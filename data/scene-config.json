@@ -298,13 +298,24 @@
     ]
   },
   "gateDoor": {
-    "model": "wooden_gate_1k.gltf/wooden_gate_1k.gltf",
     "tile": [
       0,
       3
     ],
     "rotationY": 180,
-    "comment": "Poly Haven gate mesh seated in the archway; pivots open on quest completion"
+    "leaf": {
+      "width": 1.9,
+      "springline": 2.0,
+      "archRadius": 0.95,
+      "thickness": 0.16
+    },
+    "openDegrees": 90,
+    "textures": {
+      "diffuse": "assets/Poly Haven/wooden_gate_1k.gltf/textures/wooden_gate_diff_1k.jpg",
+      "normal": "assets/Poly Haven/wooden_gate_1k.gltf/textures/wooden_gate_nor_gl_1k.jpg",
+      "arm": "assets/Poly Haven/wooden_gate_1k.gltf/textures/wooden_gate_arm_1k.jpg"
+    },
+    "comment": "The leaf is built, not loaded. wooden_gate_1k is a Poly Haven TEXTURE pack, and every texture pack they ship carries a material-preview ball as its .gltf -- one node, sphere_gltf, mesh Sphere.001. Loading it as the gate put a 3.6m wooden sphere in the archway. The three maps here are the real asset. Dimensions are the archway's own opening in wall-fortified-gate.glb, measured and asserted by test/assets.mjs: 2.0m wide, semicircular head of radius 1.0 springing at 2.0m, apex 3.0m, all after normalizeToTile's 4x. The leaf is inset 0.05m all round, because the head is a faceted circle whose stone sits just inside the ideal one."
   },
   "interiorProps": [
     {

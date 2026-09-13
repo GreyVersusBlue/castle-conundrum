@@ -3,13 +3,68 @@
 // Also builds the static collision list (world-space AABBs) and the animated gate door.
 
 import * as THREE from 'three';
-import { loadModel } from './assets.js';
+import { loadModel, loadPBRMaterial } from './assets.js';
 
 const _box = new THREE.Box3();
 
 // How much of an interior prop's footprint a surface has to cover before that
 // surface counts as holding it up. See surfaceHeightUnder().
 const SURFACE_COVERAGE = 0.5;
+
+/**
+ * The gate leaf: a plank door shaped to the archway it hangs in — a rectangle up
+ * to `springline`, capped by a semicircle of `archRadius`. Centred on local x=0
+ * and grounded at y=0, which is what the hinge math below expects.
+ *
+ * BUILT RATHER THAN LOADED, and that is the fix rather than an economy. The
+ * config used to name `wooden_gate_1k.gltf` as the door's model. Poly Haven ship
+ * a material-preview ball with every TEXTURE pack — one node called
+ * `sphere_gltf`, one mesh called `Sphere.001` — and wooden_gate is a texture
+ * pack, so the archway held a 1.93-unit sphere, auto-scaled to 3.6 m across
+ * (`tile * 0.9`) because it read as "tiny relative to the archway", grounded,
+ * hinged and swung 105 degrees on quest completion. Twenty of the forty-eight
+ * Poly Haven folders here are texture packs carrying that same ball; this was
+ * the only one the scene config loaded as a model. test/assets.mjs now fails if
+ * another one ever is.
+ *
+ * The auto-scale branch went with it. It existed to rescue a model of unknown
+ * size; these dimensions come from the archway's own measured opening, so
+ * scaling them to 90% of a tile would only undo the fit.
+ *
+ * UVs are a planar projection of the shape, not ExtrudeGeometry's default. The
+ * default hands back the shape's own coordinates, which run -0.95..0.95 across
+ * and 0..2.95 up: with RepeatWrapping that tiles a single 1k gate two across and
+ * three up. One gate, once, is the point of the map.
+ */
+function buildGateLeaf({ width, springline, archRadius, thickness }, material) {
+  const half = width / 2;
+  const shape = new THREE.Shape();
+  shape.moveTo(-half, 0);
+  shape.lineTo(half, 0);
+  shape.lineTo(half, springline);
+  shape.absarc(0, springline, archRadius, 0, Math.PI, false);
+  shape.lineTo(-half, 0);
+
+  const geo = new THREE.ExtrudeGeometry(shape, {
+    depth: thickness, bevelEnabled: false, curveSegments: 24,
+  });
+  geo.translate(0, 0, -thickness / 2); // hang the leaf on the archway's centre plane
+
+  const apex = springline + archRadius;
+  const pos = geo.attributes.position;
+  const uv = geo.attributes.uv;
+  for (let i = 0; i < pos.count; i++) {
+    uv.setXY(i, (pos.getX(i) + half) / width, pos.getY(i) / apex);
+  }
+  uv.needsUpdate = true;
+
+  const mesh = new THREE.Mesh(geo, material);
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  const group = new THREE.Group();
+  group.add(mesh);
+  return group;
+}
 
 export class CastleBuilder {
   constructor(scene, config) {
@@ -153,22 +208,15 @@ export class CastleBuilder {
       if (!p.noCollide) this.addCollider(obj, p.id);
     }
 
-    // --- Gate door (Poly Haven mesh inside the archway, hinged to swing open) ---
+    // --- Gate door (a built leaf inside the archway, hinged to swing open) ---
     const g = this.config.gateDoor;
-    const doorModel = await loadModel(pBase + g.model);
+    const doorModel = buildGateLeaf(g.leaf, loadPBRMaterial(g.textures));
     this.groundAndCenter(doorModel);
 
     // Hinge pivot at the door's left edge so it swings like a real gate
     _box.setFromObject(doorModel);
     const size = new THREE.Vector3();
     _box.getSize(size);
-    // If the gate model is tiny or huge relative to the archway, scale to ~tile width
-    if (size.x > 0.0001 && (size.x < this.tile * 0.5 || size.x > this.tile * 1.3)) {
-      doorModel.scale.multiplyScalar((this.tile * 0.9) / size.x);
-      this.groundAndCenter(doorModel);
-      _box.setFromObject(doorModel);
-      _box.getSize(size);
-    }
 
     const pivot = new THREE.Group();
     const gatePos = this.tileToWorld(g.tile[0], g.tile[1]);
@@ -199,7 +247,14 @@ export class CastleBuilder {
       pivot,
       collider: doorCollider,
       closedAngle: pivot.rotation.y,
-      openAngle: pivot.rotation.y + THREE.MathUtils.degToRad(105),
+      // 90 degrees, not the 105 this swung when the leaf was a sphere. A ball
+      // does not care how far past flush it goes; a 1.9 m leaf hinged 0.95 m off
+      // centre in a 2.0 m opening does — at 105 its outer corner ends up 0.44 m
+      // inside the west jamb and all you see of an opened gate is a dark edge.
+      // At 90 it stands flat against the jamb with 0.03 m of its thickness in
+      // the stone, which is inside the jamb's own relief. test/assets.mjs holds
+      // the angle to what the opening can actually take.
+      openAngle: pivot.rotation.y + THREE.MathUtils.degToRad(g.openDegrees),
       progress: 0,
       opening: false,
     };
