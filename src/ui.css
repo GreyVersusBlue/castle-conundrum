@@ -1,0 +1,146 @@
+:root {
+  --parchment: #e8dcc0;
+  --ink: #2a2118;
+  --panel-bg: rgba(24, 18, 12, 0.92);
+  --accent: #d4a349;
+  --accent-dim: #8a6a2f;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: #000;
+  width: 100%;
+  height: 100%;
+}
+
+canvas { display: block; }
+
+.hidden { display: none !important; }
+
+/* ---------- Loading ---------- */
+#loading-screen {
+  position: fixed; inset: 0;
+  background: radial-gradient(ellipse at center, #1c150d 0%, #0a0705 100%);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 100;
+  transition: opacity 0.6s ease;
+}
+#loading-screen.fade-out { opacity: 0; pointer-events: none; }
+.loading-inner { text-align: center; color: var(--parchment); width: 320px; }
+.loading-inner h1 { letter-spacing: 0.12em; font-weight: normal; margin-bottom: 1.4em; }
+#loading-bar-track {
+  height: 8px; background: #3a2e1e; border: 1px solid var(--accent-dim);
+  border-radius: 4px; overflow: hidden;
+}
+#loading-bar {
+  height: 100%; width: 0%; background: var(--accent);
+  transition: width 0.25s ease;
+}
+#loading-status { margin-top: 0.9em; font-size: 0.85em; color: #b9a884; font-style: italic; }
+
+/* ---------- Panels (start / riddle / victory) ---------- */
+#start-overlay, #riddle-overlay, #victory-screen {
+  position: fixed; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 50;
+}
+.panel {
+  background: var(--panel-bg);
+  border: 1px solid var(--accent-dim);
+  border-radius: 6px;
+  color: var(--parchment);
+  max-width: 460px;
+  padding: 2em 2.4em;
+  text-align: center;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.7);
+}
+.panel h1, .panel h2 { font-weight: normal; letter-spacing: 0.08em; color: var(--accent); margin-top: 0; }
+.controls-hint { font-size: 0.8em; color: #b9a884; }
+
+button {
+  font-family: inherit;
+  font-size: 1em;
+  color: var(--ink);
+  background: var(--accent);
+  border: none;
+  border-radius: 4px;
+  padding: 0.6em 1.6em;
+  cursor: pointer;
+  margin-top: 0.6em;
+}
+button:hover { background: #e6bb63; }
+
+/* ---------- HUD ---------- */
+#crosshair {
+  position: fixed; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  color: rgba(255,255,255,0.7);
+  font-size: 28px;
+  z-index: 10;
+  pointer-events: none;
+}
+
+#quest-tracker {
+  position: fixed; top: 16px; right: 16px;
+  background: var(--panel-bg);
+  border: 1px solid var(--accent-dim);
+  border-radius: 5px;
+  color: var(--parchment);
+  padding: 0.7em 1em;
+  max-width: 260px;
+  font-size: 0.85em;
+  z-index: 10;
+}
+.tracker-title { color: var(--accent); font-size: 0.8em; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.3em; }
+
+#interact-prompt {
+  position: fixed; bottom: 22%; left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.6);
+  color: var(--parchment);
+  padding: 0.4em 1em;
+  border-radius: 4px;
+  font-size: 0.9em;
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* ---------- Dialogue ---------- */
+#dialogue-box {
+  position: fixed;
+  bottom: 32px; left: 50%;
+  transform: translateX(-50%);
+  width: min(640px, 90vw);
+  background: var(--panel-bg);
+  border: 1px solid var(--accent-dim);
+  border-radius: 6px;
+  color: var(--parchment);
+  padding: 1em 1.4em 0.8em;
+  z-index: 20;
+}
+#dialogue-name { color: var(--accent); letter-spacing: 0.1em; font-size: 0.85em; text-transform: uppercase; margin-bottom: 0.4em; }
+#dialogue-text { line-height: 1.5; min-height: 2.6em; }
+#dialogue-continue { text-align: right; font-size: 0.75em; color: #b9a884; margin-top: 0.5em; }
+
+/* ---------- Riddle ---------- */
+#riddle-input {
+  width: 100%;
+  font-family: inherit;
+  font-size: 1.05em;
+  padding: 0.55em 0.8em;
+  background: #14100b;
+  border: 1px solid var(--accent-dim);
+  border-radius: 4px;
+  color: var(--parchment);
+  outline: none;
+  margin-top: 0.8em;
+}
+#riddle-input:focus { border-color: var(--accent); }
+.riddle-buttons { display: flex; gap: 0.8em; justify-content: center; }
+#riddle-feedback { min-height: 1.4em; color: #d98f6a; font-style: italic; font-size: 0.9em; }
