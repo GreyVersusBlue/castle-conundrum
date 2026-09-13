@@ -191,8 +191,11 @@ else {
   const open = openingOf(file, scale);
   const leaf = config.gateDoor.leaf;
   const gate = config.gateDoor;
+  // A solid piece has no hole to measure, and everything below would read as a
+  // TypeError rather than as the answer, which is that there is no doorway.
+  if (!open) fail(`${arch.model} has no opening in it — nothing for a gate to fill`);
 
-  if (!near(gate.tile[0], arch.tile[0], 1e-9) || !near(gate.tile[1], arch.tile[1], 1e-9))
+  if (open && !near(gate.tile[0], arch.tile[0], 1e-9) || !near(gate.tile[1], arch.tile[1], 1e-9))
     fail(`the gate leaf is on tile ${gate.tile} and the archway on ${arch.tile}`);
   else pass(`leaf and archway share tile ${arch.tile}`);
 
@@ -200,12 +203,12 @@ else {
   // width lands just inside the true one, and the sample grid is 0.02 m.
   const TOL = 0.11;
   const apex = leaf.springline + leaf.archRadius;
-  const checks = [
+  const checks = open ? [
     ['width', leaf.width, open.width, 'clears the jamb'],
     ['springline', leaf.springline, open.springline, 'meets the arch where it springs'],
     ['apex', apex, open.apex, 'reaches the crown'],
-  ];
-  for (const [what, built, measured, why] of checks) {
+  ] : [];
+  for (const [what, built, measured, why] of (open ? checks : [])) {
     if (built > measured) fail(`leaf ${what} ${built} m is wider than the opening's ${measured.toFixed(3)} m — it would clip the stone`);
     else if (!near(built, measured, TOL)) fail(`leaf ${what} ${built} m leaves a ${(measured - built).toFixed(3)} m gap in a ${measured.toFixed(3)} m opening — it no longer ${why}`);
     else pass(`leaf ${what} ${built} m in a ${measured.toFixed(3)} m opening`);
@@ -225,8 +228,9 @@ else {
   const reach = leaf.width / 2
     + leaf.width * Math.abs(Math.cos(swing))
     + (leaf.thickness / 2) * Math.abs(Math.sin(swing));
-  const jamb = open.width / 2;
-  if (gate.openDegrees < 80)
+  const jamb = (open?.width ?? 0) / 2;
+  if (!open) { /* already reported */ }
+  else if (gate.openDegrees < 80)
     fail(`the gate opens to ${gate.openDegrees} degrees — still across the doorway the quest just unlocked`);
   else if (reach > jamb + leaf.thickness)
     fail(`opened to ${gate.openDegrees} degrees the leaf reaches ${reach.toFixed(2)} m from centre, ${(reach - jamb).toFixed(2)} m into a jamb at ${jamb.toFixed(2)} m`);
