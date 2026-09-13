@@ -1,0 +1,10 @@
+{
+  "riddle": "I have keys, but open no locks. I have space, but no rooms. You can enter, but you cannot go inside. What am I?",
+  "acceptedAnswers": ["keyboard", "a keyboard", "the keyboard"],
+  "hint": "You may be resting your hands on the answer at this very moment.",
+  "wrongAnswerResponses": [
+    "Mm. No. Think on the tools of your own trade, traveler.",
+    "Wrong — though I admire the confidence. Look closer to hand.",
+    "Not even warm. The answer is nearer than you think. Much nearer."
+  ]
+}
