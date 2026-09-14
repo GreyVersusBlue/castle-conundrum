@@ -1,7 +1,7 @@
-// scene-setup.js — renderer, camera, lighting, fog, ground plane, audio stub.
+// scene-setup.js — renderer, camera, lighting, fog, audio stub.
 
 import * as THREE from 'three';
-import { loadPBRMaterial, setTextureQuality } from './assets.js';
+import { setTextureQuality } from './assets.js';
 
 export function createScene(config) {
   const scene = new THREE.Scene();
@@ -21,7 +21,7 @@ export function createScene(config) {
   renderer.toneMappingExposure = 1.0;
   document.body.appendChild(renderer.domElement);
 
-  // Before the ground plane below and before castle-builder loads a single model:
+  // Before castle-builder loads or builds a single thing:
   // assets.js tunes each texture as it arrives, so anything that loads earlier
   // than this keeps the anisotropy 1 / LinearFilter defaults that made the walls
   // blurry in the first place.
@@ -55,18 +55,12 @@ export function createScene(config) {
   const hemi = new THREE.HemisphereLight(hemiCfg.skyColor, hemiCfg.groundColor, hemiCfg.intensity);
   scene.add(hemi);
 
-  // Ground plane
-  const groundMat = loadPBRMaterial(
-    config.ground.textures,
-    config.ground.textureRepeat,
-    config.ground.fallbackColor
-  );
-  const groundGeo = new THREE.PlaneGeometry(config.ground.size, config.ground.size);
-  groundGeo.setAttribute('uv2', groundGeo.attributes.uv); // for aoMap
-  const ground = new THREE.Mesh(groundGeo, groundMat);
-  ground.rotation.x = -Math.PI / 2;
-  ground.receiveShadow = true;
-  scene.add(ground);
+  // NO GROUND HERE ANY MORE. It used to be a 140 m square centred on the origin,
+  // built before anything else knew how big the castle was and running 50 m past
+  // the walls in every direction. Phase 3 made it the curtain's own footprint plus
+  // two metres, which is a number only src/castle-plan.js can know, so the ground
+  // is one of the plan's pieces now and castle-builder.js lays it. That also puts
+  // it under test/plan-vs-scene.mjs, which the old plane was never in.
 
   // Resize handling
   window.addEventListener('resize', () => {

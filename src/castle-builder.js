@@ -15,6 +15,136 @@ import * as THREE from 'three';
 import { loadModel, loadPBRMaterial } from './assets.js';
 import { makePlan, tileToWorld } from './castle-plan.js';
 
+/* ------------------------------------------------- built stone and its UVs ---
+ *
+ * Phase 3's curtain, cross-wall, barbicans and drums are BoxGeometry and
+ * CylinderGeometry carrying a Poly Haven map, not kit pieces. What makes that
+ * read as coursed stone rather than as one smeared photograph is the repeat, and
+ * the repeat has to be WORLD-SPACE: every geometry here gets its UVs multiplied
+ * by its own metres divided by `repeatMetres`, so a 4 m tile shows 1.33 repeats
+ * of the 1k map and a 20 m run shows 6.67, instead of both showing one. Setting
+ * `texture.repeat` cannot do this — the material is shared by every piece that
+ * names the same stone, and a shared texture has one repeat for all of them.
+ */
+
+/** BoxGeometry's 24 vertices are four per face, in the order +x -x +y -y +z -z. */
+function worldUVsOnBox(geo, w, h, d, metres) {
+  const uv = geo.attributes.uv;
+  const spans = [[d, h], [d, h], [w, d], [w, d], [w, h], [w, h]];
+  for (let face = 0; face < 6; face++) {
+    const [su, sv] = spans[face];
+    for (let i = face * 4; i < face * 4 + 4; i++) {
+      uv.setXY(i, uv.getX(i) * (su / metres), uv.getY(i) * (sv / metres));
+    }
+  }
+  uv.needsUpdate = true;
+  return geo;
+}
+
+/**
+ * CylinderGeometry's side runs u 0..1 once round and v 0..1 up; its caps carry
+ * their own disc UVs. With heightSegments 1 the side owns the first
+ * `(radialSegments + 1) * 2` vertices and the caps everything after, so the two
+ * can be scaled by the things they actually measure — circumference and height
+ * for the wall, diameter for the roof.
+ */
+function worldUVsOnCylinder(geo, radius, height, radialSegments, metres) {
+  const uv = geo.attributes.uv;
+  const side = (radialSegments + 1) * 2;
+  const around = (2 * Math.PI * radius) / metres, up = height / metres, across = (2 * radius) / metres;
+  for (let i = 0; i < uv.count; i++) {
+    if (i < side) uv.setXY(i, uv.getX(i) * around, uv.getY(i) * up);
+    else uv.setXY(i, (uv.getX(i) - 0.5) * across + 0.5, (uv.getY(i) - 0.5) * across + 0.5);
+  }
+  uv.needsUpdate = true;
+  return geo;
+}
+
+/** aoMap reads the second UV set, which three calls `uv1` at r169 and `uv2` before it. */
+function secondUV(geo) {
+  geo.setAttribute('uv1', geo.attributes.uv);
+  geo.setAttribute('uv2', geo.attributes.uv);
+  return geo;
+}
+
+function mesh(geo, material) {
+  const m = new THREE.Mesh(geo, material);
+  m.castShadow = true;
+  m.receiveShadow = true;
+  return m;
+}
+
+/** One wall run: the plan's box, as the box it says it is. */
+function buildRun(box, material, metres) {
+  const w = box.max.x - box.min.x, h = box.max.y - box.min.y, d = box.max.z - box.min.z;
+  const geo = secondUV(worldUVsOnBox(new THREE.BoxGeometry(w, h, d), w, h, d, metres));
+  const m = mesh(geo, material);
+  m.position.set((box.min.x + box.max.x) / 2, (box.min.y + box.max.y) / 2, (box.min.z + box.max.z) / 2);
+  return m;
+}
+
+/**
+ * One drum: a solid cylinder on the tile the plan names, and a turret on the four
+ * inner-ward ones. `radialSegments` comes from the plan, because the plan's
+ * collider sectors are the boxes between these very vertices — the same polygon,
+ * not two roundings of the same circle.
+ */
+function buildDrum(d, material, metres) {
+  const group = new THREE.Group();
+  const geo = secondUV(worldUVsOnCylinder(
+    new THREE.CylinderGeometry(d.radius, d.radius, d.height, d.segments),
+    d.radius, d.height, d.segments, metres));
+  const tower = mesh(geo, material);
+  tower.position.set(d.cx, d.height / 2, d.cz);
+  group.add(tower);
+
+  if (d.turret) {
+    const t = d.turret;
+    const tg = secondUV(worldUVsOnCylinder(
+      new THREE.CylinderGeometry(t.radius, t.radius, t.height, d.segments),
+      t.radius, t.height, d.segments, metres));
+    const cap = mesh(tg, material);
+    cap.position.set(d.cx, t.base + t.height / 2, d.cz);
+    group.add(cap);
+  }
+  return group;
+}
+
+/**
+ * A ground plane, flat at y 0, sized by the plan.
+ *
+ * A PATCH IS COPLANAR WITH THE BASE, AND THE OFFSET IS INSURANCE, NOT A FIX. The
+ * outer ward's grassy cobbles lie on the pavers at exactly the same y. Under the
+ * software rasterizer test/plan-vs-scene.mjs runs on, the patch wins the depth
+ * test on its own and the two wards render as the two surfaces they are; this
+ * offset is here because "wins on the machine I measured" is not a property of
+ * coplanar geometry, and #53 says a render read off this rasterizer is not
+ * evidence about a GPU. Raising the patch a centimetre instead would fix the
+ * draw on every machine and break the walkability grid, which dedupes floors
+ * within 1e-6 m and would read 0.01 m as a second storey over the whole outer
+ * ward. Offsetting the depth value moves nothing: the plan box, the surface and
+ * the collider grid all still see one floor at y 0.
+ */
+function buildGround(box, material, metres, patch = false) {
+  const w = box.max.x - box.min.x, d = box.max.z - box.min.z;
+  const geo = new THREE.PlaneGeometry(w, d);
+  const uv = geo.attributes.uv;
+  for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * (w / metres), uv.getY(i) * (d / metres));
+  uv.needsUpdate = true;
+  secondUV(geo);
+  const m = new THREE.Mesh(geo, material);
+  m.rotation.x = -Math.PI / 2;
+  m.receiveShadow = true;
+  m.position.set((box.min.x + box.max.x) / 2, 0, (box.min.z + box.max.z) / 2);
+  if (patch) {
+    material.polygonOffset = true;
+    material.polygonOffsetFactor = -1;
+    material.polygonOffsetUnits = -1;
+    m.renderOrder = 1;
+  }
+  return m;
+}
+
 /**
  * The gate leaf: a plank door shaped to the archway it hangs in — a rectangle up
  * to `springline`, capped by a semicircle of `archRadius`. Centred on local x=0
@@ -112,7 +242,8 @@ function partsOfObject(root) {
 /** Every model path `makePlan` will ask about, once each. */
 function modelPaths(config) {
   const out = new Set();
-  for (const run of config.courtyard.wallRuns) out.add(config.kenneyBase + run.model);
+  out.add(config.kenneyBase + config.battlements.model);
+  for (const g of config.gates) out.add(config.kenneyBase + g.archModel);
   for (const p of config.courtyard.placements) out.add(config.kenneyBase + p.model);
   for (const p of config.interiorProps) out.add(config.polyhavenBase + p.model);
   return [...out];
@@ -125,7 +256,8 @@ export class CastleBuilder {
     this.tile = config.tileSize;
     this.plan = null;
     this.colliders = []; // { box: {min,max} | THREE.Box3, id?: string }
-    this.gateDoor = null; // { pivot, openAngle, state }
+    this.gates = new Map(); // id -> { pivot, closedAngle, openAngle, progress, opening }
+    this.materials = new Map(); // material name -> MeshStandardMaterial
   }
 
   tileToWorld(tx, tz) {
@@ -161,24 +293,47 @@ export class CastleBuilder {
     return entry;
   }
 
+  /** One MeshStandardMaterial per named stone, shared by every piece using it. */
+  material(name) {
+    if (!this.materials.has(name)) {
+      const spec = this.config.materials[name];
+      if (!spec) throw new Error(`[Castle Conundrum] no material named "${name}" in scene-config.json`);
+      this.materials.set(name, loadPBRMaterial(spec, 1, spec.fallbackColor || '#8a8175'));
+    }
+    return this.materials.get(name);
+  }
+
   async build() {
     this.plan = makePlan(this.config, await this.measure());
     // The player walks into the plan's boxes. Nothing here re-measures them.
     this.colliders = this.plan.colliders.map((c) => ({ id: c.id, box: c.box }));
+    const metres = this.config.repeatMetres;
 
     for (const piece of this.plan.pieces) {
-      const obj = piece.built === 'gate-leaf'
-        ? buildGateLeaf(this.config.gateDoor.leaf, loadPBRMaterial(this.config.gateDoor.textures))
-        : await loadModel(piece.model);
+      let obj;
+      if (piece.built === 'run') obj = buildRun(piece.box, this.material(piece.material), metres);
+      else if (piece.built === 'drum') obj = buildDrum(piece.drum, this.material(piece.material), metres);
+      else if (piece.built === 'ground') obj = buildGround(piece.box, this.material(piece.material), metres, !!piece.patch);
+      else if (piece.built === 'gate-leaf') obj = buildGateLeaf(this.gateLeafOf(piece.id), this.material(piece.material));
+      else obj = await loadModel(piece.model);
+
+      obj.userData.planId = piece.id;
+
+      if (piece.built === 'run' || piece.built === 'drum' || piece.built === 'ground') {
+        // These carry their world position inside their own geometry, so the
+        // plan's transform is the identity and there is nothing to apply.
+        this.scene.add(obj);
+        continue;
+      }
+
       const t = piece.transform;
       obj.scale.setScalar(t.scale);
       obj.rotation.y = THREE.MathUtils.degToRad(t.rotationY);
-      obj.userData.planId = piece.id;
 
       if (piece.kind === 'gate-leaf') {
         // The leaf hangs off a hinge at its own left edge so it swings like a
         // real gate. The pivot carries the rotation; the leaf sits half a width
-        // along the pivot's local +X. See the plan's gate-leaf block for why the
+        // along the pivot's local +X. See the plan's gate block for why the
         // hinge position needs the cos/sin terms at any rotationY but 0.
         const pivot = new THREE.Group();
         pivot.position.set(...piece.pivot.position);
@@ -187,10 +342,11 @@ export class CastleBuilder {
         obj.position.set(...piece.pivot.offset);
         pivot.add(obj);
         this.scene.add(pivot);
-        this.gateDoor = {
-          pivot,
-          collider: this.colliders.find((c) => c.id === 'gate-door') || null,
-          closedAngle: pivot.rotation.y,
+
+        const spec = this.plan.gates.find((g) => g.id === piece.id);
+        this.gates.set(piece.id, {
+          id: piece.id, quest: spec.quest, pivot,
+          collider: this.colliders.find((c) => c.id === piece.id) || null,
           // 90 degrees, not the 105 this swung when the leaf was a sphere. A ball
           // does not care how far past flush it goes; a 1.9 m leaf hinged 0.95 m off
           // centre in a 2.0 m opening does — at 105 its outer corner ends up 0.44 m
@@ -198,10 +354,12 @@ export class CastleBuilder {
           // At 90 it stands flat against the jamb with 0.03 m of its thickness in
           // the stone, which is inside the jamb's own relief. test/assets.mjs holds
           // the angle to what the opening can actually take.
-          openAngle: pivot.rotation.y + THREE.MathUtils.degToRad(this.config.gateDoor.openDegrees),
-          progress: 0,
+          closedAngle: THREE.MathUtils.degToRad(spec.shutAngle),
+          openAngle: THREE.MathUtils.degToRad(spec.openAngle),
+          // A gate the plan placed open is already there; only a shut one animates.
+          progress: spec.closed ? 0 : 1,
           opening: false,
-        };
+        });
         continue;
       }
 
@@ -212,10 +370,17 @@ export class CastleBuilder {
     return this;
   }
 
-  /** Call from the render loop. Animates the gate when opening. */
+  /** The `leaf` block of the gate a plan piece came from. */
+  gateLeafOf(id) {
+    const g = this.config.gates.find((x) => x.id === id);
+    if (!g) throw new Error(`[Castle Conundrum] the plan placed a leaf for "${id}", which config.gates does not name`);
+    return g.leaf;
+  }
+
+  /** Call from the render loop. Animates any gate that is opening. */
   update(dt) {
-    const gd = this.gateDoor;
-    if (gd && gd.opening && gd.progress < 1) {
+    for (const gd of this.gates.values()) {
+      if (!gd.opening || gd.progress >= 1) continue;
       gd.progress = Math.min(1, gd.progress + dt * 0.4);
       const eased = 1 - Math.pow(1 - gd.progress, 3);
       gd.pivot.rotation.y = THREE.MathUtils.lerp(gd.closedAngle, gd.openAngle, eased);
@@ -228,7 +393,16 @@ export class CastleBuilder {
     }
   }
 
-  openGate() {
-    if (this.gateDoor) this.gateDoor.opening = true;
+  /**
+   * Open the gate a quest hook names. `openGate()` with no argument is the
+   * riddle quest's `openGate` action, and it means the leaf whose `quest` is
+   * "gate" — the east gate onto the walled garden. The west gate carries no
+   * quest at all: the clerk came in through it and the way out of the castle
+   * does not open again (WISHLIST.md's answered question 5).
+   */
+  openGate(quest = 'gate') {
+    for (const gd of this.gates.values()) {
+      if (gd.quest === quest) gd.opening = true;
+    }
   }
 }

@@ -135,8 +135,19 @@ function makePlaceholder(path) {
 /**
  * Load a diffuse/normal/arm texture set into a MeshStandardMaterial.
  * Any texture that 404s logs an error; the material falls back to fallbackColor.
+ *
+ * `rough` is the other shape Poly Haven ship a pack in, and it is not
+ * interchangeable with `arm`. stone_pavers and wooden_gate carry an `arm_1k.jpg`
+ * — one image with ambient occlusion in red, roughness in green, metalness in
+ * blue. The three sets Phase 3 restored carry `rough_1k.jpg` instead: a single
+ * channel, roughness only, no AO and no metalness. Feeding one to the `arm`
+ * slot sets `metalness = 1` and drives it off a greyscale roughness map, which
+ * renders 8 m of castle wall as sheet metal. Feeding nothing leaves
+ * `roughnessMap` null and the wall reads as uniform matte plastic. So both
+ * slots exist and each pack declares the one it actually ships;
+ * `test/assets.mjs` fails a material that declares both or neither.
  */
-export function loadPBRMaterial({ diffuse, normal, arm }, repeat = 1, fallbackColor = '#888888') {
+export function loadPBRMaterial({ diffuse, normal, arm, rough }, repeat = 1, fallbackColor = '#888888') {
   const mat = new THREE.MeshStandardMaterial({ color: fallbackColor, roughness: 1 });
 
   const tryTex = (url, onOk) => {
@@ -167,6 +178,12 @@ export function loadPBRMaterial({ diffuse, normal, arm }, repeat = 1, fallbackCo
     mat.roughnessMap = t;
     mat.metalnessMap = t;
     mat.metalness = 1; // let the map drive it
+  });
+  tryTex(rough, (t) => {
+    // Roughness only. No AO channel to read and nothing metal in a castle wall,
+    // so metalness stays at the MeshStandardMaterial default of 0 rather than
+    // being handed a map that does not mean what `arm`'s blue channel means.
+    mat.roughnessMap = t;
   });
 
   return mat;

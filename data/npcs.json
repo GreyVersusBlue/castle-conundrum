@@ -14,25 +14,26 @@
         "color": "#8a2f2f"
       },
       "position": [
-        1.8,
+        -5.5,
         0,
-        9.2
+        0
       ],
       "facing": 180,
       "patrol": null,
       "dialogue": {
         "default": [
           "Halt. None pass the gate without the Keystone.",
-          "The old Scholar in the hall guards its secret behind one of his infernal riddles. Best of luck — I've never solved one."
+          "The old Scholar in the hall guards its secret behind one of his infernal riddles. Best of luck \u2014 I've never solved one."
         ],
         "hasKeystone": [
           "Well, I'll be. The Keystone itself.",
-          "A deal's a deal. Stand back — this gate hasn't moved in years."
+          "A deal's a deal. Stand back \u2014 this gate hasn't moved in years."
         ],
         "afterVictory": [
           "Go on then. The road's yours."
         ]
-      }
+      },
+      "comment": "At the porter's gate on the outer ward side: the one crossing between the wards at ground level, and the one he logs. Was (1.8, 9.2), the old courtyard's south gate."
     },
     {
       "id": "scholar",
@@ -47,21 +48,21 @@
         "color": "#2f4f8a"
       },
       "position": [
-        1.5,
+        10,
         0,
-        -8.0
+        -10
       ],
       "facing": 346,
-      "comment": "Was [0.8, 0, -9.6], which put 0.57 m of him inside the hall table (x -0.9..0.9, z -10.33..-9.67). Moved 0.6 m east of the table's east edge instead, and 0.28 m clear of the 0.18 m stool at (2, -9.2). Standing him BEHIND the table at [1.45, -10.85] was better staging and unreachable: the hall doorway is a 4 m wide, 8 m deep tunnel, and walkTo's strafe nudge wedged the player against its east wall before ever getting in range. Facing turned to 346 so he watches the doorway he is approached from rather than standing with his back to it. Z moved again, [*, -10.0] -> [*, -8.0]: his own body clipped 0.29 m into the north wall at -10.0 (nothing had ever checked an NPC's own body against the wall behind it). This is the same +2.0 m south rigid shift applied to the whole hall furniture cluster in data/scene-config.json (see gothic_statue's comment there) — his x-gap from the table (0.286 m) is unchanged, a uniform shift preserves every relative distance in the cluster. If this moves, move SCHOLAR in Tools/board-check/play-castle.mjs too.",
+      "comment": "In the King's Hall, the presence chamber in the inner ward. Was (1.5, -8), the old courtyard hall.",
       "patrol": null,
       "dialogue": {
         "default": [
           "Ah, a visitor. You want the Keystone, no doubt. Everyone does.",
-          "It is yours — if your wit is sharper than your sword. Answer me this…",
+          "It is yours \u2014 if your wit is sharper than your sword. Answer me this\u2026",
           "{RIDDLE}"
         ],
         "hasKeystone": [
-          "The Keystone suits you. Now go bother the Guard — he owes me three answers and a chicken."
+          "The Keystone suits you. Now go bother the Guard \u2014 he owes me three answers and a chicken."
         ],
         "afterVictory": [
           "The gate stands open. A mind well used is worth ten keys."
@@ -78,31 +79,31 @@
         "color": "#5a2f8a"
       },
       "position": [
-        -6,
+        -24,
         0,
-        2
+        4
       ],
       "facing": 90,
       "patrol": [
         [
-          -6,
+          -24,
           0,
-          2
+          4
         ],
         [
-          -6,
-          0,
-          -3
-        ],
-        [
-          -2,
+          -24,
           0,
           -4
         ],
         [
-          -2,
+          -12,
           0,
-          3
+          -4
+        ],
+        [
+          -12,
+          0,
+          4
         ]
       ],
       "dialogue": {
@@ -116,7 +117,8 @@
         "afterVictory": [
           "An open gate is just a wall that gave up. Ponder that."
         ]
-      }
+      },
+      "comment": "Patrolling the outer ward between the kitchen range and the Great Hall. The old patrol was a 4 m box inside the courtyard that Phase 3 replaced."
     }
   ],
   "cast": [

@@ -24,9 +24,10 @@
 // Four checks:
 //   1. every `model` in either data file resolves to a file that exists
 //   2. no `model` resolves to a Poly Haven preview ball
-//   3. the gate leaf's built dimensions match the archway's own opening,
+//   3. every gate leaf's built dimensions match the archway's own opening,
 //      measured out of wall-fortified-gate.glb rather than restated from the
-//      config — the point is to catch the two drifting apart
+//      config — the point is to catch the two drifting apart — and every
+//      material names a complete texture set
 //   4. every byte under assets/Poly Haven and assets/NPCs is reachable from one
 //      of those references, and everything a reference needs is there
 
@@ -70,7 +71,8 @@ console.log('model references in data/');
 // ornate_medieval_mace_1k, and a preview ball in that slot is the same #374 bug
 // in a hand rather than an archway.
 const refs = [
-  ...config.courtyard.wallRuns.map(r => [config.kenneyBase + r.model, r.comment || 'wall run']),
+  [config.kenneyBase + config.battlements.model, 'the battlements'],
+  ...config.gates.map(g => [config.kenneyBase + g.archModel, `${g.id}'s archway`]),
   ...config.courtyard.placements.map(p => [config.kenneyBase + p.model, p.id || p.model]),
   ...config.interiorProps.map(p => [config.polyhavenBase + p.model, p.model]),
   ...npcData.npcs.map(n => [n.modelPath, `${n.id || n.name}'s body`]),
@@ -142,68 +144,82 @@ function openingOf(file, scale) {
   };
 }
 
-console.log('\nthe gate leaf against the archway it hangs in');
-const arch = config.courtyard.placements.find(p => p.id === 'gate-arch');
-if (!arch) fail('no placement with id gate-arch — the gate leaf has nothing to be measured against');
-else {
-  const file = path.join(ROOT, config.kenneyBase + arch.model);
+console.log('\nevery gate leaf against the archway it hangs in');
+// PER GATE NOW, not once. Phase 3 put three of these in the castle — the west
+// gate the clerk came in through, the east gate onto the garden, and the
+// porter's gate through the cross-wall — and they are the same archway model at
+// the same scale with the same leaf numbers. Checking one of three and calling
+// it the gate is how a config grows a second copy that nobody measured.
+for (const gate of config.gates) {
+  const file = path.join(ROOT, config.kenneyBase + gate.archModel);
+  if (!fs.existsSync(file)) { fail(`${gate.id}: no archway model at ${gate.archModel}`); continue; }
   const { verts } = triangles(file);
   const depth = Math.max(...verts.map(v => v[2])) - Math.min(...verts.map(v => v[2]));
   const scale = config.tileSize / depth; // castle-plan.js's scaleFor, rule 'depth'
   const open = openingOf(file, scale);
-  const leaf = config.gateDoor.leaf;
-  const gate = config.gateDoor;
+  const leaf = gate.leaf;
   // A solid piece has no hole to measure, and everything below would read as a
   // TypeError rather than as the answer, which is that there is no doorway.
-  if (!open) fail(`${arch.model} has no opening in it — nothing for a gate to fill`);
-
-  if (open && !near(gate.tile[0], arch.tile[0], 1e-9) || !near(gate.tile[1], arch.tile[1], 1e-9))
-    fail(`the gate leaf is on tile ${gate.tile} and the archway on ${arch.tile}`);
-  else pass(`leaf and archway share tile ${arch.tile}`);
+  if (!open) { fail(`${gate.id}: ${gate.archModel} has no opening in it — nothing for a gate to fill`); continue; }
 
   // 0.11 m of tolerance: the head is a faceted circle, so a row's measured
   // width lands just inside the true one, and the sample grid is 0.02 m.
   const TOL = 0.11;
   const apex = leaf.springline + leaf.archRadius;
-  const checks = open ? [
+  for (const [what, built, measured, why] of [
     ['width', leaf.width, open.width, 'clears the jamb'],
     ['springline', leaf.springline, open.springline, 'meets the arch where it springs'],
     ['apex', apex, open.apex, 'reaches the crown'],
-  ] : [];
-  for (const [what, built, measured, why] of (open ? checks : [])) {
-    if (built > measured) fail(`leaf ${what} ${built} m is wider than the opening's ${measured.toFixed(3)} m — it would clip the stone`);
-    else if (!near(built, measured, TOL)) fail(`leaf ${what} ${built} m leaves a ${(measured - built).toFixed(3)} m gap in a ${measured.toFixed(3)} m opening — it no longer ${why}`);
-    else pass(`leaf ${what} ${built} m in a ${measured.toFixed(3)} m opening`);
+  ]) {
+    if (built > measured) fail(`${gate.id}: leaf ${what} ${built} m is wider than the opening's ${measured.toFixed(3)} m — it would clip the stone`);
+    else if (!near(built, measured, TOL)) fail(`${gate.id}: leaf ${what} ${built} m leaves a ${(measured - built).toFixed(3)} m gap in a ${measured.toFixed(3)} m opening — it no longer ${why}`);
+    else pass(`${gate.id}: leaf ${what} ${built} m in a ${measured.toFixed(3)} m opening`);
   }
 
   // The head is drawn as an arc of archRadius springing at springline, so a leaf
   // whose half-width and radius disagree gets a straight step in its outline.
   if (!near(leaf.width / 2, leaf.archRadius, 1e-9))
-    fail(`leaf half-width ${leaf.width / 2} and archRadius ${leaf.archRadius} disagree — the head would step in or out at the springline`);
-  else pass('the head springs straight off the jamb line');
+    fail(`${gate.id}: leaf half-width ${leaf.width / 2} and archRadius ${leaf.archRadius} disagree — the head would step in or out at the springline`);
 
   // How far the leaf can swing before it stops being an opened gate and starts
   // being a plank in a wall. Hinged at half its own width off centre, at angle θ
   // its furthest point sits `width·cos θ + (thickness/2)·sin θ` in x from the
-  // hinge, and the jamb is at half the opening's width from the centre.
+  // hinge, and the jamb is at half the opening's width from the centre. This one
+  // binds on every gate, open or shut: the west gate and the porter's gate are
+  // PLACED at `openDegrees`, so an angle the opening cannot take is not a future
+  // animation there, it is where the leaf is standing right now.
   const swing = (gate.openDegrees || 0) * Math.PI / 180;
   const reach = leaf.width / 2
     + leaf.width * Math.abs(Math.cos(swing))
     + (leaf.thickness / 2) * Math.abs(Math.sin(swing));
-  const jamb = (open?.width ?? 0) / 2;
-  if (!open) { /* already reported */ }
-  else if (gate.openDegrees < 80)
-    fail(`the gate opens to ${gate.openDegrees} degrees — still across the doorway the quest just unlocked`);
+  const jamb = open.width / 2;
+  if (gate.openDegrees < 80)
+    fail(`${gate.id} opens to ${gate.openDegrees} degrees — still across the doorway`);
   else if (reach > jamb + leaf.thickness)
-    fail(`opened to ${gate.openDegrees} degrees the leaf reaches ${reach.toFixed(2)} m from centre, ${(reach - jamb).toFixed(2)} m into a jamb at ${jamb.toFixed(2)} m`);
-  else pass(`opened to ${gate.openDegrees} degrees the leaf stands at ${reach.toFixed(2)} m against a jamb at ${jamb.toFixed(2)} m`);
+    fail(`${gate.id}: opened to ${gate.openDegrees} degrees the leaf reaches ${reach.toFixed(2)} m from centre, ${(reach - jamb).toFixed(2)} m into a jamb at ${jamb.toFixed(2)} m`);
+  else pass(`${gate.id}: opened to ${gate.openDegrees} degrees the leaf stands at ${reach.toFixed(2)} m against a jamb at ${jamb.toFixed(2)} m`);
 
-  for (const [slot, rel] of Object.entries(gate.textures || {})) {
-    if (!fs.existsSync(path.join(ROOT, rel))) fail(`gate ${slot} map missing — ${rel}`);
-  }
-  if (gate.model) fail('gateDoor still carries a `model` — the leaf is built from `leaf` and `textures` now');
+  if (gate.model) fail(`${gate.id} still carries a \`model\` — the leaf is built from \`leaf\` and \`material\` now`);
+  if (!config.materials[gate.material]) fail(`${gate.id} names material "${gate.material}", which config.materials does not define`);
 }
 
+/* ------------------------------------------- 3b: every material is a set ---
+ * The three sets Phase 3 restored ship `diff`, `nor_gl` and `rough`; the two
+ * already here ship `diff`, `nor_gl` and `arm`. src/assets.js reads whichever of
+ * `arm` and `rough` is present, and they are not the same image: `arm` carries
+ * AO, roughness and metalness in three channels and drives `metalness` off the
+ * blue one, `rough` is roughness alone. A set that declared both would render
+ * with whichever call happened to resolve last; one that declared neither is a
+ * matte plastic wall and nothing says so.
+ */
+console.log('\nevery material is a complete set');
+for (const [name, spec] of Object.entries(config.materials)) {
+  const has = ['diffuse', 'normal'].filter(k => spec[k]);
+  if (has.length !== 2) fail(`material "${name}" is missing ${['diffuse', 'normal'].filter(k => !spec[k]).join(' and ')}`);
+  const third = ['arm', 'rough'].filter(k => spec[k]);
+  if (third.length !== 1) fail(`material "${name}" declares ${third.length ? 'both `arm` and `rough`' : 'neither `arm` nor `rough`'} — src/assets.js reads exactly one`);
+  else pass(`material "${name}": diffuse, normal and ${third[0]}`);
+}
 
 /* ------------------------------------------------- 4: nothing dead on disk ---
  * The reverse of checks 1 and 2. Those ask "does every reference resolve?"; this
@@ -244,10 +260,11 @@ console.log('\nnothing on disk that nothing asks for');
     for (const uri of [...(json.buffers || []), ...(json.images || [])].map(x => x.uri).filter(Boolean))
       need(path.posix.join(dir, decodeURIComponent(uri)), `${why}'s glTF declares it`);
   }
-  for (const [slot, rel] of [
-    ...Object.entries(config.ground.textures).map(([k, v]) => [`ground ${k}`, v]),
-    ...Object.entries(config.gateDoor.textures || {}).map(([k, v]) => [`gate ${k}`, v]),
-  ]) need(rel, slot);
+  // Every map under config.materials, whether a wall, a drum, a ground or a gate
+  // leaf is the thing naming it. This is the list that made restoring a set
+  // without referencing it produce three unreferenced-file failures (#390).
+  for (const [name, spec] of Object.entries(config.materials))
+    for (const [slot, rel] of Object.entries(spec)) need(rel, `material ${name}'s ${slot}`);
   for (const n of npcData.npcs) need(n.modelPath, `${n.id || n.name}'s body`);
 
   const walk = (rel) => {

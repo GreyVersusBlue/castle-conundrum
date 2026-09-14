@@ -130,6 +130,11 @@ function scaleRuleFor(model) {
 }
 
 function scaleFor(rule, tileSize, parts) {
+  // A number is a scale, not a rule. Phase 3's battlements are the only pieces
+  // placed that way: battlement.glb is authored 1.0 x 0.4 x 0.3, and none of the
+  // three rules gives it the 4 m merlon run a 4 m tile wants — 'depth' would
+  // scale it off its 0.3 depth and hand back a 13 m block.
+  if (typeof rule === 'number') return rule;
   if (rule === 'native') return 1;
   const box = boxOfParts(parts);
   const size = rule === 'depth' ? box.max.z - box.min.z : box.max.y - box.min.y;
@@ -203,13 +208,22 @@ function gateLeafParts({ width, springline, archRadius, thickness }) {
  * it stopped nobody. A player could walk through the gatehouse wall beside the
  * shut gate, and `walkability().sealed()` said so the first time it ran. The
  * jambs and the lintel are the fix: the piece keeps its doorway and loses the
- * two gaps. The opening's size comes from `gateDoor.leaf`, which `assets.mjs`
+ * two gaps. The opening's size comes from each gate's `leaf`, which `assets.mjs`
  * already measures against the model's real hole.
  */
-function archColliders(id, box, leaf) {
+function archColliders(id, box, leaf, rotationY = 180) {
   const cx = (box.min.x + box.max.x) / 2, cz = (box.min.z + box.max.z) / 2;
   const half = leaf.width / 2, apex = leaf.springline + leaf.archRadius;
-  const across = (box.max.x - box.min.x) >= (box.max.z - box.min.z);
+  // WHICH WAY THE JAMBS RUN IS THE GATE'S ROTATION, NOT THE BOX'S SHAPE. This
+  // read `(box.max.x - box.min.x) >= (box.max.z - box.min.z)` while there was one
+  // gate in the castle and it sat in a wall running east-west. The archway is a
+  // 4 x 4 x 4 m cube at every rotation, so that comparison is `4 >= 4` — true for
+  // every gate in the castle, including the three Phase 3 turns 90 degrees into
+  // north-south walls. It would have slabbed their jambs across the passage and
+  // left the doorway's real sides open, which is #426's bug again with the
+  // opposite sign. The leaf's width runs along x at 0 and 180 and along z at 90
+  // and 270, and the jambs stand at its ends.
+  const across = ((rotationY % 180) + 180) % 180 === 0;
   const lo = across ? box.min.x : box.min.z, hi = across ? box.max.x : box.max.z;
   const c = across ? cx : cz;
   const slab = (from, to, yTop) => (across
@@ -226,6 +240,131 @@ function archColliders(id, box, leaf) {
   return out;
 }
 
+/* ------------------------------------------------------- built stone (v2) ---
+ *
+ * Phase 3 stopped building the curtain out of kit pieces. `wall.glb` is a 64 px
+ * pixel-art cube; nine runs of it made a 7x7 courtyard, and Conwy's plan is 16
+ * tiles by 9 with eight drums and a cross-wall through it. What carries the
+ * castle now is built geometry with a Poly Haven map on it (#411 reversed the
+ * round-1 "leave the walls stylised" call), and built geometry is the one thing
+ * this file can describe exactly: a run IS its box, so the plan's box and the
+ * BoxGeometry the builder emits are the same eight numbers rather than two
+ * measurements that have to agree.
+ */
+
+/** Which axis a run travels, from its own endpoints, or its declared `axis`. */
+function runAxis(run) {
+  const dx = run.from[0] !== run.to[0], dz = run.from[1] !== run.to[1];
+  if (run.axis) return run.axis;
+  if (dx && dz) throw new Error(`[castle-plan] wall run "${run.id}" is diagonal; every run in this castle is axis-aligned`);
+  if (dx) return 'x';
+  if (dz) return 'z';
+  throw new Error(`[castle-plan] wall run "${run.id}" starts and ends on the same tile and declares no "axis"`);
+}
+
+/**
+ * A run's world box. It spans its `from` and `to` tiles WHOLE — world extent
+ * [from*tile - tile/2, to*tile + tile/2] — so a run written `from [-8,-4] to
+ * [-6,-4]` covers the three `##` tiles the map draws and meets its neighbours at
+ * the tile edge rather than at their centres. Across the run it is `thickness`
+ * metres, centred on the perpendicular tile's centre.
+ */
+function runBox(run, tileSize) {
+  const axis = runAxis(run);
+  const half = tileSize / 2, t = run.thickness / 2;
+  const along = axis === 'x' ? 0 : 1;
+  const lo = Math.min(run.from[along], run.to[along]) * tileSize - half;
+  const hi = Math.max(run.from[along], run.to[along]) * tileSize + half;
+  const cross = run.from[axis === 'x' ? 1 : 0] * tileSize;
+  return axis === 'x'
+    ? { min: { x: lo, y: 0, z: cross - t }, max: { x: hi, y: run.height, z: cross + t } }
+    : { min: { x: cross - t, y: 0, z: lo }, max: { x: cross + t, y: run.height, z: hi } };
+}
+
+/**
+ * Which way a run faces, as three's cylinder angle (0 is +z, 90 is +x), so the
+ * battlement rotation below is one formula for a wall and for a drum. Read off
+ * the run's own position: this castle is a rectangle about the origin, so a run
+ * north of it faces north. Not a config field, because a field here would be a
+ * second copy of the geometry that could disagree with it.
+ */
+function outwardTheta(run, tileSize) {
+  const axis = runAxis(run);
+  const cross = run.from[axis === 'x' ? 1 : 0] * tileSize;
+  if (axis === 'x') return cross < 0 ? 180 : 0;
+  return cross < 0 ? 270 : 90;
+}
+
+/** three.js CylinderGeometry's own vertex ring, so a plan box is not an estimate. */
+const ringPoint = (cx, cz, radius, thetaDeg) => {
+  const t = thetaDeg * Math.PI / 180;
+  return { x: cx + radius * Math.sin(t), z: cz + radius * Math.cos(t) };
+};
+
+/**
+ * A drum tower: a `segments`-sided solid cylinder of `material`, and the four
+ * inner-ward drums a turret on top.
+ *
+ * THE DISC IS A POLYGON IN BOTH HALVES. The builder emits
+ * `CylinderGeometry(r, r, h, segments)`, whose vertices sit at `r*sin(theta)`,
+ * `r*cos(theta)` for theta stepped round the circle; the colliders below are the
+ * boxes over the centre and each consecutive pair of those same vertices. So the
+ * stone the player walks into and the stone drawn on the screen are the same
+ * twenty-four-sided figure, not a circle approximated twice. A sector box never
+ * reaches more than the polygon's own sagitta past the circle — 0.034 m at
+ * radius 4 with 24 sides.
+ *
+ * WHY SOLID, AND WHY THE EIGHT TOWER ROOMS ARE PHASE 4'S. A hollow drum with a
+ * doorway in its ring does not produce a tower you can walk into, and the drum
+ * is not what stops you. The curtain is a whole tile thick, so at a corner the
+ * two runs meeting there — say the west run at x -38..-34 and the north run at
+ * z -18..-14 — overlap in neither axis: they touch at the single point
+ * (-34, -14). The ward is the quadrant south-east of that point and the drum is
+ * the quadrant north-west of it, and the two meet at a pinch of exactly zero
+ * width. No radius up to the map's 4 m opens it, and the six towers that are not
+ * mid-run are all built that way. What opens it is a doorway cut THROUGH the
+ * adjacent run, which is Phase 4's "doorways as gaps the plan's walkability
+ * sees, and door frames from wall-door.glb where a doorway needs a lintel", and
+ * Phase 4's exit is the one that reads "fourteen rooms reachable". So this phase
+ * ships the six rooms that are open ground inside the wards and leaves the eight
+ * tower interiors as solid stone for the phase that gives them doors (#433).
+ */
+function drumParts(drum, tileSize) {
+  const [cx, , cz] = tileToWorld(tileSize, drum.tile[0], drum.tile[1]);
+  const r = drum.radius;
+  const segments = drum.segments || 24;
+  const step = 360 / segments;
+
+  const box = EMPTY();
+  const colliders = [];
+  for (let i = 0; i < segments; i++) {
+    const a = ringPoint(cx, cz, r, i * step), b = ringPoint(cx, cz, r, (i + 1) * step);
+    const seg = EMPTY();
+    for (const pt of [{ x: cx, z: cz }, a, b]) {
+      expand(seg, { x: pt.x, y: 0, z: pt.z });
+      expand(seg, { x: pt.x, y: drum.height, z: pt.z });
+    }
+    colliders.push({ id: `${drum.id}-sector-${i}`, box: seg });
+    expand(box, seg.min); expand(box, seg.max);
+  }
+
+  // The turret is narrower than the drum, so it cannot reach past the disc's box
+  // in plan; it is unioned anyway rather than assumed, because a later phase that
+  // widens one would otherwise leave the plan box behind and only
+  // test/plan-vs-scene.mjs would say so.
+  let turret = null;
+  if (drum.turret) {
+    turret = { radius: drum.turret.radius, height: drum.turret.height, base: drum.height, cx, cz, segments };
+    for (let i = 0; i <= segments; i++) {
+      const pt = ringPoint(cx, cz, drum.turret.radius, i * step);
+      expand(box, { x: pt.x, y: drum.height, z: pt.z });
+      expand(box, { x: pt.x, y: drum.height + drum.turret.height, z: pt.z });
+    }
+  }
+
+  return { cx, cz, radius: r, segments, box, colliders, turret };
+}
+
 /**
  * The whole castle, placed.
  *
@@ -235,9 +374,10 @@ function archColliders(id, box, leaf) {
  *        root space. `test/gltf.mjs`'s `partsOf` in Node; a traversal of the
  *        loaded `Object3D` in the browser. NOT a single box — see the header.
  */
-export function makePlan(config, boundsOf) {
+export function makePlan(config, boundsOf, { closed = [] } = {}) {
   const tileSize = config.tileSize;
   const kBase = config.kenneyBase, pBase = config.polyhavenBase;
+  const forceClosed = new Set(closed);
   const pieces = [], colliders = [], surfaces = [];
   let seq = 0;
 
@@ -250,86 +390,159 @@ export function makePlan(config, boundsOf) {
 
   const addPiece = (p) => { pieces.push(p); return p; };
 
-  /* --- the ground: one surface, no collider, the only thing at level 0 that
-   *     is not stone. `config.ground.size` is the plane's full width. */
-  const half = config.ground.size / 2;
-  const groundBox = { min: { x: -half, y: 0, z: -half }, max: { x: half, y: 0, z: half } };
-  surfaces.push({ id: 'ground', box: groundBox, top: 0, level: 0, slope: null });
+  /* --- the curtain, the cross-wall and the two barbicans, as built boxes --- */
+  const battle = config.battlements;
+  const merlons = []; // { tile: [worldX, worldZ] as metres, rotationY, y }
+  const merlonRun = (from, to, y, rotationY) => {
+    // one per `spacing` metres, centred in the run so a 12 m run gets three
+    // whole merlons rather than two and a stub at one end
+    const len = Math.hypot(to[0] - from[0], to[1] - from[1]);
+    const n = Math.max(1, Math.round(len / battle.spacing));
+    for (let i = 0; i < n; i++) {
+      const t = (i + 0.5) / n;
+      merlons.push({ at: [from[0] + (to[0] - from[0]) * t, from[1] + (to[1] - from[1]) * t], y, rotationY });
+    }
+  };
 
-  /* --- wall runs --- */
-  for (const run of config.courtyard.wallRuns) {
-    const parts = boundsOf(kBase + run.model).parts;
-    for (let i = 0; i < run.count; i++) {
-      const tile = [run.start[0] + run.step[0] * i, run.start[1] + run.step[1] * i];
-      const { transform, box } = place({
-        parts, tileSize, tile, rotationY: run.rotationY || 0, scaleRule: scaleRuleFor(run.model),
-      });
-      const id = `${run.model.replace(/\.glb$/, '')}-${seq++}`;
-      addPiece({
-        id, kind: 'wall', model: kBase + run.model, level: 0, curtain: !!run.curtain,
-        label: run.comment ? run.comment.split(/[.,]/)[0] : run.model,
-        transform, box,
-      });
-      collide(id, box);
+  for (const run of config.walls) {
+    const box = runBox(run, tileSize);
+    addPiece({
+      id: run.id, kind: 'wall', built: 'run', level: run.level || 0, curtain: !!run.curtain,
+      material: run.material, label: run.comment ? run.comment.split(/[.,]/)[0] : run.id,
+      transform: { position: [0, 0, 0], rotationY: 0, scale: 1 }, box, boxes: [box],
+    });
+    collide(run.id, box);
+
+    // battlements ride the run's outer edge, along its long axis, at its top
+    const theta = outwardTheta(run, tileSize);
+    const axis = runAxis(run);
+    const cross = run.from[axis === 'x' ? 1 : 0] * tileSize;
+    const lo = axis === 'x' ? box.min.x : box.min.z, hi = axis === 'x' ? box.max.x : box.max.z;
+    const from = axis === 'x' ? [lo, cross] : [cross, lo];
+    const to = axis === 'x' ? [hi, cross] : [cross, hi];
+    merlonRun(from, to, run.height, theta + 180);
+  }
+
+  /* --- eight drums --- */
+  const drumShapes = [];
+  for (const drum of config.drums) {
+    const d = drumParts(drum, tileSize);
+    drumShapes.push({ drum, ...d });
+    addPiece({
+      id: drum.id, kind: 'tower', built: 'drum', level: drum.level || 0, curtain: !!drum.curtain,
+      material: drum.material, label: drum.comment ? drum.comment.split(/[.,]/)[0] : drum.id,
+      drum: {
+        cx: d.cx, cz: d.cz, radius: d.radius, height: drum.height,
+        segments: d.segments, turret: d.turret,
+      },
+      transform: { position: [0, 0, 0], rotationY: 0, scale: 1 }, box: d.box,
+      // The twenty-four sectors, not the 8 x 8 m square `box` bounds them with.
+      // A drum's corners are ward floor, and a check that reads `box` calls a
+      // chest standing in that floor "inside South-west Tower".
+      boxes: d.colliders.map((c) => c.box),
+    });
+    for (const c of d.colliders) collide(c.id, c.box);
+
+    // merlons round the drum's rim, one every 360/perDrum degrees
+    for (let i = 0; i < battle.perDrum; i++) {
+      const th = (i / battle.perDrum) * 360;
+      const at = ringPoint(d.cx, d.cz, d.radius, th);
+      merlons.push({ at: [at.x, at.z], y: drum.height, rotationY: th + 180 });
     }
   }
 
-  /* --- individual placements: towers, the gate archway, props, trees --- */
+  const merlonParts = boundsOf(kBase + battle.model).parts;
+  for (const m of merlons) {
+    const { transform, box } = place({
+      parts: merlonParts, tileSize, tile: [m.at[0] / tileSize, m.at[1] / tileSize],
+      rotationY: m.rotationY, scaleRule: battle.scale, lift: m.y,
+    });
+    const id = `merlon-${seq++}`;
+    addPiece({
+      id, kind: 'decor', model: kBase + battle.model, level: 0, curtain: false,
+      label: 'battlement', transform, box,
+    });
+    // no collider: Phase 5 puts the wall walk under these, and until then the
+    // only body in the castle is on the ground 8 m below them.
+  }
+
+  /* --- three gates: an archway, and a leaf hung in it ---
+   * The west gate stands open (the clerk was let in through it and the spawn is
+   * behind it in the barbican), the east gate is shut until the riddle quest
+   * opens it onto the garden, the porter's gate is open all day. `closed` forces
+   * any of them shut, which is how test/layout.mjs floods the castle with the
+   * cross-wall's one crossing sealed.
+   */
+  const gates = [];
+  for (const g of config.gates) {
+    const archParts = boundsOf(kBase + g.archModel).parts;
+    const { transform, box } = place({
+      parts: archParts, tileSize, tile: g.tile, rotationY: g.rotationY || 0,
+      scaleRule: scaleRuleFor(g.archModel),
+    });
+    const archId = `${g.id}-arch`;
+    addPiece({
+      id: archId, kind: 'gate-arch', model: kBase + g.archModel, level: 0, curtain: !!g.curtain,
+      label: g.comment ? g.comment.split(/[.,]/)[0] : archId, transform, box,
+      boxes: archColliders(archId, box, g.leaf, g.rotationY || 0).map((c) => c.box),
+    });
+    for (const c of archColliders(archId, box, g.leaf, g.rotationY || 0)) collide(c.id, c.box);
+
+    /* The hinge sits half a leaf-width off the archway centre, rotated with the
+     * gate, so the leaf's world midpoint lands on the archway centre at any
+     * rotationY. The un-rotated `gatePos.x - size.x / 2` was only that midpoint
+     * for rotationY 0, and the one gate this castle used to have is at 180.
+     */
+    const leafParts = gateLeafParts(g.leaf);
+    const shut = g.rotationY || 0;
+    const isClosed = forceClosed.has(g.id) || !!g.closed;
+    const leafRot = shut + (isClosed ? 0 : (g.openDegrees || 0));
+    const shutRad = shut * Math.PI / 180, leafRad = leafRot * Math.PI / 180;
+    const leafSize = boxOfParts(leafParts);
+    const width = leafSize.max.x - leafSize.min.x;
+    const [gx, , gz] = tileToWorld(tileSize, g.tile[0], g.tile[1]);
+    const pivot = [gx - (width / 2) * Math.cos(shutRad), 0, gz + (width / 2) * Math.sin(shutRad)];
+    // the leaf hangs off the hinge along the pivot's local +X
+    const leafTransform = {
+      position: [pivot[0] + (width / 2) * Math.cos(leafRad), 0, pivot[2] - (width / 2) * Math.sin(leafRad)],
+      rotationY: leafRot, scale: 1,
+    };
+    const leafBox = boxOfParts(leafParts, placementMatrix(leafTransform));
+    addPiece({
+      id: g.id, kind: 'gate-leaf', built: 'gate-leaf', level: 0, curtain: false,
+      label: `${g.id} leaf`, material: g.material,
+      // The scene graph the builder makes: a pivot at the hinge, carrying the
+      // rotation, with the leaf parented `offset` along the pivot's local +X.
+      // `transform` is the same placement flattened to world space, which is what
+      // `box` is measured from and what test/plan-vs-scene.mjs compares against.
+      pivot: { position: pivot, rotationY: leafRot, offset: [width / 2, 0, 0] },
+      transform: leafTransform, box: leafBox,
+    });
+    // An open leaf is against the jamb, not across the doorway: it blocks
+    // nothing the arch's own jambs do not already block.
+    if (isClosed) collide(g.id, leafBox);
+    gates.push({
+      id: g.id, quest: g.quest || null, closed: isClosed,
+      shutAngle: shut, openAngle: shut + (g.openDegrees || 0),
+    });
+  }
+
+  /* --- individual placements: loose kit decor --- */
   for (const p of config.courtyard.placements) {
     const parts = boundsOf(kBase + p.model).parts;
     const { transform, box } = place({
       parts, tileSize, tile: p.tile, rotationY: p.rotationY || 0, scaleRule: scaleRuleFor(p.model),
     });
-    const kind = p.id === 'gate-arch' ? 'gate-arch'
-      : /^tower/.test(p.model) ? 'tower'
+    const kind = /^tower/.test(p.model) ? 'tower'
       : /^(wall|column)/.test(p.model) ? 'wall' : 'decor';
     const id = p.id || `${p.model.replace(/\.glb$/, '')}-${seq++}`;
     addPiece({
       id, kind, model: kBase + p.model, level: 0, curtain: !!p.curtain,
-      label: p.comment || p.model, transform, box,
+      label: p.comment || p.model, transform, box, boxes: p.noCollide ? [] : [box],
     });
-    // `noCollide` means one thing everywhere: this piece contributes no
-    // colliders. It used to be ignored on the archway, which made re-adding it
-    // to `gate-arch` a silent no-op — a config flag that reads as "open the
-    // gatehouse back up" and did nothing at all. What stops it being re-added
-    // now is `walkability().sealed()`, not a special case here.
-    if (!p.noCollide) {
-      if (kind === 'gate-arch') for (const c of archColliders(id, box, config.gateDoor.leaf)) collide(c.id, c.box);
-      else collide(id, box);
-    }
+    // `noCollide` means one thing everywhere: this piece contributes no colliders.
+    if (!p.noCollide) collide(id, box);
   }
-
-  /* --- the gate leaf, built rather than loaded ---
-   * The hinge sits half a leaf-width off the archway centre, rotated with the
-   * gate, so the leaf's world midpoint lands on the archway centre at any
-   * rotationY. The un-rotated `gatePos.x - size.x / 2` was only that midpoint
-   * for rotationY 0, and this gate is at 180: it put the whole leaf on the wrong
-   * side of x 0, never crossing the archway at any point in the swing.
-   */
-  const g = config.gateDoor;
-  const leafParts = gateLeafParts(g.leaf);
-  const leafRot = g.rotationY || 0, rad = leafRot * Math.PI / 180;
-  const leafSize = boxOfParts(leafParts);
-  const width = leafSize.max.x - leafSize.min.x;
-  const [gx, , gz] = tileToWorld(tileSize, g.tile[0], g.tile[1]);
-  const pivot = [gx - (width / 2) * Math.cos(rad), 0, gz + (width / 2) * Math.sin(rad)];
-  // the leaf hangs off the hinge along the pivot's local +X
-  const leafTransform = {
-    position: [pivot[0] + (width / 2) * Math.cos(rad), 0, pivot[2] - (width / 2) * Math.sin(rad)],
-    rotationY: leafRot, scale: 1,
-  };
-  const leafBox = boxOfParts(leafParts, placementMatrix(leafTransform));
-  addPiece({
-    id: 'gate-door', kind: 'gate-leaf', built: 'gate-leaf', level: 0, curtain: false,
-    label: 'the gate leaf',
-    // The scene graph the builder makes: a pivot at the hinge, carrying the
-    // rotation, with the leaf parented `offset` along the pivot's local +X.
-    // `transform` is the same placement flattened to world space, which is what
-    // `box` is measured from and what test/plan-vs-scene.mjs compares against.
-    pivot: { position: pivot, rotationY: leafRot, offset: [width / 2, 0, 0] },
-    transform: leafTransform, box: leafBox,
-  });
-  collide('gate-door', leafBox);
 
   /* --- interior props, in config order, each able to stand on any before it --- */
   const stack = [];
@@ -353,18 +566,53 @@ export function makePlan(config, boundsOf) {
   const curtain = EMPTY();
   for (const piece of pieces) if (piece.curtain) { expand(curtain, piece.box.min); expand(curtain, piece.box.max); }
 
-  const rooms = (config.rooms || []).map((r) => ({
-    id: r.id, level: r.level || 0, ward: r.ward || null,
-    bounds: {
-      min: { x: r.bounds.min[0], z: r.bounds.min[1] },
-      max: { x: r.bounds.max[0], z: r.bounds.max[1] },
-    },
-  }));
+  /* --- the ground, LAST, because its size is the curtain's ---
+   * "The 140 m ground plane shrinks to the curtain's footprint plus 2 m; outside
+   * it is fog." Worked out from the placed stone rather than written down, so a
+   * phase that moves a wall moves the ground under it and cannot leave the old
+   * number behind. The base is pavers; the outer ward's grassy cobbles lie on it
+   * at the same y, which walkability's own cell dedupe reads as one floor.
+   */
+  const gm = config.ground.base.margin;
+  const baseBox = {
+    min: { x: curtain.min.x - gm, y: 0, z: curtain.min.z - gm },
+    max: { x: curtain.max.x + gm, y: 0, z: curtain.max.z + gm },
+  };
+  const grounds = [{ id: 'ground', material: config.ground.base.material, box: baseBox,
+                     fallbackColor: config.ground.base.fallbackColor, patch: false }];
+  for (const patch of config.ground.patches || []) {
+    const half = tileSize / 2;
+    grounds.push({
+      id: patch.id, material: patch.material, patch: true, fallbackColor: patch.fallbackColor,
+      box: {
+        min: { x: patch.tiles.min[0] * tileSize - half, y: 0, z: patch.tiles.min[1] * tileSize - half },
+        max: { x: patch.tiles.max[0] * tileSize + half, y: 0, z: patch.tiles.max[1] * tileSize + half },
+      },
+    });
+  }
+  for (const g of grounds) {
+    addPiece({
+      id: g.id, kind: 'ground', built: 'ground', level: 0, curtain: false,
+      material: g.material, label: g.id, patch: g.patch,
+      transform: { position: [0, 0, 0], rotationY: 0, scale: 1 }, box: g.box,
+    });
+    surfaces.push({ id: g.id, box: g.box, top: 0, level: 0, slope: null });
+  }
+
+  const rooms = (config.rooms || []).map((r) => {
+    const half = tileSize / 2;
+    const b = r.tiles
+      ? { min: { x: r.tiles.min[0] * tileSize - half, z: r.tiles.min[1] * tileSize - half },
+          max: { x: r.tiles.max[0] * tileSize + half, z: r.tiles.max[1] * tileSize + half } }
+      : { min: { x: r.bounds.min[0], z: r.bounds.min[1] },
+          max: { x: r.bounds.max[0], z: r.bounds.max[1] } };
+    return { id: r.id, level: r.level || 0, ward: r.ward || null, bounds: b };
+  });
 
   return {
     tile: tileSize,
     spawn: { position: config.spawn.position.slice(), lookAt: config.spawn.lookAt.slice(), level: 0 },
-    pieces, colliders, surfaces, rooms, curtain,
+    pieces, colliders, surfaces, rooms, curtain, gates, grounds, drums: drumShapes,
   };
 }
 

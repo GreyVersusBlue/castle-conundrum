@@ -61,10 +61,16 @@ const props = plan.pieces.filter(p => p.kind === 'prop');
  * hall, so a prop that overlaps one in plan overlaps it in space.
  */
 console.log('interior props against the stone around them');
+const overlaps = (a, b) =>
+  Math.min(a.max.x, b.max.x) - Math.max(a.min.x, b.min.x) > 0 &&
+  Math.min(a.max.z, b.max.z) - Math.max(a.min.z, b.min.z) > 0;
 for (const prop of props) {
-  const hit = stone.find(s =>
-    Math.min(prop.box.max.x, s.box.max.x) - Math.max(prop.box.min.x, s.box.min.x) > 0 &&
-    Math.min(prop.box.max.z, s.box.max.z) - Math.max(prop.box.min.z, s.box.min.z) > 0);
+  // Against each piece's OWN collider boxes, not the box that bounds them. A
+  // drum is twenty-four sectors of a circle and `piece.box` is the 8 x 8 m
+  // square around it, three quarters of a metre of which is ward floor at each
+  // corner; reading `box` here called the Great Hall's cabinet "inside
+  // South-west Tower" while it stood 0.2 m clear of the tower's actual stone.
+  const hit = stone.find(s => s.boxes.some(b => overlaps(prop.box, b)));
   if (hit) fail(`${prop.id} at x ${f2(prop.box.min.x)}..${f2(prop.box.max.x)}, z ${f2(prop.box.min.z)}..${f2(prop.box.max.z)} is inside ${hit.label}`);
 }
 if (!failures) pass(`${props.length} interior props, none of them inside any of the ${stone.length} stone pieces`);
@@ -148,6 +154,41 @@ if (walk.sealed()) {
 } else {
   const where = walk.breaches(3).map(c => `(${c.x}, ${c.z})`).join(', ') || 'nowhere the fill crossed — the spawn is already outside';
   fail(`the castle leaks: ${walk.leaked} reachable cells outside the curtain at x ${f2(plan.curtain.min.x)}..${f2(plan.curtain.max.x)}, z ${f2(plan.curtain.min.z)}..${f2(plan.curtain.max.z)}. The fill stepped through at ${where}`);
+}
+
+/* ------------------------- 4b: the cross-wall is the only ground crossing ---
+ *
+ * The fact the whole mystery turns on. "The porter's gate is the only crossing
+ * at ground level and the porter logs it" — so who was in which ward at which
+ * bell is knowable, and an NPC who says they never crossed can be caught. If a
+ * second way through the cross-wall exists, every one of the thirty-nine clues
+ * that rests on a logged crossing rests on nothing.
+ *
+ * Flooded a second time with the porter's gate forced shut, which is what
+ * `closed` is for: with the one crossing sealed, NOTHING in the inner ward can
+ * be reached from a spawn in the west barbican. That is the opposite assertion
+ * to check 3's, not a restatement of it — check 3 says the inner ward IS
+ * reachable with the gate as the castle actually ships it, open. Deleting either
+ * leaves a real hole: without check 3 the cross-wall could be solid and the
+ * inner ward dead; without this one it could be a colander.
+ */
+console.log('\nthe cross-wall, with the porter\'s gate shut');
+{
+  const shut = makePlan(config, boundsOf, { closed: ['porter-gate'] });
+  const sealedWalk = walkability(shut);
+  const inner = sealedWalk.rooms().filter(r => r.ward === 'inner');
+  if (!inner.length) fail('no inner-ward rooms in config.rooms — nothing to divide');
+  const open = inner.filter(r => r.reachable);
+  if (open.length) {
+    fail(`inner ward reachable at level 0 with the porter's gate closed: ${open.map(r => `${r.id} (${r.cells} cells)`).join(', ')}. The cross-wall has a second way through it`);
+  } else {
+    pass(`inner ward sealed off at level 0 with the porter's gate closed — ${inner.map(r => r.id).join(', ')} all at 0 cells, against ${walk.rooms().filter(r => r.ward === 'inner').reduce((n, r) => n + r.cells, 0)} with it open`);
+  }
+  // and the outer ward is still there, so a fill that simply died proves nothing
+  const outerShut = sealedWalk.rooms().filter(r => r.ward === 'outer' && r.reachable).length;
+  const outerOpen = walk.rooms().filter(r => r.ward === 'outer' && r.reachable).length;
+  if (outerShut !== outerOpen) fail(`shutting the porter's gate changed the OUTER ward too, ${outerOpen} rooms to ${outerShut} — the second fill did not run the castle it was meant to`);
+  else pass(`the outer ward is unchanged by it, ${outerShut} rooms either way`);
 }
 
 /* ------------------------------------- 5: every NPC stands somewhere real ---
