@@ -9,15 +9,26 @@
       "objective": "Find someone who knows how to open the gate.",
       "dialogueState": "default",
       "transitions": [
-        { "on": "talked:scholar", "do": ["openRiddle"] },
-        { "on": "riddle:solved", "to": "present-keystone" }
+        {
+          "on": "talked:scholar",
+          "do": [
+            "openRiddle"
+          ]
+        },
+        {
+          "on": "riddle:solved",
+          "to": "present-keystone"
+        }
       ]
     },
     "present-keystone": {
       "objective": "You hold the Keystone! Present it to the Guard at the gate.",
       "dialogueState": "hasKeystone",
       "transitions": [
-        { "on": "talked:guard", "to": "gate-open" }
+        {
+          "on": "talked:guard",
+          "to": "gate-open"
+        }
       ]
     },
     "gate-open": {
@@ -25,7 +36,140 @@
       "dialogueState": "afterVictory",
       "terminal": true,
       "comment": "openGate first, then let the leaf visibly swing before the victory screen covers it.",
-      "enter": ["openGate", { "do": "showVictory", "after": 2600 }]
+      "enter": [
+        "openGate",
+        {
+          "do": "showVictory",
+          "after": 2600
+        }
+      ]
+    }
+  },
+  "frame": {
+    "comment": "The v2 frame (WISHLIST.md, Phase 1): the graph the mystery runs in. Not yet what the page plays; the riddle quest above is, until Phase 7 promotes this to the top level. Validated by validateQuest with the manager's grown action list, driven in Node by test/mystery.mjs, and every stage's dialogueState is checked against the twelve in npcs.json's `cast`. Events: talked:<npc>, bell:<n> (the nth ring), clue:<id>, press:<npc>:<clue>, ask:accuse, ask:journal, accused:<who>, verdict:<class>.",
+    "start": "arrive",
+    "tokens": {},
+    "stages": {
+      "arrive": {
+        "objective": "The master mason is dead at the foot of the Chapel Tower stair. Find the Constable.",
+        "dialogueState": "default",
+        "transitions": [
+          {
+            "on": "talked:constable",
+            "to": "investigate"
+          }
+        ]
+      },
+      "investigate": {
+        "objective": "Learn what happened to Hywel ap Gruffudd before Vespers.",
+        "dialogueState": "default",
+        "transitions": [
+          {
+            "on": "bell:1",
+            "do": [
+              "ringBell"
+            ]
+          },
+          {
+            "on": "bell:2",
+            "do": [
+              "ringBell"
+            ]
+          },
+          {
+            "on": "bell:3",
+            "do": [
+              "ringBell"
+            ]
+          },
+          {
+            "on": "bell:4",
+            "do": [
+              "ringBell"
+            ],
+            "to": "accusing"
+          },
+          {
+            "on": "ask:journal",
+            "do": [
+              "openJournal"
+            ]
+          },
+          {
+            "on": "ask:accuse",
+            "to": "accusing"
+          }
+        ]
+      },
+      "accusing": {
+        "objective": "Name the one who killed him, or call it a fall.",
+        "dialogueState": "default",
+        "enter": [
+          "openAccusation"
+        ],
+        "transitions": [
+          {
+            "on": "ask:accuse",
+            "do": [
+              "openAccusation"
+            ]
+          },
+          {
+            "on": "ask:journal",
+            "do": [
+              "openJournal"
+            ]
+          },
+          {
+            "on": "verdict:full",
+            "to": "full"
+          },
+          {
+            "on": "verdict:right",
+            "to": "right"
+          },
+          {
+            "on": "verdict:wrong",
+            "to": "wrong"
+          },
+          {
+            "on": "verdict:fall",
+            "to": "fall"
+          }
+        ]
+      },
+      "full": {
+        "objective": "The Clerk hangs, the Steward is taken, and the lead is found in the town.",
+        "dialogueState": "default",
+        "terminal": true,
+        "enter": [
+          "showEpilogue"
+        ]
+      },
+      "right": {
+        "objective": "The Clerk hangs. The Steward keeps his post.",
+        "dialogueState": "default",
+        "terminal": true,
+        "enter": [
+          "showEpilogue"
+        ]
+      },
+      "wrong": {
+        "objective": "Someone hangs. Not the one who did it.",
+        "dialogueState": "default",
+        "terminal": true,
+        "enter": [
+          "showEpilogue"
+        ]
+      },
+      "fall": {
+        "objective": "A fall. The inspector signs the sheet.",
+        "dialogueState": "default",
+        "terminal": true,
+        "enter": [
+          "showEpilogue"
+        ]
+      }
     }
   }
 }

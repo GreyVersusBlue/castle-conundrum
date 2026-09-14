@@ -1,0 +1,159 @@
+{
+  "comment": "The mystery as data (WISHLIST.md, Phase 1). src/mystery.js validates this file against npcs.json's `cast` and quest.json's `frame` before it runs, and runs it in Node without a room or a body existing yet. `watches` are the four bells in order. `rooms` carry id, ward and level only; positions come in Phase 3 from the plan. A clue is S (a statement: `source.npc` in `source.state`, granted when that conversation ends; `source.watches` narrows it), E (evidence: `source.evidence`), D (a deduction: `source.premises`, granted the instant both are held) or L (a location: `source.room` and `source.level`, granted on entering). `contradicts` names the earlier statement a clue gives the lie to. `herring` marks a clue that leads nowhere on purpose, and the validator makes a session say so. Evidence carries the `watches` it can be examined in, `clue` (one id or a list), `requires` (clues that have to be held first), `lock` (a lock in `locks` that has to be open) and `prop` (a model already on disk, for Phase 4). `schedule` is npc -> watch -> a station or null (not in the castle); `asleep` is a station the player cannot talk to. A press is `{npc, from, on, to}`: showing `on` to `npc` while in one of the `from` states moves them to `to`. `accusation.from` is the first watch the Constable will hear an accusation at; at Prime he is standing over the body and sends the clerk away without counting it as a refusal.",
+  "watches": ["prime", "terce", "sext", "vespers"],
+  "rooms": [
+    { "id": "west-barbican", "code": "BB", "ward": "outer", "level": 0, "name": "West barbican" },
+    { "id": "outer-ward", "code": "..", "ward": "outer", "level": 0, "name": "Outer ward" },
+    { "id": "clerk-office", "code": "CL", "ward": "outer", "level": 0, "name": "Clerk of Works' office" },
+    { "id": "kitchen", "code": "KI", "ward": "outer", "level": 0, "name": "Kitchen" },
+    { "id": "lodge", "code": "ML", "ward": "outer", "level": 0, "name": "Mason's lodge" },
+    { "id": "great-hall", "code": "GH", "ward": "outer", "level": 0, "name": "Great Hall" },
+    { "id": "guardroom", "code": "NW", "ward": "outer", "level": 0, "name": "Guardroom, North-west Tower" },
+    { "id": "larder", "code": "KT", "ward": "outer", "level": 0, "name": "Larder, Kitchen Tower" },
+    { "id": "laundry", "code": "SW", "ward": "outer", "level": 0, "name": "Well chamber and laundry, South-west Tower" },
+    { "id": "cell", "code": "PT", "ward": "outer", "level": 0, "name": "The cell, Prison Tower" },
+    { "id": "inner-ward", "code": "..", "ward": "inner", "level": 0, "name": "Inner ward" },
+    { "id": "kings-hall", "code": "KH", "ward": "inner", "level": 0, "name": "King's Hall" },
+    { "id": "steward-chamber", "code": "SC", "ward": "inner", "level": 0, "name": "Steward's chamber" },
+    { "id": "porter-lodge", "code": "ST", "ward": "inner", "level": 0, "name": "Porter's lodge, Stockhouse Tower" },
+    { "id": "bakehouse", "code": "BT", "ward": "inner", "level": 0, "name": "Bakehouse, Bakehouse Tower" },
+    { "id": "muniment", "code": "KG", "ward": "inner", "level": 0, "name": "Muniment room, King's Tower" },
+    { "id": "chapel", "code": "CT", "ward": "inner", "level": 0, "name": "Chapel, Chapel Tower" },
+    { "id": "garden", "code": "GD", "ward": "inner", "level": 0, "name": "East barbican garden" },
+    { "id": "clerk-chamber", "code": "CL", "ward": "outer", "level": 1, "name": "Clerk's chamber" },
+    { "id": "dormitory", "code": "KI", "ward": "outer", "level": 1, "name": "Garrison dormitory" },
+    { "id": "royal-apartments", "code": "KH", "ward": "inner", "level": 1, "name": "Royal apartments" },
+    { "id": "chaplain-chamber", "code": "CT", "ward": "inner", "level": 1, "name": "Chaplain's chamber" },
+    { "id": "north-walk", "code": "##", "ward": "outer", "level": 2, "name": "North wall walk" },
+    { "id": "south-walk", "code": "##", "ward": "inner", "level": 2, "name": "South wall walk" },
+    { "id": "cross-walk", "code": "||", "ward": "inner", "level": 2, "name": "The walk over the cross-wall" },
+    { "id": "stockhouse-walk", "code": "ST", "ward": "inner", "level": 2, "name": "Stockhouse Tower, the walk door" }
+  ],
+  "clues": [
+    { "id": "body-stair", "kind": "E", "title": "Hywel at the stair foot", "text": "Hywel ap Gruffudd, dead at the foot of the Chapel Tower stair. A lantern stands beside him, upright, its glass whole.", "source": { "evidence": "body" } },
+    { "id": "cook-lantern", "kind": "S", "title": "The kitchen lantern", "text": "Marged: Hywel took the kitchen lantern at Compline. Called to the inner ward, he said, about the chapel roof.", "source": { "npc": "cook", "state": "default" } },
+    { "id": "lantern-set-down", "kind": "D", "title": "Someone stood the lantern up", "text": "A lantern that fell down a stair with a man would have broken. This one was set upright on the step. Somebody stood over the body after it fell.", "source": { "premises": ["body-stair", "cook-lantern"] }, "contradicts": ["constable-accident"] },
+    { "id": "porter-log", "kind": "S", "title": "The porter's log", "text": "Gwilym let the mason through at Compline on the Steward's word. Nobody else passed, either way. The gate was barred behind him.", "source": { "npc": "porter", "state": "default" } },
+    { "id": "porter-barred", "kind": "S", "title": "\"Barred as always\"", "text": "Gwilym: \"And the walk door at my tower, barred as always.\"", "source": { "npc": "porter", "state": "default" } },
+    { "id": "summons-note", "kind": "E", "title": "The summons", "text": "A folded note from Hywel's pouch: \"Come at the second bell, the chapel roof, bring your tallies. P.M.\"", "source": { "evidence": "pouch" } },
+    { "id": "steward-denies", "kind": "S", "title": "\"I sent no summons\"", "text": "Piers Marrable: \"I sent no summons. The roof is sound. He was drunk.\"", "source": { "npc": "steward", "state": "default" } },
+    { "id": "constable-accident", "kind": "S", "title": "\"He fell\"", "text": "Sir Roger: \"He fell. The inspector is tomorrow. I want a clean sheet by Vespers.\"", "source": { "npc": "constable", "state": "default" } },
+    { "id": "hywel-sober", "kind": "S", "title": "Hywel did not drink", "text": "Ieuan: Hywel never drank on a working day, and yesterday was one.", "source": { "npc": "apprentice", "state": "default" }, "contradicts": ["steward-denies"] },
+    { "id": "apprentice-tallies", "kind": "S", "title": "Eleven tally sticks", "text": "Ieuan: eleven tally sticks on his belt, one notch a sheet. 212 sheets laid, by his count.", "source": { "npc": "apprentice", "state": "default" } },
+    { "id": "pouch-empty", "kind": "E", "title": "The pouch", "text": "Hywel's pouch: the note, a knife, and no tally sticks.", "source": { "evidence": "pouch" } },
+    { "id": "tallies-taken", "kind": "D", "title": "The tallies went with someone", "text": "Eleven sticks left the lodge on his belt and none came back. A fall does not empty a pouch.", "source": { "premises": ["apprentice-tallies", "pouch-empty"] }, "contradicts": ["constable-accident"] },
+    { "id": "lady-hand", "kind": "S", "title": "The Steward's sevens", "text": "Lady Alys: \"Piers writes his sevens like gallows. Everyone in this ward knows his hand.\"", "source": { "npc": "lady", "state": "default" } },
+    { "id": "summons-is-stewards", "kind": "D", "title": "The note is in the Steward's hand", "text": "The gallows sevens in \"second bell\". Piers Marrable wrote the summons he says he never sent.", "source": { "premises": ["summons-note", "lady-hand"] }, "contradicts": ["steward-denies"] },
+    { "id": "steward-admits", "kind": "S", "title": "\"To be talked to. By Robert.\"", "text": "Piers Marrable: \"I sent him to be talked to. By Robert. Not to the stair.\"", "source": { "npc": "steward", "state": "admits" }, "contradicts": ["steward-denies"] },
+    { "id": "sentry-sighting", "kind": "S", "title": "Fur on the north walk", "text": "Dafydd: a fur-trimmed cloak went east along the north walk at the second bell. \"The Clerk's the only man in the works with fur on him.\"", "source": { "npc": "sentry", "state": "default", "watches": ["terce", "sext", "vespers"] }, "contradicts": ["clerk-abed"] },
+    { "id": "clerk-abed", "kind": "S", "title": "\"Abed from Compline\"", "text": "Master Robert: abed in his lodging from Compline. The lead is \"sheet-perfect\".", "source": { "npc": "clerk", "state": "default" } },
+    { "id": "cloak-wax", "kind": "E", "title": "A cloak stiff with tallow", "text": "A fur-trimmed cloak in the laundry, the hem stiff with tallow, outer-ward mud on the fur.", "source": { "evidence": "cloak" } },
+    { "id": "laundress-cloak", "kind": "S", "title": "\"The Clerk's\"", "text": "Nest: \"The Clerk's. His boy brought it down at first light.\"", "source": { "npc": "laundress", "state": "default" } },
+    { "id": "chapel-candle", "kind": "E", "title": "The stair candle", "text": "One tallow candle in a pricket at the first turn of the Chapel Tower stair. Wax pooled on the step below it.", "source": { "evidence": "candle" } },
+    { "id": "wax-matches", "kind": "D", "title": "The cloak was on that stair", "text": "Tallow on the hem, tallow on the stair. The cloak in the laundry brushed the Chapel Tower stair last night.", "source": { "premises": ["cloak-wax", "chapel-candle"] }, "contradicts": ["clerk-abed"] },
+    { "id": "clerk-cloak", "kind": "S", "title": "\"Since Sunday\"", "text": "Master Robert: \"That cloak has been in the laundry since Sunday.\"", "source": { "npc": "clerk", "state": "cloak" }, "contradicts": ["laundress-cloak"] },
+    { "id": "walk-crosses", "kind": "L", "title": "The walk runs over the cross-wall", "text": "The wall walk runs over the cross-wall. Up here the two wards are one ward, and nobody logs the crossing.", "source": { "room": "cross-walk", "level": 2 } },
+    { "id": "door-unbarred", "kind": "E", "title": "The Stockhouse walk door", "text": "The bar leaning on the wall beside the walk door. Dust on the brackets, undisturbed for days.", "source": { "evidence": "walk-door" }, "contradicts": ["porter-barred"] },
+    { "id": "porter-admits", "kind": "S", "title": "\"Not this month\"", "text": "Gwilym: \"I was in my cups. It has not been barred this month. A hanging matter to say so.\"", "source": { "npc": "porter", "state": "admits" }, "contradicts": ["porter-barred"] },
+    { "id": "chaplain-feet", "kind": "S", "title": "Two men on the stair", "text": "Father Anselm: \"Two men on the stair at the second bell. Voices. Then one man, going up.\"", "source": { "npc": "chaplain", "state": "heard" } },
+    { "id": "lady-window", "kind": "S", "title": "From her window", "text": "Lady Alys: one lantern going up the Chapel Tower stair, and later a shadow along the south walk, westward.", "source": { "npc": "lady", "state": "window" }, "contradicts": ["clerk-abed"] },
+    { "id": "tally-on-walk", "kind": "E", "title": "A tally stick in the gutter", "text": "A tally stick in the gutter of the south walk by the Bakehouse Tower's door. Eleven notches, and a mason's marks.", "source": { "evidence": "tally" } },
+    { "id": "prisoner-story", "kind": "S", "title": "\"By daylight, on a cart\"", "text": "Madoc: \"The lead went out the gate on a cart, by daylight, with the Clerk's seal on the pass.\"", "source": { "npc": "prisoner", "state": "default" } },
+    { "id": "merchant-stone", "kind": "S", "title": "\"I buy stone\"", "text": "Thomas Wykes: \"Dressed stone. I buy stone.\"", "source": { "npc": "merchant", "state": "default", "watches": ["terce"] } },
+    { "id": "merchant-cart", "kind": "E", "title": "Under the sacking", "text": "Under the sacking on the merchant's cart: rolled lead sheets with the King's mark on them.", "source": { "evidence": "cart" }, "contradicts": ["merchant-stone"] },
+    { "id": "merchant-admits", "kind": "S", "title": "\"The Clerk sells\"", "text": "Thomas Wykes: \"The Clerk sells. The Steward signs the pass. I only buy.\"", "source": { "npc": "merchant", "state": "admits", "watches": ["terce"] }, "contradicts": ["merchant-stone"] },
+    { "id": "word-lock", "kind": "E", "title": "The word-lock", "text": "The muniment room's door, and the Clerk's conceit: a riddle for a lock. Answer it and the door opens.", "source": { "evidence": "lock" } },
+    { "id": "ledger", "kind": "E", "title": "The works ledger", "text": "340 sheets received, 212 laid, and \"wastage 128\" in the Steward's gallows sevens.", "source": { "evidence": "ledger" } },
+    { "id": "lead-sold", "kind": "D", "title": "128 sheets left on a cart", "text": "212 laid is the apprentice's count too. The 128 are not wastage. They left the castle on a cart, and the Steward wrote them off in his own hand.", "source": { "premises": ["ledger", "apprentice-tallies"] }, "contradicts": ["clerk-abed"] },
+    { "id": "clerk-cornered", "kind": "S", "title": "\"A mason's word\"", "text": "Master Robert: \"Wastage is a mason's word.\" He does not confess. But the lead is no longer sheet-perfect.", "source": { "npc": "clerk", "state": "cornered" }, "contradicts": ["clerk-abed"] },
+    { "id": "knife-missing", "kind": "S", "title": "A knife gone", "text": "Marged: a kitchen knife gone since yesterday.", "source": { "npc": "cook", "state": "default" }, "herring": true },
+    { "id": "knife-found", "kind": "E", "title": "The knife", "text": "The kitchen knife, in the bakehouse, flour on it.", "source": { "evidence": "knife" }, "herring": true },
+    { "id": "nest-is-wife", "kind": "S", "title": "Madoc's wife", "text": "Nest: Madoc is her husband. She has no reason to lie for the Clerk, and one to lie against him.", "source": { "npc": "laundress", "state": "wife" }, "herring": true }
+  ],
+  "evidence": [
+    { "id": "body", "room": "chapel", "level": 0, "watches": ["prime"], "clue": "body-stair", "prop": "wooden_lantern_01_1k.gltf/wooden_lantern_01_1k.gltf", "comment": "At Prime only. From Terce the body is in the chapel under a sheet and there is nothing to read off it." },
+    { "id": "pouch", "room": "chapel", "level": 0, "watches": ["prime", "terce", "sext", "vespers"], "clue": ["summons-note", "pouch-empty"], "take": true, "prop": "detail-crate-small.glb", "comment": "On the body at Prime, on the chaplain's table from Terce; the same object either way." },
+    { "id": "cloak", "room": "laundry", "level": 0, "watches": ["prime", "terce"], "clue": "cloak-wax", "prop": "detail-crate.glb", "comment": "Washed by Sext; the wax is gone with the watch." },
+    { "id": "candle", "room": "chapel", "level": 0, "watches": ["prime", "terce", "sext", "vespers"], "clue": "chapel-candle", "prop": "brass_candleholders_1k.gltf/brass_candleholders_1k.gltf" },
+    { "id": "walk-door", "room": "stockhouse-walk", "level": 2, "watches": ["prime", "terce", "sext", "vespers"], "clue": "door-unbarred", "prop": "wall-door.glb" },
+    { "id": "tally", "room": "south-walk", "level": 2, "watches": ["prime", "terce", "sext", "vespers"], "clue": "tally-on-walk", "take": true, "prop": "detail-crate-small.glb" },
+    { "id": "cart", "room": "outer-ward", "level": 0, "watches": ["terce"], "clue": "merchant-cart", "prop": "pulley-crate.glb" },
+    { "id": "lock", "room": "muniment", "level": 0, "watches": ["prime", "terce", "sext", "vespers"], "clue": "word-lock", "prop": "wall-door.glb", "comment": "The door itself, examined from the inner ward side." },
+    { "id": "ledger", "room": "muniment", "level": 0, "watches": ["prime", "terce", "sext", "vespers"], "clue": "ledger", "requires": ["word-lock"], "lock": "muniment", "prop": "WoodenTable_01_1k.gltf/WoodenTable_01_1k.gltf" },
+    { "id": "knife", "room": "bakehouse", "level": 0, "watches": ["prime", "terce", "sext", "vespers"], "clue": "knife-found", "prop": "detail-barrel.glb" }
+  ],
+  "locks": [
+    { "id": "muniment", "room": "muniment", "riddle": true, "comment": "The word-lock. riddle.json is the riddle; riddle:solved opens it." }
+  ],
+  "schedule": {
+    "constable": { "prime": { "room": "chapel", "note": "at the body" }, "terce": { "room": "kings-hall" }, "sext": { "room": "kings-hall" }, "vespers": { "room": "great-hall", "note": "the high table" } },
+    "steward": { "prime": { "room": "kings-hall" }, "terce": { "room": "steward-chamber" }, "sext": { "room": "kings-hall" }, "vespers": { "room": "great-hall" } },
+    "clerk": { "prime": { "room": "clerk-office" }, "terce": { "room": "outer-ward", "note": "at the cart" }, "sext": { "room": "clerk-office" }, "vespers": { "room": "great-hall" } },
+    "porter": { "prime": { "room": "porter-lodge" }, "terce": { "room": "porter-lodge" }, "sext": { "room": "porter-lodge" }, "vespers": { "room": "cross-walk", "level": 2 } },
+    "cook": { "prime": { "room": "kitchen" }, "terce": { "room": "kitchen" }, "sext": { "room": "kitchen" }, "vespers": { "room": "great-hall" } },
+    "chaplain": { "prime": { "room": "chapel", "note": "at the body" }, "terce": { "room": "chapel" }, "sext": { "room": "chapel" }, "vespers": { "room": "chapel" } },
+    "sentry": { "prime": { "room": "guardroom", "asleep": true }, "terce": { "room": "north-walk", "level": 2, "note": "by the Kitchen Tower" }, "sext": { "room": "north-walk", "level": 2, "note": "by the Kitchen Tower" }, "vespers": { "room": "great-hall" } },
+    "apprentice": { "prime": { "room": "lodge" }, "terce": { "room": "lodge" }, "sext": { "room": "lodge" }, "vespers": { "room": "chapel", "note": "the vigil" } },
+    "laundress": { "prime": { "room": "laundry" }, "terce": { "room": "laundry" }, "sext": { "room": "outer-ward", "note": "a patrol along the washing line" }, "vespers": { "room": "great-hall" } },
+    "prisoner": { "prime": { "room": "cell" }, "terce": { "room": "cell" }, "sext": { "room": "cell" }, "vespers": { "room": "cell" } },
+    "merchant": { "prime": null, "terce": { "room": "outer-ward", "note": "at the cart by the west gate" }, "sext": null, "vespers": null },
+    "lady": { "prime": { "room": "royal-apartments", "level": 1 }, "terce": { "room": "royal-apartments", "level": 1 }, "sext": { "room": "garden" }, "vespers": { "room": "royal-apartments", "level": 1 } }
+  },
+  "presses": [
+    { "npc": "steward", "from": ["default"], "on": "summons-is-stewards", "to": "admits" },
+    { "npc": "clerk", "from": ["default"], "on": "wax-matches", "to": "cloak" },
+    { "npc": "clerk", "from": ["default", "cloak"], "on": "lead-sold", "to": "cornered" },
+    { "npc": "porter", "from": ["default"], "on": "door-unbarred", "to": "admits" },
+    { "npc": "chaplain", "from": ["default"], "on": "steward-admits", "to": "heard" },
+    { "npc": "lady", "from": ["default"], "on": "walk-crosses", "to": "window" },
+    { "npc": "merchant", "from": ["default"], "on": "merchant-cart", "to": "admits" },
+    { "npc": "laundress", "from": ["default"], "on": "prisoner-story", "to": "wife" }
+  ],
+  "accusation": {
+    "judge": "constable",
+    "from": "terce",
+    "truth": { "who": "clerk", "motive": "lead-sold" },
+    "convicts": {
+      "clerk": ["sentry-sighting", "wax-matches", "tally-on-walk", "lady-window", "chaplain-feet"],
+      "steward": ["summons-is-stewards", "steward-admits", "lead-sold", "merchant-admits"],
+      "porter": ["porter-admits", "porter-barred"],
+      "prisoner": [],
+      "merchant": ["merchant-cart", "merchant-admits"]
+    },
+    "needs": 2,
+    "present": 3,
+    "refusals": 3,
+    "early": "Not over his body. Not before the bell. Come to me in the King's Hall when you have something worth my hearing.",
+    "refused": "That is not two things. That is a clerk's fancy and a name. Bring me something I can write down, or bring me nothing.",
+    "verdicts": {
+      "full": {
+        "convicted": "Sir Roger reads the three clues twice, and the ledger's sevens a third time. Master Robert Ferrour hangs from the Stockhouse Tower at first light. Piers Marrable is taken in his chamber with the gate passes still in his coffer.",
+        "epilogue": "The inspector finds a hundred and twenty-eight sheets of the King's lead in Thomas Wykes's yard in the town, and a Clerk of Works who went up a stair to buy a mason and came down it alone. Hywel's tallies were right to the sheet. Ieuan lays the roof."
+      },
+      "clerk": {
+        "convicted": "Sir Roger weighs the cloak against the walk and does not like the sum. Master Robert Ferrour hangs from the Stockhouse Tower at first light.",
+        "epilogue": "The right man hangs. But the ledger stays shut, the Steward keeps his post, and the carts keep leaving by daylight on passes in a hand everyone in the inner ward knows. Hywel's tallies were right to the sheet."
+      },
+      "steward": {
+        "convicted": "Sir Roger reads the summons in his own steward's hand and goes grey. Piers Marrable hangs from the Stockhouse Tower at first light, protesting to the last that he sent the mason to be talked to.",
+        "epilogue": "He was telling the truth about that. Piers Marrable stole the King's lead and signed the passes, and hangs for a killing he did not do. Master Robert Ferrour, who did, keeps the works, and walks the wall at night when he cannot sleep."
+      },
+      "porter": {
+        "convicted": "Sir Roger has wanted a name all day and here is one who admits to a door. Gwilym hangs from his own tower at first light.",
+        "epilogue": "A drunk porter who left a door unbarred, hanged for it. Master Robert Ferrour walks the same door the night after, and the lead goes on leaving by daylight on a cart."
+      },
+      "merchant": {
+        "convicted": "A town merchant with the King's lead under his sacking is the kind of answer Sir Roger can send to Caernarfon. Thomas Wykes hangs from the Stockhouse Tower at first light.",
+        "epilogue": "The lead is found. The man who sold it and the man who signed for it dine at the high table that night. Nobody asks who stood the lantern up."
+      },
+      "prisoner": {
+        "convicted": "Sir Roger does not read the clues. He does not need to. Madoc the smith hangs at first light for the lead and the mason both, and the sheet is clean before the inspector's horse is watered.",
+        "epilogue": "The inspector signs. Nest goes back to the laundry. Master Robert Ferrour and Piers Marrable go on as before, and the roof of the chapel is still short a hundred and twenty-eight sheets when the rain comes in."
+      },
+      "nobody": {
+        "convicted": "A fall. Sir Roger is relieved, and says so. The inspector signs the sheet in the morning and is gone by noon.",
+        "epilogue": "Hywel ap Gruffudd is buried as a drunk who fell. The lead goes on leaving by daylight, a cartload at a time, and the tallies that would have counted it are ash in the Clerk's hearth."
+      }
+    }
+  }
+}

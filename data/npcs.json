@@ -1,14 +1,23 @@
 {
+  "comment": "`npcs` are the three the page spawns and the riddle quest talks to; they stay until Phase 6 (Phase 3 moves them, Phase 6 removes them). `cast` are the twelve of v2 (WISHLIST.md, The cast): id, name, role, ward, one of the three bodies on disk, and a `tint` hex the body's main material is multiplied by (#419; nothing reads it until Phase 6). Dialogue is keyed by state: `default` is what everyone says, and the other states are the ones data/mystery.json's presses move an NPC to. src/mystery.js validates every press target and every statement source against these keys.",
   "npcs": [
     {
       "id": "guard",
       "name": "Guard",
       "role": "gatekeeper",
       "modelPath": "assets/NPCs/King.glb",
-      "hideMaterials": ["Gold"],
+      "hideMaterials": [
+        "Gold"
+      ],
       "heldProp": "ornate_medieval_mace_1k.gltf/ornate_medieval_mace_1k.gltf",
-      "placeholder": { "color": "#8a2f2f" },
-      "position": [1.8, 0, 9.2],
+      "placeholder": {
+        "color": "#8a2f2f"
+      },
+      "position": [
+        1.8,
+        0,
+        9.2
+      ],
       "facing": 180,
       "patrol": null,
       "dialogue": {
@@ -30,10 +39,18 @@
       "name": "Scholar",
       "role": "riddler",
       "modelPath": "assets/NPCs/Adventurer.glb",
-      "hideNodes": ["Backpack"],
+      "hideNodes": [
+        "Backpack"
+      ],
       "heldProp": null,
-      "placeholder": { "color": "#2f4f8a" },
-      "position": [1.5, 0, -8.0],
+      "placeholder": {
+        "color": "#2f4f8a"
+      },
+      "position": [
+        1.5,
+        0,
+        -8.0
+      ],
       "facing": 346,
       "comment": "Was [0.8, 0, -9.6], which put 0.57 m of him inside the hall table (x -0.9..0.9, z -10.33..-9.67). Moved 0.6 m east of the table's east edge instead, and 0.28 m clear of the 0.18 m stool at (2, -9.2). Standing him BEHIND the table at [1.45, -10.85] was better staging and unreachable: the hall doorway is a 4 m wide, 8 m deep tunnel, and walkTo's strafe nudge wedged the player against its east wall before ever getting in range. Facing turned to 346 so he watches the doorway he is approached from rather than standing with his back to it. Z moved again, [*, -10.0] -> [*, -8.0]: his own body clipped 0.29 m into the north wall at -10.0 (nothing had ever checked an NPC's own body against the wall behind it). This is the same +2.0 m south rigid shift applied to the whole hall furniture cluster in data/scene-config.json (see gothic_statue's comment there) — his x-gap from the table (0.286 m) is unchanged, a uniform shift preserves every relative distance in the cluster. If this moves, move SCHOLAR in Tools/board-check/play-castle.mjs too.",
       "patrol": null,
@@ -57,14 +74,36 @@
       "role": "atmosphere",
       "modelPath": "assets/NPCs/Farmer.glb",
       "heldProp": null,
-      "placeholder": { "color": "#5a2f8a" },
-      "position": [-6, 0, 2],
+      "placeholder": {
+        "color": "#5a2f8a"
+      },
+      "position": [
+        -6,
+        0,
+        2
+      ],
       "facing": 90,
       "patrol": [
-        [-6, 0, 2],
-        [-6, 0, -3],
-        [-2, 0, -4],
-        [-2, 0, 3]
+        [
+          -6,
+          0,
+          2
+        ],
+        [
+          -6,
+          0,
+          -3
+        ],
+        [
+          -2,
+          0,
+          -4
+        ],
+        [
+          -2,
+          0,
+          3
+        ]
       ],
       "dialogue": {
         "default": [
@@ -76,6 +115,292 @@
         ],
         "afterVictory": [
           "An open gate is just a wall that gave up. Ponder that."
+        ]
+      }
+    }
+  ],
+  "cast": [
+    {
+      "id": "constable",
+      "name": "Sir Roger Lestrange",
+      "role": "Constable",
+      "ward": "inner",
+      "modelPath": "assets/NPCs/King.glb",
+      "tint": "#a83232",
+      "placeholder": {
+        "color": "#a83232"
+      },
+      "heldProp": null,
+      "dialogue": {
+        "default": [
+          "A clerk. A day early. Well, you have seen him, so you know what there is to know: the mason was drunk, the stair is steep, and he fell.",
+          "The King's inspector rides in tomorrow. I want a clean sheet by Vespers, and I want the mason buried before the inspector's horse is watered.",
+          "Ask what you must. Then come and tell me it was a fall."
+        ]
+      }
+    },
+    {
+      "id": "steward",
+      "name": "Piers Marrable",
+      "role": "Steward",
+      "ward": "inner",
+      "modelPath": "assets/NPCs/King.glb",
+      "tint": "#3f6b2f",
+      "hideMaterials": [
+        "Gold"
+      ],
+      "placeholder": {
+        "color": "#3f6b2f"
+      },
+      "heldProp": null,
+      "dialogue": {
+        "default": [
+          "The mason? A sad business. He drank, you know. They all do.",
+          "I sent no summons. Why would I? The chapel roof is sound, I have the ledger to say so.",
+          "If you want the works, the Clerk keeps the works. I keep the household."
+        ],
+        "admits": [
+          "Where did you get that? No. Do not tell me.",
+          "I sent him to be talked to. By Robert. There was a matter of figures, and Robert wished to settle it like gentlemen.",
+          "To be talked to. Not to the stair. I never meant the stair."
+        ]
+      }
+    },
+    {
+      "id": "clerk",
+      "name": "Master Robert Ferrour",
+      "role": "Clerk of Works",
+      "ward": "outer",
+      "modelPath": "assets/NPCs/Adventurer.glb",
+      "tint": "#5a3a8a",
+      "hideNodes": [
+        "Backpack"
+      ],
+      "placeholder": {
+        "color": "#5a3a8a"
+      },
+      "heldProp": null,
+      "dialogue": {
+        "default": [
+          "Hywel. Yes. The best setter of stone in the March, and he could not set his own feet on a stair. A great loss to the works.",
+          "I was abed in my lodging from Compline. My boy will tell you. I heard of it at first light with everyone else.",
+          "The works are in order, if that is your errand. The lead is sheet-perfect. Count it yourself."
+        ],
+        "cloak": [
+          "My cloak? That cloak has been in the laundry since Sunday. Ask the girl.",
+          "Tallow is tallow. There are a hundred candles in this castle and I have brushed past most of them."
+        ],
+        "cornered": [
+          "Wastage. Yes. Wastage is a mason's word, clerk, not a thief's. Sheets crack. Sheets are cut short. Sheets are lost off a roof in a wind.",
+          "You have a ledger and an apprentice's memory. The Constable has a stair and a drunk. Ask yourself which he will write down."
+        ]
+      }
+    },
+    {
+      "id": "porter",
+      "name": "Gwilym",
+      "role": "Porter of the cross-wall gate",
+      "ward": "inner",
+      "modelPath": "assets/NPCs/Adventurer.glb",
+      "tint": "#6e6e6e",
+      "hideNodes": [
+        "Backpack"
+      ],
+      "placeholder": {
+        "color": "#6e6e6e"
+      },
+      "heldProp": null,
+      "dialogue": {
+        "default": [
+          "Every soul through this gate goes in the book, clerk. Compline: the mason, on the Steward's word, about the chapel roof. Nobody else, in or out.",
+          "Gate barred behind him. And the walk door at my tower, barred as always.",
+          "You want to know how a man in the outer ward got to a stair in the inner? He did not. That is what the book is for."
+        ],
+        "admits": [
+          "That door. God help me. I was in my cups, clerk, and it has not been barred this month, nor last.",
+          "You know what that is? A hanging matter, to say so. So I say it is barred, and I have said it so long I half believe it."
+        ]
+      }
+    },
+    {
+      "id": "cook",
+      "name": "Marged",
+      "role": "Cook",
+      "ward": "outer",
+      "modelPath": "assets/NPCs/Farmer.glb",
+      "tint": "#e3d8c0",
+      "placeholder": {
+        "color": "#e3d8c0"
+      },
+      "heldProp": null,
+      "dialogue": {
+        "default": [
+          "Hywel took my lantern. The good one, off the kitchen hook, at Compline, and I told him bring it back and he said in the morning.",
+          "Called to the inner ward, he said. The chapel roof. At that hour. I said the roof will keep and he said the Steward would not.",
+          "And now I am short a lantern and a knife both. A knife gone since yesterday, off this table, and nobody knows a thing."
+        ]
+      }
+    },
+    {
+      "id": "chaplain",
+      "name": "Father Anselm",
+      "role": "Chaplain",
+      "ward": "inner",
+      "modelPath": "assets/NPCs/Farmer.glb",
+      "tint": "#3a2a1c",
+      "placeholder": {
+        "color": "#3a2a1c"
+      },
+      "heldProp": null,
+      "dialogue": {
+        "default": [
+          "I found him with the Constable at first light. I have said the office for him. There is nothing more I can do for him now.",
+          "My chamber is above the stair. I sleep sound, clerk. I heard nothing.",
+          "Sir Roger says a fall. Sir Roger is the King's Constable."
+        ],
+        "heard": [
+          "The Steward said that? Then God forgive me, I will say what I heard.",
+          "Two men on the stair at the second bell. Voices, low, then not low. Then one man, going up. Only one.",
+          "I lay and listened to one man go up my stair and I did not get out of my bed. That is what I heard nothing means."
+        ]
+      }
+    },
+    {
+      "id": "sentry",
+      "name": "Dafydd ap Rhys",
+      "role": "Garrison, night watch on the north walk",
+      "ward": "outer",
+      "modelPath": "assets/NPCs/Adventurer.glb",
+      "tint": "#2f4f8a",
+      "hideNodes": [
+        "Backpack"
+      ],
+      "placeholder": {
+        "color": "#2f4f8a"
+      },
+      "heldProp": null,
+      "dialogue": {
+        "default": [
+          "North walk, Compline to Lauds, every night this month. You see the whole north side from the Kitchen Tower door.",
+          "Second bell, a man went east along the walk past my post. Fur-trimmed cloak. I know fur when the moon is on it.",
+          "The Clerk's the only man in the works with fur on him. I thought he was walking off a supper. I wish I had stopped him."
+        ]
+      }
+    },
+    {
+      "id": "apprentice",
+      "name": "Ieuan",
+      "role": "Hywel's apprentice",
+      "ward": "outer",
+      "modelPath": "assets/NPCs/Adventurer.glb",
+      "tint": "#c08a4a",
+      "hideNodes": [
+        "Backpack"
+      ],
+      "placeholder": {
+        "color": "#c08a4a"
+      },
+      "heldProp": null,
+      "dialogue": {
+        "default": [
+          "Drunk? Hywel? Not on a working day, clerk, and yesterday was one. Not a drop after the Sunday bell and not a drop till Saturday.",
+          "He kept his own count of the lead. Eleven tally sticks on his belt, a notch a sheet. Two hundred and twelve laid, by his count, and he was going to show somebody.",
+          "He went out of the lodge at Compline with the sticks on him. I know because he told me mind the fire."
+        ]
+      }
+    },
+    {
+      "id": "laundress",
+      "name": "Nest",
+      "role": "Laundress",
+      "ward": "outer",
+      "modelPath": "assets/NPCs/Farmer.glb",
+      "tint": "#7fa6c0",
+      "placeholder": {
+        "color": "#7fa6c0"
+      },
+      "heldProp": null,
+      "dialogue": {
+        "default": [
+          "That cloak? The Clerk's. His boy brought it down at first light and said wash it and say nothing.",
+          "It goes in the copper at Sext with the rest. If you want to look at it, look now."
+        ],
+        "wife": [
+          "Madoc is my husband. Yes. Since you ask what nobody else has.",
+          "They put him in the tower for the lead because somebody had to go in the tower. I have no reason on this earth to lie for the Clerk of Works, and one very good one to lie against him.",
+          "So weigh what I say however you like. The cloak is still the Clerk's."
+        ]
+      }
+    },
+    {
+      "id": "prisoner",
+      "name": "Madoc the smith",
+      "role": "Held for the lead theft",
+      "ward": "outer",
+      "modelPath": "assets/NPCs/Farmer.glb",
+      "tint": "#4a4a4a",
+      "placeholder": {
+        "color": "#4a4a4a"
+      },
+      "heldProp": null,
+      "dialogue": {
+        "default": [
+          "Another one come to look at the thief. Look, then.",
+          "The lead went out the gate on a cart, by daylight, with the Clerk's seal on the pass. I saw it go. I said so. That is why I am here.",
+          "Nobody believes a smith in a tower. You will not either. Go on."
+        ]
+      }
+    },
+    {
+      "id": "merchant",
+      "name": "Thomas Wykes",
+      "role": "Town merchant",
+      "ward": "outer",
+      "modelPath": "assets/NPCs/Adventurer.glb",
+      "tint": "#a0522d",
+      "hideNodes": [
+        "Backpack"
+      ],
+      "placeholder": {
+        "color": "#a0522d"
+      },
+      "heldProp": null,
+      "dialogue": {
+        "default": [
+          "Wykes, of the town. I have the cart contract for the works.",
+          "Dressed stone. I buy stone off the works and sell it on. That is the whole of my trade, clerk.",
+          "The cart? Sacking and stone. Mind your boots."
+        ],
+        "admits": [
+          "You have been under the sacking. Well.",
+          "The Clerk sells. The Steward signs the pass. I only buy, clerk, and a man who only buys has hanged for less, so I will be in the town by Sext and you may tell them I said so."
+        ]
+      }
+    },
+    {
+      "id": "lady",
+      "name": "Lady Alys",
+      "role": "The Constable's wife",
+      "ward": "inner",
+      "modelPath": "assets/NPCs/King.glb",
+      "tint": "#d9c26b",
+      "hideMaterials": [
+        "Gold"
+      ],
+      "placeholder": {
+        "color": "#d9c26b"
+      },
+      "heldProp": null,
+      "dialogue": {
+        "default": [
+          "The King's clerk, in my chamber, about a mason. My husband will be so pleased.",
+          "Piers Marrable? He writes his sevens like gallows. Everyone in this ward knows his hand; he signs everything, and he signs it large.",
+          "My window looks over the inner ward. I see a great deal from it and I am asked about none of it."
+        ],
+        "window": [
+          "You have been up on the walk. Then you know what I know, that the wards are one ward up there.",
+          "Last night: one lantern going up the Chapel Tower stair, late. And after, a shadow along the south walk, going westward, with no lantern at all.",
+          "I did not think it my business. I have been married to a Constable eleven years."
         ]
       }
     }

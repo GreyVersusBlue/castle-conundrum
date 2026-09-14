@@ -7,8 +7,14 @@
 import { QuestGraph, judgeAnswer, renderLines } from './quest-graph.js';
 
 export class QuestManager {
-  /** The actions data/quest.json may name. validateQuest checks against this list. */
-  static actions = ['openRiddle', 'openGate', 'showVictory'];
+  /**
+   * The actions data/quest.json may name. validateQuest checks against this
+   * list. The last four are the v2 frame's (WISHLIST.md, Phase 1) and are listed
+   * so the frame validates; the page does not run the frame until Phase 7, and
+   * until then each of them only logs. test/mystery.mjs drives the engine they
+   * will call.
+   */
+  static actions = ['openRiddle', 'openGate', 'showVictory', 'ringBell', 'openJournal', 'openAccusation', 'showEpilogue'];
 
   /**
    * @param quest      parsed data/quest.json
@@ -19,8 +25,10 @@ export class QuestManager {
    * @param controlsRef { lock: fn } to re-lock the pointer after overlays
    * @param schedule   (fn, ms) => void; defaults to setTimeout. Injectable so a suite can see the delay.
    * @param restart    what the victory screen's button does; defaults to a reload.
+   * @param saved      { stage, riddleWrong } from the save slot, or null: begin the graph there rather than at `start`.
+   * @param onChange   called after every batch of effects with { stage, riddleWrong }; main.js marks the autosave.
    */
-  constructor({ quest, riddle, npcs, ui, castle, controlsRef, schedule, restart }) {
+  constructor({ quest, riddle, npcs, ui, castle, controlsRef, schedule, restart, saved = null, onChange = null }) {
     this.graph = new QuestGraph(quest, QuestManager.actions);
     this.riddle = riddle;
     this.npcs = npcs;
@@ -29,7 +37,8 @@ export class QuestManager {
     this.controlsRef = controlsRef;
     this._schedule = schedule || ((fn, ms) => setTimeout(fn, ms));
     this._restart = restart || (() => window.location.reload());
-    this._wrongCount = 0;
+    this._wrongCount = Number.isInteger(saved?.riddleWrong) && saved.riddleWrong >= 0 ? saved.riddleWrong : 0;
+    this._onChange = onChange;
 
     this._actions = {
       openRiddle: () => this.ui.openRiddle(
@@ -39,10 +48,25 @@ export class QuestManager {
       ),
       openGate: () => this.castle.openGate(),
       showVictory: () => this.ui.showVictory(() => this._restart()),
+      ringBell: () => console.info('[quest] ringBell: the bell is Phase 6'),
+      openJournal: () => console.info('[quest] openJournal: the journal is Phase 7'),
+      openAccusation: () => console.info('[quest] openAccusation: the accusation is Phase 7'),
+      showEpilogue: () => console.info('[quest] showEpilogue: the epilogue is Phase 7'),
     };
 
-    this._apply(this.graph.begin());
+    // Resume at a saved stage the graph has (save.js's repair has already reset
+    // one it lacks to `start`), re-running that stage's enter effects so the
+    // objective, the dialogue state and a terminal stage's open gate come back.
+    if (saved?.stage && quest.stages[saved.stage] && saved.stage !== quest.start) {
+      this.graph.stage = saved.stage;
+      this._apply(this.graph._enterEffects());
+    } else {
+      this._apply(this.graph.begin());
+    }
   }
+
+  /** How many wrong riddle answers so far; the save carries it as `riddleWrong`. */
+  get wrongCount() { return this._wrongCount; }
 
   /** The current stage id, for anything that wants to read it (the browser suite does). */
   get stage() { return this.graph.stage; }
@@ -68,6 +92,7 @@ export class QuestManager {
     } else {
       this._wrongCount = verdict.wrongCount;
       this.ui.setRiddleFeedback(verdict.feedback);
+      this._onChange?.({ stage: this.graph.stage, riddleWrong: this._wrongCount });
     }
   }
 
@@ -81,5 +106,6 @@ export class QuestManager {
         else run();
       }
     }
+    if (effects.length) this._onChange?.({ stage: this.graph.stage, riddleWrong: this._wrongCount });
   }
 }
