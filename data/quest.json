@@ -1,0 +1,31 @@
+{
+  "comment": "The quest as a graph. `start` names the first stage. Each stage carries the objective the tracker shows, the dialogue state every NPC switches to on entering it (a key into each npc's `dialogue` in npcs.json), the transitions that leave it, and optionally `enter` actions run on arrival. A transition fires `on` an event — `talked:<npcId>` when that npc's dialogue is stepped through to its end, `riddle:solved` when the riddle overlay accepts an answer — and may `do` actions, move `to` another stage, or both. Actions are the names src/quest-manager.js implements (QuestManager.actions); an `after` is a delay in ms. `tokens` are substituted into dialogue lines before they are shown. test/quest.mjs checks all of this against npcs.json, riddle.json and index.html.",
+  "start": "seek-keystone",
+  "tokens": {
+    "{RIDDLE}": "(The Scholar clears his throat and poses his riddle…)"
+  },
+  "stages": {
+    "seek-keystone": {
+      "objective": "Find someone who knows how to open the gate.",
+      "dialogueState": "default",
+      "transitions": [
+        { "on": "talked:scholar", "do": ["openRiddle"] },
+        { "on": "riddle:solved", "to": "present-keystone" }
+      ]
+    },
+    "present-keystone": {
+      "objective": "You hold the Keystone! Present it to the Guard at the gate.",
+      "dialogueState": "hasKeystone",
+      "transitions": [
+        { "on": "talked:guard", "to": "gate-open" }
+      ]
+    },
+    "gate-open": {
+      "objective": "The gate is open. Walk free — or stay and chat.",
+      "dialogueState": "afterVictory",
+      "terminal": true,
+      "comment": "openGate first, then let the leaf visibly swing before the victory screen covers it.",
+      "enter": ["openGate", { "do": "showVictory", "after": 2600 }]
+    }
+  }
+}

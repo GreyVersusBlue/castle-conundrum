@@ -16,10 +16,11 @@ loadingManager.onProgress = (_url, loaded, total) => ui.setLoadingProgress(loade
 
 async function init() {
   // --- Data ---
-  const [config, npcData, riddleData] = await Promise.all([
+  const [config, npcData, riddleData, questData] = await Promise.all([
     loadJSON('data/scene-config.json'),
     loadJSON('data/npcs.json'),
     loadJSON('data/riddle.json'),
+    loadJSON('data/quest.json'),
   ]);
 
   // --- Scene ---
@@ -43,7 +44,11 @@ async function init() {
 
   // --- Interaction + quest ---
   const interaction = new InteractionSystem(camera, npcs, ui, scene);
-  const quest = new QuestManager(riddleData, npcs, ui, castle, { lock: () => player.lock() });
+  const quest = new QuestManager({
+    quest: questData, riddle: riddleData, npcs, ui, castle,
+    controlsRef: { lock: () => player.lock() },
+  });
+  window.__quest = quest; // the one game-side hook play-castle.mjs reads; __cam and __scene come from its scene probe
   interaction.onInteract = (npc) => {
     npc.facePlayer(camera.position);
     quest.handleInteract(npc);
