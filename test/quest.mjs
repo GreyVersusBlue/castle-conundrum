@@ -225,7 +225,7 @@ function rig() {
   check(castle.gateOpened === 1 && qm.victory && /gate is open/i.test(ui.objective), 'finishing with the Guard opens the gate and sets victory', ui.objective);
   check(npcs.every((n) => n.dialogueState === 'afterVictory'), 'every npc switched to afterVictory');
   check(ui.victory === null && timers.length === 1 && timers[0].ms === 2600, 'the victory screen is scheduled 2600 ms out, not shown yet', JSON.stringify(timers.map((t) => t.ms)));
-  timers[0].fn();
+  timers[0]?.fn();
   check(ui.victory !== null, 'and appears when the timer fires');
   ui.victory.onRestart();
   check(restarts.n === 1, 'its button calls the injected restart');
