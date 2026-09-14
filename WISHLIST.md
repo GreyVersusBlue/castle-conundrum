@@ -514,11 +514,12 @@ than three, so it is neither solvable at Prime nor lost by Vespers.
 
 ## Questions for Devon
 
-Four open, in `BACKLOG.md`'s table as Q54 to Q57. Only where the answer changes
-the work; everything else is decided below and in `HISTORY.md` (#411 to #420).
+Three open, in `BACKLOG.md`'s table as Q54, Q55 and Q57. Only where the answer
+changes the work; everything else is decided below and in `HISTORY.md` (#411 to
+#420).
 
-**Two are answered** (2026-09-14, Devon), and the numbering below is unchanged
-so the Q numbers still line up:
+**Three are answered**, and the numbering below is unchanged so the Q numbers
+still line up:
 
 - **Q53, twelve NPCs from three bodies or a fourth model: tints** (#419), and
   **Phase 1 writes the tint**, not Phase 6, because Phase 1 already replaces the
@@ -533,8 +534,12 @@ so the Q numbers still line up:
 3. **The fourth bell forces the accusation.** The alternative is an open day
    that ends only when the player accuses. Changes Phase 1's engine and
    Phase 7's UI.
-4. **The riddle survives as the muniment room's word-lock.** The alternative
-   is retiring `riddle.json` and the overlay. Changes Phases 4 and 7.
+4. **The riddle survives as the muniment room's word-lock.** *Answered by
+   Phase 4's session, 2026-09-14: yes* (#447, Q56), because it was the one
+   question standing in front of that row. `openRiddle` runs on `lock:muniment`,
+   the Scholar points at the door instead of posing anything, and `riddle.json`
+   carries the river riddle. Retiring the overlay is still Phase 7's to do, and
+   this leaves it one door and one stage rather than a system.
 5. **The barbican gates stay shut forever.** Nothing outside the curtain is
    textured, so the west gate the player arrived through never opens again
    and the east gate opens onto a walled garden. If Devon wants the ending to
@@ -766,6 +771,12 @@ nothing in it walks through the archway.
 
 ## Phase 3: The shell: two wards, eight drums, a cross-wall
 
+**Shipped 2026-09-14, PR #312, under Claude Opus 5** (#432 to #438). 219
+pieces, all within 0.0000 m of the running page. 29.0 MB to 35. The plan
+below is what it was asked to do; that session left this line off and Phase
+4's put it here, so the next reader does not take a shipped phase for an open
+one.
+
 **Size 1. Claude Opus 5.** The layout above, at ground level, without the
 rooms inside it. The old 7x7 courtyard and its hall go.
 
@@ -807,6 +818,54 @@ barbican to porter's gate to King's Hall (GPU). **Weight:** 35.2 MB
 (castle_wall_slates, defense_wall, grassy_cobblestone). **Model:** Opus.
 
 ## Phase 4: The ground-floor rooms
+
+**Shipped 2026-09-14, PR #314, under Claude Opus 5** (#439 to #450). Fourteen
+rooms, walled, doored and floored, on level 0. 259 pieces, all within
+0.0000 m of the running page; 35 MB to 39.8, three texture sets restored.
+Twelve rooms are walked into from the spawn, the muniment room opens when the
+riddle is answered and the cell never opens, because the bars are its door.
+
+What the plan below said and what shipped differ in six places, each a locked
+decision:
+
+- **The doorway is in the drum's own ring, and at six of the eight towers a
+  doorway through the run beside it as well** (#439). #433 said a drum on a
+  tile-thick wall cannot be entered from the ward and that what opens it is a
+  doorway cut through the adjacent run. Half right. A drum is 8 m across on a
+  4 m wall, so two metres of every tower stands proud of the wall's inner face
+  and the quarter of the ring facing that way is clear of both runs — which is
+  all the two mid-run towers (the Larder and the cell) need. At a corner it is
+  not enough: the two runs meeting there tile the two quadrants and touch at a
+  single point, and the 0.5 m grid cannot cross a diagonal. Those six get a
+  1.2 m doorway at the run's own end, inside the drum's footprint so the ring
+  still seals it from outside.
+- **A tower room is a disc and its bounding square is not the room** (#440).
+  Found by walling a tower's doorway shut and watching the suite stay green:
+  the room still read "reachable, 4 cells", and the four cells were the ones
+  standing *in* the blocked doorway, which is in the ring and inside the
+  square. `walkability().rooms()` takes a `shape` now.
+- **Which rooms are shut is `mystery.json`'s answer, not the castle's**
+  (#441). The first version read the expectation off `door.leaf.closed` — the
+  field being tested — so shipping the word-lock open moved the expectation
+  with the break. `locks` and the cell's `barred` are facts about the crime;
+  the castle has to match them.
+- **`wall-door.glb` is not a door frame here** (#446). The plan says "door
+  frames from `wall-door.glb` where a doorway needs a lintel". It is authored
+  1 x 1 x 1 and `scaleRuleFor` gives every `wall*` piece the depth rule, so it
+  arrives 4 m deep in a 1 m partition. The lintel is built stone, cut from the
+  run's own box.
+- **The riddle is the word-lock, and `openGate` means that leaf** (#447). The
+  east gate keeps its archway and never opens again. `openRiddle` runs on
+  `lock:muniment`, which is the player pressing E at the door, and `openGate`
+  sits on the next stage's `enter` so a save resumed there finds it open.
+- **Two colour-only surfaces live in `plainMaterials`** (#448), apart from
+  `materials`, so the complete-texture-set rail there goes on meaning what it
+  says. The cell's bars and the cloak over the laundry crate are the two.
+
+**Still open from this phase:** `npm run play` is unrun (#53). Its riddle
+beats were rewritten for the word-lock and its gate beat now looks up the
+`muniment` leaf, and none of that is verified; the GPU exit criterion below
+is outstanding.
 
 **Size 1. Claude Opus 5.** Fourteen rooms from the table, walled, doored and
 floored, on level 0.
