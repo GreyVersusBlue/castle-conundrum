@@ -315,7 +315,7 @@
       "normal": "assets/Poly Haven/wooden_gate_1k.gltf/textures/wooden_gate_nor_gl_1k.jpg",
       "arm": "assets/Poly Haven/wooden_gate_1k.gltf/textures/wooden_gate_arm_1k.jpg"
     },
-    "comment": "The leaf is built, not loaded. wooden_gate_1k is a Poly Haven TEXTURE pack, and every texture pack they ship carries a material-preview ball as its .gltf -- one node, sphere_gltf, mesh Sphere.001. Loading it as the gate put a 3.6m wooden sphere in the archway. The three maps here are the real asset. Dimensions are the archway's own opening in wall-fortified-gate.glb, measured and asserted by test/assets.mjs: 2.0m wide, semicircular head of radius 1.0 springing at 2.0m, apex 3.0m, all after normalizeToTile's 4x. The leaf is inset 0.05m all round, because the head is a faceted circle whose stone sits just inside the ideal one."
+    "comment": "The leaf is built, not loaded. wooden_gate_1k is a Poly Haven TEXTURE pack, and every texture pack they ship carries a material-preview ball as its .gltf -- one node, sphere_gltf, mesh Sphere.001. Loading it as the gate put a 3.6m wooden sphere in the archway. The three maps here are the real asset, and since the 2026-09-14 asset diet they are ALL that folder holds: the ball's .gltf and its 2.3 MB .bin are deleted, as they are in stone_pavers_1k.gltf beside it. Dimensions are the archway's own opening in wall-fortified-gate.glb, measured and asserted by test/assets.mjs: 2.0m wide, semicircular head of radius 1.0 springing at 2.0m, apex 3.0m, all after normalizeToTile's 4x. The leaf is inset 0.05m all round, because the head is a faceted circle whose stone sits just inside the ideal one."
   },
   "interiorProps": [
     {
@@ -348,20 +348,20 @@
     {
       "model": "GothicCabinet_01_1k.gltf/GothicCabinet_01_1k.gltf",
       "tile": [
-        -1.1,
-        -2.2
+        -1.36,
+        -2.05
       ],
       "rotationY": 90,
-      "comment": "was tile [-2.2, -2.7] (world -8.8, -10.8) — that box (x -9.257..-8.129, z -11.66..-9.94) sat entirely inside the corner where the north wall (z <= -10) and the hall's own west wall (x <= -6) meet, fully invisible, same class of bug as the statue below but nobody had measured this corner. Needed both an east shift (off the west wall, not just south of the north wall — a south-only shift walks it into the west wall's z-band instead) and the same +0.5 tile south shift as the rest of the cluster. +1.1 tile east (4.4 m) clears the west wall by just over its own footprint and stays clear of the hall's west column (world x -6..-5.2, z -10..-9.2, right in the naive path east)"
+      "comment": "was tile [-2.2, -2.7] (world -8.8, -10.8) — that box (x -9.257..-8.129, z -11.66..-9.94) sat entirely inside the corner where the north wall (z <= -10) and the hall's own west wall (x <= -6) meet, fully invisible, same class of bug as the statue below but nobody had measured this corner. Needed both an east shift (off the west wall, not just south of the north wall — a south-only shift walks it into the west wall's z-band instead) and the same +0.5 tile south shift as the rest of the cluster. +1.1 tile east (4.4 m) clears the west wall by just over its own footprint and stays clear of the hall's west column (world x -6..-5.2, z -10..-9.2, right in the naive path east). Moved again 2026-09-14, from tile [-1.1, -2.2] to [-1.36, -2.05]: it stood 1.143 m off the hall's west wall (inner face world x -6), out in the room rather than against it. The column was only ever a constraint in z -- it is 0.8 m deep, z -10..-9.2 -- so 0.6 m south takes this piece out of that band entirely and the wall becomes reachable. Box is now x -5.897..-4.781, z -9.060..-7.340: 0.103 m off the wall, 0.140 m clear of the column. test/layout.mjs holds both numbers"
     },
     {
       "model": "GothicCommode_01_1k.gltf/GothicCommode_01_1k.gltf",
       "tile": [
-        1.1,
-        -2.2
+        1.4,
+        -2.05
       ],
       "rotationY": 270,
-      "comment": "was tile [2.2, -2.7] (world 8.8, -10.8), entirely inside the north wall (z <= -10), same discovery as GothicCabinet_01 mirrored onto the east wall/east column — see its comment. Mirrored shift: 1.1 tile (4.4 m) west, 0.5 tile south"
+      "comment": "was tile [2.2, -2.7] (world 8.8, -10.8), entirely inside the north wall (z <= -10), same discovery as GothicCabinet_01 mirrored onto the east wall/east column — see its comment. Mirrored shift: 1.1 tile (4.4 m) west, 0.5 tile south. Moved again 2026-09-14 alongside GothicCabinet_01 and for the same reason, tile [1.1, -2.2] to [1.4, -2.05]: it stood 1.311 m off the hall's east wall (inner face world x 6). Box is now x 5.308..5.889, z -8.802..-7.600: 0.111 m off the wall, 0.398 m clear of column-damaged. Both pieces share a tile z so the config reads as the mirror pair it is; their boxes do not line up, because the cabinet is 1.72 m deep in z and the commode 1.20 m"
     },
     {
       "model": "gothic_statue_1k.gltf/gothic_statue_1k.gltf",

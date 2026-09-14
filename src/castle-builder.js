@@ -23,9 +23,13 @@ const SURFACE_COVERAGE = 0.5;
  * pack, so the archway held a 1.93-unit sphere, auto-scaled to 3.6 m across
  * (`tile * 0.9`) because it read as "tiny relative to the archway", grounded,
  * hinged and swung 105 degrees on quest completion. Twenty of the forty-eight
- * Poly Haven folders here are texture packs carrying that same ball; this was
- * the only one the scene config loaded as a model. test/assets.mjs now fails if
- * another one ever is.
+ * Poly Haven folders this project vendored were texture packs carrying that same
+ * ball; this was the only one the scene config loaded as a model. Thirty-six of
+ * the forty-eight were referenced by nothing at all, and both groups are gone
+ * (2026-09-14, the asset diet): twelve folders remain, ten of them models, and
+ * the two texture-only ones — stone_pavers and wooden_gate — keep their
+ * `textures/` and not the ball. test/assets.mjs fails if a preview ball is ever
+ * loaded as a model again, and now also if an unreferenced byte reappears.
  *
  * The auto-scale branch went with it. It existed to rescue a model of unknown
  * size; these dimensions come from the archway's own measured opening, so

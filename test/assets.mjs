@@ -1,5 +1,6 @@
-// assets.mjs — what data/scene-config.json points at, checked against the files
-// on disk. Node only, no browser: everything here is glTF parsing and geometry.
+// assets.mjs — what data/scene-config.json and data/npcs.json point at, checked
+// against the files on disk, and what is on disk checked back against them.
+// Node only, no browser: everything here is glTF parsing and geometry.
 //
 //   node test/assets.mjs        (from Projects/Castle Conundrum)
 //
@@ -10,90 +11,39 @@
 // every TEXTURE pack — one node named `sphere_gltf`, one mesh named
 // `Sphere.001` — and wooden_gate is a texture pack, so the archway held a
 // 1.93-unit sphere, auto-scaled to 3.6 m across, grounded, hinged, and swung
-// 105 degrees when the quest completed. Twenty of the forty-eight Poly Haven
-// folders in this project are texture packs carrying that same ball. Nothing
-// caught it because a preview sphere loads perfectly: no 404, no console error,
-// no placeholder box. The only signal is the shape of what it hands back.
+// 105 degrees when the quest completed. Nothing caught it because a preview
+// sphere loads perfectly: no 404, no console error, no placeholder box. The
+// only signal is the shape of what it hands back.
 //
-// Three checks:
-//   1. every `model` in the config resolves to a file that exists
+// Twenty of the forty-eight Poly Haven folders this project vendored carried
+// that ball, at 2.3 MB of .bin each, and thirty-six of the forty-eight were
+// referenced by nothing at all. They are gone (2026-09-14): 165 MB of assets
+// against 1,525 lines of code is now 29 MB, and check 4 below is what stops it
+// growing back.
+//
+// Four checks:
+//   1. every `model` in either data file resolves to a file that exists
 //   2. no `model` resolves to a Poly Haven preview ball
 //   3. the gate leaf's built dimensions match the archway's own opening,
 //      measured out of wall-fortified-gate.glb rather than restated from the
-//      config — the point is to catch the two drifting apart.
+//      config — the point is to catch the two drifting apart
+//   4. every byte under assets/Poly Haven and assets/NPCs is reachable from one
+//      of those references, and everything a reference needs is there
 
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readGLTF, triangles } from './gltf.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, '..');
 const config = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/scene-config.json'), 'utf8'));
+const npcData = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/npcs.json'), 'utf8'));
 
 let failures = 0;
 const fail = (msg) => { console.log(`  FAIL  ${msg}`); failures++; };
 const pass = (msg) => console.log(`  ok    ${msg}`);
 const near = (a, b, tol) => Math.abs(a - b) <= tol;
-
-/* ------------------------------------------------------------ glTF reading ---
- * Enough of the format to get triangles out of a .glb or a .gltf+.bin. Three's
- * own GLTFLoader wants fetch against http(s); these files are on disk.
- */
-const COMPONENT = { 5126: ['getFloat32', 4], 5125: ['getUint32', 4], 5123: ['getUint16', 2], 5121: ['getUint8', 1] };
-const NUM = { SCALAR: 1, VEC2: 2, VEC3: 3, VEC4: 4 };
-
-function readGLTF(file) {
-  if (file.endsWith('.glb')) {
-    const buf = fs.readFileSync(file);
-    let off = 12, json = null, bin = null;
-    while (off < buf.length) {
-      const len = buf.readUInt32LE(off), type = buf.readUInt32LE(off + 4);
-      const body = buf.subarray(off + 8, off + 8 + len);
-      if (type === 0x4e4f534a) json = JSON.parse(body.toString('utf8'));
-      if (type === 0x004e4942) bin = body;
-      off += 8 + len;
-    }
-    return { json, buffers: [bin] };
-  }
-  const json = JSON.parse(fs.readFileSync(file, 'utf8'));
-  const buffers = (json.buffers || []).map(b =>
-    b.uri ? fs.readFileSync(path.join(path.dirname(file), decodeURIComponent(b.uri))) : null);
-  return { json, buffers };
-}
-
-function accessor({ json, buffers }, index) {
-  const a = json.accessors[index];
-  const bv = json.bufferViews[a.bufferView];
-  const buf = buffers[bv.buffer];
-  const view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
-  const [reader, bytes] = COMPONENT[a.componentType];
-  const n = NUM[a.type];
-  const stride = bv.byteStride || bytes * n;
-  const base = (bv.byteOffset || 0) + (a.byteOffset || 0);
-  const out = [];
-  for (let i = 0; i < a.count; i++) {
-    const row = [];
-    for (let c = 0; c < n; c++) row.push(view[reader](base + i * stride + c * bytes, true));
-    out.push(n === 1 ? row[0] : row);
-  }
-  return out;
-}
-
-function triangles(file) {
-  const g = readGLTF(file);
-  const verts = [], tris = [];
-  for (const mesh of g.json.meshes || []) {
-    for (const prim of mesh.primitives) {
-      if (prim.indices === undefined) continue;
-      const p = accessor(g, prim.attributes.POSITION);
-      const idx = accessor(g, prim.indices);
-      const base = verts.length;
-      verts.push(...p);
-      for (let i = 0; i < idx.length; i += 3) tris.push([base + idx[i], base + idx[i + 1], base + idx[i + 2]]);
-    }
-  }
-  return { json: g.json, verts, tris };
-}
 
 /* -------------------------------------------------- 1 & 2: model references ---
  * A Poly Haven preview ball is recognised by its node name, which is
@@ -114,11 +64,17 @@ function isPreviewBall(file) {
   return cubic && centred;
 }
 
-console.log('scene-config model references');
+console.log('model references in data/');
+// npcs.json is in here because it is the other file that names a Poly Haven
+// model, and until 2026-09-14 nothing checked it: the King's `heldProp` is
+// ornate_medieval_mace_1k, and a preview ball in that slot is the same #374 bug
+// in a hand rather than an archway.
 const refs = [
   ...config.courtyard.wallRuns.map(r => [config.kenneyBase + r.model, r.comment || 'wall run']),
   ...config.courtyard.placements.map(p => [config.kenneyBase + p.model, p.id || p.model]),
   ...config.interiorProps.map(p => [config.polyhavenBase + p.model, p.model]),
+  ...npcData.npcs.map(n => [n.modelPath, `${n.id || n.name}'s body`]),
+  ...npcData.npcs.filter(n => n.heldProp).map(n => [config.polyhavenBase + n.heldProp, `${n.id || n.name}'s heldProp`]),
 ];
 const seen = new Set();
 for (const [rel, label] of refs) {
@@ -240,6 +196,81 @@ else {
     if (!fs.existsSync(path.join(ROOT, rel))) fail(`gate ${slot} map missing — ${rel}`);
   }
   if (gate.model) fail('gateDoor still carries a `model` — the leaf is built from `leaf` and `textures` now');
+}
+
+
+/* ------------------------------------------------- 4: nothing dead on disk ---
+ * The reverse of checks 1 and 2. Those ask "does every reference resolve?"; this
+ * asks "is every file referenced?", which is the question nobody was asking when
+ * this project carried 165 MB of assets for 1,525 lines of code. Thirty-six of
+ * the forty-eight Poly Haven folders were named by nothing, and twenty of the
+ * forty-eight carried a 2.3 MB material-preview ball as their .gltf + .bin —
+ * including the two that ARE used, where only the `textures/` beside the ball
+ * were ever loaded.
+ *
+ * The rule, for `assets/Poly Haven` and `assets/NPCs`: a file may be there if
+ * some entry in data/ names it, or if a .gltf that some entry in data/ names
+ * declares it as a buffer or an image. Nothing else.
+ *
+ * `assets/kenney_retro-fantasy-kit` is deliberately NOT swept that way. It is a
+ * kit, vendored whole: 106 GLBs of which the config places 14, and adding a
+ * fifteenth should be a one-line config edit, not a re-download. What is checked
+ * there is narrower and is the thing that actually cost bytes — the kit shipped
+ * the same models three times over, in FBX, OBJ and GLB, and loadModel reads
+ * exactly one of those.
+ */
+console.log('\nnothing on disk that nothing asks for');
+{
+  const needed = new Map(); // repo-relative path -> what asks for it
+  const need = (rel, why) => { if (!needed.has(rel)) needed.set(rel, why); };
+
+  const gltfRefs = [
+    ...config.interiorProps.map(p => [config.polyhavenBase + p.model, p.model.split('/')[0]]),
+    ...npcData.npcs.filter(n => n.heldProp)
+      .map(n => [config.polyhavenBase + n.heldProp, `${n.id || n.name}'s heldProp`]),
+  ];
+  for (const [rel, why] of gltfRefs) {
+    need(rel, why);
+    const file = path.join(ROOT, rel);
+    if (!fs.existsSync(file)) continue; // check 1 already said so
+    const { json } = readGLTF(file);
+    const dir = path.posix.dirname(rel);
+    for (const uri of [...(json.buffers || []), ...(json.images || [])].map(x => x.uri).filter(Boolean))
+      need(path.posix.join(dir, decodeURIComponent(uri)), `${why}'s glTF declares it`);
+  }
+  for (const [slot, rel] of [
+    ...Object.entries(config.ground.textures).map(([k, v]) => [`ground ${k}`, v]),
+    ...Object.entries(config.gateDoor.textures || {}).map(([k, v]) => [`gate ${k}`, v]),
+  ]) need(rel, slot);
+  for (const n of npcData.npcs) need(n.modelPath, `${n.id || n.name}'s body`);
+
+  const walk = (rel) => {
+    const abs = path.join(ROOT, rel);
+    if (!fs.existsSync(abs)) return [];
+    return fs.readdirSync(abs, { withFileTypes: true }).flatMap(e =>
+      e.isDirectory() ? walk(path.posix.join(rel, e.name)) : [path.posix.join(rel, e.name)]);
+  };
+
+  let dead = 0, deadBytes = 0;
+  for (const rel of [...walk('assets/Poly Haven'), ...walk('assets/NPCs')]) {
+    if (needed.has(rel)) continue;
+    dead++;
+    deadBytes += fs.statSync(path.join(ROOT, rel)).size;
+    if (dead <= 8) fail(`nothing references ${rel}`);
+  }
+  if (dead > 8) fail(`...and ${dead - 8} more unreferenced files`);
+  if (dead) fail(`${dead} unreferenced file(s) under assets/, ${(deadBytes / 1048576).toFixed(1)} MB`);
+  else pass(`${needed.size} files under assets/Poly Haven and assets/NPCs, every one of them asked for`);
+
+  for (const [rel, why] of needed) {
+    if (!fs.existsSync(path.join(ROOT, rel))) fail(`${why} needs ${rel}, which is not there`);
+  }
+
+  const formats = 'assets/kenney_retro-fantasy-kit/Models';
+  const kept = fs.readdirSync(path.join(ROOT, formats)).sort();
+  if (kept.join('|') !== 'GLB format')
+    fail(`${formats} holds ${kept.join(', ')} — loadModel reads GLB and nothing else, so the rest is dead weight`);
+  else pass('the Kenney kit ships only the format loadModel reads');
 }
 
 console.log(failures ? `\n${failures} failure(s)` : '\nall good');
