@@ -1,10 +1,16 @@
 {
-  "riddle": "I have keys, but open no locks. I have space, but no rooms. You can enter, but you cannot go inside. What am I?",
-  "acceptedAnswers": ["keyboard", "a keyboard", "the keyboard"],
-  "hint": "You may be resting your hands on the answer at this very moment.",
+  "comment": "The word-lock on the muniment room's door in the King's Tower (WISHLIST.md, Phase 4). The Scholar posed the old one; a door does not talk, so the wrong-answer lines are the lock not moving. judgeAnswer, the hint after two wrong answers and the overlay are untouched.",
+  "riddle": "Carved above the lock: I run and never walk, I have a bed and never sleep, a mouth and never speak, a head and never think. Say my name.",
+  "acceptedAnswers": [
+    "river",
+    "a river",
+    "the river",
+    "afon"
+  ],
+  "hint": "It came down off the mountain before the castle did, and it is still going past the walls.",
   "wrongAnswerResponses": [
-    "Mm. No. Think on the tools of your own trade, traveler.",
-    "Wrong — though I admire the confidence. Look closer to hand.",
-    "Not even warm. The answer is nearer than you think. Much nearer."
+    "Nothing moves. The word is cut in the stone and the stone does not care what you said.",
+    "The lock stays shut. Whatever the answer is, it was here before the tower was.",
+    "Still shut. Read the carving again \u2014 it is all bed and mouth and head, and none of it is a man."
   ]
 }

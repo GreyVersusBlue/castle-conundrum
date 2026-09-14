@@ -53,13 +53,13 @@
         -10
       ],
       "facing": 346,
-      "comment": "In the King's Hall, the presence chamber in the inner ward. Was (1.5, -8), the old courtyard hall.",
+      "comment": "Phase 4: the Scholar stopped posing the riddle. It is carved over the muniment room's lock now and the player reads it off the door, so his `default` lines point at the door and carry no {RIDDLE} token.",
       "patrol": null,
       "dialogue": {
         "default": [
-          "Ah, a visitor. You want the Keystone, no doubt. Everyone does.",
-          "It is yours \u2014 if your wit is sharper than your sword. Answer me this\u2026",
-          "{RIDDLE}"
+          "Ah, a visitor. You want the muniment room, no doubt. Everyone does.",
+          "I cannot open it. The Clerk of Works had a word cut over the lock and then had the mason who cut it sent up the tower.",
+          "Go and read it yourself. It is on the King's Tower, on the face that looks into the hall."
         ],
         "hasKeystone": [
           "The Keystone suits you. Now go bother the Guard \u2014 he owes me three answers and a chicken."

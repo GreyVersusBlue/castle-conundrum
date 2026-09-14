@@ -200,6 +200,47 @@ function gateLeafParts({ width, springline, archRadius, thickness }) {
 }
 
 /**
+ * The cell's bars, as the one box they fill: a plate `width` by `height` by
+ * `thickness`, centred on x and grounded, exactly like the gate leaf's shape.
+ * `castle-builder.js` draws the uprights and the two rails inside it.
+ */
+function barsParts({ width, height, thickness }) {
+  return [{
+    min: { x: -width / 2, y: 0, z: -thickness / 2 },
+    max: { x: width / 2, y: height, z: thickness / 2 },
+    matrix: IDENTITY,
+  }];
+}
+
+/**
+ * Hang a leaf in an opening: the hinge sits half a leaf-width off the opening's
+ * centre, rotated with it, so the leaf's world midpoint lands on the centre at
+ * any angle. The un-rotated `centre.x - width / 2` was only that midpoint at
+ * rotationY 0, and not one door in this castle is at 0.
+ *
+ * Shared by config.gates and by the doors in the drum towers' rings, which is
+ * the reason it is a function: a door in a ring is hung on the chord of its
+ * doorway at the ring's own angle, and that is the same arithmetic as a gate in
+ * a wall.
+ */
+function hangLeaf(parts, centre, shutAngle, leafAngle) {
+  const size = boxOfParts(parts);
+  const width = size.max.x - size.min.x;
+  const sr = shutAngle * Math.PI / 180, lr = leafAngle * Math.PI / 180;
+  const pivot = [centre[0] - (width / 2) * Math.cos(sr), 0, centre[1] + (width / 2) * Math.sin(sr)];
+  const transform = {
+    position: [pivot[0] + (width / 2) * Math.cos(lr), 0, pivot[2] - (width / 2) * Math.sin(lr)],
+    rotationY: leafAngle, scale: 1,
+  };
+  return {
+    width,
+    pivot: { position: pivot, rotationY: leafAngle, offset: [width / 2, 0, 0] },
+    transform,
+    box: boxOfParts(parts, placementMatrix(transform)),
+  };
+}
+
+/**
  * The archway's stone, as three colliders instead of none.
  *
  * `gate-arch` carried `noCollide: true` with the comment "a doorway is meant to
@@ -276,9 +317,61 @@ function runBox(run, tileSize) {
   const lo = Math.min(run.from[along], run.to[along]) * tileSize - half;
   const hi = Math.max(run.from[along], run.to[along]) * tileSize + half;
   const cross = run.from[axis === 'x' ? 1 : 0] * tileSize;
+  // `base` lifts a run off the ground. The curtain and every room wall start at
+  // 0; the mason's lodge roof is a run at base 4, and Phase 5's floor slabs are
+  // the same thing at 3.8.
+  const y0 = run.base || 0, y1 = y0 + run.height;
   return axis === 'x'
-    ? { min: { x: lo, y: 0, z: cross - t }, max: { x: hi, y: run.height, z: cross + t } }
-    : { min: { x: cross - t, y: 0, z: lo }, max: { x: cross + t, y: run.height, z: hi } };
+    ? { min: { x: lo, y: y0, z: cross - t }, max: { x: hi, y: y1, z: cross + t } }
+    : { min: { x: cross - t, y: y0, z: lo }, max: { x: cross + t, y: y1, z: hi } };
+}
+
+/**
+ * A run's stone, as the boxes the builder emits and the player walks into: one
+ * box when the run is solid, and three per doorway — the wall either side of it
+ * and the lintel over it.
+ *
+ * A DOORWAY IS A GAP IN THE COLLIDERS, WHICH IS WHY IT IS HERE AND NOT IN THE
+ * BUILDER. The walkability grid floods through a doorway because there is no
+ * collider in it below the lintel, not because anything told the grid a door
+ * exists. `height` is the head of the opening: the grid asks for 1.9 m clear
+ * above the floor, so a lintel at 2.5 leaves the cell standable and a lintel at
+ * 1.5 does not. The run's whole box is still `runBox`, and the lintel is what
+ * makes that true — remove it and the run stops reaching over its own doorway.
+ *
+ * `at` is a TILE coordinate along the run, the same units as `from` and `to`;
+ * `width` and `height` are metres.
+ */
+function runBoxes(run, tileSize) {
+  const whole = runBox(run, tileSize);
+  const doors = run.doorways || [];
+  if (!doors.length) return [whole];
+  const axis = runAxis(run);
+  const k = axis === 'x' ? 'x' : 'z';
+  const cuts = doors.map((d) => {
+    const c = d.at * tileSize;
+    return { lo: c - d.width / 2, hi: c + d.width / 2, top: whole.min.y + d.height, at: d.at };
+  }).sort((a, b) => a.lo - b.lo);
+
+  const slice = (lo, hi, yMin) => {
+    const b = { min: { ...whole.min }, max: { ...whole.max } };
+    b.min[k] = lo; b.max[k] = hi;
+    if (yMin != null) b.min.y = yMin;
+    return b;
+  };
+
+  const out = [];
+  let cursor = whole.min[k];
+  for (const cut of cuts) {
+    if (cut.lo < cursor - 1e-9) throw new Error(`[castle-plan] wall run "${run.id}" has a doorway at tile ${cut.at} that starts before the run does, or overlaps the doorway before it`);
+    if (cut.hi > whole.max[k] + 1e-9) throw new Error(`[castle-plan] wall run "${run.id}" has a doorway at tile ${cut.at} that runs past the end of the wall`);
+    if (cut.top >= whole.max.y - 1e-9) throw new Error(`[castle-plan] wall run "${run.id}" has a doorway ${cut.top - whole.min.y} m high in a ${run.height} m wall, which leaves no lintel over it`);
+    if (cut.lo > cursor + 1e-9) out.push(slice(cursor, cut.lo));
+    out.push(slice(cut.lo, cut.hi, cut.top));
+    cursor = cut.hi;
+  }
+  if (whole.max[k] > cursor + 1e-9) out.push(slice(cursor, whole.max[k]));
+  return out;
 }
 
 /**
@@ -314,38 +407,76 @@ const ringPoint = (cx, cz, radius, thetaDeg) => {
  * reaches more than the polygon's own sagitta past the circle — 0.034 m at
  * radius 4 with 24 sides.
  *
- * WHY SOLID, AND WHY THE EIGHT TOWER ROOMS ARE PHASE 4'S. A hollow drum with a
- * doorway in its ring does not produce a tower you can walk into, and the drum
- * is not what stops you. The curtain is a whole tile thick, so at a corner the
- * two runs meeting there — say the west run at x -38..-34 and the north run at
- * z -18..-14 — overlap in neither axis: they touch at the single point
- * (-34, -14). The ward is the quadrant south-east of that point and the drum is
- * the quadrant north-west of it, and the two meet at a pinch of exactly zero
- * width. No radius up to the map's 4 m opens it, and the six towers that are not
- * mid-run are all built that way. What opens it is a doorway cut THROUGH the
- * adjacent run, which is Phase 4's "doorways as gaps the plan's walkability
- * sees, and door frames from wall-door.glb where a doorway needs a lintel", and
- * Phase 4's exit is the one that reads "fourteen rooms reachable". So this phase
- * ships the six rooms that are open ground inside the wards and leaves the eight
- * tower interiors as solid stone for the phase that gives them doors (#433).
+ * HOLLOW, AND WHERE THE DOOR IS. Phase 3 shipped these solid and wrote down why
+ * (#433): a drum standing on a tile-thick wall cannot be entered from the ward,
+ * because at a corner the two runs meeting there overlap in neither axis and the
+ * ward and the drum meet at a pinch of exactly zero width. That reading was
+ * right about the pinch and wrong about the fix. A drum is 8 m across on a 4 m
+ * wall, so two metres of every one of them stands PROUD of the wall's inner
+ * face, inside the ward or inside the room behind it; the quarter of the ring
+ * facing that way is clear of both runs. The doorway goes there, in the drum's
+ * own ring, and no run is cut at all. `interior.door.theta` is that bearing.
+ *
+ * THE RING IS THE SAME POLYGON AS THE GEOMETRY, still. Each collider is the box
+ * over one sector's four ring vertices — two at `radius` and two at
+ * `interior.radius` — where the solid version used the centre and two. The
+ * door's sectors keep their box and lose their bottom: `min.y` rises to the
+ * opening's head, which IS the lintel, and which is why a doorway does not
+ * change the drum's own box by a millimetre. A shut door (the cell's bars, the
+ * muniment room's leaf before the riddle) puts that bottom back.
+ *
+ * A BOX OVER AN ARC BULGES INWARD. At 24 sides and an inner radius of 2.8 m the
+ * worst sector box reaches 0.19 m past the ring into the room, at the diagonals.
+ * That is conservative in the direction that matters — the room reads slightly
+ * smaller than it is and nothing false is ever called standable.
  */
-function drumParts(drum, tileSize) {
+function doorArc(drum, door, segments, step) {
+  const from = door.theta - door.arc / 2;
+  const whole = (v) => Math.abs(v - Math.round(v)) < 1e-6;
+  if (!(door.arc > 0) || !whole(door.arc / step) || !whole(from / step)) {
+    throw new Error(`[castle-plan] ${drum.id}'s doorway spans ${door.arc} degrees from ${from}, which does not start and end on one of this drum's ${step}-degree vertices. A doorway off the vertices makes the wall and the hole two different polygons`);
+  }
+  if (!(door.height > 0) || door.height >= drum.height) {
+    throw new Error(`[castle-plan] ${drum.id}'s doorway is ${door.height} m high in a ${drum.height} m tower, which leaves no lintel over it`);
+  }
+  const n = Math.round(door.arc / step), first = Math.round(from / step);
+  const sectors = new Set();
+  for (let k = 0; k < n; k++) sectors.add((((first + k) % segments) + segments) % segments);
+  return { sectors, from, arc: door.arc, theta: door.theta, height: door.height, count: n };
+}
+
+function drumParts(drum, tileSize, { shut = false } = {}) {
   const [cx, , cz] = tileToWorld(tileSize, drum.tile[0], drum.tile[1]);
   const r = drum.radius;
   const segments = drum.segments || 24;
   const step = 360 / segments;
+  const interior = drum.interior || null;
+  const inner = interior ? interior.radius : 0;
+  if (interior && !(inner > 0 && inner < r)) {
+    throw new Error(`[castle-plan] ${drum.id}'s interior radius ${inner} is not inside its ${r} m drum`);
+  }
+  const door = interior && interior.door ? doorArc(drum, interior.door, segments, step) : null;
 
   const box = EMPTY();
   const colliders = [];
   for (let i = 0; i < segments; i++) {
-    const a = ringPoint(cx, cz, r, i * step), b = ringPoint(cx, cz, r, (i + 1) * step);
+    const a0 = i * step, a1 = (i + 1) * step;
+    const ring = [ringPoint(cx, cz, r, a0), ringPoint(cx, cz, r, a1)];
+    if (inner) ring.push(ringPoint(cx, cz, inner, a0), ringPoint(cx, cz, inner, a1));
+    else ring.push({ x: cx, z: cz });
     const seg = EMPTY();
-    for (const pt of [{ x: cx, z: cz }, a, b]) {
+    for (const pt of ring) {
       expand(seg, { x: pt.x, y: 0, z: pt.z });
       expand(seg, { x: pt.x, y: drum.height, z: pt.z });
     }
-    colliders.push({ id: `${drum.id}-sector-${i}`, box: seg });
+    // The drum's own box is the stone's, doorway or not: the lintel reaches the
+    // same ring vertices the missing wall would have.
     expand(box, seg.min); expand(box, seg.max);
+    const open = door && door.sectors.has(i) && !shut;
+    colliders.push({
+      id: `${drum.id}-sector-${i}`, sector: i,
+      box: open ? { min: { ...seg.min, y: door.height }, max: { ...seg.max } } : seg,
+    });
   }
 
   // The turret is narrower than the drum, so it cannot reach past the disc's box
@@ -362,7 +493,7 @@ function drumParts(drum, tileSize) {
     }
   }
 
-  return { cx, cz, radius: r, segments, box, colliders, turret };
+  return { cx, cz, radius: r, segments, box, colliders, turret, inner, door, shut };
 }
 
 /**
@@ -374,12 +505,23 @@ function drumParts(drum, tileSize) {
  *        root space. `test/gltf.mjs`'s `partsOf` in Node; a traversal of the
  *        loaded `Object3D` in the browser. NOT a single box — see the header.
  */
-export function makePlan(config, boundsOf, { closed = [] } = {}) {
+export function makePlan(config, boundsOf, { closed = [], opened = [] } = {}) {
   const tileSize = config.tileSize;
   const kBase = config.kenneyBase, pBase = config.polyhavenBase;
   const forceClosed = new Set(closed);
-  const pieces = [], colliders = [], surfaces = [];
+  const forceOpen = new Set(opened);
+  const pieces = [], colliders = [], surfaces = [], gates = [];
   let seq = 0;
+
+  /* Which room is behind which drum. A tower's door, its floor and its lock all
+   * belong to the room, and the room names the drum, so none of the three is
+   * written down twice. */
+  const roomOfDrum = new Map();
+  for (const r of config.rooms || []) {
+    if (!r.drum) continue;
+    if (roomOfDrum.has(r.drum)) throw new Error(`[castle-plan] rooms "${roomOfDrum.get(r.drum).id}" and "${r.id}" both claim drum "${r.drum}"`);
+    roomOfDrum.set(r.drum, r);
+  }
 
   const collide = (id, box) => {
     // paper-thin and ground-hugging decor never blocked movement and does not
@@ -406,12 +548,23 @@ export function makePlan(config, boundsOf, { closed = [] } = {}) {
 
   for (const run of config.walls) {
     const box = runBox(run, tileSize);
+    const boxes = runBoxes(run, tileSize);
     addPiece({
       id: run.id, kind: 'wall', built: 'run', level: run.level || 0, curtain: !!run.curtain,
-      material: run.material, label: run.comment ? run.comment.split(/[.,]/)[0] : run.id,
-      transform: { position: [0, 0, 0], rotationY: 0, scale: 1 }, box, boxes: [box],
+      material: run.material, repeatMetres: run.repeatMetres || null,
+      label: run.comment ? run.comment.split(/[.,]/)[0] : run.id,
+      transform: { position: [0, 0, 0], rotationY: 0, scale: 1 }, box, boxes,
     });
-    collide(run.id, box);
+    // One collider per emitted box. A solid run keeps its own id, so nothing
+    // that names a curtain run by id had to change; a run with a doorway in it
+    // is three boxes and three ids, which is also how the deliberate break
+    // "wall a doorway shut" is written — put the box back and the room goes dark.
+    boxes.forEach((b, i) => collide(boxes.length === 1 ? run.id : `${run.id}-${i}`, b));
+
+    // Battlements are the castle's outer edge, not a room's. An interior
+    // partition is 1 m of wall between two rooms with a ceiling coming in Phase
+    // 5; crenellating it would put merlons inside the Great Hall.
+    if (run.interior) continue;
 
     // battlements ride the run's outer edge, along its long axis, at its top
     const theta = outwardTheta(run, tileSize);
@@ -420,20 +573,40 @@ export function makePlan(config, boundsOf, { closed = [] } = {}) {
     const lo = axis === 'x' ? box.min.x : box.min.z, hi = axis === 'x' ? box.max.x : box.max.z;
     const from = axis === 'x' ? [lo, cross] : [cross, lo];
     const to = axis === 'x' ? [hi, cross] : [cross, hi];
-    merlonRun(from, to, run.height, theta + 180);
+    merlonRun(from, to, box.max.y, theta + 180);
   }
 
-  /* --- eight drums --- */
+  /* --- eight drums, hollow, each with a doorway in its ring --- */
   const drumShapes = [];
   for (const drum of config.drums) {
-    const d = drumParts(drum, tileSize);
-    drumShapes.push({ drum, ...d });
+    const room = roomOfDrum.get(drum.id) || null;
+    if (drum.interior && !room) throw new Error(`[castle-plan] drum "${drum.id}" has an interior and no room in config.rooms names it`);
+    const spec = drum.interior && drum.interior.door ? drum.interior.door : null;
+    const leafSpec = spec && spec.leaf ? spec.leaf : null;
+    const barsSpec = spec && spec.bars ? spec.bars : null;
+    if (leafSpec && barsSpec) throw new Error(`[castle-plan] ${drum.id}'s doorway carries both a leaf and bars`);
+    // A leaf can be forced either way, which is how test/layout.mjs floods the
+    // castle once with the word-lock shut and once with it answered. Bars are not
+    // a door that opens: nothing forces them, and the doorway they fill stays
+    // open stone so that the BARS are what holds, not the wall around them.
+    const leafShut = !!leafSpec && !forceOpen.has(room && room.id) &&
+      (forceClosed.has(room && room.id) || !!leafSpec.closed);
+    const d = drumParts(drum, tileSize, { shut: leafShut });
+    drumShapes.push({ drum, room: room && room.id, ...d });
     addPiece({
       id: drum.id, kind: 'tower', built: 'drum', level: drum.level || 0, curtain: !!drum.curtain,
       material: drum.material, label: drum.comment ? drum.comment.split(/[.,]/)[0] : drum.id,
       drum: {
         cx: d.cx, cz: d.cz, radius: d.radius, height: drum.height,
         segments: d.segments, turret: d.turret,
+        // The ring and its doorway. These were left off the first time and the
+        // builder read `inner` as undefined, so every tower rendered as the solid
+        // cylinder Phase 3 shipped while the plan, the colliders and the whole
+        // suite said hollow. test/plan-vs-scene.mjs could not see it: a solid
+        // drum's bounds are a hollow one's bounds, to the millimetre. It came out
+        // of deleting the lintel on purpose and watching nothing happen (#34).
+        inner: d.inner,
+        door: d.door ? { from: d.door.from, arc: d.door.arc, count: d.door.count, height: d.door.height } : null,
       },
       transform: { position: [0, 0, 0], rotationY: 0, scale: 1 }, box: d.box,
       // The twenty-four sectors, not the 8 x 8 m square `box` bounds them with.
@@ -441,7 +614,59 @@ export function makePlan(config, boundsOf, { closed = [] } = {}) {
       // chest standing in that floor "inside South-west Tower".
       boxes: d.colliders.map((c) => c.box),
     });
-    for (const c of d.colliders) collide(c.id, c.box);
+    // A shut leaf blocks through the ring's own sectors rather than through its
+    // own rotated box: the sector boxes are the doorway exactly, and the builder
+    // drops them by id when the leaf swings. An open doorway's sectors are the
+    // lintel over it and block nothing at head height.
+    const blocks = [];
+    for (const c of d.colliders) {
+      const shutHere = leafShut && d.door && d.door.sectors.has(c.sector);
+      const id = shutHere ? `${room.id}-shut-${c.sector}` : c.id;
+      if (shutHere) blocks.push(id);
+      collide(id, c.box);
+    }
+
+    if (spec && (leafSpec || barsSpec)) {
+      // The plate hangs on the chord of its own doorway, at the middle of the
+      // ring's thickness. Its width is that chord, worked out from the arc rather
+      // than written down, so a wider doorway carries a wider door.
+      const mid = (d.inner + drum.radius) / 2;
+      const th = d.door.theta * Math.PI / 180;
+      const centre = [d.cx + mid * Math.sin(th), d.cz + mid * Math.cos(th)];
+      const width = 2 * mid * Math.sin((d.door.arc / 2) * Math.PI / 180);
+      const shutAngle = d.door.theta;
+      if (leafSpec) {
+        const archRadius = width / 2;
+        const leaf = { width, springline: d.door.height - archRadius, archRadius, thickness: leafSpec.thickness };
+        if (leaf.springline <= 0) throw new Error(`[castle-plan] ${drum.id}'s doorway is ${d.door.height} m high and ${width.toFixed(2)} m wide, so a round-headed leaf has no straight side at all`);
+        const openAngle = shutAngle + (leafSpec.openDegrees || 0);
+        const hung = hangLeaf(gateLeafParts(leaf), centre, shutAngle, leafShut ? shutAngle : openAngle);
+        addPiece({
+          id: room.id, kind: 'gate-leaf', built: 'gate-leaf', level: 0, curtain: false,
+          material: leafSpec.material, label: `${room.id} door`, leaf,
+          evidence: leafSpec.evidence || null,
+          pivot: hung.pivot, transform: hung.transform, box: hung.box,
+        });
+        gates.push({
+          id: room.id, quest: leafSpec.quest || null, closed: leafShut, shutAngle, openAngle, blocks,
+          // A leaf the player presses E at. `lock` is the prompt it shows, and
+          // `centre` is what the interaction system aims at, which is the leaf
+          // and not its hinge.
+          lock: leafSpec.lock || null,
+          centre: [(hung.box.min.x + hung.box.max.x) / 2, (hung.box.min.y + hung.box.max.y) / 2, (hung.box.min.z + hung.box.max.z) / 2],
+        });
+      } else {
+        const bars = { width, height: d.door.height, thickness: barsSpec.thickness, count: barsSpec.count };
+        const hung = hangLeaf(barsParts(bars), centre, shutAngle, shutAngle);
+        addPiece({
+          id: `${room.id}-bars`, kind: 'fixture', built: 'bars', level: 0, curtain: false,
+          material: barsSpec.material, label: `${room.id} bars`, bars,
+          transform: hung.transform, box: hung.box,
+        });
+        // The bars are the only thing between the Great Hall and the cell.
+        collide(`${room.id}-bars`, hung.box);
+      }
+    }
 
     // merlons round the drum's rim, one every 360/perDrum degrees
     for (let i = 0; i < battle.perDrum; i++) {
@@ -473,7 +698,6 @@ export function makePlan(config, boundsOf, { closed = [] } = {}) {
    * any of them shut, which is how test/layout.mjs floods the castle with the
    * cross-wall's one crossing sealed.
    */
-  const gates = [];
   for (const g of config.gates) {
     const archParts = boundsOf(kBase + g.archModel).parts;
     const { transform, box } = place({
@@ -495,7 +719,7 @@ export function makePlan(config, boundsOf, { closed = [] } = {}) {
      */
     const leafParts = gateLeafParts(g.leaf);
     const shut = g.rotationY || 0;
-    const isClosed = forceClosed.has(g.id) || !!g.closed;
+    const isClosed = !forceOpen.has(g.id) && (forceClosed.has(g.id) || !!g.closed);
     const leafRot = shut + (isClosed ? 0 : (g.openDegrees || 0));
     const shutRad = shut * Math.PI / 180, leafRad = leafRot * Math.PI / 180;
     const leafSize = boxOfParts(leafParts);
@@ -510,7 +734,7 @@ export function makePlan(config, boundsOf, { closed = [] } = {}) {
     const leafBox = boxOfParts(leafParts, placementMatrix(leafTransform));
     addPiece({
       id: g.id, kind: 'gate-leaf', built: 'gate-leaf', level: 0, curtain: false,
-      label: `${g.id} leaf`, material: g.material,
+      label: `${g.id} leaf`, material: g.material, leaf: g.leaf,
       // The scene graph the builder makes: a pivot at the hinge, carrying the
       // rotation, with the leaf parented `offset` along the pivot's local +X.
       // `transform` is the same placement flattened to world space, which is what
@@ -524,6 +748,7 @@ export function makePlan(config, boundsOf, { closed = [] } = {}) {
     gates.push({
       id: g.id, quest: g.quest || null, closed: isClosed,
       shutAngle: shut, openAngle: shut + (g.openDegrees || 0),
+      blocks: isClosed ? [g.id] : [],
     });
   }
 
@@ -531,14 +756,19 @@ export function makePlan(config, boundsOf, { closed = [] } = {}) {
   for (const p of config.courtyard.placements) {
     const parts = boundsOf(kBase + p.model).parts;
     const { transform, box } = place({
-      parts, tileSize, tile: p.tile, rotationY: p.rotationY || 0, scaleRule: scaleRuleFor(p.model),
+      parts, tileSize, tile: p.tile, rotationY: p.rotationY || 0,
+      // A number is a scale and a string is a rule (see scaleFor). The kit's
+      // props are authored at 1 unit and the rules only know walls, towers and
+      // columns, so a 4 m post and a 0.32 m dais step say their own number.
+      scaleRule: typeof p.scale === 'number' ? p.scale : scaleRuleFor(p.model),
     });
     const kind = /^tower/.test(p.model) ? 'tower'
       : /^(wall|column)/.test(p.model) ? 'wall' : 'decor';
     const id = p.id || `${p.model.replace(/\.glb$/, '')}-${seq++}`;
     addPiece({
       id, kind, model: kBase + p.model, level: 0, curtain: !!p.curtain,
-      label: p.comment || p.model, transform, box, boxes: p.noCollide ? [] : [box],
+      label: p.comment || p.model, evidence: p.evidence || null,
+      transform, box, boxes: p.noCollide ? [] : [box],
     });
     // `noCollide` means one thing everywhere: this piece contributes no colliders.
     if (!p.noCollide) collide(id, box);
@@ -553,8 +783,8 @@ export function makePlan(config, boundsOf, { closed = [] } = {}) {
     const { transform, box } = place({
       parts, tileSize, tile: p.tile, rotationY: p.rotationY || 0, scaleRule: 'native', lift,
     });
-    const id = p.model.split('/')[0].replace(/_1k\.gltf$/, '');
-    addPiece({ id, kind: 'prop', model: pBase + p.model, level: 0, curtain: false, label: id, transform, box });
+    const id = p.id || p.model.split('/')[0].replace(/_1k\.gltf$/, '');
+    addPiece({ id, kind: 'prop', model: pBase + p.model, level: 0, curtain: false, label: id, evidence: p.evidence || null, transform, box });
     if (!p.noCollide) {
       collide(id, box);
       stack.push(box);
@@ -562,9 +792,64 @@ export function makePlan(config, boundsOf, { closed = [] } = {}) {
     }
   }
 
+  /* --- built props: a box of a named size, for the one or two things the kit
+   * and Poly Haven between them have no model of. The cloak is the only one:
+   * WISHLIST.md rules out kite_shield as the wrong shape and no cloth map is on
+   * the stone list, so it is a slab in a colour. Axis-aligned, because a rotated
+   * slab would need a matrix to describe a rectangle and buy nothing. --- */
+  for (const b of config.builtProps || []) {
+    const [bx, , bz] = tileToWorld(tileSize, b.tile[0], b.tile[1]);
+    const [w, h, d] = b.size;
+    const y0 = b.base || 0;
+    const box = {
+      min: { x: bx - w / 2, y: y0, z: bz - d / 2 },
+      max: { x: bx + w / 2, y: y0 + h, z: bz + d / 2 },
+    };
+    addPiece({
+      id: b.id, kind: 'prop', built: 'slab', level: 0, curtain: false,
+      material: b.material, label: b.id, evidence: b.evidence || null,
+      transform: { position: [0, 0, 0], rotationY: 0, scale: 1 }, box,
+    });
+    collide(b.id, box);
+  }
+
   /* --- the curtain: the outer face of everything the config calls curtain --- */
   const curtain = EMPTY();
   for (const piece of pieces) if (piece.curtain) { expand(curtain, piece.box.min); expand(curtain, piece.box.max); }
+
+  /* --- the fourteen ground rooms ---
+   * A room is either a rectangle of whole tiles or a tower interior, and a tower
+   * interior's bounds are its drum's, not a second set of numbers that could
+   * disagree with it. `locked` is read off the doorway the room's own drum
+   * carries: the muniment room until the riddle is answered, the cell forever.
+   */
+  const rooms = (config.rooms || []).map((r) => {
+    const half = tileSize / 2;
+    let b, locked = null, shape = null;
+    if (r.drum) {
+      const d = drumShapes.find((x) => x.drum.id === r.drum);
+      if (!d) throw new Error(`[castle-plan] room "${r.id}" names drum "${r.drum}", which config.drums does not have`);
+      if (!d.inner) throw new Error(`[castle-plan] room "${r.id}" is inside drum "${r.drum}", which has no \`interior\` and is solid stone`);
+      b = { min: { x: d.cx - d.inner, z: d.cz - d.inner }, max: { x: d.cx + d.inner, z: d.cz + d.inner } };
+      // A TOWER ROOM IS A DISC AND ITS BOUNDING SQUARE IS NOT THE ROOM. The
+      // square's corners sit at 1.414 * 2.8 = 3.96 m, which is out in the ring —
+      // and the doorway's own cells are in the ring. Counting the square said a
+      // tower whose way in had been walled up was still "reachable, 4 cells",
+      // because the four cells standing IN the blocked doorway are inside the
+      // square. Found by walling one up on purpose and watching the suite stay
+      // green (#34). The disc is the floor; the square is only the index.
+      shape = { kind: 'disc', cx: d.cx, cz: d.cz, radius: d.inner };
+      const door = d.drum.interior.door || {};
+      locked = door.bars ? 'bars' : (door.leaf && door.leaf.closed ? 'riddle' : null);
+    } else if (r.tiles) {
+      b = { min: { x: r.tiles.min[0] * tileSize - half, z: r.tiles.min[1] * tileSize - half },
+            max: { x: r.tiles.max[0] * tileSize + half, z: r.tiles.max[1] * tileSize + half } };
+    } else {
+      b = { min: { x: r.bounds.min[0], z: r.bounds.min[1] },
+            max: { x: r.bounds.max[0], z: r.bounds.max[1] } };
+    }
+    return { id: r.id, level: r.level || 0, ward: r.ward || null, drum: r.drum || null, floor: r.floor || null, locked, bounds: b, shape };
+  });
 
   /* --- the ground, LAST, because its size is the curtain's ---
    * "The 140 m ground plane shrinks to the curtain's footprint plus 2 m; outside
@@ -590,24 +875,32 @@ export function makePlan(config, boundsOf, { closed = [] } = {}) {
       },
     });
   }
+  /* A room's floor is a patch of its own material laid inside it: a rectangle
+   * for a walled room, a disc for a tower. At the base's y, like every other
+   * patch, so the walkability grid's 1e-6 dedupe reads one floor and not a
+   * second storey over half the castle. Which rooms get one is WISHLIST.md's
+   * stone table: rock tile in the two halls, floor tiles in the chapel, old
+   * planks in the service rooms. A room with no `floor` keeps the ground it
+   * stands on, which is why the five pavers-floored towers cost nothing. */
+  for (const r of rooms) {
+    if (!r.floor) continue;
+    const d = r.drum ? drumShapes.find((x) => x.drum.id === r.drum) : null;
+    grounds.push({
+      id: `floor-${r.id}`, material: r.floor, patch: true, fallbackColor: null,
+      disc: d ? { cx: d.cx, cz: d.cz, radius: d.inner } : null,
+      box: { min: { x: r.bounds.min.x, y: 0, z: r.bounds.min.z },
+             max: { x: r.bounds.max.x, y: 0, z: r.bounds.max.z } },
+    });
+  }
+
   for (const g of grounds) {
     addPiece({
       id: g.id, kind: 'ground', built: 'ground', level: 0, curtain: false,
-      material: g.material, label: g.id, patch: g.patch,
+      material: g.material, label: g.id, patch: g.patch, disc: g.disc || null,
       transform: { position: [0, 0, 0], rotationY: 0, scale: 1 }, box: g.box,
     });
     surfaces.push({ id: g.id, box: g.box, top: 0, level: 0, slope: null });
   }
-
-  const rooms = (config.rooms || []).map((r) => {
-    const half = tileSize / 2;
-    const b = r.tiles
-      ? { min: { x: r.tiles.min[0] * tileSize - half, z: r.tiles.min[1] * tileSize - half },
-          max: { x: r.tiles.max[0] * tileSize + half, z: r.tiles.max[1] * tileSize + half } }
-      : { min: { x: r.bounds.min[0], z: r.bounds.min[1] },
-          max: { x: r.bounds.max[0], z: r.bounds.max[1] } };
-    return { id: r.id, level: r.level || 0, ward: r.ward || null, bounds: b };
-  });
 
   return {
     tile: tileSize,
@@ -700,6 +993,14 @@ export function walkability(plan, { grid = GRID, stepUp = STEP_UP } = {}) {
     .slice()
     .sort((a, b) => Math.abs(a.h - floor) - Math.abs(b.h - floor))[0];
 
+  /* THE DRUMS ARE ALREADY IN THIS BOX, and Phase 4 nearly shipped a second rule
+   * saying so. Hollowing the towers puts walkable floor 0.8 m past the curtain's
+   * outer FACE, which looked like it needed the seal test taught that a tower
+   * interior is inside the castle. It did not: `curtain: true` is on all eight
+   * drums, so the box has run z -20..20 rather than -18..18 since Phase 3, and a
+   * cell in a tower was never outside it. The extra rule was written, tested by
+   * deleting it, and found to change no answer at all — which is the same thing
+   * as not being a check (#13), so it is not here. */
   const outsideCurtain = (i, j) =>
     cx(i) < plan.curtain.min.x || cx(i) > plan.curtain.max.x ||
     cz(j) < plan.curtain.min.z || cz(j) > plan.curtain.max.z;
@@ -757,7 +1058,9 @@ export function walkability(plan, { grid = GRID, stepUp = STEP_UP } = {}) {
         const inside = list.filter(c =>
           c.level === r.level &&
           cx(c.i) >= r.bounds.min.x && cx(c.i) <= r.bounds.max.x &&
-          cz(c.j) >= r.bounds.min.z && cz(c.j) <= r.bounds.max.z);
+          cz(c.j) >= r.bounds.min.z && cz(c.j) <= r.bounds.max.z &&
+          (r.shape?.kind !== 'disc' ||
+            Math.hypot(cx(c.i) - r.shape.cx, cz(c.j) - r.shape.cz) <= r.shape.radius));
         return { ...r, cells: inside.length, reachable: inside.length > 0 };
       });
     },

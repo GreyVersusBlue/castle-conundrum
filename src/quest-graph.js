@@ -80,9 +80,15 @@ export function validateQuest(def, actions) {
  * The graph against the cast it drives. Every stage's dialogueState has to be a
  * non-empty list of strings on every npc; every `{TOKEN}` in a line has to be in
  * `tokens`. And the riddle is opened by exactly the conversations that end in a
- * `{RIDDLE}` line — the Scholar's `default` lines pose it, so the stage whose
- * dialogueState is `default` must open it on `talked:scholar`, and no other
- * (npc, state) pair may carry the token.
+ * `{RIDDLE}` line, in both directions: a stage that opens it on `talked:x` needs
+ * lines that pose it, and lines that pose it need a stage that opens it.
+ *
+ * A RIDDLE MAY ALSO BE A LOCK, and from Phase 4 this one is. `lock:<id>` is the
+ * player pressing E at a word-locked door, so `openRiddle` on a `lock:` event is
+ * the other legal shape and the Scholar poses nothing. What this file cannot
+ * check is that the lock exists: it knows the graph and the cast and not the
+ * castle. `test/quest.mjs` reads scene-config.json and mystery.json and holds
+ * every `lock:<id>` here to a door that is really there and really starts shut.
  */
 export function validateAgainstNpcs(def, npcs, { riddleAction = 'openRiddle', riddleToken = '{RIDDLE}' } = {}) {
   const problems = [];
@@ -113,8 +119,9 @@ export function validateAgainstNpcs(def, npcs, { riddleAction = 'openRiddle', ri
       const does = (t.do ?? []).map((a) => (typeof a === 'string' ? a : a.do));
       if (!does.includes(riddleAction)) continue;
       const m = /^talked:(.+)$/.exec(t.on);
-      if (!m) { problems.push(`${id}: ${riddleAction} runs on ${t.on}, not at the end of a conversation`); continue; }
-      openers.add(`${m[1]}/${s.dialogueState}`);
+      if (m) { openers.add(`${m[1]}/${s.dialogueState}`); continue; }
+      if (/^lock:.+$/.test(t.on)) continue;
+      problems.push(`${id}: ${riddleAction} runs on ${t.on}, which is neither the end of a conversation (talked:<npc>) nor a word-lock (lock:<id>)`);
     }
   }
   for (const p of posers) if (!openers.has(p)) problems.push(`npc/state ${p} poses ${riddleToken} but no stage in that dialogueState opens the riddle after that conversation`);

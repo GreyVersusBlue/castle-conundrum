@@ -44,6 +44,7 @@ const THREE_URL = '/Projects/Castle%20Conundrum/libs/three.module.js';
 const TOL = 0.01;
 
 const config = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/scene-config.json'), 'utf8'));
+const riddleText = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/riddle.json'), 'utf8')).riddle;
 const measured = new Map();
 const plan = makePlan(config, (rel) => {
   if (!measured.has(rel)) measured.set(rel, partsOf(path.join(ROOT, rel)));
@@ -119,6 +120,46 @@ try {
     }
   }
   if (!failures) pass(`every piece within ${TOL} m of its plan box, worst ${worst.toFixed(4)} m on ${worstId}`);
+
+  /* ------------------------------------------------ the muniment word-lock ---
+   * Phase 4 took the riddle off the Scholar and carved it over the muniment
+   * room's door, which made a door an interaction target for the first time. The
+   * Node suites can see the graph (test/quest.mjs) and the geometry
+   * (test/layout.mjs) and neither can see the wiring between them: the prompt,
+   * the facing test, the line of sight to a leaf that hangs off a hinge at its
+   * own edge, and E reaching the quest.
+   *
+   * WHY THIS IS ALLOWED HERE AND NOT UNDER #53. Nothing below moves or is timed.
+   * The camera is placed, not walked; two frames are waited for so the render
+   * loop's own interaction.update() runs; and what is read back is a string in
+   * the DOM. A software rasteriser puts the camera exactly where a GPU does. The
+   * WALK to this door is play-castle.mjs's, and stays there.
+   */
+  console.log('');
+  const lock = await page.evaluate(async () => {
+    // Two metres out in front of the muniment room's door, inside the King's
+    // Hall, looking at it. YXZ yaw 0 faces -z.
+    window.__cam.position.set(21, 1.7, -12);
+    window.__cam.rotation.set(0, -0.026, 0, 'YXZ');
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    const el = document.getElementById('interact-prompt');
+    const prompt = el && !el.classList.contains('hidden') ? el.textContent.trim() : null;
+    document.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyE' }));
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    const overlay = document.getElementById('riddle-overlay');
+    return {
+      prompt,
+      riddleOpen: overlay && !overlay.classList.contains('hidden'),
+      riddleText: document.getElementById('riddle-text')?.textContent?.trim() ?? null,
+      stage: window.__quest?.stage ?? null,
+    };
+  });
+  if (!lock.prompt) fail('standing two metres in front of the muniment room\'s door, looking at it, offers no prompt — the leaf is not an interaction target, or nothing can see it');
+  else if (!/word-lock/i.test(lock.prompt)) fail(`the door prompts "${lock.prompt}", which is not its own prompt`);
+  else pass(`the door prompts "${lock.prompt}"`);
+  if (!lock.riddleOpen) fail(`E at the word-lock opened no riddle (stage ${lock.stage})`);
+  else if (lock.riddleText !== riddleText) fail(`the overlay shows ${JSON.stringify(lock.riddleText)}, and riddle.json says ${JSON.stringify(riddleText)}`);
+  else pass('E at it opens the riddle overlay with riddle.json\'s riddle');
 } catch (err) {
   fail(`the run threw: ${err && err.message ? err.message : err}`);
 } finally {

@@ -74,6 +74,17 @@ export class QuestManager {
   /** True once the graph is in a terminal stage. main.js reads this. */
   get victory() { return this.graph.done; }
 
+  /**
+   * Wire into InteractionSystem.onInteract for a word-locked door. The graph
+   * decides whether anything happens: pressing E at the muniment room's lock in
+   * the stage that listens for it opens the riddle, and pressing E at it after
+   * the word is answered does nothing at all, because the stage that listened
+   * has been left behind.
+   */
+  handleLock(id) {
+    this._apply(this.graph.dispatch(`lock:${id}`));
+  }
+
   /** Wire into InteractionSystem.onInteract */
   handleInteract(npc) {
     npc.talking = true;

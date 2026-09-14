@@ -221,6 +221,48 @@ for (const [name, spec] of Object.entries(config.materials)) {
   else pass(`material "${name}": diffuse, normal and ${third[0]}`);
 }
 
+/* --------------------------------- 3c: every plain material is a colour ---
+ * The opposite shape, and the reason `plainMaterials` is a second section rather
+ * than two loose entries in the first. Phase 4 needed two surfaces the stone list
+ * has no map for — the cell's iron bars and the wool cloak over the laundry crate
+ * — and putting a colour-only entry in `materials` would have meant weakening the
+ * rail above to "a complete set, unless it is not". So these live apart and carry
+ * the opposite assertion: a colour, and no path to anything.
+ */
+console.log('\nevery plain material is a colour and nothing else');
+for (const [name, spec] of Object.entries(config.plainMaterials || {})) {
+  if (!/^#[0-9a-fA-F]{6}$/.test(spec.color || '')) fail(`plain material "${name}" has no six-digit hex \`color\``);
+  const maps = Object.entries(spec).filter(([, v]) => typeof v === 'string' && v.includes('/'));
+  if (maps.length) fail(`plain material "${name}" names ${maps.map(([k]) => k).join(' and ')} — anything with a map belongs in \`materials\`, where the complete-set rail can see it`);
+  else pass(`plain material "${name}": ${spec.color}`);
+}
+
+/* ------------------------------ 3d: everything built names a real material ---
+ * Every wall run, drum, ground, room floor and door leaf names a material by
+ * string. A typo in one of them throws in the browser at build time, inside a
+ * promise, after the loading bar has already run — and nowhere in Node. There
+ * are 28 runs, 8 drums and 14 rooms now, which is 50 strings nobody reads.
+ */
+console.log('\nevery built thing names a material that exists');
+{
+  const known = new Set([...Object.keys(config.materials), ...Object.keys(config.plainMaterials || {})]);
+  const named = [];
+  for (const w of config.walls) named.push([w.material, `wall run ${w.id}`]);
+  for (const d of config.drums) {
+    named.push([d.material, `drum ${d.id}`]);
+    const door = d.interior?.door;
+    if (door?.leaf) named.push([door.leaf.material, `${d.id}'s door leaf`]);
+    if (door?.bars) named.push([door.bars.material, `${d.id}'s bars`]);
+  }
+  named.push([config.ground.base.material, 'the base ground']);
+  for (const patch of config.ground.patches || []) named.push([patch.material, `ground patch ${patch.id}`]);
+  for (const r of config.rooms || []) if (r.floor) named.push([r.floor, `${r.id}'s floor`]);
+  for (const b of config.builtProps || []) named.push([b.material, `built prop ${b.id}`]);
+  const bad = named.filter(([m]) => !known.has(m));
+  for (const [m, where] of bad) fail(`${where} names material "${m}", which scene-config.json does not define`);
+  if (!bad.length) pass(`${named.length} material names across the walls, drums, doors, grounds, floors and built props, every one of them defined`);
+}
+
 /* ------------------------------------------------- 4: nothing dead on disk ---
  * The reverse of checks 1 and 2. Those ask "does every reference resolve?"; this
  * asks "is every file referenced?", which is the question nobody was asking when

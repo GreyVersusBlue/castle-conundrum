@@ -50,8 +50,12 @@ const boundsOf = (rel) => {
 
 const plan = makePlan(config, boundsOf);
 const walk = walkability(plan);
+const mystery = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/mystery.json'), 'utf8'));
 
 const f2 = (n) => n.toFixed(2);
+/** How many cells the player can stand on within `within` metres of a point. */
+const standableNear = (x, z, within = 1.5) =>
+  walk.cells.filter(c => Math.hypot((c.i * GRID + GRID / 2) - x, (c.j * GRID + GRID / 2) - z) <= within).length;
 const stone = plan.pieces.filter(p => p.kind === 'wall' || p.kind === 'tower');
 const props = plan.pieces.filter(p => p.kind === 'prop');
 
@@ -91,24 +95,40 @@ if (!failures) pass(`${props.length} interior props, none of them inside any of 
  * stone; a margin much over 0.3 m is the thing this row was opened about. Read
  * the FAIL and pick a tile, do not widen the band to make it green.
  *
- * The two faces are read off the plan's own great-hall room rather than typed
- * in, so a phase that moves the hall's side walls moves this check with them.
+ * The faces are measured off the stone rather than typed in, so a phase that
+ * moves the hall's side walls moves this check with them.
  */
-const hall = plan.rooms.find(r => r.id === 'great-hall');
-if (!hall) fail('no great-hall in config.rooms — nothing to measure the cabinet against');
 const MIN_GAP = 0.02, MAX_GAP = 0.30;
 
+/* THE FACE, NOT THE ROOM BOUNDARY, and that is the Phase 4 correction. This read
+ * `hall.bounds.min.x` and `hall.bounds.max.x`, which were the same numbers as
+ * the walls while every wall of the Great Hall was a curtain run on the room's
+ * own tile edge. The hall has a built partition on its east side now, and an
+ * interior partition is centred ON the tile edge, so half its thickness stands
+ * inside the room and the room's boundary is half a metre out in the air. What
+ * "against the wall" means is against the stone, so the stone is what this
+ * measures: whichever piece is nearest in x while sharing the prop's z band. */
+const faceBeside = (prop, dir) => {
+  let best = null;
+  for (const st of stone) for (const b of st.boxes) {
+    if (Math.min(b.max.z, prop.box.max.z) - Math.max(b.min.z, prop.box.min.z) <= 0) continue;
+    if (dir < 0 ? b.max.x > prop.box.min.x : b.min.x < prop.box.max.x) continue;
+    const face = dir < 0 ? b.max.x : b.min.x;
+    if (best === null || (dir < 0 ? face > best.face : face < best.face)) best = { face, id: st.id };
+  }
+  return best;
+};
+
 console.log('\nthe cabinet and the commode against their side walls');
-for (const [name, face, edge] of hall ? [
-  ['GothicCabinet_01', hall.bounds.min.x, 'min'],
-  ['GothicCommode_01', hall.bounds.max.x, 'max'],
-] : []) {
+for (const [name, dir] of [['GothicCabinet_01', -1], ['GothicCommode_01', 1]]) {
   const prop = props.find(p => p.id === name);
   if (!prop) { fail(`${name} is not in interiorProps — nothing to measure`); continue; }
-  const gap = edge === 'min' ? prop.box.min.x - face : face - prop.box.max.x;
-  if (gap < MIN_GAP) fail(`${name} stands ${gap.toFixed(3)} m from the hall wall at x ${face} — its back is in the stone`);
-  else if (gap > MAX_GAP) fail(`${name} stands ${gap.toFixed(3)} m off the hall wall at x ${face}, over the ${MAX_GAP} m this room reads as "against the wall"`);
-  else pass(`${name} stands ${gap.toFixed(3)} m off the wall at x ${face}`);
+  const near = faceBeside(prop, dir);
+  if (!near) { fail(`${name} has no stone either side of it in x — the hall has lost a wall`); continue; }
+  const gap = dir < 0 ? prop.box.min.x - near.face : near.face - prop.box.max.x;
+  if (gap < MIN_GAP) fail(`${name} stands ${gap.toFixed(3)} m from ${near.id} at x ${near.face} — its back is in the stone`);
+  else if (gap > MAX_GAP) fail(`${name} stands ${gap.toFixed(3)} m off ${near.id} at x ${near.face}, over the ${MAX_GAP} m this room reads as "against the wall"`);
+  else pass(`${name} stands ${gap.toFixed(3)} m off ${near.id} at x ${near.face}`);
 }
 
 /* The column each one had to get past, measured rather than restated: whichever
@@ -130,15 +150,142 @@ for (const name of ['GothicCabinet_01', 'GothicCommode_01']) {
 
 /* ------------------------------------------ 3: every room can be walked to ---
  * The plan's rooms against the walkability flood fill from the spawn. A room
- * nobody can reach is a room that may as well not be built, and the shape of
- * this castle is about to change in four consecutive phases.
+ * nobody can reach is a room that may as well not be built, and this is the
+ * check Phase 4's deliberate break is aimed at: wall a doorway shut and the room
+ * behind it names itself here.
+ *
+ * TWO OF THE FOURTEEN ARE NOT WALKED INTO, AND THAT IS THE POINT OF THEM. The
+ * muniment room is behind the word-lock until the riddle is answered, and the
+ * cell is behind bars that never open. Both are asserted below rather than
+ * excused: the muniment room opens when the lock does and not before, and the
+ * cell stays shut while the player can stand at its bars and talk through them.
  */
 console.log(`\nwalkability: ${walk.cells.length} cells on a ${GRID} m grid from the spawn`);
 if (!walk.started) fail(`the spawn at ${config.spawn.position} stands on nothing the grid calls a floor`);
 else pass(`the spawn at [${config.spawn.position.join(', ')}] stands on a floor`);
-for (const room of walk.rooms()) {
-  if (!room.reachable) fail(`${room.id} (${room.ward} ward, level ${room.level}) cannot be reached on foot from the spawn — 0 standable cells in x ${room.bounds.min.x}..${room.bounds.max.x}, z ${room.bounds.min.z}..${room.bounds.max.z}`);
-  else pass(`${room.id} reachable, ${room.cells} cells`);
+const rooms = walk.rooms();
+if (rooms.length !== 14) fail(`${rooms.length} rooms in the plan, not the fourteen WISHLIST.md's room table names`);
+
+/* WHICH ROOMS ARE SHUT IS MYSTERY.JSON'S ANSWER, NOT THE CASTLE'S. The first
+ * version of this took the expectation from `room.locked`, which the plan derives
+ * from the very field being tested — so shipping the muniment room's leaf
+ * `closed: false` moved the expectation with the break and the suite stayed green
+ * (#34, and #147: a claim the arithmetic cannot distinguish). The mystery is the
+ * independent half: `locks` names the rooms a riddle opens and the cell carries
+ * `barred`, and those are facts about the crime, not about the geometry. */
+const expected = new Map(rooms.map(r => {
+  const m = mystery.rooms.find(x => x.id === r.id && x.level === 0);
+  const lock = (mystery.locks ?? []).find(l => l.room === r.id);
+  return [r.id, lock ? 'riddle' : (m && m.barred ? 'bars' : null)];
+}));
+for (const room of rooms) {
+  const want = expected.get(room.id);
+  const shut = `x ${room.bounds.min.x}..${room.bounds.max.x}, z ${room.bounds.min.z}..${room.bounds.max.z}`;
+  if (room.locked !== want) {
+    fail(`${room.id} is ${room.locked ? `shut with ${room.locked}` : 'open'} in scene-config.json and ${want ? `shut with ${want}` : 'open'} in mystery.json`);
+  }
+  if (want) {
+    if (room.reachable) fail(`${room.id} is reachable from the spawn with its ${want === 'bars' ? 'bars in place' : 'word-lock unanswered'} — ${room.cells} standable cells in ${shut}`);
+    else pass(`${room.id} is shut (${want}), 0 cells`);
+  } else if (!room.reachable) {
+    fail(`${room.id} (${room.ward} ward, level ${room.level}) cannot be reached on foot from the spawn — 0 standable cells in ${shut}`);
+  } else {
+    pass(`${room.id} reachable, ${room.cells} cells`);
+  }
+}
+
+/* --------------------------------------- 3b: the word-lock is what shuts it ---
+ * Flood a second time with the muniment room's leaf forced open. The room has to
+ * come alive and nothing else may move: a lock that opens the castle rather than
+ * one room is not a lock. This is the opposite assertion to check 3's "muniment
+ * is shut", and deleting either leaves a hole — without check 3 the door could
+ * stand open from the start, without this one it could be a wall.
+ */
+console.log('\nthe muniment room, with the word-lock answered');
+{
+  const unlocked = walkability(makePlan(config, boundsOf, { opened: ['muniment'] })).rooms();
+  const mun = unlocked.find(r => r.id === 'muniment');
+  if (!mun) fail('no muniment room in the plan');
+  else if (!mun.reachable) fail('the muniment room is still unreachable with its leaf open — the lock is not what was shutting it');
+  else pass(`the muniment room opens to ${mun.cells} cells when the word-lock does`);
+  const moved = unlocked.filter(r => r.id !== 'muniment' && r.reachable !== rooms.find(x => x.id === r.id).reachable);
+  if (moved.length) fail(`opening the word-lock also opened ${moved.map(r => r.id).join(', ')} — it is not one room's door`);
+  else pass('every other room is exactly as it was');
+}
+
+/* ------------------------------------------------- 3c: the bars are the door ---
+ * The cell is the one ground room the player never enters, and the mystery's
+ * clue rests on talking to the man inside through the bars. So both halves are
+ * facts to hold: nothing standable inside (check 3 above), and somewhere to
+ * stand outside within arm's reach of them.
+ */
+console.log('\nthe cell');
+{
+  const bars = plan.pieces.find(p => p.built === 'bars');
+  if (!bars) fail('no bars in the plan — the cell has no door at all');
+  else {
+    const bx = (bars.box.min.x + bars.box.max.x) / 2, bz = (bars.box.min.z + bars.box.max.z) / 2;
+    const near = standableNear(bx, bz);
+    if (!near) fail(`nothing within 1.5 m of the cell's bars at (${f2(bx)}, ${f2(bz)}) can be reached — the player cannot get close enough to talk through them`);
+    else pass(`${near} standable cells within 1.5 m of the bars at (${f2(bx)}, ${f2(bz)})`);
+  }
+}
+
+/* ------------------------- 3d: the castle's rooms and the mystery's are one ---
+ * `data/mystery.json` puts twelve people and ten pieces of evidence in rooms by
+ * id, and `data/scene-config.json` builds rooms by id. Nothing made those two
+ * lists agree until now; Phase 1 wrote room ids that the scene config did not
+ * have (`clerk-office` against `clerks-office`, `lodge` against `masons-lodge`)
+ * and nothing said so. They are the same fourteen ids now and this is what keeps
+ * them that way. The four level-0 rooms mystery.json marks `open` are the two
+ * wards, the barbican and the garden — ground, not rooms with doors.
+ */
+console.log('\nthe fourteen rooms, against mystery.json');
+{
+  const want = mystery.rooms.filter(r => r.level === 0 && !r.open).map(r => r.id).sort();
+  const got = plan.rooms.map(r => r.id).sort();
+  const missing = want.filter(id => !got.includes(id));
+  const extra = got.filter(id => !want.includes(id));
+  for (const id of missing) fail(`mystery.json puts people or evidence in "${id}" and the castle has no such room`);
+  for (const id of extra) fail(`the castle builds a room "${id}" that the mystery has never heard of`);
+  if (!missing.length && !extra.length) pass(`${got.length} rooms, the same ids in both files`);
+  for (const r of plan.rooms) {
+    const m = mystery.rooms.find(x => x.id === r.id && x.level === 0);
+    if (m && m.ward !== r.ward) fail(`${r.id} is in the ${r.ward} ward in scene-config.json and the ${m.ward} ward in mystery.json`);
+  }
+}
+
+/* ------------------------------ 3e: the evidence has something to stand on ---
+ * Every level-0 row in mystery.json's `evidence` names a room and a prop. Phase
+ * 7 makes them examinable; Phase 4 owes them an object in the right room, and
+ * this is the check that the object is where the mystery thinks it is rather
+ * than somewhere that merely looked right in a screenshot.
+ */
+console.log('\nthe evidence the mystery names, as objects');
+for (const e of mystery.evidence.filter(e => e.level === 0)) {
+  const piece = plan.pieces.find(p => p.evidence === e.id);
+  const room = plan.rooms.find(r => r.id === e.room);
+  const ground = mystery.rooms.find(r => r.id === e.room && r.level === 0 && r.open);
+  if (!piece) { fail(`evidence "${e.id}" is in ${e.room} and nothing in the castle carries \`evidence: "${e.id}"\``); continue; }
+  if (!room && !ground) { fail(`evidence "${e.id}" names room "${e.room}", which the castle does not build`); continue; }
+  const cx2 = (piece.box.min.x + piece.box.max.x) / 2, cz2 = (piece.box.min.z + piece.box.max.z) / 2;
+  if (piece.model && !piece.model.endsWith(e.prop)) { fail(`evidence "${e.id}" is ${piece.model}, and mystery.json says ${e.prop}`); continue; }
+  if (piece.built === 'gate-leaf' || piece.built === 'bars') {
+    // A room's own door stands in its wall, which is outside the room's bounds by
+    // half the ring's thickness. What it has to be is that room's door.
+    if (piece.id !== e.room && piece.id !== `${e.room}-bars`) fail(`evidence "${e.id}" is the door "${piece.id}", which is not ${e.room}'s`);
+    else pass(`${e.id}: ${piece.id}, ${e.room}'s own door`);
+  } else if (room) {
+    const inside = cx2 >= room.bounds.min.x && cx2 <= room.bounds.max.x && cz2 >= room.bounds.min.z && cz2 <= room.bounds.max.z;
+    if (!inside) fail(`evidence "${e.id}" stands at (${f2(cx2)}, ${f2(cz2)}), outside ${e.room} (x ${room.bounds.min.x}..${room.bounds.max.x}, z ${room.bounds.min.z}..${room.bounds.max.z})`);
+    else pass(`${e.id}: ${piece.id} in ${e.room}`);
+  } else {
+    // Open ground has no bounds to be inside. What it has instead is that the
+    // player can walk up to it, which a rectangle would not have told us anyway.
+    const near = standableNear(cx2, cz2);
+    if (!near) fail(`evidence "${e.id}" stands at (${f2(cx2)}, ${f2(cz2)}) in the ${e.room}, with nothing standable within 1.5 m of it`);
+    else pass(`${e.id}: ${piece.id} in the ${e.room}, ${near} cells within reach`);
+  }
 }
 
 /* ---------------------------------------------- 4: the castle is shut in ---

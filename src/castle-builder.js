@@ -74,13 +74,126 @@ function mesh(geo, material) {
   return m;
 }
 
-/** One wall run: the plan's box, as the box it says it is. */
-function buildRun(box, material, metres) {
+/** One box of built stone: the plan's box, as the box it says it is. */
+function buildBox(box, material, metres) {
   const w = box.max.x - box.min.x, h = box.max.y - box.min.y, d = box.max.z - box.min.z;
   const geo = secondUV(worldUVsOnBox(new THREE.BoxGeometry(w, h, d), w, h, d, metres));
   const m = mesh(geo, material);
   m.position.set((box.min.x + box.max.x) / 2, (box.min.y + box.max.y) / 2, (box.min.z + box.max.z) / 2);
   return m;
+}
+
+/**
+ * One wall run: every box the plan cut it into. A solid run is one box and is
+ * still one mesh; a run with a doorway is the stone either side of it and the
+ * lintel over it, and those three boxes are the plan's, not this file's. The
+ * group's bounds are the run's whole box because the lintel spans the opening,
+ * which is what test/plan-vs-scene.mjs compares against.
+ */
+function buildRun(boxes, material, metres) {
+  if (boxes.length === 1) return buildBox(boxes[0], material, metres);
+  const group = new THREE.Group();
+  for (const b of boxes) group.add(buildBox(b, material, metres));
+  return group;
+}
+
+/**
+ * A section of an annulus: the outer face, the inner face, and a flat ring at
+ * each end of the y range that is not buried in the floor or in the section
+ * above it. Four pieces at most, and every vertex sits at exactly the angles
+ * three's CylinderGeometry puts them at, which is why a doorway's arc has to
+ * start and end on a vertex (src/castle-plan.js's doorArc).
+ */
+function ringSection(inner, outer, y0, y1, thetaStart, thetaLength, segs, material, metres, caps) {
+  const group = new THREE.Group();
+  const h = y1 - y0, mid = (y0 + y1) / 2;
+  for (const r of [outer, inner]) {
+    const geo = secondUV(worldUVsOnCylinder(
+      new THREE.CylinderGeometry(r, r, h, segs, 1, true, thetaStart, thetaLength),
+      r, h, segs, metres));
+    // The inner face is the same shell turned outside in, by reversing its
+    // winding and negating its normals rather than by cloning the material with
+    // `side: BackSide`. loadPBRMaterial hands back a material and fills its maps
+    // in later, from three callbacks; a clone taken here would be a copy of the
+    // untextured placeholder and would stay grey for the life of the page.
+    if (r === inner) flipInward(geo);
+    const m = mesh(geo, material);
+    m.position.y = mid;
+    group.add(m);
+  }
+  for (const y of caps) {
+    const m = new THREE.Mesh(ringCap(inner, outer, y, thetaStart, thetaLength, segs, metres, y === y1), material);
+    m.receiveShadow = true;
+    group.add(m);
+  }
+  return group;
+}
+
+/**
+ * The flat annulus at the top of a ring section, and the soffit under a lintel.
+ *
+ * NOT `RingGeometry`, AND THAT IS NOT A PREFERENCE. RingGeometry lays its
+ * vertices out as `(r cos t, r sin t)` in its own xy plane and has to be laid
+ * flat by a rotation; CylinderGeometry lays its out as `(r sin t, r cos t)` in
+ * xz and needs none. The two conventions differ by a quarter turn and a
+ * reflection, so a ring given the shell's own `thetaStart` covers a different
+ * quarter of the tower than the wall it is meant to cap — and it covers the
+ * doorway, which is how this was found: deleting the lintel over a doorway on
+ * purpose left test/plan-vs-scene.mjs green, because the misplaced cap was
+ * holding the drum's bounds up from the wrong side (#34). Built from the same
+ * `sin, cos` the shells and the plan's collider sectors use, the cap spans its
+ * own arc and nothing else.
+ */
+function ringCap(inner, outer, y, thetaStart, thetaLength, segs, metres, up) {
+  const pos = [], uvs = [], norm = [], idx = [];
+  const step = thetaLength / segs;
+  for (let i = 0; i <= segs; i++) {
+    const t = thetaStart + i * step, sn = Math.sin(t), cs = Math.cos(t);
+    for (const r of [inner, outer]) {
+      pos.push(r * sn, y, r * cs);
+      uvs.push((r * sn) / metres, (r * cs) / metres);
+      norm.push(0, up ? 1 : -1, 0);
+    }
+  }
+  for (let i = 0; i < segs; i++) {
+    const a = i * 2, b = a + 1, c = a + 2, d = a + 3;
+    if (up) idx.push(a, b, d, a, d, c);
+    else idx.push(a, d, b, a, c, d);
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
+  geo.setAttribute('normal', new THREE.Float32BufferAttribute(norm, 3));
+  geo.setIndex(idx);
+  return secondUV(geo);
+}
+
+/**
+ * The face of stone at each side of a doorway cut through a ring. A 0.02 m box
+ * rather than a plane, because the two jambs face opposite ways and a plane is
+ * only visible from one of them.
+ */
+function ringJamb(inner, outer, height, theta, material) {
+  const m = mesh(new THREE.BoxGeometry(outer - inner, height, 0.02), material);
+  const t = theta * Math.PI / 180, r = (inner + outer) / 2;
+  m.position.set(r * Math.sin(t), height / 2, r * Math.cos(t));
+  m.rotation.y = t + Math.PI / 2;
+  return m;
+}
+
+/** Turn a shell outside in: reverse every triangle and negate every normal. */
+function flipInward(geo) {
+  const idx = geo.index;
+  for (let i = 0; i < idx.count; i += 3) {
+    const a = idx.getX(i);
+    idx.setX(i, idx.getX(i + 2));
+    idx.setX(i + 2, a);
+  }
+  idx.needsUpdate = true;
+  const n = geo.attributes.normal;
+  for (let i = 0; i < n.count; i++) n.setXYZ(i, -n.getX(i), -n.getY(i), -n.getZ(i));
+  n.needsUpdate = true;
+  return geo;
 }
 
 /**
@@ -91,12 +204,38 @@ function buildRun(box, material, metres) {
  */
 function buildDrum(d, material, metres) {
   const group = new THREE.Group();
-  const geo = secondUV(worldUVsOnCylinder(
-    new THREE.CylinderGeometry(d.radius, d.radius, d.height, d.segments),
-    d.radius, d.height, d.segments, metres));
-  const tower = mesh(geo, material);
-  tower.position.set(d.cx, d.height / 2, d.cz);
-  group.add(tower);
+  if (d.inner) {
+    // A ring, and a doorway in it. Everything but the doorway's arc runs the
+    // tower's full height; over the doorway the same ring runs from the opening's
+    // head to the top, which is the lintel and is what keeps the drum's bounds
+    // exactly what the plan says they are.
+    const step = 360 / d.segments;
+    const arc = d.door ? d.door.arc : 0;
+    const from = d.door ? d.door.from : 0;
+    const wallSegs = d.segments - (d.door ? d.door.count : 0);
+    const shell = new THREE.Group();
+    if (wallSegs > 0) {
+      shell.add(ringSection(d.inner, d.radius, 0, d.height,
+        THREE.MathUtils.degToRad(from + arc), THREE.MathUtils.degToRad(360 - arc),
+        wallSegs, material, metres, [d.height]));
+    }
+    if (d.door) {
+      shell.add(ringSection(d.inner, d.radius, d.door.height, d.height,
+        THREE.MathUtils.degToRad(from), THREE.MathUtils.degToRad(arc),
+        d.door.count, material, metres, [d.door.height, d.height]));
+      shell.add(ringJamb(d.inner, d.radius, d.door.height, from, material));
+      shell.add(ringJamb(d.inner, d.radius, d.door.height, from + arc, material));
+    }
+    shell.position.set(d.cx, 0, d.cz);
+    group.add(shell);
+  } else {
+    const geo = secondUV(worldUVsOnCylinder(
+      new THREE.CylinderGeometry(d.radius, d.radius, d.height, d.segments),
+      d.radius, d.height, d.segments, metres));
+    const tower = mesh(geo, material);
+    tower.position.set(d.cx, d.height / 2, d.cz);
+    group.add(tower);
+  }
 
   if (d.turret) {
     const t = d.turret;
@@ -125,9 +264,12 @@ function buildDrum(d, material, metres) {
  * ward. Offsetting the depth value moves nothing: the plan box, the surface and
  * the collider grid all still see one floor at y 0.
  */
-function buildGround(box, material, metres, patch = false) {
+function buildGround(box, material, metres, patch = false, disc = null) {
   const w = box.max.x - box.min.x, d = box.max.z - box.min.z;
-  const geo = new THREE.PlaneGeometry(w, d);
+  // A tower's floor is round. 48 segments because a multiple of four puts a
+  // vertex on each axis, which is what makes the disc's bounds exactly the square
+  // the plan hands over.
+  const geo = disc ? new THREE.CircleGeometry(disc.radius, 48) : new THREE.PlaneGeometry(w, d);
   const uv = geo.attributes.uv;
   for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * (w / metres), uv.getY(i) * (d / metres));
   uv.needsUpdate = true;
@@ -206,6 +348,37 @@ function buildGateLeaf({ width, springline, archRadius, thickness }, material) {
   const group = new THREE.Group();
   group.add(mesh);
   return group;
+}
+
+/**
+ * The cell's bars: uprights across the opening and a rail top and bottom, inside
+ * the plate the plan measured. The two outer uprights are flush with its ends and
+ * the rails span it, so the group's bounds are that plate exactly.
+ */
+function buildBars({ width, height, thickness, count }, material) {
+  const group = new THREE.Group();
+  const bar = thickness;
+  const span = width - bar;
+  for (let i = 0; i < count; i++) {
+    const g = new THREE.BoxGeometry(bar, height, bar);
+    const m = mesh(g, material);
+    m.position.set(-span / 2 + (span * i) / (count - 1), height / 2, 0);
+    group.add(m);
+  }
+  for (const y of [height - bar / 2, bar / 2]) {
+    const m = mesh(new THREE.BoxGeometry(width, bar, thickness), material);
+    m.position.set(0, y, 0);
+    group.add(m);
+  }
+  return group;
+}
+
+/** A built prop with no model: a box of a named size. */
+function buildSlab(box, material) {
+  const w = box.max.x - box.min.x, h = box.max.y - box.min.y, d = box.max.z - box.min.z;
+  const m = mesh(new THREE.BoxGeometry(w, h, d), material);
+  m.position.set((box.min.x + box.max.x) / 2, (box.min.y + box.max.y) / 2, (box.min.z + box.max.z) / 2);
+  return m;
 }
 
 /**
@@ -293,12 +466,24 @@ export class CastleBuilder {
     return entry;
   }
 
-  /** One MeshStandardMaterial per named stone, shared by every piece using it. */
+  /**
+   * One MeshStandardMaterial per named stone, shared by every piece using it.
+   * `plainMaterials` are the colour-only ones — the cell's bars and the cloak —
+   * which have no texture set on disk and are kept out of `materials` so that
+   * section can go on meaning "a complete diffuse, normal and arm/rough set".
+   */
   material(name) {
     if (!this.materials.has(name)) {
       const spec = this.config.materials[name];
-      if (!spec) throw new Error(`[Castle Conundrum] no material named "${name}" in scene-config.json`);
-      this.materials.set(name, loadPBRMaterial(spec, 1, spec.fallbackColor || '#8a8175'));
+      const plain = this.config.plainMaterials && this.config.plainMaterials[name];
+      if (!spec && !plain) throw new Error(`[Castle Conundrum] no material named "${name}" in scene-config.json`);
+      this.materials.set(name, spec
+        ? loadPBRMaterial(spec, 1, spec.fallbackColor || '#8a8175')
+        : new THREE.MeshStandardMaterial({
+            color: plain.color,
+            roughness: plain.roughness ?? 1,
+            metalness: plain.metalness ?? 0,
+          }));
     }
     return this.materials.get(name);
   }
@@ -311,15 +496,20 @@ export class CastleBuilder {
 
     for (const piece of this.plan.pieces) {
       let obj;
-      if (piece.built === 'run') obj = buildRun(piece.box, this.material(piece.material), metres);
+      // A run may carry its own texture repeat: the interior partitions are 1 m
+      // of wall between two rooms and want a smaller course than a 4 m curtain.
+      const repeat = piece.repeatMetres || metres;
+      if (piece.built === 'run') obj = buildRun(piece.boxes, this.material(piece.material), repeat);
       else if (piece.built === 'drum') obj = buildDrum(piece.drum, this.material(piece.material), metres);
-      else if (piece.built === 'ground') obj = buildGround(piece.box, this.material(piece.material), metres, !!piece.patch);
-      else if (piece.built === 'gate-leaf') obj = buildGateLeaf(this.gateLeafOf(piece.id), this.material(piece.material));
+      else if (piece.built === 'ground') obj = buildGround(piece.box, this.material(piece.material), repeat, !!piece.patch, piece.disc);
+      else if (piece.built === 'gate-leaf') obj = buildGateLeaf(piece.leaf, this.material(piece.material));
+      else if (piece.built === 'bars') obj = buildBars(piece.bars, this.material(piece.material));
+      else if (piece.built === 'slab') obj = buildSlab(piece.box, this.material(piece.material));
       else obj = await loadModel(piece.model);
 
       obj.userData.planId = piece.id;
 
-      if (piece.built === 'run' || piece.built === 'drum' || piece.built === 'ground') {
+      if (piece.built === 'run' || piece.built === 'drum' || piece.built === 'ground' || piece.built === 'slab') {
         // These carry their world position inside their own geometry, so the
         // plan's transform is the identity and there is nothing to apply.
         this.scene.add(obj);
@@ -346,7 +536,10 @@ export class CastleBuilder {
         const spec = this.plan.gates.find((g) => g.id === piece.id);
         this.gates.set(piece.id, {
           id: piece.id, quest: spec.quest, pivot,
-          collider: this.colliders.find((c) => c.id === piece.id) || null,
+          // Every collider the shut leaf is standing in for. A gate in a wall is
+          // its own box; a door in a tower ring is the ring sectors the doorway
+          // was cut from, put back while it is shut.
+          blocks: (spec.blocks || []).map((id) => this.colliders.find((c) => c.id === id)).filter(Boolean),
           // 90 degrees, not the 105 this swung when the leaf was a sphere. A ball
           // does not care how far past flush it goes; a 1.9 m leaf hinged 0.95 m off
           // centre in a 2.0 m opening does — at 105 its outer corner ends up 0.44 m
@@ -354,6 +547,8 @@ export class CastleBuilder {
           // At 90 it stands flat against the jamb with 0.03 m of its thickness in
           // the stone, which is inside the jamb's own relief. test/assets.mjs holds
           // the angle to what the opening can actually take.
+          lock: spec.lock || null,
+          centre: spec.centre ? new THREE.Vector3(...spec.centre) : null,
           closedAngle: THREE.MathUtils.degToRad(spec.shutAngle),
           openAngle: THREE.MathUtils.degToRad(spec.openAngle),
           // A gate the plan placed open is already there; only a shut one animates.
@@ -370,13 +565,6 @@ export class CastleBuilder {
     return this;
   }
 
-  /** The `leaf` block of the gate a plan piece came from. */
-  gateLeafOf(id) {
-    const g = this.config.gates.find((x) => x.id === id);
-    if (!g) throw new Error(`[Castle Conundrum] the plan placed a leaf for "${id}", which config.gates does not name`);
-    return g.leaf;
-  }
-
   /** Call from the render loop. Animates any gate that is opening. */
   update(dt) {
     for (const gd of this.gates.values()) {
@@ -384,21 +572,46 @@ export class CastleBuilder {
       gd.progress = Math.min(1, gd.progress + dt * 0.4);
       const eased = 1 - Math.pow(1 - gd.progress, 3);
       gd.pivot.rotation.y = THREE.MathUtils.lerp(gd.closedAngle, gd.openAngle, eased);
-      if (gd.progress >= 0.25 && gd.collider) {
+      if (gd.progress >= 0.25 && gd.blocks.length) {
         // stop blocking the player once it's meaningfully open
-        const i = this.colliders.indexOf(gd.collider);
-        if (i !== -1) this.colliders.splice(i, 1);
-        gd.collider = null;
+        for (const c of gd.blocks) {
+          const i = this.colliders.indexOf(c);
+          if (i !== -1) this.colliders.splice(i, 1);
+        }
+        gd.blocks = [];
       }
     }
   }
 
   /**
-   * Open the gate a quest hook names. `openGate()` with no argument is the
-   * riddle quest's `openGate` action, and it means the leaf whose `quest` is
-   * "gate" — the east gate onto the walled garden. The west gate carries no
-   * quest at all: the clerk came in through it and the way out of the castle
-   * does not open again (WISHLIST.md's answered question 5).
+   * Every word-locked door, as something InteractionSystem can put a prompt on.
+   * The muniment room's is the only one: the riddle is carved over its lock, and
+   * pressing E at it is what `lock:muniment` in data/quest.json listens for.
+   * A door that has been answered stops offering itself.
+   */
+  locks() {
+    const out = [];
+    for (const gd of this.gates.values()) {
+      if (!gd.lock) continue;
+      out.push({
+        id: gd.id,
+        isLock: true,
+        name: gd.id,
+        prompt: gd.lock,
+        group: gd.pivot,
+        focus: gd.centre,
+        get active() { return !gd.opening && gd.progress < 1; },
+      });
+    }
+    return out;
+  }
+
+  /**
+   * Open the leaf a quest hook names. `openGate()` with no argument is the
+   * quest's `openGate` action, and it means the leaf whose `quest` is "gate".
+   * From Phase 4 that is the muniment room's word-locked door in the King's
+   * Tower, not the east gate: the riddle is the word-lock now, and both barbican
+   * gates are gates that never open again (WISHLIST.md's answered question 5).
    */
   openGate(quest = 'gate') {
     for (const gd of this.gates.values()) {

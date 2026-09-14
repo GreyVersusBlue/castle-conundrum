@@ -1,6 +1,13 @@
-// interaction.js — finds the NPC the player can talk to (proximity + facing +
-// line of sight), shows the "Press E" prompt, and routes E/click into the
-// dialogue system.
+// interaction.js — finds the thing the player can press E at (proximity +
+// facing + line of sight), shows the prompt, and routes E/click into the quest.
+//
+// A TARGET IS NOT ALWAYS AN NPC. Phase 4 put the riddle on the muniment room's
+// word-lock, so a door is a target too. A target is anything with a `group` (the
+// Object3D it is, which is left out of the occluder list so the ray can reach
+// it), a `name`, optionally a `prompt` to show instead of "talk to", optionally
+// a `focus` world point to aim at when the group's own origin is somewhere else
+// — a gate leaf hangs off a hinge at its edge — and optionally an `active`
+// getter, which is how an answered lock stops offering itself.
 
 import * as THREE from 'three';
 
@@ -23,23 +30,28 @@ const SIGHT_MARGIN = 0.05;
 const _target = new THREE.Vector3();
 const _dir = new THREE.Vector3();
 
+/** Where a target is: its own `focus` point, or the origin of its group. */
+const aimAt = (target) => target.focus || target.group.position;
+
 export class InteractionSystem {
   /**
+   * @param targets anything pressable: NPC instances and the doors from
+   *   CastleBuilder.locks().
    * @param scene THREE.Scene — occluder geometry for the line-of-sight test.
    *   Omit it and sight is trivially always clear, i.e. proximity + facing only,
    *   exactly as this behaved before the check existed.
    */
-  constructor(camera, npcs, ui, scene = null) {
+  constructor(camera, targets, ui, scene = null) {
     this.camera = camera;
-    this.npcs = npcs;
+    this.targets = targets;
     this.ui = ui;
     this.scene = scene;
     this.currentTarget = null;
     this.onInteract = null; // set by quest-manager: (npc) => void
 
-    // Everything in the scene except the NPCs themselves. Rebuilt only when the
-    // child count changes, which is once at build time and again when the gate
-    // door detaches.
+    // Everything in the scene except the targets themselves. Rebuilt only when
+    // the child count changes, which is once at build time and again when the
+    // gate door detaches.
     this._sightRay = new THREE.Raycaster();
     this._occluders = null;
     this._occluderCount = -1;
@@ -78,27 +90,28 @@ export class InteractionSystem {
 
     let best = null;
     let bestDist = INTERACT_RANGE;
-    for (const npc of this.npcs) {
-      const to = new THREE.Vector3().subVectors(npc.group.position, camPos);
+    for (const target of this.targets) {
+      if (target.active === false) continue;
+      const to = new THREE.Vector3().subVectors(aimAt(target), camPos);
       to.y = 0;
       const dist = to.length();
       if (dist > bestDist) continue;
       to.normalize();
       if (to.dot(camDir) < FACING_DOT) continue;
-      if (!this.hasLineOfSight(camPos, npc)) continue;
-      best = npc;
+      if (!this.hasLineOfSight(camPos, target)) continue;
+      best = target;
       bestDist = dist;
     }
 
     this.currentTarget = best;
-    this.ui.setInteractPrompt(!!best, best ? `Press E to talk to the ${best.name}` : '');
+    this.ui.setInteractPrompt(!!best, best ? (best.prompt || `Press E to talk to the ${best.name}`) : '');
   }
 
-  /** Scene contents minus the NPC bodies, cached until the child count changes. */
+  /** Scene contents minus the targets, cached until the child count changes. */
   occluders() {
     const kids = this.scene.children;
     if (this._occluderCount === kids.length) return this._occluders;
-    const bodies = new Set(this.npcs.map((n) => n.group));
+    const bodies = new Set(this.targets.map((t) => t.group));
     this._occluders = kids.filter((c) => !bodies.has(c) && c.visible && !c.isLight);
     this._occluderCount = kids.length;
     return this._occluders;
@@ -126,12 +139,13 @@ export class InteractionSystem {
    * already rejected everyone. Most frames raycast nothing; standing next to
    * someone costs two rays against ~150 top-level objects.
    */
-  hasLineOfSight(camPos, npc) {
+  hasLineOfSight(camPos, target) {
     if (!this.scene) return true;
     const occluders = this.occluders();
+    const at = aimAt(target);
 
     for (const h of SIGHT_HEIGHTS) {
-      _target.set(npc.group.position.x, h, npc.group.position.z);
+      _target.set(at.x, target.focus ? at.y : h, at.z);
       const dist = _dir.subVectors(_target, camPos).length();
       if (dist <= SIGHT_MARGIN) return true;
 

@@ -59,7 +59,10 @@ async function init() {
   }
 
   // --- Interaction + quest ---
-  const interaction = new InteractionSystem(camera, npcs, ui, scene);
+  // The word-locked doors are targets too: the riddle is carved over the
+  // muniment room's lock and pressing E at it is what opens the overlay.
+  const locks = castle.locks();
+  const interaction = new InteractionSystem(camera, [...npcs, ...locks], ui, scene);
   const auto = slot.autosave(() => {
     state.player = { x: camera.position.x, y: camera.position.y, z: camera.position.z, yaw: camera.rotation.y };
     return state;
@@ -74,9 +77,10 @@ async function init() {
   });
   window.__save = { slot, state }; // read by play-castle.mjs's reload beat
   window.__quest = quest; // the one game-side hook play-castle.mjs reads; __cam and __scene come from its scene probe
-  interaction.onInteract = (npc) => {
-    npc.facePlayer(camera.position);
-    quest.handleInteract(npc);
+  interaction.onInteract = (target) => {
+    if (target.isLock) { quest.handleLock(target.id); return; }
+    target.facePlayer(camera.position);
+    quest.handleInteract(target);
   };
 
   // --- UI flow ---
