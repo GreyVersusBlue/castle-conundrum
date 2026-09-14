@@ -1,8 +1,9 @@
 # Castle Conundrum Feature Wishlist
 
-**Status: this is the v2 plan, written 2026-09-14, and no phase of it has
-shipped.** Seven phases, ranked 1 to 7 in `BACKLOG.md`, each sized to one
-session, each taken in order because each reads what the one before it wrote.
+**Status: this is the v2 plan, written 2026-09-14. Phase 1 shipped the same
+day (PR #306, #421 to #425); Phases 2 to 7 are open, at ranks 1 to 6 in
+`BACKLOG.md`.** Seven phases, each sized to one session, each taken in order
+because each reads what the one before it wrote.
 The game today is `Projects/Castle Conundrum/index.html`: a fifteen minute walk
 across one 28 m courtyard to one riddle, three NPCs, 3,089 lines of code, 29 MB
 of assets. The project's history is the repo root's `HISTORY.md`, under
@@ -567,12 +568,48 @@ that basis, and the ceiling is Devon's number either way):
 
 ## Phase 1: The mystery as data, and the save
 
+**Shipped 2026-09-14, PR #306, under Claude Fable 5.1** (#421 to #425). The
+content above is `data/mystery.json`, `src/mystery.js` validates it and runs
+it in Node, and the page has a save. The page plays exactly the riddle quest
+it played before; this was the sim without the page. What the plan below said
+and what shipped differ in five places, each a locked decision:
+
+- **`npcs.json` keeps the three under `npcs` and adds the twelve under
+  `cast`** (#421), rather than replacing them. The page plays the riddle quest
+  on `talked:scholar` and `talked:guard` until Phase 7, Phase 3 moves the
+  three and Phase 6 removes them, and `play-castle.mjs` walks to two of them
+  by name; replacing them here would have contradicted two later phases and
+  broken 34 beats nothing here can run.
+- **`quest.json` keeps the riddle quest at the top level and carries the v2
+  frame under `frame`** (#422). The save's stage catalog is the union of both
+  graphs. Phase 7 promotes `frame` and deletes the riddle stages.
+- **The Constable hears no accusation at Prime** (`accusation.from`, #423).
+  The clue graph as written above convicts the Clerk in one watch
+  (`wax-matches`, `tally-on-walk`, `lead-sold` are all Prime), which the
+  two-to-three watch rail caught on the plan's own data. The shortest
+  full-ending path is **2 watches and 8 interactions**, not the 3 and 22 the
+  exit line below guessed; the prisoner-on-nothing ending is one ring and one
+  talk.
+- **Thirty-nine clues, not thirty-eight** (#424): the table above has 39 rows,
+  36 on a path and 3 herrings. A press carries a `from` list; a clue may
+  `contradicts` an earlier statement; a clue is on a path if it convicts,
+  contradicts, is a default-state statement, is a herring, or is an ancestor
+  (premise, press key, `requires`) of one that is.
+- **The engine's API grew** (#425): `talk`, `unlock`, `holds`, `npcState` and
+  a `state` getter beyond the list below; `accuse` emits `ask:accuse` itself
+  so the frame reaches `accusing` before a verdict; the fourth ring keeps the
+  watch at Vespers so the save's clamp to four loses nothing.
+
+Every guard-rail below was broken on disk from a green baseline and named its
+break; the table is in PR #306's body and in `HISTORY.md`. `npm run play`'s
+reload beat is written and not run (#53). The plan as written follows.
+
 **Size 1. Claude Fable 5.1.** The content above becomes `data/mystery.json`,
 `src/mystery.js` validates it and runs it in Node, and the page gains a save.
 The page otherwise plays exactly the riddle quest it plays today; this is the
 sim without the page.
 
-- [ ] **`data/mystery.json`.** `watches` (four ids), `rooms` (id, ward, level,
+- [x] **`data/mystery.json`.** `watches` (four ids), `rooms` (id, ward, level,
   name; positions come in Phase 3 from the plan), `clues` (id, kind, title,
   text, `source`: `{npc, state}` for S, `{evidence}` for E, `{premises}` for
   D, `{room, level}` for L; `herring`), `evidence` (id, room, `watches`,
@@ -588,7 +625,7 @@ sim without the page.
   written here rather than in Phase 6 (#419): the file is open anyway, and a
   second pass over twelve entries five phases later buys nothing. Nothing reads
   `tint` until Phase 6; it is data waiting for its renderer.
-- [ ] **`data/quest.json` grows to the frame:** `arrive` (Prime, before the
+- [x] **`data/quest.json` grows to the frame:** `arrive` (Prime, before the
   Constable has spoken), `investigate` (on `talked:constable`), `accusing`
   (on `bell:4` or `ask:accuse`), and one terminal per verdict class
   (`verdict:full`, `verdict:right`, `verdict:wrong`, `verdict:fall`). New
@@ -596,7 +633,7 @@ sim without the page.
   New actions the manager lists: `ringBell`, `openJournal`, `openAccusation`,
   `showEpilogue`. `validateQuest` is unchanged and already allows several
   terminals.
-- [ ] **`src/mystery.js`, pure.** `validateMystery(mystery, npcs, quest)`
+- [x] **`src/mystery.js`, pure.** `validateMystery(mystery, npcs, quest)`
   returns problems; `createMystery({mystery, npcs, state})` returns
   `{discover(clueId), press(npc, clueId), ring(), enter(room, level),
   examine(evidenceId), accuse(who, clueIds), available(npc), stationOf(npc),
@@ -604,7 +641,7 @@ sim without the page.
   is a fixed point: a D clue lands the instant both premises are held, a
   press moves an NPC only if the clue is held and the NPC is in the state
   the press leaves from.
-- [ ] **What the validator rejects,** each with a message that names the id:
+- [x] **What the validator rejects,** each with a message that names the id:
   a clue with no source; a source naming an npc or state not in `npcs.json`;
   an npc state no press and no stage reaches; an evidence in no room, in no
   watch, or in a room the schedule never lets the player reach (Phase 3 wires
@@ -618,7 +655,7 @@ sim without the page.
   a `convicts` list shorter than `needs`; and the two length rails, the
   shortest convicting path under two watches or over three. Plus every
   `{TOKEN}` check `validateAgainstNpcs` does today.
-- [ ] **`test/mystery.mjs`.** Validates; computes discoverability and prints
+- [x] **`test/mystery.mjs`.** Validates; computes discoverability and prints
   the shortest path in watches and interactions; drives `createMystery`
   through the intended path above and asserts the full ending, then the
   prisoner on nothing, the Steward on two, the porter on one (refused), and
@@ -630,7 +667,7 @@ sim without the page.
   (`available at prime, when the sentry cannot be spoken to about it`); drop
   the `herring` flag off `knife-found` (`knife-found: on no path to any
   accusation`). In the CI matrix.
-- [ ] **The save.** `src/save.js` imports `../../../assets/js/gvb-save.js` and
+- [x] **The save.** `src/save.js` imports `../../../assets/js/gvb-save.js` and
   builds one slot: `game: "castle-conundrum"`, `key: "castleConundrumSave_v1"`,
   `version: 1`. The schema, complete now so no later phase adds a field:
   `{stage, watch, clues[], pressed{npc: state[]}, taken[], locks[],
@@ -643,7 +680,7 @@ sim without the page.
   a non-finite coordinate. Saved through `autosave` on every effect the
   manager applies. `test/save.mjs` asserts every rail twice, the repaired
   value and what goes wrong without it, section 10 style.
-- [ ] **The page adopts it,** for the riddle quest: `main.js` loads the slot,
+- [x] **The page adopts it,** for the riddle quest: `main.js` loads the slot,
   begins the graph at the saved stage, restores `riddleWrong` and the player's
   position, and the victory screen's button calls `slot.reset()` before the
   reload. A reload mid-quest resumes mid-quest. `play-castle.mjs` gains one
