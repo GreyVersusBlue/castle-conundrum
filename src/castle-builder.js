@@ -1,20 +1,24 @@
-// castle-builder.js — turns data/scene-config.json into placed geometry.
-// All placement data lives in JSON; this file only interprets it.
-// Also builds the static collision list (world-space AABBs) and the animated gate door.
+// castle-builder.js — loads what src/castle-plan.js says to load, and puts it
+// where the plan says to put it.
+//
+// It computes no transform of its own. Every position, rotation, scale and
+// collider box in this file comes out of `makePlan`, which `test/layout.mjs`
+// reads too, so the suite and the running game cannot disagree about where a
+// wall is. Until 2026-09-14 `layout.mjs` re-implemented this file's placement
+// math in Node and said in its own header that it therefore could not catch a
+// change to it; that whole class of blind spot is what the plan removes.
+//
+// What is still this file's: loading models, building the gate leaf, the
+// hinge's scene graph, and the gate's animation.
 
 import * as THREE from 'three';
 import { loadModel, loadPBRMaterial } from './assets.js';
-
-const _box = new THREE.Box3();
-
-// How much of an interior prop's footprint a surface has to cover before that
-// surface counts as holding it up. See surfaceHeightUnder().
-const SURFACE_COVERAGE = 0.5;
+import { makePlan, tileToWorld } from './castle-plan.js';
 
 /**
  * The gate leaf: a plank door shaped to the archway it hangs in — a rectangle up
  * to `springline`, capped by a semicircle of `archRadius`. Centred on local x=0
- * and grounded at y=0, which is what the hinge math below expects.
+ * and grounded at y=0, which is what the hinge math expects.
  *
  * BUILT RATHER THAN LOADED, and that is the fix rather than an economy. The
  * config used to name `wooden_gate_1k.gltf` as the door's model. Poly Haven ship
@@ -39,6 +43,10 @@ const SURFACE_COVERAGE = 0.5;
  * default hands back the shape's own coordinates, which run -0.95..0.95 across
  * and 0..2.95 up: with RepeatWrapping that tiles a single 1k gate two across and
  * three up. One gate, once, is the point of the map.
+ *
+ * `castle-plan.js`'s `gateLeafParts` describes this same shape as one box from
+ * the same four numbers. If the outline here stops being "width by
+ * springline + archRadius by thickness", that function changes with it.
  */
 function buildGateLeaf({ width, springline, archRadius, thickness }, material) {
   const half = width / 2;
@@ -70,99 +78,79 @@ function buildGateLeaf({ width, springline, archRadius, thickness }, material) {
   return group;
 }
 
+/**
+ * `boundsOf` for the browser: every mesh under a freshly loaded model, as its
+ * own `geometry.boundingBox` plus the matrix its node chain gives it, both in
+ * the model's own root space.
+ *
+ * This is the shape `Box3.setFromObject` consumes internally, handed to the
+ * plan so the plan can produce the same answer without a live object. Not a
+ * single box: three unions per-mesh corner-transformed boxes rather than
+ * measuring vertices, so one box cannot reproduce a rotated model's runtime
+ * bounds. `test/gltf.mjs`'s `partsOf` is the Node half and carries the
+ * measurements.
+ */
+function partsOfObject(root) {
+  root.updateMatrixWorld(true);
+  const toRoot = new THREE.Matrix4().copy(root.matrixWorld).invert();
+  const local = new THREE.Matrix4();
+  const parts = [];
+  root.traverse((o) => {
+    if (!o.isMesh || !o.geometry) return;
+    if (!o.geometry.boundingBox) o.geometry.computeBoundingBox();
+    const bb = o.geometry.boundingBox;
+    local.multiplyMatrices(toRoot, o.matrixWorld);
+    parts.push({
+      min: { x: bb.min.x, y: bb.min.y, z: bb.min.z },
+      max: { x: bb.max.x, y: bb.max.y, z: bb.max.z },
+      matrix: local.elements.slice(),
+    });
+  });
+  return { parts };
+}
+
+/** Every model path `makePlan` will ask about, once each. */
+function modelPaths(config) {
+  const out = new Set();
+  for (const run of config.courtyard.wallRuns) out.add(config.kenneyBase + run.model);
+  for (const p of config.courtyard.placements) out.add(config.kenneyBase + p.model);
+  for (const p of config.interiorProps) out.add(config.polyhavenBase + p.model);
+  return [...out];
+}
+
 export class CastleBuilder {
   constructor(scene, config) {
     this.scene = scene;
     this.config = config;
     this.tile = config.tileSize;
-    this.colliders = []; // { box: THREE.Box3, id?: string }
+    this.plan = null;
+    this.colliders = []; // { box: {min,max} | THREE.Box3, id?: string }
     this.gateDoor = null; // { pivot, openAngle, state }
   }
 
   tileToWorld(tx, tz) {
-    return new THREE.Vector3(tx * this.tile, 0, tz * this.tile);
+    const [x, y, z] = tileToWorld(this.tile, tx, tz);
+    return new THREE.Vector3(x, y, z);
   }
 
   /**
-   * Scale a loaded modular wall/tower piece so its depth (Z) equals tileSize.
-   * Every piece in the kit — wall, wall-half, wall-low, tower, the fortified
-   * gate — is authored 1 unit deep; a "half" piece is half-WIDTH (X) or
-   * half-HEIGHT (Y), never half-depth. Scaling off Z therefore gives every
-   * piece the same 4x factor and every "half" dimension comes out to exactly
-   * half a tile, matching how the wallRuns below space them.
-   *
-   * This used to scale off size.x, which is correct for every piece except
-   * wall-half.glb (0.5 wide, 1 deep): its X is the odd one out, so scaling
-   * from it gave wall-half.glb an 8x factor instead of 4x — 4m wide (right),
-   * but 8m tall and 8m deep, half the texel density of every other wall and
-   * an 8m-thick partition where every other wall in the castle is 4m.
+   * Load every model the config names and measure it, then hand the plan a
+   * `boundsOf` that answers from those measurements. Loads go through
+   * `loadGLTF`'s cache, so the second pass below re-clones rather than re-fetches.
    */
-  normalizeToTile(obj) {
-    _box.setFromObject(obj);
-    const size = new THREE.Vector3();
-    _box.getSize(size);
-    if (size.z > 0.0001) {
-      const s = this.tile / size.z;
-      obj.scale.setScalar(s);
+  async measure() {
+    const measured = new Map();
+    for (const path of modelPaths(this.config)) {
+      measured.set(path, partsOfObject(await loadModel(path)));
     }
-    // sit on the ground
-    _box.setFromObject(obj);
-    obj.position.y -= _box.min.y;
+    return (path) => {
+      const parts = measured.get(path);
+      if (!parts) throw new Error(`[Castle Conundrum] the plan asked for "${path}", which the config never named`);
+      return parts;
+    };
   }
 
-  groundAndCenter(obj) {
-    _box.setFromObject(obj);
-    obj.position.y -= _box.min.y;
-  }
-
-  /**
-   * Scale a loaded model so its height equals tileSize (for the hall columns).
-   * column.glb is 0.2 x 1 x 0.2 in model units -- neither normalizeToTile's
-   * width-driven scale (20x, an absurd 4m-thick stub) nor leaving it at native
-   * scale (a 1m, 20cm-thick stub, out of frame in every screenshot) is right.
-   * Scaling to the same height as a wall tile makes it read as a floor-to-
-   * ceiling support post, which is what a "hall column" is supposed to be.
-   */
-  normalizeHeight(obj) {
-    _box.setFromObject(obj);
-    const size = new THREE.Vector3();
-    _box.getSize(size);
-    if (size.y > 0.0001) obj.scale.setScalar(this.tile / size.y);
-    _box.setFromObject(obj);
-    obj.position.y -= _box.min.y;
-  }
-
-  /**
-   * Height of the highest already-placed surface this object is standing on, or 0
-   * for "nothing under it, stand it on the ground".
-   *
-   * Overlap is a real 2D rectangle test, not a centre-point test: the brass
-   * candleholders are a 1.08 m spread of three separate candlesticks, so a centre
-   * hit says nothing about whether the outer two have anything beneath them.
-   *
-   * But bare overlap is not enough either, and getting that wrong is visible from
-   * the first frame. The gothic statue stands on the floor 1.4 m behind the hall
-   * table and its 1.56 m footprint clips the table's by 0.12 m, so an any-overlap
-   * rule stands the statue on the table; the statue then becomes a 2.29 m surface
-   * that the candleholders clip by 4 cm, and they go on top of *that*. A surface
-   * has to be under most of the object to be holding it up, hence SURFACE_COVERAGE.
-   */
-  surfaceHeightUnder(surfaces, obj) {
-    if (!surfaces.length) return 0;
-    obj.updateMatrixWorld(true);
-    const own = new THREE.Box3().setFromObject(obj);
-    const area = Math.max(1e-6, (own.max.x - own.min.x) * (own.max.z - own.min.z));
-    let best = 0;
-    for (const s of surfaces) {
-      const ox = Math.min(s.max.x, own.max.x) - Math.max(s.min.x, own.min.x);
-      const oz = Math.min(s.max.z, own.max.z) - Math.max(s.min.z, own.min.z);
-      if (ox <= 0 || oz <= 0) continue;
-      if ((ox * oz) / area < SURFACE_COVERAGE) continue;
-      if (s.max.y > best) best = s.max.y;
-    }
-    return best;
-  }
-
+  /** Register something built at runtime rather than placed by the plan. */
   addCollider(obj, id = undefined) {
     obj.updateMatrixWorld(true);
     const box = new THREE.Box3().setFromObject(obj);
@@ -174,117 +162,51 @@ export class CastleBuilder {
   }
 
   async build() {
-    const c = this.config.courtyard;
-    const kBase = this.config.kenneyBase;
-    const pBase = this.config.polyhavenBase;
+    this.plan = makePlan(this.config, await this.measure());
+    // The player walks into the plan's boxes. Nothing here re-measures them.
+    this.colliders = this.plan.colliders.map((c) => ({ id: c.id, box: c.box }));
 
-    // --- Wall runs (Kenney modular pieces, tiled) ---
-    for (const run of c.wallRuns) {
-      for (let i = 0; i < run.count; i++) {
-        const tx = run.start[0] + run.step[0] * i;
-        const tz = run.start[1] + run.step[1] * i;
-        const piece = await loadModel(kBase + run.model);
-        this.normalizeToTile(piece);
-        piece.rotation.y = THREE.MathUtils.degToRad(run.rotationY || 0);
-        const pos = this.tileToWorld(tx, tz);
-        piece.position.x = pos.x;
-        piece.position.z = pos.z;
-        this.scene.add(piece);
-        this.addCollider(piece);
-      }
-    }
+    for (const piece of this.plan.pieces) {
+      const obj = piece.built === 'gate-leaf'
+        ? buildGateLeaf(this.config.gateDoor.leaf, loadPBRMaterial(this.config.gateDoor.textures))
+        : await loadModel(piece.model);
+      const t = piece.transform;
+      obj.scale.setScalar(t.scale);
+      obj.rotation.y = THREE.MathUtils.degToRad(t.rotationY);
+      obj.userData.planId = piece.id;
 
-    // --- Individual placements (towers, gate arch, props, trees) ---
-    for (const p of c.placements) {
-      const obj = await loadModel(kBase + p.model);
-      if (p.model.startsWith('tower') || p.model.startsWith('wall')) {
-        this.normalizeToTile(obj);
-      } else if (p.model.startsWith('column')) {
-        this.normalizeHeight(obj);
-      } else {
-        this.groundAndCenter(obj);
+      if (piece.kind === 'gate-leaf') {
+        // The leaf hangs off a hinge at its own left edge so it swings like a
+        // real gate. The pivot carries the rotation; the leaf sits half a width
+        // along the pivot's local +X. See the plan's gate-leaf block for why the
+        // hinge position needs the cos/sin terms at any rotationY but 0.
+        const pivot = new THREE.Group();
+        pivot.position.set(...piece.pivot.position);
+        pivot.rotation.y = THREE.MathUtils.degToRad(piece.pivot.rotationY);
+        obj.rotation.y = 0; // the pivot owns the rotation now
+        obj.position.set(...piece.pivot.offset);
+        pivot.add(obj);
+        this.scene.add(pivot);
+        this.gateDoor = {
+          pivot,
+          collider: this.colliders.find((c) => c.id === 'gate-door') || null,
+          closedAngle: pivot.rotation.y,
+          // 90 degrees, not the 105 this swung when the leaf was a sphere. A ball
+          // does not care how far past flush it goes; a 1.9 m leaf hinged 0.95 m off
+          // centre in a 2.0 m opening does — at 105 its outer corner ends up 0.44 m
+          // inside the west jamb and all you see of an opened gate is a dark edge.
+          // At 90 it stands flat against the jamb with 0.03 m of its thickness in
+          // the stone, which is inside the jamb's own relief. test/assets.mjs holds
+          // the angle to what the opening can actually take.
+          openAngle: pivot.rotation.y + THREE.MathUtils.degToRad(this.config.gateDoor.openDegrees),
+          progress: 0,
+          opening: false,
+        };
+        continue;
       }
-      obj.rotation.y = THREE.MathUtils.degToRad(p.rotationY || 0);
-      const pos = this.tileToWorld(p.tile[0], p.tile[1]);
-      obj.position.x = pos.x;
-      obj.position.z = pos.z;
+
+      obj.position.set(t.position[0], t.position[1], t.position[2]);
       this.scene.add(obj);
-      if (!p.noCollide) this.addCollider(obj, p.id);
-    }
-
-    // --- Gate door (a built leaf inside the archway, hinged to swing open) ---
-    const g = this.config.gateDoor;
-    const doorModel = buildGateLeaf(g.leaf, loadPBRMaterial(g.textures));
-    this.groundAndCenter(doorModel);
-
-    // Hinge pivot at the door's left edge so it swings like a real gate
-    _box.setFromObject(doorModel);
-    const size = new THREE.Vector3();
-    _box.getSize(size);
-
-    const pivot = new THREE.Group();
-    const gatePos = this.tileToWorld(g.tile[0], g.tile[1]);
-    const rotY = THREE.MathUtils.degToRad(g.rotationY || 0);
-    // The door leaf hangs off the hinge along the pivot's local +X (set below), so
-    // closing it sweeps world offset [0, size.x] through R(rotY) — that range's
-    // world-space midpoint is `size.x/2` rotated by rotY, not size.x/2 along world
-    // X unconditionally. `gatePos.x - size.x / 2` (no rotation term) is only that
-    // midpoint for rotY = 0. This config's gate uses rotY = 180 (matching every
-    // wallRun flanking it, which all rotate 180 too, to face their faces into the
-    // archway) and the un-rotated formula put the whole leaf on the wrong side of
-    // 0 in world X entirely: world x [-5.4, -1.8] against a centered [-2, 2]
-    // archway, never crossing it at any point in the swing. Solving for the pivot
-    // that keeps the leaf's world-space midpoint AT the archway center for any
-    // rotY gives cos/sin of it instead.
-    pivot.position.set(
-      gatePos.x - (size.x / 2) * Math.cos(rotY),
-      0,
-      gatePos.z + (size.x / 2) * Math.sin(rotY)
-    );
-    pivot.rotation.y = rotY;
-    doorModel.position.x = size.x / 2; // door hangs off the hinge
-    pivot.add(doorModel);
-    this.scene.add(pivot);
-
-    const doorCollider = this.addCollider(pivot, 'gate-door');
-    this.gateDoor = {
-      pivot,
-      collider: doorCollider,
-      closedAngle: pivot.rotation.y,
-      // 90 degrees, not the 105 this swung when the leaf was a sphere. A ball
-      // does not care how far past flush it goes; a 1.9 m leaf hinged 0.95 m off
-      // centre in a 2.0 m opening does — at 105 its outer corner ends up 0.44 m
-      // inside the west jamb and all you see of an opened gate is a dark edge.
-      // At 90 it stands flat against the jamb with 0.03 m of its thickness in
-      // the stone, which is inside the jamb's own relief. test/assets.mjs holds
-      // the angle to what the opening can actually take.
-      openAngle: pivot.rotation.y + THREE.MathUtils.degToRad(g.openDegrees),
-      progress: 0,
-      opening: false,
-    };
-
-    // --- Interior Poly Haven props ---
-    // Placed in config order, and each one can stand on anything placed before it.
-    // `yOffset` is a lift ABOVE whatever surface is found underneath, not an
-    // absolute height: the lantern and the candleholders used to carry
-    // `yOffset: 0.95` with a comment calling it "a table-height guess, tune after
-    // first load", and nobody ever tuned it. The table is 0.55 m tall, so they
-    // hung 0.40 m in the air. Measuring the surface removes the guess.
-    const surfaces = [];
-    for (const p of this.config.interiorProps) {
-      const obj = await loadModel(pBase + p.model);
-      this.groundAndCenter(obj);
-      obj.rotation.y = THREE.MathUtils.degToRad(p.rotationY || 0);
-      const pos = this.tileToWorld(p.tile[0], p.tile[1]);
-      obj.position.x = pos.x;
-      obj.position.z = pos.z;
-      obj.position.y += this.surfaceHeightUnder(surfaces, obj) + (p.yOffset || 0);
-      this.scene.add(obj);
-      if (!p.noCollide) {
-        this.addCollider(obj);
-        obj.updateMatrixWorld(true);
-        surfaces.push(new THREE.Box3().setFromObject(obj));
-      }
     }
 
     return this;

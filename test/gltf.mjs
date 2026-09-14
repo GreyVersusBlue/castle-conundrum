@@ -116,11 +116,65 @@ export function triangles(file) {
   return { json: g.json, verts, tris };
 }
 
-/** Axis-aligned bounds of `triangles(file)`, as {min:[x,y,z], max:[x,y,z]}. */
-export function boundsOf(file) {
-  const { verts } = triangles(file);
-  return {
-    min: [0, 1, 2].map(i => Math.min(...verts.map(v => v[i]))),
-    max: [0, 1, 2].map(i => Math.max(...verts.map(v => v[i]))),
+/* There used to be a `boundsOf(file)` here returning the vertex-tight AABB.
+ * Nothing called it — assets.mjs reads `triangles` and the old layout.mjs did
+ * too — and `castle-plan.js` takes a parameter by that name meaning something
+ * else entirely, so leaving a same-named export with a different return shape
+ * in the file everyone imports was a trap. Removed 2026-09-14. `partsOf` is
+ * below, and the tight box is `triangles(file).verts` if anything wants it.
+ */
+
+/* ------------------------------------------------------------------ parts ---
+ * What `src/castle-plan.js` needs, and why a single box is not it.
+ *
+ * three's `Box3.setFromObject(obj)` does NOT measure vertices. It walks the
+ * meshes under `obj` and, for each one, transforms the eight corners of that
+ * mesh's own `geometry.boundingBox` by that mesh's `matrixWorld`, then unions
+ * the results. GLTFLoader builds one Mesh per glTF primitive, so "per mesh"
+ * means per primitive, and the box a rotated model reports at runtime is the
+ * union of per-primitive corner-rotated boxes — always at least as large as the
+ * vertex-tight box, and not derivable from the whole-model box either.
+ *
+ * Measured against the live scene by running `test/plan-vs-scene.mjs` with this
+ * collapsed to one whole-model box: brass_candleholders comes out 0.129 m wrong
+ * and GothicCabinet_01 0.113 m, against a 0.01 m tolerance. The cabinet is the
+ * instructive one — it is placed at 90 degrees, where rotating corners is
+ * exact — because the error there is not the placement rotation at all. Its
+ * four doors are separate nodes translated up to 1.75 m off the carcass and
+ * rotated open, and three boxes each of those separately.
+ *
+ * Hence `partsOf`: each primitive's local AABB (glTF requires POSITION
+ * accessors to carry `min` and `max`, which is exactly `geometry.boundingBox`)
+ * paired with the matrix its node chain gives it. `castle-plan.js` applies the
+ * placement transform on top and unions, and gets the number three gets.
+ */
+export function partsOf(file) {
+  const g = readGLTF(file);
+  const nodes = g.json.nodes || [];
+  const roots = (g.json.scenes?.[g.json.scene ?? 0]?.nodes)
+    ?? nodes.map((_, i) => i).filter(i => !nodes.some(n => (n.children || []).includes(i)));
+  const parts = [];
+  const walk = (index, parent) => {
+    const node = nodes[index];
+    const world = multiply(parent, localMatrix(node));
+    if (node.mesh !== undefined) {
+      for (const prim of g.json.meshes[node.mesh].primitives) {
+        const a = g.json.accessors[prim.attributes.POSITION];
+        let lo = a.min, hi = a.max;
+        if (!lo || !hi) {
+          const p = accessor(g, prim.attributes.POSITION);
+          lo = [0, 1, 2].map(i => Math.min(...p.map(v => v[i])));
+          hi = [0, 1, 2].map(i => Math.max(...p.map(v => v[i])));
+        }
+        parts.push({
+          min: { x: lo[0], y: lo[1], z: lo[2] },
+          max: { x: hi[0], y: hi[1], z: hi[2] },
+          matrix: world.slice(),
+        });
+      }
+    }
+    for (const child of node.children || []) walk(child, world);
   };
+  for (const root of roots) walk(root, IDENTITY);
+  return { parts };
 }

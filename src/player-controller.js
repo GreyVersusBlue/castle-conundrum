@@ -3,12 +3,25 @@
 import * as THREE from 'three';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 
-const EYE_HEIGHT = 1.7;
+import { EYE_HEIGHT } from './castle-plan.js';
+
 const RADIUS = 0.45;
 const WALK_SPEED = 5.2;
 const SPRINT_MULT = 1.75;
 
 export class PlayerController {
+  /**
+   * `getColliders` answers with `src/castle-plan.js`'s own collider list — the
+   * boxes the plan computed, not boxes measured off the live scene. The only
+   * entries that do not come from the plan are the three brazier stands, which
+   * `scene-setup.js` builds at runtime and registers through
+   * `castle.addCollider`. A THREE.Box3 and a plan box are read the same way
+   * here: `.min.x`, `.max.y`.
+   *
+   * EYE_HEIGHT comes from the plan module because the plan's walkability grid
+   * has to agree with the controller about how tall the player is. It stays
+   * constant until Phase 5 gives the castle a second storey.
+   */
   constructor(camera, domElement, getColliders) {
     this.camera = camera;
     this.getColliders = getColliders; // () => [{ box }]

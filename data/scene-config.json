@@ -60,6 +60,7 @@
         ],
         "count": 7,
         "rotationY": 0,
+        "curtain": true,
         "comment": "north outer wall"
       },
       {
@@ -74,6 +75,7 @@
         ],
         "count": 3,
         "rotationY": 180,
+        "curtain": true,
         "comment": "south wall, west of gate"
       },
       {
@@ -88,6 +90,7 @@
         ],
         "count": 3,
         "rotationY": 180,
+        "curtain": true,
         "comment": "south wall, east of gate"
       },
       {
@@ -102,6 +105,7 @@
         ],
         "count": 5,
         "rotationY": 90,
+        "curtain": true,
         "comment": "west wall"
       },
       {
@@ -116,6 +120,7 @@
         ],
         "count": 5,
         "rotationY": 270,
+        "curtain": true,
         "comment": "east wall"
       },
       {
@@ -183,6 +188,7 @@
           3
         ],
         "rotationY": 0,
+        "curtain": true,
         "comment": "southwest tower"
       },
       {
@@ -192,6 +198,7 @@
           3
         ],
         "rotationY": 0,
+        "curtain": true,
         "comment": "southeast tower"
       },
       {
@@ -201,9 +208,9 @@
           3
         ],
         "rotationY": 180,
-        "comment": "main gate archway, south center",
-        "id": "gate-arch",
-        "noCollide": true
+        "curtain": true,
+        "comment": "main gate archway, south center. `noCollide` came off on 2026-09-14: the piece is 4 m wide and its doorway is 1.9 m, so the whole-piece exemption left a 1.05 m gap of walk-through stone either side of a shut gate. src/castle-plan.js's archColliders gives it two jambs and a lintel instead, sized from gateDoor.leaf, which test/assets.mjs already holds to the model's measured opening.",
+        "id": "gate-arch"
       },
       {
         "model": "detail-crate.glb",
@@ -297,6 +304,41 @@
       }
     ]
   },
+  "rooms": [
+    {
+      "comment": "Every enclosed space the walkability grid asks about, as an interior rectangle in world metres: `bounds` is [x, z] minimum and maximum, `level` 0 is the ground floor. src/castle-plan.js's makePlan copies these into the plan and test/layout.mjs fails if any of them cannot be walked to from the spawn. Two rooms today, because two is what this castle has; Phases 3 and 4 grow it to the two wards and the fourteen ground-floor rooms. Bounds are the walls' INNER faces, measured off the plan rather than guessed.",
+      "id": "great-hall",
+      "level": 0,
+      "ward": "inner",
+      "bounds": {
+        "min": [
+          -6,
+          -10
+        ],
+        "max": [
+          6,
+          -6
+        ]
+      },
+      "comment": "The hall: the north curtain behind it, a side wall each way, and its own south wall with the doorway in it. Everything in interiorProps stands in here."
+    },
+    {
+      "id": "courtyard",
+      "level": 0,
+      "ward": "outer",
+      "bounds": {
+        "min": [
+          -10,
+          -2
+        ],
+        "max": [
+          10,
+          10
+        ]
+      },
+      "comment": "The open ward between the hall's south wall and the gatehouse. The spawn stands in it at [0, 8]."
+    }
+  ],
   "gateDoor": {
     "tile": [
       0,

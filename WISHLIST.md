@@ -1,9 +1,9 @@
 # Castle Conundrum Feature Wishlist
 
-**Status: this is the v2 plan, written 2026-09-14. Phase 1 shipped the same
-day (PR #306, #421 to #425); Phases 2 to 7 are open, at ranks 1 to 6 in
-`BACKLOG.md`.** Seven phases, each sized to one session, each taken in order
-because each reads what the one before it wrote.
+**Status: this is the v2 plan, written 2026-09-14. Phases 1 and 2 shipped the
+same day (PR #306 and PR #309, #421 to #431); Phases 3 to 7 are open, at ranks
+1 to 5 in `BACKLOG.md`.** Seven phases, each sized to one session, each taken in
+order because each reads what the one before it wrote.
 The game today is `Projects/Castle Conundrum/index.html`: a fifteen minute walk
 across one 28 m courtyard to one riddle, three NPCs, 3,089 lines of code, 29 MB
 of assets. The project's history is the repo root's `HISTORY.md`, under
@@ -490,8 +490,9 @@ than three, so it is neither solvable at Prime nor lost by Vespers.
 - **A check that only prints is ignored** (#13); **a guard-rail is broken on
   purpose once from a green baseline** (#34), and the break has to be caught
   by the assertion whose comment claims it. `layout.mjs` re-implementing the
-  builder is this project's own instance of the failure #34 describes, and
-  Phase 2 exists to end it.
+  builder was this project's own instance of the failure #34 describes; Phase 2
+  ended it. There is one copy of the placement math now, `src/castle-plan.js`,
+  and the game, `layout.mjs` and `plan-vs-scene.mjs` all read it.
 - **A real-time movement assertion under software-rendered Chromium is
   inconclusive** (#53). Every exit criterion below that says *GPU* is one
   `npm run play` verifies and nothing in CI can; every phase also has a Node
@@ -502,10 +503,12 @@ than three, so it is neither solvable at Prime nor lost by Vespers.
 - **Windows is the dev machine.** Absolute `import()` paths through
   `pathToFileURL`; no shell brace expansion. **The invocations, from
   `Projects/Castle Conundrum`:** `node test/assets.mjs`, `node test/layout.mjs`,
-  `node test/quest.mjs`, all three in the CI matrix; Phase 1 adds
-  `node test/mystery.mjs` and `node test/save.mjs`, Phase 2 adds
-  `node test/plan-vs-scene.mjs` (headless Chromium, not real time). From
-  `Tools/board-check`: `npm run play`, headed, GPU, hand-run.
+  `node test/quest.mjs`, `node test/mystery.mjs`, `node test/save.mjs` and
+  `node test/plan-vs-scene.mjs` — all six in the CI matrix as of Phase 2, whose
+  entry now carries `install: Tools/board-check` because the last of them
+  borrows `harness.mjs`. `plan-vs-scene.mjs` opens headless Chromium and is in
+  CI anyway: it moves nothing and times nothing, which is the line #53 draws.
+  From `Tools/board-check`: `npm run play`, headed, GPU, hand-run.
 - **Writing style.** Direct, numbers over adjectives, no em dashes, never
   "comprehensive" or "robust".
 
@@ -697,50 +700,69 @@ this plan a wrong answer to is silent.
 
 ## Phase 2: The plan the builder and the suite both read
 
-**Size 1. Claude Opus 5.** `test/layout.mjs` re-implements `tileToWorld`,
-`normalizeToTile`, `normalizeHeight` and `groundAndCenter` and says so in its
-own header; it cannot catch a change to them. Before the castle grows a `y`
-axis, the placement math moves into one pure module both sides read.
+**Shipped 2026-09-14, PR #309, under Claude Opus 5** (#426 to #431).
+`src/castle-plan.js` is the placement math, once. `castle-builder.js` loads
+what the plan names and applies the transform the plan computed; it works out
+no position, no scale and no collider box of its own. `test/layout.mjs` reads
+the same plan, so the header it used to carry — "it cannot catch a change to
+that math" — is gone. `test/plan-vs-scene.mjs` holds the two together against
+the running page: **all 59 pieces are within 0.0000 m of their plan box.**
 
-- [ ] **`src/castle-plan.js`, pure.** `makePlan(config, boundsOf)` where
-  `boundsOf(modelPath)` is injected: three's `Box3` of the loaded model at
-  runtime, `test/gltf.mjs`'s `boundsOf` in Node. Returns `{pieces, colliders,
-  surfaces, rooms, spawn}`. A piece is `{id, kind, model | built, level,
-  transform: {position, rotationY, scale}, box}`; a surface is `{box, top,
-  level, slope}` where `slope` is `null` for a floor and `{from, to}` for a
-  ramp; a room is `{id, level, ward, bounds}` from `config.rooms`. The
-  builder loads each piece and applies the plan's transform; it computes no
-  transform of its own, and `colliders` come from the plan, so the runtime
-  and the suite cannot disagree about where a wall is.
-- [ ] **`walkability(plan)`.** A 0.5 m grid over the plan. A cell at height
-  `h` is standable if a surface covers its centre at `h` and no collider
-  crosses the column above it between `h + 0.3` and `h + 1.9`. Cells connect
-  when adjacent and their heights differ by at most 0.35 m, or along a
-  ramp's slope. Flood fill from `spawn`. Exposes `reachable(x, z, level)`,
-  `rooms()` with each room's reachability, and `sealed()`, true when no
-  reachable cell lies outside the curtain's outer face.
-- [ ] **`test/layout.mjs` rewritten to read the plan.** The prop-in-wall check
-  and the cabinet margins become plan queries; three new checks: every room
-  reachable from the spawn, the castle sealed, every NPC position in
-  `npcs.json` on a reachable cell. `assets.mjs`'s archway measurement is
-  untouched.
-- [ ] **`test/plan-vs-scene.mjs`.** Headless Chromium through
-  `Tools/board-check/harness.mjs`, loads the page, waits for the scene probe,
-  and diffs every placed object's live `Box3` against its plan `box` to
-  0.01 m. No pointer lock, no movement, no timing, so not #53's class. In the
-  CI matrix if it proves stable over three runs; hand-run otherwise, and the
-  closing report says which.
-- [ ] **The player reads the plan.** `getColliders` becomes `plan.colliders`;
-  no behaviour change yet. `EYE_HEIGHT` stays constant until Phase 5.
+What the plan below said and what shipped differ in six places, each a locked
+decision:
 
-**Guard-rail, broken on purpose:** switch the plan's wall scaling from depth
-to width (the 8 m `wall-half` bug of round 2) and watch `layout.mjs` fail on
-the hall table inside the interior south wall; remove one `wall.glb` from the
-north run and watch `sealed()` fail with the leaking cell's coordinates. If
-either break runs green the plan is not what the suite reads and the phase
-is not done. **Exit:** all four Node suites green; `plan-vs-scene.mjs` green
-headless; `npm run play` 35 beats green (GPU). **Weight:** 29.0 MB. **Model:**
-Opus; the refactor has an oracle, the two breaks.
+- **`boundsOf(modelPath)` returns `{parts}`, not a `Box3`** (#426). three's
+  `Box3.setFromObject` never measures vertices: it transforms the eight corners
+  of each MESH's own `geometry.boundingBox` by that mesh's `matrixWorld` and
+  unions the results, and GLTFLoader makes one mesh per glTF primitive. A
+  placed model's runtime box is therefore not a function of its whole-model
+  box. Collapsing `parts` to one box and re-running `plan-vs-scene.mjs` puts
+  brass_candleholders 0.129 m and GothicCabinet_01 0.113 m away from the
+  castle the browser builds, against a 0.01 m tolerance. The cabinet is the
+  instructive one: it is placed at 90 degrees, where rotating corners is exact,
+  and it is still wrong, because its four doors are separate nodes rotated open
+  and three boxes each of those separately.
+- **The gatehouse was open, and `sealed()` found it the first time it ran**
+  (#427). `gate-arch` carried `noCollide: true` with the comment "a doorway is
+  meant to have a hole in it". The piece is 4 m wide and its doorway is 1.9 m,
+  so the exemption left **two 1.05 m strips of walk-through stone** either side
+  of a shut gate — wider than the 0.9 m player. `archColliders` gives the piece
+  two jambs and a lintel now, sized from `gateDoor.leaf`, which `assets.mjs`
+  already holds to the model's measured opening. `noCollide` also means one
+  thing everywhere now: re-adding it to `gate-arch` used to be a silent no-op.
+- **A collider blocks a whole cell, not the point at its centre** (#428). The
+  first run of the grid flooded the entire 140 m ground plane through a shut
+  gate: the leaf is 0.16 m thick and no 0.5 m cell centre lands inside it, so a
+  centre test steps over any wall thinner than the grid. Overlapping the cell's
+  square is also the truer model of a body, which is 0.9 m across — wider than
+  a cell.
+- **The leak message names where the fill crossed, recorded during the fill**
+  (#429). Picking "the leak" out of the finished set afterwards does not work: a
+  breach floods 75,228 cells, and any after-the-fact sort then points at one of
+  them that has nothing to do with the hole. The first version said the castle
+  leaked at (-14.25, 0.25) for a hole at (0, -14), and reported "9999 cells"
+  because 9999 was the limit it had asked for.
+- **Removing the END piece of the north run is green, and correctly so**
+  (#430). The plan's break says "remove one `wall.glb` from the north run";
+  `count: 7` to `6` drops the tile-3 piece, and the hole it leaves at
+  x 10..14, z -14..-10 is walled off from the interior by the east wall's own
+  end and is reachable from nothing. Dropping the MIDDLE piece is the break
+  that bites: 75,228 cells outside, the fill stepping through at (-1.75,
+  -14.25) and (0.25, -14.25), which is exactly the missing piece's span.
+- **`plan-vs-scene.mjs` is in the CI matrix** (#431), three runs, three passes,
+  6 s each. Its matrix entry carries `install: Tools/board-check` for
+  `harness.mjs`. It clears the save from a cheap page on the same origin rather
+  than loading the game and reloading it: the reload aborts the model requests
+  the first load had in flight and `page.__errs` outlives the navigation, so
+  the run ends by reporting a missing `wall.glb` that loaded fine.
+
+`data/scene-config.json` gained `rooms` (two today, the great hall and the
+courtyard, bounds measured off the plan) and a `curtain: true` flag on the five
+outer wall runs, the two towers and the gate archway, from which the plan
+derives the curtain rectangle `sealed()` tests against. **Weight: 29.0 MB,
+nothing restored.** `npm run play` is unrun here (#53) and no beat of it touches
+the gate's jambs: the quest ends at the gate opening and the victory screen, and
+nothing in it walks through the archway.
 
 ## Phase 3: The shell: two wards, eight drums, a cross-wall
 

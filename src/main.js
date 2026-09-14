@@ -50,6 +50,8 @@ async function init() {
   await Promise.all(npcs.map((n) => n.build()));
 
   // --- Player ---
+  // castle.colliders is seeded from castle.plan.colliders and grows only by
+  // scene-setup.js's brazier stands. Nothing here measures a box.
   const player = new PlayerController(camera, renderer.domElement, () => castle.colliders);
   if (state.player) {
     camera.position.set(state.player.x, state.player.y, state.player.z);

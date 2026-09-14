@@ -87,8 +87,14 @@ for (const [rel, label] of refs) {
 if (!failures) pass(`${seen.size} model references, all present, none a preview ball`);
 
 /* ------------------------------------------------- 3: the gate leaf's fit ---
- * The archway is wall-fortified-gate.glb, placed through normalizeToTile, which
- * scales every kit piece by tileSize / its own depth. The opening is measured
+ * The archway is wall-fortified-gate.glb, which src/castle-plan.js scales by
+ * tileSize / its own depth like every other kit piece (`scaleFor`, rule
+ * 'depth'; it was `castle-builder.js`'s `normalizeToTile` until 2026-09-14).
+ * That factor is worked out again below rather than read off the plan, and it
+ * is the one duplication in this project that does not matter: both sides of
+ * every comparison here are the same model scaled by the same number, so a
+ * wrong factor cancels out. Where the piece ENDS UP is layout.mjs's and
+ * plan-vs-scene.mjs's question, and both read the plan. The opening is measured
  * by projecting the piece's front and back faces onto XY and finding the hole:
  * the tunnel's own walls run parallel to that projection and contribute no area
  * to it, so what is left uncovered is the doorway and nothing else.
@@ -143,7 +149,7 @@ else {
   const file = path.join(ROOT, config.kenneyBase + arch.model);
   const { verts } = triangles(file);
   const depth = Math.max(...verts.map(v => v[2])) - Math.min(...verts.map(v => v[2]));
-  const scale = config.tileSize / depth; // normalizeToTile
+  const scale = config.tileSize / depth; // castle-plan.js's scaleFor, rule 'depth'
   const open = openingOf(file, scale);
   const leaf = config.gateDoor.leaf;
   const gate = config.gateDoor;
