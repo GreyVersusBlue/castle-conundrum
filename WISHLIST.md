@@ -510,12 +510,19 @@ than three, so it is neither solvable at Prime nor lost by Vespers.
 
 ## Questions for Devon
 
-Six, in `BACKLOG.md`'s table as Q53 to Q58. Only where the answer changes the
-work; everything else is decided below and in `HISTORY.md` (#411 to #418).
+Four open, in `BACKLOG.md`'s table as Q54 to Q57. Only where the answer changes
+the work; everything else is decided below and in `HISTORY.md` (#411 to #420).
 
-1. **Twelve NPCs from three bodies, or a fourth model?** Tints are free and
-   are the plan. A fourth body is 1.4 to 2.0 MB over the 44.4 MB ceiling and
-   falls under the reachability rule. Changes Phase 6.
+**Two are answered** (2026-09-14, Devon), and the numbering below is unchanged
+so the Q numbers still line up:
+
+- **Q53, twelve NPCs from three bodies or a fourth model: tints** (#419), and
+  **Phase 1 writes the tint**, not Phase 6, because Phase 1 already replaces the
+  three NPCs with twelve in `npcs.json` and a hex per NPC costs nothing while
+  that file is open. The risk below is accepted, not removed.
+- **Q58, ranks 1 to 7: yes** (#420). The phases stay at the top. No other
+  project is worked until the arc finishes.
+
 2. **A death, or only a theft?** The mystery as written is a killing made to
    look like a fall, with a hanging at the end. A theft-only version is a
    different cast and a different clue graph. Changes Phase 1.
@@ -576,7 +583,11 @@ sim without the page.
   `data/npcs.json`, keyed by state, for the twelve; the three current NPCs
   are replaced by the twelve in this file even though only three bodies
   exist, because `assets.mjs` checks bodies, not ids, and `npc.js` already
-  keys nothing off an id.
+  keys nothing off an id. **Each of the twelve carries its `tint`** (a hex the
+  body's main material is multiplied by) and names one of the three bodies,
+  written here rather than in Phase 6 (#419): the file is open anyway, and a
+  second pass over twelve entries five phases later buys nothing. Nothing reads
+  `tint` until Phase 6; it is data waiting for its renderer.
 - [ ] **`data/quest.json` grows to the frame:** `arrive` (Prime, before the
   Constable has spoken), `investigate` (on `talked:constable`), `accusing`
   (on `bell:4` or `ask:accuse`), and one terminal per verdict class
@@ -821,11 +832,14 @@ it.
 
 **Size 1. Claude Opus 5.** The cast moves to its stations.
 
-- [ ] **`npcs.json` grows `tint`** (a hex the body's main material is
-  multiplied by) and each of the twelve names one of the three bodies. The
-  Guard, Scholar and Wizard are gone. `hideNodes` and `hideMaterials` do the
+- [ ] **`npc.js` reads the `tint`** Phase 1 wrote (#419), multiplying the body's
+  main material by it on load. The field and the body each of the twelve names
+  are already in `npcs.json`; this phase is where they first reach the screen.
+  The Guard, Scholar and Wizard are gone. `hideNodes` and `hideMaterials` do the
   rest: the King's crown for the Constable only, the Adventurer's pack for
-  nobody.
+  nobody. **If twelve tinted NPCs read as three bodies in the Vespers
+  photograph, that is the plan's named risk arriving**, and the answer is
+  Devon's: a fourth body is 1.4 to 2.0 MB over a ceiling only he can move.
 - [ ] **The bell.** An examinable in the chapel; `ringBell` advances the
   watch, the manager tells every NPC its new station, and the lighting
   section of `scene-config.json` gains a per-watch sun position and fog
@@ -919,7 +933,9 @@ drives the real manager, and every failure here is loud.
   `plan-vs-scene.mjs` is the net; if it cannot be made stable headless, a
   builder that is allowed to drift is the state Phase 2 was written to end.
 - **Twelve NPCs from three bodies read as three NPCs.** Tints are cheap and
-  may not be enough, and nothing in Node can say. The GPU beat in Phase 6
+  may not be enough, and nothing in Node can say. **Devon answered Q53 with
+  tints on 2026-09-14** (#419), which accepts this risk rather than removing
+  it. The GPU beat in Phase 6
   should photograph all twelve in the Great Hall at Vespers and somebody
   should look.
 - **The riddle overlay's pattern generalised badly.** The `{RIDDLE}`
@@ -939,7 +955,7 @@ drives the real manager, and every failure here is loud.
 
 **The one I would bet the project fails on** is the second: the cast. A
 denser mystery is a cast the player can tell apart at twenty metres, and
-three bodies with tints is a bet that colour is enough. If Devon answers
-question 1 with a fourth model, Phase 6 gets 1.4 to 2.0 MB and the ceiling
-moves; if he does not, the risk is carried, and the Vespers photograph in
-Phase 6 is the first time anyone will know.
+three bodies with tints is a bet that colour is enough. **Devon took the bet**
+(#419): the risk is carried, and the Vespers photograph in Phase 6 is the first
+time anyone will know. The reversal stays priced at 1.4 to 2.0 MB for a fourth
+body, over a 44.4 MB ceiling that is his number and not a session's.
