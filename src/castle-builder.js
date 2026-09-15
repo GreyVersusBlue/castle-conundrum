@@ -314,11 +314,10 @@ function buildDrum(d, material, metres) {
  * a side reads its run and y, chosen by the vertex normal three computed for the
  * extrusion, so a well's edge shows planks rather than a smear.
  *
- * A `flush` floor is decking sunk into a wall's top, coplanar with the stone,
- * and is drawn polygon-offset for the same reason buildGround's patches are:
- * winning the depth test on this machine is not a property of the geometry.
- * The offset sits on the material, which is shared by every plank floor; the
- * other plank floors are coplanar with nothing, so it costs them nothing.
+ * A `flush` floor is decking sunk into a wall's top. It used to be drawn
+ * polygon-offset against the stone it lay level with; since #513 the plan
+ * lowers the run's top under it instead, so nothing here is coplanar and the
+ * offset is gone.
  */
 function buildFloor(piece, material, metres) {
   const shape = new THREE.Shape();
@@ -352,14 +351,7 @@ function buildFloor(piece, material, metres) {
   }
   uv.needsUpdate = true;
   secondUV(geo);
-  const m = mesh(geo, material);
-  if (piece.flush) {
-    material.polygonOffset = true;
-    material.polygonOffsetFactor = -1;
-    material.polygonOffsetUnits = -1;
-    m.renderOrder = 1;
-  }
-  return m;
+  return mesh(geo, material);
 }
 
 /** The plank plate the suite stands in a barred doorway: one box, centred on x, grounded. */
@@ -372,41 +364,42 @@ function buildPlate({ width, height, thickness }, material) {
 }
 
 /**
- * A ground plane, flat at y 0, sized by the plan.
+ * A ground piece, flat at y 0: the plan's boxes, one plane each, or a disc
+ * for a tower's floor. Since #513 no two ground pieces draw the same point:
+ * the base is cut round every patch and a patch round the room floors inside
+ * it, in the plan, so the strips here tile the ground with no overlap and no
+ * depth trick. UVs are world-space, as every built surface's are, so a seam
+ * between two strips of one piece is invisible.
  *
- * A PATCH IS COPLANAR WITH THE BASE, AND THE OFFSET IS INSURANCE, NOT A FIX. The
- * outer ward's grassy cobbles lie on the pavers at exactly the same y. Under the
- * software rasterizer test/plan-vs-scene.mjs runs on, the patch wins the depth
- * test on its own and the two wards render as the two surfaces they are; this
- * offset is here because "wins on the machine I measured" is not a property of
- * coplanar geometry, and #53 says a render read off this rasterizer is not
- * evidence about a GPU. Raising the patch a centimetre instead would fix the
- * draw on every machine and break the walkability grid, which dedupes floors
- * within 1e-6 m and would read 0.01 m as a second storey over the whole outer
- * ward. Offsetting the depth value moves nothing: the plan box, the surface and
- * the collider grid all still see one floor at y 0.
+ * The polygon offset that used to sit on a patch's material is gone with the
+ * overlap it papered over. It was shared by every mesh of that material and
+ * it was the same offset on a patch and on the room floor over it, which is
+ * why the clerk's office, the kitchen and the Great Hall flickered (#513).
  */
-function buildGround(box, material, metres, patch = false, disc = null) {
-  const w = box.max.x - box.min.x, d = box.max.z - box.min.z;
-  // A tower's floor is round. 48 segments because a multiple of four puts a
-  // vertex on each axis, which is what makes the disc's bounds exactly the square
-  // the plan hands over.
-  const geo = disc ? new THREE.CircleGeometry(disc.radius, 48) : new THREE.PlaneGeometry(w, d);
-  const uv = geo.attributes.uv;
-  for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * (w / metres), uv.getY(i) * (d / metres));
-  uv.needsUpdate = true;
-  secondUV(geo);
-  const m = new THREE.Mesh(geo, material);
-  m.rotation.x = -Math.PI / 2;
-  m.receiveShadow = true;
-  m.position.set((box.min.x + box.max.x) / 2, 0, (box.min.z + box.max.z) / 2);
-  if (patch) {
-    material.polygonOffset = true;
-    material.polygonOffsetFactor = -1;
-    material.polygonOffsetUnits = -1;
-    m.renderOrder = 1;
-  }
-  return m;
+function buildGround(piece, material, metres) {
+  const one = (box) => {
+    const w = box.max.x - box.min.x, d = box.max.z - box.min.z;
+    // A tower's floor is round. 48 segments because a multiple of four puts a
+    // vertex on each axis, which is what makes the disc's bounds exactly the
+    // square the plan hands over.
+    const geo = piece.disc ? new THREE.CircleGeometry(piece.disc.radius, 48) : new THREE.PlaneGeometry(w, d);
+    const uv = geo.attributes.uv, pos = geo.attributes.position;
+    const cx = (box.min.x + box.max.x) / 2, cz = (box.min.z + box.max.z) / 2;
+    // the plane lies in its own xy before the rotation below sends y to -z
+    for (let i = 0; i < uv.count; i++) uv.setXY(i, (cx + pos.getX(i)) / metres, (cz - pos.getY(i)) / metres);
+    uv.needsUpdate = true;
+    secondUV(geo);
+    const m = new THREE.Mesh(geo, material);
+    m.rotation.x = -Math.PI / 2;
+    m.receiveShadow = true;
+    m.position.set(cx, 0, cz);
+    return m;
+  };
+  const boxes = piece.boxes || [piece.box];
+  if (boxes.length === 1) return one(boxes[0]);
+  const group = new THREE.Group();
+  for (const b of boxes) group.add(one(b));
+  return group;
 }
 
 /**
@@ -625,7 +618,7 @@ export class CastleBuilder {
       const repeat = piece.repeatMetres || metres;
       if (piece.built === 'run') obj = buildRun(piece.boxes, this.material(piece.material), repeat);
       else if (piece.built === 'drum') obj = buildDrum(piece.drum, this.material(piece.material), metres);
-      else if (piece.built === 'ground') obj = buildGround(piece.box, this.material(piece.material), repeat, !!piece.patch, piece.disc);
+      else if (piece.built === 'ground') obj = buildGround(piece, this.material(piece.material), repeat);
       else if (piece.built === 'gate-leaf') obj = buildGateLeaf(piece.leaf, this.material(piece.material));
       else if (piece.built === 'bars') obj = buildBars(piece.bars, this.material(piece.material));
       else if (piece.built === 'slab') obj = buildSlab(piece.box, this.material(piece.material));

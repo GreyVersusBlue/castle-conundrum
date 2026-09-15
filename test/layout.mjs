@@ -660,6 +660,61 @@ console.log('\na body up and down every flight');
   else if (climbed === plan.ramps.length * 2) pass(`${plan.ramps.length} flights, each climbed and descended by a ${BODY_RADIUS} m body onto the floor beyond, ${sidestepped} of the ${climbed} walks leaving through the crescent beside the flight`);
 }
 
+/* ------------------------- 10: no two upward faces share a plane ---
+ * The ground-floor rooms flickered on Devon's machine and no suite could say
+ * so: the base pavers, the outer ward's grass and the Great Hall's rock tile
+ * were three meshes at y 0 over the same 128 m², two of them carrying the same
+ * polygon offset, and the walk's decking lay flush in the curtain's top. A
+ * depth fight is not a property the plan can see, but two pieces whose tops
+ * share a height over a common footprint is, and it is the only way one
+ * starts (#513). So: over every box of every ground, floor, wall and tower
+ * piece, no two boxes of different pieces have tops within a millionth and
+ * footprints that overlap by more than a square centimetre.
+ */
+console.log('\nno two upward faces on one plane');
+{
+  // Not the drums: a run's box reaches into a drum's ring, and its top there
+  // is inside the stone, seen by nobody. A wall's top is open sky.
+  const faced = plan.pieces.filter(p => ['ground', 'floor', 'wall'].includes(p.kind) && (p.boxes || p.box));
+  const entries = faced.flatMap(p => (p.boxes || [p.box]).map(b => ({ id: p.id, b, disc: p.disc || null, outline: p.outline || null })));
+  // A tower floor is a disc and its box is the square round it; the corners
+  // of that square are inside the ring's stone, so a run's top meeting them is
+  // seen by nobody. A rectangular slab is cut back to the drums it meets and
+  // its box is the box round that outline. The overlap is counted at 0.05 m
+  // over the rectangle, disc pieces by their disc and outline pieces by their
+  // polygon.
+  const inPolygon = (poly, x, z) => {
+    let inside = false;
+    for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+      const [xi, zi] = poly[i], [xj, zj] = poly[j];
+      if ((zi > z) !== (zj > z) && x < ((xj - xi) * (z - zi)) / (zj - zi) + xi) inside = !inside;
+    }
+    return inside;
+  };
+  const inShape = (e, x, z) => e.disc ? Math.hypot(x - e.disc.cx, z - e.disc.cz) <= e.disc.radius : e.outline ? inPolygon(e.outline, x, z) : true;
+  const area = (a, b, x0, x1, z0, z1) => {
+    let n = 0, total = 0;
+    for (let x = x0 + 0.025; x < x1; x += 0.05) for (let z = z0 + 0.025; z < z1; z += 0.05) { total++; if (inShape(a, x, z) && inShape(b, x, z)) n++; }
+    return total ? (x1 - x0) * (z1 - z0) * n / total : 0;
+  };
+  const shared = [];
+  for (let i = 0; i < entries.length; i++) {
+    for (let j = i + 1; j < entries.length; j++) {
+      const a = entries[i], b = entries[j];
+      if (a.id === b.id || Math.abs(a.b.max.y - b.b.max.y) > 1e-6) continue;
+      const x0 = Math.max(a.b.min.x, b.b.min.x), x1 = Math.min(a.b.max.x, b.b.max.x);
+      const z0 = Math.max(a.b.min.z, b.b.min.z), z1 = Math.min(a.b.max.z, b.b.max.z);
+      if (x1 - x0 <= 0 || z1 - z0 <= 0) continue;
+      const over = area(a, b, x0, x1, z0, z1);
+      if (over <= 1e-4) continue;
+      shared.push(`${a.id} and ${b.id} share a top at ${a.b.max.y.toFixed(3)} over ${over.toFixed(2)} m² at x ${x0.toFixed(1)}..${x1.toFixed(1)}, z ${z0.toFixed(1)}..${z1.toFixed(1)}`);
+    }
+  }
+  const seen = new Set();
+  for (const line of shared) if (!seen.has(line)) { seen.add(line); fail(line); }
+  if (!shared.length) pass(`${entries.length} boxes over ${faced.length} pieces, no two tops on one plane over a common footprint`);
+}
+
 /* ------------------------------------- 5: every NPC stands somewhere real ---
  * Both lists in npcs.json: the three the page spawns today and the twelve under
  * `cast` that Phase 1 wrote. The cast carry no `position` yet — Phase 6 fills

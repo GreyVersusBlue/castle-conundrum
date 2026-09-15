@@ -414,6 +414,94 @@ function cutHoles(box, holes) {
   return boxes;
 }
 
+/* ------------------------------------------------ one face per plane ---
+ *
+ * NO TWO UPWARD FACES SHARE A PLANE (#513). Until this pass the base pavers,
+ * the outer ward's grass and the Great Hall's rock tile were three meshes at
+ * y 0 over the same 224 m², the walk's decking lay flush in the curtain's
+ * top, a curtain's 0.8 m stub inside a tower stood level with the slab across
+ * it, and two runs turning a corner both drew the 16 m² where they crossed.
+ * The builder's answer was a polygon offset on the patch, which is a depth
+ * trick that holds on one machine and fought itself where two patches lay on
+ * a third: the clerk's office, the kitchen and the Great Hall flickered on
+ * Devon's GPU and no suite could say so. This pass makes the plan say which
+ * piece owns every point of every top, and test/layout.mjs check 10 holds
+ * that no two pieces claim one.
+ *
+ * ONLY WHAT IS DRAWN CHANGES. A piece's `boxes` are what the builder draws
+ * and `box` is their union, which is what test/plan-vs-scene.mjs measures.
+ * Colliders were registered before this ran and keep the whole stone: the
+ * 0.2 m a stub loses under a slab is above every band a body can stand in,
+ * and the corner one run gives up is the other run's box. Surfaces keep the
+ * whole footprint: a floor is a floor over its holes, and the walkability
+ * grid and the stations read nothing here.
+ *
+ * Three rules, in this order:
+ *   - grounds: a ground piece is cut round every ground piece after it that
+ *     it overlaps. The base comes first and gives way to every patch; a patch
+ *     gives way to the room floors inside it; a room floor is last. A disc's
+ *     footprint is the square round it, whose corners are under the ring.
+ *   - a run under a floor: where a run's top is level with a floor's over the
+ *     floor's footprint, that part of the run stops at the floor's underside.
+ *     The deck's 0.1 m and the slab's 0.2 m are the only two cases.
+ *   - two runs sharing a top: the later run is cut round the earlier one's
+ *     footprint, unless the earlier is the shorter, which would leave a
+ *     notch; then the earlier is cut. Two curtain runs turning a corner are
+ *     the same height and the first in the config keeps the corner.
+ */
+function unionBox(boxes) {
+  const out = EMPTY();
+  for (const b of boxes) { expand(out, b.min); expand(out, b.max); }
+  return out;
+}
+
+function oneFacePerPlane(pieces) {
+  const foot = (b) => ({ min: { x: b.min.x, z: b.min.z }, max: { x: b.max.x, z: b.max.z } });
+  const meet = (a, b) => meets2D(a, b.min.x, b.min.z, b.max.x, b.max.z);
+  const level = (a, b) => Math.abs(a.max.y - b.max.y) < 1e-6;
+
+  const grounds = pieces.filter((p) => p.built === 'ground');
+  grounds.forEach((g, i) => {
+    const holes = grounds.slice(i + 1).filter((h) => meet(g.box, h.box)).map((h) => foot(h.box));
+    g.boxes = holes.length ? cutHoles(g.box, holes) : [g.box];
+    if (g.disc && holes.length) throw new Error(`[castle-plan] ${g.id} is a disc floor with ${holes.length} ground pieces over it`);
+    g.box = unionBox(g.boxes);
+  });
+
+  const runs = pieces.filter((p) => p.built === 'run');
+  const floors = pieces.filter((p) => p.built === 'floor');
+  for (const run of runs) {
+    for (const f of floors) {
+      const next = [];
+      for (const b of run.boxes) {
+        if (!level(b, f.box) || !meet(b, f.box) || f.box.min.y <= b.min.y + 1e-9) { next.push(b); continue; }
+        next.push(...cutHoles(b, [foot(f.box)]));
+        next.push({
+          min: { x: Math.max(b.min.x, f.box.min.x), y: b.min.y, z: Math.max(b.min.z, f.box.min.z) },
+          max: { x: Math.min(b.max.x, f.box.max.x), y: f.box.min.y, z: Math.min(b.max.z, f.box.max.z) },
+        });
+      }
+      run.boxes = next;
+    }
+  }
+  // cut every box of `giver` that shares a top with `keep` round keep's footprint
+  const giveWay = (giver, keep) => giver.boxes.flatMap((v) => (level(v, keep) && meet(v, keep)) ? cutHoles(v, [foot(keep)]) : [v]);
+  for (let i = 0; i < runs.length; i++) {
+    for (let j = i + 1; j < runs.length; j++) {
+      const [a, b] = [runs[i], runs[j]];
+      // the later run gives way where the earlier one's box is at least as tall
+      for (const keep of a.boxes.slice()) {
+        if (b.boxes.some((v) => level(v, keep) && meet(v, keep) && v.min.y >= keep.min.y - 1e-9)) b.boxes = giveWay(b, keep);
+      }
+      // and the earlier gives way where the later one reaches lower, so no notch is left
+      for (const keep of b.boxes.slice()) {
+        if (a.boxes.some((v) => level(v, keep) && meet(v, keep) && v.min.y > keep.min.y + 1e-9)) a.boxes = giveWay(a, keep);
+      }
+    }
+  }
+  for (const run of runs) run.box = unionBox(run.boxes);
+}
+
 /* ------------------------------------------------------- built stone (v2) ---
  *
  * Phase 3 stopped building the curtain out of kit pieces. `wall.glb` is a 64 px
@@ -1451,6 +1539,8 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
     });
     surfaces.push({ id: g.id, box: g.box, top: 0, level: 0, slope: null });
   }
+
+  oneFacePerPlane(pieces);
 
   return {
     tile: tileSize, storey, slab: slabT,
