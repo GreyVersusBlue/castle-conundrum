@@ -1499,3 +1499,71 @@ Generator's and stayed where they are.
   and three literals in `test/assets.mjs`. The Kenney kit's three `.url`
   shortcuts were renamed for the same reason and kept for the attribution they
   carry.
+
+## The page gets a URL, and the root stops being servable (2026-09-15)
+
+Same day as the move, one round after it. Devon relinked the board card in
+`tools-and-games` to
+<https://greyversusblue.github.io/castle-conundrum/> (that repo's #493), which
+settled where this page lives and turned up something the move had quietly
+broken.
+
+- **This page is served from GitHub Pages at
+  `https://greyversusblue.github.io/castle-conundrum/`, and `og:url` says so**
+  (#504). It had been
+  `https://greyversusblue.com/Projects/Castle%20Conundrum/`, which is a path
+  that no longer exists anywhere: `tools-and-games` deleted the directory when
+  the project left. A share card pointing at a 404 is worse than no card.
+  **`og:image` still points at `greyversusblue.com/assets/og/castle-conundrum.jpg`
+  and that is deliberate**, not forgotten: the preview and og images stayed in
+  that repo when the project left, the URL resolves, and a crawler fetching it
+  is not *the page* fetching it, so #493's same-origin rule is untouched. If the
+  image is ever moved here, that meta line is the one to change.
+- **Pages serves `dist/`, built by `.github/workflows/pages.yml`, and the repo
+  root is not servable on its own** (#505). This is the price of #494 and it
+  was invisible until there was a URL to point at. Under
+  `Projects/Castle Conundrum/` the directory was directly servable: `index.html`
+  carried an import map, so a static host could hand a browser the source and
+  the browser resolved `three` itself. Deleting that map in favour of Vite means
+  `src/main.js` opens with a bare `import * as THREE from 'three'`, which no
+  browser can resolve without a build.
+
+  **Checked rather than reasoned about.** This checkout was served by a plain
+  `node:http` static server — no Vite, nothing else changed — and opened in the
+  same headless Chromium the suites use:
+
+  ```
+  pageerror: Failed to resolve module specifier "three".
+             Relative references must start with either "/", "./", or "../".
+  start overlay shown: false | loading says: "Summoning stonework…"
+  ```
+
+  The page hangs on its loading screen forever. So "deploy from a branch" would
+  publish exactly that, and **the repo's Pages source has to stay GitHub
+  Actions**; `configure-pages` sets it with `enablement: true` on the first run.
+  The workflow is build-and-publish only and runs no suites: `ci.yml` already
+  runs `npm run build` on every push to `main`, so a build that cannot succeed
+  fails there first and more loudly.
+
+  `base: './'` in `vite.config.js` is what makes the subpath work, and it was
+  already there. Every emitted URL is relative and every runtime fetch is
+  relative to the document (`data/scene-config.json`, and every asset path
+  inside it), so the same `dist/` serves correctly under `/castle-conundrum/`
+  and under a bare domain later. Nothing hardcodes a prefix, and nothing should
+  start.
+
+  **That was checked too, not assumed**, because "relative paths will be fine"
+  is the kind of claim that is wrong once and expensively. `dist/` served under
+  a `/castle-conundrum` prefix by a plain static server, the way Pages serves a
+  project site:
+
+  ```
+  castle finished building under /castle-conundrum
+  asset+data files served: 127
+  offsite requests: 0
+  errors: 0
+  Enter the Castle works: true
+  ```
+
+  127 is the same count `test/built.mjs` diffs at the root, so the prefix costs
+  nothing and hides nothing.
