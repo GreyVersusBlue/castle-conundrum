@@ -1,5 +1,5 @@
 {
-  "comment": "The mystery as data (WISHLIST.md, Phase 1). src/mystery.js validates this file against npcs.json's `cast` and quest.json's `frame` before it runs, and runs it in Node without a room or a body existing yet. `watches` are the four bells in order. `rooms` carry id, ward and level only; positions come in Phase 3 from the plan. A clue is S (a statement: `source.npc` in `source.state`, granted when that conversation ends; `source.watches` narrows it), E (evidence: `source.evidence`), D (a deduction: `source.premises`, granted the instant both are held) or L (a location: `source.room` and `source.level`, granted on entering). `contradicts` names the earlier statement a clue gives the lie to. `herring` marks a clue that leads nowhere on purpose, and the validator makes a session say so. Evidence carries the `watches` it can be examined in, `clue` (one id or a list), `requires` (clues that have to be held first), `lock` (a lock in `locks` that has to be open) and `prop` (a model already on disk, for Phase 4). `schedule` is npc -> watch -> a station or null (not in the castle); `asleep` is a station the player cannot talk to. A press is `{npc, from, on, to}`: showing `on` to `npc` while in one of the `from` states moves them to `to`. `accusation.from` is the first watch the Constable will hear an accusation at; at Prime he is standing over the body and sends the clerk away without counting it as a refusal.",
+  "comment": "The mystery as data (WISHLIST.md, Phase 1). src/mystery.js validates this file against npcs.json's `cast` and quest.json's `frame` before it runs, and runs it in Node without a room or a body existing yet. `watches` are the four bells in order. `rooms` carry id, ward and level only; positions come in Phase 3 from the plan. A clue is S (a statement: `source.npc` in `source.state`, granted when that conversation ends; `source.watches` narrows it), E (evidence: `source.evidence`), D (a deduction: `source.premises`, granted the instant both are held) or L (a location: `source.room` and `source.level`, granted on entering). `contradicts` names the earlier statement a clue gives the lie to. `herring` marks a clue that leads nowhere on purpose, and the validator makes a session say so. Evidence carries the `watches` it can be examined in, `clue` (one id or a list), `requires` (clues that have to be held first), `lock` (a lock in `locks` that has to be open) and `prop` (a model already on disk, for Phase 4). `schedule` is npc -> watch -> a station or null (not in the castle); `asleep` is a station the player cannot talk to. A station carries `tile`, a fractional tile coordinate in scene-config.json's own units: six people stand in the Great Hall at Vespers and each has to be somewhere the player can walk up to alone. src/stations.js turns it into a world point and src/mystery.js's validator holds it to the castle — standable floor, inside the room it names, 1.5 m clear of everyone else at that bell, within talking range of somewhere the player can stand, and a walk from the station before it. A press is `{npc, from, on, to}`: showing `on` to `npc` while in one of the `from` states moves them to `to`. `accusation.from` is the first watch the Constable will hear an accusation at; at Prime he is standing over the body and sends the clerk away without counting it as a refusal.",
   "watches": [
     "prime",
     "terce",
@@ -796,159 +796,323 @@
     "constable": {
       "prime": {
         "room": "chapel",
+        "tile": [
+          5.9,
+          4.2
+        ],
         "note": "at the body"
       },
       "terce": {
-        "room": "kings-hall"
+        "room": "kings-hall",
+        "tile": [
+          3.0,
+          -2.5
+        ]
       },
       "sext": {
-        "room": "kings-hall"
+        "room": "kings-hall",
+        "tile": [
+          3.0,
+          -2.5
+        ]
       },
       "vespers": {
         "room": "great-hall",
+        "tile": [
+          -3.0,
+          2.5
+        ],
         "note": "the high table"
       }
     },
     "steward": {
       "prime": {
-        "room": "kings-hall"
+        "room": "kings-hall",
+        "tile": [
+          2.0,
+          -2.5
+        ]
       },
       "terce": {
-        "room": "steward-chamber"
+        "room": "steward-chamber",
+        "tile": [
+          1.5,
+          2.5
+        ]
       },
       "sext": {
-        "room": "kings-hall"
+        "room": "kings-hall",
+        "tile": [
+          2.0,
+          -2.5
+        ]
       },
       "vespers": {
-        "room": "great-hall"
+        "room": "great-hall",
+        "tile": [
+          -3.6,
+          2.9
+        ]
       }
     },
     "clerk": {
       "prime": {
-        "room": "clerk-office"
+        "room": "clerk-office",
+        "tile": [
+          -7.5,
+          -2.5
+        ]
       },
       "terce": {
         "room": "outer-ward",
+        "tile": [
+          -7.0,
+          -0.55
+        ],
         "note": "at the cart"
       },
       "sext": {
-        "room": "clerk-office"
+        "room": "clerk-office",
+        "tile": [
+          -7.5,
+          -2.5
+        ]
       },
       "vespers": {
-        "room": "great-hall"
+        "room": "great-hall",
+        "tile": [
+          -4.4,
+          2.3
+        ]
       }
     },
     "porter": {
       "prime": {
-        "room": "porter-lodge"
+        "room": "porter-lodge",
+        "tile": [
+          0.1,
+          -4.0
+        ]
       },
       "terce": {
-        "room": "porter-lodge"
+        "room": "porter-lodge",
+        "tile": [
+          0.1,
+          -4.0
+        ]
       },
       "sext": {
-        "room": "porter-lodge"
+        "room": "porter-lodge",
+        "tile": [
+          0.1,
+          -4.0
+        ]
       },
       "vespers": {
         "room": "cross-walk",
-        "level": 2
+        "level": 2,
+        "tile": [
+          -0.25,
+          0.0
+        ]
       }
     },
     "cook": {
       "prime": {
-        "room": "kitchen"
+        "room": "kitchen",
+        "tile": [
+          -5.0,
+          -2.5
+        ]
       },
       "terce": {
-        "room": "kitchen"
+        "room": "kitchen",
+        "tile": [
+          -5.0,
+          -2.5
+        ]
       },
       "sext": {
-        "room": "kitchen"
+        "room": "kitchen",
+        "tile": [
+          -5.0,
+          -2.5
+        ]
       },
       "vespers": {
-        "room": "great-hall"
+        "room": "great-hall",
+        "tile": [
+          -5.2,
+          2.9
+        ]
       }
     },
     "chaplain": {
       "prime": {
         "room": "chapel",
+        "tile": [
+          5.4,
+          3.8
+        ],
         "note": "at the body"
       },
       "terce": {
-        "room": "chapel"
+        "room": "chapel",
+        "tile": [
+          5.4,
+          3.8
+        ]
       },
       "sext": {
-        "room": "chapel"
+        "room": "chapel",
+        "tile": [
+          5.4,
+          3.8
+        ]
       },
       "vespers": {
-        "room": "chapel"
+        "room": "chapel",
+        "tile": [
+          5.4,
+          3.8
+        ]
       }
     },
     "sentry": {
       "prime": {
         "room": "guardroom",
+        "tile": [
+          -8.9,
+          -4.0
+        ],
         "asleep": true
       },
       "terce": {
         "room": "north-walk",
         "level": 2,
+        "tile": [
+          -4.5,
+          -3.75
+        ],
         "note": "by the Kitchen Tower"
       },
       "sext": {
         "room": "north-walk",
         "level": 2,
+        "tile": [
+          -4.5,
+          -3.75
+        ],
         "note": "by the Kitchen Tower"
       },
       "vespers": {
-        "room": "great-hall"
+        "room": "great-hall",
+        "tile": [
+          -6.0,
+          2.3
+        ]
       }
     },
     "apprentice": {
       "prime": {
-        "room": "lodge"
+        "room": "lodge",
+        "tile": [
+          -1.5,
+          -2.5
+        ]
       },
       "terce": {
-        "room": "lodge"
+        "room": "lodge",
+        "tile": [
+          -1.5,
+          -2.5
+        ]
       },
       "sext": {
-        "room": "lodge"
+        "room": "lodge",
+        "tile": [
+          -1.5,
+          -2.5
+        ]
       },
       "vespers": {
         "room": "chapel",
+        "tile": [
+          5.9,
+          3.7
+        ],
         "note": "the vigil"
       }
     },
     "laundress": {
       "prime": {
-        "room": "laundry"
+        "room": "laundry",
+        "tile": [
+          -8.9,
+          4.06
+        ]
       },
       "terce": {
-        "room": "laundry"
+        "room": "laundry",
+        "tile": [
+          -8.9,
+          4.06
+        ]
       },
       "sext": {
         "room": "outer-ward",
+        "tile": [
+          -7.0,
+          1.0
+        ],
         "note": "a patrol along the washing line"
       },
       "vespers": {
-        "room": "great-hall"
+        "room": "great-hall",
+        "tile": [
+          -6.8,
+          2.9
+        ]
       }
     },
     "prisoner": {
       "prime": {
-        "room": "cell"
+        "room": "cell",
+        "tile": [
+          -5.0,
+          3.5
+        ]
       },
       "terce": {
-        "room": "cell"
+        "room": "cell",
+        "tile": [
+          -5.0,
+          3.5
+        ]
       },
       "sext": {
-        "room": "cell"
+        "room": "cell",
+        "tile": [
+          -5.0,
+          3.5
+        ]
       },
       "vespers": {
-        "room": "cell"
+        "room": "cell",
+        "tile": [
+          -5.0,
+          3.5
+        ]
       }
     },
     "merchant": {
       "prime": null,
       "terce": {
         "room": "outer-ward",
+        "tile": [
+          -7.6,
+          0.15
+        ],
         "note": "at the cart by the west gate"
       },
       "sext": null,
@@ -957,18 +1121,35 @@
     "lady": {
       "prime": {
         "room": "royal-apartments",
-        "level": 1
+        "level": 1,
+        "tile": [
+          3.0,
+          -1.8
+        ]
       },
       "terce": {
         "room": "royal-apartments",
-        "level": 1
+        "level": 1,
+        "tile": [
+          3.0,
+          -1.8
+        ]
       },
       "sext": {
-        "room": "garden"
+        "room": "inner-ward",
+        "tile": [
+          3.0,
+          0.5
+        ],
+        "note": "taking the air in the inner ward, below her own window"
       },
       "vespers": {
         "room": "royal-apartments",
-        "level": 1
+        "level": 1,
+        "tile": [
+          3.0,
+          -1.8
+        ]
       }
     }
   },

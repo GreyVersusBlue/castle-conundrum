@@ -1526,7 +1526,7 @@ export function standAt(plan, x, z, feet, stepUp = STEP_UP) {
  * they are in the game's collider list and not in this grid. They are 0.42 m
  * posts standing in open ground; nothing this answers turns on them.
  */
-export function walkability(plan, { grid = GRID, stepUp = STEP_UP } = {}) {
+export function walkability(plan, { grid = GRID, stepUp = STEP_UP, seeds = [] } = {}) {
   const half = grid / 2;
   const bounds = EMPTY();
   for (const s of plan.surfaces) { expand(bounds, s.box.min); expand(bounds, s.box.max); }
@@ -1610,31 +1610,88 @@ export function walkability(plan, { grid = GRID, stepUp = STEP_UP } = {}) {
    * for a hole at (0, -14) and reported "9999 cells" because that was the
    * limit it had asked for. A cell reached FROM an inside cell is the hole. */
   const breaches = [];
-  if (start) {
-    const queue = [{ i: si, j: sj, ...start }];
-    reached.set(key(si, sj, start.h), queue[0]);
-    while (queue.length) {
-      const cur = queue.pop();
-      const curOut = outsideCurtain(cur.i, cur.j);
-      for (const [di, dj] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
-        const ni = cur.i + di, nj = cur.j + dj;
-        if (ni < i0 || ni > i1 || nj < j0 || nj > j1) continue;
-        for (const cand of at(ni, nj)) {
-          const sameRamp = cand.surface === cur.surface && surfaceById.get(cand.surface)?.slope;
-          if (!sameRamp && Math.abs(cand.h - cur.h) > stepUp) continue;
-          const k = key(ni, nj, cand.h);
-          if (reached.has(k)) continue;
-          const cell = { i: ni, j: nj, ...cand };
-          if (!curOut && outsideCurtain(ni, nj)) breaches.push(cell);
-          reached.set(k, cell);
-          queue.push(cell);
-        }
+  /* WHO THE EDGES ARE FOR. The fill answers "can the player get here"; walking
+   * an NPC from one station to the next is a second question over the same
+   * cells, and it needs the graph rather than the set. Recorded as the fill
+   * runs, both ways, including the edge back to a cell already reached — an
+   * edge dropped because its far end was visited first is an edge, and a path
+   * search over half a graph finds detours that do not exist. */
+  const edges = new Map();
+  const link = (a, b) => {
+    if (!edges.has(a)) edges.set(a, []);
+    if (!edges.get(a).includes(b)) edges.get(a).push(b);
+  };
+
+  /* EVERY FILL STARTS AT THE SPAWN, AND SOME ALSO START SOMEWHERE ELSE. A
+   * `seeds` point adds its own standable cells as starts, which is the only
+   * way to reach floor the player never can: the man in the cell stands on
+   * stone behind bars that never open, and his station and his walk to it are
+   * still facts about the castle. `reachable`, `sealed` and `rooms()` then
+   * answer for the fill AS SEEDED, so test/layout.mjs — whose every question
+   * is "from the spawn" — passes no seeds and is unchanged by this. */
+  const queue = [];
+  const enter = (cell) => {
+    const k = key(cell.i, cell.j, cell.h);
+    if (reached.has(k)) return;
+    reached.set(k, cell);
+    queue.push(cell);
+  };
+  if (start) enter({ i: si, j: sj, ...start });
+  const spawnKey = start ? key(si, sj, start.h) : null;
+  for (const [sx, sz] of seeds) {
+    const i = Math.floor(sx / grid), j = Math.floor(sz / grid);
+    for (const cand of at(i, j)) enter({ i, j, ...cand });
+  }
+  while (queue.length) {
+    const cur = queue.pop();
+    const curOut = outsideCurtain(cur.i, cur.j);
+    const curKey = key(cur.i, cur.j, cur.h);
+    for (const [di, dj] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const ni = cur.i + di, nj = cur.j + dj;
+      if (ni < i0 || ni > i1 || nj < j0 || nj > j1) continue;
+      for (const cand of at(ni, nj)) {
+        const sameRamp = cand.surface === cur.surface && surfaceById.get(cand.surface)?.slope;
+        if (!sameRamp && Math.abs(cand.h - cur.h) > stepUp) continue;
+        const k = key(ni, nj, cand.h);
+        link(curKey, k);
+        link(k, curKey);
+        if (reached.has(k)) continue;
+        const cell = { i: ni, j: nj, ...cand };
+        if (!curOut && outsideCurtain(ni, nj)) breaches.push(cell);
+        reached.set(k, cell);
+        queue.push(cell);
       }
     }
   }
 
   const list = [...reached.values()];
   const outside = list.filter(c => outsideCurtain(c.i, c.j));
+  // One cell per (i, j, level) for lookup by world point. Where a level has two
+  // heights over one column the lower is kept, which is the floor a body walks
+  // in rather than the lip of whatever is stacked on it.
+  const byCell = new Map();
+  for (const c of list) {
+    const k = `${c.i},${c.j},${c.level}`;
+    const have = byCell.get(k);
+    if (!have || c.h < have.h) byCell.set(k, c);
+  }
+  // The spawn's own component, walked once and only if something asks.
+  let component = null;
+  const spawnComponent = () => {
+    if (component) return component;
+    component = new Set();
+    if (!spawnKey) return component;
+    const q = [spawnKey];
+    component.add(spawnKey);
+    for (let head = 0; head < q.length; head++) {
+      for (const n of edges.get(q[head]) ?? []) {
+        if (component.has(n)) continue;
+        component.add(n);
+        q.push(n);
+      }
+    }
+    return component;
+  };
 
   return {
     grid,
@@ -1669,6 +1726,57 @@ export function walkability(plan, { grid = GRID, stepUp = STEP_UP } = {}) {
     sealed() { return outside.length === 0; },
     /** How many reachable cells are outside the curtain. */
     get leaked() { return outside.length; },
+    /** The cell a body standing at (x, z) on `level` is in, or null. */
+    cellAt(x, z, level = 0) {
+      return byCell.get(`${Math.floor(x / grid)},${Math.floor(z / grid)},${level}`) ?? null;
+    },
+    /**
+     * The shortest walk from one standing point to another, as the cell
+     * centres to walk through: `[{x, z, h, level}]`, the first being `from`'s
+     * own cell and the last `to`'s. Null when either end is not a cell, and
+     * null when they are in different components — which is the answer the
+     * station rails are after, since a body that cannot walk there is a body
+     * that teleports.
+     *
+     * Breadth-first, so the count of steps is the shortest one. It is not
+     * smoothed: an NPC walking it turns at every cell centre it passes. That
+     * is 0.5 m of zig-zag on a diagonal and nothing at all along a corridor,
+     * and smoothing it would need a clearance test this grid does not do.
+     */
+    path(from, to) {
+      const a = this.cellAt(from.x, from.z, from.level ?? 0);
+      const b = this.cellAt(to.x, to.z, to.level ?? 0);
+      if (!a || !b) return null;
+      const ka = key(a.i, a.j, a.h), kb = key(b.i, b.j, b.h);
+      if (ka === kb) return [{ x: cx(a.i), z: cz(a.j), h: a.h, level: a.level }];
+      const prev = new Map([[ka, null]]);
+      const q = [ka];
+      for (let head = 0; head < q.length; head++) {
+        const k = q[head];
+        if (k === kb) break;
+        for (const n of edges.get(k) ?? []) {
+          if (prev.has(n)) continue;
+          prev.set(n, k);
+          q.push(n);
+        }
+      }
+      if (!prev.has(kb)) return null;
+      const out = [];
+      for (let k = kb; k != null; k = prev.get(k)) {
+        const c = reached.get(k);
+        out.push({ x: cx(c.i), z: cz(c.j), h: c.h, level: c.level });
+      }
+      return out.reverse();
+    },
+    /**
+     * True when `x, z, level` is in the same component as the spawn — that is,
+     * when the player could walk there. With no `seeds` that is every cell in
+     * the fill; with seeds it is the question `reachable` stops answering.
+     */
+    fromSpawn(x, z, level = 0) {
+      const c = this.cellAt(x, z, level);
+      return !!c && spawnComponent().has(key(c.i, c.j, c.h));
+    },
     /** The cells the fill stepped through the curtain at — the hole itself. */
     breaches(limit = 3) {
       return breaches

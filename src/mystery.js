@@ -18,6 +18,8 @@
 // WISHLIST.md's Phase 1 entry are each one of those, and each has to fail here
 // with the message written there.
 
+import { STATION_CLEARANCE, TALK_RANGE } from './stations.js';
+
 const KINDS = new Set(['S', 'E', 'D', 'L']);
 
 const asList = (v) => (v == null ? [] : Array.isArray(v) ? v : [v]);
@@ -194,8 +196,14 @@ export function shortestPath(mystery, npcs, { full = true } = {}) {
  * @param mystery parsed data/mystery.json
  * @param npcs    data/npcs.json's `cast` (the twelve)
  * @param quest   the frame: a quest graph definition (data/quest.json's `frame`)
+ * @param nav     src/stations.js's `castleNav(plan, mystery)`, or null. With it
+ *   the schedule is checked against the castle itself: floor under every
+ *   station, the room it names around it, everyone at one bell standing apart,
+ *   the player able to get within talking range, and a walk from each station
+ *   to the next. Without it none of those five run and the rest are unchanged,
+ *   which is what lets `earliest` and `shortestPath` stay geometry-free.
  */
-export function validateMystery(mystery, npcs, quest) {
+export function validateMystery(mystery, npcs, quest, nav = null) {
   const problems = [];
   const say = (m) => problems.push(m);
   if (!mystery || typeof mystery !== 'object') return ['mystery is not an object'];
@@ -276,6 +284,68 @@ export function validateMystery(mystery, npcs, quest) {
     }
   }
   for (const npcId of Object.keys(ix.schedule)) if (!cast.has(npcId)) say(`schedule: ${npcId} is not in the cast`);
+
+  /* --- The schedule against the castle. Five questions the data alone cannot
+   * answer, each of which was open until Phase 6 put the twelve on the screen:
+   * is there floor there, is it in the room the station names, can two people
+   * stand there at once, can the player reach them, and can they get there
+   * from where they were at the bell before. A station is a place a body
+   * stands, and a body that cannot walk to its next station teleports. */
+  if (nav) {
+    const code = (id) => rooms.get(id)?.code ?? id;
+    const where = (npcId, w) => {
+      const p = nav.at(npcId, w);
+      return p ? `${code(p.room)} at ${w}` : `nowhere at ${w}`;
+    };
+    for (const npcId of cast.keys()) {
+      if (!ix.schedule[npcId]) continue;
+      let previous = null, previousWatch = null;
+      for (const w of watches) {
+        const point = nav.at(npcId, w);
+        const s = station(npcId, w);
+        if (s && !point) { say(`${npcId}: station at ${w} has no tile`); continue; }
+        if (!point) continue;
+        if (!nav.standable(point)) {
+          say(`${npcId}: station at ${w} is at tile (${s.tile.join(', ')}) on level ${point.level}, where there is no floor to stand on`);
+        } else {
+          if (nav.inNamedRoom(point) === false) say(`${npcId}: station at ${w} is at tile (${s.tile.join(', ')}), which is not inside ${s.room}`);
+          /* WHICH STATIONS THE PLAYER HAS TO REACH IS THE MYSTERY'S ANSWER, NOT
+           * THE CASTLE'S. Every station but one is somewhere he walks up to;
+           * Madoc's is behind bars that never open, and mystery.json's `barred`
+           * is the fact that says so, the same field test/layout.mjs takes the
+           * cell's shutness from. So a barred room asks only for somewhere to
+           * stand within talking range, on the other side of the bars, and
+           * everywhere else asks for the floor itself. Standing on top of
+           * something is the failure this catches: the first Prime station for
+           * the Constable was floor by every other rail and was the top of the
+           * chapel's candlesticks, 0.84 m up, a step nobody can take. */
+          if (rooms.get(s.room)?.barred) {
+            if (!nav.talkable(point)) say(`${npcId}: station at ${w} is in ${code(s.room)}, behind bars with nowhere within ${TALK_RANGE} m of them to stand`);
+          } else if (!nav.walkable(point)) {
+            say(`${npcId}: station at ${w} is at tile (${s.tile.join(', ')}) in ${code(s.room)}, which the player cannot walk to`);
+          }
+          if (previous && !nav.route(previous, point)) {
+            say(`${npcId}: no path from ${where(npcId, previousWatch)} to ${where(npcId, w)}`);
+          }
+        }
+        previous = point; previousWatch = w;
+      }
+    }
+    // Two bodies in one place at one bell is one body the player can never talk to.
+    for (const w of watches) {
+      const here = [...cast.keys()].map((id) => [id, nav.at(id, w)]).filter(([, p]) => p);
+      for (let a = 0; a < here.length; a++) {
+        for (let b = a + 1; b < here.length; b++) {
+          const [idA, pA] = here[a], [idB, pB] = here[b];
+          if (pA.level !== pB.level) continue;
+          const gap = Math.hypot(pA.x - pB.x, pA.z - pB.z);
+          if (gap < STATION_CLEARANCE) {
+            say(`${idA} and ${idB} stand ${gap.toFixed(2)} m apart at ${w}, inside the ${STATION_CLEARANCE} m two bodies need`);
+          }
+        }
+      }
+    }
+  }
 
   // --- Presses: name an npc, a clue, states that exist and are reached.
   for (const p of presses) {

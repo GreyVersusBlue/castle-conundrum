@@ -32,6 +32,9 @@ import { fileURLToPath } from 'node:url';
 import { validateMystery, createMystery, earliest, shortestPath, freshState } from '../src/mystery.js';
 import { QuestGraph, validateQuest, validateAgainstNpcs } from '../src/quest-graph.js';
 import { QuestManager } from '../src/quest-manager.js';
+import { makePlan } from '../src/castle-plan.js';
+import { castleNav } from '../src/stations.js';
+import { partsOf } from './gltf.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, '..');
@@ -40,6 +43,18 @@ const mystery = read('data/mystery.json');
 const { cast } = read('data/npcs.json');
 const quest = read('data/quest.json');
 const frame = quest.frame;
+
+/* The castle itself, for the station rails (Phase 6). One read per glTF file;
+ * `makePlan` asks for the same wall model seven times over a run, and a broken
+ * copy of scene-config.json below builds a second plan from the same cache. */
+const measured = new Map();
+const boundsOf = (rel) => {
+  if (!measured.has(rel)) measured.set(rel, partsOf(path.join(ROOT, rel)));
+  return measured.get(rel);
+};
+const config = read('data/scene-config.json');
+const plan = makePlan(config, boundsOf);
+const nav = castleNav(plan, mystery);
 
 let failures = 0;
 const fail = (msg) => { console.log(`  FAIL  ${msg}`); failures++; };
@@ -50,8 +65,8 @@ const clone = (o) => JSON.parse(JSON.stringify(o));
 /* ------------------------------------------------- 1: the data validates --- */
 console.log('mystery.json validates');
 {
-  const problems = validateMystery(mystery, cast, frame);
-  check(problems.length === 0, 'validateMystery finds nothing wrong', problems.join('; '));
+  const problems = validateMystery(mystery, cast, frame, nav);
+  check(problems.length === 0, 'validateMystery finds nothing wrong, the castle included', problems.join('; '));
   const herrings = mystery.clues.filter((c) => c.herring).length;
   check(mystery.clues.length === 39 && herrings === 3, `${mystery.clues.length} clues, ${herrings} herrings (the plan's table lists 39 rows: 36 on a path, 3 herrings)`);
   check(cast.length === 12, `${cast.length} in the cast`);
@@ -62,7 +77,6 @@ console.log('mystery.json validates');
   check(new Set(cast.map((n) => n.tint)).size === 12, 'no two of the twelve share a tint');
   // Every evidence row names a prop that is already on disk (Phase 1 ships no
   // asset): a kit .glb, or a Poly Haven .gltf under the project's own folder.
-  const config = read('data/scene-config.json');
   const missing = mystery.evidence.filter((e) => {
     const rel = e.prop.endsWith('.glb') ? path.join(config.kenneyBase, e.prop) : path.join(config.polyhavenBase, e.prop);
     return !fs.existsSync(path.join(ROOT, rel));
@@ -75,7 +89,14 @@ console.log('mystery.json validates');
 /* ----------------------------------------------- 2: the validator rejects --- */
 console.log('the validator rejects');
 {
-  const broken = (mutate) => { const m = clone(mystery); const n = clone(cast); const f = clone(frame); mutate(m, n, f); return validateMystery(m, n, f); };
+  // A broken copy gets its own nav, because the schedule it is built from is
+  // the thing being broken; a break in scene-config.json gets its own plan too.
+  const broken = (mutate) => {
+    const m = clone(mystery); const n = clone(cast); const f = clone(frame); const c = clone(config);
+    mutate(m, n, f, c);
+    const p = JSON.stringify(c) === JSON.stringify(config) ? plan : makePlan(c, boundsOf);
+    return validateMystery(m, n, f, castleNav(p, m));
+  };
   const expect = (label, mutate, re) => {
     const p = broken(mutate);
     const hit = p.find((x) => re.test(x));
@@ -124,6 +145,87 @@ console.log('the validator rejects');
   expect('a herring that convicts someone', (m) => { m.accusation.convicts.porter.push('knife-found'); }, /^knife-found: marked herring but convicts someone/);
   expect('a tint that is not a hex', (m, n) => { n.find((x) => x.id === 'cook').tint = 'flour'; }, /^cook: tint "flour" is not a #rrggbb hex/);
   expect('a stage dialogueState the cast lacks', (m, n, f) => { f.stages.arrive.dialogueState = 'hushed'; }, /^constable: no dialogue.hushed lines for a stage/);
+
+  // The station rails (Phase 6), and the two breaks WISHLIST.md's Phase 6 entry
+  // names first. Each one is a change to the castle or to the schedule, not to
+  // the assertion: the message has to come out of the geometry.
+  /* THE KITCHEN HAS TWO DOORS, AND WISHLIST.md'S NAMED BREAK ONLY SHUTS ONE.
+   * Walling `kitchen-south` was meant to strand the cook, and it does not: the
+   * Kitchen Tower's own ground door opens south into the kitchen and its stair
+   * runs up to the wall walk, so she goes out through the larder, along the
+   * north walk, down another tower and into the hall — 196 cells instead of
+   * 45. That is Phase 5's lesson arriving a second time ("the walk joins the
+   * towers", #455), and it is asserted here rather than excused: the check
+   * below is that walling one door does NOT strand her, so that deleting the
+   * tower's door or its flight one day fails here and says why. The break the
+   * plan wanted is both doors, and that is the one that fires. */
+  const bothKitchenDoors = (c) => {
+    delete c.walls.find((w) => w.id === 'kitchen-south').doorways;
+    const larder = c.drums.find((d) => d.id === 'kitchen-tower');
+    larder.interior.doors = larder.interior.doors.filter((d) => d.base);
+  };
+  {
+    const c = clone(config);
+    delete c.walls.find((w) => w.id === 'kitchen-south').doorways;
+    const nav2 = castleNav(makePlan(c, boundsOf), mystery);
+    const route = nav2.route(nav2.at('cook', 'sext'), nav2.at('cook', 'vespers'));
+    check(route && route.length > 100, `walling the kitchen's south door alone leaves the cook the larder and the wall walk: ${route ? route.length - 1 : 0} cells to the Great Hall, against ${nav.route(nav.at('cook', 'sext'), nav.at('cook', 'vespers')).length - 1} with the door open`, route ? '' : 'she was stranded, so the tower door or its flight is gone');
+  }
+  expect("the kitchen walled up in scene-config.json, its south door and the larder's (`cook: no path from KI at sext to GH at vespers`)",
+    (m, n, f, c) => bothKitchenDoors(c),
+    /^cook: no path from KI at sext to GH at vespers$/);
+  expect('two of the twelve on one tile at one watch',
+    (m) => { m.schedule.cook.vespers.tile = [...m.schedule.constable.vespers.tile]; },
+    /^constable and cook stand 0.00 m apart at vespers, inside the 1.5 m two bodies need$/);
+  expect('a station inside a wall', (m) => { m.schedule.cook.prime.tile = [-3.5, -2.5]; }, /^cook: station at prime is at tile \(-3.5, -2.5\) on level 0, where there is no floor to stand on$/);
+  expect('a station outside the room it names', (m) => { m.schedule.cook.prime.tile = [-5, -0.5]; }, /^cook: station at prime is at tile \(-5, -0.5\), which is not inside kitchen$/);
+  // Lady Alys stood in the east barbican garden at Sext until this phase. The
+  // east gate is shut and never opens (scene-config.json, and WISHLIST.md's
+  // answered question 5), so the garden is scenery: nobody could ever have
+  // walked to her there, and no rail before this one could say so.
+  expect('a station the player cannot walk to', (m) => { m.schedule.lady.sext = { room: 'garden', tile: [7, -1.5] }; }, /^lady: station at sext is at tile \(7, -1.5\) in GD, which the player cannot walk to$/);
+  expect('a station with no tile', (m) => { delete m.schedule.porter.prime.tile; }, /^porter: station at prime has no tile$/);
+}
+
+/* -------------------------------------- 2b: the twelve on the castle floor ---
+ * The positive half of the rails above, and Phase 6's exit line: twelve at
+ * their Prime stations, and the bell rung four times moving every one of them
+ * along a walk that exists. The count printed is the walk itself — cell
+ * centres 0.5 m apart, so a route of 80 is a 40 m walk — and it is printed
+ * rather than asserted because what makes it right is the castle, not a number
+ * typed here.
+ */
+console.log('\nthe twelve, at their stations');
+{
+  const barred = new Set(mystery.rooms.filter((r) => r.barred).map((r) => r.id));
+  const absent = cast.filter((n) => !nav.at(n.id, 'prime')).map((n) => n.id);
+  check(absent.join() === 'merchant', `eleven of the twelve are in the castle at Prime; Thomas Wykes rides in at Terce`, `absent: ${absent.join(', ') || 'nobody'}`);
+  const offTheFloor = cast.filter((n) => { const p = nav.at(n.id, 'prime'); return p && !nav.standable(p); });
+  check(offTheFloor.length === 0, 'every Prime station is floor a body stands on', offTheFloor.map((n) => n.id).join(', '));
+  const unreachable = cast.filter((n) => {
+    const p = nav.at(n.id, 'prime');
+    return p && !(barred.has(p.room) ? nav.talkable(p) : nav.walkable(p));
+  });
+  check(unreachable.length === 0, 'the player can walk to eleven of them and to the bars of the twelfth', unreachable.map((n) => n.id).join(', '));
+
+  let moves = 0, steps = 0, missing = [];
+  for (const n of cast) {
+    let previous = null;
+    for (const w of mystery.watches) {
+      const point = nav.at(n.id, w);
+      if (point && previous) {
+        const route = nav.route(previous, point);
+        if (!route) missing.push(`${n.id} to ${w}`);
+        else { steps += route.length - 1; if (route.length > 1) moves += 1; }
+      }
+      if (point) previous = point;
+    }
+  }
+  check(missing.length === 0, `the day's ${moves} moves are all walks that exist, ${steps} cells of walking in all`, missing.join('; '));
+  const cook = nav.route(nav.at('cook', 'sext'), nav.at('cook', 'vespers'));
+  check(cook && cook.length > 1, `the cook walks ${cook ? cook.length - 1 : 0} cells from the kitchen to the Great Hall at Vespers`);
+  const porter = nav.route(nav.at('porter', 'sext'), nav.at('porter', 'vespers'));
+  check(porter && porter.some((p) => p.level === 2), `the porter climbs to the cross-wall walk: ${porter ? porter.length - 1 : 0} cells, top level ${porter ? Math.max(...porter.map((p) => p.level)) : '-'}`);
 }
 
 /* ----------------------------------------------- 3: discoverability --- */
