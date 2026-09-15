@@ -1727,7 +1727,7 @@
     }
   ],
   "courtyard": {
-    "comment": "What is left of the old courtyard block: loose kit pieces. The nine `wallRuns` that built the 7x7 courtyard and its hall are gone, replaced by `walls` and `drums` above.",
+    "comment": "What is left of the old courtyard block: loose kit pieces. The nine `wallRuns` that built the 7x7 courtyard and its hall are gone, replaced by `walls` and `drums` above. THE GREAT HALL'S ROOF (#527) is seven of these: structure-cross.glb scaled per axis to 0.5 m thick, 2.5 m tall and 7.25 m across the hall (z 6.00 to 13.25: the hall is 8 m wide and the last 0.75 is the Prison Tower's disc, which pokes into the hall's rectangle with a body standing in it at 8 m), feet at `base` 8 on the wall tops, at x -32 to -8 on 4 m centres. `roofs` names the room a piece is OVER rather than standing in, and test/layout.mjs check 14 reads it: inside that room's rectangle, clear over its floor, and out of every reachable head band. `noCollide` because a collider 8 m up that only a walk-walker could meet is a trap with no upside, and #427 means it carries none at all. The hall is 28 x 8 m with 8 m walls, so the ridge is at 10.5 and the tower tops at 12 look down on it. There is no covering over the trusses and that is a decision, not an omission (#528).",
     "placements": [
       {
         "model": "column.glb",
@@ -2040,6 +2040,13 @@
       {"model": "detail-barrel.glb", "tile": [-4.625, -3.575], "rotationY": 20, "scale": 1.5, "base": 12, "comment": "Kitchen Tower roof: a barrel of pitch in the south half."},
       {"model": "structure-pole.glb", "tile": [-8.625, 3.575], "rotationY": 0, "scale": 2.0, "base": 12, "comment": "South-west Tower roof: a signal pole in the north half, the half the stair well is not in."},
       {"model": "bricks.glb", "tile": [-4.625, 3.575], "rotationY": 15, "scale": 1.6, "base": 12, "comment": "Prison Tower roof: a pile of sling-stone in the north half."},
+      {"id": "hall-truss-1", "model": "structure-cross.glb", "tile": [-8, 2.40625], "rotationY": 0, "scale": [0.5, 2.5, 7.25], "base": 8, "noCollide": true, "roofs": "great-hall", "comment": "Great Hall truss 1 of seven, at x -32."},
+      {"id": "hall-truss-2", "model": "structure-cross.glb", "tile": [-7, 2.40625], "rotationY": 0, "scale": [0.5, 2.5, 7.25], "base": 8, "noCollide": true, "roofs": "great-hall", "comment": "Great Hall truss 2 of seven, at x -28."},
+      {"id": "hall-truss-3", "model": "structure-cross.glb", "tile": [-6, 2.40625], "rotationY": 0, "scale": [0.5, 2.5, 7.25], "base": 8, "noCollide": true, "roofs": "great-hall", "comment": "Great Hall truss 3 of seven, at x -24."},
+      {"id": "hall-truss-4", "model": "structure-cross.glb", "tile": [-5, 2.40625], "rotationY": 0, "scale": [0.5, 2.5, 7.25], "base": 8, "noCollide": true, "roofs": "great-hall", "comment": "Great Hall truss 4 of seven, at x -20."},
+      {"id": "hall-truss-5", "model": "structure-cross.glb", "tile": [-4, 2.40625], "rotationY": 0, "scale": [0.5, 2.5, 7.25], "base": 8, "noCollide": true, "roofs": "great-hall", "comment": "Great Hall truss 5 of seven, at x -16."},
+      {"id": "hall-truss-6", "model": "structure-cross.glb", "tile": [-3, 2.40625], "rotationY": 0, "scale": [0.5, 2.5, 7.25], "base": 8, "noCollide": true, "roofs": "great-hall", "comment": "Great Hall truss 6 of seven, at x -12."},
+      {"id": "hall-truss-7", "model": "structure-cross.glb", "tile": [-2, 2.40625], "rotationY": 0, "scale": [0.5, 2.5, 7.25], "base": 8, "noCollide": true, "roofs": "great-hall", "comment": "Great Hall truss 7 of seven, at x -8."},
       {"model": "detail-barrel.glb", "tile": [0.0, 4.55], "rotationY": 0, "scale": 1.5, "base": 8, "comment": "Bakehouse Tower, top room: a small barrel on the outer edge beside the well."},
       {"model": "detail-crate.glb", "tile": [6.0, 4.55], "rotationY": -20, "scale": 1.5, "base": 8, "comment": "Chapel Tower, top room: a crate on the outer edge beside the well."},
       {"model": "detail-crate.glb", "tile": [-7.5, -3.6], "rotationY": 10, "scale": 1.5, "base": 8, "comment": "North wall walk: a crate at the inner edge of the decking, west of the sentry's post at (-18, -15)."},

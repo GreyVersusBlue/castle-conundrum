@@ -8,8 +8,8 @@ ships the row is the one that records the call with a number.
 
 Written 2026-09-15 against `main` at `bb61958`, from the code and data as they
 are, not from the briefs. **Two rows shipped the same day and their sections are
-gone: asset compression (#506 to #510), sound (#519 to #522) and the tower
-tops (#523 to #526).** What asset
+gone: asset compression (#506 to #510), sound (#519 to #522), the tower tops
+(#523 to #526) and the hall's roof frame (#527, #528).** What asset
 compression left behind for the rows that touch assets is named in their
 Dependencies; what sound left behind is `data/sounds.json`, a `material` and a
 `kind` on every `plan.surfaces` entry, and `layout.mjs` check 12. Where a brief and the code disagree, the code is
@@ -483,88 +483,9 @@ a road, and "a different ending".
 
 ---
 
-## The hall roof
-
-**Rank 7. Size ½.** PLAN.md says the Great Hall is "full height with a flat
-ceiling". The config says otherwise: `great-hall` is a `tiles` room at level 0
-with `rock_tile_floor`, its north and east partitions are 8 m runs, its south
-and west walls are the curtain, and **no piece in the plan roofs it**. It is
-open to the sky. The row is a hammerbeam roof from `structure-cross.glb`, a
-day's work and not a gameplay change.
-
-### Scope
-
-- **`data/scene-config.json`.** The hall is world x -34 to -6, z 6 to 14: 28 x
-  8 m. `structure-cross.glb` is authored 2 x 2 x 2 (-1 to 1 on every axis) and
-  `scaleRuleFor` gives it `native`, so at scale 1 it is a 2 m frame. A truss
-  across 8 m at ~3 m tall wants a per-axis scale like the stairs' `[3, 3.9,
-  3.9]`; `placementMatrix` takes an array already. Seven trusses at 4 m
-  intervals (x -32, -28, ..., -8) with their feet at `y` 8, the wall top.
-  Covering, if any, from the kit's `roof*.glb` pieces at 4x (7 x 2 pieces) or
-  left off.
-- **`src/castle-plan.js`.** Placements need a `lift` (the merlon path uses one;
-  the courtyard path grounds every piece at 0). A `y` on a placement, read as
-  `lift`, is the smallest change. The trusses are `decor`, not `prop`, so
-  `layout.mjs` check 1 ignores them; they must not be `prop` or check 1 will
-  call them "inside great-hall-north" where their feet meet the wall.
-- **Colliders.** A 3 m truss at 8 m is over 0.3 m tall, so `collide` files it.
-  A body on the south curtain's walk (deck z 14 to 16 at `y` 8, head band 8.3
-  to 9.9) is 0.45 m wide; a truss or roof piece whose box reaches z 13.55 blocks
-  the walk. Either the roof stops at z 13.5 and x -33.5, or the pieces carry
-  `noCollide: true`, which means one thing everywhere (#427): nothing walks
-  into them. Nothing can stand on them either, since decor is no surface.
-- **Lighting.** The sun is directional with a 2048 shadow map over ±40 m, and
-  the hall is inside that. A covered hall gets hemisphere light (2.0 to 2.1 by
-  watch) and one brazier at tile [-5, 2.5], and #438 measured shadowed slate at
-  hemisphere 2.0 as mean luma 27 of 255. Six of the twelve stand in this room
-  at Vespers and the accusation is made there.
-- **`test/layout.mjs`, new check 8.** Every roof piece over a room clears
-  `HEAD_HIGH` over that room's floor and lies inside the room's plan rectangle
-  (plus the wall thickness), and no roof piece's collider overlaps a reachable
-  level-2 cell's head band. Break: lower one truss to `y` 1.5 (`truss-3 hangs
-  1.50 m over great-hall's floor`); slide the roof to z 14.5 (`roof-6 blocks 5
-  reachable cells on south-curtain-mid-walk`).
-- **`test/plan-vs-scene.mjs`** covers placement at 0.01 m with no change.
-
-### Acceptance
-
-- Seven trusses within 0.01 m of the plan; the south walk still walkable end to
-  end (`layout.mjs` 6b); check 8 green and broken twice as above.
-- A screenshot from inside the hall at Vespers in the next GPU run, and a luma
-  read off the floor the way #438 read the wall. If it is under ~25, a second
-  brazier at the hall's east end is one config line.
-
-### Open calls
-
-- **Trusses only, or a covering too?** Recommend **trusses and the kit roof
-  pieces**. Hammerbeams against open sky are a ruin, not Stirling. The kit's
-  pixel-art roof is consistent with #411 (the kit supplies the shapes the maps
-  do not have; there is no roof texture on the list).
-- **Collide or not?** Recommend **`noCollide: true` on every roof piece**, with
-  the footprint still held inside the walls by check 8. A collider 8 m up that
-  only a walk-walker could ever meet is a trap with no upside.
-- **Windows?** A partition run can carry a `doorway` with a `base` (Lady Alys's
-  window, #453). Recommend **two on `great-hall-north` at `base` 5**, so the
-  roofed hall keeps daylight and the covering does not turn the accusation
-  scene black. Two config entries, and `runBoxes` already cuts them.
-
-### Dependencies
-
-- None. Lighting verification is **The GPU run**'s class.
-
-### Constraints
-
-- #500 (every piece is a plan piece; a lift path in placements is plan code).
-- #427 (`noCollide` means no colliders at all; do not special-case).
-- #438 (measure the pixel, not the thumbnail, if the hall reads dark).
-- #411 (kit for shapes the maps lack).
-- #34 (two breaks on check 8).
-
----
-
 ## A second day
 
-**Rank 8. Size 2+.** The save has `watch` and `accusations[]`. The engine's
+**Rank 7. Size 2+.** The save has `watch` and `accusations[]`. The engine's
 `ring()` stops at the fourth bell and `accuse()` records a verdict; the epilogue
 pane's one button is `restart`, which erases the save and reloads. The content
 for a day two does not exist. This section is about the first increment, what
@@ -691,7 +612,7 @@ increment 1 shipped and what is left.
 
 ## The two plan suites
 
-**Rank 9. Size ¼.** `test/layout.mjs` (608 lines, Node, ~1 s) checks the
+**Rank 8. Size ¼.** `test/layout.mjs` (608 lines, Node, ~1 s) checks the
 plan's arithmetic; `test/plan-vs-scene.mjs` (528 lines, headless Chromium
 against `vite dev`, about a minute) checks the page against the same plan.
 Both import `makePlan`, `walkability` and `partsOf`. The row: decide what each
@@ -799,3 +720,56 @@ Constable's two conversations and the panel.
 - #500 (the box diff is the net and is not up for consolidation).
 - #53 (nothing moved into Node may be a runtime question, and nothing moved
   into the browser may be timed).
+
+---
+
+## The hall covering
+
+**Rank 9. Size ¼.** #527 put seven trusses across the Great Hall at 8 m and
+#528 left the space between them open, because neither half of a covering can
+be judged from this container. This row is both halves, for a session with a
+GPU.
+
+### Scope
+
+- **`data/scene-config.json`.** Kit `roof*.glb` pieces over the trusses, as
+  `courtyard.placements` with `roofs: "great-hall"`, `noCollide: true` and a
+  per-axis `scale` — all three already exist (#527). The hall is 28 x 8 m, so
+  a 4 m module is 7 x 2 pieces; which piece and which way it slopes is the
+  question, and it is answered by rendering one and looking.
+- **Two `doorway` entries on `great-hall-north` at `base` 5**, the way Lady
+  Alys's window is written (#453). `runBoxes` cuts them already and each cut
+  adds a sill surface, which `data/sounds.json` already answers for.
+- **Nothing in `src/`.** `layout.mjs` check 14 holds a covering exactly as it
+  holds a truss.
+
+### Acceptance
+
+- Check 14 green with the covering in place, and broken once more on it.
+- A screenshot from inside the hall at Vespers, and a **luma read off the
+  floor** the way #438 read the wall. Under about 25 of 255, a second brazier
+  at the hall's east end is one config line, and the windows are the other
+  lever.
+- The south walk still walkable end to end (`layout.mjs` 6b).
+
+### Open calls
+
+- **Which roof piece.** `roof.glb`, `roof-side.glb`, `roof-high-side.glb` and
+  `roof-edge.glb` all measure 1 x 1 x 1 (or 1 x 0.5 x 1) with every part
+  filling the same box, so the kit's own screenshots or one render answer this
+  and nothing in Node can.
+- **Windows first, or the covering first?** Recommend **the covering first,
+  then measure, then the windows if the number says so.** Two windows added
+  against a hall that turns out to be bright enough are two holes in a wall
+  for nothing.
+
+### Dependencies
+
+- **The GPU run** is what unblocks this; both criteria are a render.
+
+### Constraints
+
+- #427 (`noCollide` is all or nothing).
+- #438 (measure the pixel).
+- #411 (kit for shapes the maps lack).
+- #53, #528 (what a covered hall looks like is not a CI question).

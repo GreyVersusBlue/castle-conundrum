@@ -2035,3 +2035,58 @@ head in the stone. The builder drawing a level-3 floor 4 m low:
 `plan-vs-scene.mjs`. And the level list, with `royal-apartments` moved to
 level 4 in `mystery.json`: `room royal-apartments: level 4 is not one of the
 castle's levels 0, 1, 2, 3`.
+
+## The Great Hall gets a roof frame (2026-09-15)
+
+**Ranked row "Stirling's Great Hall roof", claimed on
+`claude/festive-hopper-nf7391` (#283, PR #8).** `PLAN.md` said the hall was
+"full height with a flat ceiling" and the config said otherwise: 28 x 8 m of
+`rock_tile_floor` with 8 m walls and nothing at all over it, open to the sky
+since Phase 3. Six of the twelve stand in it at Vespers and the accusation is
+made there. Decisions #527 and #528.
+
+- **Seven trusses, and a placement can be scaled per axis** (#527).
+  `structure-cross.glb` is authored 1 x 1 x 1 — `SPECS.md` said 2 x 2 x 2,
+  measured off the file it is 1 — and one number cannot make a truss of it.
+  `courtyard.placements` already handled `typeof p.scale === 'number'`;
+  `scaleFor` already handled an array, because the stairs are scaled
+  `[3, 3.9, 3.3]`. Joining the two is one condition. The trusses are
+  `[0.5, 2.5, 7.25]` at `base` 8 on x -32 to -8 on 4 m centres: 0.5 m thick,
+  ridge at 10.5 m, under the tower tops at 12. `noCollide: true`, which under
+  #427 means no collider at all, because a collider 8 m up that only a
+  walk-walker could ever meet is a trap with no upside. What keeps them out of
+  the way instead is a check.
+- **`roofs: "<room>"` and `layout.mjs` check 14** (#527). A piece with `roofs`
+  is over a room rather than standing in it, and three things hold: it clears
+  `HEAD_HIGH` over that room's floor, its footprint is inside that room's own
+  rectangle, and no reachable cell's head band is inside its box **grown by a
+  body's radius**. The last clause is #511 one storey up — the grid samples a
+  cell centre and a body is 0.9 m across — and it is not decoration: at the
+  hall's full 8 m span the fourth truss reaches into the Prison Tower's disc,
+  which pokes 0.75 m into the hall's rectangle and has a body standing in it at
+  8 m. The trusses are 7.25 m for that reason and the number is in the config's
+  comment with it. Read off the box and not off the colliders, because they
+  have none: a truss over the south walk would be walked *through*, which is
+  worse than walked into.
+- **No covering, and that is a decision** (#528). `SPECS.md` recommended the
+  kit's `roof*.glb` over the trusses — "hammerbeams against open sky are a
+  ruin, not Stirling" — and that recommendation cannot be taken in this
+  container. `partsOf` hands back four parts for `roof.glb` and all four have
+  the same 1 x 1 x 1 box, so nothing here knows which way the thing slopes;
+  fourteen pieces guessed from a bounding box is the kind of work that reads as
+  wrong in one glance and green in every suite. And a covering is the one
+  change on this list that can make a room dark: #438's answer to "is it dark"
+  is a luma read off a real render, six of the twelve stand in this room at
+  Vespers, and the accusation is made there. So the trusses ship and the
+  covering — with the two north windows at `base` 5 that exist to offset it —
+  is a new `BACKLOG.md` row behind the GPU run, which is what unblocks both
+  halves of it.
+
+**The breaks, from green.** Check 14, one truss dropped to `base` 1.5:
+`hall-truss-3 hangs 1.50 m over great-hall's floor at 0.00 — a standing body
+needs 1.9`. One truss slid 1 m south: `hall-truss-3 reaches outside
+great-hall: 0.50 m past its south wall`. And the head-band clause, with one
+truss put back to the hall's full 8 m: `hall-truss-4 blocks 2 reachable
+cell(s), the first at (-19.75, 13.75) standing at 8.00 on
+floor-prison-tower-2` — which is how the 7.25 m span was found rather than
+chosen.

@@ -840,6 +840,54 @@ console.log('\nnothing stands inside a turret');
   if (!inside.length) pass(`${turrets.length} turrets, ${walk.cells.length} reachable cells, none of them in one`);
 }
 
+/* --------------------------- 14: a roof is over its room and nothing else ---
+ * The Great Hall has been open to the sky since Phase 3 and PLAN.md said it had
+ * a flat ceiling; #527 puts seven trusses across it. A piece with `roofs` is
+ * over a room rather than standing in it, and three things have to hold or it is
+ * either in the way or not there: it clears a standing body over that room's
+ * floor, its footprint is inside that room's own rectangle, and no reachable
+ * cell anywhere has its head band inside the piece's box, GROWN BY A BODY'S
+ * RADIUS: the grid samples a cell centre and a body is 0.9 m across, which is
+ * the whole of #511 one storey up. The last one is read off the BOX and not off
+ * the colliders, because these carry `noCollide` (#427) — a truss that reaches
+ * over the south walk would be walked through rather than walked into, and
+ * walked through is worse. It is also the line that set the trusses' span: at
+ * the hall's full 8 m the fourth reaches into the Prison Tower's disc, which
+ * pokes 0.5 m into the hall's rectangle and has a body standing in it at 8 m.
+ */
+console.log('\na roof over its room and out of everyone\'s way');
+{
+  const roofs = plan.pieces.filter(p => p.roofs);
+  if (!roofs.length) fail('no piece in the castle roofs a room — this check measured nothing');
+  const byId = new Map(plan.rooms.map(r => [r.id, r]));
+  let clear = 0;
+  for (const piece of roofs) {
+    const room = byId.get(piece.roofs);
+    if (!room) { fail(`${piece.id} says it roofs "${piece.roofs}", which is not a room`); continue; }
+    const head = piece.box.min.y - room.top;
+    if (head < HEAD_HIGH - 1e-9) { fail(`${piece.id} hangs ${f2(head)} m over ${room.id}'s floor at ${f2(room.top)} — a standing body needs ${HEAD_HIGH}`); continue; }
+    const out = [];
+    if (piece.box.min.x < room.bounds.min.x - 1e-6) out.push(`${f2(room.bounds.min.x - piece.box.min.x)} m past its west wall`);
+    if (piece.box.max.x > room.bounds.max.x + 1e-6) out.push(`${f2(piece.box.max.x - room.bounds.max.x)} m past its east wall`);
+    if (piece.box.min.z < room.bounds.min.z - 1e-6) out.push(`${f2(room.bounds.min.z - piece.box.min.z)} m past its north wall`);
+    if (piece.box.max.z > room.bounds.max.z + 1e-6) out.push(`${f2(piece.box.max.z - room.bounds.max.z)} m past its south wall`);
+    if (out.length) { fail(`${piece.id} reaches outside ${room.id}: ${out.join(', ')}`); continue; }
+    const blocked = walk.cells.filter(c => {
+      const x = c.i * GRID + GRID / 2, z = c.j * GRID + GRID / 2;
+      if (x < piece.box.min.x - BODY_RADIUS || x > piece.box.max.x + BODY_RADIUS) return false;
+      if (z < piece.box.min.z - BODY_RADIUS || z > piece.box.max.z + BODY_RADIUS) return false;
+      return c.h + HEAD_LOW < piece.box.max.y - 1e-6 && c.h + HEAD_HIGH > piece.box.min.y + 1e-6;
+    });
+    if (blocked.length) {
+      const where = blocked[0];
+      fail(`${piece.id} blocks ${blocked.length} reachable cell(s), the first at (${f2(where.i * GRID + GRID / 2)}, ${f2(where.j * GRID + GRID / 2)}) standing at ${f2(where.h)} on ${where.surface}`);
+      continue;
+    }
+    clear++;
+  }
+  if (clear === roofs.length) pass(`${roofs.length} roof pieces, each inside its room and ${f2(Math.min(...roofs.map(p => p.box.min.y - byId.get(p.roofs).top)))} m or more over its floor, none in a reachable head band`);
+}
+
 /* ---------------------- 12: every surface a foot can land on makes a noise ---
  * The castle has made no sound for seven phases and now makes two (#519). The
  * footstep is chosen by the surface under the feet, so every one of the plan's

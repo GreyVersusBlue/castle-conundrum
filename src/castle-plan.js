@@ -1400,7 +1400,12 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
       // A number is a scale and a string is a rule (see scaleFor). The kit's
       // props are authored at 1 unit and the rules only know walls, towers and
       // columns, so a 4 m post and a 0.32 m dais step say their own number.
-      scaleRule: typeof p.scale === 'number' ? p.scale : scaleRuleFor(p.model),
+      // A number is a scale and an array is a scale per axis, the way the
+      // stairs are scaled; anything else is a rule. The hall's trusses are the
+      // first placement to want three numbers (#527): one piece stretched 0.5
+      // wide, 2.5 high and 7.5 across the hall is a truss, and no single
+      // number is.
+      scaleRule: (typeof p.scale === 'number' || Array.isArray(p.scale)) ? p.scale : scaleRuleFor(p.model),
       // `base` stands a piece on an upper floor: the tally stick's crate on the
       // south walk. Nothing on the ground says it.
       lift: p.base || 0,
@@ -1411,6 +1416,10 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
     addPiece({
       id, kind, model: kBase + p.model, level: levelUnder(p.base || 0), curtain: !!p.curtain,
       label: p.comment || p.model, evidence: p.evidence || null, bell: !!p.bell,
+      // `roofs: "<room id>"` says this piece is over that room's floor rather
+      // than standing on it, which is what test/layout.mjs check 14 holds to
+      // the room's own rectangle and out of every reachable head band (#527).
+      roofs: p.roofs || null,
       transform, box, boxes: p.noCollide ? [] : [box],
     });
     // `noCollide` means one thing everywhere: this piece contributes no colliders.
