@@ -31,7 +31,8 @@ and the castle says where you are: a HUD room line, a tint per drum, and
 something in every room. What did not ship is new texture sets, because this
 container cannot reach Poly Haven or KTX-Software (#518); that is rank 7 now.
 
-**11 ranked items.** Take rank 1.
+**11 ranked items.** Ranks 1, 6, 9 and 11 are claimed on
+`claude/festive-hopper-nf7391`. Take rank 2.
 
 Two things are true of the whole list and worth saying once. **Nothing here has
 been seen on a GPU since Phase 5.** `npm run play` walks the whole intended day
@@ -76,17 +77,17 @@ your decisions and this file's header, ranks and `Claimed` column are updated
 
 | Rank | Item | Size | Model | Claimed | Detail |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Sound: footsteps by surface, and the bell | ½ | Fable 5.1 |  | [Sound](SPECS.md#sound) |
+| 1 | Sound: footsteps by surface, and the bell | ½ | Fable 5.1 | `claude/festive-hopper-nf7391` | [Sound](SPECS.md#sound) |
 | 2 | A fourth body, and a woman's in particular | ½ | Fable 5.1 |  | [A fourth body](SPECS.md#a-fourth-body) |
 | 3 | A real GPU run of `npm run play`, and somebody looks at the twelve | ¼ | Opus 5 |  | [The GPU run](SPECS.md#the-gpu-run) |
 | 4 | A new preview and og card, from that run | ¼ | Opus 5 |  | [The GPU run](SPECS.md#the-gpu-run) |
 | 5 | Touch: pointer lock has no phone form | 1 | Opus 5 |  | [Touch](SPECS.md#touch) |
-| 6 | The turrets and the tower tops: four cylinders nobody can climb | 1 | Fable 5.1 |  | [The turrets](SPECS.md#the-turrets) |
+| 6 | The turrets and the tower tops: four cylinders nobody can climb | 1 | Fable 5.1 | `claude/festive-hopper-nf7391` | [The turrets](SPECS.md#the-turrets) |
 | 7 | Four texture sets: a second wall stone, a tower stone, a plaster, a floor | ½ | Fable 5.1 |  | [The texture sets](SPECS.md#the-texture-sets) |
 | 8 | The town side: a textured ground outside the west barbican, and a road | 1 | Fable 5.1 |  | [The town side](SPECS.md#the-town-side) |
-| 9 | Stirling's Great Hall roof: a hammerbeam from `structure-cross.glb` | ½ | Sonnet 5 |  | [The hall roof](SPECS.md#the-hall-roof) |
+| 9 | Stirling's Great Hall roof: a hammerbeam from `structure-cross.glb` | ½ | Sonnet 5 | `claude/festive-hopper-nf7391` | [The hall roof](SPECS.md#the-hall-roof) |
 | 10 | A second day, in which the epilogue's consequences play | 2+ | Opus 5 |  | [A second day](SPECS.md#a-second-day) |
-| 11 | `test/layout.mjs` and `test/plan-vs-scene.mjs` overlap; decide what each is for | ¼ | Sonnet 5 |  | [The two plan suites](SPECS.md#the-two-plan-suites) |
+| 11 | `test/layout.mjs` and `test/plan-vs-scene.mjs` overlap; decide what each is for | ¼ | Sonnet 5 | `claude/festive-hopper-nf7391` | [The two plan suites](SPECS.md#the-two-plan-suites) |
 
 ## Sound
 
