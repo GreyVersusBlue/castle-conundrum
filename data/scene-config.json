@@ -1841,13 +1841,13 @@
         "id": "pouch",
         "model": "detail-crate-small.glb",
         "tile": [
-          6.225,
-          3.775
+          6.075,
+          4.575
         ],
         "rotationY": 35,
         "scale": 2,
         "evidence": "pouch",
-        "comment": "the clerk's pouch, in the chapel"
+        "comment": "the clerk's pouch, in the chapel Moved in Phase 5 to the south crescent beside the foot of the Chapel Tower's lower flight, which it had stood inside (#460)."
       },
       {
         "id": "knife",
@@ -1864,12 +1864,12 @@
         "id": "cloak-crate",
         "model": "detail-crate.glb",
         "tile": [
-          -9.125,
-          3.875
+          -8.7,
+          3.6
         ],
         "rotationY": 15,
         "scale": 2,
-        "comment": "the laundry crate the cloak is over; the cloak itself is builtProps"
+        "comment": "the laundry crate the cloak is over; the cloak itself is builtProps Moved in Phase 5 to the South-west Tower's east half: its lower flight stands in the west half, where the crate had been (#460)."
       },
       {
         "id": "tally",
@@ -1976,21 +1976,22 @@
       "id": "lantern-chapel",
       "model": "wooden_lantern_01_1k.gltf/wooden_lantern_01_1k.gltf",
       "tile": [
-        5.8,
-        3.8
+        5.875,
+        4.55
       ],
       "evidence": "body",
-      "comment": "Where Hywel was found, at the foot of the Chapel Tower stair. mystery.json's `body` row names this prop; the second lantern in the castle, which is why interiorProps carry an optional `id` now."
+      "comment": "Where Hywel was found, at the foot of the Chapel Tower stair. mystery.json's `body` row names this prop; the second lantern in the castle, which is why interiorProps carry an optional `id` now. Moved in Phase 5 clear of the Chapel Tower's lower flight, which stands in the tower's east half with its foot at the south end (#460): the candles to the south-west quadrant, the lantern beside the foot."
     },
     {
       "id": "candles-chapel",
       "model": "brass_candleholders_1k.gltf/brass_candleholders_1k.gltf",
       "tile": [
-        5.85,
-        4.275
+        5.675,
+        4.325
       ],
       "rotationY": 10,
-      "evidence": "candle"
+      "evidence": "candle",
+      "comment": "Moved in Phase 5 clear of the Chapel Tower's lower flight, which stands in the tower's east half with its foot at the south end (#460): the candles to the south-west quadrant, the lantern beside the foot."
     },
     {
       "id": "table-muniment",
@@ -2048,8 +2049,8 @@
       "evidence": "cloak",
       "material": "wool",
       "tile": [
-        -9.125,
-        3.875
+        -8.7,
+        3.6
       ],
       "base": 0.6,
       "size": [

@@ -130,8 +130,10 @@ export class PlayerController {
     const low = this.feet + HEAD_LOW, high = this.feet + HEAD_HIGH;
     for (const { box } of colliders) {
       // only what crosses the standing body's column: not a floor underfoot, not
-      // a lintel or a slab over the head, not a ground-floor wall under the walk
-      if (box.min.y >= high || box.max.y <= low) continue;
+      // a lintel or a slab over the head, not a ground-floor wall under the walk.
+      // A top exactly a step over the feet is a step (the same millionth the
+      // grid's blocked() carries, #459).
+      if (box.min.y >= high - 1e-6 || box.max.y <= low + 1e-6) continue;
 
       const cx = THREE.MathUtils.clamp(pos.x, box.min.x, box.max.x);
       const cz = THREE.MathUtils.clamp(pos.z, box.min.z, box.max.z);

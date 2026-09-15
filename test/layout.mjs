@@ -94,6 +94,23 @@ for (const prop of props) {
 }
 if (!failures) pass(`${props.length} interior props, none of them inside any of the ${stone.length} stone pieces`);
 
+/* ----------------------------------------- 1b: no prop is inside a flight ---
+ * A flight is a surface and no collider, so a prop standing in its footprint
+ * is drawn through it and blocks nothing the grid can see. Phase 4 placed the
+ * chapel's candles and the laundry's cloak crate where Phase 5's lower flights
+ * came to stand; this is what said so.
+ */
+{
+  const flights = plan.pieces.filter(p => p.kind === 'stair');
+  const inFlight = [];
+  for (const prop of [...props, ...plan.pieces.filter(p => p.kind === 'decor' && p.label !== 'battlement')]) {
+    const hit = flights.find(f => overlaps(prop.box, f.box));
+    if (hit) inFlight.push(`${prop.id} stands in ${hit.label}`);
+  }
+  for (const line of inFlight) fail(line);
+  if (!inFlight.length) pass(`no prop stands in any of the ${flights.length} flights`);
+}
+
 /* ------------------------------ 2: the cabinet and the commode stand close ---
  * The other half of the same number. Not being in the wall is the floor; these
  * two are meant to be AGAINST their side walls, and until 2026-09-14 they stood
@@ -456,6 +473,7 @@ console.log('\neach tower\'s upper rooms, by its own stairs alone');
     if (drum.lowerFlight === false) {
       const ground = own.find(r => r.drum === drum.id && r.level === 0);
       if (!ground) fail(`${drum.id} has no ground room`);
+      else if (!ground.locked) fail(`${drum.id} has no lower flight and its ground room ${ground.id} is open — only a shut room may keep its stairs from the walk`);
       else if (ground.reachable) fail(`${ground.id} can be reached down ${drum.id}'s stairs from the walk — ${ground.cells} cells — and it is shut for a reason`);
       else pass(`${ground.id} cannot be reached from above`);
     }
@@ -487,6 +505,34 @@ console.log('\nthe walk, from the North-west Tower\'s stairs alone');
     if (a > lo || b < hi) fail(`${id} is reached only over ${axis} ${f2(a)}..${f2(b)} from the North-west Tower's stairs, not ${lo}..${hi} — the walk is broken part way along it`);
     else pass(`${id} reached end to end, ${axis} ${f2(a)}..${f2(b)}`);
   }
+}
+
+/* ------------------------------ 6c: nothing stands inside a flight ---
+ * A flight is a surface with no collider, so what keeps a body out of its
+ * wedge — off the slab under the upper flight, out of the tower floor under
+ * the lower one — is `surfacesAt` discarding every floor between a ramp's foot
+ * and its height at the point. Without that, the grid stands a body on the
+ * first floor with the upper flight passing through its chest, and reports one
+ * more reachable cell and no failure. So: no reachable cell may lie in a
+ * flight's footprint below the flight, unless it is on the flight itself.
+ */
+console.log('\nnothing stands inside a flight');
+{
+  const ramps = plan.surfaces.filter(s => s.slope);
+  const inside = [];
+  for (const c of walk.cells) {
+    const x = c.i * GRID + GRID / 2, z = c.j * GRID + GRID / 2;
+    for (const r of ramps) {
+      if (c.surface === r.id) continue;
+      if (x < r.box.min.x || x > r.box.max.x || z < r.box.min.z || z > r.box.max.z) continue;
+      const [ax, az, ay] = r.slope.from, [bx, bz, by] = r.slope.to;
+      const t = Math.max(0, Math.min(1, ((x - ax) * (bx - ax) + (z - az) * (bz - az)) / ((bx - ax) ** 2 + (bz - az) ** 2)));
+      const h = ay + (by - ay) * t;
+      if (c.h >= r.box.min.y - 1e-6 && c.h < h - 1e-6) inside.push({ c, r, h });
+    }
+  }
+  if (inside.length) fail(`${inside.length} reachable cells stand inside a flight's body, e.g. (${(inside[0].c.i * GRID + GRID / 2).toFixed(2)}, ${(inside[0].c.j * GRID + GRID / 2).toFixed(2)}) at ${inside[0].c.h.toFixed(2)} under ${inside[0].r.id}, which is at ${inside[0].h.toFixed(2)} there`);
+  else pass(`no reachable cell is inside any of the ${ramps.length} flights`);
 }
 
 /* ------------------------------- 7: head room under every upper floor ---

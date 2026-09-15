@@ -779,10 +779,15 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
     byLevel.set(level, r);
   }
 
-  const collide = (id, box) => {
+  const collide = (id, box, { thin = false } = {}) => {
     // paper-thin and ground-hugging decor never blocked movement and does not
     // start now: castle-builder.js's addCollider dropped anything under 0.3 m.
-    if (boxHeight(box) < MIN_COLLIDER_HEIGHT) return;
+    // A FLOOR IS NOT DECOR. A slab is 0.2 m and a deck 0.1, and for the first
+    // hour of Phase 5 this line dropped every one of them, so no body on a
+    // flight ever met the floor over its head and the wells cut in the slabs
+    // were needed by nothing — found by taking the wells out on purpose and
+    // watching every suite stay green (#34, #458). `thin` is how a floor gets in.
+    if (!thin && boxHeight(box) < MIN_COLLIDER_HEIGHT) return;
     colliders.push({ id, box });
   };
 
@@ -1017,14 +1022,26 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
       const width = (raw.max.x - raw.min.x) * scale[0];
       const outer = drum.stairs === 'north' ? -1 : drum.stairs === 'south' ? 1 : null;
       if (outer === null) throw new Error(`[castle-plan] ${drum.id}'s stairs side is "${drum.stairs}", not north or south`);
+      // THE LOWER FLIGHT GOES ON THE HALF AWAY FROM THE GROUND DOOR. It splits
+      // the tower's floor into two halves joined only through its own footprint
+      // and the crescents beside it, and the crescents are cut by the ring's
+      // sector boxes at the diagonals; a body that comes in on the flight's own
+      // side cannot get round to its foot. So the flight stands in the west half
+      // where the door faces east, and the east half otherwise, and the upper
+      // flight rises toward it so their overlap stays the lower flight's low
+      // half under the upper flight's high half (#460). Found when the ramp's
+      // body stopped being walkable floor: five towers went dark at once.
+      const ground = d.doors.find((x) => x.base === 0);
+      const doorEast = ground ? Math.sin(ground.theta * Math.PI / 180) > 1e-9 : false;
+      const sideX = doorEast ? -1 : 1;
       // A tower whose ground room is shut — the cell, the muniment room — has no
       // lower flight: a stair from a barred room to the walk is a way round the
       // bars, and the first time every tower had both flights the cell and the
       // muniment room both read reachable from the spawn, down from the walk
       // (#455). Its upper flight stands on a first floor reached from the walk.
       const flights = [
-        { n: 1, tile: [(d.cx + width / 2) / tileSize, d.cz / tileSize], rotationY: outer < 0 ? 0 : 180, level: 0 },
-        { n: 2, tile: [d.cx / tileSize, (d.cz + outer * width / 2) / tileSize], rotationY: 90, level: 1 },
+        { n: 1, tile: [(d.cx + sideX * width / 2) / tileSize, d.cz / tileSize], rotationY: outer < 0 ? 0 : 180, level: 0 },
+        { n: 2, tile: [d.cx / tileSize, (d.cz + outer * width / 2) / tileSize], rotationY: sideX > 0 ? 90 : 270, level: 1 },
       ].filter((f) => f.n !== 1 || drum.lowerFlight !== false);
       for (const f of flights) {
         const { transform, box } = place({ parts, tileSize, tile: f.tile, rotationY: f.rotationY, scaleRule: scale, lift: floorTop(f.level) });
@@ -1143,7 +1160,7 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
       material: w.material, repeatMetres: w.repeatMetres || null, flush: true,
       label: `${run.id} walk`, outline, cutouts: met, transform: { position: [0, 0, 0], rotationY: 0, scale: 1 }, box: pbox, boxes: [pbox],
     });
-    collide(id, pbox);
+    collide(id, pbox, { thin: true });
     surfaces.push({ id, box, top: box.max.y, level, slope: null });
   }
 
@@ -1356,7 +1373,7 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
       outline, cutouts, disc: d ? { cx: d.cx, cz: d.cz, radius: d.inner } : null, holes,
       transform: { position: [0, 0, 0], rotationY: 0, scale: 1 }, box: pbox, boxes,
     });
-    boxes.forEach((b, i) => collide(boxes.length === 1 ? id : `${id}-${i}`, b));
+    boxes.forEach((b, i) => collide(boxes.length === 1 ? id : `${id}-${i}`, b, { thin: true }));
     surfaces.push({ id, box, top, level: r.level, slope: null, disc: d ? { cx: d.cx, cz: d.cz, radius: d.inner } : null, holes });
   }
 
@@ -1464,8 +1481,12 @@ export function surfacesAt(plan, x, z) {
   }
   const bodies = plan.surfaces.filter((s) => s.slope && coversSurface(s, x, z))
     .map((s) => ({ lo: s.box.min.y, hi: heightOnSurface(s, x, z) }));
+  // From the ramp's own foot height up: the slab the upper flight stands on IS
+  // inside its body wherever the flight is above it. The first version said
+  // `> lo` and let a body walk under the flight along that slab; found by
+  // taking the whole rule out on purpose and watching nothing fail (#34).
   return found
-    .filter((f) => !bodies.some((b) => f.h > b.lo + 1e-6 && f.h < b.hi - 1e-6))
+    .filter((f) => !bodies.some((b) => f.h >= b.lo - 1e-6 && f.h < b.hi - 1e-6))
     .sort((a, b) => b.h - a.h);
 }
 
@@ -1534,10 +1555,16 @@ export function walkability(plan, { grid = GRID, stepUp = STEP_UP } = {}) {
       columns.get(i).push(c);
     }
   }
+  // A box whose top is exactly HEAD_LOW over the feet is a step, not a wall,
+  // and the top cell of a flight stands exactly a step under the slab beside
+  // its well: 7.7 against 8.0. Two identical towers once disagreed about that
+  // cell because 4 + 3.9 * (3.7 / 3.9) rounds differently from one x to the
+  // next, so the comparison carries a millionth (#459).
+  const EPS = 1e-6;
   const blocked = (i, j, h) => {
     const x0 = i * grid, z0 = j * grid, x1 = x0 + grid, z1 = z0 + grid;
     return (columns.get(i) || []).some((c) =>
-      meets2D(c.box, x0, z0, x1, z1) && c.box.min.y < h + HEAD_HIGH && c.box.max.y > h + HEAD_LOW);
+      meets2D(c.box, x0, z0, x1, z1) && c.box.min.y < h + HEAD_HIGH - EPS && c.box.max.y > h + HEAD_LOW + EPS);
   };
 
   const key = (i, j, h) => `${i},${j},${h.toFixed(3)}`;
