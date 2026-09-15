@@ -2090,3 +2090,67 @@ truss put back to the hall's full 8 m: `hall-truss-4 blocks 2 reachable
 cell(s), the first at (-19.75, 13.75) standing at 8.00 on
 floor-prison-tower-2` — which is how the 7.25 m span was found rather than
 chosen.
+
+## The line between the two plan suites (2026-09-15)
+
+**Ranked row "`test/layout.mjs` and `test/plan-vs-scene.mjs` overlap; decide
+what each is for", claimed on `claude/festive-hopper-nf7391` (#283, PR #8).**
+Both import `makePlan`, `walkability` and `partsOf`; one is 1 s of Node and one
+is two minutes of headless Chromium; and a reader could not tell which of them
+a new line belonged in. Decision #529.
+
+- **The line, and it is written in three places now** (#529). `layout.mjs` is
+  every fact derivable from the plan in Node: geometry, reachability, the plan
+  against `mystery.json`. `plan-vs-scene.mjs` is **the seams only** — that the
+  builder placed what the plan named (the box diff), that the runtime stands
+  where the plan says (`settle()`), that a tint reached a live material, and
+  that the DOM wiring works — and **nothing it asserts may be provable in
+  Node**. `test/mystery.mjs` owns the stations, through `validateMystery`'s nav
+  rails. It is in both files' headers and in `CLAUDE.md`'s #500 bullet.
+- **`layout.mjs` check 5 is deleted** (#529). It filtered both lists in
+  `npcs.json` for entries with a `position` array; `npcs` was deleted in Phase
+  6 (#472) and no `cast` entry has ever carried one, so it ran zero times and
+  asserted nothing (#13). Its job is `validateMystery`'s.
+- **Two browser assertions become preconditions that throw** (#529). "Every
+  room has a floor at its centre to anchor the camera on" and "there is floor
+  under every Prime station" are Node facts; a suite that cannot anchor or
+  cannot place a body cannot do its job, so it now stops with the room or the
+  name in the message and asserts nothing. A `fail()` reads as "the castle is
+  wrong"; a throw reads as "this suite cannot run", which is the true claim.
+  The assertion count is down by three.
+- **One assertion moves to where it can fail** (#529). The coverage guard
+  `nobody is upstairs at Prime, so this checks nothing` sat inside
+  `plan-vs-scene.mjs`'s height check. Whether anybody is upstairs at Prime is a
+  fact about `mystery.json`'s schedule, so it is beside the schedule in
+  `test/mystery.mjs` now, as its own line.
+- **AND NO CHECK CAME BACK THE OTHER WAY, ON PURPOSE** (#529). `SPECS.md` asked
+  for the room-centre assertion to become a `layout.mjs` line. Written down
+  there it cannot fail, and three attempts proved it: a room the fill reaches
+  has cells by definition; the only two it does not reach are ground rooms with
+  the base pavers under them; barring the Stockhouse walk door leaves its top
+  room reachable up its own stairs anyway; and deleting a tower room's `floor`
+  stops the room naming one at all, so the check filters it out instead of
+  failing. The nearest falsifiable neighbour — "a room that names a floor above
+  the ground is built and walked on" — was written in full and could not be
+  made to fail either, by removing the floor or by moving its surface 4 m. So
+  nothing was added. Shipping a third line guarding the same absence, all three
+  dead, is precisely what this row existed to avoid (#34, #147, #13), and the
+  row's own text said so: "that is exactly the reasoning that leaves two lines
+  guarding the same absence and both of them dead."
+- **The clock was never the point, and is not now.** `plan-vs-scene.mjs`'s two
+  minutes is one page load under SwiftShader, not the assertions; moving three
+  of them out saved nothing measurable. `SPECS.md` said so before the work
+  started and the measurement agrees: 114.2 s before, 114.2 s after.
+
+**The breaks, from green.** The moved coverage guard, with Lady Alys's Prime
+station moved down into the Great Hall: `0 of the cast is upstairs at Prime, so
+plan-vs-scene.mjs's height check has something to check — nobody`. The deleted
+check 5, with the cook's Prime station put in a wall — the break that proves
+the job is done elsewhere — `test/mystery.mjs`: `cook: station at prime is at
+tile (-3.5, -2.5) on level 0, where there is no floor to stand on`, which is
+that suite's own standing assertion `rejects a station inside a wall`. The same
+break against the browser suite, which no longer asserts it: `the run threw:
+cook are due at Prime where the grid finds no floor — test/mystery.mjs's
+validateMystery should have failed first`, exit 1. And the two failed attempts
+at a Node check, above, which are breaks that did NOT fire and are the reason
+the check is not there.

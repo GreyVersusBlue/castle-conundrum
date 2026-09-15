@@ -48,8 +48,13 @@ a container that cannot render can tell which way a kit roof piece slopes or
 whether a covered hall goes dark. The covering is rank 8 below, behind the GPU
 run.
 
-**9 ranked items.** Rank 9 is claimed on `claude/festive-hopper-nf7391`.
-Take rank 1.
+**The line between the two plan suites was drawn on 2026-09-15** (#529):
+`layout.mjs` is every fact derivable from the plan in Node, `plan-vs-scene.mjs`
+is the seams only, `mystery.mjs` owns the stations. One dead check deleted,
+three assertions moved or turned into preconditions, and **no new check written
+to replace them**, because three attempts at one could not be made to fail.
+
+**8 ranked items.** Nothing is claimed. Take rank 1.
 
 Two things are true of the whole list and worth saying once. **Nothing here has
 been seen on a GPU since Phase 5.** `npm run play` walks the whole intended day
@@ -101,8 +106,7 @@ your decisions and this file's header, ranks and `Claimed` column are updated
 | 5 | Four texture sets: a second wall stone, a tower stone, a plaster, a floor | ½ | Fable 5.1 |  | [The texture sets](SPECS.md#the-texture-sets) |
 | 6 | The town side: a textured ground outside the west barbican, and a road | 1 | Fable 5.1 |  | [The town side](SPECS.md#the-town-side) |
 | 7 | A second day, in which the epilogue's consequences play | 2+ | Opus 5 |  | [A second day](SPECS.md#a-second-day) |
-| 8 | `test/layout.mjs` and `test/plan-vs-scene.mjs` overlap; decide what each is for | ¼ | Sonnet 5 | `claude/festive-hopper-nf7391` | [The two plan suites](SPECS.md#the-two-plan-suites) |
-| 9 | The hall's covering, and the two windows under it | ¼ | Sonnet 5 |  | [The hall covering](SPECS.md#the-hall-covering) |
+| 8 | The hall's covering, and the two windows under it | ¼ | Sonnet 5 |  | [The hall covering](SPECS.md#the-hall-covering) |
 
 ## A fourth body
 
@@ -169,21 +173,9 @@ content does not exist — that is the whole row, and it is a writing job the
 size of `PLAN.md`'s mystery section before it is a code job. Do one increment,
 ship it, leave the row standing.
 
-## The two plan suites
-
-**Rank 8.** `test/layout.mjs` checks the plan's arithmetic in Node and
-`test/plan-vs-scene.mjs` checks the scene against the same plan in a browser,
-and the second is slower than the whole rest of the suite put together. Phase 2
-wrote `layout.mjs` when it was the only check there was; some of what it asserts
-is now asserted twice, and a check that re-implements the thing it checks is not
-a check (#34). Read both, decide what each is for, and delete what is doubled —
-but break whatever you keep on purpose first, because "these two overlap" is
-exactly the reasoning that leaves two lines guarding the same absence and both
-of them dead.
-
 ## The hall covering
 
-**Rank 9.** The Great Hall has seven trusses over it since #527 and nothing
+**Rank 8.** The Great Hall has seven trusses over it since #527 and nothing
 between them. The kit's `roof*.glb` pieces would cover it, and two windows at
 `base` 5 in `great-hall-north` would keep the daylight the covering takes
 away. Both halves need somebody to look: nothing in a container that cannot

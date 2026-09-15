@@ -9,7 +9,8 @@ ships the row is the one that records the call with a number.
 Written 2026-09-15 against `main` at `bb61958`, from the code and data as they
 are, not from the briefs. **Two rows shipped the same day and their sections are
 gone: asset compression (#506 to #510), sound (#519 to #522), the tower tops
-(#523 to #526) and the hall's roof frame (#527, #528).** What asset
+(#523 to #526), the hall's roof frame (#527, #528) and the two plan suites
+(#529).** What asset
 compression left behind for the rows that touch assets is named in their
 Dependencies; what sound left behind is `data/sounds.json`, a `material` and a
 `kind` on every `plan.surfaces` entry, and `layout.mjs` check 12. Where a brief and the code disagree, the code is
@@ -610,122 +611,9 @@ increment 1 shipped and what is left.
 
 ---
 
-## The two plan suites
-
-**Rank 8. Size ¼.** `test/layout.mjs` (608 lines, Node, ~1 s) checks the
-plan's arithmetic; `test/plan-vs-scene.mjs` (528 lines, headless Chromium
-against `vite dev`, about a minute) checks the page against the same plan.
-Both import `makePlan`, `walkability` and `partsOf`. The row: decide what each
-is for and delete what is doubled, breaking whatever is kept first.
-
-### What each does today, read side by side
-
-`layout.mjs`: props against stone (1, 1b, 1c); the cabinet and commode margins
-(2); every room reachable on three levels and the shut ones shut (3, 3b, 3c);
-rooms and evidence against `mystery.json` (3d, 3e); the curtain sealed (4);
-the two crossings (4b); each tower by its own stairs (6); the walk from one
-stair (6b); nothing inside a flight (6c); head room (7); **where the NPCs
-stand (5)**.
-
-`plan-vs-scene.mjs`: every `planId` object's live `Box3` against the plan
-box; the word-lock's prompt and E; the camera standing on the plan's floor in
-every room via `settle()`; twelve bodies on their Prime stations, one upstairs,
-one hidden, twelve cloth sets and one skin from live materials; the bell moving
-the watch, the sky, the evidence and the save; the candle, toast, journal; the
-Constable's two conversations and the panel.
-
-### Findings, from reading both
-
-- **`layout.mjs` check 5 is dead.** It filters `npcs.json`'s `npcs` and `cast`
-  for entries with a `position` array. `npcs` was deleted in Phase 6 (#472) and
-  no `cast` entry has ever carried `position`; stations live in
-  `mystery.json`'s `schedule`. `standing.length` is 0 and the loop asserts
-  nothing (#13). Its job is done by `validateMystery`'s nav rails in
-  `test/mystery.mjs` (floor under every station, reachable, walkable from the
-  previous bell).
-- **`layout.mjs` check 2 is a v1 leftover** about two props against the Great
-  Hall's side walls. It is still a real check (0.02 to 0.30 m band, measured
-  off stone) and fails on a real regression; keep it, but it is the only check
-  in the file that names a prop by id.
-- **Three assertions in `plan-vs-scene.mjs` are Node facts run in a browser
-  suite**: `${s.id} has no floor at its centre in the plan` (the anchor
-  computation), `${id} is due in ${at.room} at Prime and the grid finds no
-  floor there`, and `nobody is upstairs at Prime, so this checks nothing`. None
-  needs the page; the first two are already asserted by `validateMystery` and
-  `layout.mjs` 3, and the third is a guard on the suite's own coverage.
-- **The tint check is in both files on purpose** (`mystery.mjs:79-80` on the
-  file, `plan-vs-scene.mjs` on live materials) and the browser one's comment
-  says why: "npcs.json's twelve hexes being distinct is a fact about the file".
-  Not a duplicate.
-- **The slowness is the page load, not the assertions.** One page load under
-  SwiftShader, 308 objects measured, then ~20 `page.evaluate` calls. Moving
-  three Node assertions out saves nothing measurable. The row's value is the
-  line, not the clock; say so in `HISTORY.md` so nobody spends an hour on it.
-
-### The line, recommended
-
-- **`layout.mjs` is every fact derivable from the plan in Node**: geometry,
-  reachability, the plan against `mystery.json`.
-- **`plan-vs-scene.mjs` is the seams only**: that the builder placed what the
-  plan named (the box diff), that the runtime stands where the plan says
-  (`settle()`), that a tint reached a material, and that the DOM wiring works
-  (prompt, E, J, bell, panel). Nothing it asserts may be provable in Node.
-- **`test/mystery.mjs` owns stations** through the validator's nav rails.
-
-### Scope
-
-- Delete `layout.mjs` check 5; leave a two-line comment saying where the
-  question went (#472, `validateMystery`).
-- Move the three Node-only assertions out of `plan-vs-scene.mjs`: the
-  no-floor-at-centre one becomes a `layout.mjs` line (every room has a surface
-  at its centre at its own level, or is a disc whose centre is floor), the
-  Prime-station-floor one is already `validateMystery`'s and is deleted, the
-  nobody-upstairs coverage guard moves next to the schedule in `mystery.mjs`
-  (`somebody is upstairs at Prime, so the height check checks something`).
-- Write the line above into both files' headers and into `CLAUDE.md`'s
-  `#500` bullet as one sentence.
-
-### Acceptance
-
-- Eight suites green, `plan-vs-scene.mjs`'s assertion count down by three,
-  `layout.mjs`'s up by one and down by one dead check.
-- **Break everything kept, from green, before deleting anything** (#34 and the
-  row's own warning): for the moved room-centre line, remove a tower room's
-  floor patch and watch the new `layout.mjs` line fire; for the deleted
-  check 5, move a station into stone in `mystery.json` and watch
-  `test/mystery.mjs` fail with `station at prime ... where there is no floor
-  to stand on`, which is the proof the deleted check's job is done elsewhere;
-  for the deleted station-floor line in `plan-vs-scene.mjs`, the same break
-  proves the same thing. A deletion whose job nothing else catches is not a
-  deletion, it is a hole, and that is the failure the row exists to avoid.
-- `HISTORY.md` records the line and the three moves with the break output.
-
-### Open calls
-
-- **Should the standing beat stay in the browser?** Yes. It calls the runtime's
-  own `settle()`, which is the seam; Node cannot see it (#463).
-- **Should `plan-vs-scene.mjs` split into a box suite and a HUD suite?**
-  Recommend **no**. Two page loads is two minutes; the assertions after the box
-  diff are cheap once the page is up.
-
-### Dependencies
-
-- None. The tower tops row got there first and edited the level lists in both
-  files (#526); this one writes down what each file is for.
-
-### Constraints
-
-- #34 (the row is entirely this rule: break before you delete).
-- #13 (check 5 is the instance: a check that asserts over an empty list).
-- #500 (the box diff is the net and is not up for consolidation).
-- #53 (nothing moved into Node may be a runtime question, and nothing moved
-  into the browser may be timed).
-
----
-
 ## The hall covering
 
-**Rank 9. Size ¼.** #527 put seven trusses across the Great Hall at 8 m and
+**Rank 8. Size ¼.** #527 put seven trusses across the Great Hall at 8 m and
 #528 left the space between them open, because neither half of a covering can
 be judged from this container. This row is both halves, for a session with a
 GPU.

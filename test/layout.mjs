@@ -26,6 +26,15 @@
 // `test/plan-vs-scene.mjs` is that check, headless, and `npm run play` is the
 // walk.
 //
+// WHAT THIS FILE IS FOR, AND WHAT plan-vs-scene.mjs IS FOR (#529). **This file
+// is every fact derivable from the plan in Node**: geometry, reachability, the
+// plan against `mystery.json`. `plan-vs-scene.mjs` is the seams only — the box
+// diff, `settle()`, a tint on a live material, the DOM wiring — and nothing it
+// asserts may be provable here. `test/mystery.mjs` owns the stations, through
+// `validateMystery`'s nav rails. The two files overlapped for a phase and the
+// cost was not the clock, it was that a reader could not tell which one to add
+// a line to.
+//
 // PHASE 5 GAVE THE CASTLE THREE LEVELS, and this file three more questions:
 // can every upper room be reached (check 3, now on every level), by its own
 // tower's stairs and not only along the walk from the next tower (check 6), and
@@ -929,20 +938,29 @@ console.log('\nevery surface has a step sound');
   else pass(`all ${Object.keys(classes).length} step classes are reachable from some surface`);
 }
 
-/* ------------------------------------- 5: every NPC stands somewhere real ---
- * Both lists in npcs.json: the three the page spawns today and the twelve under
- * `cast` that Phase 1 wrote. The cast carry no `position` yet — Phase 6 fills
- * them — so this binds the moment one appears rather than waiting to be
- * remembered then.
+/* --------------------------------------------------- WHERE CHECK 5 WENT ---
+ * It read both lists in `npcs.json` for entries with a `position` array.
+ * `npcs` was deleted in Phase 6 (#472) and no `cast` entry has ever carried a
+ * `position` — stations live in `mystery.json`'s `schedule` — so
+ * `standing.length` was 0 and the loop asserted nothing at all (#13). The
+ * question it was asking is `validateMystery`'s now, in `test/mystery.mjs`:
+ * floor under every station, reachable, and walkable from the one before it.
+ * Deleted rather than fixed, and the break that proves the job is done
+ * elsewhere is in HISTORY.md under #529.
+ *
+ * AND WHY NO CHECK 15 CAME THE OTHER WAY. `plan-vs-scene.mjs` used to assert,
+ * in a browser, that every room had a floor at its centre to stand the camera
+ * on. That is arithmetic over the plan and it belongs in this file — and
+ * written down here it cannot fail. A room the fill reaches has cells by
+ * definition; the two it does not reach are ground rooms with the base pavers
+ * under them; barring the Stockhouse walk door leaves the room reachable up
+ * its own stairs; deleting a tower room's floor stops the room naming one at
+ * all. The nearest falsifiable neighbour, "a room that names a floor is stood
+ * on it", was written and could not be made to fail either. So nothing was
+ * added: the browser suite states it as a precondition that throws with the
+ * room named and asserts nothing, and a third dead line guarding the same
+ * absence is exactly what this row existed to avoid (#34, #147, #13).
  */
-const npcData = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/npcs.json'), 'utf8'));
-const standing = [...(npcData.npcs || []), ...(npcData.cast || [])].filter(n => Array.isArray(n.position));
-console.log(`\nwhere the NPCs stand (${standing.length} with a position, ${(npcData.npcs || []).length + (npcData.cast || []).length} defined)`);
-for (const npc of standing) {
-  const [x, , z] = npc.position;
-  if (!walk.reachable(x, z, npc.level || 0)) fail(`${npc.id} stands at (${x}, ${z}) on level ${npc.level || 0}, which the player cannot reach — in stone, outside the curtain, or shut in`);
-  else pass(`${npc.id} at (${x}, ${z}) is reachable`);
-}
 
 console.log(failures ? `\n${failures} failure(s)` : '\nall good');
 process.exit(failures ? 1 : 0);
