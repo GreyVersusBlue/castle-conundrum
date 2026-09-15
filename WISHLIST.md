@@ -2,8 +2,8 @@
 
 **Status: this is the v2 plan, written 2026-09-14, and it is finished. Phases 1
 to 4 shipped that day (PRs #306, #309, #312 and #314, #421 to #450), Phase 5
-(PR #316, #451 to #464), Phase 6 (PR #318, #465 to #476) and Phase 7 (#477 to
-#490) on 2026-09-15.** Seven phases, each sized to one session, each taken in
+(PR #316, #451 to #464), Phase 6 (PR #318, #465 to #476) and Phase 7 (PR #320,
+#477 to #490) on 2026-09-15.** Seven phases, each sized to one session, each taken in
 order because each read what the one before it wrote. What is left is under
 "What this leaves for a later arc", and `npm run play` has never been run on a
 GPU for any phase from 5 on (#53).
@@ -1078,7 +1078,7 @@ phase's GPU exit criterion is outstanding.
 
 ## Phase 7: The mystery goes live
 
-**Shipped 2026-09-15, under Claude Opus 5** (#477 to #490). Phase 1's engine
+**Shipped 2026-09-15, PR #320, under Claude Opus 5** (#477 to #490). Phase 1's engine
 meets Phase 6's cast in Phase 5's castle, through the UI. E on a thing examines
 it, J opens the journal, Present in a conversation presses somebody with a clue,
 and the Constable's last line opens a panel with twelve names, a fall and
