@@ -1,11 +1,11 @@
 // mystery.mjs — the mystery in data/mystery.json, validated and played in Node.
 //
-//   node test/mystery.mjs        (from Projects/Castle Conundrum)
+//   node test/mystery.mjs        (from the repo root)
 //
 // Exits non-zero on any failure. In the CI matrix (site-ci.yml).
 //
 // WHY THIS EXISTS. Phase 1 of the v2 plan ships the mystery as data before any
-// room it happens in exists (WISHLIST.md). Nothing on screen can say whether
+// room it happens in exists (PLAN.md). Nothing on screen can say whether
 // thirty-nine clues, eight presses, a twelve-by-four schedule and an
 // accusation table are coherent, and every mistake in them is silent: a
 // deduction whose premise nothing grants, a press keyed on a clue that is only
@@ -16,7 +16,7 @@
 //
 // Five parts:
 //   1. validateMystery finds nothing, and the counts are what the plan says
-//   2. the validator rejects each of the four breaks WISHLIST.md names, with
+//   2. the validator rejects each of the four breaks PLAN.md names, with
 //      the message it names, plus the rails around them
 //   3. discoverability: every clue is held somewhere on the day, and the
 //      shortest full-ending path is printed in watches and interactions
@@ -42,7 +42,7 @@ const read = (rel) => JSON.parse(fs.readFileSync(path.join(ROOT, rel), 'utf8'));
 const mystery = read('data/mystery.json');
 const { cast } = read('data/npcs.json');
 // Phase 7 promoted the frame: `quest` is the graph the page plays, and `frame`
-// is the same object. The name stays because the rails below and the WISHLIST
+// is the same object. The name stays because the rails below and PLAN.md
 // both call it the frame, and because it says what this file drives.
 const quest = read('data/quest.json');
 const frame = quest;
@@ -106,7 +106,7 @@ console.log('the validator rejects');
     check(!!hit, `rejects ${label}`, p.length ? `said: ${p.join('; ')}` : 'said nothing');
     if (hit) console.log(`          said: ${hit}`);
   };
-  // The four breaks WISHLIST.md's Phase 1 entry names, each with its message.
+  // The four breaks PLAN.md's Phase 1 entry names, each with its message.
   expect("lady-hand with no source (`summons-is-stewards: premise lady-hand is discoverable from nothing`)",
     (m) => { delete m.clues.find((c) => c.id === 'lady-hand').source; },
     /^summons-is-stewards: premise lady-hand is discoverable from nothing/);
@@ -149,10 +149,10 @@ console.log('the validator rejects');
   expect('a tint that is not a hex', (m, n) => { n.find((x) => x.id === 'cook').tint = 'flour'; }, /^cook: tint "flour" is not a #rrggbb hex/);
   expect('a stage dialogueState the cast lacks', (m, n, f) => { f.stages.arrive.dialogueState = 'hushed'; }, /^constable: no dialogue.hushed lines for a stage/);
 
-  // The station rails (Phase 6), and the two breaks WISHLIST.md's Phase 6 entry
+  // The station rails (Phase 6), and the two breaks PLAN.md's Phase 6 entry
   // names first. Each one is a change to the castle or to the schedule, not to
   // the assertion: the message has to come out of the geometry.
-  /* THE KITCHEN HAS TWO DOORS, AND WISHLIST.md'S NAMED BREAK ONLY SHUTS ONE.
+  /* THE KITCHEN HAS TWO DOORS, AND PLAN.md'S NAMED BREAK ONLY SHUTS ONE.
    * Walling `kitchen-south` was meant to strand the cook, and it does not: the
    * Kitchen Tower's own ground door opens south into the kitchen and its stair
    * runs up to the wall walk, so she goes out through the larder, along the
@@ -183,7 +183,7 @@ console.log('the validator rejects');
   expect('a station inside a wall', (m) => { m.schedule.cook.prime.tile = [-3.5, -2.5]; }, /^cook: station at prime is at tile \(-3.5, -2.5\) on level 0, where there is no floor to stand on$/);
   expect('a station outside the room it names', (m) => { m.schedule.cook.prime.tile = [-5, -0.5]; }, /^cook: station at prime is at tile \(-5, -0.5\), which is not inside kitchen$/);
   // Lady Alys stood in the east barbican garden at Sext until this phase. The
-  // east gate is shut and never opens (scene-config.json, and WISHLIST.md's
+  // east gate is shut and never opens (scene-config.json, and PLAN.md's
   // answered question 5), so the garden is scenery: nobody could ever have
   // walked to her there, and no rail before this one could say so.
   expect('a station the player cannot walk to', (m) => { m.schedule.lady.sext = { room: 'garden', tile: [7, -1.5] }; }, /^lady: station at sext is at tile \(7, -1.5\) in GD, which the player cannot walk to$/);
@@ -262,7 +262,7 @@ function play(state = freshState(frame)) {
   return { m, g, fed, feed, state };
 }
 {
-  // The intended path (WISHLIST.md, The intended path), watch by watch.
+  // The intended path (PLAN.md, The intended path), watch by watch.
   const { m, g, feed, state } = play();
   check(m.watch === 'prime' && g.stage === 'arrive', 'a fresh day starts at Prime, in `arrive`');
 

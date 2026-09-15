@@ -1,0 +1,4 @@
+node_modules/
+dist/
+# `npm run play` writes a numbered screenshot per beat here for eyeballing.
+shots/

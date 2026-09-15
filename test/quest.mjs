@@ -4,7 +4,7 @@
 // runs here against stand-in UI, NPCs and castle, driving the real engine, and
 // the whole day is played in a few milliseconds.
 //
-//   node test/quest.mjs        (from Projects/Castle Conundrum)
+//   node test/quest.mjs        (from the repo root)
 //
 // Exits non-zero on any failure.
 //
@@ -18,7 +18,7 @@
 //
 // WHAT PHASE 7 CHANGED HERE. Parts 1 to 3 and 5 to 6 are the same shape and
 // point at the promoted frame. Part 4 is new: it was the riddle quest walked
-// through four stand-ins, and it is the intended path (WISHLIST.md) walked
+// through four stand-ins, and it is the intended path (PLAN.md) walked
 // through the real manager to the full ending, plus the three endings that are
 // not it. `test/mystery.mjs` drives the same path one layer down, through the
 // engine's own API; this drives it the way a player reaches it, through E, the
@@ -275,7 +275,7 @@ function rig({ saved = null } = {}) {
 }
 
 {
-  // THE INTENDED PATH (WISHLIST.md), through the manager, to the full ending.
+  // THE INTENDED PATH (PLAN.md), through the manager, to the full ending.
   const r = rig();
   const { qm, ui, engine, state } = r;
   check(qm.stage === 'arrive' && ui.objective === quest.stages.arrive.objective, 'a fresh day starts in `arrive` with the mason dead on the tracker', ui.objective);
@@ -362,7 +362,7 @@ function rig({ saved = null } = {}) {
   r.present('lady', 'walk-crosses');
   check(r.holds('lady-window'), 'presented with the walk, she says what she saw from her window');
 
-  // THE PRESS RAIL. This is the assertion the WISHLIST names for this phase's
+  // THE PRESS RAIL. This is the assertion PLAN.md names for this phase's
   // first break: unhook the Present button from the manager and this is what
   // fires. The press moves him, and the box that opens is his new state's.
   ui.toasts.length = 0;

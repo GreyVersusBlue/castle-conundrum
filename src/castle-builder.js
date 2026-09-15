@@ -848,7 +848,7 @@ export class CastleBuilder {
    * quest's `openGate` action, and it means the leaf whose `quest` is "gate".
    * From Phase 4 that is the muniment room's word-locked door in the King's
    * Tower, not the east gate: the riddle is the word-lock now, and both barbican
-   * gates are gates that never open again (WISHLIST.md's answered question 5).
+   * gates are gates that never open again (PLAN.md's answered question 5).
    */
   openGate(quest = 'gate') {
     for (const gd of this.gates.values()) {

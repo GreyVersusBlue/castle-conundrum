@@ -214,7 +214,7 @@ export class UI {
     for (const c of entries) {
       const row = document.createElement(present ? 'button' : 'div');
       row.className = 'journal-row';
-      row.dataset.id = c.id; // so Tools/board-check/play-castle.mjs can click one by name
+      row.dataset.id = c.id; // so test/play-castle.mjs can click one by name
       const h = document.createElement('b');
       h.textContent = c.title;
       const t = document.createElement('span');

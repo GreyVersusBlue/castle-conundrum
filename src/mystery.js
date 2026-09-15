@@ -15,7 +15,7 @@
 // discover, a press keyed on a clue that is only held after the state it leaves
 // from, a statement the schedule makes unspeakable, a red herring that is only
 // a herring because nobody noticed it leads nowhere. The four breaks named in
-// WISHLIST.md's Phase 1 entry are each one of those, and each has to fail here
+// PLAN.md's Phase 1 entry are each one of those, and each has to fail here
 // with the message written there.
 
 import { STATION_CLEARANCE, TALK_RANGE } from './stations.js';

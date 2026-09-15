@@ -1,6 +1,9 @@
 // plan-vs-scene.mjs — the plan against the castle the browser actually builds.
 //
-//   node test/plan-vs-scene.mjs        (from Projects/Castle Conundrum)
+//   node test/plan-vs-scene.mjs        (from the repo root)
+//
+// Runs against `vite dev` — source, not the bundle. test/built.mjs is the one
+// check that loads what `npm run build` produced.
 //
 // Exits non-zero on any failure.
 //
@@ -28,20 +31,17 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { serve, launch, prepPage } from '../../../Tools/board-check/harness.mjs';
-import { attachSceneProbe, waitForProbe } from '../../../Tools/board-check/drive.mjs';
+import { serveDev, launch, prepPage, threeUrl } from './harness.mjs';
+import { attachSceneProbe, waitForProbe } from './drive.mjs';
 import { partsOf } from './gltf.mjs';
 import { makePlan, walkability, surfacesAt, EYE_HEIGHT } from '../src/castle-plan.js';
 import { castleNav } from '../src/stations.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, '..');
-const PORT = 8125; // not 8123 (the other checks) and not 8124 (play-castle.mjs)
+const PORT = 8125; // not 8124 (play-castle.mjs) and not 8126 (built.mjs)
 const BASE = `http://127.0.0.1:${PORT}`;
-const GAME = `${BASE}/Projects/Castle%20Conundrum/`;
-// Must match what the game's import map resolves 'three' to, or the probe
-// patches a second copy of the module and captures nothing.
-const THREE_URL = '/Projects/Castle%20Conundrum/libs/three.module.js';
+const GAME = `${BASE}/`;
 const TOL = 0.01;
 
 const config = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/scene-config.json'), 'utf8'));
@@ -59,19 +59,18 @@ const check = (cond, msg, detail = '') => (cond ? pass(msg) : fail(`${msg}${deta
 
 console.log(`the plan against the scene: ${plan.pieces.length} pieces, ${TOL} m\n`);
 
-const server = await serve(PORT);
+const server = await serveDev(PORT);
+const THREE_URL = await threeUrl(BASE);
 const browser = await launch();
-const page = await prepPage(browser, BASE, { width: 900, height: 700, dsf: 1 });
+const page = await prepPage(browser, { width: 900, height: 700, dsf: 1 });
 
 try {
   // A save resumes the quest, and a resumed quest opens the gate — which swings
   // the leaf out of the plan's closed position and drops its collider. Clear the
   // one key (src/save.js, castleConundrumSave_v1) BEFORE the game is ever
-  // loaded, from a cheap page on the same origin. Loading the game and then
-  // reloading it works too and costs a false failure: the reload aborts the
-  // model requests the first load had in flight, and `page.__errs` outlives the
-  // navigation, so the run ends by reporting a missing wall.glb that loaded fine.
-  await page.goto(`${BASE}/404.html`, { waitUntil: 'domcontentloaded' });
+  // loaded, from a cheap page on the same origin. See test/blank.html for why it
+  // is not a reload.
+  await page.goto(`${BASE}/test/blank.html`, { waitUntil: 'domcontentloaded' });
   await page.evaluate(() => localStorage.removeItem('castleConundrumSave_v1'));
   await page.goto(GAME, { waitUntil: 'load' });
   // The start overlay only appears after CastleBuilder.build() has resolved.
@@ -522,7 +521,7 @@ try {
   else pass('the page loaded with no console errors, page errors or failed requests');
   await page.close();
   await browser.close();
-  server.close();
+  await server.close();
 }
 
 console.log(failures ? `\n${failures} failure(s)` : '\nall good');

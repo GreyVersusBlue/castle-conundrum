@@ -1,6 +1,6 @@
 // layout.mjs — where the castle actually is, read out of src/castle-plan.js.
 //
-//   node test/layout.mjs        (from Projects/Castle Conundrum)
+//   node test/layout.mjs        (from the repo root)
 //
 // Exits non-zero on any failure.
 //
@@ -227,7 +227,7 @@ if (!walk.started) fail(`the spawn at ${config.spawn.position} stands on nothing
 else pass(`the spawn at [${config.spawn.position.join(', ')}] stands on a floor`);
 const rooms = walk.rooms();
 const groundRooms = rooms.filter(r => r.level === 0);
-if (groundRooms.length !== 14) fail(`${groundRooms.length} ground rooms in the plan, not the fourteen WISHLIST.md's room table names`);
+if (groundRooms.length !== 14) fail(`${groundRooms.length} ground rooms in the plan, not the fourteen PLAN.md's room table names`);
 for (const level of [1, 2]) {
   if (!walk.perLevel().some(([l]) => l === level)) fail(`nothing on level ${level} can be reached from the spawn`);
 }

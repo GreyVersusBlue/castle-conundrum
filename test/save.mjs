@@ -1,6 +1,6 @@
 // save.mjs — the save slot in src/save.js, run without a browser.
 //
-//   node test/save.mjs        (from Projects/Castle Conundrum)
+//   node test/save.mjs        (from the repo root)
 //
 // Exits non-zero on any failure. In the CI matrix (site-ci.yml).
 //

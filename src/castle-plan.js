@@ -68,7 +68,7 @@ function applyPoint(m, x, y, z) {
 /**
  * T(position) * Ry(degrees) * S(scale), the only transform this castle uses.
  * `scale` is a number or `[sx, sy, sz]`: the stairs are the one thing placed
- * per axis (WISHLIST.md's stone table wants a 4 m storey out of a piece that is
+ * per axis (PLAN.md's stone table wants a 4 m storey out of a piece that is
  * only 1.5 m wide once it fits a tower), and three composes T·R·S the same way,
  * so `obj.scale.set(sx, sy, sz)` in the builder lands on these numbers.
  */
@@ -1276,7 +1276,7 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
 
   /* --- built props: a box of a named size, for the one or two things the kit
    * and Poly Haven between them have no model of. The cloak is the only one:
-   * WISHLIST.md rules out kite_shield as the wrong shape and no cloth map is on
+   * PLAN.md rules out kite_shield as the wrong shape and no cloth map is on
    * the stone list, so it is a slab in a colour. Axis-aligned, because a rotated
    * slab would need a matrix to describe a rectangle and buy nothing. --- */
   for (const b of config.builtProps || []) {
@@ -1410,7 +1410,7 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
   /* A ground room's floor is a patch of its own material laid inside it: a
    * rectangle for a walled room, a disc for a tower. At the base's y, like every
    * other patch, so the walkability grid's 1e-6 dedupe reads one floor and not a
-   * second storey over half the castle. Which rooms get one is WISHLIST.md's
+   * second storey over half the castle. Which rooms get one is PLAN.md's
    * stone table: rock tile in the two halls, floor tiles in the chapel, old
    * planks in the service rooms. A room with no `floor` keeps the ground it
    * stands on, which is why the five pavers-floored towers cost nothing. Rooms

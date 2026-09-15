@@ -1,7 +1,7 @@
-// save.js — the one save slot for Castle Conundrum, through the site's shared
-// gvb-save.js (relative import so this file runs in Node; see that file's
-// header). Key `castleConundrumSave_v1`, game `castle-conundrum`, version 1
-// (#413). The key never changes (#36).
+// save.js — the one save slot for Castle Conundrum, through `./gvb-save.js`,
+// this repo's vendored copy of the site-wide save module (#502; relative
+// import so this file runs in Node too). Key `castleConundrumSave_v1`, game
+// `castle-conundrum`, version 1 (#413). The key never changes (#36).
 //
 // The schema is complete now so no later phase adds a field:
 //
@@ -18,7 +18,7 @@
 // `player` with a non-finite coordinate is nulled. test/save.mjs asserts every
 // rail twice: the repaired value, and what goes wrong without it.
 
-import { createSaveSlot } from '../../../assets/js/gvb-save.js';
+import { createSaveSlot } from './gvb-save.js';
 
 export const SAVE_KEY = 'castleConundrumSave_v1';
 export const SAVE_GAME = 'castle-conundrum';

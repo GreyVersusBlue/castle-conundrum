@@ -2,7 +2,7 @@
 // against the files on disk, and what is on disk checked back against them.
 // Node only, no browser: everything here is glTF parsing and geometry.
 //
-//   node test/assets.mjs        (from Projects/Castle Conundrum)
+//   node test/assets.mjs        (from the repo root)
 //
 // Exits non-zero on any failure.
 //
@@ -28,7 +28,7 @@
 //      measured out of wall-fortified-gate.glb rather than restated from the
 //      config — the point is to catch the two drifting apart — and every
 //      material names a complete texture set
-//   4. every byte under assets/Poly Haven and assets/NPCs is reachable from one
+//   4. every byte under assets/poly-haven and assets/NPCs is reachable from one
 //      of those references, and everything a reference needs is there
 
 import fs from 'node:fs';
@@ -276,7 +276,7 @@ console.log('\nevery built thing names a material that exists');
  * including the two that ARE used, where only the `textures/` beside the ball
  * were ever loaded.
  *
- * The rule, for `assets/Poly Haven` and `assets/NPCs`: a file may be there if
+ * The rule, for `assets/poly-haven` and `assets/NPCs`: a file may be there if
  * some entry in data/ names it, or if a .gltf that some entry in data/ names
  * declares it as a buffer or an image. Nothing else.
  *
@@ -321,7 +321,7 @@ console.log('\nnothing on disk that nothing asks for');
   };
 
   let dead = 0, deadBytes = 0;
-  for (const rel of [...walk('assets/Poly Haven'), ...walk('assets/NPCs')]) {
+  for (const rel of [...walk('assets/poly-haven'), ...walk('assets/NPCs')]) {
     if (needed.has(rel)) continue;
     dead++;
     deadBytes += fs.statSync(path.join(ROOT, rel)).size;
@@ -329,7 +329,7 @@ console.log('\nnothing on disk that nothing asks for');
   }
   if (dead > 8) fail(`...and ${dead - 8} more unreferenced files`);
   if (dead) fail(`${dead} unreferenced file(s) under assets/, ${(deadBytes / 1048576).toFixed(1)} MB`);
-  else pass(`${needed.size} files under assets/Poly Haven and assets/NPCs, every one of them asked for`);
+  else pass(`${needed.size} files under assets/poly-haven and assets/NPCs, every one of them asked for`);
 
   for (const [rel, why] of needed) {
     if (!fs.existsSync(path.join(ROOT, rel))) fail(`${why} needs ${rel}, which is not there`);
@@ -337,7 +337,7 @@ console.log('\nnothing on disk that nothing asks for');
 
   const formats = 'assets/kenney_retro-fantasy-kit/Models';
   const kept = fs.readdirSync(path.join(ROOT, formats)).sort();
-  if (kept.join('|') !== 'GLB format')
+  if (kept.join('|') !== 'glb-format')
     fail(`${formats} holds ${kept.join(', ')} — loadModel reads GLB and nothing else, so the rest is dead weight`);
   else pass('the Kenney kit ships only the format loadModel reads');
 }

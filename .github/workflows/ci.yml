@@ -1,0 +1,58 @@
+# CI: every suite, on every pull request and every push to main.
+#
+# There is no path filter and no matrix. This repo is one project, the whole
+# run is about four minutes, and the failures worth catching here are the ones
+# that cross from data/ into src/ into the built page — exactly the ones a path
+# filter hides.
+#
+# THERE IS NO known-failures.json, AND THAT IS THE POINT. The repo this came
+# from graded its checks against a list of failures that were allowed to stay
+# red, because two of them had been red on main for several rounds before
+# anyone noticed. That list is empty there now (#354 to #358, in
+# tools-and-games' HISTORY.md) and it starts empty here, as nothing at all: a
+# suite fails or the build goes red. The next entry that wants to land in such
+# a list should have to argue for its own existence first.
+#
+# What is deliberately not here: `npm run play`. It opens a real visible
+# window, takes pointer lock, holds W and asserts the walk in real time, and a
+# real-time movement assertion under a software-rendered Chromium is
+# inconclusive rather than confirmed, in either direction (#53). It is hand-run
+# from a machine with a GPU. test/plan-vs-scene.mjs IS here and is also a
+# browser suite: it is headless, it takes no pointer lock, it moves nothing and
+# times nothing, and a software rasteriser puts static geometry exactly where a
+# GPU does. That is the line #53 draws, not "browser or not".
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  suites:
+    name: build and the eight suites
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # Ahead of the suites so a broken build is reported as a broken build
+      # rather than as eight failing assertions about a page that never loaded.
+      - name: npm run build
+        run: npm run build
+      - name: npm test
+        run: npm test
