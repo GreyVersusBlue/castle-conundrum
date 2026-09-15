@@ -832,7 +832,7 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
     const lo = axis === 'x' ? box.min.x : box.min.z, hi = axis === 'x' ? box.max.x : box.max.z;
     const from = axis === 'x' ? [lo, cross] : [cross, lo];
     const to = axis === 'x' ? [hi, cross] : [cross, hi];
-    runSpans.push({ from, to, y: box.max.y, rotationY: theta + 180, axis, along: axis === 'x' ? 0 : 1 });
+    runSpans.push({ id: run.id, from, to, y: box.max.y, rotationY: theta + 180, axis, along: axis === 'x' ? 0 : 1, thickness: run.thickness });
 
     /* THE WALL WALK. `walk: true` lays `config.walk.width` metres of decking along
      * the run's INNER edge — the face away from the merlons, which is the face
@@ -1065,17 +1065,39 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
    * the level-2 floor beside the Stockhouse walk door, in the first render of
    * the walk (#456). So each span is trimmed to where the run's centreline
    * leaves the drum's outer circle before its merlons are counted out. */
+  const otherRunBoxes = config.walls.filter((r) => !r.interior).map((r) => ({ id: r.id, box: runBox(r, tileSize) }));
   for (const span of runSpans) {
     const a = span.from.slice(), b = span.to.slice();
     const k = span.along, c = 1 - k;
+    // An end ON the far face counts as inside: the barbican walls end exactly
+    // where the west curtain's box does.
+    const trim = (lo, hi) => {
+      if (a[k] >= lo - 1e-9 && a[k] < hi - 1e-9) a[k] = hi;
+      if (b[k] > lo + 1e-9 && b[k] <= hi + 1e-9) b[k] = lo;
+    };
     for (const d of drumShapes) {
       const dc = [d.cx, d.cz];
       const off = a[c] - dc[c];
       if (Math.abs(off) >= d.radius) continue;
       const reach = Math.sqrt(d.radius * d.radius - off * off);
-      const lo = dc[k] - reach, hi = dc[k] + reach;
-      if (a[k] > lo && a[k] < hi) a[k] = hi;
-      if (b[k] > lo && b[k] < hi) b[k] = lo;
+      trim(dc[k] - reach, dc[k] + reach);
+    }
+    // And at another wall it butts into: the barbican walls end against the
+    // west curtain, and their last merlon stood on the curtain's top, across
+    // the west walk. The span's line is the run's own centreline; where it runs
+    // into another run's box that reaches past BOTH its faces — a T, not the L
+    // of two walls turning a corner, where each keeps its merlon and the two
+    // overlap at the corner as they have since Phase 3 — the merlons stop at
+    // that box's face. Trimming at corners too left every barbican and garden
+    // corner bare (#456).
+    const half = span.thickness / 2;
+    for (const other of otherRunBoxes) {
+      if (other.id === span.id) continue;
+      const bx = other.box;
+      const lo = k === 0 ? bx.min.x : bx.min.z, hi = k === 0 ? bx.max.x : bx.max.z;
+      const clo = k === 0 ? bx.min.z : bx.min.x, chi = k === 0 ? bx.max.z : bx.max.x;
+      if (!(clo < a[c] - half - 1e-6 && chi > a[c] + half + 1e-6)) continue;
+      trim(lo, hi);
     }
     if (b[k] - a[k] > 1e-6) merlonRun(a, b, span.y, span.rotationY);
   }

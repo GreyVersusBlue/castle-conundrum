@@ -835,10 +835,10 @@
           },
           {
             "base": 8,
-            "theta": 337.5,
+            "theta": 22.5,
             "arc": 45,
             "height": 2.5,
-            "comment": "south, the west walk"
+            "comment": "south, the west walk: the west curtain's decking lies on its inner face at x -34, which is this tower's EAST half, so the door is just east of due south (#457)"
           }
         ]
       },
@@ -1038,10 +1038,10 @@
           },
           {
             "base": 8,
-            "theta": 210,
-            "arc": 60,
+            "theta": 157.5,
+            "arc": 45,
             "height": 2.5,
-            "comment": "north, the west walk"
+            "comment": "north, the west walk: on the tower's east half, as at the North-west Tower (#457)"
           }
         ]
       },

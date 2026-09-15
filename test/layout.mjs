@@ -462,6 +462,33 @@ console.log('\neach tower\'s upper rooms, by its own stairs alone');
   }
 }
 
+/* ------------------------ 6b: the walk is one circuit, from one stair ---
+ * With every flight built, a missing door in a tower's top room costs nothing
+ * the fill can see: the deck beyond it is reached from the next tower's stairs.
+ * So the castle is flooded once more with only the North-west Tower's flights
+ * in place — the way up at the far corner of the outer ward — and every level-2
+ * room has to be reached, and every stretch of decking the mystery names has
+ * to be reached end to end, which is the walk running through every tower on
+ * the way: KT and ST along the north, over the cross-wall, BT and CT along the
+ * south, KG up the east.
+ */
+console.log('\nthe walk, from the North-west Tower\'s stairs alone');
+{
+  const only = walkability(makePlan(config, boundsOf, { stairs: 'nw-tower' })).rooms();
+  const top = only.filter(r => r.level === 2);
+  const dark = top.filter(r => !r.reachable);
+  if (dark.length) fail(`from the North-west Tower's stairs alone the walk does not reach ${dark.map(r => r.id).join(', ')} — a tower's top room has lost a door, or a deck is missing`);
+  else pass(`from the North-west Tower's stairs alone all ${top.length} level-2 rooms are reached`);
+  for (const [id, axis, lo, hi] of [['north-walk', 'x', -31, -5], ['south-walk', 'x', 5, 21], ['cross-walk', 'z', -12, 12]]) {
+    const r = top.find(x => x.id === id);
+    if (!r || !r.reachable) continue;
+    const vals = r.at.map(c => c[axis]);
+    const [a, b] = [Math.min(...vals), Math.max(...vals)];
+    if (a > lo || b < hi) fail(`${id} is reached only over ${axis} ${f2(a)}..${f2(b)} from the North-west Tower's stairs, not ${lo}..${hi} — the walk is broken part way along it`);
+    else pass(`${id} reached end to end, ${axis} ${f2(a)}..${f2(b)}`);
+  }
+}
+
 /* ------------------------------- 7: head room under every upper floor ---
  * A slab is a collider, and the grid refuses a cell whose head band a collider
  * crosses, so no reachable cell ever has a ceiling under HEAD_HIGH: that claim
