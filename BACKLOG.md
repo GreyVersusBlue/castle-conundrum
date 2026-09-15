@@ -70,10 +70,10 @@ with a `day` field; the key did not move (#36). **Rank 6 is still open**: it is
 a 2+ and increment 2 is the castle's half of the consequences, which `SPECS.md`
 now specs.
 
-**7 ranked items. Nothing is claimed.** Rank 1 is the only row a container
-without a GPU and without Poly Haven can start from scratch; rank 6's next
-increment is the other one, and `SPECS.md` specs it file by file. Ranks 2, 3,
-4, 5 and 7 all need a machine this one is not (#518).
+**7 ranked items.** Rank 6 is claimed by `claude/second-day-epilogue-pzfxie`,
+which is taking increment 2 of it in the same sitting increment 1 shipped in.
+Rank 1 is the only other row a container without a GPU and without Poly Haven
+can start; ranks 2, 3, 4, 5 and 7 all need a machine this one is not (#518).
 
 One thing is true of the whole list and worth saying once. **Nothing here has
 been seen on a GPU since Phase 5.** `npm run play` walks the whole intended day
@@ -125,7 +125,7 @@ your decisions and this file's header, ranks and `Claimed` column are updated
 | 3 | A new preview and og card, from that run | ¼ | Opus 5 |  | [The GPU run](SPECS.md#the-gpu-run) |
 | 4 | Four texture sets: a second wall stone, a tower stone, a plaster, a floor | ½ | Fable 5.1 |  | [The texture sets](SPECS.md#the-texture-sets) |
 | 5 | The town side: a textured ground outside the west barbican, and a road | 1 | Fable 5.1 |  | [The town side](SPECS.md#the-town-side) |
-| 6 | A second day: increment 2, consequences that change the castle | 2+ | Opus 5 |  | [A second day](SPECS.md#a-second-day) |
+| 6 | A second day: increment 2, consequences that change the castle | 2+ | Opus 5 | `claude/second-day-epilogue-pzfxie` | [A second day](SPECS.md#a-second-day) |
 | 7 | The hall's covering, and the two windows under it | ¼ | Sonnet 5 |  | [The hall covering](SPECS.md#the-hall-covering) |
 
 ## A fourth body
