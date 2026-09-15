@@ -205,6 +205,16 @@ console.log('\nthe twelve, at their stations');
   check(absent.join() === 'merchant', `eleven of the twelve are in the castle at Prime; Thomas Wykes rides in at Terce`, `absent: ${absent.join(', ') || 'nobody'}`);
   const offTheFloor = cast.filter((n) => { const p = nav.at(n.id, 'prime'); return p && !nav.standable(p); });
   check(offTheFloor.length === 0, 'every Prime station is floor a body stands on', offTheFloor.map((n) => n.id).join(', '));
+  // THE COVERAGE GUARD FOR A CHECK IN ANOTHER FILE (#529). plan-vs-scene.mjs
+  // reads the twelve bodies at Prime and asserts that whoever is upstairs is
+  // standing on their own floor and not on the ground under it (#147). That
+  // assertion says nothing at all on a day when nobody is upstairs at Prime,
+  // and the browser suite used to carry the guard itself — which is a fact
+  // about `mystery.json`'s schedule and belongs beside the schedule.
+  const upstairsAtPrime = cast.filter((n) => (nav.at(n.id, 'prime')?.level ?? 0) > 0);
+  check(upstairsAtPrime.length > 0,
+    `${upstairsAtPrime.length} of the cast is upstairs at Prime, so plan-vs-scene.mjs's height check has something to check`,
+    upstairsAtPrime.map((n) => n.id).join(', ') || 'nobody');
   const unreachable = cast.filter((n) => {
     const p = nav.at(n.id, 'prime');
     return p && !(barred.has(p.room) ? nav.talkable(p) : nav.walkable(p));

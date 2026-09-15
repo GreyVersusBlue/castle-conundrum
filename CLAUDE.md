@@ -62,6 +62,9 @@ The project lived in `GreyVersusBlue/tools-and-games` under
   `castle-builder.js` places what the plan says and tags it with a `planId`,
   and `test/plan-vs-scene.mjs` loads the page, takes every tagged object's live
   `Box3` and diffs it against the plan's box at 0.01 m. That suite is the net.
+  **`test/layout.mjs` is every fact derivable from the plan in Node and
+  `test/plan-vs-scene.mjs` is the seams only — nothing it asserts may be
+  provable in Node, and `test/mystery.mjs` owns the stations** (#529).
   This was Phase 2's whole point and was never written down as a rule — it was
   visible only in the shape of the files, which is exactly how a rule gets lost.
 - **Never change a storage key** (#36, from the old repo, and it crosses).

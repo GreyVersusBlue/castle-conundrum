@@ -21,6 +21,17 @@
 // compared. A software rasteriser puts geometry in exactly the same place a GPU
 // does.
 //
+// WHAT THIS FILE IS FOR, AND WHAT layout.mjs IS FOR (#529). `layout.mjs` is
+// every fact derivable from the plan in Node: geometry, reachability, the plan
+// against `mystery.json`. THIS FILE IS THE SEAMS ONLY — that the builder placed
+// what the plan named (the box diff), that the runtime stands where the plan
+// says (`settle()`), that a tint reached a material, and that the DOM wiring
+// works (prompt, E, J, bell, panel). **Nothing asserted here may be provable in
+// Node.** Where this file needs a Node fact to do its job — a room to anchor
+// in, floor under a station — it states it as a precondition that throws, names
+// the suite that owns it, and asserts nothing. `test/mystery.mjs` owns the
+// stations, through `validateMystery`'s nav rails.
+//
 // THE TOLERANCE IS 0.01 m AND IT IS NOT ARBITRARY. Deliberately collapsing
 // `boundsOf` to one whole-model box puts brass_candleholders 0.129 m and
 // GothicCabinet_01 0.113 m out; measuring per mesh, as test/gltf.mjs's partsOf
@@ -189,6 +200,13 @@ try {
     const on = surfacesAt(plan, cx, cz).find((f) => f.level === r.level);
     return on ? { id: r.id, level: r.level, x: cx, z: cz, h: on.h } : { id: r.id, level: r.level, x: cx, z: cz, h: null };
   });
+  /* A PRECONDITION, NOT A CHECK (#529). Whether every room has somewhere to
+   * stand at its centre is arithmetic over the plan, `layout.mjs` check 15
+   * owns it, and it used to be asserted here as well. What is left is the
+   * suite refusing to run on a castle it cannot anchor in, rather than quietly
+   * measuring fewer rooms than there are. */
+  const anchorless = anchors.filter((a) => a.h == null);
+  if (anchorless.length) throw new Error(`no floor at the centre of ${anchorless.map((a) => a.id).join(', ')} — test/layout.mjs check 15 should have failed first`);
   const stood = await page.evaluate(async ({ anchors, eye }) => anchors.map((a) => {
     if (a.h == null) return { ...a, got: null };
     window.__cam.position.set(a.x, a.h + 0.3 + eye, a.z);
@@ -197,7 +215,6 @@ try {
   }), { anchors, eye: EYE_HEIGHT });
   let worstStand = -1, worstRoom = null, stoodOk = 0;
   for (const s of stood) {
-    if (s.h == null) { fail(`${s.id} (level ${s.level}) has no floor at its centre in the plan — nothing to stand the camera on`); continue; }
     if (s.got == null) { fail(`standing the camera at (${s.x.toFixed(2)}, ${s.z.toFixed(2)}) in ${s.id}, level ${s.level}, the runtime finds nothing under it within a step of the plan's floor at ${s.h.toFixed(2)}`); continue; }
     const d = Math.abs(s.got - s.h);
     if (d > worstStand) { worstStand = d; worstRoom = s.id; }
@@ -282,6 +299,12 @@ try {
   const due = Object.keys(mystery.schedule)
     .map((id) => ({ id, at: nav.at(id, mystery.watches[0]) }))
     .filter((n) => n.at);
+  /* AND SO IS THIS (#529). "There is floor under every station" is
+   * `validateMystery`'s rail and test/mystery.mjs fails on it by name; a body
+   * with no floor to stand on cannot be compared against a point in a browser
+   * either way. */
+  const floorless = due.filter((n) => n.at.h == null);
+  if (floorless.length) throw new Error(`${floorless.map((n) => n.id).join(', ')} are due at Prime where the grid finds no floor — test/mystery.mjs's validateMystery should have failed first`);
   const bodies = await page.evaluate(async () => (window.__cast || []).map((n) => {
     const colours = [];
     n.group.traverse((o) => {
@@ -304,7 +327,6 @@ try {
     const b = seen.get(id);
     if (!b) { fail(`${id} is in the schedule at Prime and the page spawned no such body`); offStation++; continue; }
     if (!b.visible) { fail(`${id} is due in ${at.room} at Prime and the page left the body hidden`); offStation++; continue; }
-    if (at.h == null) { fail(`${id} is due in ${at.room} at Prime and the grid finds no floor there`); offStation++; continue; }
     const d = Math.max(Math.abs(b.x - at.x), Math.abs(b.z - at.z), Math.abs(b.y - at.h));
     if (d > TOL) { fail(`${id} stands at (${b.x.toFixed(2)}, ${b.y.toFixed(2)}, ${b.z.toFixed(2)}) and the plan's Prime station is (${at.x.toFixed(2)}, ${at.h.toFixed(2)}, ${at.z.toFixed(2)}), ${d.toFixed(3)} m off`); offStation++; }
   }
@@ -313,12 +335,15 @@ try {
    * apartments at Prime, over the King's Hall, and her feet belong at 4.0.
    * The check above could not say so while the station carried no height and
    * both sides of it read `h ?? 0`: she stood on the ground floor inside the
-   * hall and everything agreed she was where she should be (#147). */
+   * hall and everything agreed she was where she should be (#147). That
+   * somebody IS upstairs at Prime — without which this line asserts nothing —
+   * is a fact about `mystery.json`'s schedule and test/mystery.mjs holds it
+   * beside the schedule (#529). */
   const upstairs = due.filter((n) => n.at.level > 0);
   const grounded = upstairs.filter((n) => (seen.get(n.id)?.y ?? 0) < 0.5);
-  check(upstairs.length > 0 && grounded.length === 0,
+  check(grounded.length === 0,
     `${upstairs.length} of them stand above the ground floor, on their own floor: ${upstairs.map((n) => `${n.id} at y ${(seen.get(n.id)?.y ?? 0).toFixed(1)}`).join(', ')}`,
-    grounded.length ? `${grounded.map((n) => n.id).join(', ')} on the ground` : 'nobody is upstairs at Prime, so this checks nothing');
+    grounded.map((n) => n.id).join(', ') + ' on the ground');
   const absent = bodies.filter((b) => !b.visible).map((b) => b.id);
   check(absent.join() === 'merchant', 'the one who is not in the castle at Prime is hidden rather than standing at the origin', `hidden: ${absent.join(', ') || 'nobody'}`);
   // The tint (#419). Three bodies, twelve people: the cloth has to differ
