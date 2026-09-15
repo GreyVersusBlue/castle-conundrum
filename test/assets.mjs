@@ -76,8 +76,8 @@ const refs = [
   ...config.gates.map(g => [config.kenneyBase + g.archModel, `${g.id}'s archway`]),
   ...config.courtyard.placements.map(p => [config.kenneyBase + p.model, p.id || p.model]),
   ...config.interiorProps.map(p => [config.polyhavenBase + p.model, p.model]),
-  ...npcData.npcs.map(n => [n.modelPath, `${n.id || n.name}'s body`]),
-  ...npcData.npcs.filter(n => n.heldProp).map(n => [config.polyhavenBase + n.heldProp, `${n.id || n.name}'s heldProp`]),
+  ...npcData.cast.map(n => [n.modelPath, `${n.id || n.name}'s body`]),
+  ...npcData.cast.filter(n => n.heldProp).map(n => [config.polyhavenBase + n.heldProp, `${n.id || n.name}'s heldProp`]),
 ];
 const seen = new Set();
 for (const [rel, label] of refs) {
@@ -294,7 +294,7 @@ console.log('\nnothing on disk that nothing asks for');
 
   const gltfRefs = [
     ...config.interiorProps.map(p => [config.polyhavenBase + p.model, p.model.split('/')[0]]),
-    ...npcData.npcs.filter(n => n.heldProp)
+    ...npcData.cast.filter(n => n.heldProp)
       .map(n => [config.polyhavenBase + n.heldProp, `${n.id || n.name}'s heldProp`]),
   ];
   for (const [rel, why] of gltfRefs) {
@@ -311,7 +311,7 @@ console.log('\nnothing on disk that nothing asks for');
   // without referencing it produce three unreferenced-file failures (#390).
   for (const [name, spec] of Object.entries(config.materials))
     for (const [slot, rel] of Object.entries(spec)) need(rel, `material ${name}'s ${slot}`);
-  for (const n of npcData.npcs) need(n.modelPath, `${n.id || n.name}'s body`);
+  for (const n of npcData.cast) need(n.modelPath, `${n.id || n.name}'s body`);
 
   const walk = (rel) => {
     const abs = path.join(ROOT, rel);

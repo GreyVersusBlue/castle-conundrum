@@ -1,5 +1,5 @@
 {
-  "comment": "The quest as a graph. `start` names the first stage. Each stage carries the objective the tracker shows, the dialogue state every NPC switches to on entering it (a key into each npc's `dialogue` in npcs.json), the transitions that leave it, and optionally `enter` actions run on arrival. A transition fires `on` an event \u2014 `talked:<npcId>` when that npc's dialogue is stepped through to its end, `riddle:solved` when the riddle overlay accepts an answer, `lock:<id>` when the player presses E at a word-locked door \u2014 and may `do` actions, move `to` another stage, or both. Actions are the names src/quest-manager.js implements (QuestManager.actions); an `after` is a delay in ms. `tokens` are substituted into dialogue lines before they are shown. test/quest.mjs checks all of this against npcs.json, riddle.json and index.html.",
+  "comment": "The quest as a graph. `start` names the first stage. Each stage carries the objective the tracker shows, the dialogue state every NPC switches to on entering it (a key into each npc's `dialogue` in npcs.json), the transitions that leave it, and optionally `enter` actions run on arrival. A transition fires `on` an event — `talked:<npcId>` when that npc's dialogue is stepped through to its end (an id in npcs.json's `cast`, which is the only list of people there is from Phase 6), `riddle:solved` when the riddle overlay accepts an answer, `lock:<id>` when the player presses E at a word-locked door — and may `do` actions, move `to` another stage, or both. Actions are the names src/quest-manager.js implements (QuestManager.actions); an `after` is a delay in ms. `tokens` are substituted into dialogue lines before they are shown. test/quest.mjs checks all of this against npcs.json, riddle.json and index.html.",
   "start": "seek-keystone",
   "tokens": {},
   "stages": {
@@ -21,22 +21,22 @@
       "comment": "Phase 4 moved openRiddle off `talked:scholar` and onto the word-lock itself. The Keystone the next two stages talk about is the riddle quest's own fiction and Phase 7 deletes all three stages with it; what changed here is the trigger and what opens."
     },
     "present-keystone": {
-      "objective": "The word holds and the muniment room is open. You hold the Keystone \u2014 go and tell the Guard.",
-      "dialogueState": "hasKeystone",
+      "objective": "The word holds and the muniment room is open. You hold the Keystone — go and tell the Constable.",
+      "dialogueState": "default",
       "transitions": [
         {
-          "on": "talked:guard",
+          "on": "talked:constable",
           "to": "gate-open"
         }
       ],
       "enter": [
         "openGate"
       ],
-      "comment": "openGate is on `enter` and not on the transition so that a save resumed here finds the door open again, the same way the terminal stage below does."
+      "comment": "openGate is on `enter` and not on the transition so that a save resumed here finds the door open again, the same way the terminal stage below does. Phase 6 repointed this at the Constable and put every stage in `default`: the Guard the player used to tell is gone with the other two of v1, and none of the twelve has a `hasKeystone` line — writing twelve of them for a quest Phase 7 deletes would be content with a known expiry date. The Keystone these two stages talk about is the riddle quest's own fiction and goes with them."
     },
     "gate-open": {
-      "objective": "The muniment room stands open. Walk free \u2014 or stay and chat.",
-      "dialogueState": "afterVictory",
+      "objective": "The muniment room stands open. Walk free — or stay and chat.",
+      "dialogueState": "default",
       "terminal": true,
       "comment": "openGate again, because a save resumed at a terminal stage re-runs these.",
       "enter": [

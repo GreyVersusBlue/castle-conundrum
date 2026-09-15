@@ -9,6 +9,8 @@ import { NPC } from './npc.js';
 import { InteractionSystem } from './interaction.js';
 import { QuestManager } from './quest-manager.js';
 import { createCastleSlot } from './save.js';
+import { createMystery } from './mystery.js';
+import { castleNav } from './stations.js';
 import { UI } from './ui.js';
 
 const ui = new UI();
@@ -34,7 +36,7 @@ async function init() {
   const state = saved ?? slot.fresh();
 
   // --- Scene ---
-  const { scene, renderer, camera } = createScene(config);
+  const { scene, renderer, camera, setWatch } = createScene(config);
 
   // --- World geometry ---
   const castle = new CastleBuilder(scene, config);
@@ -45,9 +47,27 @@ async function init() {
     createBrazier(castle, castle.tileToWorld(b.tile[0], b.tile[1]))
   );
 
+  // --- The mystery, and the day it happens on ---
+  // The engine owns the watch; the nav owns where everyone stands at each of
+  // them. Both read the same `state` the save carries, so a reload comes back
+  // to the right bell with the cast already at that bell's stations.
+  const engine = createMystery({ mystery: mysteryData, npcs: npcData.cast, state });
+  const nav = castleNav(castle.plan, mysteryData);
+
   // --- NPCs ---
-  const npcs = npcData.npcs.map((def) => new NPC(def, scene, config.polyhavenBase));
+  // The twelve of v2, from `cast` (#419: three bodies and a tint each). The
+  // Guard, the Scholar and the Wizard are gone with this phase; nothing here
+  // knows any of the twelve by name either, which is what lets the schedule be
+  // data.
+  const npcs = npcData.cast.map((def) => new NPC(def, scene, config.polyhavenBase));
   await Promise.all(npcs.map((n) => n.build()));
+  const stand = (npc, watch) => {
+    const at = nav.at(npc.id, watch);
+    if (!at) { npc.group.visible = false; return; }
+    npc.group.visible = true;
+    npc.placeAt({ x: at.x, y: at.h ?? 0, z: at.z });
+  };
+  for (const npc of npcs) stand(npc, engine.watch);
 
   // --- Player ---
   // castle.colliders is seeded from castle.plan.colliders and grows only by
@@ -69,7 +89,8 @@ async function init() {
   // The word-locked doors are targets too: the riddle is carved over the
   // muniment room's lock and pressing E at it is what opens the overlay.
   const locks = castle.locks();
-  const interaction = new InteractionSystem(camera, [...npcs, ...locks], ui, scene);
+  const bells = castle.bells();
+  const interaction = new InteractionSystem(camera, [...npcs, ...locks, ...bells], ui, scene);
   const auto = slot.autosave(() => {
     state.player = { x: camera.position.x, y: camera.position.y, z: camera.position.z, yaw: camera.rotation.y };
     return state;
@@ -77,6 +98,25 @@ async function init() {
   const quest = new QuestManager({
     quest: questData, riddle: riddleData, npcs, ui, castle,
     controlsRef: { lock: () => player.lock() },
+    engine,
+    // The world half of a bell: the sky, the evidence that comes and goes, and
+    // twelve people walking to where they are due next. The engine has already
+    // moved the watch on; this puts the castle where the watch says it is.
+    onWatch: (watch, { walk = true } = {}) => {
+      setWatch(watch);
+      for (const e of mysteryData.evidence) castle.setEvidenceVisible(e.id, (e.watches || []).includes(watch));
+      for (const npc of npcs) {
+        const to = nav.at(npc.id, watch);
+        if (!to) { npc.group.visible = false; continue; }
+        const from = npc.group.visible ? { x: npc.group.position.x, z: npc.group.position.z, level: to.level } : null;
+        npc.group.visible = true;
+        const route = walk && from ? nav.route(from, to) : null;
+        if (route) npc.walkTo(route);
+        else npc.placeAt({ x: to.x, y: to.h ?? 0, z: to.z });
+      }
+      state.watch = engine.state.watch;
+      auto.mark();
+    },
     saved,
     onChange: ({ stage, riddleWrong }) => { state.stage = stage; state.riddleWrong = riddleWrong; auto.mark(); },
     // The victory screen's button: erase the save, then reload into a fresh quest.
@@ -84,11 +124,19 @@ async function init() {
   });
   window.__save = { slot, state }; // read by play-castle.mjs's reload beat
   window.__quest = quest; // the one game-side hook play-castle.mjs reads; __cam and __scene come from its scene probe
+  // The cast and the day, for the two suites that drive the real page:
+  // play-castle.mjs looks up where somebody is due rather than carrying a
+  // coordinate of its own, and test/plan-vs-scene.mjs reads the twelve bodies.
+  window.__cast = npcs;
+  window.__mystery = engine;
   interaction.onInteract = (target) => {
     if (target.isLock) { quest.handleLock(target.id); return; }
+    if (target.isBell) { quest.handleBell(); return; }
     target.facePlayer(camera.position);
     quest.handleInteract(target);
   };
+  // The castle opens on the watch the save is at, without anybody walking there.
+  quest.applyWatch(engine.watch, { walk: false });
 
   // --- UI flow ---
   ui.hideLoading();

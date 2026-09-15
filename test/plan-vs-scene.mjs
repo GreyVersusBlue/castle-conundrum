@@ -32,6 +32,7 @@ import { serve, launch, prepPage } from '../../../Tools/board-check/harness.mjs'
 import { attachSceneProbe, waitForProbe } from '../../../Tools/board-check/drive.mjs';
 import { partsOf } from './gltf.mjs';
 import { makePlan, walkability, surfacesAt, EYE_HEIGHT } from '../src/castle-plan.js';
+import { castleNav } from '../src/stations.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, '..');
@@ -54,6 +55,7 @@ const plan = makePlan(config, (rel) => {
 let failures = 0;
 const fail = (msg) => { console.log(`  FAIL  ${msg}`); failures++; };
 const pass = (msg) => console.log(`  ok    ${msg}`);
+const check = (cond, msg, detail = '') => (cond ? pass(msg) : fail(`${msg}${detail ? ` — ${detail}` : ''}`));
 
 console.log(`the plan against the scene: ${plan.pieces.length} pieces, ${TOL} m\n`);
 
@@ -206,6 +208,144 @@ try {
   }
   const perLevel = [0, 1, 2].map((l) => `${stood.filter((s) => s.level === l).length} on level ${l}`).join(', ');
   if (stoodOk === stood.length) pass(`the camera stands on the plan's floor in all ${stood.length} rooms (${perLevel}), worst ${Math.max(0, worstStand).toFixed(4)} m in ${worstRoom}`);
+
+  /* ------------------------------------------- the twelve, and the bell ---
+   * Phase 6 put the cast on the screen and the day on a bell, and the Node
+   * suites can see neither: test/mystery.mjs holds the schedule to the castle's
+   * floor, and only the page can say whether twelve bodies really stand on
+   * those points, whether a tint reached a material, and whether pressing E at
+   * the bell in the chapel moves the watch, the sky and the evidence.
+   *
+   * WHY THIS IS ALLOWED HERE AND NOT UNDER #53. Nothing below is a walk. The
+   * bodies are read where the page put them at load; the bell is pressed the
+   * way the word-lock is pressed above, camera placed and two frames waited
+   * for; and what is asserted after the ring is a watch id, a fog colour, a
+   * hidden object and a line of DOM. The twelve then WALK to their Terce
+   * stations, and nothing here waits for them or times them — that walk is
+   * play-castle.mjs's, on a machine with a GPU.
+   */
+  console.log('');
+  const mystery = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/mystery.json'), 'utf8'));
+  const nav = castleNav(plan, mystery);
+  const due = Object.keys(mystery.schedule)
+    .map((id) => ({ id, at: nav.at(id, mystery.watches[0]) }))
+    .filter((n) => n.at);
+  const bodies = await page.evaluate(async () => (window.__cast || []).map((n) => {
+    const colours = [];
+    n.group.traverse((o) => {
+      if (!o.isMesh || !o.visible) return;
+      for (const m of Array.isArray(o.material) ? o.material : [o.material]) {
+        if (m && m.color) colours.push(`${m.name}:${m.color.getHexString()}`);
+      }
+    });
+    return {
+      id: n.id, visible: n.group.visible,
+      x: n.group.position.x, y: n.group.position.y, z: n.group.position.z,
+      skin: colours.filter((c) => /^Skin:/.test(c)).join(),
+      cloth: colours.filter((c) => !/^(Skin|Eye|Eyebrows|Hair)/.test(c)).sort().join(),
+    };
+  }));
+  const seen = new Map(bodies.map((b) => [b.id, b]));
+  check(bodies.length === 12, `the page spawns ${bodies.length} bodies`, 'twelve is the cast');
+  let offStation = 0;
+  for (const { id, at } of due) {
+    const b = seen.get(id);
+    if (!b) { fail(`${id} is in the schedule at Prime and the page spawned no such body`); offStation++; continue; }
+    if (!b.visible) { fail(`${id} is due in ${at.room} at Prime and the page left the body hidden`); offStation++; continue; }
+    const d = Math.max(Math.abs(b.x - at.x), Math.abs(b.z - at.z), Math.abs(b.y - (at.h ?? 0)));
+    if (d > TOL) { fail(`${id} stands at (${b.x.toFixed(2)}, ${b.y.toFixed(2)}, ${b.z.toFixed(2)}) and the plan's Prime station is (${at.x.toFixed(2)}, ${(at.h ?? 0).toFixed(2)}, ${at.z.toFixed(2)}), ${d.toFixed(3)} m off`); offStation++; }
+  }
+  if (!offStation) pass(`all ${due.length} bodies due at Prime stand on their own station within ${TOL} m, on ${new Set(due.map((n) => n.at.level)).size} level(s)`);
+  const absent = bodies.filter((b) => !b.visible).map((b) => b.id);
+  check(absent.join() === 'merchant', 'the one who is not in the castle at Prime is hidden rather than standing at the origin', `hidden: ${absent.join(', ') || 'nobody'}`);
+  // The tint (#419). Three bodies, twelve people: the cloth has to differ
+  // twelve ways and the skin must not differ at all, or the tint went onto
+  // faces. Reading the live materials is the only thing that can say so —
+  // npcs.json's twelve hexes being distinct is a fact about the file.
+  const cloth = new Set(bodies.map((b) => b.cloth));
+  check(cloth.size === 12, `the twelve read as twelve: ${cloth.size} distinct sets of cloth colours off three bodies`);
+  const skins = new Set(bodies.map((b) => b.skin).filter(Boolean));
+  check(skins.size === 1, `and one skin colour across all of them`, [...skins].join(' | '));
+
+  // The bell. Stand at the reachable cell nearest it, look at it, press E.
+  const bellPiece = plan.pieces.find((p) => p.bell);
+  const bellAt = bellPiece ? { x: (bellPiece.box.min.x + bellPiece.box.max.x) / 2, z: (bellPiece.box.min.z + bellPiece.box.max.z) / 2 } : null;
+  if (!bellAt) fail('the plan carries no piece marked `bell`, so there is nothing in the chapel to ring');
+  else {
+    const chapel = grid.rooms().find((r) => r.id === 'chapel');
+    /* SOMEWHERE IN THE CHAPEL THE BELL CAN BE RUNG. Which cell that is, this
+     * file does not get to decide: two of the twelve stand in this room at
+     * Prime, InteractionSystem offers the nearest target that is also in front
+     * of you and in sight, and modelling that here would be re-implementing the
+     * thing under test (#34). So the candidates are every cell between 1.2 and
+     * 3.0 m of the bell, nearest first, and the page is asked which of them
+     * offers the bell — the assertion is that one of them does. The first
+     * version picked one cell by arithmetic and stood the camera 0.16 m inside
+     * the Constable, where the direction to him is noise and the facing test
+     * rejects everyone including the bell.
+     */
+    const spots = chapel.at
+      .map((c) => ({ ...c, d: Math.hypot(c.x - bellAt.x, c.z - bellAt.z) }))
+      .filter((c) => c.d > 1.2 && c.d < 3.0)
+      .sort((a, b) => a.d - b.d)
+      .slice(0, 12);
+    if (!spots.length) fail('nowhere in the chapel to stand between 1.2 and 3.0 m from the bell');
+    else {
+      const rung = await page.evaluate(async ({ spots, bellAt, eye }) => {
+        const frame = () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+        // The word-lock beat above left the riddle overlay open, and an open
+        // overlay owns the input: interaction.update() hides the prompt and E
+        // goes to the riddle. Shut it the way the player would.
+        document.getElementById('riddle-cancel').click();
+        await frame();
+        const promptNow = () => {
+          const el = document.getElementById('interact-prompt');
+          return el && !el.classList.contains('hidden') ? el.textContent.trim() : null;
+        };
+        let chosen = null, prompt = null, tried = 0;
+        for (const spot of spots) {
+          tried += 1;
+          window.__cam.position.set(spot.x, spot.h + eye, spot.z);
+          window.__cam.rotation.set(0, Math.atan2(-(bellAt.x - spot.x), -(bellAt.z - spot.z)), 0, 'YXZ');
+          await frame();
+          const p = promptNow();
+          if (p && /ring the bell/i.test(p)) { chosen = spot; prompt = p; break; }
+          if (!chosen) prompt = p;
+        }
+        if (!chosen) return { chosen, prompt, tried };
+        const before = { watch: window.__mystery.watch, fog: window.__scene.fog.color.getHexString() };
+        document.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyE' }));
+        await frame();
+        const lantern = [];
+        window.__scene.traverse((o) => { if (o.userData?.planId === 'lantern-chapel') lantern.push(o.visible); });
+        return {
+          chosen, prompt, tried, before,
+          watch: window.__mystery.watch,
+          fog: window.__scene.fog.color.getHexString(),
+          hud: document.getElementById('quest-watch')?.textContent?.trim() ?? null,
+          saved: window.__save?.state?.watch ?? null,
+          body: lantern,
+        };
+      }, { spots, bellAt, eye: EYE_HEIGHT });
+      if (!rung.chosen) {
+        fail(`none of the ${rung.tried} cells in the chapel between 1.2 and 3.0 m of the bell offers it${rung.prompt ? ` (the nearest offered "${rung.prompt}")` : ' — no prompt at all'}`);
+      } else {
+        pass(`the bell prompts "${rung.prompt}" from ${rung.chosen.d.toFixed(2)} m away, the ${rung.tried} of ${spots.length} nearest cells tried`);
+        if (rung.before.watch !== mystery.watches[0]) fail(`the page opened on ${rung.before.watch}, not ${mystery.watches[0]}`);
+        else if (rung.watch !== mystery.watches[1]) fail(`E at the bell left the watch at ${rung.watch}`);
+        else pass(`E at the bell moves ${rung.before.watch} to ${rung.watch}, and the tracker says "${rung.hud}"`);
+        const wantFog = config.lighting.watches[mystery.watches[1]].fog.replace('#', '').toLowerCase();
+        if (rung.fog !== wantFog) fail(`the fog is #${rung.fog} after the bell and ${mystery.watches[1]}'s sky is #${wantFog}`);
+        else if (rung.fog === rung.before.fog) fail(`the fog did not change at all: both #${rung.fog}`);
+        else pass(`the sky follows the bell: fog #${rung.before.fog} to #${rung.fog}`);
+        const bodyWatches = mystery.evidence.find((e) => e.id === 'body').watches;
+        if (bodyWatches.includes(mystery.watches[1])) fail(`the body is examinable at ${mystery.watches[1]} now, so this beat is checking nothing`);
+        else if (rung.body.some(Boolean)) fail('the mason\'s body is still in the chapel after the bell, and mystery.json says it is a Prime-only thing');
+        else pass('the evidence that is only there at Prime is gone with the bell');
+        check(rung.saved === 1, 'and the save carries the new watch', `saved watch ${rung.saved}`);
+      }
+    }
+  }
 
 } catch (err) {
   fail(`the run threw: ${err && err.message ? err.message : err}`);

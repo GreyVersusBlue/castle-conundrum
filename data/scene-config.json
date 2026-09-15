@@ -38,6 +38,53 @@
       "near": 30,
       "far": 150,
       "comment": "The castle is 80 m end to end now, against the 32 m courtyard this replaced, so the old far of 120 fogged the far curtain to nothing from the barbican. The ground stops at the curtain plus 2 m and fog is what is beyond it."
+    },
+    "watches": {
+      "comment": "The four bells, as four skies. `sun` is the light's position, which for a directional light is the direction it comes FROM with its target at the origin; +x is east, so Prime is low in the east and Vespers low in the west. `fog` is the fog AND the background, which are one colour in this scene. `hemisphere` is the sky/ground fill, and it does not go far below the 2.0 that Phase 3 measured the shadowed slate needs (see the hemisphere comment above): a darker Vespers is a warmer, lower sun and a colder fog, not an unlit castle. The `sun` block above is what the page opens on before any bell rings, and it is Terce's.",
+      "prime": {
+        "sun": [
+          58,
+          14,
+          10
+        ],
+        "color": "#ffd9a8",
+        "intensity": 2.0,
+        "fog": "#c6ccd6",
+        "hemisphere": 2.1
+      },
+      "terce": {
+        "sun": [
+          30,
+          45,
+          18
+        ],
+        "color": "#fff2dd",
+        "intensity": 2.6,
+        "fog": "#a8b2c4",
+        "hemisphere": 2.0
+      },
+      "sext": {
+        "sun": [
+          6,
+          62,
+          16
+        ],
+        "color": "#fffaf0",
+        "intensity": 2.9,
+        "fog": "#b4bccb",
+        "hemisphere": 2.2
+      },
+      "vespers": {
+        "sun": [
+          -56,
+          12,
+          8
+        ],
+        "color": "#ffab5e",
+        "intensity": 1.7,
+        "fog": "#7c7486",
+        "hemisphere": 1.9
+      }
     }
   },
   "repeatMetres": 3,
@@ -1883,6 +1930,18 @@
         "base": 8,
         "evidence": "tally",
         "comment": "The tally stick, in the gutter of the south walk just east of the Bakehouse Tower's door, on the decking (`base` 8). A small crate until Phase 7 makes it examinable."
+      },
+      {
+        "model": "pulley.glb",
+        "tile": [
+          5.55,
+          4.05
+        ],
+        "rotationY": 200,
+        "scale": 2.5,
+        "id": "chapel-bell",
+        "bell": true,
+        "comment": "The chapel bell's crank and rope, and the only examinable in Phase 6: pressing E at it rings the next watch in. The kit has no bell, and a rope over a crank in the corner of the chapel tower is what it does have. Its first tile put the BOX 0.9 m into the tower's ring while its own tile point stood on clear floor — the model reaches 1.4 m north of its origin at this rotation — so the prompt never appeared and the line-of-sight check was right to refuse it. test/layout.mjs holds every piece the player presses E at clear of the stone now."
       }
     ]
   },

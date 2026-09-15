@@ -162,7 +162,7 @@ console.log('the manager resumes from a save');
 {
   const riddle = read('data/riddle.json');
   const ui = { setObjective(t) { this.objective = t; }, openDialogue() {}, openRiddle() { this.riddleOpen = true; }, closeRiddle() {}, setRiddleFeedback(t) { this.feedback = t; }, showVictory(fn) { this.victory = fn; } };
-  const npcs = read('data/npcs.json').npcs.map((def) => ({ id: def.id, name: def.name, def, dialogueState: 'default', getDialogueLines() { return this.def.dialogue[this.dialogueState]; } }));
+  const npcs = read('data/npcs.json').cast.map((def) => ({ id: def.id, name: def.name, def, dialogueState: 'default', getDialogueLines() { return this.def.dialogue[this.dialogueState]; } }));
   const changes = [];
   const timers = [];
   const qm = new QuestManager({
@@ -172,10 +172,10 @@ console.log('the manager resumes from a save');
     onChange: (s) => changes.push({ ...s }),
   });
   check(qm.stage === 'present-keystone' && /Keystone/.test(ui.objective), 'a saved stage resumes there with its objective', ui.objective);
-  check(npcs.every((n) => n.dialogueState === 'hasKeystone'), 'and every npc is in that stage\'s dialogue state');
+  check(npcs.every((n) => n.dialogueState === quest.stages['present-keystone'].dialogueState), 'and every npc is in that stage\'s dialogue state');
   check(qm.wrongCount === 2, 'riddleWrong is restored');
   check(changes.length === 1 && changes[0].stage === 'present-keystone' && changes[0].riddleWrong === 2, 'onChange fires once on resume with the stage and count', JSON.stringify(changes));
-  qm.handleInteract(npcs.find((n) => n.id === 'guard'));
+  qm.handleInteract(npcs.find((n) => n.id === 'constable'));
   ui.dialogueEnd?.();
 }
 {

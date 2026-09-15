@@ -41,7 +41,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, '..');
 const read = (rel) => JSON.parse(fs.readFileSync(path.join(ROOT, rel), 'utf8'));
 const quest = read('data/quest.json');
-const { npcs: npcDefs } = read('data/npcs.json');
+const { cast: npcDefs } = read('data/npcs.json');
 const riddle = read('data/riddle.json');
 const scene = read('data/scene-config.json');
 const mystery = read('data/mystery.json');
@@ -80,16 +80,30 @@ console.log('quest.json validates');
 /* ------------------------------------------- 2: the graph against the cast --- */
 console.log('quest.json against npcs.json');
 {
+  // THE THREE ARE GONE (Phase 6). `npcs` in npcs.json held the Guard, the
+  // Scholar and the Wizard, and the page spawned them; it spawns the twelve of
+  // `cast` now, so this file reads the cast and the riddle quest is validated
+  // against the people who are actually in the castle. What that changed in the
+  // quest itself: every stage is in `default`, because none of the twelve has a
+  // `hasKeystone` line and writing twelve of them for three stages Phase 7
+  // deletes would be content with an expiry date on it; and the last transition
+  // is `talked:constable`, because the Guard the player used to tell is gone.
   const problems = validateAgainstNpcs(quest, npcDefs);
-  check(problems.length === 0, 'every stage has lines on every npc, every token is known, the riddle opens where it is posed', problems.join('; '));
+  check(problems.length === 0, 'every stage has lines on every one of the twelve, every token is known, the riddle opens where it is posed', problems.join('; '));
   const states = new Set(Object.values(quest.stages).map((s) => s.dialogueState));
+  // A press in mystery.json is the other thing that moves an NPC's state, and
+  // the states it moves them to are that file's to check (src/mystery.js does).
+  for (const p of mystery.presses) states.add(p.to);
   for (const npc of npcDefs) {
     const extra = Object.keys(npc.dialogue).filter((k) => !states.has(k));
-    check(extra.length === 0, `${npc.id} has no dialogue no stage can reach`, extra.join(', '));
+    check(extra.length === 0, `${npc.id} has no dialogue no stage and no press can reach`, extra.join(', '));
   }
+  const talkedTo = Object.values(quest.stages).flatMap((s) => (s.transitions ?? []).map((t) => /^talked:(.+)$/.exec(t.on)?.[1])).filter(Boolean);
+  const strangers = talkedTo.filter((id) => !npcDefs.some((n) => n.id === id));
+  check(strangers.length === 0, `the ${talkedTo.length} conversation the quest turns on is with somebody the castle spawns (${talkedTo.join(', ')})`, strangers.join(', '));
   const brokenNpcs = (mutate) => { const d = JSON.parse(JSON.stringify(npcDefs)); mutate(d); return validateAgainstNpcs(quest, d); };
-  let p = brokenNpcs((d) => { delete d.find((n) => n.id === 'wizard').dialogue.hasKeystone; });
-  check(p.some((x) => /wizard has no `dialogue.hasKeystone`/.test(x)), 'a dropped dialogue state on one npc is caught', p.join('; ') || 'said nothing');
+  let p = brokenNpcs((d) => { delete d.find((n) => n.id === 'cook').dialogue.default; });
+  check(p.some((x) => /cook has no `dialogue.default`/.test(x)), 'a dropped dialogue state on one npc is caught', p.join('; ') || 'said nothing');
   // Phase 4 moved the riddle onto the muniment room's word-lock, so no npc poses
   // it and the break that used to take the Scholar's token line away has nothing
   // to take. What replaces it is the other half of the same rail, from the graph
@@ -99,8 +113,8 @@ console.log('quest.json against npcs.json');
   check(p2.some((x) => /openRiddle runs on bell:3, which is neither the end of a conversation .* nor a word-lock/.test(x)), 'openRiddle hung on an event that is neither a conversation nor a lock is caught', p2.join('; ') || 'said nothing');
   p2 = brokenQuest((q) => { q.stages[q.start].transitions[0].on = 'talked:scholar'; });
   check(p2.some((x) => /the riddle opens after scholar\/default but those lines never pose it/.test(x)), 'pointing the riddle back at the Scholar, who no longer poses it, is caught', p2.join('; ') || 'said nothing');
-  p = brokenNpcs((d) => { d.find((n) => n.id === 'guard').dialogue.default.push('{RIDDLE}'); });
-  check(p.some((x) => /guard\/default poses \{RIDDLE\} but no stage/.test(x)), 'a second npc posing the riddle with nothing opening it is caught', p.join('; ') || 'said nothing');
+  p = brokenNpcs((d) => { d.find((n) => n.id === 'chaplain').dialogue.default.push('{RIDDLE}'); });
+  check(p.some((x) => /chaplain\/default poses \{RIDDLE\} but no stage/.test(x)), 'an npc posing the riddle with nothing opening it is caught', p.join('; ') || 'said nothing');
   p = brokenNpcs((d) => { d[0].dialogue.default.push('{PROPHECY}'); });
   check(p.some((x) => /token \{PROPHECY\} is not in quest.tokens/.test(x)), 'an unknown token is caught', p.join('; ') || 'said nothing');
 }
@@ -121,7 +135,7 @@ console.log('the graph');
 
   // From every stage, every event the graph knows plus one it does not: the
   // result is always a stage, and effects only ever name known actions.
-  const events = [...g.events(), 'talked:wizard', 'riddle:wrong', 'nonsense'];
+  const events = [...g.events(), 'talked:cook', 'riddle:wrong', 'nonsense'];
   let landed = 0, strays = 0;
   for (const id of Object.keys(quest.stages)) {
     for (const ev of events) {
@@ -143,12 +157,12 @@ console.log('the graph');
   g.begin();
   const e1 = g.dispatch('lock:muniment');
   check(g.stage === quest.start && same(e1, [{ type: 'action', name: 'openRiddle' }]), 'lock:muniment opens the riddle and stays put', JSON.stringify(e1));
-  check(same(g.dispatch('talked:scholar'), []), 'and talking to the Scholar does nothing, because he stopped posing it');
+  check(same(g.dispatch('talked:chaplain'), []), 'and talking to the chaplain does nothing: nobody poses the riddle, the door does');
   const e2 = g.dispatch('riddle:solved');
   check(g.stage !== quest.start && e2.some((e) => e.type === 'dialogueState') && !g.done, 'riddle:solved moves on and switches dialogue state');
   check(e2.some((e) => e.type === 'action' && e.name === 'openGate'), 'and opens the leaf, which is the muniment room\'s door now', JSON.stringify(e2));
-  const e3 = g.dispatch('talked:guard');
-  check(g.done && e3.some((e) => e.name === 'showVictory' && e.after >= 1000), 'talked:guard ends it and the victory screen is delayed', JSON.stringify(e3));
+  const e3 = g.dispatch('talked:constable');
+  check(g.done && e3.some((e) => e.name === 'showVictory' && e.after >= 1000), 'talked:constable ends it and the victory screen is delayed', JSON.stringify(e3));
   const openIdx = e3.findIndex((e) => e.name === 'openGate'), winIdx = e3.findIndex((e) => e.name === 'showVictory');
   check(openIdx !== -1 && openIdx < winIdx, 'the terminal stage re-opens the leaf before the victory screen, so a save resumed there finds it open');
 
@@ -202,19 +216,20 @@ function rig() {
   check(npcs.every((n) => n.dialogueState === quest.stages[quest.start].dialogueState), 'and every npc is in the start dialogue state');
   check(!qm.victory && qm.stage === quest.start, 'victory is false at the start');
 
-  // Talk to the Guard first: he refuses, nothing moves.
-  const d0 = talk('guard');
-  check(d0.name === 'Guard' && same(d0.lines, npcDefs.find((n) => n.id === 'guard').dialogue.default), 'the Guard opens with his default lines');
-  check(npcs.find((n) => n.id === 'guard').talking, 'the npc is flagged talking while the box is open');
+  // Talk to the Constable first: nothing moves until the word is answered.
+  const constable = npcDefs.find((n) => n.id === 'constable');
+  const d0 = talk('constable');
+  check(d0.name === constable.name && same(d0.lines, constable.dialogue.default), 'the Constable opens with his default lines');
+  check(npcs.find((n) => n.id === 'constable').talking, 'the npc is flagged talking while the box is open');
   ui.endDialogue();
-  check(!npcs.find((n) => n.id === 'guard').talking && qm.stage === quest.start && castle.gateOpened === 0, 'ending it early changes nothing: no keystone, no gate');
+  check(!npcs.find((n) => n.id === 'constable').talking && qm.stage === quest.start && castle.gateOpened === 0, 'ending it early changes nothing: no keystone, no gate');
 
-  // The Scholar points at the door and nothing else happens.
-  const d1 = talk('scholar');
-  const scholarLines = npcDefs.find((n) => n.id === 'scholar').dialogue.default;
-  check(same(d1.lines, scholarLines), 'the Scholar gives his default lines and poses nothing', JSON.stringify(d1.lines.at(-1)));
+  // The chaplain says his piece and nothing else happens.
+  const d1 = talk('chaplain');
+  const chaplainLines = npcDefs.find((n) => n.id === 'chaplain').dialogue.default;
+  check(same(d1.lines, chaplainLines), 'the chaplain gives his default lines and poses nothing', JSON.stringify(d1.lines.at(-1)));
   ui.endDialogue();
-  check(!ui.riddleOpen && qm.stage === quest.start, 'finishing with him does not open the riddle any more');
+  check(!ui.riddleOpen && qm.stage === quest.start, 'finishing with him does not open the riddle');
 
   // The word-lock does.
   qm.handleLock('muniment');
@@ -226,21 +241,20 @@ function rig() {
   ui.answer('River');
   check(!ui.riddleOpen && controls.locks === 1, 'the right answer closes the overlay and re-locks the pointer');
   check(qm.stage === 'present-keystone' && /Keystone/.test(ui.objective), 'and the objective moves to the Keystone', ui.objective);
-  check(castle.gateOpened === 1, 'and the muniment room\'s leaf opens on the answer, not on the Guard');
-  check(npcs.every((n) => n.dialogueState === 'hasKeystone'), 'every npc switched to hasKeystone');
+  check(castle.gateOpened === 1, 'and the muniment room\'s leaf opens on the answer, not on the Constable');
+  check(npcs.every((n) => n.dialogueState === 'default'), 'every npc is still in default: the three stages that had their own states went with the three npcs that had the lines');
 
-  // Back to the Scholar: his hasKeystone lines, and no second riddle.
-  const d2 = talk('scholar');
-  check(same(d2.lines, npcDefs.find((n) => n.id === 'scholar').dialogue.hasKeystone), 'the Scholar now gives his hasKeystone lines');
+  // Back to the chaplain: the same lines, and no second riddle.
+  const d2 = talk('chaplain');
+  check(same(d2.lines, chaplainLines), 'the chaplain says what he said before');
   ui.endDialogue();
   check(!ui.riddleOpen && qm.stage === 'present-keystone', 'talking to him again does not reopen the riddle');
 
-  // The Guard opens the gate; the victory screen waits on the timer.
-  const d3 = talk('guard');
-  check(same(d3.lines, npcDefs.find((n) => n.id === 'guard').dialogue.hasKeystone), 'the Guard gives his hasKeystone lines');
+  // The Constable ends it; the victory screen waits on the timer.
+  const d3 = talk('constable');
+  check(same(d3.lines, constable.dialogue.default), 'the Constable gives his default lines');
   ui.endDialogue();
-  check(castle.gateOpened === 2 && qm.victory && /muniment room stands open/i.test(ui.objective), 'finishing with the Guard sets victory and re-opens the leaf', ui.objective);
-  check(npcs.every((n) => n.dialogueState === 'afterVictory'), 'every npc switched to afterVictory');
+  check(castle.gateOpened === 2 && qm.victory && /muniment room stands open/i.test(ui.objective), 'finishing with the Constable sets victory and re-opens the leaf', ui.objective);
   check(ui.victory === null && timers.length === 1 && timers[0].ms === 2600, 'the victory screen is scheduled 2600 ms out, not shown yet', JSON.stringify(timers.map((t) => t.ms)));
   timers[0]?.fn();
   check(ui.victory !== null, 'and appears when the timer fires');
@@ -248,8 +262,8 @@ function rig() {
   check(restarts.n === 1, 'its button calls the injected restart');
 
   // After the end: chatting is free, nothing repeats.
-  talk('guard'); ui.endDialogue();
-  talk('scholar'); ui.endDialogue();
+  talk('constable'); ui.endDialogue();
+  talk('chaplain'); ui.endDialogue();
   qm.handleLock('muniment');
   check(castle.gateOpened === 2 && timers.length === 1 && !ui.riddleOpen && qm.stage === 'gate-open', 'after victory nothing repeats: the timer is set once and pressing the answered lock again opens no riddle');
 
@@ -257,11 +271,11 @@ function rig() {
   check(same(order, ['riddle:open', 'riddle:close', 'gate', 'gate', 'victory']), 'the whole run, in order: riddle opens, closes, the leaf opens, and again on the terminal stage, then victory', order.join(' > '));
 }
 {
-  // The other shortcut: the riddle answered right straight away, then the Guard.
+  // The other shortcut: the riddle answered right straight away, then the Constable.
   const { qm, ui, castle, talk } = rig();
   qm.handleLock('muniment'); ui.answer('the river');
-  talk('guard'); ui.endDialogue();
-  check(qm.victory && castle.gateOpened === 2, 'a first-try answer reaches the end without the Scholar at all');
+  talk('constable'); ui.endDialogue();
+  check(qm.victory && castle.gateOpened === 2, 'a first-try answer reaches the end without talking to anybody else at all');
 }
 {
   // A quest.json the manager cannot run fails at construction, not on the walk.

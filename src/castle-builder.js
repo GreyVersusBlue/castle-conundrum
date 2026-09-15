@@ -554,6 +554,7 @@ export class CastleBuilder {
     this.colliders = []; // { box: {min,max} | THREE.Box3, id?: string }
     this.gates = new Map(); // id -> { pivot, closedAngle, openAngle, progress, opening }
     this.materials = new Map(); // material name -> MeshStandardMaterial
+    this.objects = new Map(); // plan piece id -> the Object3D built for it
   }
 
   tileToWorld(tx, tz) {
@@ -633,6 +634,7 @@ export class CastleBuilder {
       else obj = await loadModel(piece.model);
 
       obj.userData.planId = piece.id;
+      this.objects.set(piece.id, obj);
 
       if (piece.built === 'run' || piece.built === 'drum' || piece.built === 'ground' || piece.built === 'slab' || piece.built === 'floor') {
         // These carry their world position inside their own geometry, so the
@@ -732,6 +734,45 @@ export class CastleBuilder {
       });
     }
     return out;
+  }
+
+  /**
+   * The chapel bell, as something InteractionSystem can put a prompt on. One
+   * piece in the plan carries `bell`; pressing E at it is what rings the next
+   * watch in. Phase 7 turns `evidence` pieces into targets the same way, which
+   * is why this reads a flag on the piece rather than knowing a prop by name.
+   */
+  bells() {
+    return this.plan.pieces.filter((p) => p.bell).map((piece) => {
+      const obj = this.objects.get(piece.id);
+      const centre = new THREE.Vector3(
+        (piece.box.min.x + piece.box.max.x) / 2,
+        (piece.box.min.y + piece.box.max.y) / 2,
+        (piece.box.min.z + piece.box.max.z) / 2,
+      );
+      return { id: piece.id, isBell: true, name: 'bell', prompt: 'Press E to ring the bell', group: obj, focus: centre };
+    });
+  }
+
+  /**
+   * Show or hide a piece of evidence, collider and all. Three of the ten are
+   * there for some watches and not others — the body at Prime, the cloak until
+   * it is washed, the merchant's cart at Terce — and a hidden object that still
+   * blocks the player is a wall nobody can see, which is why the collider goes
+   * with it rather than only the mesh.
+   */
+  setEvidenceVisible(evidenceId, visible) {
+    const piece = this.plan.pieces.find((p) => p.evidence === evidenceId);
+    if (!piece) return false;
+    const obj = this.objects.get(piece.id);
+    if (obj) obj.visible = visible;
+    const planned = this.plan.colliders.filter((c) => c.id === piece.id);
+    for (const c of planned) {
+      const i = this.colliders.findIndex((x) => x.id === c.id && x.box === c.box);
+      if (visible && i === -1) this.colliders.push({ id: c.id, box: c.box });
+      if (!visible && i !== -1) this.colliders.splice(i, 1);
+    }
+    return true;
   }
 
   /**

@@ -98,6 +98,9 @@ button:hover { background: #e6bb63; }
   z-index: 10;
 }
 .tracker-title { color: var(--accent); font-size: 0.8em; letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 0.3em; }
+/* The bell the castle is on. Sits above the objective because it is the thing
+   that changes under the player rather than the thing they are doing. */
+.tracker-watch { color: var(--accent); font-size: 1.05em; margin-bottom: 0.35em; }
 
 #interact-prompt {
   position: fixed; bottom: 22%; left: 50%;

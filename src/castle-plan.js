@@ -1243,7 +1243,7 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
     const id = p.id || `${p.model.replace(/\.glb$/, '')}-${seq++}`;
     addPiece({
       id, kind, model: kBase + p.model, level: levelUnder(p.base || 0), curtain: !!p.curtain,
-      label: p.comment || p.model, evidence: p.evidence || null,
+      label: p.comment || p.model, evidence: p.evidence || null, bell: !!p.bell,
       transform, box, boxes: p.noCollide ? [] : [box],
     });
     // `noCollide` means one thing everywhere: this piece contributes no colliders.

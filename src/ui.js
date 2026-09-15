@@ -11,6 +11,7 @@ export class UI {
       crosshair: document.getElementById('crosshair'),
       tracker: document.getElementById('quest-tracker'),
       objective: document.getElementById('quest-objective'),
+      watch: document.getElementById('quest-watch'),
       prompt: document.getElementById('interact-prompt'),
       dialogue: document.getElementById('dialogue-box'),
       dialogueName: document.getElementById('dialogue-name'),
@@ -65,6 +66,9 @@ export class UI {
   }
 
   setObjective(text) { this.el.objective.textContent = text; }
+
+  /** Which of the four bells the castle is on. */
+  setWatch(text) { if (this.el.watch) this.el.watch.textContent = text; }
 
   setInteractPrompt(visible, text = '') {
     this.el.prompt.classList.toggle('hidden', !visible);

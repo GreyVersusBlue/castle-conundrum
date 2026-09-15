@@ -69,7 +69,26 @@ export function createScene(config) {
     renderer.setSize(window.innerWidth, window.innerHeight);
   });
 
-  return { scene, renderer, camera, audioListener };
+  /**
+   * The sky at one of the four bells. `lighting.watches` carries a sun
+   * position, colour and intensity, a fog colour and a hemisphere strength for
+   * each; ringing the bell calls this and Vespers looks like Vespers. An
+   * unknown watch leaves the scene exactly as it is, so a save carrying a watch
+   * this config has never heard of opens on daylight rather than on black.
+   */
+  const setWatch = (watch) => {
+    const spec = config.lighting.watches?.[watch];
+    if (!spec) return false;
+    sun.position.set(...spec.sun);
+    sun.color.set(spec.color);
+    sun.intensity = spec.intensity;
+    hemi.intensity = spec.hemisphere ?? hemiCfg.intensity;
+    scene.fog.color.set(spec.fog);
+    scene.background.set(spec.fog);
+    return true;
+  };
+
+  return { scene, renderer, camera, audioListener, sun, hemi, setWatch };
 }
 
 // Brazier proportions. BOWL_Y is the rim height, which is also where the light

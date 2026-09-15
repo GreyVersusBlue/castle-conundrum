@@ -6,6 +6,9 @@
 
 import { QuestGraph, judgeAnswer, renderLines } from './quest-graph.js';
 
+/** "prime" -> "Prime". The four bells are shown as they are named in the data. */
+const label = (id) => (typeof id === 'string' && id ? id[0].toUpperCase() + id.slice(1) : '');
+
 export class QuestManager {
   /**
    * The actions data/quest.json may name. validateQuest checks against this
@@ -27,8 +30,10 @@ export class QuestManager {
    * @param restart    what the victory screen's button does; defaults to a reload.
    * @param saved      { stage, riddleWrong } from the save slot, or null: begin the graph there rather than at `start`.
    * @param onChange   called after every batch of effects with { stage, riddleWrong }; main.js marks the autosave.
+   * @param engine     src/mystery.js's `createMystery`, or null. It owns the watch; the bell asks it to move.
+   * @param onWatch    (watchId, {walk}) => void: the world half of a bell — the sky, the evidence, the walk to the next station.
    */
-  constructor({ quest, riddle, npcs, ui, castle, controlsRef, schedule, restart, saved = null, onChange = null }) {
+  constructor({ quest, riddle, npcs, ui, castle, controlsRef, schedule, restart, saved = null, onChange = null, engine = null, onWatch = null }) {
     this.graph = new QuestGraph(quest, QuestManager.actions);
     this.riddle = riddle;
     this.npcs = npcs;
@@ -39,6 +44,8 @@ export class QuestManager {
     this._restart = restart || (() => window.location.reload());
     this._wrongCount = Number.isInteger(saved?.riddleWrong) && saved.riddleWrong >= 0 ? saved.riddleWrong : 0;
     this._onChange = onChange;
+    this.engine = engine;
+    this._onWatch = onWatch;
 
     this._actions = {
       openRiddle: () => this.ui.openRiddle(
@@ -48,7 +55,11 @@ export class QuestManager {
       ),
       openGate: () => this.castle.openGate(),
       showVictory: () => this.ui.showVictory(() => this._restart()),
-      ringBell: () => console.info('[quest] ringBell: the bell is Phase 6'),
+      // The frame names `ringBell` on each of its four bell transitions. The ring
+      // itself is `handleBell` below — it is what dispatched the event this
+      // action is reacting to — so what is left for the stage to do is nothing
+      // until Phase 7 gives the frame its HUD.
+      ringBell: () => {},
       openJournal: () => console.info('[quest] openJournal: the journal is Phase 7'),
       openAccusation: () => console.info('[quest] openAccusation: the accusation is Phase 7'),
       showEpilogue: () => console.info('[quest] showEpilogue: the epilogue is Phase 7'),
@@ -83,6 +94,37 @@ export class QuestManager {
    */
   handleLock(id) {
     this._apply(this.graph.dispatch(`lock:${id}`));
+  }
+
+  /** The watch the engine is on, or null when this manager has none (a stand-in suite). */
+  get watch() { return this.engine ? this.engine.watch : null; }
+
+  /**
+   * Put the world at a watch without ringing anything: the sky, the evidence
+   * that is there at that bell, and everyone standing at their station for it.
+   * main.js calls this once at load, so a save resumed at Sext opens at Sext.
+   */
+  applyWatch(watch, opts = {}) {
+    this.ui.setWatch?.(label(watch));
+    this._onWatch?.(watch, opts);
+  }
+
+  /**
+   * The chapel bell. The engine moves the watch on, the world follows it, and
+   * the graph hears `bell:<n>` — which the riddle quest the page still plays
+   * does not listen for, and the frame does. The fourth ring moves no watch:
+   * it is the Constable demanding an answer, and it comes back as `demand`.
+   */
+  handleBell() {
+    if (!this.engine) return [];
+    const before = this.engine.watch;
+    const effects = this.engine.ring();
+    if (this.engine.watch !== before) this.applyWatch(this.engine.watch);
+    for (const e of effects) {
+      if (e.type === 'event') this._apply(this.graph.dispatch(e.name));
+    }
+    this._onChange?.({ stage: this.graph.stage, riddleWrong: this._wrongCount });
+    return effects;
   }
 
   /** Wire into InteractionSystem.onInteract */

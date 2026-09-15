@@ -1,126 +1,5 @@
 {
-  "comment": "`npcs` are the three the page spawns and the riddle quest talks to; they stay until Phase 6 (Phase 3 moves them, Phase 6 removes them). `cast` are the twelve of v2 (WISHLIST.md, The cast): id, name, role, ward, one of the three bodies on disk, and a `tint` hex the body's main material is multiplied by (#419; nothing reads it until Phase 6). Dialogue is keyed by state: `default` is what everyone says, and the other states are the ones data/mystery.json's presses move an NPC to. src/mystery.js validates every press target and every statement source against these keys.",
-  "npcs": [
-    {
-      "id": "guard",
-      "name": "Guard",
-      "role": "gatekeeper",
-      "modelPath": "assets/NPCs/King.glb",
-      "hideMaterials": [
-        "Gold"
-      ],
-      "heldProp": "ornate_medieval_mace_1k.gltf/ornate_medieval_mace_1k.gltf",
-      "placeholder": {
-        "color": "#8a2f2f"
-      },
-      "position": [
-        -5.5,
-        0,
-        0
-      ],
-      "facing": 180,
-      "patrol": null,
-      "dialogue": {
-        "default": [
-          "Halt. None pass the gate without the Keystone.",
-          "The old Scholar in the hall guards its secret behind one of his infernal riddles. Best of luck \u2014 I've never solved one."
-        ],
-        "hasKeystone": [
-          "Well, I'll be. The Keystone itself.",
-          "A deal's a deal. Stand back \u2014 this gate hasn't moved in years."
-        ],
-        "afterVictory": [
-          "Go on then. The road's yours."
-        ]
-      },
-      "comment": "At the porter's gate on the outer ward side: the one crossing between the wards at ground level, and the one he logs. Was (1.8, 9.2), the old courtyard's south gate."
-    },
-    {
-      "id": "scholar",
-      "name": "Scholar",
-      "role": "riddler",
-      "modelPath": "assets/NPCs/Adventurer.glb",
-      "hideNodes": [
-        "Backpack"
-      ],
-      "heldProp": null,
-      "placeholder": {
-        "color": "#2f4f8a"
-      },
-      "position": [
-        10,
-        0,
-        -10
-      ],
-      "facing": 346,
-      "comment": "Phase 4: the Scholar stopped posing the riddle. It is carved over the muniment room's lock now and the player reads it off the door, so his `default` lines point at the door and carry no {RIDDLE} token.",
-      "patrol": null,
-      "dialogue": {
-        "default": [
-          "Ah, a visitor. You want the muniment room, no doubt. Everyone does.",
-          "I cannot open it. The Clerk of Works had a word cut over the lock and then had the mason who cut it sent up the tower.",
-          "Go and read it yourself. It is on the King's Tower, on the face that looks into the hall."
-        ],
-        "hasKeystone": [
-          "The Keystone suits you. Now go bother the Guard \u2014 he owes me three answers and a chicken."
-        ],
-        "afterVictory": [
-          "The gate stands open. A mind well used is worth ten keys."
-        ]
-      }
-    },
-    {
-      "id": "wizard",
-      "name": "Wandering Wizard",
-      "role": "atmosphere",
-      "modelPath": "assets/NPCs/Farmer.glb",
-      "heldProp": null,
-      "placeholder": {
-        "color": "#5a2f8a"
-      },
-      "position": [
-        -24,
-        0,
-        4
-      ],
-      "facing": 90,
-      "patrol": [
-        [
-          -24,
-          0,
-          4
-        ],
-        [
-          -24,
-          0,
-          -4
-        ],
-        [
-          -12,
-          0,
-          -4
-        ],
-        [
-          -12,
-          0,
-          4
-        ]
-      ],
-      "dialogue": {
-        "default": [
-          "Hmm? Oh, don't mind me. I'm counting the stones. There are more every time.",
-          "The Scholar's riddles? Child's play. I simply choose not to answer them. On principle."
-        ],
-        "hasKeystone": [
-          "You solved it? Fascinating. I was *this* close, you know."
-        ],
-        "afterVictory": [
-          "An open gate is just a wall that gave up. Ponder that."
-        ]
-      },
-      "comment": "Patrolling the outer ward between the kitchen range and the Great Hall. The old patrol was a 4 m box inside the courtyard that Phase 3 replaced."
-    }
-  ],
+  "comment": "The twelve of v2 (WISHLIST.md, The cast): id, name, role, ward, one of the three bodies on disk, and a `tint` hex every cloth material on that body is multiplied by (#419). Phase 6 is where they reach the screen, and it is where the Guard, the Scholar and the Wizard of v1 left it: `npcs`, the three the page used to spawn, is gone, and the riddle quest it played runs on the Constable until Phase 7 retires it. Dialogue is keyed by state: `default` is what everyone says, and the other states are the ones data/mystery.json's presses move an NPC to. src/mystery.js validates every press target and every statement source against these keys, and holds each `tint` to a #rrggbb.",
   "cast": [
     {
       "id": "constable",
@@ -280,14 +159,15 @@
       "placeholder": {
         "color": "#2f4f8a"
       },
-      "heldProp": null,
+      "heldProp": "ornate_medieval_mace_1k.gltf/ornate_medieval_mace_1k.gltf",
       "dialogue": {
         "default": [
           "North walk, Compline to Lauds, every night this month. You see the whole north side from the Kitchen Tower door.",
           "Second bell, a man went east along the walk past my post. Fur-trimmed cloak. I know fur when the moon is on it.",
           "The Clerk's the only man in the works with fur on him. I thought he was walking off a supper. I wish I had stopped him."
         ]
-      }
+      },
+      "heldPropComment": "Dafydd is the only one of the twelve carrying anything. The mace came into the project on the Guard of v1 and stays referenced through him; it is also what reads as a soldier from across the ward, where a tint alone does not."
     },
     {
       "id": "apprentice",

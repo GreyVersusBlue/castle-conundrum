@@ -111,6 +111,30 @@ if (!failures) pass(`${props.length} interior props, none of them inside any of 
   if (!inFlight.length) pass(`no prop stands in any of the ${flights.length} flights`);
 }
 
+/* ------------------------ 1c: nothing pressable stands inside the stone ---
+ * Check 1 above covers `prop` pieces, and the bell is `decor`: a kit model
+ * placed through `courtyard.placements`, like the crates and the shrubs. It got
+ * through check 1 with 0.9 m of its box inside the Chapel Tower's ring, because
+ * its TILE POINT stood on clear floor and the model reaches 1.4 m past its own
+ * origin at that rotation. What said so was the line-of-sight test in
+ * interaction.js refusing to offer it — the same rail that caught the Guard
+ * sealed 0.16 m inside the gatehouse in v1, and the same class of bug.
+ *
+ * So: anything the player presses E at is held clear of every wall and tower,
+ * whatever kind of piece it is. Doors are the exception and the reason is not a
+ * fudge — a door IS in a wall, and it is the wall's own opening.
+ */
+console.log('\nthe pieces the player presses E at');
+{
+  const pressable = plan.pieces.filter(p => p.bell);
+  if (!pressable.length) fail('no piece in the plan carries `bell`, so the chapel has nothing to ring and this check tests nothing');
+  for (const piece of pressable) {
+    const hit = stone.find(s => s.boxes.some(b => overlaps(piece.box, b)));
+    if (hit) fail(`${piece.id} at x ${f2(piece.box.min.x)}..${f2(piece.box.max.x)}, z ${f2(piece.box.min.z)}..${f2(piece.box.max.z)} is inside ${hit.label} — a prompt on it would be a prompt on blank stone`);
+    else pass(`${piece.id} stands clear of all ${stone.length} stone pieces`);
+  }
+}
+
 /* ------------------------------ 2: the cabinet and the commode stand close ---
  * The other half of the same number. Not being in the wall is the floor; these
  * two are meant to be AGAINST their side walls, and until 2026-09-14 they stood

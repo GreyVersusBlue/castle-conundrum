@@ -5,6 +5,18 @@
 // If `modelPath` is null, build() falls back to a coloured capsule-and-head placeholder
 // tinted by placeholder.color. Nothing here keys off an npc's id — swapping a model in or
 // out, or changing which clips or held prop it uses, is a data change, not a code change.
+//
+// TWELVE PEOPLE, THREE BODIES (#419). `tint` is a hex every cloth material on the
+// body is multiplied by, which is what makes Marged and Nest two women rather than
+// two copies of Farmer.glb. Skin, eyes, brows and hair are left alone: a green face
+// is a different species, not a different person. The materials are cloned first,
+// because SkeletonUtils.clone() shares them by reference and tinting one Farmer
+// otherwise tints all four.
+//
+// WALKING BETWEEN STATIONS. `def.patrol` is a loop, which is what the three of v1
+// had. `walkTo(points)` is the Phase 6 form: a one-shot route from src/stations.js,
+// cell centres 0.5 m apart with the floor height at each, so an NPC crossing the
+// castle climbs the same stairs the player does and stops when it arrives.
 
 import * as THREE from 'three';
 import { loadGLTF, loadModel } from './assets.js';
@@ -12,7 +24,10 @@ import { loadGLTF, loadModel } from './assets.js';
 const PATROL_SPEED = 1.1; // m/s
 const WAYPOINT_EPS = 0.05;
 const TURN_SPEED = 4.0; // rad/s — how fast an npc swings round to a new heading
+const CLIMB_SPEED = 1.6; // m/s the feet rise or fall towards the next waypoint's floor
 const DEFAULT_HEIGHT = 1.8; // metres; player eye height is 1.7, so npcs read as adults
+// What the tint does not touch.
+const BARE_MATERIALS = [/^skin$/i, /^eye/i, /^eyebrow/i, /^hair/i];
 
 // Clip-name preferences, most-wanted first. Matched case-insensitively against whatever
 // the loaded file happens to ship, so a model with a different animation set still finds
@@ -41,10 +56,11 @@ export class NPC {
     this.dialogueState = 'default';
 
     this.group = new THREE.Group();
-    this.group.position.set(...def.position);
+    this.group.position.set(...(def.position || [0, 0, 0]));
     this.group.rotation.y = THREE.MathUtils.degToRad(def.facing || 0);
 
     this._waypoints = (def.patrol || []).map((p) => new THREE.Vector3(...p));
+    this._loop = this._waypoints.length > 0;
     this._waypointIndex = 0;
     this._targetYaw = this.group.rotation.y;
 
@@ -92,6 +108,8 @@ export class NPC {
         }
       });
     }
+
+    if (this.def.tint) tintBody(model, this.def.tint);
 
     if (animations.length) {
       this._mixer = new THREE.AnimationMixer(model);
@@ -240,14 +258,47 @@ export class NPC {
     const dist = to.length();
 
     if (dist < WAYPOINT_EPS) {
-      this._waypointIndex = (this._waypointIndex + 1) % this._waypoints.length;
+      // A patrol wraps; a route ends. An NPC that has arrived stands where the
+      // last waypoint put it, at that waypoint's own height, and idles.
+      if (this._waypointIndex + 1 < this._waypoints.length) this._waypointIndex += 1;
+      else if (this._loop) this._waypointIndex = 0;
+      else { this.group.position.copy(target); this._waypoints = []; this._play('idle'); }
       return;
     }
 
     to.normalize();
     this.group.position.addScaledVector(to, Math.min(PATROL_SPEED * dt, dist));
+    // The feet follow the floor the route was read off, rather than sliding up
+    // a flight at a constant y: every waypoint carries the height of the cell
+    // it is the centre of.
+    this.group.position.y += Math.min(Math.abs(target.y - this.group.position.y), CLIMB_SPEED * dt) * Math.sign(target.y - this.group.position.y);
     this._targetYaw = Math.atan2(to.x, to.z);
     this._play('walk');
+  }
+
+  /** Stand here now, feet on `y`. Used to put the cast at its opening stations. */
+  placeAt({ x, y = 0, z, facing = null }) {
+    this.group.position.set(x, y, z);
+    this._waypoints = [];
+    this._loop = false;
+    if (facing != null) { this.group.rotation.y = facing; this._targetYaw = facing; }
+  }
+
+  /**
+   * Walk this route and stop at the end of it: `[{x, z, h}]` from
+   * src/stations.js. An empty or one-point route means "you are already there",
+   * and is a place rather than a walk.
+   */
+  walkTo(points) {
+    const route = (points || []).map((p) => new THREE.Vector3(p.x, p.h ?? 0, p.z));
+    if (route.length < 2) {
+      if (route.length === 1) this.group.position.copy(route[0]);
+      this._waypoints = [];
+      return;
+    }
+    this._waypoints = route;
+    this._loop = false;
+    this._waypointIndex = 1; // [0] is the cell it is standing in
   }
 
   /** Ease the body round to _targetYaw instead of snapping, which reads as a glitch. */
@@ -269,6 +320,31 @@ export class NPC {
   getDialogueLines() {
     return this.def.dialogue[this.dialogueState];
   }
+}
+
+/**
+ * Multiply every cloth material under `root` by `hex`. The materials are cloned
+ * first: three.js shares them across every clone of a cached glTF, so tinting
+ * in place would repaint everyone wearing the same body.
+ */
+function tintBody(root, hex) {
+  const tint = new THREE.Color(hex);
+  const swapped = new Map();
+  root.traverse((obj) => {
+    if (!obj.isMesh) return;
+    const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+    const next = mats.map((mat) => {
+      if (!mat) return mat;
+      if (BARE_MATERIALS.some((re) => re.test(mat.name || ''))) return mat;
+      if (!swapped.has(mat)) {
+        const copy = mat.clone();
+        copy.color.multiply(tint);
+        swapped.set(mat, copy);
+      }
+      return swapped.get(mat);
+    });
+    obj.material = Array.isArray(obj.material) ? next : next[0];
+  });
 }
 
 function pickClip(animations, names) {
