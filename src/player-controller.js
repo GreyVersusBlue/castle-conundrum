@@ -4,9 +4,8 @@
 import * as THREE from 'three';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 
-import { EYE_HEIGHT, HEAD_LOW, HEAD_HIGH, STEP_UP, standAt } from './castle-plan.js';
+import { EYE_HEIGHT, STEP_UP, standAt, moveBody } from './castle-plan.js';
 
-const RADIUS = 0.45;
 const WALK_SPEED = 5.2;
 const SPRINT_MULT = 1.75;
 
@@ -30,8 +29,9 @@ export class PlayerController {
    * on and a floor the player can stand on are one floor.
    *
    * Colliders are tested in a band relative to the feet, HEAD_LOW to HEAD_HIGH
-   * above them, which is the grid's band too. A wall on the first floor does not
-   * stop a body on the wall walk over it, and the walk's parapet does.
+   * above them, which is the grid's band too (`moveBody`, castle-plan.js). A
+   * wall on the first floor does not stop a body on the wall walk over it, and
+   * the walk's parapet does.
    */
   constructor(camera, domElement, getColliders, getPlan) {
     this.camera = camera;
@@ -109,54 +109,18 @@ export class PlayerController {
     pos.y = this.feet + EYE_HEIGHT;
   }
 
-  /** One axis of a move: take it, push out of any box, then stand — or, standing nowhere, undo it. */
+  /**
+   * One axis of a move: take it, push out of any box, then stand, or, standing
+   * nowhere, undo it. The rule is `moveBody` in castle-plan.js, so
+   * test/layout.mjs walks the same body up every flight this does (#511).
+   */
   step(pos, dx, dz) {
-    if (dx === 0 && dz === 0) return;
-    const x0 = pos.x, z0 = pos.z, feet0 = this.feet;
-    pos.x += dx;
-    pos.z += dz;
-    this.resolveCollisions(pos);
     const plan = this.getPlan && this.getPlan();
     if (!plan) return;
-    const on = standAt(plan, pos.x, pos.z, this.feet, STEP_UP);
-    if (on) { this.feet = on.h; return; }
-    pos.x = x0;
-    pos.z = z0;
-    this.feet = feet0;
-  }
-
-  resolveCollisions(pos) {
-    const colliders = this.getColliders();
-    const low = this.feet + HEAD_LOW, high = this.feet + HEAD_HIGH;
-    for (const { box } of colliders) {
-      // only what crosses the standing body's column: not a floor underfoot, not
-      // a lintel or a slab over the head, not a ground-floor wall under the walk.
-      // A top exactly a step over the feet is a step (the same millionth the
-      // grid's blocked() carries, #459).
-      if (box.min.y >= high - 1e-6 || box.max.y <= low + 1e-6) continue;
-
-      const cx = THREE.MathUtils.clamp(pos.x, box.min.x, box.max.x);
-      const cz = THREE.MathUtils.clamp(pos.z, box.min.z, box.max.z);
-      const dx = pos.x - cx;
-      const dz = pos.z - cz;
-      const distSq = dx * dx + dz * dz;
-      if (distSq < RADIUS * RADIUS) {
-        const dist = Math.sqrt(distSq);
-        if (dist > 0.0001) {
-          const push = (RADIUS - dist) / dist;
-          pos.x += dx * push;
-          pos.z += dz * push;
-        } else {
-          // dead center inside a box — push out toward the nearest face on x/z
-          const left = pos.x - box.min.x, rightD = box.max.x - pos.x;
-          const front = pos.z - box.min.z, back = box.max.z - pos.z;
-          const m = Math.min(left, rightD, front, back);
-          if (m === left) pos.x = box.min.x - RADIUS;
-          else if (m === rightD) pos.x = box.max.x + RADIUS;
-          else if (m === front) pos.z = box.min.z - RADIUS;
-          else pos.z = box.max.z + RADIUS;
-        }
-      }
-    }
+    const r = moveBody(plan, this.getColliders(), { x: pos.x, z: pos.z, feet: this.feet }, dx, dz);
+    if (r.refused) return;
+    pos.x = r.x;
+    pos.z = r.z;
+    this.feet = r.feet;
   }
 }

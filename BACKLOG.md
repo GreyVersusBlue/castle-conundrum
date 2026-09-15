@@ -24,6 +24,12 @@ every texture, meshopt over the Poly Haven props and the NPC bodies, and 317.9
 MB of video memory down to 79.9. `tools/encode-assets.mjs` is the pipeline, and
 anything ranks 2 and 7 add has to come through it.
 
+**Three things a GPU saw shipped on 2026-09-15** (#511 to #514): a body can
+climb every flight, the drums wear built crowns instead of merlons hanging in
+the air, and no two faces share a plane, so nothing flickers. `layout.mjs`
+checks 8, 9 and 10 hold each. The fourth thing Devon saw, that every room
+looks like the last, is the next PR.
+
 **10 ranked items.** Take rank 1.
 
 Two things are true of the whole list and worth saying once. **Nothing here has
@@ -130,7 +136,8 @@ what is in front of it.
 
 **Rank 6.** Four cylinders nobody can climb. A third stair per inner tower and
 a view over the whole plan from 12 m. Phase 5 built the upper level and the
-wall walk and stopped below the tower tops.
+wall walk and stopped below the tower tops. The parapet up there is the drum's
+own crown since #514, not kit merlons.
 
 ## The town side
 

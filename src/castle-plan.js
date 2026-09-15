@@ -30,6 +30,13 @@
 export const GRID = 0.5;
 /** A step this tall or shorter is walked up; anything taller is a wall. */
 export const STEP_UP = 0.35;
+/**
+ * The player's body, as a circle in plan. `moveBody` pushes it out of every
+ * collider by this much, and the slabs cut their collider wells this much
+ * wider than their surface wells so a body on a flight never meets the strip
+ * beside the well before it is a step (#511).
+ */
+export const BODY_RADIUS = 0.45;
 /** The column a standing body needs clear above the floor it stands on. */
 export const HEAD_LOW = 0.3, HEAD_HIGH = 1.9;
 /**
@@ -407,6 +414,94 @@ function cutHoles(box, holes) {
   return boxes;
 }
 
+/* ------------------------------------------------ one face per plane ---
+ *
+ * NO TWO UPWARD FACES SHARE A PLANE (#513). Until this pass the base pavers,
+ * the outer ward's grass and the Great Hall's rock tile were three meshes at
+ * y 0 over the same 224 m², the walk's decking lay flush in the curtain's
+ * top, a curtain's 0.8 m stub inside a tower stood level with the slab across
+ * it, and two runs turning a corner both drew the 16 m² where they crossed.
+ * The builder's answer was a polygon offset on the patch, which is a depth
+ * trick that holds on one machine and fought itself where two patches lay on
+ * a third: the clerk's office, the kitchen and the Great Hall flickered on
+ * Devon's GPU and no suite could say so. This pass makes the plan say which
+ * piece owns every point of every top, and test/layout.mjs check 10 holds
+ * that no two pieces claim one.
+ *
+ * ONLY WHAT IS DRAWN CHANGES. A piece's `boxes` are what the builder draws
+ * and `box` is their union, which is what test/plan-vs-scene.mjs measures.
+ * Colliders were registered before this ran and keep the whole stone: the
+ * 0.2 m a stub loses under a slab is above every band a body can stand in,
+ * and the corner one run gives up is the other run's box. Surfaces keep the
+ * whole footprint: a floor is a floor over its holes, and the walkability
+ * grid and the stations read nothing here.
+ *
+ * Three rules, in this order:
+ *   - grounds: a ground piece is cut round every ground piece after it that
+ *     it overlaps. The base comes first and gives way to every patch; a patch
+ *     gives way to the room floors inside it; a room floor is last. A disc's
+ *     footprint is the square round it, whose corners are under the ring.
+ *   - a run under a floor: where a run's top is level with a floor's over the
+ *     floor's footprint, that part of the run stops at the floor's underside.
+ *     The deck's 0.1 m and the slab's 0.2 m are the only two cases.
+ *   - two runs sharing a top: the later run is cut round the earlier one's
+ *     footprint, unless the earlier is the shorter, which would leave a
+ *     notch; then the earlier is cut. Two curtain runs turning a corner are
+ *     the same height and the first in the config keeps the corner.
+ */
+function unionBox(boxes) {
+  const out = EMPTY();
+  for (const b of boxes) { expand(out, b.min); expand(out, b.max); }
+  return out;
+}
+
+function oneFacePerPlane(pieces) {
+  const foot = (b) => ({ min: { x: b.min.x, z: b.min.z }, max: { x: b.max.x, z: b.max.z } });
+  const meet = (a, b) => meets2D(a, b.min.x, b.min.z, b.max.x, b.max.z);
+  const level = (a, b) => Math.abs(a.max.y - b.max.y) < 1e-6;
+
+  const grounds = pieces.filter((p) => p.built === 'ground');
+  grounds.forEach((g, i) => {
+    const holes = grounds.slice(i + 1).filter((h) => meet(g.box, h.box)).map((h) => foot(h.box));
+    g.boxes = holes.length ? cutHoles(g.box, holes) : [g.box];
+    if (g.disc && holes.length) throw new Error(`[castle-plan] ${g.id} is a disc floor with ${holes.length} ground pieces over it`);
+    g.box = unionBox(g.boxes);
+  });
+
+  const runs = pieces.filter((p) => p.built === 'run');
+  const floors = pieces.filter((p) => p.built === 'floor');
+  for (const run of runs) {
+    for (const f of floors) {
+      const next = [];
+      for (const b of run.boxes) {
+        if (!level(b, f.box) || !meet(b, f.box) || f.box.min.y <= b.min.y + 1e-9) { next.push(b); continue; }
+        next.push(...cutHoles(b, [foot(f.box)]));
+        next.push({
+          min: { x: Math.max(b.min.x, f.box.min.x), y: b.min.y, z: Math.max(b.min.z, f.box.min.z) },
+          max: { x: Math.min(b.max.x, f.box.max.x), y: f.box.min.y, z: Math.min(b.max.z, f.box.max.z) },
+        });
+      }
+      run.boxes = next;
+    }
+  }
+  // cut every box of `giver` that shares a top with `keep` round keep's footprint
+  const giveWay = (giver, keep) => giver.boxes.flatMap((v) => (level(v, keep) && meet(v, keep)) ? cutHoles(v, [foot(keep)]) : [v]);
+  for (let i = 0; i < runs.length; i++) {
+    for (let j = i + 1; j < runs.length; j++) {
+      const [a, b] = [runs[i], runs[j]];
+      // the later run gives way where the earlier one's box is at least as tall
+      for (const keep of a.boxes.slice()) {
+        if (b.boxes.some((v) => level(v, keep) && meet(v, keep) && v.min.y >= keep.min.y - 1e-9)) b.boxes = giveWay(b, keep);
+      }
+      // and the earlier gives way where the later one reaches lower, so no notch is left
+      for (const keep of b.boxes.slice()) {
+        if (a.boxes.some((v) => level(v, keep) && meet(v, keep) && v.min.y > keep.min.y + 1e-9)) a.boxes = giveWay(a, keep);
+      }
+    }
+  }
+  for (const run of runs) run.box = unionBox(run.boxes);
+}
+
 /* ------------------------------------------------------- built stone (v2) ---
  *
  * Phase 3 stopped building the curtain out of kit pieces. `wall.glb` is a 64 px
@@ -635,7 +730,7 @@ function doorArc(drum, door, index, segments, step) {
  * sectors lose its y range; every door's sectors are still boxes over the same
  * vertices.
  */
-function drumParts(drum, tileSize, { shut = new Set() } = {}) {
+function drumParts(drum, tileSize, { shut = new Set(), crown = null } = {}) {
   const [cx, , cz] = tileToWorld(tileSize, drum.tile[0], drum.tile[1]);
   const r = drum.radius;
   const segments = drum.segments || 24;
@@ -670,6 +765,14 @@ function drumParts(drum, tileSize, { shut = new Set() } = {}) {
     .filter((d) => d.sectors.has(i))
     .map((d) => ({ lo: d.base, hi: d.top, index: d.index, shut: shut.has(d.index) }))
     .sort((p, q) => p.lo - q.lo);
+  /* THE CROWN (#514). A hollow drum's top sector is stone to `merlon` over the
+   * drum's height on the even sectors and to `crenel` on the odd, which is the
+   * parapet the kit's twelve merlons were meant to be and never were: their
+   * bodies hung 1.2 m outside the drum. Built in the drum's own sectors so the
+   * colliders are the geometry's own polygon (#432) and the drum's box grows
+   * with it, which is how test/plan-vs-scene.mjs sees a builder that forgot
+   * to draw it. A solid drum keeps its flat top. */
+  const topOf = (i) => (inner && crown) ? drum.height + (i % 2 ? crown.crenel : crown.merlon) : drum.height;
   const stoneAt = (i, respectShut) => {
     const out = [];
     let y = 0;
@@ -678,7 +781,7 @@ function drumParts(drum, tileSize, { shut = new Set() } = {}) {
       if (respectShut && o.shut) out.push({ y0: o.lo, y1: o.hi, door: o.index });
       y = Math.max(y, o.hi);
     }
-    if (drum.height > y + 1e-9) out.push({ y0: y, y1: drum.height, door: null });
+    if (topOf(i) > y + 1e-9) out.push({ y0: y, y1: topOf(i), door: null });
     return out;
   };
   const stoneVisual = (i) => stoneAt(i, false).map((st) => [st.y0, st.y1]);
@@ -693,12 +796,12 @@ function drumParts(drum, tileSize, { shut = new Set() } = {}) {
     const seg = EMPTY();
     for (const pt of ring) {
       expand(seg, { x: pt.x, y: 0, z: pt.z });
-      expand(seg, { x: pt.x, y: drum.height, z: pt.z });
+      expand(seg, { x: pt.x, y: topOf(i), z: pt.z });
     }
     // The drum's own box is the stone's, doorway or not: the lintel reaches the
     // same ring vertices the missing wall would have.
     expand(box, seg.min); expand(box, seg.max);
-    const stone = inner ? stoneAt(i, true) : [{ y0: 0, y1: drum.height, door: null }];
+    const stone = inner ? stoneAt(i, true) : [{ y0: 0, y1: topOf(i), door: null }];
     stone.forEach(({ y0, y1, door }, k) => colliders.push({
       id: stone.length === 1 ? `${drum.id}-sector-${i}` : `${drum.id}-sector-${i}-${k}`,
       sector: i, y0, y1, door,
@@ -720,7 +823,7 @@ function drumParts(drum, tileSize, { shut = new Set() } = {}) {
     }
   }
 
-  return { cx, cz, radius: r, segments, step, box, colliders, turret, inner, doors, shut, stoneVisual };
+  return { cx, cz, radius: r, segments, step, box, colliders, turret, inner, doors, shut, stoneVisual, crown: inner && crown ? crown : null };
 }
 
 /**
@@ -796,6 +899,14 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
   /* --- the curtain, the cross-wall and the two barbicans, as built boxes --- */
   const battle = config.battlements;
   const merlons = []; // { at: [worldX, worldZ], rotationY, y }
+  // How far outward of its anchor the kit merlon's body reaches: the piece is
+  // authored with its body behind its origin, and `place` moves nothing in
+  // plan, so a run's merlons stand on its outer 0.8 m and 0.4 m past its face.
+  const merlonReach = () => {
+    const raw = boxOfParts(boundsOf(kBase + battle.model).parts);
+    const scale = Array.isArray(battle.scale) ? battle.scale[2] : battle.scale;
+    return -raw.min.z * scale;
+  };
   const runSpans = []; // a run's merlons wait until the drums are placed
   const merlonRun = (from, to, y, rotationY) => {
     // one per `spacing` metres, centred in the run so a 12 m run gets three
@@ -837,7 +948,7 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
     const lo = axis === 'x' ? box.min.x : box.min.z, hi = axis === 'x' ? box.max.x : box.max.z;
     const from = axis === 'x' ? [lo, cross] : [cross, lo];
     const to = axis === 'x' ? [hi, cross] : [cross, hi];
-    runSpans.push({ id: run.id, from, to, y: box.max.y, rotationY: theta + 180, axis, along: axis === 'x' ? 0 : 1, thickness: run.thickness });
+    runSpans.push({ id: run.id, from, to, y: box.max.y, rotationY: theta + 180, axis, along: axis === 'x' ? 0 : 1, thickness: run.thickness, merlonReach: merlonReach() });
 
     /* THE WALL WALK. `walk: true` lays `config.walk.width` metres of decking along
      * the run's INNER edge — the face away from the merlons, which is the face
@@ -890,7 +1001,7 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
       return { spec, level, room, isShut };
     });
 
-    const d = drumParts(drum, tileSize, { shut });
+    const d = drumParts(drum, tileSize, { crown: battle.crown || null, shut });
     drumShapes.push({ drum, room: rooms.has(0) ? rooms.get(0).id : null, rooms, ...d });
     addPiece({
       id: drum.id, kind: 'tower', built: 'drum', level: drum.level || 0, curtain: !!drum.curtain,
@@ -898,6 +1009,9 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
       drum: {
         cx: d.cx, cz: d.cz, radius: d.radius, height: drum.height,
         segments: d.segments, turret: d.turret,
+        // The parapet, as extra height on the ring's own sectors above
+        // `height`; `stone` below already carries each sector's own top (#514).
+        crown: d.crown,
         // The ring and its doorways. These were left off the first time and the
         // builder read `inner` as undefined, so every tower rendered as the solid
         // cylinder Phase 3 shipped while the plan, the colliders and the whole
@@ -1073,12 +1187,7 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
       }
     }
 
-    // merlons round the drum's rim, one every 360/perDrum degrees
-    for (let i = 0; i < battle.perDrum; i++) {
-      const th = (i / battle.perDrum) * 360;
-      const at = ringPoint(d.cx, d.cz, d.radius, th);
-      merlons.push({ at: [at.x, at.z], y: drum.height, rotationY: th + 180 });
-    }
+    // No kit merlons round a drum: the crown above is its parapet (#514).
   }
 
   /* A run's merlons stop at the towers. Every curtain run ends 2 m short of a
@@ -1098,9 +1207,16 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
       if (a[k] >= lo - 1e-9 && a[k] < hi - 1e-9) a[k] = hi;
       if (b[k] > lo + 1e-9 && b[k] <= hi + 1e-9) b[k] = lo;
     };
+    // The trim is taken at the merlon body's OUTER edge, 2.4 m outward of the
+    // centreline the span runs along, not at the centreline: a round drum is
+    // nearer along that edge, and trimmed at the centreline the last merlon
+    // stopped up to 0.8 m short of the drum's face with air between (#514).
+    // Trimmed here its outer corner touches the face and its inner corner is
+    // inside the ring's stone, under the crown.
+    const outward = Math.sign(a[c]) || 1;
     for (const d of drumShapes) {
       const dc = [d.cx, d.cz];
-      const off = a[c] - dc[c];
+      const off = a[c] + outward * span.merlonReach - dc[c];
       if (Math.abs(off) >= d.radius) continue;
       const reach = Math.sqrt(d.radius * d.radius - off * off);
       trim(dc[k] - reach, dc[k] + reach);
@@ -1372,7 +1488,17 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
       if (!outline.length) throw new Error(`[castle-plan] ${r.id}'s floor lies wholly inside a drum`);
     }
     const pbox = outline ? boxOfOutline(outline, y0, top) : box;
-    const boxes = cutHoles(pbox, holes);
+    // THE COLLIDER WELL IS A BODY'S RADIUS WIDER THAN THE SURFACE WELL (#511).
+    // The strips beside a well are walls to a body on the flight until its
+    // feet are within HEAD_LOW of the slab's top, which on this flight is the
+    // last 0.25 m of run, and a body whose centre is pushed BODY_RADIUS clear
+    // of the strip past the flight's head never gets there: it stops with the
+    // slab a 0.55 m climb away. The surface well stays the flight's own
+    // footprint, so a body on the slab still cannot step over the well's edge.
+    const boxes = cutHoles(pbox, holes.map((h) => ({
+      min: { x: h.min.x - BODY_RADIUS, z: h.min.z - BODY_RADIUS },
+      max: { x: h.max.x + BODY_RADIUS, z: h.max.z + BODY_RADIUS },
+    })));
     addPiece({
       id, kind: 'floor', built: 'floor', level: r.level, curtain: false,
       material: r.floor, repeatMetres: r.repeatMetres || null, flush: false, label: id,
@@ -1434,6 +1560,8 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
     });
     surfaces.push({ id: g.id, box: g.box, top: 0, level: 0, slope: null });
   }
+
+  oneFacePerPlane(pieces);
 
   return {
     tile: tileSize, storey, slab: slabT,
@@ -1507,6 +1635,60 @@ export function standAt(plan, x, z, feet, stepUp = STEP_UP) {
     if (Math.abs(f.h - feet) <= stepUp + 1e-9) return f;
   }
   return null;
+}
+
+/* ------------------------------------------------------------- the body ---
+ *
+ * One axis of a player's move, as player-controller.js takes it every frame
+ * and as test/layout.mjs walks it up every flight: take the move, push the
+ * body out of every collider that crosses its head band, then stand where it
+ * ends up, or, standing nowhere, undo the whole thing. Here rather than in the
+ * controller because the controller needs three and a browser, and the one
+ * thing no Node suite could see until check 8 was the body's own radius
+ * (#511): the walkability grid samples a cell CENTRE, and a flight whose top
+ * cell reads fine can still hold a 0.45 m body short of the slab.
+ *
+ * `colliders` is passed in rather than read off the plan because the game's
+ * list carries the three brazier stands `scene-setup.js` registers at runtime;
+ * a THREE.Box3 and a plan box read the same here.
+ */
+export function moveBody(plan, colliders, body, dx, dz, radius = BODY_RADIUS) {
+  if (dx === 0 && dz === 0) return { ...body, pushedBy: [] };
+  const feet0 = body.feet;
+  let x = body.x + dx, z = body.z + dz;
+  const pushedBy = [];
+  const low = feet0 + HEAD_LOW, high = feet0 + HEAD_HIGH;
+  for (const { id, box } of colliders) {
+    // only what crosses the standing body's column: not a floor underfoot, not
+    // a lintel or a slab over the head, not a ground-floor wall under the walk.
+    // A top exactly a step over the feet is a step (the same millionth the
+    // grid's blocked() carries, #459).
+    if (box.min.y >= high - 1e-6 || box.max.y <= low + 1e-6) continue;
+    const cx = Math.min(Math.max(x, box.min.x), box.max.x);
+    const cz = Math.min(Math.max(z, box.min.z), box.max.z);
+    const ox = x - cx, oz = z - cz;
+    const distSq = ox * ox + oz * oz;
+    if (distSq >= radius * radius) continue;
+    pushedBy.push(id);
+    const dist = Math.sqrt(distSq);
+    if (dist > 0.0001) {
+      const push = (radius - dist) / dist;
+      x += ox * push;
+      z += oz * push;
+    } else {
+      // dead centre inside a box: push out toward the nearest face on x/z
+      const left = x - box.min.x, right = box.max.x - x;
+      const front = z - box.min.z, back = box.max.z - z;
+      const m = Math.min(left, right, front, back);
+      if (m === left) x = box.min.x - radius;
+      else if (m === right) x = box.max.x + radius;
+      else if (m === front) z = box.min.z - radius;
+      else z = box.max.z + radius;
+    }
+  }
+  const on = standAt(plan, x, z, feet0, STEP_UP);
+  if (!on) return { ...body, pushedBy, refused: true };
+  return { x, z, feet: on.h, pushedBy, refused: false };
 }
 
 /* ----------------------------------------------------------- walkability ---
@@ -1661,9 +1843,16 @@ export function walkability(plan, { grid = GRID, stepUp = STEP_UP, seeds = [] } 
     for (const [di, dj] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
       const ni = cur.i + di, nj = cur.j + dj;
       if (ni < i0 || ni > i1 || nj < j0 || nj > j1) continue;
+      // Two cells meet at the edge between them, so a cell on a flight is
+      // compared at the flight's height AT THAT EDGE, not at its centre: a
+      // 0.5 m cell on a 3.9 over 3.3 flight is 0.59 m of rise, more than a
+      // step, and the flight's foot still meets the floor at 0 (#512). Two
+      // cells on the same flight connect whatever their rise.
+      const ex = (cx(cur.i) + cx(ni)) / 2, ez = (cz(cur.j) + cz(nj)) / 2;
+      const edgeH = (c) => { const s = surfaceById.get(c.surface); return s?.slope ? heightOnSurface(s, ex, ez) : c.h; };
       for (const cand of at(ni, nj)) {
         const sameRamp = cand.surface === cur.surface && surfaceById.get(cand.surface)?.slope;
-        if (!sameRamp && Math.abs(cand.h - cur.h) > stepUp) continue;
+        if (!sameRamp && Math.abs(edgeH(cand) - edgeH(cur)) > stepUp) continue;
         const k = key(ni, nj, cand.h);
         link(curKey, k);
         if (reached.has(k)) continue;

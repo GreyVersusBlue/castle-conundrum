@@ -100,9 +100,9 @@
     "scale": [
       3,
       3.9,
-      3.9
+      3.3
     ],
-    "comment": "Two flights per tower, both this piece, placed by src/castle-plan.js from the drum's `stairs` side. stairs-stone.glb is authored 0.5 x 1 x 1 and rises toward its own +z; at a uniform 4 it is 2 m wide and 4 m long, and two of those side by side are a 4 m square whose corners sit 2.83 m from a tower's centre, 0.03 m into a ring whose inner face is at 2.8 (#452). So the scale is per axis: 1.5 m wide, 3.9 m of rise over 3.9 m of run, and the last 0.1 m onto the slab is a step. The lower flight runs along z in the tower's east half, rising toward the outer wall; the upper flight runs along x in the outer half, rising east, and its well in the level-2 floor sits where the walk does not cross. Their overlap is the lower flight's low half under the upper flight's high half, 2.05 m of headroom at the worst point."
+    "comment": "Two flights per tower, both this piece, placed by src/castle-plan.js from the drum's `stairs` side. stairs-stone.glb is authored 0.5 x 1 x 1 and rises toward its own +z; at a uniform 4 it is 2 m wide and 4 m long, and two of those side by side are a 4 m square whose corners sit 2.83 m from a tower's centre, 0.03 m into a ring whose inner face is at 2.8 (#452). So the scale is per axis: 1.5 m wide, 3.9 m of rise over 3.3 m of run, and the last 0.1 m onto the slab is a step. The run was 3.9 until #512: a curtain run reaches 2 m into every tower it meets, so a 3.9 m flight centred on the tower ends 0.05 m from a pier at each end, and a 0.45 m body is held 0.40 m short of the foot, where the floor is a 0.40 m drop and STEP_UP is 0.35. At 3.3 each end has 0.35 m of clear floor, the body reaches within 0.1 m of either end, and at the head its feet are already at 7.78, over the 7.7 at which the pier's top stops being a wall. The lower flight runs along z in the tower's east half, rising toward the outer wall; the upper flight runs along x in the outer half, rising east, and its well in the level-2 floor sits where the walk does not cross. Their overlap is the lower flight's low half under the upper flight's high half, 2.05 m of headroom at the worst point."
   },
   "materials": {
     "castle_wall_slates": {
@@ -1233,8 +1233,11 @@
     "model": "battlement.glb",
     "scale": 4,
     "spacing": 4,
-    "perDrum": 12,
-    "comment": "battlement.glb is 1.0 x 0.4 x 0.3 as authored, so scale 4 is a 4 m merlon run, one per tile along every wall and `perDrum` around every drum. Decoration: they carry no collider and Phase 5 puts the wall walk under them."
+    "crown": {
+      "merlon": 1.5,
+      "crenel": 0.6
+    },
+    "comment": "battlement.glb is 1.0 x 0.4 x 0.3 as authored, so scale 4 is a 4 m merlon run, one per tile along every wall. Its body is authored 0.3 to 0.6 behind its origin, so at scale 4 it stands 1.2 to 2.4 m outward of the run's centreline, on the outer 0.8 m of a 4 m wall and 0.4 m over its face. A drum gets no kit merlons: `perDrum` 12 used to anchor them on the rim, and the same offset hung them in the air at radius 5.2 to 6.4 round a 4 m drum (#514). A drum wears a `crown` instead, built stone in its own sectors: every other sector rises `merlon` over the drum's height and the rest `crenel`, so 24 sectors are 12 merlons and 12 crenels of 1.05 m of arc. The crenel is over HEAD_LOW so a body on a tower top cannot step through it; the merlon is 0.1 under the kit piece's 1.6 so the last run merlon, which reaches into the crown, shares no top with it. Colliders since Phase 5: the wall walk runs under the run merlons and the parapet is what a body on it walks into."
   },
   "gates": [
     {

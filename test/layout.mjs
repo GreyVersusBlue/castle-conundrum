@@ -40,7 +40,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { partsOf } from './gltf.mjs';
-import { makePlan, walkability, GRID, HEAD_HIGH } from '../src/castle-plan.js';
+import { makePlan, walkability, moveBody, GRID, HEAD_LOW, HEAD_HIGH, BODY_RADIUS } from '../src/castle-plan.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, '..');
@@ -587,6 +587,194 @@ console.log('\nhead room under the upper floors');
   }
   if (!checked) fail('no upper floor lies over any room — nothing was measured');
   else pass(`${slabs.length} upper floors over ${checked} rooms beneath them, every one ${HEAD_HIGH} m or more clear`);
+}
+
+/* ------------------------------ 8: a body can climb every flight ---
+ * The grid samples a cell CENTRE and its top cell on every flight reads fine
+ * (#459). A body is 0.45 m across, and for a year nothing in Node walked one:
+ * the slab beside a well is a wall while the feet are under its top less
+ * HEAD_LOW, on a 1:1 flight that is everything but the last 0.20 m of run,
+ * and the strip past the well's top end holds a body 0.45 m short of the
+ * edge, where the slab is a 0.55 m climb and STEP_UP is 0.35. Every flight in
+ * the castle was a wall at its top and every suite was green (#511). So this
+ * walks the controller's own `moveBody` along each flight in 0.05 m steps,
+ * starting on the flight a body's radius in from one end, and asks that the
+ * feet end on the floor at the other end, which they can only do once the
+ * body's centre is past the flight's own edge; then the same the other way. It
+ * starts on the flight rather than before it because a metre before a lower
+ * flight's foot is inside the tower's ring.
+ */
+console.log('\na body up and down every flight');
+{
+  const walkFlight = (ramp, up) => {
+    const [ax, az, ay] = ramp.slope.from, [bx, bz, by] = ramp.slope.to;
+    const len = Math.hypot(bx - ax, bz - az);
+    const ux = (bx - ax) / len, uz = (bz - az) / len;
+    // the flight's ends are its own surface; the floors it joins are the storeys either side
+    const [sx, sz, sy, tx, tz] = up ? [ax, az, ay, bx, bz] : [bx, bz, by, ax, az];
+    const ty = plan.storey * (ramp.level + (up ? 1 : 0));
+    const dir = up ? 1 : -1;
+    const rise = (by - ay) / len;
+    let body = { x: sx + ux * dir * BODY_RADIUS, z: sz + uz * dir * BODY_RADIUS, feet: sy + dir * rise * BODY_RADIUS };
+    let pushed = new Set();
+    for (let i = 0; i < 200; i++) {
+      const r = moveBody(plan, plan.colliders, body, ux * dir * 0.05, uz * dir * 0.05);
+      r.pushedBy.forEach((id) => pushed.add(id));
+      if (r.refused) break;
+      body = r;
+    }
+    const past = ((body.x - tx) * ux + (body.z - tz) * uz) * dir;
+    // A flight at a curtain's end faces the pier that run drives 2 m into the
+    // tower, 0.35 m past the flight's end, and that pier is an 8 m wall: a
+    // body walking straight on stops a radius from it, 0.1 m onto the flight,
+    // and leaves through the crescent beside the flight instead, the way
+    // play-castle.mjs's walk has always described it. So one sidestep of a
+    // body's width, either way, counts.
+    let side = null;
+    if (Math.abs(body.feet - ty) > 1e-6) {
+      for (const sgn of [1, -1]) {
+        let b = body;
+        for (let i = 0; i < 20 && Math.abs(b.feet - ty) > 1e-6; i++) {
+          const r = moveBody(plan, plan.colliders, b, -uz * sgn * 0.05, ux * sgn * 0.05);
+          if (r.refused) break;
+          b = r;
+        }
+        if (Math.abs(b.feet - ty) <= 1e-6) { side = sgn; body = b; break; }
+      }
+    }
+    return { body, past, side, pushed: [...pushed], top: ty, edge: up ? by : ay };
+  };
+  let climbed = 0, sidestepped = 0;
+  for (const ramp of plan.ramps) {
+    const piece = plan.pieces.find(p => p.id === ramp.id);
+    const label = piece ? piece.label : ramp.id;
+    for (const up of [true, false]) {
+      const r = walkFlight(ramp, up);
+      const ok = Math.abs(r.body.feet - r.top) < 1e-6;
+      if (ok) { climbed++; if (r.side) sidestepped++; continue; }
+      const short = Math.max(0, -r.past);
+      fail(`${label} cannot be ${up ? 'climbed' : 'descended'}: the body stops at feet ${r.body.feet.toFixed(2)}, ${short.toFixed(2)} m short of the ${up ? 'top' : 'bottom'} edge at ${r.edge.toFixed(2)}${r.pushed.length ? `, pushed by ${r.pushed.join(', ')}` : ''}`);
+    }
+  }
+  if (!plan.ramps.length) fail('the plan has no flights, so nothing was climbed');
+  else if (climbed === plan.ramps.length * 2) pass(`${plan.ramps.length} flights, each climbed and descended by a ${BODY_RADIUS} m body onto the floor beyond, ${sidestepped} of the ${climbed} walks leaving through the crescent beside the flight`);
+}
+
+/* ------------------------------ 9: every merlon stands on stone ---
+ * battlement.glb is authored with its body 0.3 to 0.6 behind its origin, and
+ * `place` moves nothing in plan, so at scale 4 a merlon's stone stands 1.2 to
+ * 2.4 m outward of wherever it is anchored. On a 4 m thick run that is the
+ * outer 0.8 m of the wall top and 0.4 m over the face. On a drum of radius 4,
+ * anchored on the rim, it was radius 5.2 to 6.4: twelve merlons per tower
+ * hanging in the air with 1.2 m of nothing between them and the stone, seen
+ * by nobody until Devon saw them (#514). plan-vs-scene.mjs could not: the
+ * plan box carries the same offset the scene does. So: at least half of every
+ * merlon's footprint lies over a collider whose top is the merlon's base.
+ */
+console.log('\nevery merlon stands on stone');
+{
+  const merlons = plan.pieces.filter(p => p.label === 'battlement');
+  const tops = plan.colliders;
+  let floating = 0;
+  for (const m of merlons) {
+    const area = (m.box.max.x - m.box.min.x) * (m.box.max.z - m.box.min.z);
+    let over = 0;
+    for (const c of tops) {
+      if (Math.abs(c.box.max.y - m.box.min.y) > 1e-6) continue;
+      const ox = Math.min(c.box.max.x, m.box.max.x) - Math.max(c.box.min.x, m.box.min.x);
+      const oz = Math.min(c.box.max.z, m.box.max.z) - Math.max(c.box.min.z, m.box.min.z);
+      if (ox > 0 && oz > 0) over += ox * oz;
+    }
+    if (over / area >= 0.5) continue;
+    floating++;
+    const near = tops.filter(c => Math.abs(c.box.max.y - m.box.min.y) < 1e-6)
+      .map(c => ({ id: c.id, d: Math.hypot(Math.max(c.box.min.x - m.box.max.x, m.box.min.x - c.box.max.x, 0), Math.max(c.box.min.z - m.box.max.z, m.box.min.z - c.box.max.z, 0)) }))
+      .sort((p, q) => p.d - q.d)[0];
+    fail(`${m.id} at y ${m.box.min.y.toFixed(2)} has ${Math.round(100 * over / area)}% of its footprint over stone; nearest stone with a top at ${m.box.min.y.toFixed(2)} is ${near ? `${near.id}, ${near.d.toFixed(2)} m away` : 'nowhere'}`);
+  }
+  if (!merlons.length) fail('the plan has no merlons, so nothing was checked');
+  else if (!floating) pass(`${merlons.length} merlons, every one at least half over stone whose top is its base`);
+}
+
+/* ----------------------------- 9b: every hollow drum wears a crown ---
+ * The drum's parapet is stone in its own sectors (#514), and a sector that
+ * stops at the drum's height is a gap in it that a body on a future tower top
+ * would walk off. Every sector reaches over HEAD_LOW above the drum, and at
+ * least one reaches the crown's merlon height.
+ */
+console.log('\nthe drums\' crowns');
+{
+  const crown = config.battlements.crown;
+  if (!crown) fail('config.battlements has no crown');
+  for (const drum of config.drums) {
+    if (!drum.interior) continue;
+    const sectors = plan.colliders.filter(c => c.id.startsWith(`${drum.id}-sector-`));
+    const top = new Map();
+    for (const c of sectors) {
+      const i = +c.id.split('-sector-')[1].split('-')[0];
+      top.set(i, Math.max(top.get(i) || 0, c.box.max.y));
+    }
+    const low = [...top.entries()].filter(([, y]) => y < drum.height + HEAD_LOW + 1e-6);
+    const merlon = [...top.values()].some(y => Math.abs(y - (drum.height + (crown ? crown.merlon : 0))) < 1e-6);
+    if (low.length) fail(`${drum.id} sector ${low[0][0]} crowns at ${low[0][1].toFixed(2)}, under the ${(drum.height + HEAD_LOW).toFixed(2)} a body on the lid would need stopping by`);
+    else if (!merlon) fail(`${drum.id} has no sector at the crown's merlon height ${drum.height + (crown ? crown.merlon : 0)}`);
+    else pass(`${drum.id}: ${top.size} sectors, none under ${(drum.height + HEAD_LOW).toFixed(2)}, merlons at ${(drum.height + crown.merlon).toFixed(2)}`);
+  }
+}
+
+/* ------------------------- 10: no two upward faces share a plane ---
+ * The ground-floor rooms flickered on Devon's machine and no suite could say
+ * so: the base pavers, the outer ward's grass and the Great Hall's rock tile
+ * were three meshes at y 0 over the same 128 m², two of them carrying the same
+ * polygon offset, and the walk's decking lay flush in the curtain's top. A
+ * depth fight is not a property the plan can see, but two pieces whose tops
+ * share a height over a common footprint is, and it is the only way one
+ * starts (#513). So: over every box of every ground, floor, wall and tower
+ * piece, no two boxes of different pieces have tops within a millionth and
+ * footprints that overlap by more than a square centimetre.
+ */
+console.log('\nno two upward faces on one plane');
+{
+  // Not the drums: a run's box reaches into a drum's ring, and its top there
+  // is inside the stone, seen by nobody. A wall's top is open sky.
+  const faced = plan.pieces.filter(p => ['ground', 'floor', 'wall'].includes(p.kind) && (p.boxes || p.box));
+  const entries = faced.flatMap(p => (p.boxes || [p.box]).map(b => ({ id: p.id, b, disc: p.disc || null, outline: p.outline || null })));
+  // A tower floor is a disc and its box is the square round it; the corners
+  // of that square are inside the ring's stone, so a run's top meeting them is
+  // seen by nobody. A rectangular slab is cut back to the drums it meets and
+  // its box is the box round that outline. The overlap is counted at 0.05 m
+  // over the rectangle, disc pieces by their disc and outline pieces by their
+  // polygon.
+  const inPolygon = (poly, x, z) => {
+    let inside = false;
+    for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+      const [xi, zi] = poly[i], [xj, zj] = poly[j];
+      if ((zi > z) !== (zj > z) && x < ((xj - xi) * (z - zi)) / (zj - zi) + xi) inside = !inside;
+    }
+    return inside;
+  };
+  const inShape = (e, x, z) => e.disc ? Math.hypot(x - e.disc.cx, z - e.disc.cz) <= e.disc.radius : e.outline ? inPolygon(e.outline, x, z) : true;
+  const area = (a, b, x0, x1, z0, z1) => {
+    let n = 0, total = 0;
+    for (let x = x0 + 0.025; x < x1; x += 0.05) for (let z = z0 + 0.025; z < z1; z += 0.05) { total++; if (inShape(a, x, z) && inShape(b, x, z)) n++; }
+    return total ? (x1 - x0) * (z1 - z0) * n / total : 0;
+  };
+  const shared = [];
+  for (let i = 0; i < entries.length; i++) {
+    for (let j = i + 1; j < entries.length; j++) {
+      const a = entries[i], b = entries[j];
+      if (a.id === b.id || Math.abs(a.b.max.y - b.b.max.y) > 1e-6) continue;
+      const x0 = Math.max(a.b.min.x, b.b.min.x), x1 = Math.min(a.b.max.x, b.b.max.x);
+      const z0 = Math.max(a.b.min.z, b.b.min.z), z1 = Math.min(a.b.max.z, b.b.max.z);
+      if (x1 - x0 <= 0 || z1 - z0 <= 0) continue;
+      const over = area(a, b, x0, x1, z0, z1);
+      if (over <= 1e-4) continue;
+      shared.push(`${a.id} and ${b.id} share a top at ${a.b.max.y.toFixed(3)} over ${over.toFixed(2)} m² at x ${x0.toFixed(1)}..${x1.toFixed(1)}, z ${z0.toFixed(1)}..${z1.toFixed(1)}`);
+    }
+  }
+  const seen = new Set();
+  for (const line of shared) if (!seen.has(line)) { seen.add(line); fail(line); }
+  if (!shared.length) pass(`${entries.length} boxes over ${faced.length} pieces, no two tops on one plane over a common footprint`);
 }
 
 /* ------------------------------------- 5: every NPC stands somewhere real ---
