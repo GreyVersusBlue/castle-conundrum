@@ -141,7 +141,8 @@ async function init() {
     audio,
     // The world half of a bell: the sky and twelve people walking to where they
     // are due next. The engine has already moved the watch on; this puts the
-    // castle where the watch says it is.
+    // castle where the watch says it is. `applyDay` calls it once more for
+    // Lauds, with `walk: false`, which is how the morning after opens.
     onWatch: (watch, { walk = true } = {}) => {
       setWatch(watch);
       // What is on the ground at this bell is the manager's: it owns `taken`,
@@ -162,7 +163,9 @@ async function init() {
     },
     saved,
     onChange: ({ stage, riddleWrong, day }) => { state.stage = stage; state.riddleWrong = riddleWrong; state.day = day; auto.mark(); },
-    // The epilogue's button: erase the save, then reload into a fresh day.
+    // What the epilogue's button does when it reads "Play Again" — at the end
+    // of the second day, or at the end of a verdict with no morning after it
+    // (#537). Erase the save, then reload into a fresh day.
     restart: () => { auto.stop(); slot.reset(); window.location.reload(); },
   });
   window.__save = { slot, state }; // read by play-castle.mjs's reload beat

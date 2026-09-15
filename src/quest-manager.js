@@ -92,7 +92,7 @@ export class QuestManager {
     // door id is written down in this file.
     this._lockAsked = null;
     // The last verdict the engine handed back, for `showEpilogue`. A save
-    // resumed in a terminal stage has none and rebuilds it from `accusations`.
+    // resumed in a verdict stage has none and rebuilds it from `accusations`.
     this._verdict = null;
     // What each of the thirteen says on the morning after, once `applyDay` has
     // asked the engine. Null on day one, and null is what says which day it is
@@ -127,7 +127,8 @@ export class QuestManager {
 
     // Resume at a saved stage the graph has (save.js's repair has already reset
     // one it lacks to `start`), re-running that stage's enter effects so the
-    // objective, the dialogue states and a terminal stage's epilogue come back.
+    // objective, the dialogue states, a verdict stage's epilogue pane and the
+    // morning after's whole castle all come back.
     if (saved?.stage && quest.stages[saved.stage] && saved.stage !== quest.start) {
       this.graph.stage = saved.stage;
       this._apply(this.graph._enterEffects());
