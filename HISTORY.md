@@ -1869,3 +1869,84 @@ HUD's room line reads "", and roomAt names it "Clerk of Works' office"`; the
 Prison Tower's tint deleted: `prison-tower wants no tint at all and shows
 ffffff`. `layout.mjs` check 11, the dormitory emptied: `dormitory (level 1)
 has nothing in it`.
+
+## The castle makes a noise: footsteps by surface, and the bell (2026-09-15)
+
+**Ranked row 1, claimed on `claude/festive-hopper-nf7391` (#283, PR #8).**
+`scene-setup.js` created an `AudioListener`, added it to the camera and
+returned it, and `main.js` had never destructured it. Seven phases, twelve
+suspects, four bells, and not one sound. Decisions #519 to #522.
+
+- **Both sounds are synthesised, and there is not a byte of audio in this
+  repo** (#519). `SPECS.md` recommended synthesis for the footsteps and a
+  recorded CC0 bell "if one is found"; none was looked for, because a file
+  buys a licence question, a new `assets/audio/` for `test/assets.mjs`'s
+  reachability sweep to grow (#390), and a place in the encode pipeline that
+  has no codec for it (#506), against a sound that six sine oscillators
+  make. `src/audio.js` builds a one-second white-noise buffer once and reads
+  it from a random offset per footfall, through a biquad and an exponential
+  decay; the bell is a 35 ms filtered strike transient and six partials at
+  the standard inharmonic ratios of a tuned bell — hum 0.5, prime 1, tierce
+  1.2, quint 1.5, nominal 2, on a 330 Hz prime, about a hundredweight. The
+  tierce is the whole difference between a bell and a chime. Every number is
+  in `data/sounds.json` and `src/audio.js` holds no default of its own. The
+  bell is positional, a plain `PannerNode` at the bell piece's centre:
+  `THREE.AudioListener.updateMatrixWorld` already writes the camera's
+  position and orientation into `context.listener` on every frame the
+  renderer draws, so spatialising it needed no three import at all, and
+  `src/audio.js` has none. That is what lets `stepClassOf` be a pure function
+  `test/layout.mjs` imports in Node.
+- **A surface says what it is made of** (#519, same pass). `plan.surfaces`
+  carried an id, a box and a level, and the material was on the piece with
+  the same id — except for the three window sills, which have no piece at
+  all. `makePlan` now copies `material` and `kind` onto every surface in one
+  pass before it returns, and the sills take the run's own stone where they
+  are pushed. `data/sounds.json` maps material to step class, then kind for
+  the two kinds that never have a material (the kit's `stairs-stone.glb` and
+  a Poly Haven prop top). No default: a surface neither map answers for is a
+  failure in Node, which is `layout.mjs` check 12. The spread the castle
+  actually has is 47 planks, 22 stone, 1 carpet, 1 grass.
+- **The bell rings off the engine's event, not the graph's action** (#520).
+  `SPECS.md` named `quest-manager.js:103`'s `ringBell: () => {}` as the hook.
+  It is the wrong one: that action runs only for a stage carrying a
+  `bell:<n>` transition, and a man pulling a bell rope is not conditional on
+  the quest graph listening. `handleBell` fires the sound when
+  `engine.ring()` returns a `bell:` event, which every ring emits, which the
+  fourth ring emits although it moves no watch, and which a day already ended
+  emits none of. So the fourth bell rings and a press at the rope after the
+  verdict is silent.
+- **A step every 1.6 m, not every 0.75 m** (#521). `SPECS.md` said ~0.75 m
+  walking and ~1.0 m sprinting, which is a real person's stride and wrong
+  here: `WALK_SPEED` is 5.2 m/s, so 0.75 m is 6.9 footfalls a second and
+  1.0 m under the 1.75 sprint multiplier is 9.1. This player does not walk,
+  he runs. 1.6 m and 2.2 m give 3.25 and 4.1 a second. The accumulator counts
+  ground **actually covered**, not asked for, so a body pressed into a wall
+  goes quiet, and `standAt` is asked once per footfall rather than once per
+  frame — about three times a second against sixty.
+- **A `SPECS.md` section is named, not numbered** (#522). Every section
+  opened with a rank, every section referred to every other section by rank,
+  and this row shipping shifted ten of them. Worse, the file was already a
+  row out of step with itself before anything had shipped: "The GPU run" is
+  headed "Ranks 3 and 4" and its own subheadings read "Scope, rank 4" (the
+  play run) and "Scope, rank 5" (the images), with "Rank 4 cannot start until
+  rank 3 has run" under Dependencies meaning the images and the run. A number
+  that is wrong in the file that defines it is worse than no number. Sections
+  name each other by title now; the opening `**Rank N.**` line stays as a
+  pointer into `BACKLOG.md` that the session shipping a row updates, and is
+  the only rank number left in the file.
+
+**What is not here.** No NPC footsteps (`SPECS.md`'s recommendation, taken:
+twelve walkers at a bell is a mix, not a feature), no ambience, and no
+assertion anywhere about a sound. `harness.mjs` already launched with
+`--mute-audio` and nothing in CI hears anything (#53); what the castle sounds
+like is a question for a machine with speakers, and the two numbers most
+likely to be wrong — the stride and the bell's 330 Hz prime — are one data
+edit each.
+
+**The breaks, from green.** `layout.mjs` check 12, `dirty_carpet` deleted
+from `byMaterial`: `"floor-royal-apartments" is a dirty_carpet floor and
+data/sounds.json says nothing about what standing on it sounds like`, and the
+second half of the same check caught the other side of the same edit,
+`data/sounds.json defines step class "carpet" that no surface in the castle
+resolves to`. `quest.mjs`, the sound put back to a no-op the way it was:
+`four rings, four bells — 0`.

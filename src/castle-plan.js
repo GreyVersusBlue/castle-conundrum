@@ -934,7 +934,10 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
     // is three boxes and three ids, which is also how the deliberate break
     // "wall a doorway shut" is written — put the box back and the room goes dark.
     boxes.forEach((b, i) => collide(boxes.length === 1 ? run.id : `${run.id}-${i}`, b));
-    for (const sill of runSills(run, tileSize)) surfaces.push({ ...sill, level: levelUnder(sill.top), slope: null });
+    // A sill is the run's own stone, and says so: it is the one surface with no
+    // piece of its own, so the material pass at the end of makePlan cannot find
+    // it one (#519).
+    for (const sill of runSills(run, tileSize)) surfaces.push({ ...sill, level: levelUnder(sill.top), slope: null, material: run.material, kind: 'sill' });
 
     // Battlements are the castle's outer edge, not a room's. An interior
     // partition is 1 m of wall between two rooms, some of them carrying a
@@ -1560,6 +1563,21 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
       transform: { position: [0, 0, 0], rotationY: 0, scale: 1 }, box: g.box,
     });
     surfaces.push({ id: g.id, box: g.box, top: 0, level: 0, slope: null });
+  }
+
+  /* --- what every surface is made of ---
+   * A foot lands on a surface and has to make a noise (#519), and until this
+   * pass a surface carried an id and nothing else: the material was on the
+   * piece with the same id, and three of the seventy-one (the window sills)
+   * have no piece at all. So each surface takes its piece's `material` and
+   * `kind` here, once, and `src/audio.js` reads the surface rather than
+   * re-deriving the join. Sills set both above; nothing else does.
+   */
+  const pieceOf = new Map(pieces.map((p) => [p.id, p]));
+  for (const s of surfaces) {
+    const p = pieceOf.get(s.id);
+    if (s.material === undefined) s.material = p?.material ?? null;
+    if (s.kind === undefined) s.kind = p?.kind ?? null;
   }
 
   oneFacePerPlane(pieces);
