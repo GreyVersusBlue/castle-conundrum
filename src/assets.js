@@ -5,11 +5,40 @@
 
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 
 export const loadingManager = new THREE.LoadingManager();
+
+/* --------------------------------------------------- compressed assets ---
+ * Every texture under assets/ is KTX2/Basis and every Poly Haven mesh and NPC
+ * body is EXT_meshopt_compression (#506 to #508). Both are read by loaders
+ * three r169 already ships; neither is optional, because tools/encode-assets.mjs
+ * wrote over the originals and there is no jpg left to fall back to.
+ *
+ * THE TRANSCODER IS A FILE, NOT A MODULE. KTX2Loader fetches
+ * basis_transcoder.js and basis_transcoder.wasm by URL at first use, so Vite's
+ * module graph never sees them and they have to be put under this origin by
+ * hand — vite.config.js copies them out of the pinned `three` package, into
+ * dist/decoders/basis/ for the build and onto the dev server's own middleware.
+ * Nothing here leaves the origin (#493) and the path is relative, so the same
+ * build serves from a subpath and from a bare domain (#505).
+ *
+ * MeshoptDecoder is the opposite shape: an ES module with its wasm inline, so
+ * it bundles and there is nothing to copy.
+ */
+const TRANSCODER_PATH = 'decoders/basis/';
+const ktx2Loader = new KTX2Loader(loadingManager).setTranscoderPath(TRANSCODER_PATH);
+
 const gltfLoader = new GLTFLoader(loadingManager);
+gltfLoader.setKTX2Loader(ktx2Loader);
+gltfLoader.setMeshoptDecoder(MeshoptDecoder);
+
 const textureLoader = new THREE.TextureLoader(loadingManager);
+
+/** KTX2 is one transcode target per GPU, so the right loader is the path's. */
+const loaderFor = (url) => (url.endsWith('.ktx2') ? ktx2Loader : textureLoader);
 
 const modelCache = new Map();
 
@@ -51,6 +80,10 @@ let maxAnisotropy = 1;
  */
 export function setTextureQuality(renderer) {
   maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
+  // Same ordering constraint, one line down: KTX2Loader picks its transcode
+  // target (ASTC, BC7, ETC2, ...) from what this renderer reports, and a load
+  // that starts before it has asked throws rather than guessing.
+  ktx2Loader.detectSupport(renderer);
   return maxAnisotropy;
 }
 
@@ -58,7 +91,14 @@ export function tuneTexture(tex) {
   if (!tex || tex.userData.__tuned) return tex;
   tex.userData.__tuned = true;
   const px = Math.max(tex.image?.width || 0, tex.image?.height || 0);
-  if (px > 0 && px <= PIXEL_ART_MAX_PX) tex.magFilter = THREE.NearestFilter;
+  // NOT on a compressed texture. `image` on a CompressedTexture is the
+  // {width, height} KTX2Loader put there, so the size test still reads, but
+  // magnification filtering on a block format is the format's business and
+  // the mip chain is baked at encode time. Nothing compressed is pixel art
+  // here anyway — the retro kit is the only thing under 128 px and the kit is
+  // deliberately the one thing tools/encode-assets.mjs leaves alone (#508).
+  if (px > 0 && px <= PIXEL_ART_MAX_PX && !tex.isCompressedTexture)
+    tex.magFilter = THREE.NearestFilter;
   tex.anisotropy = maxAnisotropy;
   tex.needsUpdate = true;
   return tex;
@@ -152,7 +192,7 @@ export function loadPBRMaterial({ diffuse, normal, arm, rough }, repeat = 1, fal
 
   const tryTex = (url, onOk) => {
     if (!url) return;
-    textureLoader.load(
+    loaderFor(url).load(
       url,
       (tex) => {
         tex.wrapS = tex.wrapT = THREE.RepeatWrapping;

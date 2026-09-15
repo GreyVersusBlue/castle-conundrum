@@ -106,54 +106,54 @@
   },
   "materials": {
     "castle_wall_slates": {
-      "diffuse": "assets/poly-haven/castle_wall_slates_1k.gltf/textures/castle_wall_slates_diff_1k.jpg",
-      "normal": "assets/poly-haven/castle_wall_slates_1k.gltf/textures/castle_wall_slates_nor_gl_1k.jpg",
-      "rough": "assets/poly-haven/castle_wall_slates_1k.gltf/textures/castle_wall_slates_rough_1k.jpg"
+      "diffuse": "assets/poly-haven/castle_wall_slates_1k.gltf/textures/castle_wall_slates_diff_1k.ktx2",
+      "normal": "assets/poly-haven/castle_wall_slates_1k.gltf/textures/castle_wall_slates_nor_gl_1k.ktx2",
+      "rough": "assets/poly-haven/castle_wall_slates_1k.gltf/textures/castle_wall_slates_rough_1k.ktx2"
     },
     "defense_wall": {
-      "diffuse": "assets/poly-haven/defense_wall_1k.gltf/textures/defense_wall_diff_1k.jpg",
-      "normal": "assets/poly-haven/defense_wall_1k.gltf/textures/defense_wall_nor_gl_1k.jpg",
-      "rough": "assets/poly-haven/defense_wall_1k.gltf/textures/defense_wall_rough_1k.jpg"
+      "diffuse": "assets/poly-haven/defense_wall_1k.gltf/textures/defense_wall_diff_1k.ktx2",
+      "normal": "assets/poly-haven/defense_wall_1k.gltf/textures/defense_wall_nor_gl_1k.ktx2",
+      "rough": "assets/poly-haven/defense_wall_1k.gltf/textures/defense_wall_rough_1k.ktx2"
     },
     "grassy_cobblestone": {
-      "diffuse": "assets/poly-haven/grassy_cobblestone_1k.gltf/textures/grassy_cobblestone_diff_1k.jpg",
-      "normal": "assets/poly-haven/grassy_cobblestone_1k.gltf/textures/grassy_cobblestone_nor_gl_1k.jpg",
-      "rough": "assets/poly-haven/grassy_cobblestone_1k.gltf/textures/grassy_cobblestone_rough_1k.jpg"
+      "diffuse": "assets/poly-haven/grassy_cobblestone_1k.gltf/textures/grassy_cobblestone_diff_1k.ktx2",
+      "normal": "assets/poly-haven/grassy_cobblestone_1k.gltf/textures/grassy_cobblestone_nor_gl_1k.ktx2",
+      "rough": "assets/poly-haven/grassy_cobblestone_1k.gltf/textures/grassy_cobblestone_rough_1k.ktx2"
     },
     "stone_pavers": {
-      "diffuse": "assets/poly-haven/stone_pavers_1k.gltf/textures/stone_pavers_diff_1k.jpg",
-      "normal": "assets/poly-haven/stone_pavers_1k.gltf/textures/stone_pavers_nor_gl_1k.jpg",
-      "arm": "assets/poly-haven/stone_pavers_1k.gltf/textures/stone_pavers_arm_1k.jpg"
+      "diffuse": "assets/poly-haven/stone_pavers_1k.gltf/textures/stone_pavers_diff_1k.ktx2",
+      "normal": "assets/poly-haven/stone_pavers_1k.gltf/textures/stone_pavers_nor_gl_1k.ktx2",
+      "arm": "assets/poly-haven/stone_pavers_1k.gltf/textures/stone_pavers_arm_1k.ktx2"
     },
     "wooden_gate": {
-      "diffuse": "assets/poly-haven/wooden_gate_1k.gltf/textures/wooden_gate_diff_1k.jpg",
-      "normal": "assets/poly-haven/wooden_gate_1k.gltf/textures/wooden_gate_nor_gl_1k.jpg",
-      "arm": "assets/poly-haven/wooden_gate_1k.gltf/textures/wooden_gate_arm_1k.jpg"
+      "diffuse": "assets/poly-haven/wooden_gate_1k.gltf/textures/wooden_gate_diff_1k.ktx2",
+      "normal": "assets/poly-haven/wooden_gate_1k.gltf/textures/wooden_gate_nor_gl_1k.ktx2",
+      "arm": "assets/poly-haven/wooden_gate_1k.gltf/textures/wooden_gate_arm_1k.ktx2"
     },
     "rock_tile_floor": {
-      "diffuse": "assets/poly-haven/rock_tile_floor_1k.gltf/textures/rock_tile_floor_diff_1k.jpg",
-      "normal": "assets/poly-haven/rock_tile_floor_1k.gltf/textures/rock_tile_floor_nor_gl_1k.jpg",
-      "arm": "assets/poly-haven/rock_tile_floor_1k.gltf/textures/rock_tile_floor_arm_1k.jpg"
+      "diffuse": "assets/poly-haven/rock_tile_floor_1k.gltf/textures/rock_tile_floor_diff_1k.ktx2",
+      "normal": "assets/poly-haven/rock_tile_floor_1k.gltf/textures/rock_tile_floor_nor_gl_1k.ktx2",
+      "arm": "assets/poly-haven/rock_tile_floor_1k.gltf/textures/rock_tile_floor_arm_1k.ktx2"
     },
     "floor_tiles_02": {
-      "diffuse": "assets/poly-haven/floor_tiles_02_1k.gltf/textures/floor_tiles_02_diff_1k.jpg",
-      "normal": "assets/poly-haven/floor_tiles_02_1k.gltf/textures/floor_tiles_02_nor_gl_1k.jpg",
-      "rough": "assets/poly-haven/floor_tiles_02_1k.gltf/textures/floor_tiles_02_rough_1k.jpg"
+      "diffuse": "assets/poly-haven/floor_tiles_02_1k.gltf/textures/floor_tiles_02_diff_1k.ktx2",
+      "normal": "assets/poly-haven/floor_tiles_02_1k.gltf/textures/floor_tiles_02_nor_gl_1k.ktx2",
+      "rough": "assets/poly-haven/floor_tiles_02_1k.gltf/textures/floor_tiles_02_rough_1k.ktx2"
     },
     "old_planks_02": {
-      "diffuse": "assets/poly-haven/old_planks_02_1k.gltf/textures/old_planks_02_diff_1k.jpg",
-      "normal": "assets/poly-haven/old_planks_02_1k.gltf/textures/old_planks_02_nor_gl_1k.jpg",
-      "rough": "assets/poly-haven/old_planks_02_1k.gltf/textures/old_planks_02_rough_1k.jpg"
+      "diffuse": "assets/poly-haven/old_planks_02_1k.gltf/textures/old_planks_02_diff_1k.ktx2",
+      "normal": "assets/poly-haven/old_planks_02_1k.gltf/textures/old_planks_02_nor_gl_1k.ktx2",
+      "rough": "assets/poly-haven/old_planks_02_1k.gltf/textures/old_planks_02_rough_1k.ktx2"
     },
     "wood_planks": {
-      "diffuse": "assets/poly-haven/wood_planks_1k.gltf/textures/wood_planks_diff_1k.jpg",
-      "normal": "assets/poly-haven/wood_planks_1k.gltf/textures/wood_planks_nor_gl_1k.jpg",
-      "arm": "assets/poly-haven/wood_planks_1k.gltf/textures/wood_planks_arm_1k.jpg"
+      "diffuse": "assets/poly-haven/wood_planks_1k.gltf/textures/wood_planks_diff_1k.ktx2",
+      "normal": "assets/poly-haven/wood_planks_1k.gltf/textures/wood_planks_nor_gl_1k.ktx2",
+      "arm": "assets/poly-haven/wood_planks_1k.gltf/textures/wood_planks_arm_1k.ktx2"
     },
     "dirty_carpet": {
-      "diffuse": "assets/poly-haven/dirty_carpet_1k.gltf/textures/dirty_carpet_diff_1k.jpg",
-      "normal": "assets/poly-haven/dirty_carpet_1k.gltf/textures/dirty_carpet_nor_gl_1k.jpg",
-      "arm": "assets/poly-haven/dirty_carpet_1k.gltf/textures/dirty_carpet_arm_1k.jpg"
+      "diffuse": "assets/poly-haven/dirty_carpet_1k.gltf/textures/dirty_carpet_diff_1k.ktx2",
+      "normal": "assets/poly-haven/dirty_carpet_1k.gltf/textures/dirty_carpet_nor_gl_1k.ktx2",
+      "arm": "assets/poly-haven/dirty_carpet_1k.gltf/textures/dirty_carpet_arm_1k.ktx2"
     }
   },
   "materialsComment": "Every built surface names one of these. rock_tile_floor, wood_planks, dirty_carpet and the two that were always here (stone_pavers, wooden_gate) ship a three-channel `arm`; the five others ship a single-channel `rough`. src/assets.js reads whichever key is present and test/assets.mjs fails a material declaring both or neither. `repeatMetres` is the world-space texture repeat: one repeat per 3 m on the curtain, so a 4 m tile shows 1.33 repeats of the 1k map and reads as coursed stone. A wall run or a floor may override it with its own `repeatMetres`; the interior partitions do, at 1.5 m, because a 1 m thick room wall wants a smaller course than a 4 m curtain.",

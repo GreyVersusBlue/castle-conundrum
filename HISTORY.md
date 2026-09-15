@@ -1567,3 +1567,164 @@ broken.
 
   127 is the same count `test/built.mjs` diffs at the root, so the prefix costs
   nothing and hides nothing.
+
+## KTX2 for the textures, meshopt for the meshes (2026-09-15)
+
+**Ranked row 1, claimed on `main` before the work started (#283, PR #4) and
+merged as one PR.** A 1 on its own. Decisions #506 to #510.
+
+The reason for the row was never weight. `dist/` was 42.0 MB against a 200 MB
+ceiling (#499), so there was no room to fight for. It was that every 1k jpg was
+decoded to RGBA and handed to the GPU at full size, and 105 textures over one
+castle came to **317.9 MB of video memory**. That is the number this row moved.
+
+**Measured off the live page, before and after, by walking every material on
+every mesh in the scene and adding up each texture's real GPU footprint —
+mipmaps included, compressed textures by their actual block bytes:**
+
+```
+before   105 textures, 317.9 MB   (0 compressed)
+after    105 textures,  79.9 MB   (79.3 MB compressed, 0.6 MB not)
+```
+
+**4.0x, 238 MB off the GPU.** The 0.6 MB that is still RGBA is the Kenney kit's
+64 px pixel art, which is left alone on purpose (#508).
+
+Disk barely moved, and one half of it moved the wrong way, exactly as expected:
+
+```
+assets/ total          41.20 MB -> 39.47 MB
+  textures (jpg->ktx2) 29.94 MB -> 31.75 MB      up 1.8 MB
+  Poly Haven geometry   4.33 MB ->  2.65 MB      down 39%
+  the three NPC bodies  5.27 MB ->  3.35 MB      down 36%
+  the Kenney kit        1.60 MB ->  1.60 MB      untouched
+dist/                  42.0  MB -> 40.9  MB
+```
+
+- **A committed re-encode, over the originals, not a build step** (#506).
+  `tools/encode-assets.mjs` is run by hand (`npm run assets:encode`), needs
+  KTX-Software's `ktx` on PATH, and writes over what it reads. Three reasons,
+  in order: seven suites read `assets/` off disk at repo-relative paths;
+  `test/built.mjs` diffs the file set the dev server and the bundle serve, and
+  a build-time pipeline would make `npm run dev` serve jpg while `dist/` served
+  ktx2, which is that assertion failing by construction; and #493 says assets
+  live in git. **The originals are not kept**: git history is the originals
+  (#390's reasoning), and a second copy on disk is exactly what
+  `test/assets.mjs` check 4 exists to refuse. The script is a deliverable
+  rather than a convenience — BACKLOG ranks 3 and 8 both add assets, and an
+  asset that did not come through it is an uncompressed one nothing notices.
+  Re-running is safe: it skips a texture already in KTX2 and a file already
+  carrying `EXT_meshopt_compression`, so adding one asset encodes that asset.
+
+  It uses `@gltf-transform/core`, `/extensions` and `/functions` rather than
+  `@gltf-transform/cli`, which SPECS.md named. The CLI is a wrapper over those
+  three plus `ktx`, and it brought 234 packages into `devDependencies` for a
+  script that shells `ktx` itself so it can pick a codec per texture slot. The
+  libraries plus `sharp` and `meshoptimizer` are 84.
+
+- **ETC1S for colour, UASTC for anything whose channels mean different things**
+  (#507). Diffuse and `rough` go to ETC1S (`basis-lz`); **normal and `arm` go to
+  UASTC**, which is where this departs from SPECS.md's recommendation of ETC1S
+  for `arm`. ETC1S quantises RGB jointly against a shared palette. That is right
+  for a photograph of stone and wrong for a normal map, whose channels are the
+  x, y and z of a direction — which SPECS.md already said — and wrong in exactly
+  the same way for an ARM map, whose channels are ambient occlusion, roughness
+  and metalness. `src/assets.js` feeds an ARM map's blue channel straight into
+  `metalness`, so colour bleed between its channels is not a soft artefact: it
+  is the sheet-metal castle wall `loadPBRMaterial`'s own comment describes.
+
+  The price is disk, and it is the +1.8 MB above: a 1k UASTC map is about 1 MB
+  before supercompression whatever the source, so the props' small ARM jpgs
+  (130-210 KB) came out three times larger. Allowed under #499 and predicted by
+  SPECS.md. **Load bytes for textures went up and GPU bytes went down 4x**, and
+  saying it the other way round would be a nicer sentence and not a true one.
+
+  Every input is widened to three channels through `sharp` first. Four `rough`
+  maps are single-channel greyscale JPEGs, and encoding those as `R8_UNORM`
+  gives a red-only texture — three reads roughness out of **green**, so that is
+  a roughness of zero everywhere and a castle of mirrors.
+
+- **meshopt on the Poly Haven props and the three NPC bodies; nothing on the
+  Kenney kit; no Draco anywhere** (#508). The kit is 1.6 MB across 106 GLBs of
+  64 px pixel art: the saving would not pay for the risk, because
+  `test/assets.mjs` measures the gate archway's opening out of
+  `wall-fortified-gate.glb` triangle by triangle and that is the one
+  measurement in the project that reads raw index and position buffers. Draco
+  buys over meshopt only on dense static meshes and there are none here; it
+  would cost a 1 MB decoder under the origin and a second decode path in Node.
+
+  **The Node reader had to learn to decode** (`test/gltf.mjs`), which SPECS.md
+  named as the constraint the brief missed. A meshopt bufferView carries no
+  bytes of its own — it names a range in another buffer, a mode and a filter —
+  so `viewBytes` decodes through `meshoptimizer`, at a top-level `await` so
+  `triangles` and `partsOf` stay synchronous and five suites stay unchanged.
+  And meshopt quantises: positions are normalised 16-bit integers with the
+  scale put back on the node, and **an accessor's `min`/`max` are stored in the
+  same quantised units**, so `partsOf` dequantises them too. Without that, every
+  plan box is 32767 times too big.
+
+- **The Basis transcoder is copied out of the pinned `three` package at build
+  time, not committed** (#509). `KTX2Loader` fetches `basis_transcoder.js` and
+  `.wasm` by URL, so Rollup never sees them. `vite.config.js` writes them to
+  `dist/decoders/basis/` and answers the same path from `node_modules` on the
+  dev server, which keeps both pages fetching the same file set and keeps
+  everything on this origin (#493). Copied rather than vendored because a
+  hand-copied decoder nothing can tell you the provenance of is what #494
+  deleted. The path handed to `setTranscoderPath` is relative, so the subpath
+  deploy still works (#505).
+
+- **`test/built.mjs` compares `decoders/` as well as `assets/` and `data/`, and
+  asserts the format by name** (#510). Two new lines: both transcoder files
+  present in `dist/`, and both pages fetched the same non-zero number of `.ktx2`
+  with no jpg or png under `assets/poly-haven` or `assets/NPCs`. `test/assets.mjs`'s
+  complete-set rail grows one line: every declared map path ends `.ktx2`.
+
+### Broken on purpose, from green, before any of it was believed (#34)
+
+The baseline was all eight suites green. Each rail was then broken and watched
+to fail, and the failing assertion is quoted.
+
+1. **The build stops copying `basis_transcoder.wasm.`** `test/built.mjs`, two
+   failures, which is the point — if only the new line had fired, the old one
+   would not be catching what its comment claims:
+   `FAIL dist/decoders/basis/basis_transcoder.wasm is there` and
+   `FAIL no console errors — THREE.GLTFLoader: Couldn't load texture textures/WoodenTable_01_nor_gl_1k.ktx2`.
+2. **One material pointed back at its old `.jpg`.** `test/assets.mjs`, four
+   failures, the first naming the material and the slot:
+   `FAIL material "castle_wall_slates"'s diffuse is .jpg, not .ktx2`, then
+   `FAIL nothing references ...castle_wall_slates_diff_1k.ktx2` and
+   `FAIL material castle_wall_slates's diffuse needs ....jpg, which is not there`.
+   That second pair is check 4, and it is the same failure a pipeline that
+   skipped one texture set would produce.
+3. **`setMeshoptDecoder` commented out.** `test/plan-vs-scene.mjs`, one failure
+   per compressed prop:
+   `FAIL "WoodenTable_01" loaded as a magenta placeholder box — its model is missing or broken`.
+4. **`partsOf` dequantising by 30000 instead of 32767**, a 9% error.
+   `test/plan-vs-scene.mjs`:
+   `FAIL "GothicCabinet_01" (prop) is 0.109 m off the plan`, against a 0.01 m
+   tolerance, and the same for every meshopt file. Removing the dequantisation
+   altogether does **not** produce a clean failure — the boxes come out 32767x
+   too large and `makePlan` wedges before any assertion runs — so the break was
+   sized to what the rail is for rather than to the largest wrong number
+   available.
+5. **The new rails run against the uncompressed assets this row replaced**, out
+   of a worktree at the pre-change commit: `FAIL both pages fetched the same 0
+   KTX2 textures — bundle 0, source 0` and `FAIL and neither asked for a jpg or
+   a png under assets/poly-haven or assets/NPCs`. A silent fall back to jpg
+   would otherwise pass every other line in that suite.
+
+One rail failed first time for real, which is the best evidence any of them are
+live: `and neither asked for a jpg or a png under assets/` named
+`cobblestone.png` out of the Kenney kit. The assertion was wrong, not the
+build — the kit is left uncompressed on purpose — and it was narrowed to
+`assets/poly-haven` and `assets/NPCs`, which is the scope the script covers
+(#147: when a break lands somewhere unexpected, ask whether the assertion's
+comment is the thing that is wrong).
+
+### What this did not do
+
+**Nobody has looked at it.** Every number above is off a software-rendered
+headless Chromium, which is fine for bytes and geometry and says nothing about
+whether an ETC1S diffuse bands on a 8 m wall or a UASTC normal holds up at a
+grazing angle (#53). Ranked row 4 is the GPU run, and a look at the walls is
+now part of what it is for.

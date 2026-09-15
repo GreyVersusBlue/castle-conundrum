@@ -30,6 +30,12 @@
 //      material names a complete texture set
 //   4. every byte under assets/poly-haven and assets/NPCs is reachable from one
 //      of those references, and everything a reference needs is there
+//
+// Everything it reads is compressed as of 2026-09-15 (#506 to #508): KTX2/Basis
+// textures and EXT_meshopt_compression geometry. `triangles()` decodes meshopt
+// now (test/gltf.mjs) and `partsOf` dequantises, so the two measurements below
+// are unchanged in kind. Nothing here decodes a KTX2 — what is asserted about
+// the textures is their paths.
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -220,6 +226,16 @@ for (const [name, spec] of Object.entries(config.materials)) {
   const third = ['arm', 'rough'].filter(k => spec[k]);
   if (third.length !== 1) fail(`material "${name}" declares ${third.length ? 'both `arm` and `rough`' : 'neither `arm` nor `rough`'} — src/assets.js reads exactly one`);
   else pass(`material "${name}": diffuse, normal and ${third[0]}`);
+  // AND IT IS KTX2, EVERY SLOT. tools/encode-assets.mjs wrote over the jpgs
+  // (#506), so a slot still naming one names a file that is not there — but
+  // nothing in Node would say so, because check 1 sweeps `model` references and
+  // check 4 sweeps the disk, and a path that points at nothing is in neither
+  // list. The browser would log MISSING TEXTURE and render that surface as the
+  // fallback colour, which is a wall that looks wrong rather than a wall that
+  // fails. This is the line that names the material and the slot instead.
+  const jpg = Object.entries(spec).filter(([, rel]) => !rel.endsWith('.ktx2'));
+  for (const [slot, rel] of jpg)
+    fail(`material "${name}"'s ${slot} is ${path.extname(rel) || 'extensionless'}, not .ktx2 — ${rel}`);
 }
 
 /* --------------------------------- 3c: every plain material is a colour ---

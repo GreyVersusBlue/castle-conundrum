@@ -1,61 +1,165 @@
 {
   "asset": {
-    "generator": "glTF-Transform v4.4.2",
+    "generator": "glTF-Transform v4.5.0",
     "version": "2.0"
   },
   "accessors": [
     {
-      "type": "VEC3",
-      "componentType": 5126,
-      "count": 23314,
-      "max": [
-        0.7231897115707397,
-        0.5321175456047058,
-        0.1022685244679451
-      ],
-      "min": [
-        -0.754274308681488,
-        -1.2077802419662476,
-        -1.4614895582199097
-      ],
-      "bufferView": 0,
-      "byteOffset": 0
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 83217,
+      "normalized": false,
+      "byteOffset": 0,
+      "bufferView": 0
     },
     {
       "type": "VEC3",
       "componentType": 5126,
       "count": 23314,
-      "bufferView": 0,
-      "byteOffset": 12
+      "normalized": false,
+      "byteOffset": 0,
+      "bufferView": 1
+    },
+    {
+      "type": "VEC3",
+      "componentType": 5120,
+      "count": 23314,
+      "normalized": true,
+      "byteOffset": 0,
+      "bufferView": 2
     },
     {
       "type": "VEC2",
       "componentType": 5126,
       "count": 23314,
-      "bufferView": 0,
-      "byteOffset": 24
+      "normalized": false,
+      "byteOffset": 0,
+      "bufferView": 3
     },
     {
-      "type": "SCALAR",
+      "type": "VEC3",
+      "componentType": 5122,
+      "count": 23314,
+      "max": [
+        27827,
+        32767,
+        29451
+      ],
+      "min": [
+        -27827,
+        -32767,
+        -29451
+      ],
+      "normalized": true,
+      "byteOffset": 0,
+      "bufferView": 4
+    },
+    {
+      "type": "VEC2",
       "componentType": 5123,
-      "count": 83217,
-      "bufferView": 1,
-      "byteOffset": 0
+      "count": 23314,
+      "normalized": true,
+      "byteOffset": 0,
+      "bufferView": 5
     }
   ],
   "bufferViews": [
     {
-      "buffer": 0,
+      "buffer": 1,
       "byteOffset": 0,
-      "byteLength": 746048,
-      "byteStride": 32,
-      "target": 34962
+      "byteLength": 166434,
+      "target": 34963,
+      "extensions": {
+        "EXT_meshopt_compression": {
+          "buffer": 0,
+          "byteOffset": 0,
+          "byteLength": 30197,
+          "mode": "TRIANGLES",
+          "byteStride": 2,
+          "count": 83217
+        }
+      }
     },
     {
-      "buffer": 0,
-      "byteOffset": 746048,
-      "byteLength": 166436,
-      "target": 34963
+      "buffer": 1,
+      "byteOffset": 166436,
+      "byteLength": 279768,
+      "extensions": {
+        "EXT_meshopt_compression": {
+          "buffer": 0,
+          "byteOffset": 30200,
+          "byteLength": 206709,
+          "mode": "ATTRIBUTES",
+          "byteStride": 12,
+          "count": 23314
+        }
+      }
+    },
+    {
+      "buffer": 1,
+      "byteOffset": 446204,
+      "byteLength": 93256,
+      "target": 34962,
+      "byteStride": 4,
+      "extensions": {
+        "EXT_meshopt_compression": {
+          "buffer": 0,
+          "byteOffset": 236912,
+          "byteLength": 65656,
+          "mode": "ATTRIBUTES",
+          "byteStride": 4,
+          "count": 23314
+        }
+      }
+    },
+    {
+      "buffer": 1,
+      "byteOffset": 539460,
+      "byteLength": 186512,
+      "extensions": {
+        "EXT_meshopt_compression": {
+          "buffer": 0,
+          "byteOffset": 302568,
+          "byteLength": 127184,
+          "mode": "ATTRIBUTES",
+          "byteStride": 8,
+          "count": 23314
+        }
+      }
+    },
+    {
+      "buffer": 1,
+      "byteOffset": 725972,
+      "byteLength": 186512,
+      "target": 34962,
+      "byteStride": 8,
+      "extensions": {
+        "EXT_meshopt_compression": {
+          "buffer": 0,
+          "byteOffset": 429752,
+          "byteLength": 107011,
+          "mode": "ATTRIBUTES",
+          "byteStride": 8,
+          "count": 23314
+        }
+      }
+    },
+    {
+      "buffer": 1,
+      "byteOffset": 912484,
+      "byteLength": 93256,
+      "target": 34962,
+      "byteStride": 4,
+      "extensions": {
+        "EXT_meshopt_compression": {
+          "buffer": 0,
+          "byteOffset": 536764,
+          "byteLength": 68900,
+          "mode": "ATTRIBUTES",
+          "byteStride": 4,
+          "count": 23314
+        }
+      }
     }
   ],
   "samplers": [
@@ -68,39 +172,59 @@
   ],
   "textures": [
     {
-      "source": 1,
-      "sampler": 0
+      "sampler": 0,
+      "extensions": {
+        "KHR_texture_basisu": {
+          "source": 1
+        }
+      }
     },
     {
-      "source": 0,
-      "sampler": 0
+      "sampler": 0,
+      "extensions": {
+        "KHR_texture_basisu": {
+          "source": 0
+        }
+      }
     },
     {
-      "source": 2,
-      "sampler": 0
+      "sampler": 0,
+      "extensions": {
+        "KHR_texture_basisu": {
+          "source": 2
+        }
+      }
     }
   ],
   "images": [
     {
       "name": "gothic_statue_nor_gl",
-      "mimeType": "image/jpeg",
-      "uri": "textures/gothic_statue_nor_gl_1k.jpg"
+      "mimeType": "image/ktx2",
+      "uri": "textures/gothic_statue_nor_gl_1k.ktx2"
     },
     {
       "name": "gothic_statue_diff",
-      "mimeType": "image/jpeg",
-      "uri": "textures/gothic_statue_diff_1k.jpg"
+      "mimeType": "image/ktx2",
+      "uri": "textures/gothic_statue_diff_1k.ktx2"
     },
     {
       "name": "gothic_statue_rough",
-      "mimeType": "image/jpeg",
-      "uri": "textures/gothic_statue_arm_1k.jpg"
+      "mimeType": "image/ktx2",
+      "uri": "textures/gothic_statue_arm_1k.ktx2"
     }
   ],
   "buffers": [
     {
       "uri": "gothic_statue.bin",
-      "byteLength": 912484
+      "byteLength": 605664
+    },
+    {
+      "byteLength": 1005740,
+      "extensions": {
+        "EXT_meshopt_compression": {
+          "fallback": true
+        }
+      }
     }
   ],
   "materials": [
@@ -127,13 +251,13 @@
       "primitives": [
         {
           "attributes": {
-            "POSITION": 0,
-            "NORMAL": 1,
-            "TEXCOORD_0": 2
+            "NORMAL": 2,
+            "POSITION": 4,
+            "TEXCOORD_0": 5
           },
           "mode": 4,
           "material": 0,
-          "indices": 3
+          "indices": 0
         }
       ]
     }
@@ -142,9 +266,14 @@
     {
       "name": "gothic_statue",
       "translation": [
-        -0.028923194855451584,
-        1.1918599605560303,
-        0.2721009850502014
+        -0.04446549341082573,
+        0.8540286123752594,
+        -0.40750953182578087
+      ],
+      "scale": [
+        0.8699488937854767,
+        0.8699488937854767,
+        0.8699488937854767
       ],
       "mesh": 0
     }
@@ -157,5 +286,15 @@
       ]
     }
   ],
-  "scene": 0
+  "scene": 0,
+  "extensionsUsed": [
+    "EXT_meshopt_compression",
+    "KHR_mesh_quantization",
+    "KHR_texture_basisu"
+  ],
+  "extensionsRequired": [
+    "EXT_meshopt_compression",
+    "KHR_mesh_quantization",
+    "KHR_texture_basisu"
+  ]
 }

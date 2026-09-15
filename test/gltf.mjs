@@ -13,9 +13,62 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { MeshoptDecoder } from 'meshoptimizer';
 
-const COMPONENT = { 5126: ['getFloat32', 4], 5125: ['getUint32', 4], 5123: ['getUint16', 2], 5121: ['getUint8', 1] };
+// Top-level, once, so everything below stays synchronous. MeshoptDecoder
+// instantiates a wasm module before it can decode anything, and making
+// `triangles` and `partsOf` async to wait for it would have rippled through
+// five suites for no gain: an ES module is allowed to await at load.
+await MeshoptDecoder.ready;
+
+const COMPONENT = {
+  5126: ['getFloat32', 4, 1],
+  5125: ['getUint32', 4, 4294967295],
+  5123: ['getUint16', 2, 65535],
+  5122: ['getInt16', 2, 32767],
+  5121: ['getUint8', 1, 255],
+  5120: ['getInt8', 1, 127],
+};
 const NUM = { SCALAR: 1, VEC2: 2, VEC3: 3, VEC4: 4 };
+
+/* --------------------------------------------- EXT_meshopt_compression ---
+ * tools/encode-assets.mjs puts every Poly Haven prop and all three NPC bodies
+ * through meshopt (#508), and meshopt is not a container the raw reader below
+ * can see through: a compressed bufferView carries no bytes of its own. It
+ * names a byte range in some OTHER buffer, a mode and a filter, and its real
+ * contents only exist once that range has been decoded.
+ *
+ * So every read goes through here, and a file that was never compressed comes
+ * out of the first branch unchanged.
+ */
+function viewBytes(g, index) {
+  const cache = (g.views ??= new Map());
+  if (cache.has(index)) return cache.get(index);
+  const bv = g.json.bufferViews[index];
+  const ext = bv.extensions?.EXT_meshopt_compression;
+  let out;
+  if (!ext) {
+    const buf = g.buffers[bv.buffer];
+    out = new Uint8Array(buf.buffer, buf.byteOffset + (bv.byteOffset || 0), bv.byteLength);
+  } else {
+    const src = g.buffers[ext.buffer];
+    const from = new Uint8Array(src.buffer, src.byteOffset + (ext.byteOffset || 0), ext.byteLength);
+    out = new Uint8Array(ext.count * ext.byteStride);
+    MeshoptDecoder.decodeGltfBuffer(out, ext.count, ext.byteStride, from, ext.mode, ext.filter || 'NONE');
+  }
+  cache.set(index, out);
+  return out;
+}
+
+/* Quantised components read back as the floats the file means.
+ *
+ * meshopt stores positions as normalised 16-bit integers and puts the scale
+ * back on the node, so a reader that skipped this step would measure every
+ * compressed model at 32767 times its size — and `partsOf` reads the accessor's
+ * own `min`/`max`, which are stored in exactly the same quantised units, so
+ * the plan boxes would move with it. That is the failure SPECS.md named for
+ * this row and it is the reason this function is shared by both readers. */
+const dequantize = (a, v) => (a.normalized ? Math.max(v / COMPONENT[a.componentType][2], -1) : v);
 
 export function readGLTF(file) {
   if (file.endsWith('.glb')) {
@@ -28,7 +81,15 @@ export function readGLTF(file) {
       if (type === 0x004e4942) bin = body;
       off += 8 + len;
     }
-    return { json, buffers: [bin] };
+    // Buffer 0 is the BIN chunk, which the GLB spec requires. Anything else is
+    // either an external .bin or EXT_meshopt_compression's fallback buffer,
+    // which carries no bytes and is read by nothing.
+    return {
+      json,
+      buffers: (json.buffers || []).map((b, i) => (b.uri
+        ? fs.readFileSync(path.join(path.dirname(file), decodeURIComponent(b.uri)))
+        : (i === 0 ? bin : null))),
+    };
   }
   const json = JSON.parse(fs.readFileSync(file, 'utf8'));
   const buffers = (json.buffers || []).map(b =>
@@ -36,19 +97,20 @@ export function readGLTF(file) {
   return { json, buffers };
 }
 
-function accessor({ json, buffers }, index) {
-  const a = json.accessors[index];
-  const bv = json.bufferViews[a.bufferView];
-  const buf = buffers[bv.buffer];
-  const view = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
+function accessor(g, index) {
+  const a = g.json.accessors[index];
+  const bv = g.json.bufferViews[a.bufferView];
+  const bytes_ = viewBytes(g, a.bufferView);
+  const view = new DataView(bytes_.buffer, bytes_.byteOffset, bytes_.byteLength);
   const [reader, bytes] = COMPONENT[a.componentType];
   const n = NUM[a.type];
   const stride = bv.byteStride || bytes * n;
-  const base = (bv.byteOffset || 0) + (a.byteOffset || 0);
+  // viewBytes has already applied the bufferView's own offset.
+  const base = a.byteOffset || 0;
   const out = [];
   for (let i = 0; i < a.count; i++) {
     const row = [];
-    for (let c = 0; c < n; c++) row.push(view[reader](base + i * stride + c * bytes, true));
+    for (let c = 0; c < n; c++) row.push(dequantize(a, view[reader](base + i * stride + c * bytes, true)));
     out.push(n === 1 ? row[0] : row);
   }
   return out;
@@ -160,7 +222,8 @@ export function partsOf(file) {
     if (node.mesh !== undefined) {
       for (const prim of g.json.meshes[node.mesh].primitives) {
         const a = g.json.accessors[prim.attributes.POSITION];
-        let lo = a.min, hi = a.max;
+        let lo = a.min?.map((v) => dequantize(a, v));
+        let hi = a.max?.map((v) => dequantize(a, v));
         if (!lo || !hi) {
           const p = accessor(g, prim.attributes.POSITION);
           lo = [0, 1, 2].map(i => Math.min(...p.map(v => v[i])));

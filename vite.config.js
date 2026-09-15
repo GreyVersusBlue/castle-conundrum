@@ -17,6 +17,45 @@ import path from 'node:path';
 // `publicDir` is off for the same reason: there is no `public/`.
 const STATIC_DIRS = ['assets', 'data'];
 
+// KTX2Loader fetches these two by URL at first use, so they are not in the
+// module graph and Vite will never emit them on its own (#506). They come out
+// of the `three` package this repo pins rather than being copied into the repo
+// by hand: a hand-copied decoder that nothing can tell you the provenance of is
+// exactly what #494 deleted. Served under this origin at both ends — the build
+// writes them into dist/decoders/basis/ and the dev server answers the same
+// path from node_modules — because nothing this page fetches leaves its origin
+// (#493) and test/built.mjs compares the two file sets.
+const DECODER_DIR = 'decoders/basis';
+const DECODER_SRC = 'node_modules/three/examples/jsm/libs/basis';
+const DECODER_FILES = ['basis_transcoder.js', 'basis_transcoder.wasm'];
+
+function decoders() {
+  const from = (name) => path.resolve(import.meta.dirname, DECODER_SRC, name);
+  return {
+    name: 'castle-basis-transcoder',
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const name = DECODER_FILES.find(f => req.url?.split('?')[0].endsWith(`${DECODER_DIR}/${f}`));
+        if (!name) return next();
+        res.setHeader('Content-Type', name.endsWith('.wasm') ? 'application/wasm' : 'text/javascript');
+        fs.createReadStream(from(name)).pipe(res);
+      });
+    },
+    closeBundle() {
+      const out = this.environment?.config?.build?.outDir ?? 'dist';
+      const to = path.resolve(import.meta.dirname, out, DECODER_DIR);
+      fs.mkdirSync(to, { recursive: true });
+      for (const name of DECODER_FILES) {
+        // Throws rather than warns: a build that ships the page without the
+        // transcoder is a build whose every texture 404s (#13).
+        if (!fs.existsSync(from(name)))
+          throw new Error(`build: ${DECODER_SRC}/${name} is not there — is three installed?`);
+        fs.copyFileSync(from(name), path.join(to, name));
+      }
+    },
+  };
+}
+
 function copyStatic() {
   return {
     name: 'castle-copy-static',
@@ -48,15 +87,15 @@ export default {
   // build that had dropped it (#501). There is one page here and no client-side
   // routing, so there is nothing to fall back for: a miss is a 404.
   appType: 'mpa',
-  plugins: [copyStatic()],
+  plugins: [copyStatic(), decoders()],
   build: {
     outDir: 'dist',
     emptyOutDir: true,
-    // Not the default 'assets'. `assets/` is the game's 43 MB of glTF and
+    // Not the default 'assets'. `assets/` is the game's 40 MB of glTF and
     // textures, copied in whole by the plugin above; the hashed bundle gets its
     // own folder rather than being dropped in among the castle walls.
     assetsDir: 'bundle',
-    // 43 MB of glTF and textures are copied in beside a ~700 KB bundle. The
+    // 40 MB of glTF and textures are copied in beside a ~700 KB bundle. The
     // default 500 KB warning would fire on three.js every single build.
     chunkSizeWarningLimit: 2000,
   },

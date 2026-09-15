@@ -7,7 +7,7 @@
 // WHY THIS EXISTS, WHEN SIX OTHER SUITES ALREADY PASS. Every one of them runs
 // against source: the five Node suites import src/ directly and
 // plan-vs-scene.mjs drives `vite dev`, which serves the same files a developer
-// edits. None of them would notice a build that dropped the 43 MB of glTF on
+// edits. None of them would notice a build that dropped the 40 MB of glTF on
 // the floor, or an index.html that came out still pointing at a libs/ folder
 // that no longer exists. Those are the failures the bundler can invent on its
 // own, and this is where they get caught.
@@ -66,6 +66,18 @@ for (const dir of ['assets', 'data']) {
   check(there, `dist/${dir}/ is there`, 'vite.config.js’s copy plugin did not run');
 }
 
+// THE DECODERS, AND WHY THEY GET THEIR OWN LINE. Every texture under assets/ is
+// KTX2/Basis now (#506), and KTX2Loader reaches basis_transcoder.js and .wasm by
+// URL rather than by import, so Rollup never sees them and cannot be relied on
+// to emit them. A build that dropped them still builds, still copies 40 MB of
+// assets, and still serves a page — one where the first texture 404s inside a
+// worker. Both files, by name: the .js alone loads and then asks for the .wasm.
+for (const name of ['basis_transcoder.js', 'basis_transcoder.wasm']) {
+  check(fs.existsSync(path.join(dist, 'decoders/basis', name)),
+    `dist/decoders/basis/${name} is there`,
+    'vite.config.js’s decoder plugin did not copy it out of node_modules/three');
+}
+
 /* ---- and what it does in a browser --------------------------------------- */
 
 const browser = await launch();
@@ -88,7 +100,7 @@ async function loadAndWatch(base, label) {
   pass(`${label}: the castle finished building`);
   const files = new Set(page.__served
     .map(u => u.startsWith(base) ? u.slice(base.length) : u)
-    .filter(u => /^\/(assets|data)\//.test(u)));
+    .filter(u => /^\/(assets|data|decoders)\//.test(u)));
   return { page, files };
 }
 
@@ -115,9 +127,29 @@ try {
   const missing = [...source.files].filter(f => !built.files.has(f));
   const extra = [...built.files].filter(f => !source.files.has(f));
   check(!missing.length && !extra.length,
-    `the built page fetched the same ${source.files.size} files under assets/ and data/ as the source page`,
+    `the built page fetched the same ${source.files.size} files under assets/, data/ and decoders/ as the source page`,
     [missing.length ? `${missing.length} missing (${missing.slice(0, 3).join(', ')})` : '',
      extra.length ? `${extra.length} unexpected (${extra.slice(0, 3).join(', ')})` : ''].filter(Boolean).join('; '));
+
+  // A silent fall back to jpg would pass every line above: the file sets would
+  // still match, the castle would still finish, and the row would have shipped
+  // nothing. So the format is asserted by name, on what the server actually
+  // served, on BOTH pages — if only the bundle had lost its .ktx2 the diff
+  // above would say so, and if both had, only this line would.
+  const ktx2 = (side) => [...side.files].filter(f => f.endsWith('.ktx2')).length;
+  check(ktx2(built) > 0 && ktx2(built) === ktx2(source),
+    `both pages fetched the same ${ktx2(source)} KTX2 textures`,
+    `bundle ${ktx2(built)}, source ${ktx2(source)}`);
+  // Poly Haven and the NPC bodies only. The Kenney kit is 106 GLBs of 64 px
+  // pixel art beside its own PNGs and tools/encode-assets.mjs leaves it alone
+  // on purpose (#508), so a rail that read "no png anywhere" would be a rail
+  // that fails on the state this row shipped. It said exactly that the first
+  // time it ran, naming cobblestone.png.
+  const uncompressed = [...built.files]
+    .filter(f => /^\/assets\/(poly-haven|NPCs)\//.test(f) && /\.(jpe?g|png)$/i.test(f));
+  check(!uncompressed.length,
+    'and neither asked for a jpg or a png under assets/poly-haven or assets/NPCs',
+    uncompressed.slice(0, 3).join(', '));
 
   check(built.page.__blocked.length === 0,
     'the built page made no offsite request',

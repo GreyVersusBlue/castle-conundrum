@@ -1,38 +1,356 @@
 {
   "asset": {
-    "generator": "Khronos glTF Blender I/O v4.1.63",
+    "generator": "glTF-Transform v4.5.0",
     "version": "2.0"
   },
-  "scene": 0,
-  "scenes": [
+  "accessors": [
     {
-      "name": "blend_export",
-      "nodes": [
-        0
-      ]
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 32235,
+      "normalized": false,
+      "byteOffset": 0,
+      "bufferView": 0
+    },
+    {
+      "type": "VEC3",
+      "componentType": 5126,
+      "count": 5977,
+      "normalized": false,
+      "byteOffset": 0,
+      "bufferView": 1
+    },
+    {
+      "type": "VEC3",
+      "componentType": 5120,
+      "count": 5977,
+      "normalized": true,
+      "byteOffset": 0,
+      "bufferView": 2
+    },
+    {
+      "type": "VEC2",
+      "componentType": 5126,
+      "count": 5977,
+      "normalized": false,
+      "byteOffset": 0,
+      "bufferView": 3
+    },
+    {
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 1203,
+      "normalized": false,
+      "byteOffset": 64470,
+      "bufferView": 0
+    },
+    {
+      "type": "VEC3",
+      "componentType": 5126,
+      "count": 322,
+      "normalized": false,
+      "byteOffset": 71724,
+      "bufferView": 1
+    },
+    {
+      "type": "VEC3",
+      "componentType": 5120,
+      "count": 322,
+      "normalized": true,
+      "byteOffset": 0,
+      "bufferView": 4
+    },
+    {
+      "type": "VEC2",
+      "componentType": 5126,
+      "count": 322,
+      "normalized": false,
+      "byteOffset": 47816,
+      "bufferView": 3
+    },
+    {
+      "type": "VEC3",
+      "componentType": 5122,
+      "count": 5977,
+      "max": [
+        32767,
+        22482,
+        22630
+      ],
+      "min": [
+        -32767,
+        -22182,
+        -22630
+      ],
+      "normalized": true,
+      "byteOffset": 0,
+      "bufferView": 5
+    },
+    {
+      "type": "VEC2",
+      "componentType": 5123,
+      "count": 5977,
+      "normalized": true,
+      "byteOffset": 0,
+      "bufferView": 6
+    },
+    {
+      "type": "VEC3",
+      "componentType": 5122,
+      "count": 322,
+      "max": [
+        23218,
+        -20794,
+        21666
+      ],
+      "min": [
+        -21830,
+        -22482,
+        -21994
+      ],
+      "normalized": true,
+      "byteOffset": 0,
+      "bufferView": 7
+    },
+    {
+      "type": "VEC2",
+      "componentType": 5123,
+      "count": 322,
+      "normalized": true,
+      "byteOffset": 0,
+      "bufferView": 8
     }
   ],
-  "nodes": [
+  "bufferViews": [
     {
-      "mesh": 0,
-      "name": "wooden_stool_02"
+      "buffer": 1,
+      "byteOffset": 0,
+      "byteLength": 66876,
+      "target": 34963,
+      "extensions": {
+        "EXT_meshopt_compression": {
+          "buffer": 0,
+          "byteOffset": 0,
+          "byteLength": 12850,
+          "mode": "TRIANGLES",
+          "byteStride": 2,
+          "count": 33438
+        }
+      }
+    },
+    {
+      "buffer": 1,
+      "byteOffset": 66876,
+      "byteLength": 75588,
+      "extensions": {
+        "EXT_meshopt_compression": {
+          "buffer": 0,
+          "byteOffset": 12852,
+          "byteLength": 55243,
+          "mode": "ATTRIBUTES",
+          "byteStride": 12,
+          "count": 6299
+        }
+      }
+    },
+    {
+      "buffer": 1,
+      "byteOffset": 142464,
+      "byteLength": 23908,
+      "target": 34962,
+      "byteStride": 4,
+      "extensions": {
+        "EXT_meshopt_compression": {
+          "buffer": 0,
+          "byteOffset": 68096,
+          "byteLength": 14670,
+          "mode": "ATTRIBUTES",
+          "byteStride": 4,
+          "count": 5977
+        }
+      }
+    },
+    {
+      "buffer": 1,
+      "byteOffset": 166372,
+      "byteLength": 50392,
+      "extensions": {
+        "EXT_meshopt_compression": {
+          "buffer": 0,
+          "byteOffset": 82768,
+          "byteLength": 34973,
+          "mode": "ATTRIBUTES",
+          "byteStride": 8,
+          "count": 6299
+        }
+      }
+    },
+    {
+      "buffer": 1,
+      "byteOffset": 216764,
+      "byteLength": 1288,
+      "target": 34962,
+      "byteStride": 4,
+      "extensions": {
+        "EXT_meshopt_compression": {
+          "buffer": 0,
+          "byteOffset": 117744,
+          "byteLength": 987,
+          "mode": "ATTRIBUTES",
+          "byteStride": 4,
+          "count": 322
+        }
+      }
+    },
+    {
+      "buffer": 1,
+      "byteOffset": 218052,
+      "byteLength": 47816,
+      "target": 34962,
+      "byteStride": 8,
+      "extensions": {
+        "EXT_meshopt_compression": {
+          "buffer": 0,
+          "byteOffset": 118732,
+          "byteLength": 28307,
+          "mode": "ATTRIBUTES",
+          "byteStride": 8,
+          "count": 5977
+        }
+      }
+    },
+    {
+      "buffer": 1,
+      "byteOffset": 265868,
+      "byteLength": 23908,
+      "target": 34962,
+      "byteStride": 4,
+      "extensions": {
+        "EXT_meshopt_compression": {
+          "buffer": 0,
+          "byteOffset": 147040,
+          "byteLength": 18253,
+          "mode": "ATTRIBUTES",
+          "byteStride": 4,
+          "count": 5977
+        }
+      }
+    },
+    {
+      "buffer": 1,
+      "byteOffset": 289776,
+      "byteLength": 2576,
+      "target": 34962,
+      "byteStride": 8,
+      "extensions": {
+        "EXT_meshopt_compression": {
+          "buffer": 0,
+          "byteOffset": 165296,
+          "byteLength": 1527,
+          "mode": "ATTRIBUTES",
+          "byteStride": 8,
+          "count": 322
+        }
+      }
+    },
+    {
+      "buffer": 1,
+      "byteOffset": 292352,
+      "byteLength": 1288,
+      "target": 34962,
+      "byteStride": 4,
+      "extensions": {
+        "EXT_meshopt_compression": {
+          "buffer": 0,
+          "byteOffset": 166824,
+          "byteLength": 1033,
+          "mode": "ATTRIBUTES",
+          "byteStride": 4,
+          "count": 322
+        }
+      }
+    }
+  ],
+  "samplers": [
+    {
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "wrapS": 10497,
+      "wrapT": 10497
+    }
+  ],
+  "textures": [
+    {
+      "sampler": 0,
+      "extensions": {
+        "KHR_texture_basisu": {
+          "source": 1
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "KHR_texture_basisu": {
+          "source": 0
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "KHR_texture_basisu": {
+          "source": 2
+        }
+      }
+    }
+  ],
+  "images": [
+    {
+      "name": "wooden_stool_02_nor_gl",
+      "mimeType": "image/ktx2",
+      "uri": "textures/wooden_stool_02_nor_gl_1k.ktx2"
+    },
+    {
+      "name": "wooden_stool_02_diff",
+      "mimeType": "image/ktx2",
+      "uri": "textures/wooden_stool_02_diff_1k.ktx2"
+    },
+    {
+      "name": "wooden_stool_02_rough",
+      "mimeType": "image/ktx2",
+      "uri": "textures/wooden_stool_02_arm_1k.ktx2"
+    }
+  ],
+  "buffers": [
+    {
+      "uri": "wooden_stool_02.bin",
+      "byteLength": 167860
+    },
+    {
+      "byteLength": 293640,
+      "extensions": {
+        "EXT_meshopt_compression": {
+          "fallback": true
+        }
+      }
     }
   ],
   "materials": [
     {
-      "doubleSided": true,
       "name": "wooden_stool_02",
-      "normalTexture": {
-        "index": 0
-      },
+      "doubleSided": true,
       "pbrMetallicRoughness": {
-        "baseColorTexture": {
-          "index": 1
-        },
         "metallicFactor": 0,
+        "baseColorTexture": {
+          "index": 0
+        },
         "metallicRoughnessTexture": {
           "index": 2
         }
+      },
+      "normalTexture": {
+        "index": 1
       }
     }
   ],
@@ -42,186 +360,60 @@
       "primitives": [
         {
           "attributes": {
-            "POSITION": 0,
-            "NORMAL": 1,
-            "TEXCOORD_0": 2
+            "NORMAL": 2,
+            "POSITION": 8,
+            "TEXCOORD_0": 9
           },
-          "indices": 3,
-          "material": 0
+          "mode": 4,
+          "material": 0,
+          "indices": 0
         },
         {
           "attributes": {
-            "POSITION": 4,
-            "NORMAL": 5,
-            "TEXCOORD_0": 6
+            "NORMAL": 6,
+            "POSITION": 10,
+            "TEXCOORD_0": 11
           },
-          "indices": 7,
-          "material": 0
+          "mode": 4,
+          "material": 0,
+          "indices": 4
         }
       ]
     }
   ],
-  "textures": [
+  "nodes": [
     {
-      "sampler": 0,
-      "source": 0
-    },
-    {
-      "sampler": 0,
-      "source": 1
-    },
-    {
-      "sampler": 0,
-      "source": 2
-    }
-  ],
-  "images": [
-    {
-      "mimeType": "image/jpeg",
-      "name": "wooden_stool_02_nor_gl",
-      "uri": "textures/wooden_stool_02_nor_gl_1k.jpg"
-    },
-    {
-      "mimeType": "image/jpeg",
-      "name": "wooden_stool_02_diff",
-      "uri": "textures/wooden_stool_02_diff_1k.jpg"
-    },
-    {
-      "mimeType": "image/jpeg",
-      "name": "wooden_stool_02_rough",
-      "uri": "textures/wooden_stool_02_arm_1k.jpg"
-    }
-  ],
-  "accessors": [
-    {
-      "bufferView": 0,
-      "componentType": 5126,
-      "count": 5977,
-      "max": [
-        0.13161049783229828,
-        0.18209776282310486,
-        0.08744602650403976
+      "name": "wooden_stool_02",
+      "translation": [
+        -0.0009780675172805786,
+        0.09113352109852713,
+        -0.0041176266968250275
       ],
-      "min": [
-        -0.13356663286685944,
-        0.001375384978018701,
-        -0.09568127989768982
+      "scale": [
+        0.13258856534957886,
+        0.13258856534957886,
+        0.13258856534957886
       ],
-      "type": "VEC3"
-    },
-    {
-      "bufferView": 1,
-      "componentType": 5126,
-      "count": 5977,
-      "type": "VEC3"
-    },
-    {
-      "bufferView": 2,
-      "componentType": 5126,
-      "count": 5977,
-      "type": "VEC2"
-    },
-    {
-      "bufferView": 3,
-      "componentType": 5123,
-      "count": 32235,
-      "type": "SCALAR"
-    },
-    {
-      "bufferView": 4,
-      "componentType": 5126,
-      "count": 322,
-      "max": [
-        0.09296837449073792,
-        0.006995363160967827,
-        0.08354391902685165
-      ],
-      "min": [
-        -0.08931396156549454,
-        0.00016927937394939363,
-        -0.0931180790066719
-      ],
-      "type": "VEC3"
-    },
-    {
-      "bufferView": 5,
-      "componentType": 5126,
-      "count": 322,
-      "type": "VEC3"
-    },
-    {
-      "bufferView": 6,
-      "componentType": 5126,
-      "count": 322,
-      "type": "VEC2"
-    },
-    {
-      "bufferView": 7,
-      "componentType": 5123,
-      "count": 1203,
-      "type": "SCALAR"
+      "mesh": 0
     }
   ],
-  "bufferViews": [
+  "scenes": [
     {
-      "buffer": 0,
-      "byteLength": 71724,
-      "byteOffset": 0,
-      "target": 34962
-    },
-    {
-      "buffer": 0,
-      "byteLength": 71724,
-      "byteOffset": 71724,
-      "target": 34962
-    },
-    {
-      "buffer": 0,
-      "byteLength": 47816,
-      "byteOffset": 143448,
-      "target": 34962
-    },
-    {
-      "buffer": 0,
-      "byteLength": 64470,
-      "byteOffset": 191264,
-      "target": 34963
-    },
-    {
-      "buffer": 0,
-      "byteLength": 3864,
-      "byteOffset": 255736,
-      "target": 34962
-    },
-    {
-      "buffer": 0,
-      "byteLength": 3864,
-      "byteOffset": 259600,
-      "target": 34962
-    },
-    {
-      "buffer": 0,
-      "byteLength": 2576,
-      "byteOffset": 263464,
-      "target": 34962
-    },
-    {
-      "buffer": 0,
-      "byteLength": 2406,
-      "byteOffset": 266040,
-      "target": 34963
+      "name": "blend_export",
+      "nodes": [
+        0
+      ]
     }
   ],
-  "samplers": [
-    {
-      "magFilter": 9729,
-      "minFilter": 9987
-    }
+  "scene": 0,
+  "extensionsUsed": [
+    "EXT_meshopt_compression",
+    "KHR_mesh_quantization",
+    "KHR_texture_basisu"
   ],
-  "buffers": [
-    {
-      "byteLength": 268448,
-      "uri": "wooden_stool_02.bin"
-    }
+  "extensionsRequired": [
+    "EXT_meshopt_compression",
+    "KHR_mesh_quantization",
+    "KHR_texture_basisu"
   ]
 }
