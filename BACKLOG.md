@@ -60,7 +60,10 @@ and `test/touch.mjs` as the ninth suite. What it FEELS like is unknown — nobod
 has had a thumb on it, and the six numbers that decide that are named constants
 in one file each (#53).
 
-**7 ranked items.** Nothing is claimed. Take rank 1.
+**7 ranked items.** Rank 6 is claimed by `claude/second-day-epilogue-pzfxie`,
+which is taking increment 1 of it. Ranks 2, 3, 4, 5 and 7 all need a machine
+this one is not: a GPU, or Poly Haven and `ktx`, which answer 403 here (#518).
+Rank 1 is the only other open row a container can finish.
 
 One thing is true of the whole list and worth saying once. **Nothing here has
 been seen on a GPU since Phase 5.** `npm run play` walks the whole intended day
@@ -112,7 +115,7 @@ your decisions and this file's header, ranks and `Claimed` column are updated
 | 3 | A new preview and og card, from that run | ¼ | Opus 5 |  | [The GPU run](SPECS.md#the-gpu-run) |
 | 4 | Four texture sets: a second wall stone, a tower stone, a plaster, a floor | ½ | Fable 5.1 |  | [The texture sets](SPECS.md#the-texture-sets) |
 | 5 | The town side: a textured ground outside the west barbican, and a road | 1 | Fable 5.1 |  | [The town side](SPECS.md#the-town-side) |
-| 6 | A second day, in which the epilogue's consequences play | 2+ | Opus 5 |  | [A second day](SPECS.md#a-second-day) |
+| 6 | A second day, in which the epilogue's consequences play | 2+ | Opus 5 | `claude/second-day-epilogue-pzfxie` | [A second day](SPECS.md#a-second-day) |
 | 7 | The hall's covering, and the two windows under it | ¼ | Sonnet 5 |  | [The hall covering](SPECS.md#the-hall-covering) |
 
 ## A fourth body
