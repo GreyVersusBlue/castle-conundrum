@@ -2241,7 +2241,7 @@ started (#283, PR #15) and shipped as PR #16.** It is a **2+**: this is
 increment 1 and the row stays in the table. Six of the seven open rows want a
 machine this container is not — a GPU for ranks 2, 3 and 7, polyhaven.com and
 the KTX-Software release for 4 and 5, both of which answer 403 from here
-(#518) — so this was the row that could be finished. Decisions #533 to #537.
+(#518) — so this was the row that could be finished. Decisions #533 to #538.
 
 It was a writing job before it was a code job, as `BACKLOG.md` said: sixty line
 sets, 140 lines, seven closing panes and a thirteenth person, against about 250
@@ -2331,6 +2331,20 @@ strength, the coldest fog in the file, and the hemisphere held at 2.2 for the
 reason Phase 3 measured (a darker watch is a lower, colder sun and not an unlit
 castle).
 
+- **A hidden body is not something to press E at** (#538), and this one was a
+  bug the second day found rather than one it introduced.
+  `InteractionSystem.update` skips a target whose `active` is false, and
+  `castle-builder.js` has said `get active() { return obj.visible; }` for every
+  piece of evidence since Phase 7. NPCs never had one. On day one that hid: the
+  merchant is not in the castle until Terce and his group sits at the origin
+  with `visible` false, which no player walks up to. The morning after puts a
+  hidden body exactly where the player is certain to go, because the man who
+  hanged stays standing, invisible, at the Vespers station the accusation was
+  made at. Measured in the browser before the fix, with the merchant moved into
+  the Great Hall on purpose and the camera 2 m in front of him: `Press E to
+  talk to the Thomas Wykes`, identical with `visible` true and false.
+  `src/npc.js` gets the getter `castle-builder.js` already had.
+
 **What increment 1 leaves.** `SPECS.md`'s list, unchanged in order: a second
 mystery for day two (the inspector's audit, and the missing 128 sheets as
 evidence in the town, which needs **The town side**'s road); bells on day two
@@ -2341,7 +2355,7 @@ list: **nobody has seen a Lauds sky.** The five numbers in
 `lighting.watches.lauds` were written against the four already there and
 checked by nothing but the four (#53).
 
-**The breaks, from green.** Seven, and one of them found a bug in a check
+**The breaks, from green.** Eight, and one of them found a bug in a check
 rather than in the code.
 
 - `day2.absent.accused` set to `false` in the data, which is the switch that
@@ -2377,6 +2391,16 @@ rather than in the code.
   all falls back to day 1`, `and so does day 2 behind a refusal, which is an
   accusation with no verdict in it`, and `and on the repaired incoherent one it
   is back on day one at Prime — day 2 at lauds`.
+- `get active()` deleted from `src/npc.js` again: `and hidden, 2 m in front of
+  the camera, merchant offers nothing to press E at — the HUD said "Press E to
+  talk to the Thomas Wykes" over a body nobody can see`. **That beat carries its
+  own control, and the control is what made it worth writing.** A "no prompt" on
+  its own proves nothing, because the camera might be looking at a wall, so the
+  same body is made visible on the same spot with the same camera and the prompt
+  has to appear. The first run of the beat reported no prompt for a VISIBLE body
+  — the word-lock beat above it had left the riddle overlay open, and an open
+  overlay hides the prompt whatever is in front of the camera — so without the
+  control the line under it would have passed while asserting nothing at all.
 - **And the one that was wrong.** `migrate` reverted to `(s) => s` left
   `test/save.mjs` **green**, which is #147 arriving on schedule. The assertion
   read `a version-1 save comes through migrate as day one`, and it could not

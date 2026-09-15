@@ -414,7 +414,7 @@ a road, and "a different ending".
 
 ## A second day
 
-**Rank 6. Size 2+. Increment 1 shipped on 2026-09-15 (#533 to #537, PR #16).**
+**Rank 6. Size 2+. Increment 1 shipped on 2026-09-15 (#533 to #538, PR #16).**
 The morning after exists: one watch (`lauds`), thirteen stations, sixty line
 sets keyed by what the player said, seven closing panes, and a thirteenth cast
 entry whose conversation ends the game. What follows is what increment 1
@@ -447,8 +447,9 @@ actually built, then increment 2, which is the next one to take.
   `day` getters, the two-state epilogue button, the accusation panel filtered to
   day-one cast.
 - **`src/ui.js`** `showEpilogue` takes a button label. **`src/main.js`** asks the
-  engine for a station before asking the nav where it is.
-  **`data/scene-config.json`** grew a `lauds` sky.
+  engine for a station before asking the nav where it is. **`src/npc.js`** grew
+  `get active()` (#538), without which the hanged man's invisible body goes on
+  offering the HUD his name. **`data/scene-config.json`** grew a `lauds` sky.
 - **Suites**: `test/mystery.mjs` drives all seven endings into day two and
   carries eight day-two validator breaks; `test/save.mjs` has a fifth section on
   version 2; `test/quest.mjs` walks the full ending through the button, the
