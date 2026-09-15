@@ -1,0 +1,2141 @@
+{
+  "comment": "Castle Conundrum v2, Phase 5. Three levels: the ground floor (Phase 4), a first storey of slabs at `storey` metres, and the wall walk at 2 x `storey` along every curtain run and the cross-wall. Tile coordinates, 4 m per tile, +x east, +z south; a tile coordinate names that tile's CENTRE in world space. A wall run spans its `from` and `to` tiles whole, so world extent along the run is [from*4 - 2, to*4 + 2], and `thickness` metres across, centred on the perpendicular tile centre. The layout is WISHLIST.md's map, tile for tile.",
+  "spawn": {
+    "position": [
+      -40,
+      1.7,
+      0
+    ],
+    "lookAt": [
+      0,
+      1.7,
+      0
+    ],
+    "comment": "Tile (-10, 0), the west barbican, facing east through the west gate."
+  },
+  "tileSize": 4,
+  "storey": 4,
+  "slab": 0.2,
+  "storeyComment": "A level's floor is `level * storey` metres up: the ground at 0, the first storey at 4, the wall walk at 8, which is the curtain's own height. A room on level 1 or 2 with a `floor` gets a slab `slab` metres thick whose TOP is at that height, so a level-1 slab runs 3.8..4.0 and a tower's level-2 floor 7.8..8.0. src/castle-plan.js reads both numbers; nothing else may write a storey height down.",
+  "lighting": {
+    "sun": {
+      "color": "#fff2dd",
+      "intensity": 2.6,
+      "position": [
+        30,
+        45,
+        18
+      ]
+    },
+    "hemisphere": {
+      "skyColor": "#b8c8e0",
+      "groundColor": "#4a3b28",
+      "intensity": 2,
+      "comment": "Raised from 0.55 in Phase 3, and the reason is the stone, not taste. The sun sits at (30, 45, 18), so every wall face pointing -x or -z has n.l <= 0 and gets no direct light at all: the west face of the cross-wall, the north face of every run, the inside of the west curtain the player spawns looking at. That was survivable while the walls were the Kenney kit's 64 px pixel art, which is bright and flat. castle_wall_slates and defense_wall are photographic dark stone, and under ACES tone mapping a 0.55 hemisphere put the shadowed faces at a mean luma of 6 out of 255 — black, with the pixel-art archway beside them at full white. Measured off the live canvas: 0.55 -> 6, 1.1 -> 14, 2.0 -> 27, 3.5 -> 44. At 2.0 the shadowed slate reads as slate."
+    },
+    "fog": {
+      "color": "#a8b2c4",
+      "near": 30,
+      "far": 150,
+      "comment": "The castle is 80 m end to end now, against the 32 m courtyard this replaced, so the old far of 120 fogged the far curtain to nothing from the barbican. The ground stops at the curtain plus 2 m and fog is what is beyond it."
+    },
+    "watches": {
+      "comment": "The four bells, as four skies. `sun` is the light's position, which for a directional light is the direction it comes FROM with its target at the origin; +x is east, so Prime is low in the east and Vespers low in the west. `fog` is the fog AND the background, which are one colour in this scene. `hemisphere` is the sky/ground fill, and it does not go far below the 2.0 that Phase 3 measured the shadowed slate needs (see the hemisphere comment above): a darker Vespers is a warmer, lower sun and a colder fog, not an unlit castle. The `sun` block above is what the page opens on before any bell rings, and it is Terce's.",
+      "prime": {
+        "sun": [
+          58,
+          14,
+          10
+        ],
+        "color": "#ffd9a8",
+        "intensity": 2.0,
+        "fog": "#c6ccd6",
+        "hemisphere": 2.1
+      },
+      "terce": {
+        "sun": [
+          30,
+          45,
+          18
+        ],
+        "color": "#fff2dd",
+        "intensity": 2.6,
+        "fog": "#a8b2c4",
+        "hemisphere": 2.0
+      },
+      "sext": {
+        "sun": [
+          6,
+          62,
+          16
+        ],
+        "color": "#fffaf0",
+        "intensity": 2.9,
+        "fog": "#b4bccb",
+        "hemisphere": 2.2
+      },
+      "vespers": {
+        "sun": [
+          -56,
+          12,
+          8
+        ],
+        "color": "#ffab5e",
+        "intensity": 1.7,
+        "fog": "#7c7486",
+        "hemisphere": 1.9
+      }
+    }
+  },
+  "repeatMetres": 3,
+  "walk": {
+    "width": 2,
+    "thickness": 0.1,
+    "material": "wood_planks",
+    "repeatMetres": 2,
+    "comment": "The wall walk: `width` metres of decking laid along the INSIDE edge of every run that says `walk: true`, its top flush with the run's top (so 7.9..8.0 on an 8 m wall), and sunk into the stone rather than standing on it, which is why castle-builder.js draws it polygon-offset like a ground patch. The inside edge is the face opposite the merlons, which src/castle-plan.js reads off the run's position and never off a field. The rest of the run's top is not a floor: the merlons stand on its outer 0.8 m and carry colliders from this phase on, and the strip between is stone the grid has no surface for. Where a deck runs into a drum it is cut back to the drum's outer circle and the tower's own level-2 floor takes over inside."
+  },
+  "stairs": {
+    "model": "stairs-stone.glb",
+    "scale": [
+      3,
+      3.9,
+      3.9
+    ],
+    "comment": "Two flights per tower, both this piece, placed by src/castle-plan.js from the drum's `stairs` side. stairs-stone.glb is authored 0.5 x 1 x 1 and rises toward its own +z; at a uniform 4 it is 2 m wide and 4 m long, and two of those side by side are a 4 m square whose corners sit 2.83 m from a tower's centre, 0.03 m into a ring whose inner face is at 2.8 (#452). So the scale is per axis: 1.5 m wide, 3.9 m of rise over 3.9 m of run, and the last 0.1 m onto the slab is a step. The lower flight runs along z in the tower's east half, rising toward the outer wall; the upper flight runs along x in the outer half, rising east, and its well in the level-2 floor sits where the walk does not cross. Their overlap is the lower flight's low half under the upper flight's high half, 2.05 m of headroom at the worst point."
+  },
+  "materials": {
+    "castle_wall_slates": {
+      "diffuse": "assets/poly-haven/castle_wall_slates_1k.gltf/textures/castle_wall_slates_diff_1k.jpg",
+      "normal": "assets/poly-haven/castle_wall_slates_1k.gltf/textures/castle_wall_slates_nor_gl_1k.jpg",
+      "rough": "assets/poly-haven/castle_wall_slates_1k.gltf/textures/castle_wall_slates_rough_1k.jpg"
+    },
+    "defense_wall": {
+      "diffuse": "assets/poly-haven/defense_wall_1k.gltf/textures/defense_wall_diff_1k.jpg",
+      "normal": "assets/poly-haven/defense_wall_1k.gltf/textures/defense_wall_nor_gl_1k.jpg",
+      "rough": "assets/poly-haven/defense_wall_1k.gltf/textures/defense_wall_rough_1k.jpg"
+    },
+    "grassy_cobblestone": {
+      "diffuse": "assets/poly-haven/grassy_cobblestone_1k.gltf/textures/grassy_cobblestone_diff_1k.jpg",
+      "normal": "assets/poly-haven/grassy_cobblestone_1k.gltf/textures/grassy_cobblestone_nor_gl_1k.jpg",
+      "rough": "assets/poly-haven/grassy_cobblestone_1k.gltf/textures/grassy_cobblestone_rough_1k.jpg"
+    },
+    "stone_pavers": {
+      "diffuse": "assets/poly-haven/stone_pavers_1k.gltf/textures/stone_pavers_diff_1k.jpg",
+      "normal": "assets/poly-haven/stone_pavers_1k.gltf/textures/stone_pavers_nor_gl_1k.jpg",
+      "arm": "assets/poly-haven/stone_pavers_1k.gltf/textures/stone_pavers_arm_1k.jpg"
+    },
+    "wooden_gate": {
+      "diffuse": "assets/poly-haven/wooden_gate_1k.gltf/textures/wooden_gate_diff_1k.jpg",
+      "normal": "assets/poly-haven/wooden_gate_1k.gltf/textures/wooden_gate_nor_gl_1k.jpg",
+      "arm": "assets/poly-haven/wooden_gate_1k.gltf/textures/wooden_gate_arm_1k.jpg"
+    },
+    "rock_tile_floor": {
+      "diffuse": "assets/poly-haven/rock_tile_floor_1k.gltf/textures/rock_tile_floor_diff_1k.jpg",
+      "normal": "assets/poly-haven/rock_tile_floor_1k.gltf/textures/rock_tile_floor_nor_gl_1k.jpg",
+      "arm": "assets/poly-haven/rock_tile_floor_1k.gltf/textures/rock_tile_floor_arm_1k.jpg"
+    },
+    "floor_tiles_02": {
+      "diffuse": "assets/poly-haven/floor_tiles_02_1k.gltf/textures/floor_tiles_02_diff_1k.jpg",
+      "normal": "assets/poly-haven/floor_tiles_02_1k.gltf/textures/floor_tiles_02_nor_gl_1k.jpg",
+      "rough": "assets/poly-haven/floor_tiles_02_1k.gltf/textures/floor_tiles_02_rough_1k.jpg"
+    },
+    "old_planks_02": {
+      "diffuse": "assets/poly-haven/old_planks_02_1k.gltf/textures/old_planks_02_diff_1k.jpg",
+      "normal": "assets/poly-haven/old_planks_02_1k.gltf/textures/old_planks_02_nor_gl_1k.jpg",
+      "rough": "assets/poly-haven/old_planks_02_1k.gltf/textures/old_planks_02_rough_1k.jpg"
+    },
+    "wood_planks": {
+      "diffuse": "assets/poly-haven/wood_planks_1k.gltf/textures/wood_planks_diff_1k.jpg",
+      "normal": "assets/poly-haven/wood_planks_1k.gltf/textures/wood_planks_nor_gl_1k.jpg",
+      "arm": "assets/poly-haven/wood_planks_1k.gltf/textures/wood_planks_arm_1k.jpg"
+    },
+    "dirty_carpet": {
+      "diffuse": "assets/poly-haven/dirty_carpet_1k.gltf/textures/dirty_carpet_diff_1k.jpg",
+      "normal": "assets/poly-haven/dirty_carpet_1k.gltf/textures/dirty_carpet_nor_gl_1k.jpg",
+      "arm": "assets/poly-haven/dirty_carpet_1k.gltf/textures/dirty_carpet_arm_1k.jpg"
+    }
+  },
+  "materialsComment": "Every built surface names one of these. rock_tile_floor, wood_planks, dirty_carpet and the two that were always here (stone_pavers, wooden_gate) ship a three-channel `arm`; the five others ship a single-channel `rough`. src/assets.js reads whichever key is present and test/assets.mjs fails a material declaring both or neither. `repeatMetres` is the world-space texture repeat: one repeat per 3 m on the curtain, so a 4 m tile shows 1.33 repeats of the 1k map and reads as coursed stone. A wall run or a floor may override it with its own `repeatMetres`; the interior partitions do, at 1.5 m, because a 1 m thick room wall wants a smaller course than a 4 m curtain.",
+  "ground": {
+    "base": {
+      "material": "stone_pavers",
+      "margin": 2,
+      "fallbackColor": "#6e6154"
+    },
+    "patches": [
+      {
+        "id": "outer-ward",
+        "material": "grassy_cobblestone",
+        "tiles": {
+          "min": [
+            -8,
+            -3
+          ],
+          "max": [
+            -1,
+            3
+          ]
+        },
+        "fallbackColor": "#5c6340"
+      },
+      {
+        "id": "chapel-vestibule",
+        "material": "rock_tile_floor",
+        "tiles": {
+          "min": [
+            5,
+            3
+          ],
+          "max": [
+            5,
+            3
+          ]
+        },
+        "fallbackColor": "#7a7268",
+        "comment": "The one patch that is not a room: the paved bay in the inner ward outside the Chapel Tower's door, which is where WISHLIST.md's stone table sends the third share of rock_tile_floor."
+      }
+    ],
+    "comment": "Two outdoor surfaces and no third. The base is the curtain's own footprint plus `margin` metres, worked out from the placed pieces rather than typed in, so it cannot drift from the castle; the 140 m plane it replaces ran 50 m past the walls in every direction. Patches lie on the base at the same y, and walkability's cell dedupe (src/castle-plan.js) means a patch adds no second floor height."
+  },
+  "kenneyBase": "assets/kenney_retro-fantasy-kit/Models/glb-format/",
+  "polyhavenBase": "assets/poly-haven/",
+  "walls": [
+    {
+      "id": "north-curtain-west",
+      "from": [
+        -8,
+        -4
+      ],
+      "to": [
+        -6,
+        -4
+      ],
+      "material": "castle_wall_slates",
+      "height": 8,
+      "thickness": 4,
+      "level": 0,
+      "curtain": true,
+      "comment": "Conwy's north run, west of the Kitchen Tower. The `##` row at z -4 in WISHLIST.md's map.",
+      "doorways": [
+        {
+          "at": -8.35,
+          "width": 1.2,
+          "height": 2.5
+        },
+        {
+          "at": -8.35,
+          "width": 1.2,
+          "base": 4,
+          "height": 2.5
+        }
+      ],
+      "doorwaysComment": "Tower doorways: nw-tower, at level 0 and again at level 1 (`base` 4), each 1.2 m wide at the run's own end, entirely inside that drum's footprint, so the drum's ring is what seals it from the outside. The level-1 one is how the Clerk's chamber over his office is entered: from the North-west Tower's first floor, through the ring's level-1 door, through this cut in the run's end, and out of its south face onto the chamber's slab.",
+      "walk": true
+    },
+    {
+      "id": "north-curtain-mid",
+      "from": [
+        -4,
+        -4
+      ],
+      "to": [
+        -1,
+        -4
+      ],
+      "material": "castle_wall_slates",
+      "height": 8,
+      "thickness": 4,
+      "level": 0,
+      "curtain": true,
+      "walk": true
+    },
+    {
+      "id": "north-curtain-east",
+      "from": [
+        1,
+        -4
+      ],
+      "to": [
+        5,
+        -4
+      ],
+      "material": "castle_wall_slates",
+      "height": 8,
+      "thickness": 4,
+      "level": 0,
+      "curtain": true,
+      "doorways": [
+        {
+          "at": 0.65,
+          "width": 1.2,
+          "height": 2.5
+        },
+        {
+          "at": 5.35,
+          "width": 1.2,
+          "height": 2.5
+        },
+        {
+          "at": 5.35,
+          "width": 1.2,
+          "base": 4,
+          "height": 2.5
+        }
+      ],
+      "doorwaysComment": "Tower doorways: stockhouse-tower, kings-tower, and kings-tower again at level 1 (`base` 4). Each one is 1.2 m wide at the run's own end, entirely inside that drum's footprint, so the drum's ring is what seals it from the outside. The level-1 one is the royal apartments' door: from the King's Tower's first floor, through its ring, through this cut, onto the carpet.",
+      "walk": true
+    },
+    {
+      "id": "south-curtain-west",
+      "from": [
+        -8,
+        4
+      ],
+      "to": [
+        -6,
+        4
+      ],
+      "material": "castle_wall_slates",
+      "height": 8,
+      "thickness": 4,
+      "level": 0,
+      "curtain": true,
+      "doorways": [
+        {
+          "at": -8.35,
+          "width": 1.2,
+          "height": 2.5
+        }
+      ],
+      "doorwaysComment": "Tower doorways: sw-tower. Each one is 1.2 m wide at the run's own end, entirely inside that drum's footprint, so the drum's ring is what seals it from the outside.",
+      "walk": true
+    },
+    {
+      "id": "south-curtain-mid",
+      "from": [
+        -4,
+        4
+      ],
+      "to": [
+        -1,
+        4
+      ],
+      "material": "castle_wall_slates",
+      "height": 8,
+      "thickness": 4,
+      "level": 0,
+      "curtain": true,
+      "walk": true
+    },
+    {
+      "id": "south-curtain-east",
+      "from": [
+        1,
+        4
+      ],
+      "to": [
+        5,
+        4
+      ],
+      "material": "castle_wall_slates",
+      "height": 8,
+      "thickness": 4,
+      "level": 0,
+      "curtain": true,
+      "doorways": [
+        {
+          "at": 0.65,
+          "width": 1.2,
+          "height": 2.5
+        },
+        {
+          "at": 5.35,
+          "width": 1.2,
+          "height": 2.5
+        }
+      ],
+      "doorwaysComment": "Tower doorways: bakehouse-tower, chapel-tower. Each one is 1.2 m wide at the run's own end, entirely inside that drum's footprint, so the drum's ring is what seals it from the outside.",
+      "walk": true
+    },
+    {
+      "id": "west-curtain-north",
+      "from": [
+        -9,
+        -3
+      ],
+      "to": [
+        -9,
+        -1
+      ],
+      "material": "castle_wall_slates",
+      "height": 8,
+      "thickness": 4,
+      "level": 0,
+      "curtain": true,
+      "comment": "the west run, north of the west gate's tile",
+      "walk": true
+    },
+    {
+      "id": "west-curtain-south",
+      "from": [
+        -9,
+        1
+      ],
+      "to": [
+        -9,
+        3
+      ],
+      "material": "castle_wall_slates",
+      "height": 8,
+      "thickness": 4,
+      "level": 0,
+      "curtain": true,
+      "walk": true
+    },
+    {
+      "id": "east-curtain-north",
+      "from": [
+        6,
+        -3
+      ],
+      "to": [
+        6,
+        -1
+      ],
+      "material": "castle_wall_slates",
+      "height": 8,
+      "thickness": 4,
+      "level": 0,
+      "curtain": true,
+      "walk": true
+    },
+    {
+      "id": "east-curtain-south",
+      "from": [
+        6,
+        1
+      ],
+      "to": [
+        6,
+        3
+      ],
+      "material": "castle_wall_slates",
+      "height": 8,
+      "thickness": 4,
+      "level": 0,
+      "curtain": true,
+      "walk": true
+    },
+    {
+      "id": "cross-wall-north",
+      "from": [
+        0,
+        -3
+      ],
+      "to": [
+        0,
+        -1
+      ],
+      "material": "defense_wall",
+      "height": 8,
+      "thickness": 4,
+      "level": 0,
+      "comment": "The cross-wall, `||` in the map. Not curtain: it divides the two wards, it does not enclose the castle. The porter's gate at tile (0,0) is the only gap in it, and test/layout.mjs asserts that with that gate shut the inner ward cannot be reached at all.",
+      "walk": true
+    },
+    {
+      "id": "cross-wall-south",
+      "from": [
+        0,
+        1
+      ],
+      "to": [
+        0,
+        3
+      ],
+      "material": "defense_wall",
+      "height": 8,
+      "thickness": 4,
+      "level": 0,
+      "walk": true
+    },
+    {
+      "id": "barbican-west",
+      "from": [
+        -11,
+        -2
+      ],
+      "to": [
+        -11,
+        2
+      ],
+      "material": "castle_wall_slates",
+      "height": 8,
+      "thickness": 4,
+      "level": 0,
+      "curtain": true,
+      "axis": "z",
+      "comment": "The west barbican BB, the walled outwork the clerk arrived through. Its west face carries no archway at all: nothing outside the curtain is textured, so there is no way out and nothing to open onto (WISHLIST.md's answered question 5)."
+    },
+    {
+      "id": "barbican-north",
+      "from": [
+        -11,
+        -2
+      ],
+      "to": [
+        -9,
+        -2
+      ],
+      "material": "castle_wall_slates",
+      "height": 8,
+      "thickness": 4,
+      "level": 0,
+      "curtain": true,
+      "axis": "x"
+    },
+    {
+      "id": "barbican-south",
+      "from": [
+        -11,
+        2
+      ],
+      "to": [
+        -9,
+        2
+      ],
+      "material": "castle_wall_slates",
+      "height": 8,
+      "thickness": 4,
+      "level": 0,
+      "curtain": true,
+      "axis": "x"
+    },
+    {
+      "id": "garden-east",
+      "from": [
+        8,
+        -4
+      ],
+      "to": [
+        8,
+        4
+      ],
+      "material": "castle_wall_slates",
+      "height": 8,
+      "thickness": 4,
+      "level": 0,
+      "curtain": true,
+      "axis": "z",
+      "comment": "The east barbican GD, a walled garden. The east gate opens onto it and it goes no further."
+    },
+    {
+      "id": "garden-north",
+      "from": [
+        7,
+        -4
+      ],
+      "to": [
+        8,
+        -4
+      ],
+      "material": "castle_wall_slates",
+      "height": 8,
+      "thickness": 4,
+      "level": 0,
+      "curtain": true,
+      "axis": "x",
+      "comment": "The east barbican garden GD. These two start at tile 7 and not at tile 6: tile 6 is the King's and Chapel Towers, and a run from 6 laid 12 m of curtain through both tower interiors. The towers are the corner here, the same way the North-west Tower is the corner where the west and north runs stop."
+    },
+    {
+      "id": "garden-south",
+      "from": [
+        7,
+        4
+      ],
+      "to": [
+        8,
+        4
+      ],
+      "material": "castle_wall_slates",
+      "height": 8,
+      "thickness": 4,
+      "level": 0,
+      "curtain": true,
+      "axis": "x"
+    },
+    {
+      "id": "west-gate-over",
+      "from": [
+        -9,
+        0
+      ],
+      "to": [
+        -9,
+        0
+      ],
+      "axis": "z",
+      "material": "castle_wall_slates",
+      "height": 4,
+      "thickness": 4,
+      "level": 1,
+      "base": 4,
+      "curtain": true,
+      "walk": true,
+      "comment": "The wall over the west gate. wall-fortified-gate.glb is a 4 m cube in an 8 m curtain, and Phase 3 left the 4 m above it open air; this is the missing top half, so the west walk runs over the gate rather than stopping at each side of a notch."
+    },
+    {
+      "id": "east-gate-over",
+      "from": [
+        6,
+        0
+      ],
+      "to": [
+        6,
+        0
+      ],
+      "axis": "z",
+      "material": "castle_wall_slates",
+      "height": 4,
+      "thickness": 4,
+      "level": 1,
+      "base": 4,
+      "curtain": true,
+      "walk": true,
+      "comment": "The wall over the east gate, as over the west one."
+    },
+    {
+      "id": "porter-gate-over",
+      "from": [
+        0,
+        0
+      ],
+      "to": [
+        0,
+        0
+      ],
+      "axis": "z",
+      "material": "defense_wall",
+      "height": 4,
+      "thickness": 4,
+      "level": 1,
+      "base": 4,
+      "curtain": false,
+      "walk": true,
+      "comment": "The cross-wall over the porter's gate. This is the piece the mystery turns on: the walk runs along it, and so the wards connect above the porter's head."
+    },
+    {
+      "id": "clerk-office-east",
+      "from": [
+        -6.5,
+        -3
+      ],
+      "to": [
+        -6.5,
+        -2
+      ],
+      "height": 8,
+      "thickness": 1,
+      "material": "castle_wall_slates",
+      "repeatMetres": 1.5,
+      "interior": true,
+      "comment": "CL/KI, on the tile edge at world x -26. Interior partitions sit on tile EDGES, which is why their `from`/`to` carry a half: runBox centres `thickness` on from[perp] * tileSize, so a wall between tile -7 and tile -6 is written at -6.5.",
+      "heightComment": "Raised from 4 to 8 in Phase 5 so the room above has walls rather than a railing: a bedchamber or a dormitory open to the ward along one side is a gallery, not a room, and the drop it would have needed a rail against does not exist (#453)."
+    },
+    {
+      "id": "clerk-office-south",
+      "from": [
+        -8,
+        -1.5
+      ],
+      "to": [
+        -7,
+        -1.5
+      ],
+      "height": 8,
+      "thickness": 1,
+      "material": "castle_wall_slates",
+      "repeatMetres": 1.5,
+      "interior": true,
+      "doorways": [
+        {
+          "at": -7.5,
+          "width": 2,
+          "height": 2.5
+        }
+      ],
+      "comment": "The Clerk of Works' office opens south into the outer ward, at world (-30, -6).",
+      "heightComment": "Raised from 4 to 8 in Phase 5 so the room above has walls rather than a railing: a bedchamber or a dormitory open to the ward along one side is a gallery, not a room, and the drop it would have needed a rail against does not exist (#453)."
+    },
+    {
+      "id": "kitchen-east",
+      "from": [
+        -3.5,
+        -3
+      ],
+      "to": [
+        -3.5,
+        -2
+      ],
+      "height": 8,
+      "thickness": 1,
+      "material": "castle_wall_slates",
+      "repeatMetres": 1.5,
+      "interior": true,
+      "heightComment": "Raised from 4 to 8 in Phase 5 so the room above has walls rather than a railing: a bedchamber or a dormitory open to the ward along one side is a gallery, not a room, and the drop it would have needed a rail against does not exist (#453)."
+    },
+    {
+      "id": "kitchen-south",
+      "from": [
+        -6,
+        -1.5
+      ],
+      "to": [
+        -4,
+        -1.5
+      ],
+      "height": 8,
+      "thickness": 1,
+      "material": "castle_wall_slates",
+      "repeatMetres": 1.5,
+      "interior": true,
+      "doorways": [
+        {
+          "at": -5,
+          "width": 2,
+          "height": 2.5
+        }
+      ],
+      "heightComment": "Raised from 4 to 8 in Phase 5 so the room above has walls rather than a railing: a bedchamber or a dormitory open to the ward along one side is a gallery, not a room, and the drop it would have needed a rail against does not exist (#453)."
+    },
+    {
+      "id": "great-hall-north",
+      "from": [
+        -8,
+        1.5
+      ],
+      "to": [
+        -2,
+        1.5
+      ],
+      "height": 8,
+      "thickness": 1,
+      "material": "castle_wall_slates",
+      "repeatMetres": 1.5,
+      "interior": true,
+      "doorways": [
+        {
+          "at": -5,
+          "width": 2,
+          "height": 2.5
+        },
+        {
+          "at": -3,
+          "width": 2,
+          "height": 2.5
+        }
+      ],
+      "comment": "Full height, no floor above it (Stirling's hall, not a tower room), and the only room in the castle with two doors off the ward."
+    },
+    {
+      "id": "great-hall-east",
+      "from": [
+        -1.5,
+        2
+      ],
+      "to": [
+        -1.5,
+        3
+      ],
+      "height": 8,
+      "thickness": 1,
+      "material": "castle_wall_slates",
+      "repeatMetres": 1.5,
+      "interior": true
+    },
+    {
+      "id": "kings-hall-south",
+      "from": [
+        1,
+        -1.5
+      ],
+      "to": [
+        5,
+        -1.5
+      ],
+      "height": 8,
+      "thickness": 1,
+      "material": "castle_wall_slates",
+      "repeatMetres": 1.5,
+      "interior": true,
+      "doorways": [
+        {
+          "at": 3,
+          "width": 2,
+          "height": 2.5
+        },
+        {
+          "at": 4,
+          "width": 1.2,
+          "base": 5,
+          "height": 1.4
+        }
+      ],
+      "doorwaysComment": "The hall door at level 0, and Lady Alys's window at level 1: a doorway whose `base` is a metre above her floor is a window, and the sill below it is what keeps a body from walking through. She looks south over the inner ward, at the Chapel Tower stair and the south walk, which is what `lady-window` says she saw.",
+      "heightComment": "Raised from 4 to 8 in Phase 5 so the room above has walls rather than a railing: a bedchamber or a dormitory open to the ward along one side is a gallery, not a room, and the drop it would have needed a rail against does not exist (#453)."
+    },
+    {
+      "id": "steward-chamber-north",
+      "from": [
+        1,
+        1.5
+      ],
+      "to": [
+        2,
+        1.5
+      ],
+      "height": 4,
+      "thickness": 1,
+      "material": "castle_wall_slates",
+      "repeatMetres": 1.5,
+      "interior": true,
+      "doorways": [
+        {
+          "at": 1.5,
+          "width": 2,
+          "height": 2.5
+        }
+      ]
+    },
+    {
+      "id": "steward-chamber-east",
+      "from": [
+        2.5,
+        2
+      ],
+      "to": [
+        2.5,
+        3
+      ],
+      "height": 4,
+      "thickness": 1,
+      "material": "castle_wall_slates",
+      "repeatMetres": 1.5,
+      "interior": true
+    },
+    {
+      "id": "masons-lodge-roof",
+      "from": [
+        -2,
+        -2.5
+      ],
+      "to": [
+        -1,
+        -2.5
+      ],
+      "height": 0.3,
+      "thickness": 8,
+      "material": "old_planks_02",
+      "repeatMetres": 3,
+      "interior": true,
+      "base": 4,
+      "comment": "The mason's lodge is a roof on four poles and no walls, so its `run` is the roof: `base` lifts a run off the ground, which is also how Phase 5's floor slabs will be written. It carries a collider and cannot be reached under it at head height, 4 m up."
+    }
+  ],
+  "drums": [
+    {
+      "id": "nw-tower",
+      "tile": [
+        -9,
+        -4
+      ],
+      "radius": 4,
+      "height": 12,
+      "material": "defense_wall",
+      "level": 0,
+      "curtain": true,
+      "segments": 24,
+      "turret": null,
+      "comment": "North-west Tower. Guardroom. Solid at ground level in this phase; Phase 4 hollows it, floors it and cuts its door through the run beside it (#433).",
+      "interior": {
+        "radius": 2.8,
+        "comment": "Hollow, with a doorway in the ring. `arc` is 60 degrees at the six towers that stand at a corner or at a cross-wall junction and 30 at the two mid-run ones: at a corner the passage in from the ward crosses the ring diagonally and a 30-degree arc leaves a sector of stone 0.08 m inside the only cell the grid can use. Both numbers are multiples of the drum's 15-degree vertex spacing, which src/castle-plan.js's doorArc insists on.",
+        "doors": [
+          {
+            "theta": 60,
+            "arc": 60,
+            "height": 2.5
+          },
+          {
+            "base": 4,
+            "theta": 60,
+            "arc": 60,
+            "height": 2.5
+          },
+          {
+            "base": 8,
+            "theta": 60,
+            "arc": 60,
+            "height": 2.5,
+            "comment": "east, the north walk"
+          },
+          {
+            "base": 8,
+            "theta": 22.5,
+            "arc": 45,
+            "height": 2.5,
+            "comment": "south, the west walk: the west curtain's decking lies on its inner face at x -34, which is this tower's EAST half, so the door is just east of due south (#457)"
+          }
+        ]
+      },
+      "stairs": "north"
+    },
+    {
+      "id": "kitchen-tower",
+      "tile": [
+        -5,
+        -4
+      ],
+      "radius": 4,
+      "height": 12,
+      "material": "defense_wall",
+      "level": 0,
+      "curtain": true,
+      "segments": 24,
+      "turret": null,
+      "comment": "Kitchen Tower. Larder, and the outer ward's stair to the walk in Phase 5. Solid at ground level in this phase; Phase 4 hollows it, floors it and cuts its door through the run beside it (#433).",
+      "interior": {
+        "radius": 2.8,
+        "doors": [
+          {
+            "theta": 0,
+            "arc": 30,
+            "height": 2.5
+          },
+          {
+            "base": 4,
+            "theta": 0,
+            "arc": 30,
+            "height": 2.5
+          },
+          {
+            "base": 8,
+            "theta": 60,
+            "arc": 60,
+            "height": 2.5,
+            "comment": "east, the north walk"
+          },
+          {
+            "base": 8,
+            "theta": 300,
+            "arc": 60,
+            "height": 2.5,
+            "comment": "west, the north walk"
+          }
+        ]
+      },
+      "stairs": "north"
+    },
+    {
+      "id": "stockhouse-tower",
+      "tile": [
+        0,
+        -4
+      ],
+      "radius": 4,
+      "height": 12,
+      "material": "defense_wall",
+      "level": 0,
+      "curtain": true,
+      "segments": 24,
+      "turret": {
+        "radius": 2.5,
+        "height": 2
+      },
+      "comment": "Stockhouse Tower. Porter's lodge. Solid at ground level in this phase; Phase 4 hollows it, floors it and cuts its door through the run beside it (#433).",
+      "interior": {
+        "radius": 2.8,
+        "doors": [
+          {
+            "theta": 60,
+            "arc": 60,
+            "height": 2.5
+          },
+          {
+            "base": 8,
+            "theta": 300,
+            "arc": 60,
+            "height": 2.5,
+            "bar": {
+              "closed": false,
+              "thickness": 0.16,
+              "material": "wooden_gate"
+            },
+            "evidence": "walk-door",
+            "comment": "west, the outer ward's north walk: THE WALK DOOR"
+          },
+          {
+            "base": 8,
+            "theta": 60,
+            "arc": 60,
+            "height": 2.5,
+            "comment": "east, the inner ward's north walk"
+          },
+          {
+            "base": 8,
+            "theta": 352.5,
+            "arc": 45,
+            "height": 2.5,
+            "comment": "south, the cross-wall walk"
+          }
+        ]
+      },
+      "stairs": "north"
+    },
+    {
+      "id": "kings-tower",
+      "tile": [
+        6,
+        -4
+      ],
+      "radius": 4,
+      "height": 12,
+      "material": "defense_wall",
+      "level": 0,
+      "curtain": true,
+      "segments": 24,
+      "turret": {
+        "radius": 2.5,
+        "height": 2
+      },
+      "comment": "King's Tower. Muniment room, and Phase 4's word-lock. Solid at ground level in this phase; Phase 4 hollows it, floors it and cuts its door through the run beside it (#433).",
+      "interior": {
+        "radius": 2.8,
+        "doors": [
+          {
+            "theta": 300,
+            "arc": 60,
+            "height": 3.2,
+            "leaf": {
+              "thickness": 0.16,
+              "material": "wooden_gate",
+              "openDegrees": 90,
+              "closed": true,
+              "quest": "gate",
+              "comment": "The muniment room's word-lock. `quest: gate` is what castle-builder's openGate() opens, and from Phase 4 that action means this leaf and not the east gate. riddle.json is the word.",
+              "evidence": "lock",
+              "lock": "Press E to read the word-lock"
+            }
+          },
+          {
+            "base": 4,
+            "theta": 300,
+            "arc": 60,
+            "height": 2.5
+          },
+          {
+            "base": 8,
+            "theta": 300,
+            "arc": 60,
+            "height": 2.5,
+            "comment": "west, the north walk"
+          },
+          {
+            "base": 8,
+            "theta": 352.5,
+            "arc": 45,
+            "height": 2.5,
+            "comment": "south, the east walk"
+          }
+        ]
+      },
+      "stairs": "north",
+      "lowerFlight": false,
+      "lowerFlightComment": "No flight from the ground room: it is the muniment room, behind the word-lock, and a stair from it to the walk is a way round the lock. The first time both flights went into every tower, test/layout.mjs read the room reachable from the spawn, down from the walk (#455). The upper flight stands on the first floor and the first floor is reached from the walk."
+    },
+    {
+      "id": "sw-tower",
+      "tile": [
+        -9,
+        4
+      ],
+      "radius": 4,
+      "height": 12,
+      "material": "defense_wall",
+      "level": 0,
+      "curtain": true,
+      "segments": 24,
+      "turret": null,
+      "comment": "South-west Tower. Well chamber and laundry. Solid at ground level in this phase; Phase 4 hollows it, floors it and cuts its door through the run beside it (#433).",
+      "interior": {
+        "radius": 2.8,
+        "doors": [
+          {
+            "theta": 120,
+            "arc": 60,
+            "height": 2.5
+          },
+          {
+            "base": 8,
+            "theta": 120,
+            "arc": 60,
+            "height": 2.5,
+            "comment": "east, the south walk"
+          },
+          {
+            "base": 8,
+            "theta": 157.5,
+            "arc": 45,
+            "height": 2.5,
+            "comment": "north, the west walk: on the tower's east half, as at the North-west Tower (#457)"
+          }
+        ]
+      },
+      "stairs": "south"
+    },
+    {
+      "id": "prison-tower",
+      "tile": [
+        -5,
+        4
+      ],
+      "radius": 4,
+      "height": 12,
+      "material": "defense_wall",
+      "level": 0,
+      "curtain": true,
+      "segments": 24,
+      "turret": null,
+      "comment": "Prison Tower. The cell. Solid at ground level in this phase; Phase 4 hollows it, floors it and cuts its door through the run beside it (#433).",
+      "interior": {
+        "radius": 2.8,
+        "doors": [
+          {
+            "theta": 180,
+            "arc": 30,
+            "height": 2.5,
+            "bars": {
+              "count": 6,
+              "thickness": 0.12,
+              "material": "iron",
+              "comment": "The bars ARE the door and they never open. The cell is the one ground room the player cannot enter; what the player can reach is the bars."
+            }
+          },
+          {
+            "base": 8,
+            "theta": 120,
+            "arc": 60,
+            "height": 2.5,
+            "comment": "east, the south walk"
+          },
+          {
+            "base": 8,
+            "theta": 240,
+            "arc": 60,
+            "height": 2.5,
+            "comment": "west, the south walk"
+          }
+        ]
+      },
+      "stairs": "south",
+      "lowerFlight": false,
+      "lowerFlightComment": "No flight from the ground room: it is the cell, barred, and a stair from it to the walk is a way round the bars. The first time both flights went into every tower, test/layout.mjs read the room reachable from the spawn, down from the walk (#455). The upper flight stands on the first floor and the first floor is reached from the walk."
+    },
+    {
+      "id": "bakehouse-tower",
+      "tile": [
+        0,
+        4
+      ],
+      "radius": 4,
+      "height": 12,
+      "material": "defense_wall",
+      "level": 0,
+      "curtain": true,
+      "segments": 24,
+      "turret": {
+        "radius": 2.5,
+        "height": 2
+      },
+      "comment": "Bakehouse Tower. Solid at ground level in this phase; Phase 4 hollows it, floors it and cuts its door through the run beside it (#433).",
+      "interior": {
+        "radius": 2.8,
+        "doors": [
+          {
+            "theta": 120,
+            "arc": 60,
+            "height": 2.5
+          },
+          {
+            "base": 8,
+            "theta": 210,
+            "arc": 60,
+            "height": 2.5,
+            "comment": "north, the cross-wall walk"
+          },
+          {
+            "base": 8,
+            "theta": 120,
+            "arc": 60,
+            "height": 2.5,
+            "comment": "east, the inner ward's south walk"
+          }
+        ]
+      },
+      "stairs": "south"
+    },
+    {
+      "id": "chapel-tower",
+      "tile": [
+        6,
+        4
+      ],
+      "radius": 4,
+      "height": 12,
+      "material": "defense_wall",
+      "level": 0,
+      "curtain": true,
+      "segments": 24,
+      "turret": {
+        "radius": 2.5,
+        "height": 2
+      },
+      "comment": "Chapel Tower, and the stair Hywel died at the foot of. Solid at ground level in this phase; Phase 4 hollows it, floors it and cuts its door through the run beside it (#433).",
+      "interior": {
+        "radius": 2.8,
+        "doors": [
+          {
+            "theta": 240,
+            "arc": 60,
+            "height": 2.5
+          },
+          {
+            "base": 8,
+            "theta": 240,
+            "arc": 60,
+            "height": 2.5,
+            "comment": "west, the south walk"
+          },
+          {
+            "base": 8,
+            "theta": 210,
+            "arc": 60,
+            "height": 2.5,
+            "comment": "north, the east walk"
+          }
+        ]
+      },
+      "stairs": "south"
+    }
+  ],
+  "battlements": {
+    "model": "battlement.glb",
+    "scale": 4,
+    "spacing": 4,
+    "perDrum": 12,
+    "comment": "battlement.glb is 1.0 x 0.4 x 0.3 as authored, so scale 4 is a 4 m merlon run, one per tile along every wall and `perDrum` around every drum. Decoration: they carry no collider and Phase 5 puts the wall walk under them."
+  },
+  "gates": [
+    {
+      "id": "west-gate",
+      "tile": [
+        -9,
+        0
+      ],
+      "rotationY": 90,
+      "archModel": "wall-fortified-gate.glb",
+      "material": "wooden_gate",
+      "leaf": {
+        "width": 1.9,
+        "springline": 2,
+        "archRadius": 0.95,
+        "thickness": 0.16
+      },
+      "openDegrees": 90,
+      "closed": false,
+      "quest": null,
+      "comment": "Stands open, and never animates. The clerk was admitted through it at first light and the porter has not swung it to; the spawn is in the barbican behind it, so the walk east into the outer ward has to be clear. It carries no quest id: the thing that never opens again is the way OUT of the castle, and the barbican's west face has no archway in it at all."
+    },
+    {
+      "id": "east-gate",
+      "tile": [
+        6,
+        0
+      ],
+      "rotationY": 90,
+      "archModel": "wall-fortified-gate.glb",
+      "material": "wooden_gate",
+      "leaf": {
+        "width": 1.9,
+        "springline": 2,
+        "archRadius": 0.95,
+        "thickness": 0.16
+      },
+      "openDegrees": 90,
+      "closed": true,
+      "quest": null,
+      "comment": "Shut, and from Phase 4 it never opens: the riddle is the muniment room's word-lock now and `openGate` means that leaf. Both barbican gates are gates that stay shut, which is WISHLIST.md's answered question 5."
+    },
+    {
+      "id": "porter-gate",
+      "tile": [
+        0,
+        0
+      ],
+      "rotationY": 90,
+      "archModel": "wall-fortified-gate.glb",
+      "material": "wooden_gate",
+      "leaf": {
+        "width": 1.9,
+        "springline": 2,
+        "archRadius": 0.95,
+        "thickness": 0.16
+      },
+      "openDegrees": 90,
+      "closed": false,
+      "quest": "porter",
+      "comment": "The one crossing between the wards at ground level, and the one the porter logs. Open all day, which is why the plan places it open; `closed: ['porter-gate']` is the variant test/layout.mjs floods to prove the cross-wall really divides the castle."
+    }
+  ],
+  "rooms": [
+    {
+      "id": "clerk-office",
+      "level": 0,
+      "ward": "outer",
+      "tiles": {
+        "min": [
+          -8,
+          -3
+        ],
+        "max": [
+          -7,
+          -2
+        ]
+      },
+      "floor": "old_planks_02",
+      "comment": "The fourteen ground rooms of WISHLIST.md's table, with mystery.json's ids: these are the same fourteen rooms the mystery puts people and evidence in, and test/layout.mjs holds the two lists to each other. A room is either `tiles` (a rectangle of whole tiles, walled by the runs above) or `drum` (a tower interior, whose bounds come from that drum's `interior.radius` rather than being typed again). `floor` names a material patch laid on the ground inside it; a room with no `floor` keeps whatever ground it stands on, which is pavers in the towers and grassy cobbles in the mason's lodge."
+    },
+    {
+      "id": "kitchen",
+      "level": 0,
+      "ward": "outer",
+      "tiles": {
+        "min": [
+          -6,
+          -3
+        ],
+        "max": [
+          -4,
+          -2
+        ]
+      },
+      "floor": "old_planks_02"
+    },
+    {
+      "id": "lodge",
+      "level": 0,
+      "ward": "outer",
+      "tiles": {
+        "min": [
+          -2,
+          -3
+        ],
+        "max": [
+          -1,
+          -2
+        ]
+      },
+      "comment": "ML. An open-sided shed: four poles and the `masons-lodge-roof` run, no walls, so it is reachable because nothing encloses it."
+    },
+    {
+      "id": "great-hall",
+      "level": 0,
+      "ward": "outer",
+      "tiles": {
+        "min": [
+          -8,
+          2
+        ],
+        "max": [
+          -2,
+          3
+        ]
+      },
+      "floor": "rock_tile_floor",
+      "comment": "GH. Full height, no floor above it in Phase 5. The laundry and the cell open off it: the South-west and Prison Towers stand on the south curtain, whose inner face is this room's south wall, so their doors give onto the hall and not onto a ward."
+    },
+    {
+      "id": "guardroom",
+      "level": 0,
+      "ward": "outer",
+      "drum": "nw-tower"
+    },
+    {
+      "id": "larder",
+      "level": 0,
+      "ward": "outer",
+      "drum": "kitchen-tower"
+    },
+    {
+      "id": "laundry",
+      "level": 0,
+      "ward": "outer",
+      "drum": "sw-tower"
+    },
+    {
+      "id": "cell",
+      "level": 0,
+      "ward": "outer",
+      "drum": "prison-tower",
+      "comment": "PT. The one room the player cannot enter: `bars` on its doorway never open, and test/layout.mjs asserts both halves of that — the bars hold, and the player can stand at them."
+    },
+    {
+      "id": "kings-hall",
+      "level": 0,
+      "ward": "inner",
+      "tiles": {
+        "min": [
+          1,
+          -3
+        ],
+        "max": [
+          5,
+          -2
+        ]
+      },
+      "floor": "rock_tile_floor"
+    },
+    {
+      "id": "steward-chamber",
+      "level": 0,
+      "ward": "inner",
+      "tiles": {
+        "min": [
+          1,
+          2
+        ],
+        "max": [
+          2,
+          3
+        ]
+      },
+      "floor": "old_planks_02",
+      "comment": "SC. The bakehouse opens into its south-west corner: the Bakehouse Tower stands where the cross-wall meets the south curtain, and the only quarter of its ring that faces open floor is the one this room occupies."
+    },
+    {
+      "id": "porter-lodge",
+      "level": 0,
+      "ward": "inner",
+      "drum": "stockhouse-tower",
+      "floor": "old_planks_02",
+      "comment": "ST. Same geometry as the bakehouse at the other end of the cross-wall, so the lodge is entered from the King's Hall's north-west corner. WISHLIST.md wrote the door as 'south, off the porter's gate passage'; south of this tower is twelve metres of cross-wall."
+    },
+    {
+      "id": "bakehouse",
+      "level": 0,
+      "ward": "inner",
+      "drum": "bakehouse-tower"
+    },
+    {
+      "id": "muniment",
+      "level": 0,
+      "ward": "inner",
+      "drum": "kings-tower",
+      "floor": "old_planks_02",
+      "comment": "KG. Behind the word-lock. riddle.json is the word and mystery.json's `locks` names this room."
+    },
+    {
+      "id": "chapel",
+      "level": 0,
+      "ward": "inner",
+      "drum": "chapel-tower",
+      "floor": "floor_tiles_02"
+    },
+    {
+      "id": "clerk-chamber",
+      "level": 1,
+      "ward": "outer",
+      "tiles": {
+        "min": [
+          -8,
+          -3
+        ],
+        "max": [
+          -7,
+          -2
+        ]
+      },
+      "floor": "wood_planks",
+      "comment": "Over the Clerk of Works' office, entered from the North-west Tower's first floor through the level-1 doorway in north-curtain-west's end."
+    },
+    {
+      "id": "dormitory",
+      "level": 1,
+      "ward": "outer",
+      "tiles": {
+        "min": [
+          -6,
+          -3
+        ],
+        "max": [
+          -4,
+          -2
+        ]
+      },
+      "floor": "wood_planks",
+      "comment": "The garrison dormitory over the kitchen, entered from the Kitchen Tower's first floor through its level-1 door."
+    },
+    {
+      "id": "royal-apartments",
+      "level": 1,
+      "ward": "inner",
+      "tiles": {
+        "min": [
+          1,
+          -3
+        ],
+        "max": [
+          5,
+          -2
+        ]
+      },
+      "floor": "dirty_carpet",
+      "comment": "Over the King's Hall, entered from the King's Tower's first floor through the level-1 doorway in north-curtain-east's end. The one carpet in the castle."
+    },
+    {
+      "id": "nw-tower-1",
+      "level": 1,
+      "ward": "outer",
+      "drum": "nw-tower",
+      "floor": "wood_planks"
+    },
+    {
+      "id": "kitchen-tower-1",
+      "level": 1,
+      "ward": "outer",
+      "drum": "kitchen-tower",
+      "floor": "wood_planks"
+    },
+    {
+      "id": "stockhouse-tower-1",
+      "level": 1,
+      "ward": "inner",
+      "drum": "stockhouse-tower",
+      "floor": "wood_planks"
+    },
+    {
+      "id": "kings-tower-1",
+      "level": 1,
+      "ward": "inner",
+      "drum": "kings-tower",
+      "floor": "wood_planks"
+    },
+    {
+      "id": "sw-tower-1",
+      "level": 1,
+      "ward": "outer",
+      "drum": "sw-tower",
+      "floor": "wood_planks"
+    },
+    {
+      "id": "prison-tower-1",
+      "level": 1,
+      "ward": "outer",
+      "drum": "prison-tower",
+      "floor": "wood_planks"
+    },
+    {
+      "id": "bakehouse-tower-1",
+      "level": 1,
+      "ward": "inner",
+      "drum": "bakehouse-tower",
+      "floor": "wood_planks"
+    },
+    {
+      "id": "chaplain-chamber",
+      "level": 1,
+      "ward": "inner",
+      "drum": "chapel-tower",
+      "floor": "wood_planks"
+    },
+    {
+      "id": "nw-tower-2",
+      "level": 2,
+      "ward": "outer",
+      "drum": "nw-tower",
+      "floor": "wood_planks"
+    },
+    {
+      "id": "kitchen-tower-2",
+      "level": 2,
+      "ward": "outer",
+      "drum": "kitchen-tower",
+      "floor": "wood_planks"
+    },
+    {
+      "id": "stockhouse-walk",
+      "level": 2,
+      "ward": "inner",
+      "drum": "stockhouse-tower",
+      "floor": "wood_planks"
+    },
+    {
+      "id": "kings-tower-2",
+      "level": 2,
+      "ward": "inner",
+      "drum": "kings-tower",
+      "floor": "wood_planks"
+    },
+    {
+      "id": "sw-tower-2",
+      "level": 2,
+      "ward": "outer",
+      "drum": "sw-tower",
+      "floor": "wood_planks"
+    },
+    {
+      "id": "prison-tower-2",
+      "level": 2,
+      "ward": "outer",
+      "drum": "prison-tower",
+      "floor": "wood_planks"
+    },
+    {
+      "id": "bakehouse-tower-2",
+      "level": 2,
+      "ward": "inner",
+      "drum": "bakehouse-tower",
+      "floor": "wood_planks"
+    },
+    {
+      "id": "chapel-tower-2",
+      "level": 2,
+      "ward": "inner",
+      "drum": "chapel-tower",
+      "floor": "wood_planks"
+    },
+    {
+      "id": "north-walk",
+      "level": 2,
+      "ward": "outer",
+      "bounds": {
+        "min": [
+          -34,
+          -16
+        ],
+        "max": [
+          -4,
+          -14
+        ]
+      },
+      "comment": "The outer ward's north walk: the decking from the North-west Tower to the Stockhouse Tower's walk door. The sentry's post at Terce and Sext."
+    },
+    {
+      "id": "south-walk",
+      "level": 2,
+      "ward": "inner",
+      "bounds": {
+        "min": [
+          4,
+          14
+        ],
+        "max": [
+          22,
+          16
+        ]
+      },
+      "comment": "The inner ward's south walk, from the Bakehouse Tower's east door to the Chapel Tower. The tally stick lies in its gutter by the Bakehouse door."
+    },
+    {
+      "id": "cross-walk",
+      "level": 2,
+      "ward": "inner",
+      "bounds": {
+        "min": [
+          -2,
+          -14
+        ],
+        "max": [
+          0,
+          14
+        ]
+      },
+      "comment": "The walk over the cross-wall, Stockhouse Tower to Bakehouse Tower over the porter's gate. `walk-crosses` is granted on stepping onto it."
+    }
+  ],
+  "courtyard": {
+    "comment": "What is left of the old courtyard block: loose kit pieces. The nine `wallRuns` that built the 7x7 courtyard and its hall are gone, replaced by `walls` and `drums` above.",
+    "placements": [
+      {
+        "model": "column.glb",
+        "tile": [
+          -8.3289,
+          2.3875
+        ],
+        "rotationY": 0,
+        "comment": "Great Hall column, west bay. The cabinet has to get past it in z; see test/layout.mjs."
+      },
+      {
+        "model": "column-damaged.glb",
+        "tile": [
+          -1.7276,
+          2.3875
+        ],
+        "rotationY": 0,
+        "comment": "Great Hall column, east bay. Moved 0.5 m west in Phase 4: the hall's east wall is a built run now, on the tile edge at world x -6, and a partition straddles its edge by half its thickness."
+      },
+      {
+        "model": "detail-crate.glb",
+        "tile": [
+          -6.5,
+          -0.6
+        ],
+        "rotationY": 25
+      },
+      {
+        "model": "detail-crate-small.glb",
+        "tile": [
+          -6.2,
+          -0.35
+        ],
+        "rotationY": 70
+      },
+      {
+        "model": "barrels.glb",
+        "tile": [
+          -3.4,
+          0.6
+        ],
+        "rotationY": 0
+      },
+      {
+        "model": "detail-crate-ropes.glb",
+        "tile": [
+          3.2,
+          1
+        ],
+        "rotationY": 140
+      },
+      {
+        "model": "pulley-crate.glb",
+        "tile": [
+          -7.4,
+          -0.4
+        ],
+        "rotationY": 90,
+        "id": "cart",
+        "evidence": "cart",
+        "comment": "The cart the clerk's lead left on at Terce. Evidence `cart` in mystery.json."
+      },
+      {
+        "model": "fence.glb",
+        "tile": [
+          4.2,
+          1.4
+        ],
+        "rotationY": 45
+      },
+      {
+        "model": "tree-shrub.glb",
+        "tile": [
+          7,
+          -2.4
+        ],
+        "rotationY": 60,
+        "comment": "the four shrubs in the east garden"
+      },
+      {
+        "model": "tree-shrub.glb",
+        "tile": [
+          7,
+          -0.9
+        ],
+        "rotationY": 140
+      },
+      {
+        "model": "tree-shrub.glb",
+        "tile": [
+          7,
+          0.6
+        ],
+        "rotationY": 20
+      },
+      {
+        "model": "tree-shrub.glb",
+        "tile": [
+          7,
+          2
+        ],
+        "rotationY": 200
+      },
+      {
+        "model": "barrels.glb",
+        "tile": [
+          -7.75,
+          -0.05
+        ],
+        "rotationY": 20,
+        "comment": "beside the cart at the west gate"
+      },
+      {
+        "model": "structure-pole.glb",
+        "tile": [
+          -2.425,
+          -3.425
+        ],
+        "scale": 4,
+        "comment": "mason's lodge post"
+      },
+      {
+        "model": "structure-pole.glb",
+        "tile": [
+          -0.575,
+          -3.425
+        ],
+        "scale": 4
+      },
+      {
+        "model": "structure-pole.glb",
+        "tile": [
+          -2.425,
+          -1.575
+        ],
+        "scale": 4
+      },
+      {
+        "model": "structure-pole.glb",
+        "tile": [
+          -0.575,
+          -1.575
+        ],
+        "scale": 4
+      },
+      {
+        "model": "floor-steps.glb",
+        "tile": [
+          -2.65,
+          2.1
+        ],
+        "scale": 1.6,
+        "comment": "the Great Hall's dais, nine 1.6 m steps in a 4.8 m square, 0.32 m proud of the floor"
+      },
+      {
+        "model": "floor-steps.glb",
+        "tile": [
+          -2.65,
+          2.5
+        ],
+        "scale": 1.6
+      },
+      {
+        "model": "floor-steps.glb",
+        "tile": [
+          -2.65,
+          2.9
+        ],
+        "scale": 1.6
+      },
+      {
+        "model": "floor-steps.glb",
+        "tile": [
+          -2.25,
+          2.1
+        ],
+        "scale": 1.6
+      },
+      {
+        "model": "floor-steps.glb",
+        "tile": [
+          -2.25,
+          2.5
+        ],
+        "scale": 1.6
+      },
+      {
+        "model": "floor-steps.glb",
+        "tile": [
+          -2.25,
+          2.9
+        ],
+        "scale": 1.6
+      },
+      {
+        "model": "floor-steps.glb",
+        "tile": [
+          -1.85,
+          2.1
+        ],
+        "scale": 1.6
+      },
+      {
+        "model": "floor-steps.glb",
+        "tile": [
+          -1.85,
+          2.5
+        ],
+        "scale": 1.6
+      },
+      {
+        "model": "floor-steps.glb",
+        "tile": [
+          -1.85,
+          2.9
+        ],
+        "scale": 1.6
+      },
+      {
+        "id": "pouch",
+        "model": "detail-crate-small.glb",
+        "tile": [
+          6.075,
+          4.575
+        ],
+        "rotationY": 35,
+        "scale": 2,
+        "evidence": "pouch",
+        "comment": "the clerk's pouch, in the chapel Moved in Phase 5 to the south crescent beside the foot of the Chapel Tower's lower flight, which it had stood inside (#460)."
+      },
+      {
+        "id": "knife",
+        "model": "detail-barrel.glb",
+        "tile": [
+          0.125,
+          3.825
+        ],
+        "scale": 2,
+        "evidence": "knife",
+        "comment": "the bakehouse barrel the knife is behind"
+      },
+      {
+        "id": "cloak-crate",
+        "model": "detail-crate.glb",
+        "tile": [
+          -8.7,
+          3.6
+        ],
+        "rotationY": 15,
+        "scale": 2,
+        "comment": "the laundry crate the cloak is over; the cloak itself is builtProps Moved in Phase 5 to the South-west Tower's east half: its lower flight stands in the west half, where the crate had been (#460)."
+      },
+      {
+        "id": "tally",
+        "model": "detail-crate-small.glb",
+        "tile": [
+          1.3,
+          3.8
+        ],
+        "rotationY": 25,
+        "scale": 1.5,
+        "base": 8,
+        "evidence": "tally",
+        "comment": "The tally stick, in the gutter of the south walk just east of the Bakehouse Tower's door, on the decking (`base` 8). A small crate until Phase 7 makes it examinable."
+      },
+      {
+        "model": "pulley.glb",
+        "tile": [
+          5.55,
+          4.05
+        ],
+        "rotationY": 200,
+        "scale": 2.5,
+        "id": "chapel-bell",
+        "bell": true,
+        "comment": "The chapel bell's crank and rope, and the only examinable in Phase 6: pressing E at it rings the next watch in. The kit has no bell, and a rope over a crank in the corner of the chapel tower is what it does have. Its first tile put the BOX 0.9 m into the tower's ring while its own tile point stood on clear floor — the model reaches 1.4 m north of its origin at this rotation — so the prompt never appeared and the line-of-sight check was right to refuse it. test/layout.mjs holds every piece the player presses E at clear of the stone now."
+      }
+    ]
+  },
+  "interiorProps": [
+    {
+      "model": "WoodenTable_01_1k.gltf/WoodenTable_01_1k.gltf",
+      "tile": [
+        -5,
+        2.625
+      ],
+      "rotationY": 0,
+      "comment": "was tile z -2.5 (world -10), which put the table's own north edge 0.33 m inside the north wall (wall's inner face is world z -10, box was z -10.33..-9.67). Whole hall cluster (this table, the chair, stool, statue, candleholders, lantern) and the Scholar shifted +2.0 m south (+0.5 tile) together as one rigid move so their relative spacing is unchanged; see gothic_statue's comment below for the wall-clearance numbers that picked +2.0"
+    },
+    {
+      "model": "WoodenChair_01_1k.gltf/WoodenChair_01_1k.gltf",
+      "tile": [
+        -5.5,
+        2.825
+      ],
+      "rotationY": 40,
+      "comment": "part of the +2.0 m south rigid shift, see WoodenTable_01's comment"
+    },
+    {
+      "model": "wooden_stool_02_1k.gltf/wooden_stool_02_1k.gltf",
+      "tile": [
+        -4.5,
+        2.825
+      ],
+      "rotationY": -30,
+      "comment": "part of the +2.0 m south rigid shift, see WoodenTable_01's comment"
+    },
+    {
+      "model": "GothicCabinet_01_1k.gltf/GothicCabinet_01_1k.gltf",
+      "tile": [
+        -8.3557,
+        2.8149
+      ],
+      "rotationY": 90,
+      "comment": "was tile [-2.2, -2.7] (world -8.8, -10.8) — that box (x -9.257..-8.129, z -11.66..-9.94) sat entirely inside the corner where the north wall (z <= -10) and the hall's own west wall (x <= -6) meet, fully invisible, same class of bug as the statue below but nobody had measured this corner. Needed both an east shift (off the west wall, not just south of the north wall — a south-only shift walks it into the west wall's z-band instead) and the same +0.5 tile south shift as the rest of the cluster. +1.1 tile east (4.4 m) clears the west wall by just over its own footprint and stays clear of the hall's west column (world x -6..-5.2, z -10..-9.2, right in the naive path east). Moved again 2026-09-14, from tile [-1.1, -2.2] to [-1.36, -2.05]: it stood 1.143 m off the hall's west wall (inner face world x -6), out in the room rather than against it. The column was only ever a constraint in z -- it is 0.8 m deep, z -10..-9.2 -- so 0.6 m south takes this piece out of that band entirely and the wall becomes reachable. Box is now x -5.897..-4.781, z -9.060..-7.340: 0.103 m off the wall, 0.140 m clear of the column. test/layout.mjs holds both numbers"
+    },
+    {
+      "model": "GothicCommode_01_1k.gltf/GothicCommode_01_1k.gltf",
+      "tile": [
+        -1.7273,
+        2.7504
+      ],
+      "rotationY": 270,
+      "comment": "was tile [2.2, -2.7] (world 8.8, -10.8), entirely inside the north wall (z <= -10), same discovery as GothicCabinet_01 mirrored onto the east wall/east column — see its comment. Mirrored shift: 1.1 tile (4.4 m) west, 0.5 tile south. Moved again 2026-09-14 alongside GothicCabinet_01 and for the same reason, tile [1.1, -2.2] to [1.4, -2.05]: it stood 1.311 m off the hall's east wall (inner face world x 6). Box is now x 5.308..5.889, z -8.802..-7.600: 0.111 m off the wall, 0.398 m clear of column-damaged. Both pieces share a tile z so the config reads as the mirror pair it is; their boxes do not line up, because the cabinet is 1.72 m deep in z and the commode 1.20 m Moved 0.5 m west in Phase 4 with the column beside it: the Great Hall's east side is a 1 m partition centred on world x -6, so the face it stands against is at -6.5 and not at the room's tile boundary."
+    },
+    {
+      "model": "gothic_statue_1k.gltf/gothic_statue_1k.gltf",
+      "tile": [
+        -5,
+        2.275
+      ],
+      "rotationY": 180,
+      "comment": "was tile z -2.85 (world -11.4): measured box z -11.774..-10.211, entirely inside the north wall (inner face z -10) -- confirmed invisible with a camera probe standing where it should render. The whole hall cluster (this statue, the table, chair, stool, candleholders, lantern) and the Scholar (data/npcs.json, and SCHOLAR in Tools/board-check/play-castle.mjs) moved +2.0 m south (+0.5 tile) as one rigid shift, chosen as the smallest round number that clears the statue's north edge (0.23 m margin from the wall) without pushing the chair's south edge past the doorway partition (0.76 m margin from its inner face at z -6) -- valid range was roughly +1.9 to +2.6 m"
+    },
+    {
+      "model": "wooden_lantern_01_1k.gltf/wooden_lantern_01_1k.gltf",
+      "tile": [
+        -4.85,
+        2.645
+      ],
+      "rotationY": 0,
+      "noCollide": true,
+      "comment": "lantern on the table. yOffset is a lift ABOVE whatever castle-builder finds underneath, so a tabletop item wants no yOffset at all — it used to carry 0.95 against a 0.55 m table and hung in the air. Tile z was -2.48 (world -9.92); its own box clipped 0.03 m into the north wall even sitting on the table, since the table's own north edge already did. Part of the +2.0 m south rigid shift, see gothic_statue's comment"
+    },
+    {
+      "model": "brass_candleholders_1k.gltf/brass_candleholders_1k.gltf",
+      "tile": [
+        -5.1,
+        2.645
+      ],
+      "rotationY": 15,
+      "noCollide": true,
+      "comment": "a 1.08 m spread of three candlesticks, not one object. At tile x -0.2 the westmost one overhung the table by 0.35 m; -0.1 puts the whole spread on it. Tile z was -2.48 (world -9.92); its own box clipped 0.25 m into the north wall. Part of the +2.0 m south rigid shift, see gothic_statue's comment"
+    },
+    {
+      "model": "kite_shield_1k.gltf/kite_shield_1k.gltf",
+      "tile": [
+        -8.42,
+        2.1
+      ],
+      "rotationY": 0,
+      "noCollide": true,
+      "yOffset": 1.2,
+      "comment": "wall dressing on the Great Hall's west wall, which is the west curtain's inner face at world x -34. Nothing underneath it, so the 1.2 lift is measured off the ground and still means what it says. Was near the Guard's old post in the courtyard that Phase 3 replaced."
+    },
+    {
+      "id": "lantern-chapel",
+      "model": "wooden_lantern_01_1k.gltf/wooden_lantern_01_1k.gltf",
+      "tile": [
+        5.875,
+        4.55
+      ],
+      "evidence": "body",
+      "comment": "Where Hywel was found, at the foot of the Chapel Tower stair. mystery.json's `body` row names this prop; the second lantern in the castle, which is why interiorProps carry an optional `id` now. Moved in Phase 5 clear of the Chapel Tower's lower flight, which stands in the tower's east half with its foot at the south end (#460): the candles to the south-west quadrant, the lantern beside the foot."
+    },
+    {
+      "id": "candles-chapel",
+      "model": "brass_candleholders_1k.gltf/brass_candleholders_1k.gltf",
+      "tile": [
+        5.675,
+        4.325
+      ],
+      "rotationY": 10,
+      "evidence": "candle",
+      "comment": "Moved in Phase 5 clear of the Chapel Tower's lower flight, which stands in the tower's east half with its foot at the south end (#460): the candles to the south-west quadrant, the lantern beside the foot."
+    },
+    {
+      "id": "table-muniment",
+      "model": "WoodenTable_01_1k.gltf/WoodenTable_01_1k.gltf",
+      "tile": [
+        6.05,
+        -4.15
+      ],
+      "rotationY": 90,
+      "evidence": "ledger"
+    }
+  ],
+  "braziers": [
+    {
+      "tile": [
+        -1.2,
+        -0.6
+      ],
+      "comment": "flanking the porter's gate on the outer ward side, north"
+    },
+    {
+      "tile": [
+        -1.2,
+        0.6
+      ],
+      "comment": "flanking the porter's gate on the outer ward side, south"
+    },
+    {
+      "tile": [
+        -5,
+        2.5
+      ],
+      "comment": "the Great Hall"
+    }
+  ],
+  "plainMaterials": {
+    "wool": {
+      "color": "#453a52",
+      "roughness": 0.95
+    },
+    "iron": {
+      "color": "#3b3b40",
+      "roughness": 0.55,
+      "metalness": 0.85
+    },
+    "oak": {
+      "color": "#5a4128",
+      "roughness": 0.9
+    }
+  },
+  "plainMaterialsComment": "Built surfaces with no texture set on disk and no set on the stone list: the cell's bars, the cloak over the laundry crate and the bar leaning beside the Stockhouse walk door. A colour, a roughness and a metalness, no maps. They are not in `materials` because every entry there has to be a complete diffuse + normal + arm/rough set, and these would have had to weaken that rail to live beside it. test/assets.mjs checks the opposite shape here: a colour and no path.",
+  "builtProps": [
+    {
+      "id": "cloak",
+      "evidence": "cloak",
+      "material": "wool",
+      "tile": [
+        -8.7,
+        3.6
+      ],
+      "base": 0.6,
+      "size": [
+        0.85,
+        0.06,
+        0.75
+      ],
+      "comment": "A cloth quad over the laundry crate. WISHLIST.md rules out kite_shield for this (wrong shape) and there is no cloth map on the stone list, so it is a built slab in a colour from `plainMaterials`. Axis-aligned and 0.06 m thick, so it is under the 0.3 m a thing has to be to block movement and nobody walks into the laundry."
+    },
+    {
+      "id": "walk-bar",
+      "evidence": "walk-door",
+      "material": "oak",
+      "tile": [
+        -0.575,
+        -4.125
+      ],
+      "base": 8,
+      "size": [
+        0.12,
+        1.5,
+        0.12
+      ],
+      "comment": "The bar that should be across the Stockhouse Tower's walk door, standing on end against the ring inside the tower's top room just north of that door, dust on the brackets. `door-unbarred` is read off it. The door itself is the ring's opening; the bar is the object. It stands over the stub of north-curtain-mid that reaches into the tower, whose top is the level-2 floor."
+    }
+  ],
+  "drumsComment": "Eight drums. `interior.doors` is every opening in the ring: `base` is the opening's floor (0, 4 or 8, a level's height), `theta` its bearing in three's cylinder angle (0 is +z, south; 90 is +x, east), `arc` its width in degrees, and both have to land on the drum's own vertices. The level-0 door is the room's; the level-1 doors (three of them) lead to the chambers built over the rooms beside those towers; the level-2 doors are where the wall walk passes through the tower's top room, sixty degrees wide because a 2 m deck's cells cross the ring over about thirty degrees and the grid's sector boxes bulge past that. The Stockhouse Tower's west door at level 2 carries `bar`: it is the walk door the porter swears he bars every night, it ships open because he did not, and `bar.closed` is the one thing test/layout.mjs forces shut to prove the wards would separate if he had. `stairs` names the side of the tower the upper flight and its well go on, which is the outer side, away from where the walk crosses. `lowerFlight: false` on the two towers whose ground room is shut leaves them the upper flight only.",
+  "roomsComment": "Fourteen ground rooms (Phase 4), then the upper ones. A room is a rectangle of whole tiles, a tower interior (`drum`, and its disc is the drum's), or a `bounds` rectangle in world metres, which is how a stretch of decking is named. `level` 1 and 2 rooms with a `floor` get a slab from src/castle-plan.js: a rectangle cut back to any drum it runs into, or a disc with a well cut where a stair comes up through it. Tower rooms above the ground that the mystery never names (nw-tower-1, sw-tower-2 and so on) are here so the suite can hold every tower's upper floors reachable from its own stairs; the four the mystery does name at level 1 and the four at level 2 have to match data/mystery.json by id, level and ward, and test/layout.mjs says so."
+}

@@ -1,0 +1,161 @@
+{
+  "asset": {
+    "generator": "glTF-Transform v4.4.2",
+    "version": "2.0"
+  },
+  "accessors": [
+    {
+      "type": "VEC3",
+      "componentType": 5126,
+      "count": 23314,
+      "max": [
+        0.7231897115707397,
+        0.5321175456047058,
+        0.1022685244679451
+      ],
+      "min": [
+        -0.754274308681488,
+        -1.2077802419662476,
+        -1.4614895582199097
+      ],
+      "bufferView": 0,
+      "byteOffset": 0
+    },
+    {
+      "type": "VEC3",
+      "componentType": 5126,
+      "count": 23314,
+      "bufferView": 0,
+      "byteOffset": 12
+    },
+    {
+      "type": "VEC2",
+      "componentType": 5126,
+      "count": 23314,
+      "bufferView": 0,
+      "byteOffset": 24
+    },
+    {
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 83217,
+      "bufferView": 1,
+      "byteOffset": 0
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 746048,
+      "byteStride": 32,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 746048,
+      "byteLength": 166436,
+      "target": 34963
+    }
+  ],
+  "samplers": [
+    {
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "wrapS": 10497,
+      "wrapT": 10497
+    }
+  ],
+  "textures": [
+    {
+      "source": 1,
+      "sampler": 0
+    },
+    {
+      "source": 0,
+      "sampler": 0
+    },
+    {
+      "source": 2,
+      "sampler": 0
+    }
+  ],
+  "images": [
+    {
+      "name": "gothic_statue_nor_gl",
+      "mimeType": "image/jpeg",
+      "uri": "textures/gothic_statue_nor_gl_1k.jpg"
+    },
+    {
+      "name": "gothic_statue_diff",
+      "mimeType": "image/jpeg",
+      "uri": "textures/gothic_statue_diff_1k.jpg"
+    },
+    {
+      "name": "gothic_statue_rough",
+      "mimeType": "image/jpeg",
+      "uri": "textures/gothic_statue_arm_1k.jpg"
+    }
+  ],
+  "buffers": [
+    {
+      "uri": "gothic_statue.bin",
+      "byteLength": 912484
+    }
+  ],
+  "materials": [
+    {
+      "name": "gothic_statue",
+      "doubleSided": true,
+      "pbrMetallicRoughness": {
+        "metallicFactor": 0,
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicRoughnessTexture": {
+          "index": 2
+        }
+      },
+      "normalTexture": {
+        "index": 1
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "Plane",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1,
+            "TEXCOORD_0": 2
+          },
+          "mode": 4,
+          "material": 0,
+          "indices": 3
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "name": "gothic_statue",
+      "translation": [
+        -0.028923194855451584,
+        1.1918599605560303,
+        0.2721009850502014
+      ],
+      "mesh": 0
+    }
+  ],
+  "scenes": [
+    {
+      "name": "Scene",
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "scene": 0
+}

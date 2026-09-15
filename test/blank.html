@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>blank</title>
+<!-- A cheap same-origin document, so a suite can clear the save key BEFORE the
+     game is ever loaded. Loading the game and then reloading it works too and
+     costs a false failure: the reload aborts the model requests the first load
+     had in flight, and page.__errs outlives the navigation, so the run ends by
+     reporting a missing wall.glb that loaded fine. Nothing references this file,
+     so it is not in the build. -->
