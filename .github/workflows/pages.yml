@@ -1,0 +1,79 @@
+# Pages: build the site and publish dist/, on every push to main.
+#
+# WHY THIS FILE HAS TO EXIST. Under `Projects/Castle Conundrum/` in
+# tools-and-games, the repo directory was directly servable: index.html carried
+# an import map, so a static host could hand a browser the source and the
+# browser resolved `three` on its own. #494 deleted that map in favour of Vite,
+# which means `src/main.js` now opens with a bare `import * as THREE from
+# 'three'` and a plain static server is not enough. Checked rather than assumed
+# (#505): this repo served by a dumb node:http server, no Vite, headless
+# Chromium, gives `pageerror: Failed to resolve module specifier "three".` and
+# the page hangs on "Summoning stonework…" forever.
+#
+# So Pages serves `dist/`, not the repo root, and it gets there by building
+# here. "Deploy from a branch" would serve the root and ship that broken page,
+# which is why the repo's Pages source must be **GitHub Actions**
+# (Settings -> Pages -> Source). `configure-pages` sets that itself via
+# `enablement: true` the first time this runs.
+#
+# `base: './'` in vite.config.js is what makes the subpath work: every emitted
+# URL is relative, so the same dist/ serves correctly at
+# greyversusblue.github.io/castle-conundrum/ and at a bare domain later. The
+# runtime fetches are relative to the document for the same reason
+# (data/scene-config.json, and every asset path inside it), so nothing here
+# hardcodes a prefix.
+#
+# This does NOT run the suites. `ci.yml` does that on every pull request and
+# every push to main, and it runs `npm run build` too, so a build that cannot
+# succeed fails there first and more loudly.
+
+name: Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never cancel a deploy in flight: a half-published site is worse than a stale
+# one, and these are cheap.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: npm run build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    name: publish
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

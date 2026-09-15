@@ -24,6 +24,18 @@ The project lived in `GreyVersusBlue/tools-and-games` under
   `libs/three.module.js` that nothing could tell you the provenance of.
   `npm run build` produces `dist/`, and `test/built.mjs` is the check that the
   built page loads the same castle the source does.
+- **`dist/` is what gets served, and the repo root is not servable** (#505).
+  That is the price of the line above and it is easy to forget, because under
+  `Projects/Castle Conundrum/` the import map made the source directly
+  servable. It does not any more: `src/main.js` opens with a bare `import * as
+  THREE from 'three'`, and a static host hands that to a browser which cannot
+  resolve it — `Failed to resolve module specifier "three"`, and the page hangs
+  on its loading screen. `.github/workflows/pages.yml` builds and publishes
+  `dist/` to <https://greyversusblue.github.io/castle-conundrum/> on every push
+  to `main`, and the repo's Pages source has to stay **GitHub Actions**, never
+  "deploy from a branch". `base: './'` in `vite.config.js` is what lets the same
+  `dist/` serve from a subpath and from a bare domain later; do not hardcode a
+  prefix anywhere.
 - **Everything the page fetches at runtime comes from its own origin** (#493).
   No CDN, no font host, no asset host, ever. This is the half of the old
   vendoring rule that did not change, and it is asserted rather than promised:

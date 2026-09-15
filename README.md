@@ -19,6 +19,11 @@ which is the fact the mystery turns on.
 **WASD** move · **mouse** look · **Shift** sprint · **E** talk, examine, ring ·
 **J** journal.
 
+It is live at <https://greyversusblue.github.io/castle-conundrum/>, published
+by `.github/workflows/pages.yml` on every push to `main`. That workflow runs
+`npm run build` and serves `dist/`, **not the repo root** — since the import map
+went away in favour of Vite, the source is not servable on its own (#505).
+
 ## Running it
 
 ```
