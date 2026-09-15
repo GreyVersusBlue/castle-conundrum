@@ -2237,7 +2237,7 @@ is enabled and on the touch scheme, with no pointer lock to take`.
 
 **Ranked row 6, "A second day, in which the epilogue's consequences play",
 claimed on `main` on `claude/second-day-epilogue-pzfxie` before the work
-started (#283, PR #15) and shipped as PR #PRNUM.** It is a **2+**: this is
+started (#283, PR #15) and shipped as PR #16.** It is a **2+**: this is
 increment 1 and the row stays in the table. Six of the seven open rows want a
 machine this container is not — a GPU for ranks 2, 3 and 7, polyhaven.com and
 the KTX-Software release for 4 and 5, both of which answer 403 from here

@@ -414,11 +414,11 @@ a road, and "a different ending".
 
 ## A second day
 
-**Rank 6. Size 2+. Increment 1 shipped on 2026-09-15 (#533 to #537, PR
-#PRNUM).** The morning after exists: one watch (`lauds`), thirteen stations,
-sixty line sets keyed by what the player said, seven closing panes, and a
-thirteenth cast entry whose conversation ends the game. What follows is what
-increment 1 actually built, then increment 2, which is the next one to take.
+**Rank 6. Size 2+. Increment 1 shipped on 2026-09-15 (#533 to #537, PR #16).**
+The morning after exists: one watch (`lauds`), thirteen stations, sixty line
+sets keyed by what the player said, seven closing panes, and a thirteenth cast
+entry whose conversation ends the game. What follows is what increment 1
+actually built, then increment 2, which is the next one to take.
 
 ### What increment 1 shipped
 

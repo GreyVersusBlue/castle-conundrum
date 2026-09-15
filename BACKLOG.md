@@ -60,7 +60,8 @@ and `test/touch.mjs` as the ninth suite. What it FEELS like is unknown — nobod
 has had a thumb on it, and the six numbers that decide that are named constants
 in one file each (#53).
 
-**The second day's first increment shipped on 2026-09-15** (#533 to #537): the
+**The second day's first increment shipped on 2026-09-15** (#533 to #537, PR
+#16): the
 epilogue's button reads "The next morning" now. One watch, `lauds`, thirteen
 stations, sixty line sets keyed by which of the seven endings the player
 reached, seven closing panes, and a thirteenth cast entry — the King's
