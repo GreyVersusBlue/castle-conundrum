@@ -32,7 +32,12 @@ export function createScene(config) {
   camera.position.set(...config.spawn.position);
   camera.lookAt(new THREE.Vector3(...config.spawn.lookAt));
 
-  // Ambient audio hook point (silent for now — ready for footsteps/ambience later)
+  // The listener, on the camera, which is what makes the bell loud in the chapel
+  // and thin from the far ward: three updates `context.listener`'s position and
+  // orientation from this object's world matrix on every frame the renderer
+  // draws. src/audio.js takes it and reads two things off it, `context` and
+  // `getInput()`, and plays through plain Web Audio nodes (#519). It used to say
+  // "silent for now", and was, for seven phases.
   const audioListener = new THREE.AudioListener();
   camera.add(audioListener);
 

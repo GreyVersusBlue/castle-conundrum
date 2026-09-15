@@ -41,6 +41,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { partsOf } from './gltf.mjs';
 import { makePlan, walkability, moveBody, GRID, HEAD_LOW, HEAD_HIGH, BODY_RADIUS } from '../src/castle-plan.js';
+import { stepClassOf } from '../src/audio.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, '..');
@@ -802,6 +803,47 @@ console.log('\nsomething in every room');
   }
   const open = plan.rooms.filter(r => r.locked).length;
   if (filled + open === plan.rooms.length) pass(`${filled} rooms each hold at least one thing, ${open} shut rooms not asked`);
+}
+
+/* ---------------------- 12: every surface a foot can land on makes a noise ---
+ * The castle has made no sound for seven phases and now makes two (#519). The
+ * footstep is chosen by the surface under the feet, so every one of the plan's
+ * surfaces has to resolve to a step class and every class it resolves to has to
+ * be defined — an unknown material has to fail here, in Node, and not shrug at
+ * runtime (#13). The resolution is `stepClassOf` from src/audio.js itself, not
+ * a copy of the rule written out again in this file: a check that
+ * re-implements the thing it checks is not a check (#34).
+ */
+console.log('\nevery surface has a step sound');
+{
+  const sounds = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/sounds.json'), 'utf8'));
+  const classes = sounds.steps.classes;
+  const used = new Map();
+  let unresolved = 0;
+  for (const s of plan.surfaces) {
+    const cls = stepClassOf(sounds, s);
+    if (!cls) {
+      fail(`"${s.id}" is a ${s.material ? `${s.material} ` : ''}${s.kind || 'surface'} and data/sounds.json says nothing about what standing on it sounds like`);
+      unresolved++;
+      continue;
+    }
+    if (!classes[cls]) {
+      fail(`"${s.id}" resolves to the step class "${cls}", which data/sounds.json's classes do not define`);
+      unresolved++;
+      continue;
+    }
+    used.set(cls, (used.get(cls) || 0) + 1);
+  }
+  if (!unresolved) {
+    const spread = [...used].sort((a, b) => b[1] - a[1]).map(([c, n]) => `${n} ${c}`).join(', ');
+    pass(`all ${plan.surfaces.length} surfaces have a step class: ${spread}`);
+  }
+  // And nothing in the file that no surface can reach: a class defined and
+  // never used is a tuning nobody will ever hear, and the four here are
+  // exactly the four the castle stands on.
+  const dead = Object.keys(classes).filter(c => !used.has(c));
+  if (dead.length) fail(`data/sounds.json defines step ${dead.length === 1 ? 'class' : 'classes'} ${dead.map(c => `"${c}"`).join(', ')} that no surface in the castle resolves to`);
+  else pass(`all ${Object.keys(classes).length} step classes are reachable from some surface`);
 }
 
 /* ------------------------------------- 5: every NPC stands somewhere real ---

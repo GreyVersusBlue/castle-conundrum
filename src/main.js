@@ -13,6 +13,7 @@ import { createMystery } from './mystery.js';
 import { castleNav } from './stations.js';
 import { EYE_HEIGHT } from './castle-plan.js';
 import { UI } from './ui.js';
+import { createAudio } from './audio.js';
 
 const ui = new UI();
 
@@ -20,12 +21,13 @@ loadingManager.onProgress = (_url, loaded, total) => ui.setLoadingProgress(loade
 
 async function init() {
   // --- Data ---
-  const [config, npcData, riddleData, questData, mysteryData] = await Promise.all([
+  const [config, npcData, riddleData, questData, mysteryData, soundData] = await Promise.all([
     loadJSON('data/scene-config.json'),
     loadJSON('data/npcs.json'),
     loadJSON('data/riddle.json'),
     loadJSON('data/quest.json'),
     loadJSON('data/mystery.json'),
+    loadJSON('data/sounds.json'),
   ]);
 
   // --- The save (src/save.js, key castleConundrumSave_v1). One slot; a reload
@@ -37,7 +39,13 @@ async function init() {
   const state = saved ?? slot.fresh();
 
   // --- Scene ---
-  const { scene, renderer, camera, setWatch } = createScene(config);
+  const { scene, renderer, camera, setWatch, audioListener } = createScene(config);
+
+  // --- Sound ---
+  // Two sounds, both synthesised out of data/sounds.json: a footstep per
+  // surface class and the chapel bell (#519). The context is suspended until
+  // the start button below resumes it, which is the gesture a browser wants.
+  const audio = createAudio(audioListener, soundData);
 
   // --- World geometry ---
   const castle = new CastleBuilder(scene, config);
@@ -74,7 +82,7 @@ async function init() {
   // scene-setup.js's brazier stands. Nothing here measures a box. The plan is
   // what the player stands on: a floor, a slab, the wall walk, a flight of
   // stairs, all through castle-plan.js's standAt.
-  const player = new PlayerController(camera, renderer.domElement, () => castle.colliders, () => castle.plan);
+  const player = new PlayerController(camera, renderer.domElement, () => castle.colliders, () => castle.plan, audio);
   if (state.player) {
     camera.position.set(state.player.x, state.player.y, state.player.z);
     camera.rotation.set(0, state.player.yaw, 0, 'YXZ');
@@ -90,6 +98,10 @@ async function init() {
   // muniment room's lock and pressing E at it is what opens the overlay.
   const locks = castle.locks();
   const bells = castle.bells();
+  // The bell is a place, not a sound effect: the panner sits at the piece's own
+  // centre so it is loud in the chapel and thin from the far ward. One bell in
+  // the castle today; the first of them if there is ever a second.
+  audio.bellAt(bells[0]?.focus);
   // The ten pieces of evidence, each with mystery.json's own `name` on its
   // prompt. The muniment room's leaf is not in this list: it is already a lock
   // target and carries the same evidence id, so one press of E reads the word
@@ -104,6 +116,7 @@ async function init() {
     quest: questData, mystery: mysteryData, riddle: riddleData, npcs, ui, castle,
     controlsRef: { lock: () => player.lock() },
     engine,
+    audio,
     // The world half of a bell: the sky and twelve people walking to where they
     // are due next. The engine has already moved the watch on; this puts the
     // castle where the watch says it is.
@@ -159,6 +172,8 @@ async function init() {
   // --- UI flow ---
   ui.hideLoading();
   ui.showStart(() => {
+    // The click is the gesture the AudioContext has been waiting for.
+    audio.resume();
     player.enabled = true;
     player.lock();
   });

@@ -7,9 +7,11 @@ decision. Every "recommendation" below is exactly that, and the session that
 ships the row is the one that records the call with a number.
 
 Written 2026-09-15 against `main` at `bb61958`, from the code and data as they
-are, not from the briefs. **Rank 1, asset compression, shipped the same day
-(#506 to #510) and its section is gone**; what it left behind for the rows that
-touch assets is named in their Dependencies. Where a brief and the code disagree, the code is
+are, not from the briefs. **Two rows shipped the same day and their sections are
+gone: asset compression (#506 to #510) and sound (#519 to #521).** What asset
+compression left behind for the rows that touch assets is named in their
+Dependencies; what sound left behind is `data/sounds.json`, a `material` and a
+`kind` on every `plan.surfaces` entry, and `layout.mjs` check 12. Where a brief and the code disagree, the code is
 quoted and the disagreement is named. Measurements are `git ls-tree`, `du` and
 `ls -la` on that commit.
 
@@ -29,7 +31,14 @@ Each row has the same five parts.
    those.
 
 The depth follows the `Size` column: a ¼ gets bullets, a 1 gets the file-level
-plan, and the 2+ (rank 9) is mostly about the first increment.
+plan, and the 2+ is mostly about the first increment.
+
+**A section is named, not numbered.** Each one opens with the rank it holds in
+`BACKLOG.md` today, and a shipped row shifts every number below it, so the rank
+on that line is a pointer a shipping session updates and nothing else refers to.
+Everywhere one section names another it names it by title. The version of this
+file written on 2026-09-15 numbered them inline instead and was already a row
+out of step with itself inside "The GPU run" before anything had shipped (#522).
 
 ## What every row shares
 
@@ -53,92 +62,9 @@ Four facts every row below leans on, stated once:
 
 ---
 
-## Sound
-
-**Rank 1. Size ½.** `scene-setup.js:36` creates an `AudioListener`, adds it to
-the camera and returns it; `main.js` never reads it. Nothing has ever played.
-Two sounds: footsteps by surface, and the bell.
-
-### Scope
-
-- **`src/audio.js`, new.** Owns the `AudioContext` (through three's
-  `AudioListener`), resumes it on the start button (browsers refuse audio before
-  a gesture; `ui.showStart`'s callback is the gesture), and exposes
-  `footstep(material)` and `bell()`. Injectable: `QuestManager` and the player
-  controller take it the way they take `ui`, so `test/quest.mjs` can hand in a
-  recorder.
-- **`src/player-controller.js`.** `update` knows the speed and the axis moves;
-  add a distance accumulator that fires a step every ~0.75 m walking, ~1.0 m
-  sprinting, and asks the plan what the feet are on. `standAt` returns
-  `{h, surface, level, ramp}`; the surface id resolves to a plan piece and the
-  piece's `material` (`stone_pavers`, `grassy_cobblestone`, `wood_planks`,
-  `dirty_carpet`, `rock_tile_floor`, `floor_tiles_02`, `old_planks_02`) or, for
-  a flight, to `stairs-stone.glb` with no material at all.
-- **`data/scene-config.json`** or a `data/sounds.json`: the material to step
-  class map (`stone`, `planks`, `carpet`, `grass`) and, if files are used, the
-  paths. Data, so the suite can read it.
-- **`src/quest-manager.js`.** `ringBell: () => {}` at `quest-manager.js:103` is
-  the hook: the action `data/quest.json` already fires on `bell:1` to `bell:4`.
-  The fourth ring rings too; it is the Constable's demand and the loudest press
-  in the game.
-- **`src/main.js`.** Constructs the audio, passes it in, wires the start gesture.
-- **`test/quest.mjs`.** A stand-in `audio` that records calls; assert one
-  `bell()` per ring, four in the intended path.
-- **`test/layout.mjs`** (or `assets.mjs`): every material a surface can carry
-  maps to a step class, and every file the map names exists.
-
-### Acceptance
-
-- Walking across the porter's gate from grassy cobbles to pavers changes the
-  step sound; climbing a flight is stone; the walk is planks; the royal
-  apartments are carpet. GPU/ears only (#53), and stated as such.
-- `test/quest.mjs`: `ring()` through the manager calls `audio.bell()` exactly
-  once per ring, including the fourth. Break: make `ringBell` a no-op again;
-  the assertion `four rings, four bells` fails with the count.
-- Node: for every `plan.surfaces` entry, the piece's material (or `stair`) is
-  in the step map. Break: delete `dirty_carpet` from the map; the line names
-  `floor-royal-apartments`.
-- If sound files are used: they live under `assets/audio/`, `assets.mjs`'s
-  reachability sweep grows that directory (today it walks only `poly-haven`
-  and `NPCs`), and `built.mjs`'s served-set diff picks them up. Break: add an
-  unreferenced `.ogg`; check 4 names it.
-- `harness.mjs` launches with `--mute-audio`; nothing in CI hears anything,
-  and no suite may assert on an `AudioContext` state that a muted headless
-  browser does not enter.
-
-### Open calls
-
-- **Files or synthesis?** Recommend **synthesis for footsteps** (a filtered
-  noise burst with a per-class envelope is 30 lines and zero bytes, and no
-  licence question) and **a recorded bell if a CC0 one is found, synthesis
-  otherwise**. A synthesised bell reads as a chime; a chapel bell is the one
-  sound the game cannot afford to have read as cheap. If a file is used it is
-  committed (#493) and swept by `assets.mjs`.
-- **Positional bell?** Recommend **yes, `THREE.PositionalAudio` on the bell
-  piece** so it is loud in the chapel and audible from the far ward, and
-  **non-positional footsteps** on the listener.
-- **NPC footsteps?** Recommend **no** for this row. Twelve walkers at a bell is
-  a mix, not a feature.
-
-### Dependencies
-
-- None. Touches `player-controller.js`, which rank 6 also rewrites; do not run
-  the two at once.
-
-### Constraints
-
-- #493 (no audio host; files committed).
-- #390 (a new asset directory needs the reachability sweep extended or it is
-  unchecked weight).
-- #53 (what it sounds like is not a CI question).
-- #13 (the step-class map is a check that fails, not a console warning on an
-  unknown material).
-
----
-
 ## A fourth body
 
-**Rank 2. Size ½.** Marged (cook), Nest (laundress) and Lady Alys are three of
+**Rank 1. Size ½.** Marged (cook), Nest (laundress) and Lady Alys are three of
 twelve and wear `Farmer.glb`, `Farmer.glb` and `King.glb`. Twelve people off
 three bodies by tint was Devon's bet (#417, #419) and PLAN.md's own risk list
 calls it the one it would bet the project fails on. This repo's rule lets a
@@ -179,7 +105,7 @@ session answer the question.
 - `test/assets.mjs`: model reference resolves, is not a preview ball, is
   referenced. Break: add the file without the `npcs.json` edit; check 4 says
   `nothing references assets/NPCs/<Woman>.glb`.
-- The GPU criterion is rank 4's photograph, and the honest line in `HISTORY.md`
+- The GPU criterion is **The GPU run**'s photograph, and the honest line in `HISTORY.md`
   is that the fourth body has not been looked at either until that run.
 
 ### Open calls
@@ -200,9 +126,10 @@ session answer the question.
 
 ### Dependencies
 
-- The evidence for this row is rank 4's Vespers photograph, which no session
-  can take. Devon ranked this above rank 4 knowing that; ship it on the plan's
-  stated risk and let rank 4 look at thirteen bodies' worth of question instead
+- The evidence for this row is **The GPU run**'s Vespers photograph, which no
+  session can take. Devon ranked this above that row knowing so; ship it on the
+  plan's stated risk and let the run look at thirteen bodies' worth of question
+  instead
   of twelve.
 - **The body goes through `tools/encode-assets.mjs`** (#506), which is shipped:
   `npm run assets:encode` meshopts it in place. It needs KTX-Software's `ktx` on
@@ -222,13 +149,13 @@ session answer the question.
 
 ## The GPU run
 
-**Ranks 3 and 4. Size ¼ each.** `npm run play` is 102 assertions and a numbered
+**Ranks 2 and 3. Size ¼ each.** `npm run play` is 102 assertions and a numbered
 screenshot per beat into `shots/play/`, and no run of it since Phase 5 has
 happened on a machine with real compositing (#53). Phases 5, 6 and 7 each list
-a GPU exit criterion as outstanding. Rank 4 makes a new preview and og card
-from that run.
+a GPU exit criterion as outstanding. The second of the two makes a new preview
+and og card from that run.
 
-### Scope, rank 4
+### Scope, the run
 
 - **Nothing in `src/`.** The run is the deliverable. `test/play-castle.mjs`
   gains one beat: at Vespers, after `arrives('cook')`, stand in the Great
@@ -245,18 +172,18 @@ from that run.
 - **`BACKLOG.md`**'s header line "Nothing here has been seen on a GPU since
   Phase 5" comes out.
 
-### Acceptance, rank 4
+### Acceptance, the run
 
 - `npm run play` exits 0 on a machine with a GPU, or exits non-zero with the
   failing beat named and filed as a new backlog row.
 - `shots/play/` contains the numbered set, `twelve-at-vespers.png` among them,
   and a human has looked at it and written one sentence per body: told apart
-  or not. That sentence is the answer to Q53's risk and is rank 3's evidence
-  after the fact.
+  or not. That sentence is the answer to Q53's risk and is **A fourth body**'s
+  evidence after the fact.
 - No new guard-rail: the run is the check. The `snap` beat is a screenshot, not
   an assertion, and says so in its comment.
 
-### Scope, rank 5
+### Scope, the images
 
 - Two images: the board preview and the 1200x630 og card
   (`index.html`'s `og:image:width`/`height`). Composed from the run's shots,
@@ -266,7 +193,7 @@ from that run.
   the images live in `tools-and-games/assets/`. Where the new ones go decides
   whether that line changes.
 
-### Acceptance, rank 5
+### Acceptance, the images
 
 - Two files exist and are linked from wherever they end up; the og card is
   1200x630; `index.html`'s meta matches the actual file if it moved here.
@@ -292,25 +219,26 @@ from that run.
 
 ### Dependencies
 
-- **Rank 4 cannot start until rank 3 has run**, and `BACKLOG.md` says so.
-- Rank 3 needs a machine with a GPU, which is Devon's; a session can add the
-  `snap` beat and cannot run it. If a session is asked to take rank 4 without
+- **The images cannot start until the run has happened**, and `BACKLOG.md` says
+  so.
+- The run needs a machine with a GPU, which is Devon's; a session can add the
+  `snap` beat and cannot run it. If a session is asked to take the run without
   one, the honest output is the beat and a note, not a claim.
-- Rank 2 wants rank 3's photograph as evidence; see above.
+- **A fourth body** wants the run's photograph as evidence; see above.
 
 ### Constraints
 
 - #53 (the whole point of the row).
 - #504 (if `og:image` moves, that is the line to change, and the crawler fetch
   is not a page fetch so #493 does not bind either way).
-- #34 does not apply to rank 4 (no rail added); applies to rank 5's `built.mjs`
-  line if the image moves here.
+- #34 does not apply to the run (no rail added); applies to the images'
+  `built.mjs` line if they move here.
 
 ---
 
 ## Touch
 
-**Rank 5. Size 1.** `PlayerController` is `PointerLockControls` plus WASD off
+**Rank 4. Size 1.** `PlayerController` is `PointerLockControls` plus WASD off
 `document` keydown; `InteractionSystem` listens for `KeyE` and `KeyJ` on the
 document; `main.js` gates movement on `player.isLocked` and re-shows the start
 overlay on `unlock`. A phone has none of that. This is a second input scheme.
@@ -380,10 +308,10 @@ overlay on `unlock`. A phone has none of that. This is a second input scheme.
 
 ### Dependencies
 
-- None to start. Rewrites `player-controller.js`, which rank 2 also edits; do
-  not run them together.
-- Verification on a real phone is rank 4's class of problem: Devon's device,
-  not a session's.
+- None to start. Rewrites `player-controller.js`, which **The turrets** also
+  edits; do not run them together. Sound edited it too and has shipped (#519).
+- Verification on a real phone is **The GPU run**'s class of problem: Devon's
+  device, not a session's.
 
 ### Constraints
 
@@ -397,7 +325,7 @@ overlay on `unlock`. A phone has none of that. This is a second input scheme.
 
 ## The turrets
 
-**Rank 6. Size 1.** Eight drums are 12 m high with a level-2 room whose floor
+**Rank 5. Size 1.** Eight drums are 12 m high with a level-2 room whose floor
 is at 8 m; the builder draws a lid at 12 (`buildDrum`, `d.roof`) as a
 `CircleGeometry` inside the drum piece, with no surface, so nothing stands on
 it. The four inner drums (stockhouse, kings, bakehouse, chapel) carry a
@@ -472,8 +400,8 @@ floor at 12 m is the row.
   chord (6b: `south-walk is reached only over ...`). Builder break: draw the
   top floor at `y` 8 (`"floor-chapel-tower-top" (floor) is 4.000 m off the
   plan`).
-- GPU: the view over the whole plan from 12 m. Screenshot in a later rank 4
-  style run; not a CI claim.
+- GPU: the view over the whole plan from 12 m. Screenshot in a later run of the
+  **The GPU run** kind; not a CI claim.
 
 ### Open calls
 
@@ -489,10 +417,10 @@ floor at 12 m is the row.
 
 ### Dependencies
 
-- **Rank 11 first is cheaper.** It decides what `layout.mjs` and
+- **The two plan suites first is cheaper.** It decides what `layout.mjs` and
   `plan-vs-scene.mjs` each keep, and this row edits the level lists in both.
   Not blocking.
-- Rank 7 is visible from here; no dependency either way.
+- **The texture sets** are visible from here; no dependency either way.
 
 ### Constraints
 
@@ -509,7 +437,7 @@ floor at 12 m is the row.
 
 ## The texture sets
 
-**Rank 7. Size ½.** The castle is dressed in ten sets and reads as one: 27 of
+**Rank 6. Size ½.** The castle is dressed in ten sets and reads as one: 27 of
 31 runs are `castle_wall_slates`, all eight drums `defense_wall`, every upper
 floor `wood_planks`. #516 gave each drum a `tint` over the same maps, which is
 free and is not a second stone. This row is the second stone. It was meant
@@ -573,12 +501,12 @@ PR was built in answers 403 to Poly Haven and to KTX-Software's release page
 
 ## The town side
 
-**Rank 8. Size 1.** The ground is the curtain's footprint plus a 2 m margin,
+**Rank 7. Size 1.** The ground is the curtain's footprint plus a 2 m margin,
 worked out from the placed stone (#436); beyond it is fog from 30 to 150 m.
 `barbican-west` has no archway and PLAN.md's answered question 5 says both
 barbican gates stay shut forever. The spawn is in the barbican facing east. So
 today the only place the outside is visible from is the west walk and, after
-rank 6, the tower tops. The row: a textured ground outside the west barbican,
+**The turrets**, the tower tops. The row: a textured ground outside the west barbican,
 a road, and "a different ending".
 
 ### Scope
@@ -651,7 +579,7 @@ a road, and "a different ending".
 - **The restored jpgs go through `tools/encode-assets.mjs`** (#506, shipped)
   before they
   are referenced.
-- Rank 6 makes this visible from four more places; not blocking.
+- **The turrets** makes this visible from four more places; not blocking.
 
 ### Constraints
 
@@ -668,7 +596,7 @@ a road, and "a different ending".
 
 ## The hall roof
 
-**Rank 9. Size ½.** PLAN.md says the Great Hall is "full height with a flat
+**Rank 8. Size ½.** PLAN.md says the Great Hall is "full height with a flat
 ceiling". The config says otherwise: `great-hall` is a `tiles` room at level 0
 with `rock_tile_floor`, its north and east partitions are 8 m runs, its south
 and west walls are the curtain, and **no piece in the plan roofs it**. It is
@@ -733,7 +661,7 @@ day's work and not a gameplay change.
 
 ### Dependencies
 
-- None. Lighting verification is rank 4's class.
+- None. Lighting verification is **The GPU run**'s class.
 
 ### Constraints
 
@@ -747,7 +675,7 @@ day's work and not a gameplay change.
 
 ## A second day
 
-**Rank 10. Size 2+.** The save has `watch` and `accusations[]`. The engine's
+**Rank 9. Size 2+.** The save has `watch` and `accusations[]`. The engine's
 `ring()` stops at the fourth bell and `accuse()` records a verdict; the epilogue
 pane's one button is `restart`, which erases the save and reloads. The content
 for a day two does not exist. This section is about the first increment, what
@@ -824,7 +752,7 @@ increment 1 shipped and what is left.
 ### What increment 1 leaves, in order
 
 1. A second mystery for day two (the inspector's audit; the missing 128 sheets
-   as evidence the player can find in the town, which needs rank 8's road to
+   as evidence the player can find in the town, which needs **The town side**'s road to
    be walkable, which it is not).
 2. Bells on day two, and a schedule with more than one watch.
 3. Consequences that change the castle, not only the cast: an empty cell, a
@@ -855,7 +783,7 @@ increment 1 shipped and what is left.
 
 - None, but **do not run alongside anything else that touches `save.js`** (no
   other row does today).
-- Rank 7 does not block: the road is scenery in increment 1.
+- **The texture sets** do not block: the road is scenery in increment 1.
 
 ### Constraints
 
@@ -874,7 +802,7 @@ increment 1 shipped and what is left.
 
 ## The two plan suites
 
-**Rank 11. Size ¼.** `test/layout.mjs` (608 lines, Node, ~1 s) checks the
+**Rank 10. Size ¼.** `test/layout.mjs` (608 lines, Node, ~1 s) checks the
 plan's arithmetic; `test/plan-vs-scene.mjs` (528 lines, headless Chromium
 against `vite dev`, about a minute) checks the page against the same plan.
 Both import `makePlan`, `walkability` and `partsOf`. The row: decide what each
@@ -972,8 +900,8 @@ Constable's two conversations and the panel.
 
 ### Dependencies
 
-- None. **Doing this before rank 6** means rank 6 edits the level lists in
-  files whose purpose is written down.
+- None. **Doing this before The turrets** means that row edits the level lists
+  in files whose purpose is written down.
 
 ### Constraints
 

@@ -1,0 +1,66 @@
+{
+  "comment": "The game's two sounds, as parameters rather than as bytes. NOTHING HERE IS A FILE (#519): every sound is synthesised in src/audio.js out of a noise buffer and a handful of oscillators, so the castle makes a noise without a byte of audio on disk, without a licence question, and without a host (#493 would refuse one anyway). `steps` is the foot; `bell` is the chapel bell. The numbers are the only place the sounds are tuned: src/audio.js reads them and holds no default of its own.",
+
+  "steps": {
+    "walkMetres": 1.6,
+    "sprintMetres": 2.2,
+    "comment": "A step every `walkMetres` of ground actually covered, `sprintMetres` while sprinting. Distance and not time, so a body sliding along a wall at half speed does not machine-gun, and a body that is not moving is silent for free. SPECS.md said 0.75 m and 1.0 m, which is a real person's stride and wrong here: WALK_SPEED is 5.2 m/s, so 0.75 m is 6.9 steps a second and 1.0 m at the 1.75 sprint multiplier is 9.1. This player does not walk, he runs at 5.2 m/s, and 1.6 m gives 3.25 steps a second walking and 2.2 m gives 4.1 sprinting, which is a run. The right number is a thing to argue with on a GPU and a pair of ears (#53), and it is here so the argument is one edit.",
+
+    "byMaterial": {
+      "castle_wall_slates": "stone",
+      "defense_wall": "stone",
+      "stone_pavers": "stone",
+      "rock_tile_floor": "stone",
+      "floor_tiles_02": "stone",
+      "grassy_cobblestone": "grass",
+      "wood_planks": "planks",
+      "old_planks_02": "planks",
+      "wooden_gate": "planks",
+      "dirty_carpet": "carpet"
+    },
+    "byKind": {
+      "stair": "stone",
+      "prop": "planks"
+    },
+    "byKindComment": "A surface's material first, its piece's kind second. The kit's stairs-stone.glb carries no texture set at all (it is the kit's own pixel art, #411) and neither does a Poly Haven prop, so the two kinds that can stand a body with no material of their own say what they are made of here. test/layout.mjs check 12 fails any surface that neither map answers for, which is the whole reason there is no default.",
+
+    "classes": {
+      "stone": {
+        "gain": 0.20, "decay": 0.075, "type": "bandpass", "hz": 1500, "q": 0.8,
+        "thumpHz": 96, "thumpGain": 0.42, "thumpDecay": 0.075
+      },
+      "planks": {
+        "gain": 0.19, "decay": 0.125, "type": "bandpass", "hz": 620, "q": 1.7,
+        "thumpHz": 132, "thumpGain": 0.55, "thumpDecay": 0.13
+      },
+      "grass": {
+        "gain": 0.13, "decay": 0.135, "type": "bandpass", "hz": 3600, "q": 0.5,
+        "thumpHz": 0, "thumpGain": 0, "thumpDecay": 0
+      },
+      "carpet": {
+        "gain": 0.10, "decay": 0.085, "type": "lowpass", "hz": 760, "q": 0.7,
+        "thumpHz": 70, "thumpGain": 0.22, "thumpDecay": 0.09
+      }
+    },
+    "classesComment": "One filtered noise burst and one sine thump per step. `hz` and `q` are the filter over the noise: stone is bright and short, planks ring low and longer because a floorboard is a hollow thing, grass is a rustle with no body under it at all, carpet is the same burst with the top taken off. `thump*` is the weight of the boot, which grass has none of. Every step also gets +/- 12% on the filter and +/- 15% on the gain in src/audio.js so two steps are never the same sound."
+  },
+
+  "bell": {
+    "gain": 0.34,
+    "refDistance": 7,
+    "maxDistance": 110,
+    "rolloff": 1.15,
+    "strikeHz": 2600,
+    "strikeGain": 0.30,
+    "strikeDecay": 0.035,
+    "partials": [
+      { "hz": 165, "gain": 0.95, "decay": 3.6, "name": "hum" },
+      { "hz": 330, "gain": 1.00, "decay": 2.7, "name": "prime" },
+      { "hz": 396, "gain": 0.72, "decay": 2.0, "name": "tierce, a minor third over the prime" },
+      { "hz": 495, "gain": 0.46, "decay": 1.4, "name": "quint" },
+      { "hz": 660, "gain": 0.58, "decay": 1.1, "name": "nominal" },
+      { "hz": 1000, "gain": 0.20, "decay": 0.55, "name": "superquint, and the last one worth having" }
+    ],
+    "partialsComment": "A bell is not a chime, and the difference is the tierce: a struck bell's partials are inharmonic, and the minor third at 1.2x the prime is the interval that makes a bell sound like a bell rather than like a sine at 330 Hz. The ratios here are the standard five of a tuned bell (hum 0.5, prime 1, tierce 1.2, quint 1.5, nominal 2) on a 330 Hz prime, which is a bell of about a hundredweight: a chapel bell one man pulls, not a cathedral's. Higher partials die first, which is what the per-partial `decay` is for and what makes the tail a hum rather than a ring."
+  }
+}

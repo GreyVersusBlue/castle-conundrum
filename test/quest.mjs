@@ -247,12 +247,16 @@ function rig({ saved = null } = {}) {
     setEvidenceVisible(id, v) { this.shown[id] = v; if (!v) this.hidden.push(id); },
   };
   const controls = { locks: 0, lock() { this.locks++; } };
+  // The recorder standing in for src/audio.js. It has the one method the
+  // manager calls; a suite that hears nothing is the whole point (#53), so what
+  // is asserted is the call and never a sound.
+  const audio = { bells: 0, bell() { this.bells++; } };
   const state = saved ?? freshState(quest);
   const engine = createMystery({ mystery, npcs: npcDefs, state });
   const restarts = { n: 0 };
   const watches = [];
   const qm = new QuestManager({
-    quest, mystery, riddle, npcs, ui, castle, controlsRef: controls, engine,
+    quest, mystery, riddle, npcs, ui, castle, controlsRef: controls, engine, audio,
     saved, restart: () => { restarts.n++; },
     onWatch: (w) => watches.push(w),
     // What main.js does with onChange, because the stage and the wrong-answer
@@ -263,7 +267,7 @@ function rig({ saved = null } = {}) {
   });
   const npc = (id) => npcs.find((n) => n.id === id);
   return {
-    qm, ui, npcs, castle, controls, engine, state, restarts, watches, npc,
+    qm, ui, npcs, castle, controls, engine, state, restarts, watches, npc, audio,
     /** E on somebody, then step through to the end of what they say. */
     talk(id) { qm.handleInteract(npc(id)); ui.endDialogue(); return ui.toasts; },
     /** E on somebody, the Present button, then a clue in the list that opens. */
@@ -499,9 +503,18 @@ function rig({ saved = null } = {}) {
   check(fx.some((e) => e.type === 'demand'), 'the fourth ring is a demand, not a watch');
   check(r.engine.watch === 'vespers', 'and the watch stays at Vespers');
   check(r.qm.stage === 'accusing' && r.ui.accusation !== null, 'the frame is in `accusing` and the panel is open', r.qm.stage);
+  // AND ALL FOUR RANG (#519). The fourth moves no watch and reaches no
+  // `ringBell` action on any stage, and it is still a man pulling a bell rope:
+  // the sound is on the engine's own bell:<n>, which is the only thing all
+  // four rings have in common.
+  check(r.audio.bells === 4, 'four rings, four bells', `${r.audio.bells}`);
   // A fall named here is the ending, and it is not the same one as three refusals.
   r.ui.say('nobody', []);
   check(r.qm.stage === 'fall' && r.ui.epilogue.class === 'fall', 'calling it a fall ends the day');
+  // The day is over and the rope is dead: `ring()` after the verdict emits no
+  // event, so it makes no noise either.
+  r.ring();
+  check(r.audio.bells === 4, 'and a press at the rope after the verdict rings nothing', `${r.audio.bells}`);
 }
 
 {

@@ -62,8 +62,10 @@ export class QuestManager {
    * @param onChange   called after every batch of effects; main.js marks the autosave.
    * @param engine     src/mystery.js's `createMystery`, or null.
    * @param onWatch    (watchId, {walk}) => void: the world half of a bell.
+   * @param audio      src/audio.js, or anything with `bell()`. Injected the way
+   *                   `ui` is, so test/quest.mjs hands in a recorder.
    */
-  constructor({ quest, mystery = null, riddle, npcs, ui, castle, controlsRef, schedule, restart, saved = null, onChange = null, engine = null, onWatch = null }) {
+  constructor({ quest, mystery = null, riddle, npcs, ui, castle, controlsRef, schedule, restart, saved = null, onChange = null, engine = null, onWatch = null, audio = null }) {
     this.graph = new QuestGraph(quest, QuestManager.actions);
     this.mystery = mystery;
     this.riddle = riddle;
@@ -77,6 +79,7 @@ export class QuestManager {
     this._onChange = onChange;
     this.engine = engine;
     this._onWatch = onWatch;
+    this.audio = audio;
     // The lock the player last pressed E at. `openLock` unlocks that one, so no
     // door id is written down in this file.
     this._lockAsked = null;
@@ -99,7 +102,10 @@ export class QuestManager {
       },
       // The ring itself is `handleBell` below — it is what dispatched the event
       // this action is reacting to — so what is left for the stage to do is the
-      // tracker, which `applyWatch` has already written.
+      // tracker, which `applyWatch` has already written. THE SOUND IS NOT HERE
+      // EITHER (#520), though SPECS.md proposed it: this action only runs for a
+      // stage that carries a `bell:<n>` transition, and the bell rings whether
+      // the graph is listening or not. It is on the engine's own event instead.
       ringBell: () => {},
       openJournal: () => this._openJournal(),
       openAccusation: () => this._openAccusation(),
@@ -171,6 +177,10 @@ export class QuestManager {
     if (!this.engine) return [];
     const before = this.engine.watch;
     const effects = this.engine.ring();
+    // The sound is on the engine's own `bell:<n>`, which every ring emits and
+    // which a day already ended emits none of, so the fourth ring rings and a
+    // press after the verdict does not (#520).
+    if (effects.some((e) => e.type === 'event' && e.name.startsWith('bell:'))) this.audio?.bell();
     if (this.engine.watch !== before) this.applyWatch(this.engine.watch);
     this._surface(effects);
     this._onChange?.(this._snapshot());

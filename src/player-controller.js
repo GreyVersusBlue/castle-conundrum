@@ -5,6 +5,7 @@ import * as THREE from 'three';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 
 import { EYE_HEIGHT, STEP_UP, standAt, moveBody } from './castle-plan.js';
+import { SILENCE } from './audio.js';
 
 const WALK_SPEED = 5.2;
 const SPRINT_MULT = 1.75;
@@ -33,10 +34,15 @@ export class PlayerController {
    * wall on the first floor does not stop a body on the wall walk over it, and
    * the walk's parapet does.
    */
-  constructor(camera, domElement, getColliders, getPlan) {
+  constructor(camera, domElement, getColliders, getPlan, audio = SILENCE) {
     this.camera = camera;
     this.getColliders = getColliders; // () => [{ box }]
     this.getPlan = getPlan; // () => plan, or null before the castle is built
+    this.audio = audio; // src/audio.js, or SILENCE; injected the way `ui` is
+    // Metres walked since the last footfall, and every surface's step class,
+    // built once off the plan the first time a foot lands (#519).
+    this.walked = 0;
+    this.stepClass = null;
     this.controls = new PointerLockControls(camera, domElement);
     this.keys = new Set();
     this.enabled = false;
@@ -104,9 +110,31 @@ export class PlayerController {
     // resolve each axis separately so we slide along walls, and stand each axis
     // separately so a step off a slab's edge in x still lets the z half of the
     // move slide along the edge
+    const x0 = pos.x, z0 = pos.z;
     this.step(pos, move.x, 0);
     this.step(pos, 0, move.z);
     pos.y = this.feet + EYE_HEIGHT;
+    this.footfall(Math.hypot(pos.x - x0, pos.z - z0), sprint);
+  }
+
+  /**
+   * A footstep every stride's worth of ground ACTUALLY COVERED, not every
+   * stride's worth asked for: a body pressed against a wall covers nothing and
+   * goes quiet, which is the behaviour a timer would have got wrong. What the
+   * foot lands on is the plan's own answer, `standAt`, asked once per footfall
+   * rather than once per frame — about three times a second against sixty.
+   */
+  footfall(moved, sprint) {
+    this.walked += moved;
+    const stride = this.audio.stride(sprint);
+    if (!(this.walked >= stride)) return; // also false for a stride of Infinity
+    this.walked = 0;
+    const plan = this.getPlan && this.getPlan();
+    if (!plan) return;
+    if (!this.stepClass) this.stepClass = this.audio.classesFor(plan);
+    const pos = this.camera.position;
+    const on = standAt(plan, pos.x, pos.z, this.feet, STEP_UP);
+    if (on) this.audio.footstep(this.stepClass.get(on.surface));
   }
 
   /**
