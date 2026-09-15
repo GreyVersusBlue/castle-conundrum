@@ -2,7 +2,7 @@
 
 A first-person medieval murder mystery in three.js. Twelve suspects, four
 bells, one accusation. `index.html` at the repo root, source in `src/`, the
-mystery and the castle as data in `data/`, 43 MB of glTF and textures in
+mystery and the castle as data in `data/`, 39 MB of glTF and textures in
 `assets/`, eight suites in `test/`.
 
 **`PLAN.md` is the most valuable file here.** It is 64 K of phase plans — what
@@ -44,9 +44,19 @@ The project lived in `GreyVersusBlue/tools-and-games` under
   `harness.mjs` refuses every offsite request and `test/built.mjs` fails on a
   non-empty `page.__blocked`.
 - **Code dependencies come from npm; assets stay committed** (#493). three is
-  `"three": "0.169.0"` in `package.json`. The 43 MB under `assets/` is in git
+  `"three": "0.169.0"` in `package.json`. The 39 MB under `assets/` is in git
   and stays there. The ceiling is **200 MB** (#499), not the 44.4 MB this
   project carried when the whole site shared one deploy.
+- **Every asset is compressed, by a script, before it is committed** (#506).
+  `npm run assets:encode` runs `tools/encode-assets.mjs` over `assets/` in
+  place: KTX2/Basis for textures, meshopt for the Poly Haven meshes and the NPC
+  bodies, nothing for the Kenney kit (#508). It needs KTX-Software's `ktx` on
+  PATH and is re-runnable, so adding one asset encodes that asset. **The
+  originals are not kept** — git history is the originals — and `dist/` has no
+  encode step in it, because a build-time pipeline would make `npm run dev`
+  serve one format and `dist/` another, which is `test/built.mjs`'s file diff
+  failing by construction. Disk barely moved; video memory went from 317.9 MB
+  to 79.9.
 - **`src/castle-plan.js` is the single source the builder and every suite
   read** (#500). Neither side computes a transform the other cannot see:
   `castle-builder.js` places what the plan says and tags it with a `planId`,
@@ -109,8 +119,9 @@ file keeps a pointer saying which band left.
 | Script | What it does |
 | --- | --- |
 | `npm run dev` | Vite dev server. What the two browser suites drive. |
-| `npm run build` | `dist/`: the hashed bundle in `dist/bundle/`, `assets/` and `data/` copied in whole. |
+| `npm run build` | `dist/`: the hashed bundle in `dist/bundle/`, `assets/` and `data/` copied in whole, the Basis transcoder into `dist/decoders/basis/`. |
 | `npm run preview` | Serves `dist/`. |
+| `npm run assets:encode` | Re-encodes `assets/` in place, KTX2 and meshopt. Hand-run, needs `ktx` (#506). |
 | `npm test` | All eight suites, cheapest first, non-zero on any failure. `npm test layout built` runs a subset. |
 | `npm run play` | **Opens a real visible window** and plays the whole day with pointer lock, WASD and real key presses. Hand-run, on a GPU (#53). Screenshots land in `shots/play/`. |
 

@@ -1,37 +1,246 @@
 {
   "asset": {
-    "generator": "Khronos glTF Blender I/O v1.6.16",
+    "generator": "glTF-Transform v4.5.0",
     "version": "2.0"
   },
-  "scene": 0,
-  "scenes": [
+  "accessors": [
     {
-      "name": "Scene",
-      "nodes": [
-        0
-      ]
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 2856,
+      "normalized": false,
+      "byteOffset": 0,
+      "bufferView": 0
+    },
+    {
+      "type": "VEC3",
+      "componentType": 5126,
+      "count": 1136,
+      "normalized": false,
+      "byteOffset": 0,
+      "bufferView": 1
+    },
+    {
+      "type": "VEC3",
+      "componentType": 5120,
+      "count": 1136,
+      "normalized": true,
+      "byteOffset": 0,
+      "bufferView": 2
+    },
+    {
+      "type": "VEC2",
+      "componentType": 5126,
+      "count": 1136,
+      "normalized": false,
+      "byteOffset": 0,
+      "bufferView": 3
+    },
+    {
+      "type": "VEC3",
+      "componentType": 5122,
+      "count": 1136,
+      "max": [
+        32767,
+        9993,
+        11965
+      ],
+      "min": [
+        -32767,
+        -9993,
+        -11965
+      ],
+      "normalized": true,
+      "byteOffset": 0,
+      "bufferView": 4
+    },
+    {
+      "type": "VEC2",
+      "componentType": 5123,
+      "count": 1136,
+      "normalized": true,
+      "byteOffset": 0,
+      "bufferView": 5
     }
   ],
-  "nodes": [
+  "bufferViews": [
     {
-      "mesh": 0,
-      "name": "WoodenTable_01"
+      "buffer": 1,
+      "byteOffset": 0,
+      "byteLength": 5712,
+      "target": 34963,
+      "extensions": {
+        "EXT_meshopt_compression": {
+          "buffer": 0,
+          "byteOffset": 0,
+          "byteLength": 1010,
+          "mode": "TRIANGLES",
+          "byteStride": 2,
+          "count": 2856
+        }
+      }
+    },
+    {
+      "buffer": 1,
+      "byteOffset": 5712,
+      "byteLength": 13632,
+      "extensions": {
+        "EXT_meshopt_compression": {
+          "buffer": 0,
+          "byteOffset": 1012,
+          "byteLength": 8504,
+          "mode": "ATTRIBUTES",
+          "byteStride": 12,
+          "count": 1136
+        }
+      }
+    },
+    {
+      "buffer": 1,
+      "byteOffset": 19344,
+      "byteLength": 4544,
+      "target": 34962,
+      "byteStride": 4,
+      "extensions": {
+        "EXT_meshopt_compression": {
+          "buffer": 0,
+          "byteOffset": 9516,
+          "byteLength": 1340,
+          "mode": "ATTRIBUTES",
+          "byteStride": 4,
+          "count": 1136
+        }
+      }
+    },
+    {
+      "buffer": 1,
+      "byteOffset": 23888,
+      "byteLength": 9088,
+      "extensions": {
+        "EXT_meshopt_compression": {
+          "buffer": 0,
+          "byteOffset": 10856,
+          "byteLength": 6497,
+          "mode": "ATTRIBUTES",
+          "byteStride": 8,
+          "count": 1136
+        }
+      }
+    },
+    {
+      "buffer": 1,
+      "byteOffset": 32976,
+      "byteLength": 9088,
+      "target": 34962,
+      "byteStride": 8,
+      "extensions": {
+        "EXT_meshopt_compression": {
+          "buffer": 0,
+          "byteOffset": 17356,
+          "byteLength": 4662,
+          "mode": "ATTRIBUTES",
+          "byteStride": 8,
+          "count": 1136
+        }
+      }
+    },
+    {
+      "buffer": 1,
+      "byteOffset": 42064,
+      "byteLength": 4544,
+      "target": 34962,
+      "byteStride": 4,
+      "extensions": {
+        "EXT_meshopt_compression": {
+          "buffer": 0,
+          "byteOffset": 22020,
+          "byteLength": 3655,
+          "mode": "ATTRIBUTES",
+          "byteStride": 4,
+          "count": 1136
+        }
+      }
+    }
+  ],
+  "samplers": [
+    {
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "wrapS": 10497,
+      "wrapT": 10497
+    }
+  ],
+  "textures": [
+    {
+      "sampler": 0,
+      "extensions": {
+        "KHR_texture_basisu": {
+          "source": 1
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "KHR_texture_basisu": {
+          "source": 0
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "KHR_texture_basisu": {
+          "source": 2
+        }
+      }
+    }
+  ],
+  "images": [
+    {
+      "name": "WoodenTable_01_nor_gl",
+      "mimeType": "image/ktx2",
+      "uri": "textures/WoodenTable_01_nor_gl_1k.ktx2"
+    },
+    {
+      "name": "WoodenTable_01_diff",
+      "mimeType": "image/ktx2",
+      "uri": "textures/WoodenTable_01_diff_1k.ktx2"
+    },
+    {
+      "name": "WoodenTable_01_metallic-WoodenTable_01_roughness",
+      "mimeType": "image/ktx2",
+      "uri": "textures/WoodenTable_01_arm_1k.ktx2"
+    }
+  ],
+  "buffers": [
+    {
+      "uri": "WoodenTable_01.bin",
+      "byteLength": 25676
+    },
+    {
+      "byteLength": 46608,
+      "extensions": {
+        "EXT_meshopt_compression": {
+          "fallback": true
+        }
+      }
     }
   ],
   "materials": [
     {
-      "doubleSided": true,
       "name": "WoodenTable_01",
-      "normalTexture": {
-        "index": 0
-      },
+      "doubleSided": true,
       "pbrMetallicRoughness": {
         "baseColorTexture": {
-          "index": 1
+          "index": 0
         },
         "metallicRoughnessTexture": {
           "index": 2
         }
+      },
+      "normalTexture": {
+        "index": 1
       }
     }
   ],
@@ -41,115 +250,50 @@
       "primitives": [
         {
           "attributes": {
-            "POSITION": 0,
-            "NORMAL": 1,
-            "TEXCOORD_0": 2
+            "NORMAL": 2,
+            "POSITION": 4,
+            "TEXCOORD_0": 5
           },
-          "indices": 3,
-          "material": 0
+          "mode": 4,
+          "material": 0,
+          "indices": 0
         }
       ]
     }
   ],
-  "textures": [
+  "nodes": [
     {
-      "sampler": 0,
-      "source": 0
-    },
-    {
-      "sampler": 0,
-      "source": 1
-    },
-    {
-      "sampler": 0,
-      "source": 2
-    }
-  ],
-  "images": [
-    {
-      "mimeType": "image/jpeg",
-      "name": "WoodenTable_01_nor_gl",
-      "uri": "textures/WoodenTable_01_nor_gl_1k.jpg"
-    },
-    {
-      "mimeType": "image/jpeg",
-      "name": "WoodenTable_01_diff",
-      "uri": "textures/WoodenTable_01_diff_1k.jpg"
-    },
-    {
-      "mimeType": "image/jpeg",
-      "name": "WoodenTable_01_metallic-WoodenTable_01_roughness",
-      "uri": "textures/WoodenTable_01_arm_1k.jpg"
-    }
-  ],
-  "accessors": [
-    {
-      "bufferView": 0,
-      "componentType": 5126,
-      "count": 1136,
-      "max": [
+      "name": "WoodenTable_01",
+      "translation": [
+        0,
+        0.2744245895791213,
+        8.940696716308594e-8
+      ],
+      "scale": [
         0.8998239636421204,
-        0.5488492250442505,
-        0.3285874128341675
+        0.8998239636421204,
+        0.8998239636421204
       ],
-      "min": [
-        -0.8998239636421204,
-        -4.5886007882245394e-8,
-        -0.32858723402023315
-      ],
-      "type": "VEC3"
-    },
-    {
-      "bufferView": 1,
-      "componentType": 5126,
-      "count": 1136,
-      "type": "VEC3"
-    },
-    {
-      "bufferView": 2,
-      "componentType": 5126,
-      "count": 1136,
-      "type": "VEC2"
-    },
-    {
-      "bufferView": 3,
-      "componentType": 5123,
-      "count": 2856,
-      "type": "SCALAR"
+      "mesh": 0
     }
   ],
-  "bufferViews": [
+  "scenes": [
     {
-      "buffer": 0,
-      "byteLength": 13632,
-      "byteOffset": 0
-    },
-    {
-      "buffer": 0,
-      "byteLength": 13632,
-      "byteOffset": 13632
-    },
-    {
-      "buffer": 0,
-      "byteLength": 9088,
-      "byteOffset": 27264
-    },
-    {
-      "buffer": 0,
-      "byteLength": 5712,
-      "byteOffset": 36352
+      "name": "Scene",
+      "nodes": [
+        0
+      ]
     }
   ],
-  "samplers": [
-    {
-      "magFilter": 9729,
-      "minFilter": 9987
-    }
+  "scene": 0,
+  "extensionsUsed": [
+    "EXT_meshopt_compression",
+    "KHR_mesh_quantization",
+    "KHR_texture_basisu"
   ],
-  "buffers": [
-    {
-      "byteLength": 42064,
-      "uri": "WoodenTable_01.bin"
-    }
+  "extensionsRequired": [
+    "EXT_meshopt_compression",
+    "KHR_mesh_quantization",
+    "KHR_texture_basisu"
   ]
 }

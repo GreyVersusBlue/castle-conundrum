@@ -19,14 +19,21 @@ under the table here are the one-paragraph summaries; where a summary and
 here on 2026-09-15** (#491 to #503): its own repo, its own CI, Vite instead of
 a hand-vendored `libs/`, and a 200 MB asset ceiling instead of 44.4.
 
-**11 ranked items.** Take rank 1.
+**Asset compression shipped on 2026-09-15** (#506 to #510): KTX2/Basis over
+every texture, meshopt over the Poly Haven props and the NPC bodies, and 317.9
+MB of video memory down to 79.9. `tools/encode-assets.mjs` is the pipeline, and
+anything ranks 2 and 7 add has to come through it.
+
+**10 ranked items.** Take rank 1.
 
 Two things are true of the whole list and worth saying once. **Nothing here has
 been seen on a GPU since Phase 5.** `npm run play` walks the whole intended day
 — twelve people, ten pieces of evidence, three bells, a reload at Sext, the
 accusation and the epilogue, 102 assertions — and no run of it since Phase 5 has
-happened on a machine with real compositing (#53). Rank 4 is that run. And
-**the game has never had a thumb on it**: pointer lock has no phone form at all.
+happened on a machine with real compositing (#53). Rank 3 is that run, and it
+now carries a job it did not have: nobody has looked at a compressed texture.
+And **the game has never had a thumb on it**: pointer lock has no phone form at
+all.
 
 ## How this repo is worked
 
@@ -62,47 +69,20 @@ your decisions and this file's header, ranks and `Claimed` column are updated
 
 | Rank | Item | Size | Model | Claimed | Detail |
 | --- | --- | --- | --- | --- | --- |
-| 1 | KTX2/Basis, meshopt and Draco over the 43 MB of assets, via `@gltf-transform/cli` | 1 | Opus 5 | `claude/inspiring-planck-yfwfsd` | [Asset compression](SPECS.md#asset-compression) |
-| 2 | Sound: footsteps by surface, and the bell | ½ | Fable 5.1 |  | [Sound](SPECS.md#sound) |
-| 3 | A fourth body, and a woman's in particular | ½ | Fable 5.1 |  | [A fourth body](SPECS.md#a-fourth-body) |
-| 4 | A real GPU run of `npm run play`, and somebody looks at the twelve | ¼ | Opus 5 |  | [The GPU run](SPECS.md#the-gpu-run) |
-| 5 | A new preview and og card, from that run | ¼ | Opus 5 |  | [The GPU run](SPECS.md#the-gpu-run) |
-| 6 | Touch: pointer lock has no phone form | 1 | Opus 5 |  | [Touch](SPECS.md#touch) |
-| 7 | The turrets and the tower tops: four cylinders nobody can climb | 1 | Fable 5.1 |  | [The turrets](SPECS.md#the-turrets) |
-| 8 | The town side: a textured ground outside the west barbican, and a road | 1 | Fable 5.1 |  | [The town side](SPECS.md#the-town-side) |
-| 9 | Stirling's Great Hall roof: a hammerbeam from `structure-cross.glb` | ½ | Sonnet 5 |  | [The hall roof](SPECS.md#the-hall-roof) |
-| 10 | A second day, in which the epilogue's consequences play | 2+ | Opus 5 |  | [A second day](SPECS.md#a-second-day) |
-| 11 | `test/layout.mjs` and `test/plan-vs-scene.mjs` overlap; decide what each is for | ¼ | Sonnet 5 |  | [The two plan suites](SPECS.md#the-two-plan-suites) |
-
-## Asset compression
-
-**Rank 1.** `assets/` is 43 MB across 127 files the page actually fetches:
-1k Poly Haven texture sets as .jpg, a Kenney kit of .glb, and three NPC bodies.
-None of it is compressed for the GPU — every texture is decoded to RGBA in
-video memory at full size, and every mesh ships as uncompressed glTF.
-
-The work is `@gltf-transform/cli` over the lot: **KTX2/Basis** for the
-textures, **meshopt** for the geometry, **Draco** where meshopt does not pay.
-three r169 reads all three with the loaders it already ships
-(`KTX2Loader`, `MeshoptDecoder`, `DRACOLoader`); wiring them into
-`src/assets.js` is the code half, and the transcoder and decoder files are
-dependencies that have to land under this origin like everything else (#493).
-
-The ceiling is **200 MB** and this is not a fight for room under it (#499).
-The current build is 42.0 MB with 158 MB of headroom, so the reason to do this
-is load time and video memory, not weight. Two things to hold it to:
-`test/assets.mjs`'s reachability sweep must still pass over whatever the
-pipeline writes, and `test/built.mjs` diffs the file sets the source page and
-the built page fetch — if the pipeline runs at build time rather than as a
-committed re-encode, those two sets stop matching and that assertion is the
-one that will say so.
-
-**Devon's brief, 2026-09-15**, named this increment two of the move and rank 1
-here, explicitly not the session that did the move.
+| 1 | Sound: footsteps by surface, and the bell | ½ | Fable 5.1 |  | [Sound](SPECS.md#sound) |
+| 2 | A fourth body, and a woman's in particular | ½ | Fable 5.1 |  | [A fourth body](SPECS.md#a-fourth-body) |
+| 3 | A real GPU run of `npm run play`, and somebody looks at the twelve | ¼ | Opus 5 |  | [The GPU run](SPECS.md#the-gpu-run) |
+| 4 | A new preview and og card, from that run | ¼ | Opus 5 |  | [The GPU run](SPECS.md#the-gpu-run) |
+| 5 | Touch: pointer lock has no phone form | 1 | Opus 5 |  | [Touch](SPECS.md#touch) |
+| 6 | The turrets and the tower tops: four cylinders nobody can climb | 1 | Fable 5.1 |  | [The turrets](SPECS.md#the-turrets) |
+| 7 | The town side: a textured ground outside the west barbican, and a road | 1 | Fable 5.1 |  | [The town side](SPECS.md#the-town-side) |
+| 8 | Stirling's Great Hall roof: a hammerbeam from `structure-cross.glb` | ½ | Sonnet 5 |  | [The hall roof](SPECS.md#the-hall-roof) |
+| 9 | A second day, in which the epilogue's consequences play | 2+ | Opus 5 |  | [A second day](SPECS.md#a-second-day) |
+| 10 | `test/layout.mjs` and `test/plan-vs-scene.mjs` overlap; decide what each is for | ¼ | Sonnet 5 |  | [The two plan suites](SPECS.md#the-two-plan-suites) |
 
 ## Sound
 
-**Rank 2.** `AudioListener` is on the camera and nothing has ever played
+**Rank 1.** `AudioListener` is on the camera and nothing has ever played
 through it. Footsteps on planks against footsteps on pavers is the cheap one
 and the surface is already known — `surfacesAt` in `src/castle-plan.js` returns
 it. The bell is the obvious one: four watches, and ringing it is the single
@@ -110,22 +90,30 @@ most consequential press in the game.
 
 ## A fourth body
 
-**Rank 3.** Marged, Nest and Lady Alys are three of twelve and the Kenney kit
+**Rank 2.** Marged, Nest and Lady Alys are three of twelve and the Kenney kit
 has no woman's body. Twelve NPCs come off three bodies by tint (#417, #419) and
 that was accepted as a risk, not as a solution. **Question 1 for Devon in
 `PLAN.md`**, and under this repo's own rule a session may answer it: find or
 make a fourth body, add it to `data/npcs.json`'s `cast`, and record the call.
+Whatever it is goes through `tools/encode-assets.mjs` before it is committed
+(#506): an uncompressed body is the one asset nothing else on this list would
+notice.
 
 ## The GPU run
 
-**Ranks 4 and 5.** `npm run play` has not run on a machine with real GPU
+**Ranks 3 and 4.** `npm run play` has not run on a machine with real GPU
 compositing since Phase 5 (#53). It is 102 assertions over the whole day and it
 writes a numbered screenshot per beat into `shots/play/`. Two things come out
 of one run: whether the walk, the stairs and the wall walk actually behave, and
 whether **twelve NPCs off three bodies read as twelve** — photograph all twelve
-in the Great Hall at Vespers and look (`PLAN.md`, Risks).
+in the Great Hall at Vespers and look (`PLAN.md`, Risks). **And now a third:
+nobody has looked at a compressed texture.** #507 put ETC1S on every diffuse and
+UASTC on every normal and ARM map on a reading of what each codec does to which
+channels, checked by nothing but bytes and a headless software rasteriser.
+Whether 8 m of `castle_wall_slates` bands is a question only a real render
+answers.
 
-Rank 5 depends on rank 4 having happened. The board preview and og card in
+Rank 4 depends on rank 3 having happened. The board preview and og card in
 `tools-and-games` are from before Phase 3: they show the archway wide open in a
 7x7 courtyard that no longer exists, with none of the HUD the game has now
 (#374, #379). New images come out of the same run. **Where they go is Devon's**
@@ -133,33 +121,35 @@ Rank 5 depends on rank 4 having happened. The board preview and og card in
 
 ## Touch
 
-**Rank 6.** Pointer lock has no phone form and the project has never had a
+**Rank 5.** Pointer lock has no phone form and the project has never had a
 thumb on it. This is a second input scheme, not a HUD addition: look, move,
 sprint, and a single E that has to mean talk, examine and ring depending on
 what is in front of it.
 
 ## The turrets
 
-**Rank 7.** Four cylinders nobody can climb. A third stair per inner tower and
+**Rank 6.** Four cylinders nobody can climb. A third stair per inner tower and
 a view over the whole plan from 12 m. Phase 5 built the upper level and the
 wall walk and stopped below the tower tops.
 
 ## The town side
 
-**Rank 8.** The world ends at the curtain by budget. A textured ground outside
+**Rank 7.** The world ends at the curtain by budget. A textured ground outside
 the west barbican and a road is one texture set Devon dropped
 (`forest_ground_06`) and a different ending — the clerk arrives from somewhere
-and currently that somewhere is a hard edge.
+and currently that somewhere is a hard edge. The texture set goes through
+`tools/encode-assets.mjs` first (#506), which rewrites the paths
+`data/scene-config.json` needs as it encodes.
 
 ## The hall roof
 
-**Rank 9.** The Great Hall is full height and open to the sky: `PLAN.md` says
+**Rank 8.** The Great Hall is full height and open to the sky: `PLAN.md` says
 "a flat ceiling", and no piece in the plan roofs it. A hammerbeam from
 `structure-cross.glb` is a day's work and not a gameplay change.
 
 ## A second day
 
-**Rank 10, and a 2+.** The save schema already has `watch` and `accusations[]`
+**Rank 9, and a 2+.** The save schema already has `watch` and `accusations[]`
 and nothing stops a day two in which the epilogue's consequences play. The
 content does not exist — that is the whole row, and it is a writing job the
 size of `PLAN.md`'s mystery section before it is a code job. Do one increment,
@@ -167,7 +157,7 @@ ship it, leave the row standing.
 
 ## The two plan suites
 
-**Rank 11.** `test/layout.mjs` checks the plan's arithmetic in Node and
+**Rank 10.** `test/layout.mjs` checks the plan's arithmetic in Node and
 `test/plan-vs-scene.mjs` checks the scene against the same plan in a browser,
 and the second is slower than the whole rest of the suite put together. Phase 2
 wrote `layout.mjs` when it was the only check there was; some of what it asserts

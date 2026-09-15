@@ -35,8 +35,16 @@ Then open the URL it prints. `npm run build` writes `dist/`, and
 `npm run preview` serves that.
 
 Nothing the page fetches leaves its own origin: no CDN, no font host, no asset
-host. three comes from npm at build time; the 43 MB of glTF and textures under
+host. three comes from npm at build time; the 39 MB of glTF and textures under
 `assets/` is committed to this repo and copied into `dist/` whole.
+
+Every texture under `assets/` is KTX2/Basis and every Poly Haven mesh and NPC
+body is meshopt-compressed, which is what takes the castle's textures from
+317.9 MB of video memory to 79.9 (#506 to #510). That is a **committed
+re-encode**, not a build step: `npm run assets:encode` runs
+`tools/encode-assets.mjs` over `assets/` in place, and it needs
+[KTX-Software](https://github.com/KhronosGroup/KTX-Software)'s `ktx` on PATH.
+Run it on anything you add before you commit it.
 
 ## The suites
 
@@ -79,4 +87,5 @@ history intact. `PLAN.md` was moved unedited and still spells the old paths.
 ## Credits
 
 Models from [Kenney](https://kenney.nl/)'s Retro Fantasy Kit (CC0) and
-[Poly Haven](https://polyhaven.com/) (CC0).
+[Poly Haven](https://polyhaven.com/) (CC0), re-encoded in place; git history is
+the originals.

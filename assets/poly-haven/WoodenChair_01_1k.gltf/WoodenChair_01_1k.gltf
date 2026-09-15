@@ -1,37 +1,223 @@
 {
   "asset": {
-    "generator": "Khronos glTF Blender I/O v1.6.16",
+    "generator": "glTF-Transform v4.5.0",
     "version": "2.0"
   },
-  "scene": 0,
-  "scenes": [
+  "accessors": [
     {
-      "name": "Scene",
-      "nodes": [
-        0
-      ]
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 59976,
+      "normalized": false,
+      "byteOffset": 0,
+      "bufferView": 0
+    },
+    {
+      "type": "VEC3",
+      "componentType": 5126,
+      "count": 13327,
+      "normalized": false,
+      "byteOffset": 0,
+      "bufferView": 1
+    },
+    {
+      "type": "VEC3",
+      "componentType": 5120,
+      "count": 13327,
+      "normalized": true,
+      "byteOffset": 0,
+      "bufferView": 2
+    },
+    {
+      "type": "VEC2",
+      "componentType": 5126,
+      "count": 13327,
+      "normalized": false,
+      "byteOffset": 0,
+      "bufferView": 3
+    },
+    {
+      "type": "VEC3",
+      "componentType": 5122,
+      "count": 13327,
+      "max": [
+        9917,
+        32767,
+        9489
+      ],
+      "min": [
+        -9917,
+        -32767,
+        -9489
+      ],
+      "normalized": true,
+      "byteOffset": 0,
+      "bufferView": 4
     }
   ],
-  "nodes": [
+  "bufferViews": [
     {
-      "mesh": 0,
-      "name": "WoodenChair_01"
+      "buffer": 1,
+      "byteOffset": 0,
+      "byteLength": 119952,
+      "target": 34963,
+      "extensions": {
+        "EXT_meshopt_compression": {
+          "buffer": 0,
+          "byteOffset": 0,
+          "byteLength": 22551,
+          "mode": "TRIANGLES",
+          "byteStride": 2,
+          "count": 59976
+        }
+      }
+    },
+    {
+      "buffer": 1,
+      "byteOffset": 119952,
+      "byteLength": 159924,
+      "extensions": {
+        "EXT_meshopt_compression": {
+          "buffer": 0,
+          "byteOffset": 22552,
+          "byteLength": 107906,
+          "mode": "ATTRIBUTES",
+          "byteStride": 12,
+          "count": 13327
+        }
+      }
+    },
+    {
+      "buffer": 1,
+      "byteOffset": 279876,
+      "byteLength": 53308,
+      "target": 34962,
+      "byteStride": 4,
+      "extensions": {
+        "EXT_meshopt_compression": {
+          "buffer": 0,
+          "byteOffset": 130460,
+          "byteLength": 35746,
+          "mode": "ATTRIBUTES",
+          "byteStride": 4,
+          "count": 13327
+        }
+      }
+    },
+    {
+      "buffer": 1,
+      "byteOffset": 333184,
+      "byteLength": 106616,
+      "target": 34962,
+      "byteStride": 8,
+      "extensions": {
+        "EXT_meshopt_compression": {
+          "buffer": 0,
+          "byteOffset": 166208,
+          "byteLength": 66990,
+          "mode": "ATTRIBUTES",
+          "byteStride": 8,
+          "count": 13327
+        }
+      }
+    },
+    {
+      "buffer": 1,
+      "byteOffset": 439800,
+      "byteLength": 106616,
+      "target": 34962,
+      "byteStride": 8,
+      "extensions": {
+        "EXT_meshopt_compression": {
+          "buffer": 0,
+          "byteOffset": 233200,
+          "byteLength": 54548,
+          "mode": "ATTRIBUTES",
+          "byteStride": 8,
+          "count": 13327
+        }
+      }
+    }
+  ],
+  "samplers": [
+    {
+      "magFilter": 9729,
+      "minFilter": 9987,
+      "wrapS": 10497,
+      "wrapT": 10497
+    }
+  ],
+  "textures": [
+    {
+      "sampler": 0,
+      "extensions": {
+        "KHR_texture_basisu": {
+          "source": 1
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "KHR_texture_basisu": {
+          "source": 0
+        }
+      }
+    },
+    {
+      "sampler": 0,
+      "extensions": {
+        "KHR_texture_basisu": {
+          "source": 2
+        }
+      }
+    }
+  ],
+  "images": [
+    {
+      "name": "WoodenChair_01_nor_gl",
+      "mimeType": "image/ktx2",
+      "uri": "textures/WoodenChair_01_nor_gl_1k.ktx2"
+    },
+    {
+      "name": "WoodenChair_01_diff",
+      "mimeType": "image/ktx2",
+      "uri": "textures/WoodenChair_01_diff_1k.ktx2"
+    },
+    {
+      "name": "WoodenChair_01_metallic-WoodenChair_01_roughness",
+      "mimeType": "image/ktx2",
+      "uri": "textures/WoodenChair_01_arm_1k.ktx2"
+    }
+  ],
+  "buffers": [
+    {
+      "uri": "WoodenChair_01.bin",
+      "byteLength": 287748
+    },
+    {
+      "byteLength": 546416,
+      "extensions": {
+        "EXT_meshopt_compression": {
+          "fallback": true
+        }
+      }
     }
   ],
   "materials": [
     {
-      "doubleSided": true,
       "name": "WoodenChair_01",
-      "normalTexture": {
-        "index": 0
-      },
+      "doubleSided": true,
       "pbrMetallicRoughness": {
         "baseColorTexture": {
-          "index": 1
+          "index": 0
         },
         "metallicRoughnessTexture": {
           "index": 2
         }
+      },
+      "normalTexture": {
+        "index": 1
       }
     }
   ],
@@ -41,115 +227,50 @@
       "primitives": [
         {
           "attributes": {
-            "POSITION": 0,
-            "NORMAL": 1,
-            "TEXCOORD_0": 2
+            "NORMAL": 2,
+            "TEXCOORD_0": 3,
+            "POSITION": 4
           },
-          "indices": 3,
-          "material": 0
+          "mode": 4,
+          "material": 0,
+          "indices": 0
         }
       ]
     }
   ],
-  "textures": [
+  "nodes": [
     {
-      "sampler": 0,
-      "source": 0
-    },
-    {
-      "sampler": 0,
-      "source": 1
-    },
-    {
-      "sampler": 0,
-      "source": 2
-    }
-  ],
-  "images": [
-    {
-      "mimeType": "image/jpeg",
-      "name": "WoodenChair_01_nor_gl",
-      "uri": "textures/WoodenChair_01_nor_gl_1k.jpg"
-    },
-    {
-      "mimeType": "image/jpeg",
-      "name": "WoodenChair_01_diff",
-      "uri": "textures/WoodenChair_01_diff_1k.jpg"
-    },
-    {
-      "mimeType": "image/jpeg",
-      "name": "WoodenChair_01_metallic-WoodenChair_01_roughness",
-      "uri": "textures/WoodenChair_01_arm_1k.jpg"
-    }
-  ],
-  "accessors": [
-    {
-      "bufferView": 0,
-      "componentType": 5126,
-      "count": 13327,
-      "max": [
-        0.3440864086151123,
-        2.2721478939056396,
-        0.2913127839565277
+      "name": "WoodenChair_01",
+      "translation": [
+        0,
+        1.1353904658462852,
+        -0.03791813552379608
       ],
-      "min": [
-        -0.3440864086151123,
-        -0.0013669622130692005,
-        -0.3671490550041199
+      "scale": [
+        1.1367574280593544,
+        1.1367574280593544,
+        1.1367574280593544
       ],
-      "type": "VEC3"
-    },
-    {
-      "bufferView": 1,
-      "componentType": 5126,
-      "count": 13327,
-      "type": "VEC3"
-    },
-    {
-      "bufferView": 2,
-      "componentType": 5126,
-      "count": 13327,
-      "type": "VEC2"
-    },
-    {
-      "bufferView": 3,
-      "componentType": 5123,
-      "count": 59976,
-      "type": "SCALAR"
+      "mesh": 0
     }
   ],
-  "bufferViews": [
+  "scenes": [
     {
-      "buffer": 0,
-      "byteLength": 159924,
-      "byteOffset": 0
-    },
-    {
-      "buffer": 0,
-      "byteLength": 159924,
-      "byteOffset": 159924
-    },
-    {
-      "buffer": 0,
-      "byteLength": 106616,
-      "byteOffset": 319848
-    },
-    {
-      "buffer": 0,
-      "byteLength": 119952,
-      "byteOffset": 426464
+      "name": "Scene",
+      "nodes": [
+        0
+      ]
     }
   ],
-  "samplers": [
-    {
-      "magFilter": 9729,
-      "minFilter": 9987
-    }
+  "scene": 0,
+  "extensionsUsed": [
+    "EXT_meshopt_compression",
+    "KHR_mesh_quantization",
+    "KHR_texture_basisu"
   ],
-  "buffers": [
-    {
-      "byteLength": 546416,
-      "uri": "WoodenChair_01.bin"
-    }
+  "extensionsRequired": [
+    "EXT_meshopt_compression",
+    "KHR_mesh_quantization",
+    "KHR_texture_basisu"
   ]
 }

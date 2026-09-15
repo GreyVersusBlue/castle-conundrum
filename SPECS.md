@@ -7,7 +7,9 @@ decision. Every "recommendation" below is exactly that, and the session that
 ships the row is the one that records the call with a number.
 
 Written 2026-09-15 against `main` at `bb61958`, from the code and data as they
-are, not from the briefs. Where a brief and the code disagree, the code is
+are, not from the briefs. **Rank 1, asset compression, shipped the same day
+(#506 to #510) and its section is gone**; what it left behind for the rows that
+touch assets is named in their Dependencies. Where a brief and the code disagree, the code is
 quoted and the disagreement is named. Measurements are `git ls-tree`, `du` and
 `ls -la` on that commit.
 
@@ -27,7 +29,7 @@ Each row has the same five parts.
    those.
 
 The depth follows the `Size` column: a ¼ gets bullets, a 1 gets the file-level
-plan, and the 2+ (rank 10) is mostly about the first increment.
+plan, and the 2+ (rank 9) is mostly about the first increment.
 
 ## What every row shares
 
@@ -51,162 +53,9 @@ Four facts every row below leans on, stated once:
 
 ---
 
-## Asset compression
-
-**Rank 1. Size 1.** `assets/` is 43 MB, 326 files tracked, 127 fetched by the
-page. Nothing is compressed for the GPU: every 1k jpg is decoded to 4 MB of RGBA
-in video memory and every mesh is raw float glTF. The row is `@gltf-transform/cli`
-over the lot, with KTX2/Basis for textures, meshopt for geometry, Draco where
-meshopt does not pay, and three r169's own loaders wired into `src/assets.js`.
-
-### Scope
-
-What is actually on disk, by class, because the pipeline is different for each:
-
-| Class | Where | Size | What compression buys |
-| --- | --- | --- | --- |
-| Poly Haven texture sets, 10 materials | `assets/poly-haven/*/textures/*.jpg`, named directly by `data/scene-config.json`'s `materials` | ~20 MB | Video memory. A 1k jpg is 4 MB decoded; KTX2 stays compressed on the GPU at 0.5 to 1 MB. |
-| Poly Haven prop models, 10 `.gltf` + `.bin` + `textures/` | `assets/poly-haven/<prop>/` | ~15 MB, mostly textures (lantern 3.4 MB, kite shield 3.4 MB) | Same, plus meshopt on the `.bin`. |
-| NPC bodies | `assets/NPCs/{Adventurer,Farmer,King}.glb` | 5.3 MB | Geometry and animation only: the three carry **zero images** and 24 clips each. meshopt quantises the animation samplers; Draco does nothing for animation. |
-| Kenney kit, 106 GLBs | `assets/kenney_retro-fantasy-kit/Models/glb-format/` | 2.1 MB | Almost nothing. Embedded 64 px PNGs, tiny meshes. |
-
-The generator string in all three NPC files is `glTF-Transform v4.4.2`: they have
-been through the tool once already, uncompressed.
-
-Files that change:
-
-- **`src/assets.js`.** `loadPBRMaterial` uses `THREE.TextureLoader` on a jpg
-  path; it needs a `KTX2Loader` (with `setTranscoderPath` pointing at an
-  on-origin copy of `basis_transcoder.js` + `.wasm`, 584 KB in
-  `node_modules/three/examples/jsm/libs/basis/`) when the path ends `.ktx2`.
-  `gltfLoader` needs `setKTX2Loader`, `setMeshoptDecoder` (`meshopt_decoder.module.js`,
-  25 KB, a JS module Vite can bundle) and, if Draco is used, `setDRACOLoader`
-  with `setDecoderPath` at an on-origin copy of `libs/draco/gltf/` (~1 MB).
-  `tuneTexture` reads `tex.image.width`; a compressed texture's `image` is
-  `{width, height}` and the read still works, but `magFilter = NearestFilter`
-  must not be applied to a KTX2 texture (mipmaps are baked; filtering is per
-  format). `KTX2Loader` needs `detectSupport(renderer)` before the first load,
-  which is the same ordering constraint `setTextureQuality` already carries.
-- **`vite.config.js`.** The transcoder and decoder files are not in the module
-  graph (three loads them by URL) so they have to be copied into `dist/bundle/`
-  or `dist/decoders/` by the same plugin that copies `assets/` and `data/`, and
-  served under `npm run dev` too. The path handed to `setTranscoderPath` has to
-  be relative (`base: './'`, #505).
-- **`data/scene-config.json`.** Every `materials.<name>.{diffuse,normal,arm,rough}`
-  path changes from `.jpg` to `.ktx2` if textures are re-encoded on disk.
-- **The Poly Haven `.gltf` files.** `images[].uri` moves to `.ktx2` and the
-  file gains `KHR_texture_basisu` (and `EXT_meshopt_compression` on the `.bin`).
-  `test/assets.mjs`'s reachability sweep already reads `images[].uri` and
-  `buffers[].uri` out of these, so it follows the rename on its own.
-- **A script**, `tools/encode-assets.mjs` or an `npm run assets:encode` entry,
-  that re-runs the pipeline from the originals. This is what ranks 3 and 8 need
-  when they add an asset later. `@gltf-transform/cli` is a devDependency; the
-  encoders it needs (`ktx` for KTX2, `meshoptimizer`, `draco3d`) are its own.
-- **`package.json`, `package-lock.json`.** The devDependency, and the two new
-  runtime imports from `three/addons/`.
-- **`test/gltf.mjs`.** This is the constraint the brief does not mention.
-  `readGLTF` and `accessor` read buffer views raw. `partsOf` survives meshopt
-  and Draco because it reads each POSITION accessor's `min`/`max`, which both
-  extensions keep. **`triangles()` does not survive either**: it decodes indices
-  and positions by hand, and `test/assets.mjs` calls it on every model
-  reference (`isPreviewBall`, checks 1 and 2) and on `wall-fortified-gate.glb`
-  (`openingOf`, check 3, the gate-leaf fit). Compressing the kit or the NPC
-  bodies with meshopt or Draco therefore breaks `assets.mjs` unless the Node
-  reader learns to decode. `meshoptimizer`'s npm package has a JS decoder that
-  runs in Node; Draco's needs `draco3d` and WASM in Node. Either is a day on
-  its own.
-- **`test/assets.mjs`.** Three literals name texture slots and the `.jpg`
-  assumption is implicit in the material sweep; the complete-set rail (3b) is
-  slot-based and survives.
-- **`test/built.mjs`.** Diffs the served file set between source and bundle
-  (127 files today). If the pipeline runs as a committed re-encode, both sides
-  change together and the count moves. If it ran at build time, the source
-  page would fetch `.jpg` and the built page `.ktx2` and the diff would fail,
-  which is the assertion the brief points at.
-
-### Acceptance
-
-- `npm run build` and all eight suites green.
-- `test/built.mjs` shows `dist/` under 200 MB (#499) and, new, asserts the
-  transcoder and decoder files are present in `dist/` and that the built page
-  fetched at least one `.ktx2`, so a silent fall back to jpg cannot pass.
-- `test/assets.mjs` still reports every reference resolving and every byte
-  under `assets/poly-haven` and `assets/NPCs` asked for. The 3b rail grows one
-  line: every declared map path ends `.ktx2` (or, if the row decides to keep
-  jpg for some class, that class is named).
-- A measurement in the PR body and `HISTORY.md`: bytes on disk before and after
-  per class, and `renderer.info.memory.textures` before and after off the live
-  page. The reason for the row is load time and video memory, not weight, so
-  the number that has to move is the second.
-- **Guard-rails, broken on purpose from green (#34):**
-  - Delete the copied `basis_transcoder.wasm` out of `dist/`: `test/built.mjs`
-    fails on `no console errors` (KTX2Loader logs the 404) and on the new
-    "decoders present" line. If only the second fires, the first is not
-    catching what its comment claims.
-  - Point one material at its old `.jpg` path: the new 3b line names the
-    material and the slot.
-  - Collapse the pipeline to skip one texture set: `test/assets.mjs` check 4
-    reports the `.jpg` files nothing references, or check 1 reports the
-    `.ktx2` nothing has.
-  - Remove `setMeshoptDecoder`: the page logs `MISSING/BROKEN ASSET` for every
-    meshopt file and `plan-vs-scene.mjs` fails on `loaded as a magenta
-    placeholder box`.
-
-### Open calls
-
-- **Committed re-encode, or build-time pipeline?** Recommend **committed**.
-  Seven suites read `assets/` off disk at repo-relative paths; `built.mjs`'s
-  diff is written for one file set; and #493 says assets are in git. A
-  build-time pipeline puts 43 MB of encoding into every CI run and makes
-  `npm run dev` serve something different from `dist/`. Keep the originals?
-  Recommend **no**: git history is the originals (#390's reasoning), and a
-  second copy on disk is exactly what check 4 exists to refuse.
-- **ETC1S or UASTC?** Recommend **UASTC for normal maps, ETC1S for diffuse and
-  arm/rough**. ETC1S is 4 to 8x smaller on disk but visibly bands a normal map
-  on flat stone; UASTC at 1k is about 1 MB per map before supercompression,
-  which can be **larger than the jpg it replaces**. Disk size may go up on the
-  normal maps. That is acceptable under #499 and is the reason the number to
-  report is video memory.
-- **meshopt on the NPC bodies and the kit?** Recommend **meshopt on the Poly
-  Haven props and the NPC bodies, nothing on the kit**. The kit is 2.1 MB and
-  its 106 files are what `assets.mjs` reads for the gate fit; the saving does
-  not pay for teaching `triangles()` to decode. The NPC bodies are 5.3 MB of
-  animation and the isPreviewBall check on them only reads node names and
-  bounds, so a Node meshopt decoder is needed for exactly one call and one
-  file class. If that is still too much, do textures only and record it.
-- **Draco at all?** Recommend **no**. Draco buys over meshopt only on dense
-  static meshes, and there are none here; it costs a 1 MB decoder under the
-  origin and a second Node decode path.
-- **Where do the decoder files live in `dist/`?** Recommend `dist/decoders/`,
-  copied by the existing `copyStatic` plugin, referenced relatively.
-
-### Dependencies
-
-- None to start. **Ranks 3 and 8 add assets** and must go through this row's
-  script if this row has shipped, so the script is a deliverable, not a
-  convenience. If either ships first, this row re-encodes what they added.
-- Runs against `npm run play` only for a look; nothing here is real-time.
-
-### Constraints
-
-- #493 (transcoder, decoder and every texture under this origin; `harness.mjs`
-  and `built.mjs` enforce it).
-- #499 (200 MB in `built.mjs`; UASTC can raise disk size and that is allowed).
-- #390 and `assets.mjs` check 4 (every file under `poly-haven` and `NPCs`
-  named by `data/`, directly or through a `.gltf`).
-- #501 (`built.mjs` diffs what was served, not requested; a committed encode
-  keeps the two pages' sets equal).
-- #500 is untouched: no transform changes. But **`partsOf` reads accessor
-  `min`/`max`**, and an encoder option that drops them (quantisation without
-  min/max rewrite) would move every plan box; `plan-vs-scene.mjs` would say so.
-- #34 (the four breaks above, and the "decoders present" line has to be
-  proven non-vacuous by the wasm deletion, not assumed).
-
----
-
 ## Sound
 
-**Rank 2. Size ½.** `scene-setup.js:36` creates an `AudioListener`, adds it to
+**Rank 1. Size ½.** `scene-setup.js:36` creates an `AudioListener`, adds it to
 the camera and returns it; `main.js` never reads it. Nothing has ever played.
 Two sounds: footsteps by surface, and the bell.
 
@@ -289,7 +138,7 @@ Two sounds: footsteps by surface, and the bell.
 
 ## A fourth body
 
-**Rank 3. Size ½.** Marged (cook), Nest (laundress) and Lady Alys are three of
+**Rank 2. Size ½.** Marged (cook), Nest (laundress) and Lady Alys are three of
 twelve and wear `Farmer.glb`, `Farmer.glb` and `King.glb`. Twelve people off
 three bodies by tint was Devon's bet (#417, #419) and PLAN.md's own risk list
 calls it the one it would bet the project fails on. This repo's rule lets a
@@ -355,7 +204,10 @@ session answer the question.
   can take. Devon ranked this above rank 4 knowing that; ship it on the plan's
   stated risk and let rank 4 look at thirteen bodies' worth of question instead
   of twelve.
-- If rank 1 has shipped, the file goes through its encode script.
+- **The body goes through `tools/encode-assets.mjs`** (#506), which is shipped:
+  `npm run assets:encode` meshopts it in place. It needs KTX-Software's `ktx` on
+  PATH. A body committed uncompressed passes every suite and is the one asset
+  nothing would catch.
 
 ### Constraints
 
@@ -370,10 +222,10 @@ session answer the question.
 
 ## The GPU run
 
-**Ranks 4 and 5. Size ¼ each.** `npm run play` is 102 assertions and a numbered
+**Ranks 3 and 4. Size ¼ each.** `npm run play` is 102 assertions and a numbered
 screenshot per beat into `shots/play/`, and no run of it since Phase 5 has
 happened on a machine with real compositing (#53). Phases 5, 6 and 7 each list
-a GPU exit criterion as outstanding. Rank 5 makes a new preview and og card
+a GPU exit criterion as outstanding. Rank 4 makes a new preview and og card
 from that run.
 
 ### Scope, rank 4
@@ -440,11 +292,11 @@ from that run.
 
 ### Dependencies
 
-- **Rank 5 cannot start until rank 4 has run**, and `BACKLOG.md` says so.
-- Rank 4 needs a machine with a GPU, which is Devon's; a session can add the
+- **Rank 4 cannot start until rank 3 has run**, and `BACKLOG.md` says so.
+- Rank 3 needs a machine with a GPU, which is Devon's; a session can add the
   `snap` beat and cannot run it. If a session is asked to take rank 4 without
   one, the honest output is the beat and a note, not a claim.
-- Rank 3 wants rank 4's photograph as evidence; see above.
+- Rank 2 wants rank 3's photograph as evidence; see above.
 
 ### Constraints
 
@@ -458,7 +310,7 @@ from that run.
 
 ## Touch
 
-**Rank 6. Size 1.** `PlayerController` is `PointerLockControls` plus WASD off
+**Rank 5. Size 1.** `PlayerController` is `PointerLockControls` plus WASD off
 `document` keydown; `InteractionSystem` listens for `KeyE` and `KeyJ` on the
 document; `main.js` gates movement on `player.isLocked` and re-shows the start
 overlay on `unlock`. A phone has none of that. This is a second input scheme.
@@ -545,7 +397,7 @@ overlay on `unlock`. A phone has none of that. This is a second input scheme.
 
 ## The turrets
 
-**Rank 7. Size 1.** Eight drums are 12 m high with a level-2 room whose floor
+**Rank 6. Size 1.** Eight drums are 12 m high with a level-2 room whose floor
 is at 8 m; the builder draws a lid at 12 (`buildDrum`, `d.roof`) as a
 `CircleGeometry` inside the drum piece, with no surface, so nothing stands on
 it. The four inner drums (stockhouse, kings, bakehouse, chapel) carry a
@@ -634,10 +486,10 @@ not: a third flight per inner tower and a floor at 12 m is the row.
 
 ### Dependencies
 
-- **Rank 11 first is cheaper.** It decides what `layout.mjs` and
+- **Rank 10 first is cheaper.** It decides what `layout.mjs` and
   `plan-vs-scene.mjs` each keep, and this row edits the level lists in both.
   Not blocking.
-- Rank 8 is visible from here; no dependency either way.
+- Rank 7 is visible from here; no dependency either way.
 
 ### Constraints
 
@@ -653,7 +505,7 @@ not: a third flight per inner tower and a floor at 12 m is the row.
 
 ## The town side
 
-**Rank 8. Size 1.** The ground is the curtain's footprint plus a 2 m margin,
+**Rank 7. Size 1.** The ground is the curtain's footprint plus a 2 m margin,
 worked out from the placed stone (#436); beyond it is fog from 30 to 150 m.
 `barbican-west` has no archway and PLAN.md's answered question 5 says both
 barbican gates stay shut forever. The spawn is in the barbican facing east. So
@@ -728,9 +580,10 @@ a road, and "a different ending".
 
 ### Dependencies
 
-- If rank 1 has shipped, the restored jpgs go through its encoder before they
+- **The restored jpgs go through `tools/encode-assets.mjs`** (#506, shipped)
+  before they
   are referenced.
-- Rank 7 makes this visible from four more places; not blocking.
+- Rank 6 makes this visible from four more places; not blocking.
 
 ### Constraints
 
@@ -747,7 +600,7 @@ a road, and "a different ending".
 
 ## The hall roof
 
-**Rank 9. Size ½.** PLAN.md says the Great Hall is "full height with a flat
+**Rank 8. Size ½.** PLAN.md says the Great Hall is "full height with a flat
 ceiling". The config says otherwise: `great-hall` is a `tiles` room at level 0
 with `rock_tile_floor`, its north and east partitions are 8 m runs, its south
 and west walls are the curtain, and **no piece in the plan roofs it**. It is
@@ -826,7 +679,7 @@ day's work and not a gameplay change.
 
 ## A second day
 
-**Rank 10. Size 2+.** The save has `watch` and `accusations[]`. The engine's
+**Rank 9. Size 2+.** The save has `watch` and `accusations[]`. The engine's
 `ring()` stops at the fourth bell and `accuse()` records a verdict; the epilogue
 pane's one button is `restart`, which erases the save and reloads. The content
 for a day two does not exist. This section is about the first increment, what
@@ -934,7 +787,7 @@ increment 1 shipped and what is left.
 
 - None, but **do not run alongside anything else that touches `save.js`** (no
   other row does today).
-- Rank 8 does not block: the road is scenery in increment 1.
+- Rank 7 does not block: the road is scenery in increment 1.
 
 ### Constraints
 
@@ -953,7 +806,7 @@ increment 1 shipped and what is left.
 
 ## The two plan suites
 
-**Rank 11. Size ¼.** `test/layout.mjs` (608 lines, Node, ~1 s) checks the
+**Rank 10. Size ¼.** `test/layout.mjs` (608 lines, Node, ~1 s) checks the
 plan's arithmetic; `test/plan-vs-scene.mjs` (528 lines, headless Chromium
 against `vite dev`, about a minute) checks the page against the same plan.
 Both import `makePlan`, `walkability` and `partsOf`. The row: decide what each

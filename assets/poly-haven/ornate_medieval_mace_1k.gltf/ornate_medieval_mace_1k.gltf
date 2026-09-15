@@ -1,61 +1,165 @@
 {
   "asset": {
-    "generator": "glTF-Transform v4.4.2",
+    "generator": "glTF-Transform v4.5.0",
     "version": "2.0"
   },
   "accessors": [
     {
-      "type": "VEC3",
-      "componentType": 5126,
-      "count": 9919,
-      "max": [
-        0.047472625970840454,
-        0.5259767174720764,
-        0.05086246505379677
-      ],
-      "min": [
-        -0.04739980399608612,
-        -0.10402332246303558,
-        -0.050850674510002136
-      ],
-      "bufferView": 0,
-      "byteOffset": 0
+      "type": "SCALAR",
+      "componentType": 5123,
+      "count": 44286,
+      "normalized": false,
+      "byteOffset": 0,
+      "bufferView": 0
     },
     {
       "type": "VEC3",
       "componentType": 5126,
       "count": 9919,
-      "bufferView": 0,
-      "byteOffset": 12
+      "normalized": false,
+      "byteOffset": 0,
+      "bufferView": 1
+    },
+    {
+      "type": "VEC3",
+      "componentType": 5120,
+      "count": 9919,
+      "normalized": true,
+      "byteOffset": 0,
+      "bufferView": 2
     },
     {
       "type": "VEC2",
       "componentType": 5126,
       "count": 9919,
-      "bufferView": 0,
-      "byteOffset": 24
+      "normalized": false,
+      "byteOffset": 0,
+      "bufferView": 3
     },
     {
-      "type": "SCALAR",
+      "type": "VEC3",
+      "componentType": 5122,
+      "count": 9919,
+      "max": [
+        4932,
+        32767,
+        5288
+      ],
+      "min": [
+        -4932,
+        -32767,
+        -5288
+      ],
+      "normalized": true,
+      "byteOffset": 0,
+      "bufferView": 4
+    },
+    {
+      "type": "VEC2",
       "componentType": 5123,
-      "count": 44286,
-      "bufferView": 1,
-      "byteOffset": 0
+      "count": 9919,
+      "normalized": true,
+      "byteOffset": 0,
+      "bufferView": 5
     }
   ],
   "bufferViews": [
     {
-      "buffer": 0,
+      "buffer": 1,
       "byteOffset": 0,
-      "byteLength": 317408,
-      "byteStride": 32,
-      "target": 34962
+      "byteLength": 88572,
+      "target": 34963,
+      "extensions": {
+        "EXT_meshopt_compression": {
+          "buffer": 0,
+          "byteOffset": 0,
+          "byteLength": 17090,
+          "mode": "TRIANGLES",
+          "byteStride": 2,
+          "count": 44286
+        }
+      }
     },
     {
-      "buffer": 0,
-      "byteOffset": 317408,
-      "byteLength": 88572,
-      "target": 34963
+      "buffer": 1,
+      "byteOffset": 88572,
+      "byteLength": 119028,
+      "extensions": {
+        "EXT_meshopt_compression": {
+          "buffer": 0,
+          "byteOffset": 17092,
+          "byteLength": 88305,
+          "mode": "ATTRIBUTES",
+          "byteStride": 12,
+          "count": 9919
+        }
+      }
+    },
+    {
+      "buffer": 1,
+      "byteOffset": 207600,
+      "byteLength": 39676,
+      "target": 34962,
+      "byteStride": 4,
+      "extensions": {
+        "EXT_meshopt_compression": {
+          "buffer": 0,
+          "byteOffset": 105400,
+          "byteLength": 27808,
+          "mode": "ATTRIBUTES",
+          "byteStride": 4,
+          "count": 9919
+        }
+      }
+    },
+    {
+      "buffer": 1,
+      "byteOffset": 247276,
+      "byteLength": 79352,
+      "extensions": {
+        "EXT_meshopt_compression": {
+          "buffer": 0,
+          "byteOffset": 133208,
+          "byteLength": 53229,
+          "mode": "ATTRIBUTES",
+          "byteStride": 8,
+          "count": 9919
+        }
+      }
+    },
+    {
+      "buffer": 1,
+      "byteOffset": 326628,
+      "byteLength": 79352,
+      "target": 34962,
+      "byteStride": 8,
+      "extensions": {
+        "EXT_meshopt_compression": {
+          "buffer": 0,
+          "byteOffset": 186440,
+          "byteLength": 40831,
+          "mode": "ATTRIBUTES",
+          "byteStride": 8,
+          "count": 9919
+        }
+      }
+    },
+    {
+      "buffer": 1,
+      "byteOffset": 405980,
+      "byteLength": 39676,
+      "target": 34962,
+      "byteStride": 4,
+      "extensions": {
+        "EXT_meshopt_compression": {
+          "buffer": 0,
+          "byteOffset": 227272,
+          "byteLength": 29093,
+          "mode": "ATTRIBUTES",
+          "byteStride": 4,
+          "count": 9919
+        }
+      }
     }
   ],
   "samplers": [
@@ -68,39 +172,59 @@
   ],
   "textures": [
     {
-      "source": 1,
-      "sampler": 0
+      "sampler": 0,
+      "extensions": {
+        "KHR_texture_basisu": {
+          "source": 1
+        }
+      }
     },
     {
-      "source": 0,
-      "sampler": 0
+      "sampler": 0,
+      "extensions": {
+        "KHR_texture_basisu": {
+          "source": 0
+        }
+      }
     },
     {
-      "source": 2,
-      "sampler": 0
+      "sampler": 0,
+      "extensions": {
+        "KHR_texture_basisu": {
+          "source": 2
+        }
+      }
     }
   ],
   "images": [
     {
       "name": "ornate_medieval_mace_nor_gl",
-      "mimeType": "image/jpeg",
-      "uri": "textures/ornate_medieval_mace_nor_gl_1k.jpg"
+      "mimeType": "image/ktx2",
+      "uri": "textures/ornate_medieval_mace_nor_gl_1k.ktx2"
     },
     {
       "name": "ornate_medieval_mace_diff",
-      "mimeType": "image/jpeg",
-      "uri": "textures/ornate_medieval_mace_diff_1k.jpg"
+      "mimeType": "image/ktx2",
+      "uri": "textures/ornate_medieval_mace_diff_1k.ktx2"
     },
     {
       "name": "ornate_medieval_mace_metal-ornate_medieval_mace_rough",
-      "mimeType": "image/jpeg",
-      "uri": "textures/ornate_medieval_mace_arm_1k.jpg"
+      "mimeType": "image/ktx2",
+      "uri": "textures/ornate_medieval_mace_arm_1k.ktx2"
     }
   ],
   "buffers": [
     {
       "uri": "ornate_medieval_mace.bin",
-      "byteLength": 405980
+      "byteLength": 256368
+    },
+    {
+      "byteLength": 445656,
+      "extensions": {
+        "EXT_meshopt_compression": {
+          "fallback": true
+        }
+      }
     }
   ],
   "materials": [
@@ -126,13 +250,13 @@
       "primitives": [
         {
           "attributes": {
-            "POSITION": 0,
-            "NORMAL": 1,
-            "TEXCOORD_0": 2
+            "NORMAL": 2,
+            "POSITION": 4,
+            "TEXCOORD_0": 5
           },
           "mode": 4,
           "material": 0,
-          "indices": 3
+          "indices": 0
         }
       ]
     }
@@ -140,6 +264,16 @@
   "nodes": [
     {
       "name": "ornate_medieval_mace",
+      "translation": [
+        0.00003641098737716675,
+        0.21097669750452042,
+        0.000005895271897315979
+      ],
+      "scale": [
+        0.315000019967556,
+        0.315000019967556,
+        0.315000019967556
+      ],
       "mesh": 0
     }
   ],
@@ -151,5 +285,15 @@
       ]
     }
   ],
-  "scene": 0
+  "scene": 0,
+  "extensionsUsed": [
+    "EXT_meshopt_compression",
+    "KHR_mesh_quantization",
+    "KHR_texture_basisu"
+  ],
+  "extensionsRequired": [
+    "EXT_meshopt_compression",
+    "KHR_mesh_quantization",
+    "KHR_texture_basisu"
+  ]
 }
