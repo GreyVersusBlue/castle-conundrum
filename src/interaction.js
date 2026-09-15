@@ -2,7 +2,8 @@
 // facing + line of sight), shows the prompt, and routes E/click into the quest.
 //
 // A TARGET IS NOT ALWAYS AN NPC. Phase 4 put the riddle on the muniment room's
-// word-lock, so a door is a target too. A target is anything with a `group` (the
+// word-lock, so a door is a target too; Phase 6 added the chapel bell and Phase 7
+// the ten pieces of evidence. A target is anything with a `group` (the
 // Object3D it is, which is left out of the occluder list so the ray can reach
 // it), a `name`, optionally a `prompt` to show instead of "talk to", optionally
 // a `focus` world point to aim at when the group's own origin is somewhere else
@@ -47,7 +48,8 @@ export class InteractionSystem {
     this.ui = ui;
     this.scene = scene;
     this.currentTarget = null;
-    this.onInteract = null; // set by quest-manager: (npc) => void
+    this.onInteract = null; // set by main.js: (target) => void
+    this.onJournal = null;  // set by main.js: () => void, the J key
 
     // Everything in the scene except the targets themselves. Rebuilt only when
     // the child count changes, which is once at build time and again when the
@@ -58,6 +60,7 @@ export class InteractionSystem {
 
     document.addEventListener('keydown', (e) => {
       if (e.code === 'KeyE') this.tryInteract();
+      if (e.code === 'KeyJ') this.tryJournal();
     });
     document.addEventListener('click', () => {
       // click advances dialogue only when a dialogue is open (pointer lock swallows other clicks)
@@ -66,7 +69,7 @@ export class InteractionSystem {
   }
 
   tryInteract() {
-    if (this.ui.isRiddleOpen()) return; // riddle overlay owns input
+    if (this.ui.isOverlayOpen()) return; // the riddle, the journal and the accusation own input
     if (this.ui.isDialogueOpen()) {
       this.ui.advanceDialogue();
       return;
@@ -76,8 +79,20 @@ export class InteractionSystem {
     }
   }
 
+  /**
+   * J. A toggle, so the key that opened the journal closes it; the riddle and
+   * the accusation own the screen while they are up, and the journal opened
+   * from inside a conversation is closed by picking something or by its own
+   * button, not by walking away from it.
+   */
+  tryJournal() {
+    if (this.ui.isRiddleOpen() || this.ui.isAccusationOpen()) return;
+    if (this.ui.isJournalOpen()) { this.ui.closeJournal(); return; }
+    if (this.onJournal) this.onJournal();
+  }
+
   update() {
-    if (this.ui.isDialogueOpen() || this.ui.isRiddleOpen()) {
+    if (this.ui.isDialogueOpen() || this.ui.isOverlayOpen()) {
       this.ui.setInteractPrompt(false);
       return;
     }

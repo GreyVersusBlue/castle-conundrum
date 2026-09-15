@@ -358,6 +358,162 @@ try {
     }
   }
 
+  /* ------------------------------------------ the HUD the mystery needs ---
+   * Phase 7 put the engine on the screen: E on a thing examines it, J opens
+   * the journal, and a second conversation with the Constable opens the
+   * accusation panel. test/quest.mjs drives every one of those through the real
+   * manager against a UI that records instead of rendering, which is the whole
+   * of the logic and none of the wiring — the prompts, the element ids, the
+   * classList toggles and the keydown handlers are here.
+   *
+   * WHY THIS IS ALLOWED UNDER #53, again: nothing below moves or is timed. The
+   * camera is placed, frames are waited for so interaction.update() runs, and
+   * what comes back is text and a count of DOM nodes.
+   *
+   * The watch is Terce by now: the bell beat above rang it.
+   */
+  console.log('');
+  {
+    const evidencePiece = plan.pieces.find((p) => p.evidence === 'candle');
+    const wantName = mystery.evidence.find((e) => e.id === 'candle').name;
+    if (!evidencePiece) fail('no piece in the plan carries the `candle` evidence, so there is nothing in the chapel to examine');
+    else {
+      const at = {
+        x: (evidencePiece.box.min.x + evidencePiece.box.max.x) / 2,
+        z: (evidencePiece.box.min.z + evidencePiece.box.max.z) / 2,
+      };
+      // Same shape as the bell beat: this file does not get to decide which
+      // cell works, it offers the near ones and asks the page which of them
+      // the running InteractionSystem actually offers the candles from.
+      const spots = grid.rooms().find((r) => r.id === 'chapel').at
+        .map((c) => ({ ...c, d: Math.hypot(c.x - at.x, c.z - at.z) }))
+        .filter((c) => c.d > 0.9 && c.d < 2.8)
+        .sort((a, b) => a.d - b.d)
+        .slice(0, 12);
+      const looked = await page.evaluate(async ({ spots, at, eye }) => {
+        const frame = () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+        const hidden = (id) => document.getElementById(id).classList.contains('hidden');
+        const promptNow = () => (hidden('interact-prompt') ? null : document.getElementById('interact-prompt').textContent.trim());
+        let chosen = null, prompt = null, tried = 0;
+        for (const spot of spots) {
+          tried++;
+          window.__cam.position.set(spot.x, spot.h + eye, spot.z);
+          window.__cam.rotation.set(0, Math.atan2(-(at.x - spot.x), -(at.z - spot.z)), 0, 'YXZ');
+          await frame();
+          const p = promptNow();
+          if (p && /examine/i.test(p)) { chosen = spot; prompt = p; break; }
+        }
+        if (!chosen) return { chosen: null, tried, prompt: promptNow() };
+        const before = [...window.__mystery.state.clues];
+        document.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyE' }));
+        await frame();
+        // THE TEXT, NOT THE CLASS. The toast hides itself 3.2 s after it is
+        // written, and `await frame()` is two requestAnimationFrames — which
+        // under a software rasteriser with no compositor can take longer than
+        // that, and once did: the text was right and the element was already
+        // `hidden` again. Asserting the class here would be a wall-clock
+        // assertion under exactly the renderer #53 calls inconclusive. What is
+        // being checked is that the manager wrote the clue to the toast at all.
+        const toast = document.getElementById('toast').textContent.trim();
+        const gained = window.__mystery.state.clues.filter((c) => !before.includes(c));
+        // J, twice: it opens the journal and closes it again.
+        document.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyJ' }));
+        await frame();
+        const journal = {
+          open: !hidden('journal-overlay'),
+          rows: document.querySelectorAll('#journal-list .journal-row').length,
+          title: document.getElementById('journal-title').textContent.trim(),
+          text: document.getElementById('journal-list').textContent,
+        };
+        document.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyJ' }));
+        await frame();
+        return { chosen, tried, prompt, toast, gained, journal, shut: hidden('journal-overlay'), held: window.__mystery.state.clues.length };
+      }, { spots, at, eye: EYE_HEIGHT });
+
+      if (!looked.chosen) fail(`none of the ${looked.tried} cells between 0.9 and 2.8 m of the chapel candles offers them${looked.prompt ? ` (the nearest offered "${looked.prompt}")` : ' — no prompt at all'}`);
+      else {
+        check(looked.prompt === `Press E to examine the ${wantName}`, `evidence prompts with mystery.json's own name: "${looked.prompt}"`, `mystery.json says ${JSON.stringify(wantName)}`);
+        check(looked.gained.includes('chapel-candle'), 'E on it lands its clue in the engine', looked.gained.join(', ') || 'nothing landed');
+        check(!!looked.toast && /^New clue: /.test(looked.toast), 'and the manager writes it to the toast', JSON.stringify(looked.toast));
+        check(looked.journal.open && looked.journal.rows === looked.held, `J opens the journal with all ${looked.held} held clues`, `${looked.journal.rows} rows`);
+        check(/What you know/.test(looked.journal.title), 'read-only, not the picker', looked.journal.title);
+        check(/candle/i.test(looked.journal.text), 'and the clue just found is in it');
+        check(looked.shut, 'J again shuts it');
+      }
+    }
+
+    // The Constable, and the panel his last line asks for. The first
+    // conversation moves `arrive` on; the second opens the accusation.
+    const due = nav.at('constable', mystery.watches[1]);
+    if (!due) fail(`the Constable has no station at ${mystery.watches[1]}`);
+    else {
+      const room = grid.rooms().find((r) => r.id === due.room && (r.level ?? 0) === (due.level ?? 0));
+      const spots = (room?.at ?? [])
+        .map((c) => ({ ...c, d: Math.hypot(c.x - due.x, c.z - due.z) }))
+        .filter((c) => c.d > 1.0 && c.d < 2.8)
+        .sort((a, b) => a.d - b.d)
+        .slice(0, 16);
+      const said = await page.evaluate(async ({ spots, due, eye }) => {
+        const frame = () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+        const hidden = (id) => document.getElementById(id).classList.contains('hidden');
+        const E = async () => { document.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyE' })); await frame(); };
+        /* PUT THE CAST AT THE WATCH, WITHOUT THE WALK. The bell beat above rang
+         * Terce in, and ringing a bell sends twelve people walking: the
+         * Constable is somewhere between the chapel and the King's Hall for
+         * several seconds afterwards, so standing at his Terce station finds
+         * nobody there. Waiting for him to arrive would be a timed assertion,
+         * which is what #53 rules out of this file. `applyWatch(watch, {walk:
+         * false})` is the call main.js makes at load for exactly this reason —
+         * a save resumed at Sext opens with everyone already standing where
+         * Sext says — so it puts them there with no motion to time. */
+        window.__quest.applyWatch(window.__mystery.watch, { walk: false });
+        await frame();
+        let chosen = null, prompt = null, tried = 0;
+        for (const spot of spots) {
+          tried++;
+          window.__cam.position.set(spot.x, spot.h + eye, spot.z);
+          window.__cam.rotation.set(0, Math.atan2(-(due.x - spot.x), -(due.z - spot.z)), 0, 'YXZ');
+          await frame();
+          const el = document.getElementById('interact-prompt');
+          const p = hidden('interact-prompt') ? null : el.textContent.trim();
+          if (p && /Lestrange/.test(p)) { chosen = spot; prompt = p; break; }
+        }
+        if (!chosen) return { chosen: null, tried };
+        // One conversation: E to open, then one E per line until it shuts.
+        const out = { chosen, tried, prompt, lines: [] };
+        for (let i = 0; i < 12 && (i === 0 || !hidden('dialogue-box')); i++) {
+          await E();
+          if (!hidden('dialogue-box')) out.lines.push(document.getElementById('dialogue-text').textContent.trim());
+        }
+        out.stageAfterFirst = window.__quest.stage;
+        out.panelAfterFirst = !hidden('accusation-overlay');
+        // And again.
+        for (let i = 0; i < 12 && (i === 0 || !hidden('dialogue-box')); i++) await E();
+        out.panelAfterSecond = !hidden('accusation-overlay');
+        out.names = document.querySelectorAll('#accusation-people .pick-person').length;
+        out.clues = document.querySelectorAll('#accusation-clues .pick-clue').length;
+        out.count = document.getElementById('accusation-count').textContent.trim();
+        out.sayDisabled = document.getElementById('accusation-say').disabled;
+        out.held = window.__mystery.state.clues.length;
+        return out;
+      }, { spots, due, eye: EYE_HEIGHT });
+
+      if (!room) fail(`the plan has no room ${due.room} on level ${due.level ?? 0}, where the Constable stands at ${mystery.watches[1]}`);
+      else if (!said.chosen) fail(`none of the ${said.tried} cells within 2.8 m of the Constable's ${mystery.watches[1]} station offers him`);
+      else {
+        check(said.lines.length >= 3, `E opens his dialogue and steps through ${said.lines.length} lines`, said.prompt);
+        check(!said.lines.includes('{ACCUSE}'), 'the {ACCUSE} token is substituted, not shown raw', JSON.stringify(said.lines.at(-1)));
+        check(said.stageAfterFirst === 'investigate', 'the first conversation moves the day to `investigate`', said.stageAfterFirst);
+        check(!said.panelAfterFirst, 'and opens no accusation panel');
+        check(said.panelAfterSecond, 'the second conversation opens it');
+        check(said.names === 13, 'twelve names and a fall', `${said.names} buttons`);
+        check(said.clues === said.held, `and the ${said.held} clues held so far`, `${said.clues} buttons`);
+        check(/0 of 3/.test(said.count), 'nothing presented yet, up to three allowed', said.count);
+        check(said.sayDisabled, 'and the button is dead until somebody is named');
+      }
+    }
+  }
+
 } catch (err) {
   fail(`the run threw: ${err && err.message ? err.message : err}`);
 } finally {

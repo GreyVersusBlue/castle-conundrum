@@ -1,10 +1,14 @@
 {
-  "comment": "The quest as a graph. `start` names the first stage. Each stage carries the objective the tracker shows, the dialogue state every NPC switches to on entering it (a key into each npc's `dialogue` in npcs.json), the transitions that leave it, and optionally `enter` actions run on arrival. A transition fires `on` an event — `talked:<npcId>` when that npc's dialogue is stepped through to its end (an id in npcs.json's `cast`, which is the only list of people there is from Phase 6), `riddle:solved` when the riddle overlay accepts an answer, `lock:<id>` when the player presses E at a word-locked door — and may `do` actions, move `to` another stage, or both. Actions are the names src/quest-manager.js implements (QuestManager.actions); an `after` is a delay in ms. `tokens` are substituted into dialogue lines before they are shown. test/quest.mjs checks all of this against npcs.json, riddle.json and index.html.",
-  "start": "seek-keystone",
-  "tokens": {},
+  "comment": "The quest as a graph. `start` names the first stage. Each stage carries the objective the tracker shows, the dialogue state every NPC switches to on entering it (a key into each npc's `dialogue` in npcs.json), the transitions that leave it, and optionally `enter` actions run on arrival. A transition fires `on` an event and may `do` actions, move `to` another stage, or both. Actions are the names src/quest-manager.js implements (QuestManager.actions); an `after` is a delay in ms. `tokens` are substituted into dialogue lines before they are shown. test/quest.mjs checks all of this against npcs.json, riddle.json, mystery.json, scene-config.json and index.html.",
+  "frameComment": "PHASE 7 PROMOTED THE FRAME AND DELETED THE RIDDLE QUEST. Phase 1 wrote this graph under a `frame` key beside the three stages the page played (seek-keystone, present-keystone, gate-open) and the Keystone those stages talked about; both are gone, and what is left is the graph the mystery actually runs in. The riddle survived (#416) as the word-lock on the muniment room: `lock:muniment` opens it and `riddle:solved` does `openLock`, which unlocks the room in the engine and swings the leaf. `openGate` and `showVictory` went with the three stages, and so did `frame` itself: there is one graph in this file now.",
+  "events": "talked:<npc> (an id in npcs.json's `cast`) when that conversation is stepped through to its end; lock:<id> when the player presses E at a word-locked door; riddle:solved when the overlay accepts the word; bell:<n> on the nth ring; clue:<id> when a clue lands; press:<npc>:<clue> when a press moves someone; ask:journal and ask:accuse when the player asks for the journal or for the Constable's judgement; accused:<who> and verdict:<class> when he gives it.",
+  "start": "arrive",
+  "tokens": {
+    "{ACCUSE}": "Well. Have you a name for me, or do I write that he fell?"
+  },
   "stages": {
-    "seek-keystone": {
-      "objective": "The muniment room is shut with a word. Find its door in the King's Tower.",
+    "arrive": {
+      "objective": "The master mason is dead at the foot of the Chapel Tower stair. Find the Constable.",
       "dialogueState": "default",
       "transitions": [
         {
@@ -15,164 +19,164 @@
         },
         {
           "on": "riddle:solved",
-          "to": "present-keystone"
+          "do": [
+            "openLock"
+          ]
+        },
+        {
+          "on": "ask:journal",
+          "do": [
+            "openJournal"
+          ]
+        },
+        {
+          "on": "talked:constable",
+          "to": "investigate"
         }
       ],
-      "comment": "Phase 4 moved openRiddle off `talked:scholar` and onto the word-lock itself. The Keystone the next two stages talk about is the riddle quest's own fiction and Phase 7 deletes all three stages with it; what changed here is the trigger and what opens."
+      "comment": "The Constable stands over the body at Prime, which is where the player spawns, so this stage is one conversation long. His lines end in {ACCUSE} and nothing opens here: the first time he asks for a name the answer is the objective below, not the overlay. The word-lock is repeated in all three non-terminal stages because a door that is inert until the player has had a conversation on the other side of the castle reads as a broken door; test/plan-vs-scene.mjs pressed E at it before meeting anybody and found exactly that. The J key is here for the same reason."
     },
-    "present-keystone": {
-      "objective": "The word holds and the muniment room is open. You hold the Keystone — go and tell the Constable.",
+    "investigate": {
+      "objective": "Learn what happened to Hywel ap Gruffudd before Vespers.",
       "dialogueState": "default",
       "transitions": [
         {
+          "on": "lock:muniment",
+          "do": [
+            "openRiddle"
+          ]
+        },
+        {
+          "on": "riddle:solved",
+          "do": [
+            "openLock"
+          ]
+        },
+        {
+          "on": "bell:1",
+          "do": [
+            "ringBell"
+          ]
+        },
+        {
+          "on": "bell:2",
+          "do": [
+            "ringBell"
+          ]
+        },
+        {
+          "on": "bell:3",
+          "do": [
+            "ringBell"
+          ]
+        },
+        {
+          "on": "bell:4",
+          "do": [
+            "ringBell"
+          ],
+          "to": "accusing"
+        },
+        {
+          "on": "ask:journal",
+          "do": [
+            "openJournal"
+          ]
+        },
+        {
           "on": "talked:constable",
-          "to": "gate-open"
+          "do": [
+            "openAccusation"
+          ]
+        },
+        {
+          "on": "ask:accuse",
+          "to": "accusing"
         }
       ],
-      "enter": [
-        "openGate"
-      ],
-      "comment": "openGate is on `enter` and not on the transition so that a save resumed here finds the door open again, the same way the terminal stage below does. Phase 6 repointed this at the Constable and put every stage in `default`: the Guard the player used to tell is gone with the other two of v1, and none of the twelve has a `hasKeystone` line — writing twelve of them for a quest Phase 7 deletes would be content with a known expiry date. The Keystone these two stages talk about is the riddle quest's own fiction and goes with them."
+      "comment": "The whole day. Three bells move the watch; the fourth is the Constable demanding an answer, and it is the only transition out of here that the player does not choose. `talked:constable` opens the accusation overlay rather than moving, because asking him is not the same as answering him: the move happens on `ask:accuse`, which src/mystery.js emits when an accusation is actually made."
     },
-    "gate-open": {
-      "objective": "The muniment room stands open. Walk free — or stay and chat.",
+    "accusing": {
+      "objective": "Name the one who killed him, or call it a fall.",
+      "dialogueState": "default",
+      "enter": [
+        "openAccusation"
+      ],
+      "transitions": [
+        {
+          "on": "lock:muniment",
+          "do": [
+            "openRiddle"
+          ]
+        },
+        {
+          "on": "riddle:solved",
+          "do": [
+            "openLock"
+          ]
+        },
+        {
+          "on": "ask:journal",
+          "do": [
+            "openJournal"
+          ]
+        },
+        {
+          "on": "talked:constable",
+          "do": [
+            "openAccusation"
+          ]
+        },
+        {
+          "on": "verdict:full",
+          "to": "full"
+        },
+        {
+          "on": "verdict:right",
+          "to": "right"
+        },
+        {
+          "on": "verdict:wrong",
+          "to": "wrong"
+        },
+        {
+          "on": "verdict:fall",
+          "to": "fall"
+        }
+      ],
+      "comment": "openAccusation is on `enter` and not on the bell's transition so that a save resumed here comes back to the overlay. A refusal emits ask:accuse and no verdict, so this stage has no ask:accuse transition at all: the overlay was never closed, and the manager writes the Constable's refusal line into the panel that is already open. The word-lock is repeated here because the ledger is still worth opening at Vespers."
+    },
+    "full": {
+      "objective": "The Clerk hangs, the Steward is taken, and the lead is found in the town.",
       "dialogueState": "default",
       "terminal": true,
-      "comment": "openGate again, because a save resumed at a terminal stage re-runs these.",
       "enter": [
-        "openGate",
-        {
-          "do": "showVictory",
-          "after": 2600
-        }
+        "showEpilogue"
       ]
-    }
-  },
-  "frame": {
-    "comment": "The v2 frame (WISHLIST.md, Phase 1): the graph the mystery runs in. Not yet what the page plays; the riddle quest above is, until Phase 7 promotes this to the top level. Validated by validateQuest with the manager's grown action list, driven in Node by test/mystery.mjs, and every stage's dialogueState is checked against the twelve in npcs.json's `cast`. Events: talked:<npc>, bell:<n> (the nth ring), clue:<id>, press:<npc>:<clue>, ask:accuse, ask:journal, accused:<who>, verdict:<class>.",
-    "start": "arrive",
-    "tokens": {},
-    "stages": {
-      "arrive": {
-        "objective": "The master mason is dead at the foot of the Chapel Tower stair. Find the Constable.",
-        "dialogueState": "default",
-        "transitions": [
-          {
-            "on": "talked:constable",
-            "to": "investigate"
-          }
-        ]
-      },
-      "investigate": {
-        "objective": "Learn what happened to Hywel ap Gruffudd before Vespers.",
-        "dialogueState": "default",
-        "transitions": [
-          {
-            "on": "bell:1",
-            "do": [
-              "ringBell"
-            ]
-          },
-          {
-            "on": "bell:2",
-            "do": [
-              "ringBell"
-            ]
-          },
-          {
-            "on": "bell:3",
-            "do": [
-              "ringBell"
-            ]
-          },
-          {
-            "on": "bell:4",
-            "do": [
-              "ringBell"
-            ],
-            "to": "accusing"
-          },
-          {
-            "on": "ask:journal",
-            "do": [
-              "openJournal"
-            ]
-          },
-          {
-            "on": "ask:accuse",
-            "to": "accusing"
-          }
-        ]
-      },
-      "accusing": {
-        "objective": "Name the one who killed him, or call it a fall.",
-        "dialogueState": "default",
-        "enter": [
-          "openAccusation"
-        ],
-        "transitions": [
-          {
-            "on": "ask:accuse",
-            "do": [
-              "openAccusation"
-            ]
-          },
-          {
-            "on": "ask:journal",
-            "do": [
-              "openJournal"
-            ]
-          },
-          {
-            "on": "verdict:full",
-            "to": "full"
-          },
-          {
-            "on": "verdict:right",
-            "to": "right"
-          },
-          {
-            "on": "verdict:wrong",
-            "to": "wrong"
-          },
-          {
-            "on": "verdict:fall",
-            "to": "fall"
-          }
-        ]
-      },
-      "full": {
-        "objective": "The Clerk hangs, the Steward is taken, and the lead is found in the town.",
-        "dialogueState": "default",
-        "terminal": true,
-        "enter": [
-          "showEpilogue"
-        ]
-      },
-      "right": {
-        "objective": "The Clerk hangs. The Steward keeps his post.",
-        "dialogueState": "default",
-        "terminal": true,
-        "enter": [
-          "showEpilogue"
-        ]
-      },
-      "wrong": {
-        "objective": "Someone hangs. Not the one who did it.",
-        "dialogueState": "default",
-        "terminal": true,
-        "enter": [
-          "showEpilogue"
-        ]
-      },
-      "fall": {
-        "objective": "A fall. The inspector signs the sheet.",
-        "dialogueState": "default",
-        "terminal": true,
-        "enter": [
-          "showEpilogue"
-        ]
-      }
+    },
+    "right": {
+      "objective": "The Clerk hangs. The Steward keeps his post.",
+      "dialogueState": "default",
+      "terminal": true,
+      "enter": [
+        "showEpilogue"
+      ]
+    },
+    "wrong": {
+      "objective": "Someone hangs. Not the one who did it.",
+      "dialogueState": "default",
+      "terminal": true,
+      "enter": [
+        "showEpilogue"
+      ]
+    },
+    "fall": {
+      "objective": "A fall. The inspector signs the sheet.",
+      "dialogueState": "default",
+      "terminal": true,
+      "enter": [
+        "showEpilogue"
+      ]
     }
   }
 }

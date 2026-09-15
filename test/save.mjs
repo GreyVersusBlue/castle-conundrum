@@ -77,7 +77,11 @@ console.log('repair, each rail twice');
 const repaired = (s) => repairState(s, catalog);
 {
   // The catalog is the data, not a list beside it.
-  check(catalog.stages.has('seek-keystone') && catalog.stages.has('arrive') && catalog.stages.has('full'), 'the catalog knows the riddle quest and the frame');
+  check(catalog.stages.has('arrive') && catalog.stages.has('investigate') && catalog.stages.has('full'), 'the catalog knows every stage of the graph');
+  // Phase 7 deleted the riddle quest, so its stages are not in the catalog any
+  // more and a save carrying one is repaired to `start` rather than migrated.
+  // There is no honest resume: the quest that save was halfway through is gone.
+  check(!catalog.stages.has('seek-keystone') && !catalog.stages.has('present-keystone') && !catalog.stages.has('gate-open'), 'and knows none of the riddle quest, which Phase 7 deleted');
   check(catalog.clues.size === mystery.clues.length && catalog.evidence.size === mystery.evidence.length && catalog.locks.has('muniment'), 'the catalog is built from mystery.json');
   check(catalog.npcs.get('clerk').has('cornered') && !catalog.npcs.get('cook').has('cornered') && catalog.accusables.has('nobody'), "npc states come from the presses; 'nobody' is accusable");
   const noSlot = buildCatalog({ ...mystery, clues: mystery.clues.slice(1) }, quest);
@@ -93,7 +97,8 @@ const repaired = (s) => repairState(s, catalog);
   let threw = false;
   try { void g.objective; } catch (e) { threw = true; }
   check(threw, 'without it: the graph throws reading the objective of a stage it lacks');
-  check(repaired({ stage: 'present-keystone' }).stage === 'present-keystone' && repaired({ stage: 'accusing' }).stage === 'accusing', 'a stage either graph has is kept');
+  check(repaired({ stage: 'investigate' }).stage === 'investigate' && repaired({ stage: 'accusing' }).stage === 'accusing', 'a stage the graph has is kept');
+  check(repaired({ stage: 'present-keystone' }).stage === quest.start, 'a riddle-quest stage resets to `start`, because that graph no longer exists');
 }
 {
   // Watch clamps to the four. Without it: the engine indexes past the last watch.
@@ -150,49 +155,68 @@ const repaired = (s) => repairState(s, catalog);
   // repaired. There is no version 0 save on any machine, because there was no
   // key before Phase 1; this is #36's binding from now on.
   const { slot, storage } = slotWith();
-  storage.setItem(SAVE_KEY, JSON.stringify({ stage: 'present-keystone', riddleWrong: 2, clues: ['ghost'] }));
+  storage.setItem(SAVE_KEY, JSON.stringify({ stage: 'investigate', riddleWrong: 2, clues: ['ghost'] }));
   const r = slot.load();
-  check(r && r.stage === 'present-keystone' && r.riddleWrong === 2 && same(r.clues, []) && r.watch === 0, 'an unversioned save loads through repair', JSON.stringify(r));
+  check(r && r.stage === 'investigate' && r.riddleWrong === 2 && same(r.clues, []) && r.watch === 0, 'an unversioned save loads through repair', JSON.stringify(r));
   storage.setItem(SAVE_KEY, '{not json');
   check(slot.load() === null, 'unparseable storage loads as null, not a crash');
 }
 
 /* --------------------------------------------- 4: the manager resumes --- */
 console.log('the manager resumes from a save');
+const riddle = read('data/riddle.json');
+/** A UI stand-in that records rather than renders. */
+const stubUI = () => ({
+  toasts: [], objective: null, epilogue: null,
+  setObjective(t) { this.objective = t; }, setWatch() {},
+  toast(t) { this.toasts.push(t); },
+  openDialogue(name, lines, onEnd) { this.dialogue = { name, lines }; this.dialogueEnd = onEnd; },
+  openRiddle() { this.riddleOpen = true; }, closeRiddle() { this.riddleOpen = false; }, setRiddleFeedback(t) { this.feedback = t; },
+  openJournal(entries) { this.journal = entries; }, closeJournal() { this.journal = null; },
+  openAccusation(o) { this.accusation = o; }, setAccusationNote(t) { this.note = t; },
+  showEpilogue(v, onRestart) { this.epilogue = v; this.restart = onRestart; },
+});
+const stubCastle = () => ({ opened: [], hidden: [], openLock(id) { this.opened.push(id); }, setEvidenceVisible(id, v) { if (!v) this.hidden.push(id); } });
 {
-  const riddle = read('data/riddle.json');
-  const ui = { setObjective(t) { this.objective = t; }, openDialogue() {}, openRiddle() { this.riddleOpen = true; }, closeRiddle() {}, setRiddleFeedback(t) { this.feedback = t; }, showVictory(fn) { this.victory = fn; } };
+  const ui = stubUI();
   const npcs = read('data/npcs.json').cast.map((def) => ({ id: def.id, name: def.name, def, dialogueState: 'default', getDialogueLines() { return this.def.dialogue[this.dialogueState]; } }));
   const changes = [];
-  const timers = [];
+  const state = repaired({ stage: 'investigate', riddleWrong: 2, watch: 2, clues: ['summons-note'], pressed: { steward: ['admits'] } });
+  const engine = createMystery({ mystery, npcs: cast, state });
   const qm = new QuestManager({
-    quest, riddle, npcs, ui, castle: { opened: 0, openGate() { this.opened++; } }, controlsRef: { lock() {} },
-    schedule: (fn, ms) => timers.push({ fn, ms }),
-    saved: repaired({ stage: 'present-keystone', riddleWrong: 2 }),
-    onChange: (s) => changes.push({ ...s }),
+    quest, mystery, riddle, npcs, ui, castle: stubCastle(), controlsRef: { lock() {} }, engine,
+    saved: state, onChange: (s) => changes.push({ ...s }),
   });
-  check(qm.stage === 'present-keystone' && /Keystone/.test(ui.objective), 'a saved stage resumes there with its objective', ui.objective);
-  check(npcs.every((n) => n.dialogueState === quest.stages['present-keystone'].dialogueState), 'and every npc is in that stage\'s dialogue state');
+  check(qm.stage === 'investigate' && ui.objective === quest.stages.investigate.objective, 'a saved stage resumes there with its objective', ui.objective);
   check(qm.wrongCount === 2, 'riddleWrong is restored');
-  check(changes.length === 1 && changes[0].stage === 'present-keystone' && changes[0].riddleWrong === 2, 'onChange fires once on resume with the stage and count', JSON.stringify(changes));
-  qm.handleInteract(npcs.find((n) => n.id === 'constable'));
-  ui.dialogueEnd?.();
+  check(changes.length === 1 && changes[0].stage === 'investigate' && changes[0].riddleWrong === 2, 'onChange fires once on resume with the stage and count', JSON.stringify(changes));
+  // The engine, not the stage, says whose lines somebody gives. The Steward was
+  // pressed before the reload and comes back in `admits`; everybody else is in
+  // the stage's own state. Without _syncStates reading the engine, the graph's
+  // dialogueState effect would put him back in `default` and lose the admission.
+  check(npcs.find((n) => n.id === 'steward').dialogueState === 'admits', 'the pressed Steward comes back in `admits`');
+  check(npcs.filter((n) => n.id !== 'steward').every((n) => n.dialogueState === 'default'), 'and nobody else moved');
+  check(qm.journal().some((c) => c.id === 'summons-note'), 'the journal came back with the clue in it');
 }
 {
-  // Resuming at the terminal stage re-runs its enter effects: the gate opens again.
-  const riddle = read('data/riddle.json');
-  const ui = { setObjective(t) { this.objective = t; }, openDialogue() {}, openRiddle() {}, closeRiddle() {}, setRiddleFeedback() {}, showVictory(fn) { this.victory = fn; } };
-  const castle = { opened: 0, openGate() { this.opened++; } };
-  const timers = [];
-  const qm = new QuestManager({ quest, riddle, npcs: [], ui, castle, controlsRef: { lock() {} }, schedule: (fn, ms) => timers.push({ fn, ms }), saved: repaired({ stage: 'gate-open' }) });
-  check(qm.victory && castle.opened === 1 && timers.length === 1, 'resumed at gate-open: the gate is open again and the victory screen is scheduled');
+  // Resumed in a terminal stage: `showEpilogue` has no verdict in hand and
+  // rebuilds it from the save's own `accusations`. Without that a reload after
+  // the ending comes back to a blank panel with no way out of it.
+  const ui = stubUI();
+  const state = repaired({ stage: 'fall', watch: 3, accusations: [{ who: 'nobody', clues: [], verdict: 'fall', watch: 'vespers' }] });
+  const engine = createMystery({ mystery, npcs: cast, state });
+  const restarts = { n: 0 };
+  const qm = new QuestManager({ quest, mystery, riddle, npcs: [], ui, castle: stubCastle(), controlsRef: { lock() {} }, engine, saved: state, restart: () => { restarts.n++; } });
+  check(qm.victory && !!ui.epilogue, 'resumed at `fall`: the epilogue is on the screen again');
+  check(ui.epilogue.epilogue === mystery.accusation.verdicts.nobody.epilogue, 'and it is the fall\'s own epilogue, rebuilt from the save', ui.epilogue.epilogue?.slice(0, 40));
+  ui.restart();
+  check(restarts.n === 1, 'its button calls the injected restart, which erases the save');
 }
 {
   // A fresh save, or a save at start, begins at start with no onChange surprises.
-  const riddle = read('data/riddle.json');
-  const ui = { setObjective(t) { this.objective = t; }, openDialogue() {}, openRiddle() {}, closeRiddle() {}, setRiddleFeedback() {}, showVictory() {} };
+  const ui = stubUI();
   const changes = [];
-  const qm = new QuestManager({ quest, riddle, npcs: [], ui, castle: {}, controlsRef: {}, saved: null, onChange: (s) => changes.push(s) });
+  const qm = new QuestManager({ quest, mystery, riddle, npcs: [], ui, castle: stubCastle(), controlsRef: {}, saved: null, onChange: (s) => changes.push(s) });
   check(qm.stage === quest.start && changes.length === 1 && changes[0].stage === quest.start, 'no save: begins at start and reports it');
 }
 

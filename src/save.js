@@ -25,12 +25,15 @@ export const SAVE_GAME = 'castle-conundrum';
 export const SAVE_VERSION = 1;
 
 /**
- * Every id a save may carry, read off the data. `quest` is data/quest.json
- * whole: its top-level stages are the graph the page plays and `frame` is the
- * v2 graph the engine runs; a save may be in either until Phase 7 retires one.
+ * Every id a save may carry, read off the data. `quest` is data/quest.json,
+ * which from Phase 7 holds one graph: the frame was promoted and the three
+ * riddle-quest stages went with it. A save still carrying `seek-keystone` is
+ * not migrated, it is repaired — the stage is not in the catalog, so it resets
+ * to `start` and the day begins again, which is the only honest answer when the
+ * quest it was halfway through no longer exists. The key does not change (#36).
  */
 export function buildCatalog(mystery, quest) {
-  const stages = new Set([...Object.keys(quest?.stages ?? {}), ...Object.keys(quest?.frame?.stages ?? {})]);
+  const stages = new Set(Object.keys(quest?.stages ?? {}));
   const watches = Array.isArray(mystery?.watches) ? mystery.watches : [];
   const clues = new Set((mystery?.clues ?? []).map((c) => c.id));
   const evidence = new Set((mystery?.evidence ?? []).map((e) => e.id));

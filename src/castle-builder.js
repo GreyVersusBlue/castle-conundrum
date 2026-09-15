@@ -678,6 +678,7 @@ export class CastleBuilder {
           // the stone, which is inside the jamb's own relief. test/assets.mjs holds
           // the angle to what the opening can actually take.
           lock: spec.lock || null,
+          evidence: spec.evidence || null,
           centre: spec.centre ? new THREE.Vector3(...spec.centre) : null,
           closedAngle: THREE.MathUtils.degToRad(spec.shutAngle),
           openAngle: THREE.MathUtils.degToRad(spec.openAngle),
@@ -726,6 +727,9 @@ export class CastleBuilder {
       out.push({
         id: gd.id,
         isLock: true,
+        // The evidence this leaf is, or null. Reading the word-lock and
+        // answering it are the same press of E (Phase 7).
+        evidence: gd.evidence,
         name: gd.id,
         prompt: gd.lock,
         group: gd.pivot,
@@ -752,6 +756,70 @@ export class CastleBuilder {
       );
       return { id: piece.id, isBell: true, name: 'bell', prompt: 'Press E to ring the bell', group: obj, focus: centre };
     });
+  }
+
+  /**
+   * Every piece of evidence in the castle, as something InteractionSystem can
+   * put a prompt on (Phase 7). One target per evidence id: `bells()` reads a
+   * flag on the piece and so does this, so a prop becomes examinable by growing
+   * an `evidence` in scene-config.json and nothing else.
+   *
+   * THE GATE LEAF IS NOT ONE OF THESE. The muniment room's door carries
+   * `evidence: "lock"` and is already a target through `locks()`, which carries
+   * the same id; two targets on one door would put two prompts on one press of
+   * E and let the player read the word-lock without ever being offered the
+   * riddle. `names` is mystery.json's own `name` per row, which validateMystery
+   * makes compulsory.
+   *
+   * A hidden piece is not a target: three of the ten come and go with the watch
+   * and two more leave the world when they are taken, and a prompt on an
+   * invisible object is the Guard-in-the-wall bug with the wall taken away.
+   */
+  evidence(names = {}) {
+    const seen = new Set();
+    const out = [];
+    for (const piece of this.plan.pieces) {
+      if (!piece.evidence || piece.kind === 'gate-leaf' || seen.has(piece.evidence)) continue;
+      const obj = this.objects.get(piece.id);
+      if (!obj) continue;
+      seen.add(piece.evidence);
+      const centre = new THREE.Vector3(
+        (piece.box.min.x + piece.box.max.x) / 2,
+        (piece.box.min.y + piece.box.max.y) / 2,
+        (piece.box.min.z + piece.box.max.z) / 2,
+      );
+      const name = names[piece.evidence] || piece.evidence;
+      out.push({
+        id: piece.evidence, isEvidence: true, name,
+        prompt: `Press E to examine the ${name}`,
+        group: obj, focus: centre,
+        get active() { return obj.visible; },
+      });
+    }
+    return out;
+  }
+
+  /**
+   * Swing one named leaf, by the id `locks()` hands out. `instant` puts it at
+   * full open with no animation, which is what a save resumed with the word
+   * already answered needs: the riddle quest kept its `openGate` on the terminal
+   * stage's `enter` for exactly this, and the frame's `openLock` is on a
+   * transition, so the resume has to say so itself.
+   */
+  openLock(id, { instant = false } = {}) {
+    const gd = this.gates.get(id);
+    if (!gd) return false;
+    gd.opening = true;
+    if (instant) {
+      gd.progress = 1;
+      gd.pivot.rotation.y = gd.openAngle;
+      for (const c of gd.blocks) {
+        const i = this.colliders.indexOf(c);
+        if (i !== -1) this.colliders.splice(i, 1);
+      }
+      gd.blocks = [];
+    }
+    return true;
   }
 
   /**

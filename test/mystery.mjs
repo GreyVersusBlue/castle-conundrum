@@ -31,7 +31,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { validateMystery, createMystery, earliest, shortestPath, freshState } from '../src/mystery.js';
 import { QuestGraph, validateQuest, validateAgainstNpcs } from '../src/quest-graph.js';
-import { QuestManager } from '../src/quest-manager.js';
+import { QuestManager, MANAGER_PAIRS } from '../src/quest-manager.js';
 import { makePlan } from '../src/castle-plan.js';
 import { castleNav } from '../src/stations.js';
 import { partsOf } from './gltf.mjs';
@@ -41,8 +41,11 @@ const ROOT = path.join(HERE, '..');
 const read = (rel) => JSON.parse(fs.readFileSync(path.join(ROOT, rel), 'utf8'));
 const mystery = read('data/mystery.json');
 const { cast } = read('data/npcs.json');
+// Phase 7 promoted the frame: `quest` is the graph the page plays, and `frame`
+// is the same object. The name stays because the rails below and the WISHLIST
+// both call it the frame, and because it says what this file drives.
 const quest = read('data/quest.json');
-const frame = quest.frame;
+const frame = quest;
 
 /* The castle itself, for the station rails (Phase 6). One read per glTF file;
  * `makePlan` asks for the same wall model seven times over a run, and a broken
@@ -430,15 +433,22 @@ function play(state = freshState(frame)) {
 console.log('the frame');
 {
   const p = validateQuest(frame, QuestManager.actions);
-  check(p.length === 0, 'quest.frame validates with the manager\'s actions', p.join('; '));
-  const q = validateAgainstNpcs(frame, cast);
-  check(q.length === 0, 'every frame stage has lines on every one of the twelve', q.join('; '));
+  check(p.length === 0, 'quest.json validates with the manager\'s actions', p.join('; '));
+  const q = validateAgainstNpcs(frame, cast, { pairs: MANAGER_PAIRS });
+  check(q.length === 0, 'every stage has lines on every one of the twelve, and both token pairs match', q.join('; '));
   const terminals = Object.entries(frame.stages).filter(([, s]) => s.terminal).map(([id]) => id).sort();
   check(JSON.stringify(terminals) === JSON.stringify(['fall', 'full', 'right', 'wrong']), 'one terminal per verdict class', terminals.join(', '));
   check(['ringBell', 'openJournal', 'openAccusation', 'showEpilogue'].every((a) => QuestManager.actions.includes(a)), 'the manager lists the four new actions');
   check(frame.start === 'arrive' && frame.stages.investigate.transitions.some((t) => t.on === 'bell:4' && t.to === 'accusing'), 'arrive first; the fourth bell moves investigate to accusing');
-  // The page still plays the riddle quest: the top-level graph is untouched by the frame.
-  check(quest.start === 'seek-keystone' && validateQuest(quest, QuestManager.actions).length === 0, 'the riddle quest at the top level still validates (the page plays it until Phase 7)');
+  // Phase 7 deleted the riddle quest. Nothing in this file should be able to
+  // find a second graph in quest.json, and the three stages it had are gone.
+  check(!quest.frame, 'there is no `frame` key left: the frame is the graph');
+  for (const dead of ['seek-keystone', 'present-keystone', 'gate-open']) {
+    check(!quest.stages[dead], `the riddle quest's ${dead} is gone`);
+  }
+  for (const dead of ['openGate', 'showVictory']) {
+    check(!QuestManager.actions.includes(dead), `the manager no longer lists ${dead}, which only the riddle quest used`);
+  }
 }
 
 console.log(failures ? `\n${failures} failure(s)` : '\nall good');

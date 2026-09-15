@@ -1,10 +1,12 @@
 # Castle Conundrum Feature Wishlist
 
-**Status: this is the v2 plan, written 2026-09-14. Phases 1 to 4 shipped that
-day (PRs #306, #309, #312 and #314, #421 to #450) and Phase 5 on 2026-09-15
-(PR #316, #451 to #464); Phases 6 and 7 are open, at ranks 1 and 2 in
-`BACKLOG.md`.** Seven phases, each sized to one session, each taken in
-order because each reads what the one before it wrote.
+**Status: this is the v2 plan, written 2026-09-14, and it is finished. Phases 1
+to 4 shipped that day (PRs #306, #309, #312 and #314, #421 to #450), Phase 5
+(PR #316, #451 to #464), Phase 6 (PR #318, #465 to #476) and Phase 7 (#477 to
+#490) on 2026-09-15.** Seven phases, each sized to one session, each taken in
+order because each read what the one before it wrote. What is left is under
+"What this leaves for a later arc", and `npm run play` has never been run on a
+GPU for any phase from 5 on (#53).
 The game today is `Projects/Castle Conundrum/index.html`: a fifteen minute walk
 across one 28 m courtyard to one riddle, three NPCs, 3,089 lines of code, 29 MB
 of assets. The project's history is the repo root's `HISTORY.md`, under
@@ -515,11 +517,12 @@ than three, so it is neither solvable at Prime nor lost by Vespers.
 
 ## Questions for Devon
 
-Three open, in `BACKLOG.md`'s table as Q54, Q55 and Q57. Only where the answer
+Two open, in `BACKLOG.md`'s table as Q54 and Q57; Q55 was answered by Phase 7's
+session, as the plan below said (#490). Only where the answer
 changes the work; everything else is decided below and in `HISTORY.md` (#411 to
 #420).
 
-**Three are answered**, and the numbering below is unchanged so the Q numbers
+**Four are answered**, and the numbering below is unchanged so the Q numbers
 still line up:
 
 - **Q53, twelve NPCs from three bodies or a fourth model: tints** (#419), and
@@ -532,9 +535,14 @@ still line up:
 2. **A death, or only a theft?** The mystery as written is a killing made to
    look like a fall, with a hanging at the end. A theft-only version is a
    different cast and a different clue graph. Changes Phase 1.
-3. **The fourth bell forces the accusation.** The alternative is an open day
-   that ends only when the player accuses. Changes Phase 1's engine and
-   Phase 7's UI.
+3. **The fourth bell forces the accusation.** *Answered by Phase 7's session,
+   2026-09-15: yes, as written* (#490, Q55), because it was the one question
+   standing in front of that row. Phase 1 had already shipped the engine half —
+   `ring()`'s fourth moves no watch, returns a `demand` and emits `bell:4` — so
+   the open-day alternative meant unpicking a green rail rather than not writing
+   one. `bell:4` moves the frame to `accusing` and its `enter` opens the panel.
+   The player can still ask for it at any time by talking to the Constable; what
+   the bell removes is never answering.
 4. **The riddle survives as the muniment room's word-lock.** *Answered by
    Phase 4's session, 2026-09-14: yes* (#447, Q56), because it was the one
    question standing in front of that row. `openRiddle` runs on `lock:muniment`,
@@ -1070,43 +1078,81 @@ phase's GPU exit criterion is outstanding.
 
 ## Phase 7: The mystery goes live
 
-**Size 1. Claude Opus 5.** Phase 1's engine meets Phase 6's cast in
-Phase 5's castle, through the UI.
+**Shipped 2026-09-15, under Claude Opus 5** (#477 to #490). Phase 1's engine
+meets Phase 6's cast in Phase 5's castle, through the UI. E on a thing examines
+it, J opens the journal, Present in a conversation presses somebody with a clue,
+and the Constable's last line opens a panel with twelve names, a fall and
+everything written down. `quest.json` is one graph: the frame is the top level
+and the riddle quest's three stages are gone, along with `openGate` and
+`showVictory`. The riddle survived as the word-lock (#416) and one press of E now
+reads the word into the journal and asks it. `test/quest.mjs` 76 assertions to
+**154**, `test/mystery.mjs` 113 to 118, `test/save.mjs` 50 to 56,
+`test/plan-vs-scene.mjs` 16 to 34. **43.18 MB by `git ls-tree`, unchanged**: no
+asset added and none restored.
 
-- [ ] **Examine.** `interaction.js` grows examinables beside NPCs: the
-  prompt says "Press E to examine", the manager calls `examine(id)`, the
-  clue lands in the journal with a toast. Evidence with `take: true` (the
-  tally stick, the note) leaves the world and `taken[]` in the save.
-- [ ] **The journal.** `J` opens a list of held clues with their text; from
-  inside a conversation, "Present" opens the same list and choosing one calls
-  `press(npc, clue)`. A press that moves nobody gets the NPC's `default`
-  shrug line rather than silence, so a wrong present is answered.
-- [ ] **The accusation.** The Constable's `default` lines end in an
-  `{ACCUSE}` token the way the Scholar's end in `{RIDDLE}`, and
-  `validateAgainstNpcs`'s poser-and-opener check is generalised to any token
-  and action pair; the overlay lists the twelve and "a fall", then up to
-  three journal clues, then the verdict lines and the epilogue, then `slot
-  .reset()` on the button.
-- [ ] **The riddle quest retires.** `quest.json` is the four-stage frame from
-  Phase 1; `index.html`'s start panel and initial objective say the mason is
-  dead; the board card's description and `assets/og` text change in the same
-  PR, called out in the body as the shared-file edit it is.
-- [ ] **`test/quest.mjs` becomes the manager's suite for the whole thing:**
-  the intended path driven through stand-in UI to the full ending, the
-  prisoner on nothing, three refusals to a fall, a reload at Sext resuming
-  with the journal intact. `play-castle.mjs` is rewritten around the intended
-  path: 34 beats become about 60, and the preview recapture (parked in
-  `BACKLOG.md`) follows this phase, because every frame goes stale the
-  moment the castle changed in Phase 3 and stays stale until the HUD is
-  final here.
+- [x] **Examine.** `castle.evidence()` is ten targets beside the NPCs, the bell
+  and the lock, each prompted with mystery.json's own `name`; the manager calls
+  `examine(id)`, the clue toasts its title into the HUD, and evidence with
+  `take: true` leaves the world and lands in `taken[]`.
+- [x] **The journal.** `J` opens the held clues with their text; Present inside a
+  conversation opens the same list and picking one calls `press(npc, clue)`. A
+  press that moves nobody gets the NPC's `default` lines back.
+- [x] **The accusation.** The Constable's `default` lines end in `{ACCUSE}` and
+  `validateAgainstNpcs` takes a list of token/action pairs; the overlay lists the
+  twelve and a fall, then up to three journal clues, then becomes the verdict and
+  the epilogue, whose button erases the save.
+- [x] **The riddle quest retires.** Three stages, two actions and the victory
+  screen deleted; the start panel and the initial objective say the mason is
+  dead; the board card and the og text changed in the same PR.
+- [x] **`test/quest.mjs` is the manager's suite for the whole thing:** the
+  intended path driven through stand-in UI to the full ending, the prisoner on
+  nothing, three refusals to a fall, a reload at Sext with the journal intact.
+  `play-castle.mjs` is rewritten around the intended path, 34 beats to **102**.
 
-**Guard-rail:** remove the manager's `press` wiring and watch `quest.mjs`
-fail on "presenting summons-is-stewards to the Steward moves him to
-pressed"; let the Constable accept the porter on one clue and watch "one
-clue is refused" fail. **Exit:** `quest.mjs` walks the full ending in Node;
-`npm run play` plays it in a browser to the epilogue (GPU). **Weight:**
-44.4 MB. **Model:** Opus; the content and the save are Phase 1's, the suite
-drives the real manager, and every failure here is loud.
+What the plan above said and what shipped differ in six places, each a locked
+decision:
+
+- **`validateAgainstNpcs` takes pairs, not a generalised "token and action"**
+  (#479). The plan asked for the check to be generalised to any token and action
+  pair; the argument is a list of them, so the riddle and the accusation are both
+  rails rather than one rail and one special case.
+- **One press of E reads the word-lock and asks it** (#480). The plan had examine
+  and the lock as separate things. The muniment room's leaf carries
+  `evidence: "lock"` in `scene-config.json` and is a lock target already, so
+  giving it a second prompt would have let the player read the word without ever
+  being offered the riddle.
+- **Five lines of the castle's own voice are data** (#481). `mystery.ui` carries
+  what the HUD says when the engine hands back something that is not a clue —
+  asleep, not here at this bell, already taken, still locked, already read,
+  nothing written down, and "No one. He fell." Seven strings, required by the
+  validator, because they are content.
+- **"Which room am I in" is not a question this castle answers** (#482). The one
+  location clue needed somebody to notice the player walking onto the cross-wall
+  walk. A general `roomAt` came back naming ten of the forty-five stations as a
+  room their own schedule does not call them, because the towers' discs overlap
+  the walks and the cell's disc overlaps the Great Hall. `nav.inRoom(room, level,
+  x, z, feet)` asks about one room, which has one answer.
+- **A shrug is not a conversation** (#483). Presenting the wrong thing dispatches
+  no `talked:` event, so shrugging at the Constable does not also open the
+  accusation panel.
+- **The word-lock and the journal are offered in `arrive` too** (#486). The plan
+  left `arrive` as one conversation. A door across the castle that is inert until
+  the player has spoken to somebody reads as a broken door, and
+  `test/plan-vs-scene.mjs` pressed E at it before meeting anybody and found
+  exactly that.
+
+**Both breaks the plan named fired.** Unhooking the Present button from the
+manager failed eight assertions, the named one among them: `presenting
+summons-is-stewards to the Steward moves him to pressed — state default, holds
+false`. Dropping `accusation.needs` to 1 failed six, the named one first: `one
+clue is refused — refusals 0, stage wrong`. Seven more breaks are in the closing
+report; one of them, a place clue moved into open ground, is the only one whose
+own rail had to be written for it.
+
+**`npm run play` is unrun** (#53). It walks the whole intended path now — twelve
+people, ten pieces of evidence, three bells, a reload at Sext, the accusation
+panel and the epilogue, 102 assertions against 34 — and none of it has been seen
+on a GPU. The phase's GPU exit criterion is outstanding, as Phase 6's still is.
 
 ## What this leaves for a later arc
 

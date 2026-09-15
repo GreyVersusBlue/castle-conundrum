@@ -21,6 +21,8 @@
 import { STATION_CLEARANCE, TALK_RANGE } from './stations.js';
 
 const KINDS = new Set(['S', 'E', 'D', 'L']);
+/** The seven `ui` lines the HUD reads out of mystery.json. */
+const UI_LINES = ['asleep', 'absent', 'gone', 'locked', 'known', 'empty', 'fall'];
 
 const asList = (v) => (v == null ? [] : Array.isArray(v) ? v : [v]);
 
@@ -211,6 +213,11 @@ export function validateMystery(mystery, npcs, quest, nav = null) {
   const { watches, rooms, clues, evidence, locks, cast, presses, accusation, statesOf, station, speakable } = ix;
 
   if (watches.length !== 4) say(`watches: expected four bells, found ${watches.length}`);
+  // The HUD's own lines, for the five answers that are not a clue (Phase 7).
+  // A missing one shows as an empty toast, which reads as nothing happening.
+  for (const k of UI_LINES) {
+    if (typeof mystery.ui?.[k] !== 'string' || !mystery.ui[k].trim()) say(`ui.${k}: no line, so the HUD would say nothing at all when it has something to say`);
+  }
   if (!clues.size) say('clues: none');
   if (!cast.size) say('npcs: none in the cast');
 
@@ -252,6 +259,11 @@ export function validateMystery(mystery, npcs, quest, nav = null) {
 
   // --- Evidence: in a room, in a watch, reachable, listing clues that exist.
   for (const e of evidence.values()) {
+    // Phase 7 puts a prompt on every piece of evidence in the castle, and the
+    // prompt is this name: "Press E to examine the tally stick". A row without
+    // one reads "examine the undefined" on a real wall, which is the class of
+    // thing nothing downstream can catch, because `undefined` renders fine.
+    if (typeof e.name !== 'string' || !e.name.trim()) say(`${e.id}: no \`name\`, so its prompt would read "Press E to examine the ${e.name}"`);
     if (!e.room || !rooms.has(e.room)) say(`${e.id}: in no room (${JSON.stringify(e.room)})`);
     else if (e.level != null && rooms.get(e.room).level !== e.level) say(`${e.id}: room ${e.room} is on level ${rooms.get(e.room).level}, not ${e.level}`);
     const ws = asList(e.watches);
@@ -593,13 +605,17 @@ export function createMystery({ mystery, npcs, state }) {
     examine(evidenceId) {
       const e = evidence.get(evidenceId);
       if (!e) return [];
-      if (st.taken.includes(evidenceId)) return [{ type: 'gone', evidence: evidenceId }];
-      if (!asList(e.watches).includes(watchId())) return [{ type: 'absent', evidence: evidenceId, watch: watchId() }];
-      if (!asList(e.requires).every(holds)) return [{ type: 'locked', evidence: evidenceId, requires: asList(e.requires).filter((r) => !holds(r)) }];
-      if (e.lock && !st.locks.includes(e.lock)) return [{ type: 'locked', evidence: evidenceId, lock: e.lock }];
-      const effects = [{ type: 'examined', evidence: evidenceId }];
+      // Every effect carries the row's `name`, so the HUD that shows the result
+      // does not have to hold a second copy of mystery.json to say what was
+      // examined. validateMystery makes the name compulsory.
+      const of = (type, extra = {}) => ({ type, evidence: evidenceId, name: e.name, ...extra });
+      if (st.taken.includes(evidenceId)) return [of('gone')];
+      if (!asList(e.watches).includes(watchId())) return [of('absent', { watch: watchId() })];
+      if (!asList(e.requires).every(holds)) return [of('locked', { requires: asList(e.requires).filter((r) => !holds(r)) })];
+      if (e.lock && !st.locks.includes(e.lock)) return [of('locked', { lock: e.lock })];
+      const effects = [of('examined')];
       for (const id of asList(e.clue)) grant(id, effects);
-      if (e.take) { st.taken.push(evidenceId); effects.push({ type: 'taken', evidence: evidenceId }); }
+      if (e.take) { st.taken.push(evidenceId); effects.push(of('taken')); }
       return effects;
     },
 

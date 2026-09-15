@@ -971,6 +971,12 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
           // `centre` is what the interaction system aims at, which is the leaf
           // and not its hinge.
           lock: leafSpec.lock || null,
+          // The evidence this leaf IS. The muniment room's word-lock is both a
+          // thing to read (mystery.json's `lock` row) and a thing to answer, and
+          // it is one press of E: the manager examines the evidence and then
+          // dispatches `lock:<id>`. Carrying it here is what keeps the id out of
+          // the manager's code.
+          evidence: leafSpec.evidence || null,
           centre: [(hung.box.min.x + hung.box.max.x) / 2, (hung.box.min.y + hung.box.max.y) / 2, (hung.box.min.z + hung.box.max.z) / 2],
         });
       } else if (barsSpec) {

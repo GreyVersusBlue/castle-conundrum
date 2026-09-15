@@ -16,9 +16,11 @@
         "default": [
           "A clerk. A day early. Well, you have seen him, so you know what there is to know: the mason was drunk, the stair is steep, and he fell.",
           "The King's inspector rides in tomorrow. I want a clean sheet by Vespers, and I want the mason buried before the inspector's horse is watered.",
-          "Ask what you must. Then come and tell me it was a fall."
+          "Ask what you must. Then come and tell me it was a fall.",
+          "{ACCUSE}"
         ]
-      }
+      },
+      "dialogueComment": "The last line is a token, the way the Scholar's used to end in {RIDDLE} (Phase 7). quest.json substitutes it, and `talked:constable` in `investigate` and `accusing` opens the accusation overlay after the conversation. validateAgainstNpcs holds the token and the action to each other in both directions."
     },
     {
       "id": "steward",

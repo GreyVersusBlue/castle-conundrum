@@ -117,6 +117,35 @@ export function castleNav(plan, mystery) {
       return inside;
     },
     /**
+     * Is a point standing inside one named room, on one level (Phase 7)? The
+     * player's own position goes in; `clue:walk-crosses` is what comes out of
+     * it, the one clue in mystery.json granted by being somewhere rather than
+     * by looking at something or asking somebody.
+     *
+     * THIS ASKS ABOUT ONE ROOM ON PURPOSE. The first version answered "which
+     * room is this point in", and that question has no single answer in this
+     * castle: the towers' discs overlap the walks that cross their roofs and
+     * the cell's disc overlaps the Great Hall's box, so ten of the forty-five
+     * stations came back named as a room their own schedule does not call
+     * them. Whichever room won was whichever `plan.rooms` happened to list
+     * first. "Am I inside cross-walk at level 2" has one answer, and it is the
+     * only question anything actually asks.
+     *
+     * THE LEVEL IS CONFIRMED AGAINST THE FLOOR, not the bounds: the towers are
+     * discs stacked three deep at identical x and z, so bounds alone cannot
+     * tell the King's Tower's muniment room from the walk over its roof.
+     * `feet` is the player's floor height, not the eye's.
+     */
+    inRoom(roomId, level, x, z, feet) {
+      const r = planRooms.get(`${roomId}/${level ?? 0}`);
+      if (!r) return false;
+      if (x < r.bounds.min.x || x > r.bounds.max.x || z < r.bounds.min.z || z > r.bounds.max.z) return false;
+      if (r.shape?.kind === 'disc' && Math.hypot(x - r.shape.cx, z - r.shape.cz) > r.shape.radius) return false;
+      const cell = walk.cellAt(x, z, level ?? 0);
+      return !!cell && Math.abs(cell.h - feet) <= 1.0;
+    },
+
+    /**
      * The cell centres to walk from one station to the next, or null when
      * there is no walk between them. A body already standing at its next
      * station gets a one-point path, which is how everyone who does not move

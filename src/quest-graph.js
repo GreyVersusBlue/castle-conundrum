@@ -79,18 +79,26 @@ export function validateQuest(def, actions) {
 /**
  * The graph against the cast it drives. Every stage's dialogueState has to be a
  * non-empty list of strings on every npc; every `{TOKEN}` in a line has to be in
- * `tokens`. And the riddle is opened by exactly the conversations that end in a
- * `{RIDDLE}` line, in both directions: a stage that opens it on `talked:x` needs
- * lines that pose it, and lines that pose it need a stage that opens it.
+ * `tokens`. And an overlay is opened by exactly the conversations that end in
+ * its token, in both directions: a stage that opens it on `talked:x` needs lines
+ * that offer it, and lines that offer it need a stage that opens it.
  *
- * A RIDDLE MAY ALSO BE A LOCK, and from Phase 4 this one is. `lock:<id>` is the
- * player pressing E at a word-locked door, so `openRiddle` on a `lock:` event is
- * the other legal shape and the Scholar poses nothing. What this file cannot
- * check is that the lock exists: it knows the graph and the cast and not the
- * castle. `test/quest.mjs` reads scene-config.json and mystery.json and holds
- * every `lock:<id>` here to a door that is really there and really starts shut.
+ * THE RAIL IS A LIST OF PAIRS, NOT THE RIDDLE (Phase 7). It was written for one
+ * pair, `openRiddle`/`{RIDDLE}`, and hard-coded both names. The accusation is
+ * the same shape — the Constable's `default` lines end in `{ACCUSE}` the way the
+ * Scholar's ended in `{RIDDLE}`, and `openAccusation` is what a stage does about
+ * it — so `pairs` is the argument now and the riddle is its default entry. A
+ * second pair costs a line of data; without this it cost a second copy of forty
+ * lines of checking.
+ *
+ * A TOKEN MAY ALSO BE A LOCK, and from Phase 4 the riddle is. `lock:<id>` is the
+ * player pressing E at a word-locked door, so an action on a `lock:` event is
+ * the other legal shape and nobody poses it. What this file cannot check is that
+ * the lock exists: it knows the graph and the cast and not the castle.
+ * `test/quest.mjs` reads scene-config.json and mystery.json and holds every
+ * `lock:<id>` here to a door that is really there and really starts shut.
  */
-export function validateAgainstNpcs(def, npcs, { riddleAction = 'openRiddle', riddleToken = '{RIDDLE}' } = {}) {
+export function validateAgainstNpcs(def, npcs, { pairs = [{ action: 'openRiddle', token: '{RIDDLE}' }] } = {}) {
   const problems = [];
   const stages = def.stages ?? {};
   const tokens = def.tokens ?? {};
@@ -102,7 +110,6 @@ export function validateAgainstNpcs(def, npcs, { riddleAction = 'openRiddle', ri
       }
     }
   }
-  const posers = new Set(); // "npcId/state" pairs whose lines end in the riddle token
   for (const npc of npcs) {
     for (const [state, lines] of Object.entries(npc.dialogue ?? {})) {
       for (const line of lines) {
@@ -110,22 +117,33 @@ export function validateAgainstNpcs(def, npcs, { riddleAction = 'openRiddle', ri
           if (!(tok in tokens)) problems.push(`npc ${npc.id}, dialogue.${state}: token ${tok} is not in quest.tokens`);
         }
       }
-      if (lines.includes(riddleToken)) posers.add(`${npc.id}/${state}`);
     }
   }
-  const openers = new Set();
-  for (const [id, s] of Object.entries(stages)) {
-    for (const t of s.transitions ?? []) {
-      const does = (t.do ?? []).map((a) => (typeof a === 'string' ? a : a.do));
-      if (!does.includes(riddleAction)) continue;
-      const m = /^talked:(.+)$/.exec(t.on);
-      if (m) { openers.add(`${m[1]}/${s.dialogueState}`); continue; }
-      if (/^lock:.+$/.test(t.on)) continue;
-      problems.push(`${id}: ${riddleAction} runs on ${t.on}, which is neither the end of a conversation (talked:<npc>) nor a word-lock (lock:<id>)`);
+  // One pass per pair. `posers` is the "npcId/state" whose lines carry the
+  // token; `openers` is the "npcId/state" a stage runs the action after. Each
+  // set has to be the other, or somebody offers something no stage answers, or
+  // a stage answers something nobody offers.
+  for (const { action, token } of pairs) {
+    const posers = new Set();
+    for (const npc of npcs) {
+      for (const [state, lines] of Object.entries(npc.dialogue ?? {})) {
+        if (lines.includes(token)) posers.add(`${npc.id}/${state}`);
+      }
     }
+    const openers = new Set();
+    for (const [id, s] of Object.entries(stages)) {
+      for (const t of s.transitions ?? []) {
+        const does = (t.do ?? []).map((a) => (typeof a === 'string' ? a : a.do));
+        if (!does.includes(action)) continue;
+        const m = /^talked:(.+)$/.exec(t.on);
+        if (m) { openers.add(`${m[1]}/${s.dialogueState}`); continue; }
+        if (/^lock:.+$/.test(t.on)) continue;
+        problems.push(`${id}: ${action} runs on ${t.on}, which is neither the end of a conversation (talked:<npc>) nor a word-lock (lock:<id>)`);
+      }
+    }
+    for (const p of posers) if (!openers.has(p)) problems.push(`npc/state ${p} poses ${token} but no stage in that dialogueState runs ${action} after that conversation`);
+    for (const o of openers) if (!posers.has(o)) problems.push(`${action} runs after ${o} but those lines never pose it (${token})`);
   }
-  for (const p of posers) if (!openers.has(p)) problems.push(`npc/state ${p} poses ${riddleToken} but no stage in that dialogueState opens the riddle after that conversation`);
-  for (const o of openers) if (!posers.has(o)) problems.push(`the riddle opens after ${o} but those lines never pose it (${riddleToken})`);
   return problems;
 }
 

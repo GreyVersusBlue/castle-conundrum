@@ -1,5 +1,15 @@
 {
   "comment": "The mystery as data (WISHLIST.md, Phase 1). src/mystery.js validates this file against npcs.json's `cast` and quest.json's `frame` before it runs, and runs it in Node without a room or a body existing yet. `watches` are the four bells in order. `rooms` carry id, ward and level only; positions come in Phase 3 from the plan. A clue is S (a statement: `source.npc` in `source.state`, granted when that conversation ends; `source.watches` narrows it), E (evidence: `source.evidence`), D (a deduction: `source.premises`, granted the instant both are held) or L (a location: `source.room` and `source.level`, granted on entering). `contradicts` names the earlier statement a clue gives the lie to. `herring` marks a clue that leads nowhere on purpose, and the validator makes a session say so. Evidence carries the `watches` it can be examined in, `clue` (one id or a list), `requires` (clues that have to be held first), `lock` (a lock in `locks` that has to be open) and `prop` (a model already on disk, for Phase 4). `schedule` is npc -> watch -> a station or null (not in the castle); `asleep` is a station the player cannot talk to. A station carries `tile`, a fractional tile coordinate in scene-config.json's own units: six people stand in the Great Hall at Vespers and each has to be somewhere the player can walk up to alone. src/stations.js turns it into a world point and src/mystery.js's validator holds it to the castle — standable floor, inside the room it names, 1.5 m clear of everyone else at that bell, within talking range of somewhere the player can stand, and a walk from the station before it. A press is `{npc, from, on, to}`: showing `on` to `npc` while in one of the `from` states moves them to `to`. `accusation.from` is the first watch the Constable will hear an accusation at; at Prime he is standing over the body and sends the clerk away without counting it as a refusal.",
+  "uiComment": "The lines the HUD says when the engine returns something other than a clue (Phase 7). They are here and not in src/ because they are content: what the castle says when a body is asleep, when evidence has already been taken, when a door is still shut. validateMystery requires all seven.",
+  "ui": {
+    "asleep": "Asleep, and not to be woken.",
+    "absent": "Nothing there now.",
+    "gone": "You have that already.",
+    "locked": "Shut fast. There is no reading it yet.",
+    "known": "Nothing here you have not already read.",
+    "empty": "Nothing written down yet.",
+    "fall": "No one. He fell."
+  },
   "watches": [
     "prime",
     "terce",
@@ -650,6 +660,7 @@
   "evidence": [
     {
       "id": "body",
+      "name": "body at the stair foot",
       "room": "chapel",
       "level": 0,
       "watches": [
@@ -661,6 +672,7 @@
     },
     {
       "id": "pouch",
+      "name": "mason's pouch",
       "room": "chapel",
       "level": 0,
       "watches": [
@@ -679,6 +691,7 @@
     },
     {
       "id": "cloak",
+      "name": "cloak on the crate",
       "room": "laundry",
       "level": 0,
       "watches": [
@@ -691,6 +704,7 @@
     },
     {
       "id": "candle",
+      "name": "chapel candles",
       "room": "chapel",
       "level": 0,
       "watches": [
@@ -704,6 +718,7 @@
     },
     {
       "id": "walk-door",
+      "name": "bar beside the Stockhouse door",
       "room": "stockhouse-walk",
       "level": 2,
       "watches": [
@@ -717,6 +732,7 @@
     },
     {
       "id": "tally",
+      "name": "tally stick",
       "room": "south-walk",
       "level": 2,
       "watches": [
@@ -731,6 +747,7 @@
     },
     {
       "id": "cart",
+      "name": "cart under the sacking",
       "room": "outer-ward",
       "level": 0,
       "watches": [
@@ -741,6 +758,7 @@
     },
     {
       "id": "lock",
+      "name": "word-lock",
       "room": "muniment",
       "level": 0,
       "watches": [
@@ -755,6 +773,7 @@
     },
     {
       "id": "ledger",
+      "name": "works ledger",
       "room": "muniment",
       "level": 0,
       "watches": [
@@ -772,6 +791,7 @@
     },
     {
       "id": "knife",
+      "name": "bakehouse barrel",
       "room": "bakehouse",
       "level": 0,
       "watches": [
