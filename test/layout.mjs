@@ -40,7 +40,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { partsOf } from './gltf.mjs';
-import { makePlan, walkability, GRID, HEAD_HIGH } from '../src/castle-plan.js';
+import { makePlan, walkability, moveBody, GRID, HEAD_HIGH, BODY_RADIUS } from '../src/castle-plan.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, '..');
@@ -587,6 +587,77 @@ console.log('\nhead room under the upper floors');
   }
   if (!checked) fail('no upper floor lies over any room — nothing was measured');
   else pass(`${slabs.length} upper floors over ${checked} rooms beneath them, every one ${HEAD_HIGH} m or more clear`);
+}
+
+/* ------------------------------ 8: a body can climb every flight ---
+ * The grid samples a cell CENTRE and its top cell on every flight reads fine
+ * (#459). A body is 0.45 m across, and for a year nothing in Node walked one:
+ * the slab beside a well is a wall while the feet are under its top less
+ * HEAD_LOW, on a 1:1 flight that is everything but the last 0.20 m of run,
+ * and the strip past the well's top end holds a body 0.45 m short of the
+ * edge, where the slab is a 0.55 m climb and STEP_UP is 0.35. Every flight in
+ * the castle was a wall at its top and every suite was green (#511). So this
+ * walks the controller's own `moveBody` along each flight in 0.05 m steps,
+ * starting on the flight a body's radius in from one end, and asks that the
+ * feet end on the floor at the other end, which they can only do once the
+ * body's centre is past the flight's own edge; then the same the other way. It
+ * starts on the flight rather than before it because a metre before a lower
+ * flight's foot is inside the tower's ring.
+ */
+console.log('\na body up and down every flight');
+{
+  const walkFlight = (ramp, up) => {
+    const [ax, az, ay] = ramp.slope.from, [bx, bz, by] = ramp.slope.to;
+    const len = Math.hypot(bx - ax, bz - az);
+    const ux = (bx - ax) / len, uz = (bz - az) / len;
+    // the flight's ends are its own surface; the floors it joins are the storeys either side
+    const [sx, sz, sy, tx, tz] = up ? [ax, az, ay, bx, bz] : [bx, bz, by, ax, az];
+    const ty = plan.storey * (ramp.level + (up ? 1 : 0));
+    const dir = up ? 1 : -1;
+    const rise = (by - ay) / len;
+    let body = { x: sx + ux * dir * BODY_RADIUS, z: sz + uz * dir * BODY_RADIUS, feet: sy + dir * rise * BODY_RADIUS };
+    let pushed = new Set();
+    for (let i = 0; i < 200; i++) {
+      const r = moveBody(plan, plan.colliders, body, ux * dir * 0.05, uz * dir * 0.05);
+      r.pushedBy.forEach((id) => pushed.add(id));
+      if (r.refused) break;
+      body = r;
+    }
+    const past = ((body.x - tx) * ux + (body.z - tz) * uz) * dir;
+    // A flight at a curtain's end faces the pier that run drives 2 m into the
+    // tower, 0.35 m past the flight's end, and that pier is an 8 m wall: a
+    // body walking straight on stops a radius from it, 0.1 m onto the flight,
+    // and leaves through the crescent beside the flight instead, the way
+    // play-castle.mjs's walk has always described it. So one sidestep of a
+    // body's width, either way, counts.
+    let side = null;
+    if (Math.abs(body.feet - ty) > 1e-6) {
+      for (const sgn of [1, -1]) {
+        let b = body;
+        for (let i = 0; i < 20 && Math.abs(b.feet - ty) > 1e-6; i++) {
+          const r = moveBody(plan, plan.colliders, b, -uz * sgn * 0.05, ux * sgn * 0.05);
+          if (r.refused) break;
+          b = r;
+        }
+        if (Math.abs(b.feet - ty) <= 1e-6) { side = sgn; body = b; break; }
+      }
+    }
+    return { body, past, side, pushed: [...pushed], top: ty, edge: up ? by : ay };
+  };
+  let climbed = 0, sidestepped = 0;
+  for (const ramp of plan.ramps) {
+    const piece = plan.pieces.find(p => p.id === ramp.id);
+    const label = piece ? piece.label : ramp.id;
+    for (const up of [true, false]) {
+      const r = walkFlight(ramp, up);
+      const ok = Math.abs(r.body.feet - r.top) < 1e-6;
+      if (ok) { climbed++; if (r.side) sidestepped++; continue; }
+      const short = Math.max(0, -r.past);
+      fail(`${label} cannot be ${up ? 'climbed' : 'descended'}: the body stops at feet ${r.body.feet.toFixed(2)}, ${short.toFixed(2)} m short of the ${up ? 'top' : 'bottom'} edge at ${r.edge.toFixed(2)}${r.pushed.length ? `, pushed by ${r.pushed.join(', ')}` : ''}`);
+    }
+  }
+  if (!plan.ramps.length) fail('the plan has no flights, so nothing was climbed');
+  else if (climbed === plan.ramps.length * 2) pass(`${plan.ramps.length} flights, each climbed and descended by a ${BODY_RADIUS} m body onto the floor beyond, ${sidestepped} of the ${climbed} walks leaving through the crescent beside the flight`);
 }
 
 /* ------------------------------------- 5: every NPC stands somewhere real ---

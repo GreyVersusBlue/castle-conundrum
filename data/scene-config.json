@@ -100,9 +100,9 @@
     "scale": [
       3,
       3.9,
-      3.9
+      3.3
     ],
-    "comment": "Two flights per tower, both this piece, placed by src/castle-plan.js from the drum's `stairs` side. stairs-stone.glb is authored 0.5 x 1 x 1 and rises toward its own +z; at a uniform 4 it is 2 m wide and 4 m long, and two of those side by side are a 4 m square whose corners sit 2.83 m from a tower's centre, 0.03 m into a ring whose inner face is at 2.8 (#452). So the scale is per axis: 1.5 m wide, 3.9 m of rise over 3.9 m of run, and the last 0.1 m onto the slab is a step. The lower flight runs along z in the tower's east half, rising toward the outer wall; the upper flight runs along x in the outer half, rising east, and its well in the level-2 floor sits where the walk does not cross. Their overlap is the lower flight's low half under the upper flight's high half, 2.05 m of headroom at the worst point."
+    "comment": "Two flights per tower, both this piece, placed by src/castle-plan.js from the drum's `stairs` side. stairs-stone.glb is authored 0.5 x 1 x 1 and rises toward its own +z; at a uniform 4 it is 2 m wide and 4 m long, and two of those side by side are a 4 m square whose corners sit 2.83 m from a tower's centre, 0.03 m into a ring whose inner face is at 2.8 (#452). So the scale is per axis: 1.5 m wide, 3.9 m of rise over 3.3 m of run, and the last 0.1 m onto the slab is a step. The run was 3.9 until #512: a curtain run reaches 2 m into every tower it meets, so a 3.9 m flight centred on the tower ends 0.05 m from a pier at each end, and a 0.45 m body is held 0.40 m short of the foot, where the floor is a 0.40 m drop and STEP_UP is 0.35. At 3.3 each end has 0.35 m of clear floor, the body reaches within 0.1 m of either end, and at the head its feet are already at 7.78, over the 7.7 at which the pier's top stops being a wall. The lower flight runs along z in the tower's east half, rising toward the outer wall; the upper flight runs along x in the outer half, rising east, and its well in the level-2 floor sits where the walk does not cross. Their overlap is the lower flight's low half under the upper flight's high half, 2.05 m of headroom at the worst point."
   },
   "materials": {
     "castle_wall_slates": {

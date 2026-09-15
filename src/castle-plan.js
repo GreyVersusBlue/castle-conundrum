@@ -30,6 +30,13 @@
 export const GRID = 0.5;
 /** A step this tall or shorter is walked up; anything taller is a wall. */
 export const STEP_UP = 0.35;
+/**
+ * The player's body, as a circle in plan. `moveBody` pushes it out of every
+ * collider by this much, and the slabs cut their collider wells this much
+ * wider than their surface wells so a body on a flight never meets the strip
+ * beside the well before it is a step (#511).
+ */
+export const BODY_RADIUS = 0.45;
 /** The column a standing body needs clear above the floor it stands on. */
 export const HEAD_LOW = 0.3, HEAD_HIGH = 1.9;
 /**
@@ -1372,7 +1379,17 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
       if (!outline.length) throw new Error(`[castle-plan] ${r.id}'s floor lies wholly inside a drum`);
     }
     const pbox = outline ? boxOfOutline(outline, y0, top) : box;
-    const boxes = cutHoles(pbox, holes);
+    // THE COLLIDER WELL IS A BODY'S RADIUS WIDER THAN THE SURFACE WELL (#511).
+    // The strips beside a well are walls to a body on the flight until its
+    // feet are within HEAD_LOW of the slab's top, which on this flight is the
+    // last 0.25 m of run, and a body whose centre is pushed BODY_RADIUS clear
+    // of the strip past the flight's head never gets there: it stops with the
+    // slab a 0.55 m climb away. The surface well stays the flight's own
+    // footprint, so a body on the slab still cannot step over the well's edge.
+    const boxes = cutHoles(pbox, holes.map((h) => ({
+      min: { x: h.min.x - BODY_RADIUS, z: h.min.z - BODY_RADIUS },
+      max: { x: h.max.x + BODY_RADIUS, z: h.max.z + BODY_RADIUS },
+    })));
     addPiece({
       id, kind: 'floor', built: 'floor', level: r.level, curtain: false,
       material: r.floor, repeatMetres: r.repeatMetres || null, flush: false, label: id,
@@ -1507,6 +1524,60 @@ export function standAt(plan, x, z, feet, stepUp = STEP_UP) {
     if (Math.abs(f.h - feet) <= stepUp + 1e-9) return f;
   }
   return null;
+}
+
+/* ------------------------------------------------------------- the body ---
+ *
+ * One axis of a player's move, as player-controller.js takes it every frame
+ * and as test/layout.mjs walks it up every flight: take the move, push the
+ * body out of every collider that crosses its head band, then stand where it
+ * ends up, or, standing nowhere, undo the whole thing. Here rather than in the
+ * controller because the controller needs three and a browser, and the one
+ * thing no Node suite could see until check 8 was the body's own radius
+ * (#511): the walkability grid samples a cell CENTRE, and a flight whose top
+ * cell reads fine can still hold a 0.45 m body short of the slab.
+ *
+ * `colliders` is passed in rather than read off the plan because the game's
+ * list carries the three brazier stands `scene-setup.js` registers at runtime;
+ * a THREE.Box3 and a plan box read the same here.
+ */
+export function moveBody(plan, colliders, body, dx, dz, radius = BODY_RADIUS) {
+  if (dx === 0 && dz === 0) return { ...body, pushedBy: [] };
+  const feet0 = body.feet;
+  let x = body.x + dx, z = body.z + dz;
+  const pushedBy = [];
+  const low = feet0 + HEAD_LOW, high = feet0 + HEAD_HIGH;
+  for (const { id, box } of colliders) {
+    // only what crosses the standing body's column: not a floor underfoot, not
+    // a lintel or a slab over the head, not a ground-floor wall under the walk.
+    // A top exactly a step over the feet is a step (the same millionth the
+    // grid's blocked() carries, #459).
+    if (box.min.y >= high - 1e-6 || box.max.y <= low + 1e-6) continue;
+    const cx = Math.min(Math.max(x, box.min.x), box.max.x);
+    const cz = Math.min(Math.max(z, box.min.z), box.max.z);
+    const ox = x - cx, oz = z - cz;
+    const distSq = ox * ox + oz * oz;
+    if (distSq >= radius * radius) continue;
+    pushedBy.push(id);
+    const dist = Math.sqrt(distSq);
+    if (dist > 0.0001) {
+      const push = (radius - dist) / dist;
+      x += ox * push;
+      z += oz * push;
+    } else {
+      // dead centre inside a box: push out toward the nearest face on x/z
+      const left = x - box.min.x, right = box.max.x - x;
+      const front = z - box.min.z, back = box.max.z - z;
+      const m = Math.min(left, right, front, back);
+      if (m === left) x = box.min.x - radius;
+      else if (m === right) x = box.max.x + radius;
+      else if (m === front) z = box.min.z - radius;
+      else z = box.max.z + radius;
+    }
+  }
+  const on = standAt(plan, x, z, feet0, STEP_UP);
+  if (!on) return { ...body, pushedBy, refused: true };
+  return { x, z, feet: on.h, pushedBy, refused: false };
 }
 
 /* ----------------------------------------------------------- walkability ---
@@ -1661,9 +1732,16 @@ export function walkability(plan, { grid = GRID, stepUp = STEP_UP, seeds = [] } 
     for (const [di, dj] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
       const ni = cur.i + di, nj = cur.j + dj;
       if (ni < i0 || ni > i1 || nj < j0 || nj > j1) continue;
+      // Two cells meet at the edge between them, so a cell on a flight is
+      // compared at the flight's height AT THAT EDGE, not at its centre: a
+      // 0.5 m cell on a 3.9 over 3.3 flight is 0.59 m of rise, more than a
+      // step, and the flight's foot still meets the floor at 0 (#512). Two
+      // cells on the same flight connect whatever their rise.
+      const ex = (cx(cur.i) + cx(ni)) / 2, ez = (cz(cur.j) + cz(nj)) / 2;
+      const edgeH = (c) => { const s = surfaceById.get(c.surface); return s?.slope ? heightOnSurface(s, ex, ez) : c.h; };
       for (const cand of at(ni, nj)) {
         const sameRamp = cand.surface === cur.surface && surfaceById.get(cand.surface)?.slope;
-        if (!sameRamp && Math.abs(cand.h - cur.h) > stepUp) continue;
+        if (!sameRamp && Math.abs(edgeH(cand) - edgeH(cur)) > stepUp) continue;
         const k = key(ni, nj, cand.h);
         link(curKey, k);
         if (reached.has(k)) continue;
