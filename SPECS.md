@@ -173,6 +173,21 @@ and og card from that run.
   under software rendering and passes here was never one.
 - **`BACKLOG.md`**'s header line "Nothing here has been seen on a GPU since
   Phase 5" comes out.
+- **AND FOUR THINGS THIS SESSION ADDED THAT ONLY A RENDER CAN JUDGE**, each
+  worth a shot and a sentence in `HISTORY.md`:
+  - **A tower roof from 12 m** (#523). Four of them, reached up a third flight;
+    the view over the whole plan is the thing the row was for and nothing in CI
+    can see it. Stand on the North-west Tower's roof and look east.
+  - **Seven trusses over the Great Hall** (#527). Whether
+    `structure-cross.glb` stretched to 0.5 x 2.5 x 7.25 reads as a hammerbeam
+    or as scaffolding is the open question, and the answer decides whether the
+    covering row (rank 7) is worth taking at all.
+  - **A phone** (#530). The stick throw, the sprint threshold, the look rate,
+    the E button's size and the two render numbers are all guesses. One session
+    with a real thumb settles six constants.
+  - **A luma read off the Great Hall's floor** the way #438 read the wall, for
+    the covering row's baseline: what the hall measures OPEN is the number the
+    covered hall has to be compared against.
 
 ### Acceptance, the run
 

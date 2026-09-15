@@ -45,7 +45,7 @@ a 0.3 m ledge. The turrets are solid now, which they had never been.
 **The Great Hall's roof frame shipped on 2026-09-15** (#527 and #528): seven
 trusses across the hall at 8 m, and no covering over them, because nothing in
 a container that cannot render can tell which way a kit roof piece slopes or
-whether a covered hall goes dark. The covering is rank 8 below, behind the GPU
+whether a covered hall goes dark. The covering is rank 7 below, behind the GPU
 run.
 
 **The line between the two plan suites was drawn on 2026-09-15** (#529):
@@ -62,14 +62,16 @@ in one file each (#53).
 
 **7 ranked items.** Nothing is claimed. Take rank 1.
 
-Two things are true of the whole list and worth saying once. **Nothing here has
+One thing is true of the whole list and worth saying once. **Nothing here has
 been seen on a GPU since Phase 5.** `npm run play` walks the whole intended day
 — twelve people, ten pieces of evidence, three bells, a reload at Sext, the
 accusation and the epilogue, 102 assertions — and no run of it since Phase 5 has
 happened on a machine with real compositing (#53). Rank 2 is that run, and it
-now carries a job it did not have: nobody has looked at a compressed texture.
-The second is gone: **the game has a thumb on it since #530**, and what is left
-of that one is that nobody has put a real thumb on a real phone.
+carries three jobs it did not have: nobody has looked at a compressed texture
+(#507), at a tower roof from 12 m (#523), at seven trusses over the hall (#527)
+— and nobody has put a thumb on a phone (#530). The second standing line, "the
+game has never had a thumb on it", came out with #530: the scheme is there, it
+is in CI, and what is left of it is the feel.
 
 ## How this repo is worked
 
