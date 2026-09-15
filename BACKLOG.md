@@ -62,7 +62,7 @@ your decisions and this file's header, ranks and `Claimed` column are updated
 
 | Rank | Item | Size | Model | Claimed | Detail |
 | --- | --- | --- | --- | --- | --- |
-| 1 | KTX2/Basis, meshopt and Draco over the 43 MB of assets, via `@gltf-transform/cli` | 1 | Opus 5 |  | [Asset compression](SPECS.md#asset-compression) |
+| 1 | KTX2/Basis, meshopt and Draco over the 43 MB of assets, via `@gltf-transform/cli` | 1 | Opus 5 | `claude/inspiring-planck-yfwfsd` | [Asset compression](SPECS.md#asset-compression) |
 | 2 | Sound: footsteps by surface, and the bell | ½ | Fable 5.1 |  | [Sound](SPECS.md#sound) |
 | 3 | A fourth body, and a woman's in particular | ½ | Fable 5.1 |  | [A fourth body](SPECS.md#a-fourth-body) |
 | 4 | A real GPU run of `npm run play`, and somebody looks at the twelve | ¼ | Opus 5 |  | [The GPU run](SPECS.md#the-gpu-run) |
