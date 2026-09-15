@@ -59,6 +59,18 @@ export function castleNav(plan, mystery) {
   }
 
   const walk = walkability(plan, { seeds });
+  /* AND THE FLOOR EACH OF THEM STANDS ON. A station is a tile and a level, and
+   * the height is the grid's, not a third number in the data: Lady Alys's
+   * chamber is level 1 and her feet are at 4.0, and the fill is the only thing
+   * that knows that. `h` is null where there is no floor, which is a station
+   * the validator refuses. Without it both the page and the check that watches
+   * the page read `h ?? 0`, agreed, and stood her on the ground floor inside
+   * the King's Hall (#470). */
+  for (const point of points.values()) {
+    if (!point) continue;
+    const cell = walk.cellAt(point.x, point.z, point.level);
+    point.h = cell ? cell.h : null;
+  }
   const planRooms = new Map(plan.rooms.map((r) => [`${r.id}/${r.level}`, r]));
 
   const api = {

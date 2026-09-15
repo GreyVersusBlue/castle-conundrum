@@ -1612,10 +1612,16 @@ export function walkability(plan, { grid = GRID, stepUp = STEP_UP, seeds = [] } 
   const breaches = [];
   /* WHO THE EDGES ARE FOR. The fill answers "can the player get here"; walking
    * an NPC from one station to the next is a second question over the same
-   * cells, and it needs the graph rather than the set. Recorded as the fill
-   * runs, both ways, including the edge back to a cell already reached — an
-   * edge dropped because its far end was visited first is an edge, and a path
-   * search over half a graph finds detours that do not exist. */
+   * cells, and it needs the graph rather than the set.
+   *
+   * ONE DIRECTION IS ENOUGH, and the first version of this recorded both with a
+   * comment claiming a path search over half a graph would find detours that do
+   * not exist. It would — but this is not half a graph. Every cell that is
+   * reached is pushed exactly once and popped exactly once, and a popped cell
+   * links to all four of its neighbours whether or not they were reached first,
+   * so B->A is recorded when B is popped just as A->B was when A was. Deleting
+   * the back-link changed no answer in any suite, which is the same thing as not
+   * being a check (#13), so it is not here. */
   const edges = new Map();
   const link = (a, b) => {
     if (!edges.has(a)) edges.set(a, []);
@@ -1654,7 +1660,6 @@ export function walkability(plan, { grid = GRID, stepUp = STEP_UP, seeds = [] } 
         if (!sameRamp && Math.abs(cand.h - cur.h) > stepUp) continue;
         const k = key(ni, nj, cand.h);
         link(curKey, k);
-        link(k, curKey);
         if (reached.has(k)) continue;
         const cell = { i: ni, j: nj, ...cand };
         if (!curOut && outsideCurtain(ni, nj)) breaches.push(cell);

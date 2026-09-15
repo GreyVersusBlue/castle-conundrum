@@ -1013,39 +1013,60 @@ it.
 
 ## Phase 6: Twelve NPCs on four bells
 
-**Size 1. Claude Opus 5.** The cast moves to its stations.
+**Shipped 2026-09-15, PR #318, under Claude Opus 5** (#465 to #476). The cast is
+on the screen: twelve bodies, three models and a tint each, standing where
+`data/mystery.json`'s schedule says at the bell the game is on. The bell is a
+crank and a rope in the chapel; ringing it moves the watch, and the watch moves
+the sky, the evidence that is only there at some bells, and twelve people, each
+walking the breadth-first route from where they stand to where they are due, on
+the same grid the player walks. `test/mystery.mjs` 100 assertions to 113,
+`test/plan-vs-scene.mjs` 7 to 16. 44 MB and nothing restored.
 
-- [ ] **`npc.js` reads the `tint`** Phase 1 wrote (#419), multiplying the body's
-  main material by it on load. The field and the body each of the twelve names
-  are already in `npcs.json`; this phase is where they first reach the screen.
-  The Guard, Scholar and Wizard are gone. `hideNodes` and `hideMaterials` do the
-  rest: the King's crown for the Constable only, the Adventurer's pack for
-  nobody. **If twelve tinted NPCs read as three bodies in the Vespers
-  photograph, that is the plan's named risk arriving**, and the answer is
-  Devon's: a fourth body is 1.4 to 2.0 MB over a ceiling only he can move.
-- [ ] **The bell.** An examinable in the chapel; `ringBell` advances the
-  watch, the manager tells every NPC its new station, and the lighting
-  section of `scene-config.json` gains a per-watch sun position and fog
-  colour so Vespers looks like Vespers. Time-gated evidence appears and
-  vanishes on the same event.
-- [ ] **NPCs path between stations.** `npc.js`'s patrol loop is fed a
-  waypoint list from `walkability`'s grid (breadth-first from station to
-  station, through doorways and up stairs), so the cook walks from the
-  kitchen to the Great Hall at Vespers rather than teleporting. An NPC that
-  cannot path is a validator failure, not a frozen body: `validateMystery`
-  now takes the plan and rejects a station with no path from the previous
-  watch's station.
-- [ ] **`play-castle.mjs` reads stations from data.** `SCHOLAR` and `GUARD`
-  go; the walk beats look up `stationOf(npc, watch)`. Two constants that
-  three phases have had to move by hand stop existing.
+What the plan below said and what shipped differ in seven places, each a
+locked decision:
 
-**Guard-rail:** wall the kitchen's door in the config and watch
-`mystery.mjs` fail with "cook: no path from KI at sext to GH at vespers";
-put two NPCs on one tile at one watch and watch the station-collision rail
-fail. **Exit:** twelve NPCs at their Prime stations in Node
-(`stationOf` for all twelve, all reachable); the bell rung four times moves
-every one of them along an existing path; `npm run play` rings the bell and
-finds the cook in the Great Hall (GPU). **Weight:** 44.4 MB. **Model:** Opus.
+- **A station is a tile, not a room** (#466). Six people stand in the Great Hall
+  at Vespers and each of them has to be somewhere the player can walk up to and
+  talk to alone, so every station in the schedule carries a fractional `tile` in
+  `scene-config.json`'s own units. `src/stations.js` is the new file that turns
+  one into a world point and a walk.
+- **The validator takes a nav and asks five things of every station** (#467):
+  floor under it, the room it names around it, 1.5 m between any two bodies at
+  one bell, the player able to walk to it (or, for the one barred room, to
+  within talking range of its bars), and a walk from the station before it.
+- **Lady Alys leaves the garden** (#469). Her Sext station was the east barbican
+  garden, which is behind a gate that never opens: nobody could ever have walked
+  to her there and no rail before this one could say so. She takes the air in
+  the inner ward.
+- **A station carries the floor's height, not just its level** (#470), and the
+  first version of the browser check could not tell: both sides read `h ?? 0`,
+  so Lady Alys stood on the ground floor inside the King's Hall and every
+  assertion agreed she was where she should be.
+- **The tint clones the material first** (#471). Three.js shares materials
+  across every clone of a cached glTF, so tinting in place repaints everyone
+  wearing the same body. Skin, eyes, brows and hair are left alone.
+- **The three of v1 are gone and the riddle quest ends on the Constable** (#472),
+  with every stage in `default`: none of the twelve has a `hasKeystone` line, and
+  writing twelve of them for three stages Phase 7 deletes is content with an
+  expiry date on it. `npcs.json` is the twelve now, and Dafydd carries the mace
+  the Guard left behind.
+- **Anything the player presses E at is held clear of the stone** (#473). The
+  bell's first tile put 0.9 m of its box inside the Chapel Tower's ring while its
+  own tile point stood on clear floor, and the only thing that said so was
+  `interaction.js` refusing to offer a prompt through stone.
+
+**The break the plan named ran green** (#475). Walling the kitchen's south door
+does not strand the cook: the Kitchen Tower's own ground door opens into the
+kitchen and its stair runs to the wall walk, so she goes out through the larder,
+along the north walk, down another tower and into the hall, 195 cells instead of
+47. That is Phase 5's lesson arriving a second time. The suite asserts both
+halves now: one door walled leaves her a way round, and both doors walled
+produces `cook: no path from KI at sext to GH at vespers`.
+
+**`npm run play` is unrun** (#53). Its `SCHOLAR` and `GUARD` constants are gone
+and it looks up `stationOf` instead, rings the bell three times and walks to the
+Great Hall to find the cook there; none of that has been seen on a GPU, and the
+phase's GPU exit criterion is outstanding.
 
 ## Phase 7: The mystery goes live
 

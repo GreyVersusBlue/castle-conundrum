@@ -252,10 +252,21 @@ try {
     const b = seen.get(id);
     if (!b) { fail(`${id} is in the schedule at Prime and the page spawned no such body`); offStation++; continue; }
     if (!b.visible) { fail(`${id} is due in ${at.room} at Prime and the page left the body hidden`); offStation++; continue; }
-    const d = Math.max(Math.abs(b.x - at.x), Math.abs(b.z - at.z), Math.abs(b.y - (at.h ?? 0)));
-    if (d > TOL) { fail(`${id} stands at (${b.x.toFixed(2)}, ${b.y.toFixed(2)}, ${b.z.toFixed(2)}) and the plan's Prime station is (${at.x.toFixed(2)}, ${(at.h ?? 0).toFixed(2)}, ${at.z.toFixed(2)}), ${d.toFixed(3)} m off`); offStation++; }
+    if (at.h == null) { fail(`${id} is due in ${at.room} at Prime and the grid finds no floor there`); offStation++; continue; }
+    const d = Math.max(Math.abs(b.x - at.x), Math.abs(b.z - at.z), Math.abs(b.y - at.h));
+    if (d > TOL) { fail(`${id} stands at (${b.x.toFixed(2)}, ${b.y.toFixed(2)}, ${b.z.toFixed(2)}) and the plan's Prime station is (${at.x.toFixed(2)}, ${at.h.toFixed(2)}, ${at.z.toFixed(2)}), ${d.toFixed(3)} m off`); offStation++; }
   }
   if (!offStation) pass(`all ${due.length} bodies due at Prime stand on their own station within ${TOL} m, on ${new Set(due.map((n) => n.at.level)).size} level(s)`);
+  /* AND THE ONE ON THE UPPER FLOOR IS ON IT. Lady Alys is in the royal
+   * apartments at Prime, over the King's Hall, and her feet belong at 4.0.
+   * The check above could not say so while the station carried no height and
+   * both sides of it read `h ?? 0`: she stood on the ground floor inside the
+   * hall and everything agreed she was where she should be (#147). */
+  const upstairs = due.filter((n) => n.at.level > 0);
+  const grounded = upstairs.filter((n) => (seen.get(n.id)?.y ?? 0) < 0.5);
+  check(upstairs.length > 0 && grounded.length === 0,
+    `${upstairs.length} of them stand above the ground floor, on their own floor: ${upstairs.map((n) => `${n.id} at y ${(seen.get(n.id)?.y ?? 0).toFixed(1)}`).join(', ')}`,
+    grounded.length ? `${grounded.map((n) => n.id).join(', ')} on the ground` : 'nobody is upstairs at Prime, so this checks nothing');
   const absent = bodies.filter((b) => !b.visible).map((b) => b.id);
   check(absent.join() === 'merchant', 'the one who is not in the castle at Prime is hidden rather than standing at the origin', `hidden: ${absent.join(', ') || 'nobody'}`);
   // The tint (#419). Three bodies, twelve people: the cloth has to differ
