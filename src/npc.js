@@ -70,6 +70,22 @@ export class NPC {
     this._wasTalking = false;
   }
 
+  /**
+   * A HIDDEN BODY IS NOT SOMETHING TO PRESS E AT (#538). `InteractionSystem`
+   * skips a target whose `active` is false, and `castle-builder.js` has said
+   * `get active() { return obj.visible; }` for every piece of evidence since
+   * Phase 7. NPCs never did, and the bug that hid behind that was day one's:
+   * the merchant is not in the castle until Terce, and his group sits at the
+   * origin with `visible` false, which no player ever walks up to. The second
+   * day put a hidden body where the player is certain to go — the man who
+   * hanged stays standing, invisible, at the Vespers station the accusation
+   * was made at — and the HUD offered "Press E to talk to Master Robert
+   * Ferrour" over an empty patch of the Great Hall. Measured in the browser
+   * before this line existed, with the merchant moved into the hall on
+   * purpose: the prompt was identical with `visible` true and false.
+   */
+  get active() { return this.group.visible; }
+
   async build() {
     const body = this.def.modelPath
       ? await this._buildModelBody()

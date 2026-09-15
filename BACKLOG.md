@@ -60,19 +60,29 @@ and `test/touch.mjs` as the ninth suite. What it FEELS like is unknown — nobod
 has had a thumb on it, and the six numbers that decide that are named constants
 in one file each (#53).
 
-**7 ranked items.** Rank 6 is claimed by `claude/second-day-epilogue-pzfxie`,
-which is taking increment 1 of it. Ranks 2, 3, 4, 5 and 7 all need a machine
-this one is not: a GPU, or Poly Haven and `ktx`, which answer 403 here (#518).
-Rank 1 is the only other open row a container can finish.
+**The second day's first increment shipped on 2026-09-15** (#533 to #538, PR
+#16): the
+epilogue's button reads "The next morning" now. One watch, `lauds`, thirteen
+stations, sixty line sets keyed by which of the seven endings the player
+reached, seven closing panes, and a thirteenth cast entry — the King's
+inspector — whose conversation is the end of the game. The save is version 2
+with a `day` field; the key did not move (#36). **Rank 6 is still open**: it is
+a 2+ and increment 2 is the castle's half of the consequences, which `SPECS.md`
+now specs.
+
+**7 ranked items. Nothing is claimed.** Rank 1 is the only row a container
+without a GPU and without Poly Haven can start from scratch; rank 6's next
+increment is the other one, and `SPECS.md` specs it file by file. Ranks 2, 3,
+4, 5 and 7 all need a machine this one is not (#518).
 
 One thing is true of the whole list and worth saying once. **Nothing here has
 been seen on a GPU since Phase 5.** `npm run play` walks the whole intended day
 — twelve people, ten pieces of evidence, three bells, a reload at Sext, the
 accusation and the epilogue, 102 assertions — and no run of it since Phase 5 has
 happened on a machine with real compositing (#53). Rank 2 is that run, and it
-carries three jobs it did not have: nobody has looked at a compressed texture
-(#507), at a tower roof from 12 m (#523), at seven trusses over the hall (#527)
-— and nobody has put a thumb on a phone (#530). The second standing line, "the
+carries four jobs it did not have: nobody has looked at a compressed texture
+(#507), at a tower roof from 12 m (#523), at seven trusses over the hall (#527),
+or at a Lauds sky (#533) — and nobody has put a thumb on a phone (#530). The second standing line, "the
 game has never had a thumb on it", came out with #530: the scheme is there, it
 is in CI, and what is left of it is the feel.
 
@@ -115,7 +125,7 @@ your decisions and this file's header, ranks and `Claimed` column are updated
 | 3 | A new preview and og card, from that run | ¼ | Opus 5 |  | [The GPU run](SPECS.md#the-gpu-run) |
 | 4 | Four texture sets: a second wall stone, a tower stone, a plaster, a floor | ½ | Fable 5.1 |  | [The texture sets](SPECS.md#the-texture-sets) |
 | 5 | The town side: a textured ground outside the west barbican, and a road | 1 | Fable 5.1 |  | [The town side](SPECS.md#the-town-side) |
-| 6 | A second day, in which the epilogue's consequences play | 2+ | Opus 5 | `claude/second-day-epilogue-pzfxie` | [A second day](SPECS.md#a-second-day) |
+| 6 | A second day: increment 2, consequences that change the castle | 2+ | Opus 5 |  | [A second day](SPECS.md#a-second-day) |
 | 7 | The hall's covering, and the two windows under it | ¼ | Sonnet 5 |  | [The hall covering](SPECS.md#the-hall-covering) |
 
 ## A fourth body
@@ -170,11 +180,16 @@ and currently that somewhere is a hard edge. The texture set goes through
 
 ## A second day
 
-**Rank 6, and a 2+.** The save schema already has `watch` and `accusations[]`
-and nothing stops a day two in which the epilogue's consequences play. The
-content does not exist — that is the whole row, and it is a writing job the
-size of `PLAN.md`'s mystery section before it is a code job. Do one increment,
-ship it, leave the row standing.
+**Rank 6, and a 2+. Increment 1 shipped on 2026-09-15** (#533 to #537): the
+morning after is there, seven shapes of it, and the cast says what the verdict
+made of them. **What is left is the castle's half.** The consequences are all in
+people at the moment — an empty desk, an empty cell, a laundress at the foot of
+a tower — and the stone does not know anything happened: the cell's bars are
+still shut on the morning Madoc is let out, the muniment room is still open on
+the morning the Clerk goes on keeping the works, and the merchant's cart is
+still in the outer ward. `SPECS.md` specs increment 2 file by file, with the two
+open calls answered. The two after it want a road the castle does not have
+(**The town side**) and a fifth bell that #533 would have to be argued with.
 
 ## The hall covering
 

@@ -18,8 +18,16 @@
 // an effect becomes a call. That is what makes the accusation work without a
 // special case: `accuse()` returns `[ask:accuse, verdict, accused:x,
 // verdict:<class>]`, so the panel re-renders, the verdict is stashed, and then
-// the class event walks the graph into a terminal stage whose `showEpilogue`
+// the class event walks the graph into a verdict stage whose `showEpilogue`
 // reads the stash. Nothing is scheduled and nothing is reordered.
+//
+// AND THE MORNING AFTER (#533 to #537). The four verdict stages are not the end
+// any more: their pane's button dispatches `day:2`, the graph moves to
+// `morning`, and `applyDay` is one call into the engine whose answer is the
+// whole second day — which watch, who is missing, where the rest of them stand
+// and what each of them says about it. There are no clues, no bell and no
+// accusation on day two, so nothing below grew a branch for those: the engine
+// already refuses all three once a verdict is recorded.
 
 import { QuestGraph, judgeAnswer, renderLines } from './quest-graph.js';
 
@@ -43,7 +51,7 @@ export class QuestManager {
    * list, so an action here that nothing implements is caught at load and a
    * stage naming one that is missing refuses to construct.
    */
-  static actions = ['openRiddle', 'openLock', 'ringBell', 'openJournal', 'openAccusation', 'showEpilogue'];
+  static actions = ['openRiddle', 'openLock', 'ringBell', 'openJournal', 'openAccusation', 'showEpilogue', 'applyDay'];
 
   /**
    * @param quest      parsed data/quest.json
@@ -84,8 +92,12 @@ export class QuestManager {
     // door id is written down in this file.
     this._lockAsked = null;
     // The last verdict the engine handed back, for `showEpilogue`. A save
-    // resumed in a terminal stage has none and rebuilds it from `accusations`.
+    // resumed in a verdict stage has none and rebuilds it from `accusations`.
     this._verdict = null;
+    // What each of the thirteen says on the morning after, once `applyDay` has
+    // asked the engine. Null on day one, and null is what says which day it is
+    // to every method below that has to answer differently.
+    this._dayLines = null;
 
     this._actions = {
       openRiddle: () => this.ui.openRiddle(
@@ -110,11 +122,13 @@ export class QuestManager {
       openJournal: () => this._openJournal(),
       openAccusation: () => this._openAccusation(),
       showEpilogue: () => this._showEpilogue(),
+      applyDay: () => this._applyDay(),
     };
 
     // Resume at a saved stage the graph has (save.js's repair has already reset
     // one it lacks to `start`), re-running that stage's enter effects so the
-    // objective, the dialogue states and a terminal stage's epilogue come back.
+    // objective, the dialogue states, a verdict stage's epilogue pane and the
+    // morning after's whole castle all come back.
     if (saved?.stage && quest.stages[saved.stage] && saved.stage !== quest.start) {
       this.graph.stage = saved.stage;
       this._apply(this.graph._enterEffects());
@@ -129,8 +143,20 @@ export class QuestManager {
   /** The current stage id, for anything that wants to read it (both suites do). */
   get stage() { return this.graph.stage; }
 
-  /** True once the graph is in a terminal stage: the day is judged. */
+  /**
+   * True once the graph is in a terminal stage. THAT IS NO LONGER "THE DAY IS
+   * JUDGED" (#537): the four verdict stages stopped being terminal when the
+   * second day arrived, so between the epilogue pane and the inspector this is
+   * false and the player is walking a castle again. `judged` is the other
+   * question, and main.js and both browser suites wanted that one all along.
+   */
   get victory() { return this.graph.done; }
+
+  /** True once a verdict is recorded: the first day is over, whatever comes after. */
+  get judged() { return (this.engine?.state?.accusations ?? []).some((a) => a.verdict); }
+
+  /** 1 or 2. The second day begins when the epilogue's button is pressed. */
+  get day() { return this.engine?.day ?? 1; }
 
   /** The watch the engine is on, or null when this manager has none (a stand-in suite). */
   get watch() { return this.engine ? this.engine.watch : null; }
@@ -228,14 +254,24 @@ export class QuestManager {
       return;
     }
     npc.talking = true;
-    const lines = renderLines(npc.getDialogueLines(), this.graph.tokens);
+    const lines = renderLines(this._linesFor(npc), this.graph.tokens);
     this.ui.openDialogue(npc.name, lines, () => {
       npc.talking = false;
       if (this.engine) this._surface(this.engine.talk(npc.id));
       else this._apply(this.graph.dispatch(`talked:${npc.id}`));
       this._onChange?.(this._snapshot());
-    }, { onPresent: this.engine ? () => this._present(npc) : null });
+    }, { onPresent: this.engine && !this._dayLines ? () => this._present(npc) : null });
   }
+
+  /**
+   * Whose words come out of somebody's mouth. On day one it is their own
+   * `dialogue[state]`; on the morning after it is the set `applyDay` got from
+   * the engine, which depends on what the player said at the accusation. The
+   * day-two lines are in mystery.json rather than npcs.json because there are
+   * seven of them per person and which one is spoken is a fact about the
+   * mystery and not about the body (#534).
+   */
+  _linesFor(npc) { return this._dayLines?.[npc.id] ?? npc.getDialogueLines(); }
 
   /**
    * The player has walked into a room. `walk-crosses` is the only clue in
@@ -270,7 +306,7 @@ export class QuestManager {
     this._surface(effects);
     this._syncStates();
     const shrugged = effects.some((e) => e.type === 'shrug');
-    const lines = renderLines(shrugged ? (npc.def?.dialogue?.default ?? npc.getDialogueLines()) : npc.getDialogueLines(), this.graph.tokens);
+    const lines = renderLines(this._dayLines?.[npc.id] ?? (shrugged ? (npc.def?.dialogue?.default ?? npc.getDialogueLines()) : npc.getDialogueLines()), this.graph.tokens);
     npc.talking = true;
     this.ui.openDialogue(npc.name, lines, () => { npc.talking = false; }, { onPresent: () => this._present(npc) });
     this._onChange?.(this._snapshot());
@@ -310,7 +346,10 @@ export class QuestManager {
     if (!this.engine) return;
     const acc = this.mystery?.accusation ?? {};
     this.ui.openAccusation({
-      people: this.npcs.map((n) => ({ id: n.id, name: n.name })),
+      // Twelve names and a fall. The thirteenth is the King's inspector, who
+      // has not dismounted, and `arrives` is the field that says so (#534):
+      // offering him would be offering an alibi nobody could ever break.
+      people: this.npcs.filter((n) => ((n.def?.arrives ?? 1) === 1)).map((n) => ({ id: n.id, name: n.name })),
       fall: { id: 'nobody', name: this.line('fall') },
       clues: this.journal(),
       present: acc.present ?? 3,
@@ -321,17 +360,63 @@ export class QuestManager {
   }
 
   /**
-   * The verdict and the epilogue, in the panel the accusation was made in. The
-   * button erases the save and starts the day again — `restart` is injected, so
-   * a suite sees the call rather than a reload.
+   * The verdict and the epilogue, in the panel the accusation was made in, and
+   * then on the second day the same pane again with the sheet signed.
+   *
+   * THE BUTTON IS WHAT CHANGED (#537). It used to do one thing: erase the save
+   * and start the day over. Now, at the end of a day one that has a morning
+   * after to go to, it reads "The next morning" and dispatches `day:2`, which
+   * is the event the four verdict stages listen for. Which of the two it is is
+   * read off the stage the graph is actually in rather than off a stage id
+   * written here: a verdict stage with no `day:2` transition gets the old
+   * button, which is how one ending is made final without touching this file.
    */
   _showEpilogue() {
+    if (this.engine?.day === 2) {
+      const e = this.engine.dayTwoEnding?.();
+      if (!e) return;
+      this.ui.showEpilogue({ ...(this._savedVerdict() ?? {}), convicted: e.signed, epilogue: e.after },
+        () => this._restart(), { label: 'Play Again' });
+      return;
+    }
     const v = this._verdict ?? this._savedVerdict();
     if (!v) return;
-    this.ui.showEpilogue(v, () => this._restart());
+    const morning = this._hasMorning();
+    this.ui.showEpilogue(v, morning ? () => this._nextMorning() : () => this._restart(),
+      { label: morning ? 'The next morning' : 'Play Again' });
   }
 
-  /** Rebuild the last verdict from the save, for a reload in a terminal stage. */
+  /** Does this ending have a second day to go to? */
+  _hasMorning() {
+    return !!this.mystery?.day2 && (this.graph.current?.transitions ?? []).some((t) => t.on === 'day:2');
+  }
+
+  /** The epilogue's button, when there is a morning after. */
+  _nextMorning() { this._apply(this.graph.dispatch('day:2')); }
+
+  /**
+   * The morning after, applied to the whole game: the save says day 2, the sky
+   * and the HUD say Lauds, the evidence is off the ground because none of it is
+   * listed at that watch, the cast is placed by `onWatch` from the day-aware
+   * station lookup, and every one of them is carrying the lines the verdict
+   * earned them. The panel the epilogue was read in is closed and the pointer
+   * goes back, because the next thing that happens is walking.
+   *
+   * IT IS IDEMPOTENT ON PURPOSE. It runs on entering `morning` and again on
+   * entering `end`, so a save resumed in either stage comes back to a castle at
+   * Lauds rather than to one still standing at Vespers behind the pane.
+   */
+  _applyDay() {
+    const day = this.engine?.beginDay2?.();
+    if (!day) return;
+    this._dayLines = day.lines;
+    this.ui.closeAccusation?.();
+    this.applyWatch(day.watch, { walk: false });
+    this._syncStates();
+    this._onChange?.(this._snapshot());
+  }
+
+  /** Rebuild the last verdict from the save, for a reload after the accusation. */
   _savedVerdict() {
     const acc = this.mystery?.accusation ?? {};
     const a = (this.engine?.state?.accusations ?? []).filter((x) => x.verdict).at(-1);
@@ -371,7 +456,7 @@ export class QuestManager {
     return effects;
   }
 
-  _snapshot() { return { stage: this.graph.stage, riddleWrong: this._wrongCount }; }
+  _snapshot() { return { stage: this.graph.stage, riddleWrong: this._wrongCount, day: this.engine?.day ?? 1 }; }
 
   /**
    * Whose lines each NPC gives. The engine is the authority once a press has

@@ -1306,5 +1306,441 @@
         "epilogue": "Hywel ap Gruffudd is buried as a drunk who fell. The lead goes on leaving by daylight, a cartload at a time, and the tallies that would have counted it are ash in the Clerk's hearth."
       }
     }
+  },
+  "day2": {
+    "comment": "THE MORNING AFTER (rank 6, increment 1). One watch, no clues, no bell, no accusation: the player wakes at Lauds and walks a castle the verdict has rearranged. `watch` is a fifth bell id that is deliberately NOT in `watches` — `watches` is asserted to be exactly four and `ring()`'s fourth is the Constable's demand, so a second day is a `day` field on the save and not a fifth ring (#533). `schedule` is one station per cast member for that watch, the inspector included; `absent` is applied on top of it at runtime, because who is gone depends on what the player said and the file cannot know that. `lines` are keyed by outcome, resolved key then verdict class then `default`, where a key is one of `accusation.verdicts`' own seven (`full`, the five accusables, `nobody`) and a class is one of the four the engine emits. `ends` names the one whose conversation is the terminal. Every line-set here has to be reachable by some outcome and every reachable outcome has to resolve to lines: src/mystery.js refuses both halves.",
+    "watch": "lauds",
+    "ends": "inspector",
+    "absentComment": "Who is not in the castle on the morning after. `accused` means whoever the last recorded accusation names is gone — hanged at first light from the Stockhouse Tower, which is where this castle hangs people — and `also` names anyone else the ending takes with them. The full ending takes two more: Piers Marrable is taken in his chamber with the gate passes in his coffer, and Thomas Wykes is taken in the town with a hundred and twenty-eight sheets of the King's lead in his yard. Both of those are the `full` epilogue's own words. There is no body at the gallows and no gallows: a corpse the player can walk up to is a new asset and a tone decision that is Devon's (#535).",
+    "absent": {
+      "accused": true,
+      "also": {
+        "full": [
+          "steward",
+          "merchant"
+        ]
+      }
+    },
+    "scheduleComment": "Where the thirteen stand at Lauds. Eleven of the twelve are at a tile they already stood on during the day, which is the point rather than the shortcut: the castle goes back to work and the difference is who is missing from it. The two that move are the sentry, awake in the guardroom he slept through Prime in, and the merchant, at the west gate with a cart at first light instead of at Terce. The inspector is at the King's Hall table with the Constable, 1.80 m off him, which is the room the accusation was supposed to be brought to.",
+    "schedule": {
+      "constable": {
+        "room": "kings-hall",
+        "tile": [
+          3,
+          -2.5
+        ],
+        "note": "at the table with the King's man"
+      },
+      "steward": {
+        "room": "steward-chamber",
+        "tile": [
+          1.5,
+          2.5
+        ]
+      },
+      "clerk": {
+        "room": "clerk-office",
+        "tile": [
+          -7.5,
+          -2.5
+        ]
+      },
+      "porter": {
+        "room": "porter-lodge",
+        "tile": [
+          0.1,
+          -4
+        ]
+      },
+      "cook": {
+        "room": "kitchen",
+        "tile": [
+          -5,
+          -2.5
+        ]
+      },
+      "chaplain": {
+        "room": "chapel",
+        "tile": [
+          5.4,
+          3.8
+        ],
+        "note": "the grave is filled"
+      },
+      "sentry": {
+        "room": "guardroom",
+        "tile": [
+          -8.9,
+          -4
+        ],
+        "note": "off watch and awake, which he was not at Prime"
+      },
+      "apprentice": {
+        "room": "lodge",
+        "tile": [
+          -1.5,
+          -2.5
+        ],
+        "note": "his master's tools still laid out"
+      },
+      "laundress": {
+        "room": "laundry",
+        "tile": [
+          -8.9,
+          4.06
+        ]
+      },
+      "prisoner": {
+        "room": "cell",
+        "tile": [
+          -5,
+          3.5
+        ]
+      },
+      "merchant": {
+        "room": "outer-ward",
+        "tile": [
+          -7.6,
+          0.15
+        ],
+        "note": "at the cart by the west gate"
+      },
+      "lady": {
+        "room": "royal-apartments",
+        "level": 1,
+        "tile": [
+          3,
+          -1.8
+        ]
+      },
+      "inspector": {
+        "room": "kings-hall",
+        "tile": [
+          1.2,
+          -2.5
+        ],
+        "note": "the sheet, and the ledger it was drawn from"
+      }
+    },
+    "linesComment": "Sixty line sets. Nobody says the same thing on the morning after a right hanging that they say on the morning after a wrong one, and the four whose morning is a different morning — the laundress whose husband hangs, the apprentice who does or does not get his lead back, the prisoner who is or is not let out, the Constable who has to sit with the King's man either way — carry the most of it.",
+    "lines": {
+      "constable": {
+        "full": [
+          "It is a poor morning to be Constable of this castle. One of my officers hangs and the other went to Caernarfon in irons before the bread was out of the oven.",
+          "Master Adam asked me how long the carts had been going out by daylight. I said I should have to look at the passes. He said that he had looked at them.",
+          "Go to him. He is in my own hall and he wants the one who did the asking."
+        ],
+        "clerk": [
+          "The right man hangs and the sheet is clean, and I shall not be sorry to see the inspector's horse go.",
+          "You will tell me I should have read further. A clerk's fancy and a name is not two things. You brought me two things and I wrote them down, and that is the whole of what I am for.",
+          "He is at the table in the King's Hall with a ledger nobody opened."
+        ],
+        "steward": [
+          "My own steward. I signed the order myself and I watched it done, and he went to it saying he sent the mason to be talked to and nothing further.",
+          "I have been a soldier thirty years and I know the taste of a man telling the truth at the end. I did not care for it.",
+          "Master Adam is in the King's Hall. Go and let him look at you instead of at me."
+        ],
+        "porter": [
+          "Gwilym hangs from his own tower and I have no porter. There is a man on the gate this morning who cannot read a pass held the right way up.",
+          "The inspector asked me who bars the doors now. I had no answer for him. He is in the King's Hall, if you want to try one."
+        ],
+        "merchant": [
+          "A town merchant with the King's lead under his sacking. Caernarfon can be told that and Caernarfon will be satisfied.",
+          "Master Adam has been at the ledger since first light and is a great deal less satisfied. He is in the King's Hall."
+        ],
+        "prisoner": [
+          "The smith went at first light and the sheet went out before the inspector's horse was watered, which is exactly what I asked for.",
+          "I got what I asked for. Thirty years a soldier and I know that taste too.",
+          "He is in the King's Hall. He has the gaol roll open and he has not said a word to me for an hour."
+        ],
+        "nobody": [
+          "A fall. I said so over the body on the first morning and I say so over the sheet on the second.",
+          "Master Adam signs at noon and is gone. He has asked me twice how a sober man comes down a stair he has walked a hundred times, and twice I have told him that the man was not sober.",
+          "He is in the King's Hall. Tell him whatever you like."
+        ]
+      },
+      "steward": {
+        "default": [
+          "You are still here. I had thought the King's business would have carried you off by now.",
+          "I have a deal of writing to do this morning and none of it is yours."
+        ],
+        "clerk": [
+          "They took him out at first light and the works are mine to let until Caernarfon sends another man. There is a mercy in that, of a sort, and I shall not pretend I cannot see it.",
+          "You came to me twice with a piece of paper. I am glad you stopped at twice."
+        ],
+        "prisoner": [
+          "The smith. Well. He had a temper on him and the whole ward knew it.",
+          "The laundry woman has not come to her work. Send somebody down, would you. The linen does not do itself."
+        ],
+        "nobody": [
+          "A fall. The stair is steep, he had drink in him, and that is the whole of it written down and signed for.",
+          "The carts go out at nine. Do not stand about in the gateway."
+        ]
+      },
+      "clerk": {
+        "default": [
+          "The works go on. Somebody has to count the sheets and it is still me.",
+          "I am sorry about Hywel. He was a good mason and a poor climber."
+        ],
+        "steward": [
+          "Master Piers hangs and I keep the works. I did not look for that and I will not stand here and pretend to mourn it.",
+          "He said to the last that he only sent the mason to be talked to. A man will say a great deal with a rope on him."
+        ],
+        "prisoner": [
+          "The smith. I said from the first that it was a fall, and nobody in this castle wanted a fall.",
+          "There is a new lock wanted on the muniment room. The old word is known to half the ward and I have been saying so since Easter."
+        ],
+        "nobody": [
+          "A fall, and the sheet signed. I am for the town this afternoon about the roof lead.",
+          "You look at me as though you had something. You have not, or you would have said it yesterday when it would have cost me anything at all."
+        ]
+      },
+      "porter": {
+        "default": [
+          "My head. Do not shout.",
+          "The gate is barred and I barred it, whatever anybody is saying this morning."
+        ],
+        "full": [
+          "They brought Master Piers past this door with his hands tied and he did not look at me once.",
+          "I have been dry since Vespers. That is a day, or near enough to one that I shall call it a day."
+        ],
+        "prisoner": [
+          "They hanged the smith, and the smith never came through my gate that night. I would have written it down.",
+          "I would have written it down. I think I would have written it down."
+        ],
+        "nobody": [
+          "A fall, they are saying. Well. It was not my door, then.",
+          "It was not my door."
+        ]
+      },
+      "cook": {
+        "default": [
+          "Bread first and grief after. There are forty mouths in this castle and not one of them stopped being hungry overnight.",
+          "Take that away from the fire, you will have the sleeve off it."
+        ],
+        "full": [
+          "Two of them gone before breakfast. Eleven years I have cooked in this castle and I have never had to put away that many bowls in a morning.",
+          "The lantern. I said about the lantern from the first hour and nobody heard a word of it until you came and asked."
+        ],
+        "prisoner": [
+          "Nest has not come for the bread. She has not come for the bread and I will not send it down to her, she would not thank me for it.",
+          "Madoc mended my crane hook for a loaf and would not take more. That is what I have to say about Madoc, and nobody is writing it down."
+        ],
+        "nobody": [
+          "A fall. Very well. And my lantern walked itself out of my kitchen and up a tower stair.",
+          "Eat something. You have the look of a man who has not."
+        ]
+      },
+      "chaplain": {
+        "default": [
+          "We put him in the ground at first light. There were six of us and the rain held off, which is as much as anyone gets.",
+          "Pray for him. And for whoever he spoke to last."
+        ],
+        "full": [
+          "Two men went up that stair. I have said it to everybody who would stand still for it, which until yesterday was nobody at all.",
+          "I shall have a deal of praying to do for Master Robert, and God forgive me, I do not much want to begin."
+        ],
+        "prisoner": [
+          "I gave the smith what I could give him and it was not much, and he knew it was not much, and he thanked me for it anyway.",
+          "He asked me whether God counts a thing a man did not do. I said that He does not. I have been sitting here since wondering whether I answered too quickly."
+        ],
+        "nobody": [
+          "The sheet is signed and the grave is filled and neither of those things is the truth.",
+          "I heard two men on that stair. I shall go on saying it to the stones if there is nobody left who will hear it."
+        ]
+      },
+      "sentry": {
+        "default": [
+          "Off watch, and I have not slept. There is no sleeping after a thing like that.",
+          "I saw fur on the wall walk. I have said it to three people now and it has stopped being worth the saying."
+        ],
+        "full": [
+          "They had him down off the walk before Lauds, fur and all.",
+          "I shall take the north side myself tonight, and I shall look at it properly."
+        ],
+        "prisoner": [
+          "The smith was in the cell. He was in the cell and I know it, because it was my hand that put the bar on it.",
+          "Nobody asked me. I stood on that wall the whole of yesterday and not one man asked me that."
+        ],
+        "nobody": [
+          "A fall. Then what I saw on the walk was nothing, and I am a liar or a fool.",
+          "Take your pick. Everybody else in this castle has."
+        ]
+      },
+      "apprentice": {
+        "default": [
+          "His tools are still laid out the way he left them. I have not had the heart to shift them.",
+          "I am to finish the roof. I do not know how I am to finish the roof."
+        ],
+        "full": [
+          "They found the sheets in Wykes's yard. A hundred and twenty-eight of them, the same count his tallies said, to the sheet.",
+          "Master Adam says the lead comes back to the castle and I am to lay it. I shall lay it. I shall lay every sheet of it myself."
+        ],
+        "prisoner": [
+          "They hanged the smith for it. The smith who drew out his chisels for him, twice a year, for nothing but the ale.",
+          "His tallies are still right and now there is nobody left who will ever look at them."
+        ],
+        "nobody": [
+          "A fall, they wrote. He could walk that stair in the dark. He did walk it in the dark, a hundred times, and I went up behind him.",
+          "There are a hundred and twenty-eight sheets short and there is not a man in this castle who is going to count them."
+        ]
+      },
+      "laundress": {
+        "default": [
+          "The linen does not stop for it.",
+          "It was a bad thing and I am sorry for it, and I have six shirts to get dry before the light goes."
+        ],
+        "full": [
+          "They say it was the Clerk. I washed that cloak of his and it was stiff with wax down the front and I thought nothing of it, because who in the world thinks about wax.",
+          "Madoc comes out at noon. I have his shirt ready. I have had his shirt ready for eleven days."
+        ],
+        "clerk": [
+          "Madoc comes out at noon, they tell me. Nobody has yet told Madoc.",
+          "I washed the Clerk's cloak. If I had stopped and thought about the wax on it, would that have been a day earlier? I shall be a long while with that one."
+        ],
+        "prisoner": [
+          "They hanged my husband this morning. From the Stockhouse Tower, where they hang everybody, and I walked up and stood at the foot of it and nobody sent me away.",
+          "Nobody asked me whether he had a wife. In a whole day of asking, nobody asked me anything at all.",
+          "Go away. No. Stay, and tell the King's man that Madoc the smith had a wife, and that she was in this castle the whole of yesterday."
+        ],
+        "nobody": [
+          "A fall. And my husband stays in that cell for a knife he never drew.",
+          "That is two men this castle has done nothing whatever for."
+        ]
+      },
+      "prisoner": {
+        "default": [
+          "Through the bars, then. Everything in my life is through the bars now.",
+          "I did not go up that stair. I have not been out of this room in eleven days and every man in the ward knows it."
+        ],
+        "full": [
+          "The bar comes off at noon, they tell me. I shall believe it at noon.",
+          "Tell Nest. Tell her before noon, she will want the time to make something of it."
+        ],
+        "clerk": [
+          "They hanged the Clerk and they left me where I am. I am to be let out when somebody remembers the letting out.",
+          "Tell Nest I am well. Tell her it however you can make it sound."
+        ],
+        "nobody": [
+          "A fall. So there was no killing at all, and I am still in here for a knife.",
+          "Ask the laundry woman what she makes of your castle's justice. Ask her gently."
+        ]
+      },
+      "merchant": {
+        "default": [
+          "I am here for stone, the same as I am always here for stone.",
+          "Whatever went on in this castle is the castle's business. I have a cart to load and eleven miles to go."
+        ],
+        "clerk": [
+          "The Clerk hanged. Well. He owed me for the last load and I suppose I shall not see the colour of it now.",
+          "No, I do not want to talk about what was under the sacking. Nobody has asked me and you will not be the first."
+        ],
+        "prisoner": [
+          "They hanged a smith. That is nothing at all to do with me and I am glad of it.",
+          "The Clerk has a load for me this afternoon. The same as always."
+        ],
+        "nobody": [
+          "A fall, they say, and the King's man signs at noon, and everybody's morning goes on the way it was going to go.",
+          "Mine does. Eleven miles before dark."
+        ]
+      },
+      "lady": {
+        "default": [
+          "You are still walking about. I had thought it would all be over by now, and it seems that it is.",
+          "I saw a light on the wall walk and I said so. That is the whole of what I have and it was the whole of it yesterday."
+        ],
+        "full": [
+          "They took Piers Marrable out of his chamber and he passed under my window with his hands tied. I did not look away, which I find I am glad of.",
+          "I have written to my brother. I would rather he had it from me than off a roll in Caernarfon."
+        ],
+        "steward": [
+          "Piers hangs, and Piers did not kill the mason, and I think every soul in this castle knows both of those things this morning.",
+          "I shall not say it to Sir Roger. There is no use left in it."
+        ],
+        "prisoner": [
+          "The smith. I never saw the smith in my life and now I never shall.",
+          "My window looks at the Stockhouse Tower. I did not sit at it this morning."
+        ],
+        "nobody": [
+          "A fall. My father would have had the truth of it by noon, and my father has been nine years dead.",
+          "You did what you could. I am not certain that is the comfort I meant it for."
+        ]
+      },
+      "inspector": {
+        "full": [
+          "You are the clerk who did the asking. Sit down. I have read the sheet, and then I read the ledger it was drawn out of, which I am told nobody in this castle thought to open until yesterday afternoon.",
+          "A hundred and twenty-eight sheets of the King's lead in a yard in the town, and a Clerk of Works who went up a stair behind the man who counted them and came down it alone. That is not a fall. That is an account, and it balances.",
+          "Marrable rides to Caernarfon with me. Wykes rides behind him. The works go to whoever Caernarfon sends and the lead comes back on a cart, and the apprentice lays it.",
+          "I shall put your name in the margin. It is not much of a reward. It is what I have got."
+        ],
+        "clerk": [
+          "Sit down. The right man hangs, and I will say that much for a day's work, which is a great deal more than I usually get to say.",
+          "But the ledger is still shut, and the Steward is still Steward, and the carts still go out by daylight on passes in a hand that everybody in this ward knows. I have asked three men whose hand it is. All three of them looked at their boots.",
+          "So I shall sign your sheet, and I shall be back before Michaelmas, and somebody else's mason will have fallen down somebody else's stair.",
+          "Go and get your breakfast."
+        ],
+        "steward": [
+          "Sit down. Piers Marrable hanged this morning protesting that he sent the mason to be talked to and nothing further, and having read what he signed and what he did not sign, I am inclined to believe him.",
+          "He stole the lead. He did not break the man's head. You have hanged a thief for a murder and left the murderer counting the sheets he is short.",
+          "Master Robert Ferrour keeps the works. He walks the wall at night. I asked him why and he told me that he sleeps badly, and I did not doubt that either.",
+          "I shall sign it. I have to sign something."
+        ],
+        "porter": [
+          "Sit down. You have hanged a porter for leaving a door unbarred.",
+          "Doors are left unbarred in this castle every night of the year. If we hanged for it there would be nobody on the gates at all and the King could ride in whenever he pleased.",
+          "I have read the ledger. The sevens in it are not the Clerk's sevens and the Clerk is the man who wrote the rest of the page, which is a thing you could have brought me yesterday, and did not.",
+          "Gwilym is in the ground. Sign here."
+        ],
+        "merchant": [
+          "Sit down. The lead is found, which is the one part of this that I can send to Caernarfon without hanging my head over it.",
+          "Thomas Wykes bought it. He did not sell it to himself. The man who did sold it out of this castle on a pass in a hand I could match in an afternoon, and nobody has asked me to spend the afternoon.",
+          "He and the man who signed for him dined at the high table last night. I was at that table. I watched the pair of them eat.",
+          "Sign here, and do not tell me it was the best that could be done."
+        ],
+        "prisoner": [
+          "Sit down. The smith was hanged before my horse was watered, which I am told was your Constable's own instruction and which I am obliged to write down.",
+          "Eleven days in a cell for a knife, and then a rope for a killing he was behind bars for. I have the gaol roll in front of me. It has the dates in it. As far as I can tell, nobody else in this castle has ever looked at it.",
+          "The tallies were short a hundred and twenty-eight sheets yesterday morning and they are short a hundred and twenty-eight sheets this morning. Nothing here has been mended. A man has been used up.",
+          "There is a woman at the laundry. Somebody ought to go down to her. It will not be me. I am gone by noon."
+        ],
+        "nobody": [
+          "Sit down. A fall, the sheet says, and the sheet is the only thing in this castle that says it with a straight face.",
+          "I asked your chaplain what he heard on that stair. He said two men. I asked your sentry what he saw on the wall walk. He said fur, and no lantern. I asked your cook about her lantern and she laughed at me, and it was not a pleasant laugh.",
+          "None of that is on the sheet. You had a day, and a castle full of people who wanted to tell you, and what I am carrying to Caernarfon is that Hywel ap Gruffudd was a drunk who fell down a stair.",
+          "He was not. Sign here."
+        ]
+      }
+    },
+    "endingsComment": "The second day's close, in the pane the verdict was read in. `signed` is what goes to Caernarfon and `after` is what happens to this castle once the horse is out of the gate. One per outcome, the same seven keys `accusation.verdicts` uses.",
+    "endings": {
+      "full": {
+        "signed": "Master Adam Fraunceys signs at noon and rides for Caernarfon with Piers Marrable behind him and Thomas Wykes behind Piers, and a cart of the King's lead behind all three.",
+        "after": "Ieuan lays the chapel roof before the rain comes, a hundred and twenty-eight sheets of it, and Hywel ap Gruffudd's tallies are pinned up in the lodge because they were right and somebody said so out loud."
+      },
+      "clerk": {
+        "signed": "Master Adam Fraunceys signs at noon and is gone, and says on the way out that he will be back before Michaelmas.",
+        "after": "Piers Marrable keeps his post and his coffer. The carts go out by daylight on passes in a hand everybody knows, and Madoc the smith is let out of the cell when somebody remembers the letting out."
+      },
+      "steward": {
+        "signed": "Master Adam Fraunceys signs at noon, having written in the margin that the man who hanged was a thief and not a murderer, which nobody in Caernarfon will read.",
+        "after": "Master Robert Ferrour keeps the works. He walks the wall at night when he cannot sleep, and there is nobody left on it to see him do it."
+      },
+      "porter": {
+        "signed": "Master Adam Fraunceys signs at noon and asks, on the way to his horse, who bars the doors now. Nobody has an answer for him.",
+        "after": "Gwilym is in the ground and there is a boy on the gate who cannot read a pass. The lead goes on leaving by daylight, a cartload at a time."
+      },
+      "merchant": {
+        "signed": "Master Adam Fraunceys signs at noon. The lead goes back on a cart, which is the one line in the whole sheet he does not mind writing.",
+        "after": "The man who sold it and the man who signed for it dine at the high table again that night. Nobody asks who stood the lantern up on the Chapel Tower stair."
+      },
+      "prisoner": {
+        "signed": "Master Adam Fraunceys signs at noon, with the gaol roll open beside the sheet and the dates in it not matching, and rides out without shaking anybody's hand.",
+        "after": "Nest does not come back to the laundry. The tallies are still short a hundred and twenty-eight sheets, and the roof of the chapel is still open when the rain comes in."
+      },
+      "nobody": {
+        "signed": "Master Adam Fraunceys signs at noon that Hywel ap Gruffudd was a drunk who fell, and says so to the Constable's face in a voice that carries.",
+        "after": "The lead goes on leaving by daylight. Father Anselm goes on saying that he heard two men on the stair, to anybody who will stand still for it, and by Michaelmas there is nobody left who will."
+      }
+    }
   }
 }

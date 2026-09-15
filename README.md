@@ -10,6 +10,11 @@ a graph a validator holds coherent before the page loads. A word-lock over the
 muniment room door. One accusation, which you can get wrong, and a hanging at
 the end of it.
 
+Then the morning after. Seven endings, seven versions of Lauds: whoever you
+named is gone from his station, the rest of the castle has something to say
+about it, and the King's inspector is at the table in the King's Hall with the
+sheet in front of him and questions you cannot answer any more.
+
 Built in [three.js](https://threejs.org/) r169, on a 4 m tile grid, in a Welsh
 castle of the 1280s: two wards divided by a cross-wall with one guarded gate, a
 Great Hall, a kitchen, a chapel, a prison, a muniment room, royal apartments on

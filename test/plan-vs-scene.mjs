@@ -321,7 +321,7 @@ try {
     };
   }));
   const seen = new Map(bodies.map((b) => [b.id, b]));
-  check(bodies.length === 12, `the page spawns ${bodies.length} bodies`, 'twelve is the cast');
+  check(bodies.length === 13, `the page spawns ${bodies.length} bodies`, "twelve for the day and the King's inspector for the morning after (#534)");
   let offStation = 0;
   for (const { id, at } of due) {
     const b = seen.get(id);
@@ -344,14 +344,68 @@ try {
   check(grounded.length === 0,
     `${upstairs.length} of them stand above the ground floor, on their own floor: ${upstairs.map((n) => `${n.id} at y ${(seen.get(n.id)?.y ?? 0).toFixed(1)}`).join(', ')}`,
     grounded.map((n) => n.id).join(', ') + ' on the ground');
-  const absent = bodies.filter((b) => !b.visible).map((b) => b.id);
-  check(absent.join() === 'merchant', 'the one who is not in the castle at Prime is hidden rather than standing at the origin', `hidden: ${absent.join(', ') || 'nobody'}`);
-  // The tint (#419). Three bodies, twelve people: the cloth has to differ
-  // twelve ways and the skin must not differ at all, or the tint went onto
+  const absent = bodies.filter((b) => !b.visible).map((b) => b.id).sort();
+  check(absent.join() === 'inspector,merchant', 'the two who are not in the castle at Prime are hidden rather than standing at the origin', `hidden: ${absent.join(', ') || 'nobody'}`);
+  /* AND A HIDDEN BODY IS NOT SOMETHING TO PRESS E AT (#538). Two of the
+   * thirteen are invisible at Prime and on the morning after the man who
+   * hanged is invisible at the station the accusation was made at, which is
+   * somewhere the player is certain to walk. `InteractionSystem` skips a
+   * target whose `active` is false and NPCs did not have one, so the HUD
+   * offered his name over an empty floor. Only the page can say this: the
+   * prompt is the product of a camera, a facing test and a line-of-sight cast,
+   * and modelling any of that here would be re-implementing the thing under
+   * test (#34).
+   *
+   * THE CONTROL IS THE SAME CAMERA AND THE SAME SPOT. A "no prompt" on its own
+   * proves nothing — the camera might be looking at a wall — so the hidden body
+   * is made visible without moving anything and the prompt has to appear. One
+   * beat, two reads, and the second is what gives the first its meaning. */
+  {
+    const hall = grid.rooms().find((r) => r.id === 'great-hall');
+    const stand = hall?.at?.[Math.floor((hall.at?.length ?? 0) / 2)] ?? null;
+    const look = stand ? hall.at.find((c) => c.level === stand.level && Math.abs(Math.hypot(c.x - stand.x, c.z - stand.z) - 2.0) < 0.35) : null;
+    const who = bodies.find((b) => !b.visible)?.id ?? null;
+    if (!stand || !look || !who) fail('no hidden body and two cells 2 m apart in the Great Hall to try it from');
+    else {
+      const seen = await page.evaluate(async ({ at, from, id, eye }) => {
+        const frame = () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+        const promptNow = () => { const el = document.getElementById('interact-prompt'); return el && !el.classList.contains('hidden') ? el.textContent.trim() : null; };
+        // The word-lock beat above left the riddle overlay open, and an open
+        // overlay owns the input: `interaction.update()` hides the prompt
+        // whatever is in front of the camera. Shut it the way the player would,
+        // which is what the bell beat below does for the same reason. The
+        // control is what found this: the first run of this beat reported no
+        // prompt for a VISIBLE body, which would have made the line under it
+        // pass while asserting nothing.
+        document.getElementById('riddle-cancel').click();
+        await frame();
+        const n = window.__cast.find((x) => x.id === id);
+        const home = n.group.position.clone();
+        n.group.position.set(at.x, at.h, at.z);
+        window.__player.camera.position.set(from.x, from.h + eye, from.z);
+        window.__player.camera.rotation.set(0, Math.atan2(-(at.x - from.x), -(at.z - from.z)), 0, 'YXZ');
+        await frame();
+        const hidden = promptNow();
+        n.group.visible = true;
+        await frame();
+        const shown = promptNow();
+        n.group.visible = false;
+        n.group.position.copy(home);
+        return { hidden, shown, name: n.name };
+      }, { at: stand, from: look, id: who, eye: EYE_HEIGHT });
+      check(!!seen.shown && seen.shown.includes(seen.name),
+        `the same body, made visible on the same spot, prompts "${seen.shown}"`,
+        seen.shown === null ? 'no prompt at all, so the camera is not looking at him and the line below proves nothing' : seen.shown);
+      check(seen.hidden === null, `and hidden, 2 m in front of the camera, ${who} offers nothing to press E at`,
+        seen.hidden ? `the HUD said "${seen.hidden}" over a body nobody can see` : '');
+    }
+  }
+  // The tint (#419). Three bodies, thirteen people: the cloth has to differ
+  // thirteen ways and the skin must not differ at all, or the tint went onto
   // faces. Reading the live materials is the only thing that can say so —
-  // npcs.json's twelve hexes being distinct is a fact about the file.
+  // npcs.json's thirteen hexes being distinct is a fact about the file.
   const cloth = new Set(bodies.map((b) => b.cloth));
-  check(cloth.size === 12, `the twelve read as twelve: ${cloth.size} distinct sets of cloth colours off three bodies`);
+  check(cloth.size === 13, `the thirteen read as thirteen: ${cloth.size} distinct sets of cloth colours off three bodies`);
   const skins = new Set(bodies.map((b) => b.skin).filter(Boolean));
   check(skins.size === 1, `and one skin colour across all of them`, [...skins].join(' | '));
 

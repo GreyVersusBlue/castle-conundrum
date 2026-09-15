@@ -75,8 +75,15 @@ async function init() {
   // data.
   const npcs = npcData.cast.map((def) => new NPC(def, scene, config.polyhavenBase));
   await Promise.all(npcs.map((n) => n.build()));
+  /* WHERE SOMEBODY STANDS IS THE ENGINE'S ANSWER AND WHERE THAT IS IS THE NAV'S
+   * (#533). The nav knows the world point of every station at every watch, the
+   * morning after's included, and it knows nothing about verdicts. The engine
+   * knows that the man who hangs has no station on the second day whatever the
+   * schedule says. So the engine is asked first and the nav second, and a null
+   * from either is a body that is not in the castle. */
+  const placeOf = (npcId, watch) => (engine.stationOf(npcId, watch) ? nav.at(npcId, watch) : null);
   const stand = (npc, watch) => {
-    const at = nav.at(npc.id, watch);
+    const at = placeOf(npc.id, watch);
     if (!at) { npc.group.visible = false; return; }
     npc.group.visible = true;
     npc.placeAt({ x: at.x, y: at.h ?? 0, z: at.z });
@@ -134,14 +141,15 @@ async function init() {
     audio,
     // The world half of a bell: the sky and twelve people walking to where they
     // are due next. The engine has already moved the watch on; this puts the
-    // castle where the watch says it is.
+    // castle where the watch says it is. `applyDay` calls it once more for
+    // Lauds, with `walk: false`, which is how the morning after opens.
     onWatch: (watch, { walk = true } = {}) => {
       setWatch(watch);
       // What is on the ground at this bell is the manager's: it owns `taken`,
       // and a thing taken does not come back at the next one. What is left here
       // is the sky and twelve people walking.
       for (const npc of npcs) {
-        const to = nav.at(npc.id, watch);
+        const to = placeOf(npc.id, watch);
         if (!to) { npc.group.visible = false; continue; }
         const from = npc.group.visible ? { x: npc.group.position.x, z: npc.group.position.z, level: to.level } : null;
         npc.group.visible = true;
@@ -150,11 +158,14 @@ async function init() {
         else npc.placeAt({ x: to.x, y: to.h ?? 0, z: to.z });
       }
       state.watch = engine.state.watch;
+      state.day = engine.day;
       auto.mark();
     },
     saved,
-    onChange: ({ stage, riddleWrong }) => { state.stage = stage; state.riddleWrong = riddleWrong; auto.mark(); },
-    // The epilogue's button: erase the save, then reload into a fresh day.
+    onChange: ({ stage, riddleWrong, day }) => { state.stage = stage; state.riddleWrong = riddleWrong; state.day = day; auto.mark(); },
+    // What the epilogue's button does when it reads "Play Again" — at the end
+    // of the second day, or at the end of a verdict with no morning after it
+    // (#537). Erase the save, then reload into a fresh day.
     restart: () => { auto.stop(); slot.reset(); window.location.reload(); },
   });
   window.__save = { slot, state }; // read by play-castle.mjs's reload beat
@@ -213,7 +224,10 @@ async function init() {
   // castle the player is standing in (#530).
   player.controls.addEventListener('unlock', () => {
     if (touchMode) return;
-    if (!ui.isOverlayOpen() && !ui.isDialogueOpen() && !quest.victory) {
+    // `judged` and not `victory` (#537): between the epilogue's button and the
+    // inspector the graph is not in a terminal stage and the player is walking
+    // the castle at Lauds, which is a moment that wants the panel back.
+    if (!ui.isOverlayOpen() && !ui.isDialogueOpen() && !(quest.victory || (quest.judged && quest.day === 1))) {
       ui.showStartAgain();
     }
   });

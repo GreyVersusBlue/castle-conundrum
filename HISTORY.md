@@ -2232,3 +2232,184 @@ not on the screen`. The detection forced to false: `the touch HUD is shown under
 a coarse pointer — hidden true, body.touch false`, `and the start panel says
 thumbs, not keys`, `the toggle reads on — Touch controls: off`, and `the player
 is enabled and on the touch scheme, with no pointer lock to take`.
+
+## A second day, increment 1: the morning after (2026-09-15)
+
+**Ranked row 6, "A second day, in which the epilogue's consequences play",
+claimed on `main` on `claude/second-day-epilogue-pzfxie` before the work
+started (#283, PR #15) and shipped as PR #16.** It is a **2+**: this is
+increment 1 and the row stays in the table. Six of the seven open rows want a
+machine this container is not — a GPU for ranks 2, 3 and 7, polyhaven.com and
+the KTX-Software release for 4 and 5, both of which answer 403 from here
+(#518) — so this was the row that could be finished. Decisions #533 to #538.
+
+It was a writing job before it was a code job, as `BACKLOG.md` said: sixty line
+sets, 140 lines, seven closing panes and a thirteenth person, against about 250
+lines of engine and manager.
+
+- **A `day` field on the save, not a fifth bell, and `SAVE_VERSION` goes to 2**
+  (#533). `watches` is asserted to be exactly four in `validateMystery`,
+  `ring()`'s fourth is the Constable demanding an answer rather than a watch,
+  and both length rails ("neither solvable at Prime nor lost by Vespers") are
+  written against one day. A fifth entry in `watches` would have made all of
+  that say nothing. So `data/mystery.json` grows a `day2` block whose `watch` is
+  `lauds`, deliberately *not* in `watches`, and `src/stations.js` indexes it as a
+  fifth watch in the one place that cares about "where does a body stand at a
+  named bell" — which is what lets the day-two schedule run through the same
+  five nav rails as day one with no second copy of any of them. The save's key
+  does not change (#36, #413); the version inside it does. `migrate` adds
+  `day: 1` to anything written before version 2, which is the honest record of
+  a field arriving, and `repair` clamps it on every load (#37). #413 said the
+  schema was complete so that no phase would add a field, and no phase did: all
+  seven shipped against version 1.
+- **The thirteenth is the King's inspector, and his lines are the mystery's**
+  (#534). `Master Adam Fraunceys`, on `King.glb` with `hideMaterials: ["Gold"]`
+  and a tint nobody else has, at the King's Hall table 1.80 m off the Constable
+  — the room the accusation was supposed to have been brought to. He is a
+  thirteenth entry in `npcs.json`'s `cast` with `arrives: 2`, and that one field
+  does three things: `validateMystery` asks him for a day-two station instead of
+  a day-one schedule and refuses him if he has both, `quest-manager.js` keeps
+  him out of the accusation panel (twelve names and a fall is the choice the
+  Constable offers, and a man who has not dismounted cannot be argued with), and
+  `main.js` spawns his body hidden like the merchant's at Prime. His seven
+  speeches live in `mystery.json`'s `day2.lines`, not in `npcs.json`, because
+  which one he gives is a fact about the mystery rather than about the body; his
+  `npcs.json` `default` is one fallback line that is only reachable if
+  `applyDay` never ran.
+- **The man who hangs is gone, and the full ending takes two more with him**
+  (#535). `day2.absent` is `{accused: true, also: {full: [steward, merchant]}}`,
+  applied by the engine at runtime because the file cannot know what the player
+  said. `SPECS.md` named only the Steward for `full`; the merchant went in too
+  because the `full` epilogue's own words are that the lead was found in Thomas
+  Wykes's yard in the town, and a man whose yard the King's inspector has just
+  emptied is not at the west gate with a cart the next morning. **There is no
+  body at the gallows.** A corpse the player can walk up to is a new asset and a
+  tone decision that is Devon's; the hanged man simply has no station, which
+  means an empty desk, an empty lodge or an empty cell depending on who it was.
+- **Day-two lines are keyed by outcome, and both halves of the coverage are
+  checked** (#536). One resolver, `dayTwoLines`, reads the exact ending key
+  first (one of `accusation.verdicts`' own seven: `full`, the five accusables,
+  `nobody`), then the verdict class (`full`, `right`, `wrong`, `fall`), then
+  `default`. Two vocabularies on purpose: Nest has one thing to say when it is
+  her own husband who hanged and another when it is anybody else, and the
+  Constable has seven. The validator then asks it in both directions — every
+  ending that leaves somebody standing has to resolve to lines, and every line
+  set has to be reachable by some ending — because those fail in opposite
+  directions and neither shows on a screen: a missing set opens the dialogue box
+  on `undefined`, and an unreachable set is content written for an ending that
+  cannot happen, which reads as work done.
+- **The epilogue's button is the second day, and `victory` stops meaning "the
+  day is judged"** (#537). The four verdict stages are not `terminal` any more:
+  each carries one transition, `day:2` to a new `morning` stage whose `enter` is
+  `applyDay`, and whose only way out is `talked:inspector` to `end`, which is
+  terminal and shows the same pane again with the sheet signed. `showEpilogue`
+  decides which button it is putting up by reading whether the stage the graph
+  is *actually in* has a `day:2` transition, not by a stage id written in the
+  manager, so making one ending final again is deleting one line of
+  `quest.json`. The consequence is that `QuestManager.victory` — the graph is in
+  a terminal stage — is false between the epilogue pane and the inspector, when
+  the player is walking a castle at Lauds. `judged` is the other question and is
+  what `main.js` and both browser suites wanted all along; the two of them had
+  been the same thing since Phase 7 and nothing had had to tell them apart.
+- **What a day two refuses.** No clues, no bell, no accusation, and no Present
+  button. The engine already refused the last three once a verdict was recorded;
+  what was new is the press, because the journal is still in the player's hand
+  and the day-one presses are still in the data, so `press()` shrugs on day two
+  rather than moving a Steward into `admits` against a verdict already in the
+  ground. No evidence is listed at `lauds`, so the body, the cart and the cloak
+  are all off the ground with no code saying so.
+
+**The content.** Thirteen people at Lauds; eleven of the twelve stand at a tile
+they already stood on during the day, which is the point rather than the
+shortcut — the castle goes back to work and the difference is who is missing
+from it. The two who move are the sentry, awake in the guardroom he slept
+through Prime in, and the merchant, at the west gate at first light instead of
+at Terce. Sixty line sets and 140 lines against day one's 57, seven closing
+panes, and a `lauds` sky in
+`scene-config.json`: the sun lower in the east than Prime's and a third of its
+strength, the coldest fog in the file, and the hemisphere held at 2.2 for the
+reason Phase 3 measured (a darker watch is a lower, colder sun and not an unlit
+castle).
+
+- **A hidden body is not something to press E at** (#538), and this one was a
+  bug the second day found rather than one it introduced.
+  `InteractionSystem.update` skips a target whose `active` is false, and
+  `castle-builder.js` has said `get active() { return obj.visible; }` for every
+  piece of evidence since Phase 7. NPCs never had one. On day one that hid: the
+  merchant is not in the castle until Terce and his group sits at the origin
+  with `visible` false, which no player walks up to. The morning after puts a
+  hidden body exactly where the player is certain to go, because the man who
+  hanged stays standing, invisible, at the Vespers station the accusation was
+  made at. Measured in the browser before the fix, with the merchant moved into
+  the Great Hall on purpose and the camera 2 m in front of him: `Press E to
+  talk to the Thomas Wykes`, identical with `visible` true and false.
+  `src/npc.js` gets the getter `castle-builder.js` already had.
+
+**What increment 1 leaves.** `SPECS.md`'s list, unchanged in order: a second
+mystery for day two (the inspector's audit, and the missing 128 sheets as
+evidence in the town, which needs **The town side**'s road); bells on day two
+and a schedule with more than one watch; and consequences that change the
+castle rather than only the cast — an empty cell that is a shut door, a
+muniment room sealed, the cart gone. And one thing this increment added to that
+list: **nobody has seen a Lauds sky.** The five numbers in
+`lighting.watches.lauds` were written against the four already there and
+checked by nothing but the four (#53).
+
+**The breaks, from green.** Eight, and one of them found a bug in a check
+rather than in the code.
+
+- `day2.absent.accused` set to `false` in the data, which is the switch that
+  takes the hanged man out of the morning: `validateMystery finds nothing wrong,
+  the castle included — clerk: has a station at lauds and hangs in full, clerk;
+  steward: has a station at lauds and hangs in steward; porter: has a station at
+  lauds and hangs in porter; merchant: ...; prisoner: ...`, and behind it
+  `full: clerk hanged at first light and is not in the castle —
+  {"room":"clerk-office","tile":[-7.5,-2.5]}` for each ending in turn. **This is
+  not the break `SPECS.md` named.** It proposed writing the Clerk a day-two
+  station; that does not fail and should not, because the Clerk has a morning in
+  the four endings he lives through. The rule is the thing worth guarding, and
+  the message is the one `SPECS.md` wrote.
+- `day2.lines.inspector.nobody` deleted: `validateMystery finds nothing wrong,
+  the castle included — inspector: no day-two lines after the verdict nobody (a
+  fall)`, and `nobody: all 13 of them who are there have lines — inspector`.
+- The engine's own half of the same rule, `stationOf`'s absent branch deleted:
+  `full: and cannot be spoken to`, `clerk: and cannot be spoken to`, and five
+  more — the validator refuses the data and the engine refuses the body, and
+  breaking either one leaves the other standing.
+- `applyDay` unhooked from `morning`'s `enter`, which is the break `SPECS.md`
+  named and it fires as written: `a non-terminal stage runs applyDay: that is
+  the morning`, then `the frame is in \`morning\` and the save is on day two —
+  morning, day 1`, `the panel is closed, the world is at Lauds and the HUD says
+  so — vespers / Vespers`, and four more. The stage moves and the morning does
+  not happen, which is exactly the failure worth catching.
+- `_hasMorning()` forced to false, so the pane's button always restarts: `the
+  button offers the morning after rather than a fresh day — "Play Again"`, `and
+  pressing it does not erase the save`, and in `test/save.mjs` the resumed-at-a-
+  verdict case, `its button offers the second day rather than a fresh one —
+  "Play Again"`.
+- `repair`'s day-two-needs-a-verdict line deleted: `day 2 with no accusation at
+  all falls back to day 1`, `and so does day 2 behind a refusal, which is an
+  accusation with no verdict in it`, and `and on the repaired incoherent one it
+  is back on day one at Prime — day 2 at lauds`.
+- `get active()` deleted from `src/npc.js` again: `and hidden, 2 m in front of
+  the camera, merchant offers nothing to press E at — the HUD said "Press E to
+  talk to the Thomas Wykes" over a body nobody can see`. **That beat carries its
+  own control, and the control is what made it worth writing.** A "no prompt" on
+  its own proves nothing, because the camera might be looking at a wall, so the
+  same body is made visible on the same spot with the same camera and the prompt
+  has to appear. The first run of the beat reported no prompt for a VISIBLE body
+  — the word-lock beat above it had left the riddle overlay open, and an open
+  overlay hides the prompt whatever is in front of the camera — so without the
+  control the line under it would have passed while asserting nothing at all.
+- **And the one that was wrong.** `migrate` reverted to `(s) => s` left
+  `test/save.mjs` **green**, which is #147 arriving on schedule. The assertion
+  read `a version-1 save comes through migrate as day one`, and it could not
+  tell you migrate had run: a version-1 save carries no `day` at all, and
+  `repair`'s clamp answers a missing `day` with 1 whether migrate ran or not, so
+  the word "migrate" in the assertion's name was a lie. What only migrate can
+  say is that a version-1 save is a save of the FIRST day whatever is written in
+  it — day two did not exist when it was written, so a stray `day: 2` in one is
+  not a second day the player was on, while `repair` would take it because the
+  verdict beside it makes it coherent. That assertion is in the file now and it
+  fails on the break: `a version-1 save claiming day 2 is still day one: version
+  1 had no second day to be on — 2`.

@@ -90,14 +90,14 @@ console.log('quest.json validates');
   expect('two stages with one objective', (d) => { const [a, b] = Object.values(d.stages); b.objective = a.objective; }, /same text as/);
   expect('a second transition on the same event', (d) => { const t = d.stages.investigate.transitions; t.push({ ...t[0] }); }, /second transition on/);
   expect('a bad `start`', (d) => { d.start = 'prologue'; }, /`start`.*is not a stage/);
-  expect('a terminal stage with a way out', (d) => { d.stages.full.transitions = [{ on: 'x', to: 'right' }]; }, /terminal stage has a transition that leaves it/);
+  expect('a terminal stage with a way out', (d) => { d.stages.end.transitions = [{ on: 'x', to: 'right' }]; }, /terminal stage has a transition that leaves it/);
 }
 
 /* ------------------------------------------- 2: the graph against the cast --- */
 console.log('quest.json against npcs.json');
 {
   const problems = validateAgainstNpcs(quest, npcDefs, { pairs: MANAGER_PAIRS });
-  check(problems.length === 0, 'every stage has lines on every one of the twelve, every token is known, and both pairs match', problems.join('; '));
+  check(problems.length === 0, 'every stage has lines on every one of the thirteen, every token is known, and both pairs match', problems.join('; '));
   const states = new Set(Object.values(quest.stages).map((s) => s.dialogueState));
   // A press in mystery.json is the other thing that moves an NPC's state, and
   // the states it moves them to are that file's to check (src/mystery.js does).
@@ -136,6 +136,38 @@ console.log('quest.json against npcs.json');
   check(p.some((x) => /constable\/default poses \{ACCUSE\} but no stage in that dialogueState runs openAccusation/.test(x)), 'a Constable who asks for a name with no stage that opens the panel is caught', p.join('; ') || 'said nothing');
   check(brokenNpcs((d) => { const c = d.find((n) => n.id === 'constable'); c.dialogue.default = c.dialogue.default.filter((l) => l !== '{ACCUSE}'); }, { pairs: [MANAGER_PAIRS[0]] }).length === 0,
     'and neither break fires when only the riddle pair is passed: the rail is the pair list, not a second hard-coded token');
+}
+
+/* ------------------------- 2b: the second day, across the two files (#533) ---
+ * `validateAgainstNpcs` knows the graph and the cast; `validateMystery` knows
+ * the mystery. Neither of them can see that the stage which ends the game
+ * listens for a conversation with the person mystery.json says ends it. Get
+ * those two out of step and the second day has no exit: the player walks a
+ * castle at Lauds with nothing to do in it and no way back to a menu.
+ */
+console.log('the second day, against mystery.json');
+{
+  const ends = mystery.day2?.ends;
+  check(!!ends, 'mystery.json names who ends the second day', JSON.stringify(ends));
+  const morning = Object.entries(quest.stages).find(([, st]) => (st.enter ?? []).includes('applyDay') && !st.terminal);
+  check(!!morning, 'a non-terminal stage runs applyDay: that is the morning', morning?.[0]);
+  if (morning && ends) {
+    const [id, st] = morning;
+    const out = (st.transitions ?? []).filter((t) => t.to);
+    check(out.length === 1 && out[0].on === `talked:${ends}`,
+      `${id} has one way out and it is a conversation with ${ends}`, out.map((t) => t.on).join(', '));
+    check(quest.stages[out[0].to]?.terminal, `and it leads to ${out[0].to}, which is terminal`);
+    check((quest.stages[out[0].to].enter ?? []).includes('showEpilogue'), 'which shows the closing pane');
+    check(npcDefs.some((n) => n.id === ends), `${ends} is in npcs.json's cast`);
+    check((npcDefs.find((n) => n.id === ends)?.arrives ?? 1) === 2, `and arrives on day two`);
+  }
+  // Every stage that can be reached after a verdict has to be able to reach the
+  // end of the second day, which validateQuest's reachability already says; what
+  // it cannot say is that the button exists to get there.
+  for (const cls of ['full', 'right', 'wrong', 'fall']) {
+    const st = quest.stages[cls];
+    check((st.transitions ?? []).some((t) => t.on === 'day:2'), `the ${cls} pane carries the button that opens the morning`);
+  }
 }
 
 /* ------------------------------------------------------ 3: the graph runs --- */
@@ -179,9 +211,15 @@ console.log('the graph');
     g.stage = 'accusing';
     g.dispatch(`verdict:${cls}`);
     endings[cls] = g.stage;
-    check(g.done, `verdict:${cls} ends the day in ${g.stage}`);
+    // NOT `done` SINCE #537. A verdict stage is the epilogue pane and a button,
+    // and the button is `day:2`. What ends the game is the inspector.
+    check(!g.done && g.stage === cls.replace('full', 'full'), `verdict:${cls} reaches the ${g.stage} pane, which is not the end any more`);
+    g.dispatch('day:2');
+    check(g.stage === 'morning', `and its button opens the morning after`, g.stage);
+    g.dispatch('talked:inspector');
+    check(g.stage === 'end' && g.done, `and the inspector is what ends it`, g.stage);
   }
-  check(new Set(Object.values(endings)).size === 4, 'the four classes reach four different endings', JSON.stringify(endings));
+  check(new Set(Object.values(endings)).size === 4, 'the four classes reach four different panes', JSON.stringify(endings));
 
   // The riddle judge.
   const wrong1 = judgeAnswer(riddle, 'a door', 0);
@@ -221,7 +259,7 @@ function stubUI() {
     openAccusation(o) { this.accusation = o; this.note = null; this.log.push('accusation:open'); },
     setAccusationNote(t) { this.note = t; },
     closeAccusation() { this.accusation = null; },
-    showEpilogue(v, onRestart) { this.epilogue = v; this._restart = onRestart; this.log.push(`epilogue:${v.class}`); },
+    showEpilogue(v, onButton, { label = 'Play Again' } = {}) { this.epilogue = v; this._restart = onButton; this.epilogueLabel = label; this.log.push(`epilogue:${v.class ?? 'day2'}`); },
     // --- the player's hand ---
     endDialogue() { const d = this.dialogue; this.dialogue = null; d?.onEnd?.(); },
     pressPresent() { this.dialogue?.onPresent?.(); },
@@ -424,19 +462,76 @@ function rig({ saved = null } = {}) {
   // {ACCUSE} token and the stage answers it.
   r.talk('constable');
   check(ui.accusation !== null, 'talking to the Constable now opens the accusation panel');
-  check(ui.accusation.people.length === 12 && ui.accusation.fall.id === 'nobody', 'twelve names and a fall', `${ui.accusation.people.length} people`);
+  check(ui.accusation.people.length === 12 && !ui.accusation.people.some((p) => p.id === 'inspector') && ui.accusation.fall.id === 'nobody',
+    'twelve names and a fall, and the King\'s inspector is not one of them: he has not dismounted (#534)', `${ui.accusation.people.length} people`);
   check(ui.accusation.clues.length === 33 && ui.accusation.present === mystery.accusation.present, 'the journal is in it, and up to three may be shown');
 
   ui.say('clerk', ['sentry-sighting', 'wax-matches', 'lead-sold']);
-  check(qm.stage === 'full' && qm.victory, 'the Clerk on the sighting, the wax and the lead: the full ending', qm.stage);
+  check(qm.stage === 'full' && qm.judged && !qm.victory, 'the Clerk on the sighting, the wax and the lead: the full ending', qm.stage);
   check(ui.epilogue && ui.epilogue.class === 'full' && /Ferrour hangs/.test(ui.epilogue.convicted) && /Wykes/.test(ui.epilogue.epilogue), 'the verdict and the epilogue are on the screen', ui.epilogue?.class);
   check(state.accusations.length === 1 && state.accusations[0].verdict === 'full' && state.accusations[0].watch === 'vespers', 'and the accusation is in the save');
-  ui.restart();
-  check(r.restarts.n === 1, 'the button calls the injected restart, which erases the save');
 
-  // After the ending, nothing repeats.
+  // After the verdict, nothing of the first day repeats.
   const rings = r.ring().length;
   check(rings === 0 && qm.stage === 'full', 'after the verdict the bell does nothing');
+
+  /* --- THE MORNING AFTER (#533 to #537). The pane's one button is the second
+   * day now, and the difference between the two is one word on it. */
+  check(ui.epilogueLabel === 'The next morning', 'the button offers the morning after rather than a fresh day', JSON.stringify(ui.epilogueLabel));
+  ui.restart();
+  check(r.restarts.n === 0, 'and pressing it does not erase the save');
+  check(qm.stage === 'morning' && qm.day === 2 && state.day === 2, 'the frame is in `morning` and the save is on day two', `${qm.stage}, day ${state.day}`);
+  check(ui.accusation === null && r.watches.at(-1) === mystery.day2.watch && ui.watch === 'Lauds',
+    'the panel is closed, the world is at Lauds and the HUD says so', `${r.watches.at(-1)} / ${ui.watch}`);
+  check(Object.values(r.castle.shown).every((v) => v === false), 'nothing examinable is on the ground: no evidence is listed at Lauds');
+
+  // The full ending takes three men out of the castle.
+  check(r.engine.stationOf('clerk') === null && r.engine.stationOf('steward') === null && r.engine.stationOf('merchant') === null,
+    'the Clerk hanged, the Steward is in irons and the merchant is taken in the town: none of the three is at a station');
+  check(!!r.engine.stationOf('inspector') && !!r.engine.stationOf('apprentice'), 'the inspector is in the castle and the apprentice is still at the lodge');
+  r.qm.handleInteract(r.npc('clerk'));
+  check(same(ui.dialogue.lines, [mystery.ui.asleep]), 'and E where the Clerk stood says nothing rather than opening his lines', JSON.stringify(ui.dialogue?.lines));
+  ui.dialogue = null;
+
+  // Everybody else has something new to say, and it is about what happened.
+  ui.toasts.length = 0;
+  qm.handleInteract(r.npc('apprentice'));
+  check(/hundred and twenty-eight/.test(ui.dialogue.lines.join(' ')), 'Ieuan has his master\'s count back, to the sheet', ui.dialogue.lines[0].slice(0, 48));
+  check(!same(ui.dialogue.lines, r.npc('apprentice').def.dialogue.default), 'and it is not what he said yesterday');
+  check(ui.dialogue.onPresent === null, 'there is no Present button on the morning after: the journal moves nobody now');
+  ui.endDialogue();
+  check(ui.toasts.length === 0, 'and no clue landed, because a day two has none', ui.toasts.join(' | '));
+  // Two different endings are two different mornings for the same man.
+  check(mystery.day2.lines.apprentice.full[0] !== mystery.day2.lines.apprentice.default[0], 'the apprentice does not say the same thing on every morning');
+
+  // The inspector, and the end of the game.
+  r.talk('inspector');
+  check(qm.stage === 'end' && qm.victory, 'the King\'s inspector is the end of it', qm.stage);
+  check(ui.epilogue && ui.epilogue.convicted === mystery.day2.endings.full.signed && ui.epilogue.epilogue === mystery.day2.endings.full.after,
+    'and the pane comes back with the sheet signed', ui.epilogue?.convicted?.slice(0, 48));
+  check(ui.epilogueLabel === 'Play Again', 'with the button that erases the save this time', JSON.stringify(ui.epilogueLabel));
+  ui.restart();
+  check(r.restarts.n === 1, 'and pressing it calls the injected restart');
+}
+
+{
+  // THE BREAK #34 WANTS FOR `applyDay`. Unhooking the manager's action from the
+  // graph is one line in quest.json, and everything else about the second day
+  // goes on working: the stage moves, the pane closes, the objective changes.
+  // What does not happen is the morning.
+  const r = rig();
+  r.talk('constable');
+  r.ring();
+  r.talk('constable');
+  r.ui.say('nobody', []);
+  check(r.qm.stage === 'fall', 'a fall, and the pane is up');
+  r.ui.restart();
+  check(r.qm.stage === 'morning' && r.qm.day === 2, 'the button opens the morning');
+  check(r.engine.stationOf('inspector')?.room === 'kings-hall' && r.watches.at(-1) === mystery.day2.watch,
+    'the morning opens with the cast moved: the inspector is in the King\'s Hall at Lauds',
+    `${r.engine.stationOf('inspector')?.room} / ${r.watches.at(-1)}`);
+  r.talk('inspector');
+  check(r.qm.stage === 'end' && /straight face/.test(r.ui.epilogue.epilogue + r.ui.epilogue.convicted) === false, 'and talking to him ends it', r.qm.stage);
 }
 
 {
@@ -450,7 +545,7 @@ function rig({ saved = null } = {}) {
   r.talk('constable');
   check(ui.accusation !== null, 'the panel opens at Terce, which is the earliest the Constable will hear it');
   ui.say('prisoner', []);
-  check(qm.victory && ui.epilogue && ui.epilogue.class === 'wrong', 'the prisoner is accepted on no clues at all, and it is a wrong hanging', ui.epilogue?.class);
+  check(qm.judged && ui.epilogue && ui.epilogue.class === 'wrong', 'the prisoner is accepted on no clues at all, and it is a wrong hanging', ui.epilogue?.class);
   check(/Madoc the smith hangs/.test(ui.epilogue.convicted), 'Madoc hangs', ui.epilogue.convicted.slice(0, 40));
   check(state.refusals === 0, 'and it is not a refusal: he does not need to be argued into it');
 }
@@ -488,7 +583,7 @@ function rig({ saved = null } = {}) {
   check(state.refusals === 2 && !qm.victory, 'a second single clue: refused again');
   ui.say('cook', ['porter-barred', 'door-unbarred']);
   check(state.refusals === 3, 'naming somebody with no convicts list at all is the third refusal');
-  check(qm.victory && ui.epilogue && ui.epilogue.class === 'fall', 'and the third ends the day: he writes it down as a fall', ui.epilogue?.class);
+  check(qm.judged && ui.epilogue && ui.epilogue.class === 'fall', 'and the third ends the day: he writes it down as a fall', ui.epilogue?.class);
   check(state.accusations.at(-1).who === 'nobody' && state.accusations.at(-1).verdict === 'fall', 'the save records the fall, not the cook');
 }
 
@@ -510,7 +605,7 @@ function rig({ saved = null } = {}) {
   check(r.audio.bells === 4, 'four rings, four bells', `${r.audio.bells}`);
   // A fall named here is the ending, and it is not the same one as three refusals.
   r.ui.say('nobody', []);
-  check(r.qm.stage === 'fall' && r.ui.epilogue.class === 'fall', 'calling it a fall ends the day');
+  check(r.qm.stage === 'fall' && r.ui.epilogue.class === 'fall' && r.qm.judged, 'calling it a fall ends the day');
   // The day is over and the rope is dead: `ring()` after the verdict emits no
   // event, so it makes no noise either.
   r.ring();

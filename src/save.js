@@ -1,13 +1,21 @@
 // save.js — the one save slot for Castle Conundrum, through `./gvb-save.js`,
 // this repo's vendored copy of the site-wide save module (#502; relative
 // import so this file runs in Node too). Key `castleConundrumSave_v1`, game
-// `castle-conundrum`, version 1 (#413). The key never changes (#36).
+// `castle-conundrum`, version 2. The key never changes (#36), and it does not
+// change here either: what moved is the version number inside it.
 //
-// The schema is complete now so no later phase adds a field:
-//
-//   { stage, watch, clues[], pressed{npc: state[]}, taken[], locks[],
+//   { stage, day, watch, clues[], pressed{npc: state[]}, taken[], locks[],
 //     accusations[{who, clues, verdict, watch}], refusals, riddleWrong,
 //     player{x, y, z, yaw} | null }
+//
+// VERSION 2 IS THE SECOND DAY (#533). #413 said the schema was complete so that
+// no later phase would add a field, and no phase did: all seven shipped against
+// version 1. A day two is the thing after the plan rather than a part of it, and
+// the honest record of a field arriving is a version number, not a `repair`
+// default that pretends the field was always there (#37 draws exactly that
+// line). So `day` comes in through `migrate`, which runs only on the drift, and
+// `repair` then holds it to the two values it can have on every load, including
+// the ones `migrate` never touched.
 //
 // `validate` refuses a non-object and a non-string stage and nothing else;
 // everything past that is `repair`'s, which runs on every load (#37) and
@@ -22,7 +30,7 @@ import { createSaveSlot } from './gvb-save.js';
 
 export const SAVE_KEY = 'castleConundrumSave_v1';
 export const SAVE_GAME = 'castle-conundrum';
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 
 /**
  * Every id a save may carry, read off the data. `quest` is data/quest.json,
@@ -54,6 +62,16 @@ export function repairState(state, catalog) {
   const s = state && typeof state === 'object' ? state : {};
   const out = {};
   out.stage = typeof s.stage === 'string' && catalog.stages.has(s.stage) ? s.stage : catalog.start;
+  /* THE DAY, AND THE ONE THING THAT MAKES IT INCOHERENT. `day` is 1 or 2 and
+   * nothing else; a hand-edited 7, a "2", a NaN all read as day one. And a
+   * `day: 2` with no verdict in `accusations` is a save that says the morning
+   * after happened without the day before it: the engine would look up a
+   * verdict that is not there, place nobody, hand the manager no lines, and
+   * open the dialogue box on `undefined` at a station with no one at it. That
+   * is not version drift, so it is here and not in `migrate` (#37). The
+   * accusations are repaired above this line, so what is tested is the list
+   * that survives repair rather than the one that came in. */
+  out.day = s.day === 2 ? 2 : 1;
   const top = Math.max(0, catalog.watches.length - 1);
   out.watch = Number.isInteger(s.watch) ? Math.min(Math.max(s.watch, 0), top) : 0;
   out.clues = idsIn(s.clues, catalog.clues);
@@ -77,6 +95,7 @@ export function repairState(state, catalog) {
       watch: catalog.watches.includes(a.watch) ? a.watch : null,
     });
   }
+  if (out.day === 2 && !out.accusations.some((a) => a.verdict)) out.day = 1;
   out.refusals = nonNegInt(s.refusals);
   out.riddleWrong = nonNegInt(s.riddleWrong);
   const p = s.player;
@@ -97,7 +116,10 @@ export function createCastleSlot({ mystery, quest, storage = null }) {
     key: SAVE_KEY,
     version: SAVE_VERSION,
     validate: (s) => !!s && typeof s === 'object' && typeof s.stage === 'string',
-    migrate: (s) => s, // version 1 is the first; nothing to drift from yet
+    // Version drift, and only that (#37). A version-1 save was written before
+    // there was a second day, so it is a save of the first one: `day: 1`. An
+    // unversioned save reads as version 0 and comes through the same line.
+    migrate: (s, from) => (from < 2 ? { ...s, day: 1 } : s),
     repair: (s) => repairState(s, catalog),
     defaults: () => repairState({}, catalog),
     storage,

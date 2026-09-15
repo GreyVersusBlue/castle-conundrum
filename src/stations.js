@@ -49,13 +49,25 @@ export function castleNav(plan, mystery) {
 
   const points = new Map(); // "npc/watch" -> {room, level, x, z} | null
   const seeds = [];
+  const put = (npcId, watch, station) => {
+    const world = stationWorld(plan, station);
+    points.set(`${npcId}/${watch}`, world ? { ...world, room: station.room, note: station.note ?? null, asleep: !!station.asleep } : null);
+    if (world) seeds.push([world.x, world.z]);
+  };
   for (const [npcId, byWatch] of Object.entries(schedule)) {
-    for (const watch of watches) {
-      const station = byWatch?.[watch] ?? null;
-      const world = stationWorld(plan, station);
-      points.set(`${npcId}/${watch}`, world ? { ...world, room: station.room, note: station.note ?? null, asleep: !!station.asleep } : null);
-      if (world) seeds.push([world.x, world.z]);
-    }
+    for (const watch of watches) put(npcId, watch, byWatch?.[watch] ?? null);
+  }
+  /* THE SECOND DAY IS A FIFTH WATCH IN HERE AND NOWHERE ELSE (#533). `watches`
+   * stays four everywhere the mystery counts bells; what this file cares about
+   * is "where does a body stand at a named bell", and Lauds is a named bell
+   * with thirteen stations under it. Indexing it here is what lets
+   * `validateMystery` run the day-two schedule through the same five rails as
+   * day one without a second copy of any of them, and lets main.js ask
+   * `nav.at(id, 'lauds')` the way it asks for Terce. The day-two stations are
+   * seeds too: the inspector stands somewhere no day-one station is. */
+  const day2 = mystery?.day2 ?? null;
+  if (day2?.watch) {
+    for (const [npcId, station] of Object.entries(day2.schedule ?? {})) put(npcId, day2.watch, station);
   }
 
   const walk = walkability(plan, { seeds });

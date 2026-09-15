@@ -41,6 +41,18 @@
     },
     "watches": {
       "comment": "The four bells, as four skies. `sun` is the light's position, which for a directional light is the direction it comes FROM with its target at the origin; +x is east, so Prime is low in the east and Vespers low in the west. `fog` is the fog AND the background, which are one colour in this scene. `hemisphere` is the sky/ground fill, and it does not go far below the 2.0 that Phase 3 measured the shadowed slate needs (see the hemisphere comment above): a darker Vespers is a warmer, lower sun and a colder fog, not an unlit castle. The `sun` block above is what the page opens on before any bell rings, and it is Terce's.",
+      "lauds": {
+        "sun": [
+          62,
+          6,
+          9
+        ],
+        "color": "#cdd6e6",
+        "intensity": 1.3,
+        "fog": "#8e98ab",
+        "hemisphere": 2.2,
+        "comment": "The morning after (#533). Lauds is first light and not daylight: the sun is lower in the east than Prime's 14 and a third of its strength, the colour has the warmth taken out of it, and the fog is the coldest in the file. The hemisphere stays at 2.2 for the reason the block above gives — a darker watch is a lower, colder sun and not an unlit castle, and 2.0 is the floor the shadowed slate needs."
+      },
       "prime": {
         "sun": [
           58,

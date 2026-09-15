@@ -149,34 +149,100 @@
     "full": {
       "objective": "The Clerk hangs, the Steward is taken, and the lead is found in the town.",
       "dialogueState": "default",
-      "terminal": true,
       "enter": [
         "showEpilogue"
-      ]
+      ],
+      "transitions": [
+        {
+          "on": "day:2",
+          "to": "morning"
+        }
+      ],
+      "comment": "NOT TERMINAL SINCE #537. The epilogue pane is up and the only thing on it is the button, which reads \"The next morning\" now and dispatches `day:2`. A verdict stage with no `day:2` transition gets the old button back and erases the save, so deleting this one line is how a verdict is made to end the game outright."
     },
     "right": {
       "objective": "The Clerk hangs. The Steward keeps his post.",
       "dialogueState": "default",
-      "terminal": true,
       "enter": [
         "showEpilogue"
-      ]
+      ],
+      "transitions": [
+        {
+          "on": "day:2",
+          "to": "morning"
+        }
+      ],
+      "comment": "NOT TERMINAL SINCE #537. The epilogue pane is up and the only thing on it is the button, which reads \"The next morning\" now and dispatches `day:2`. A verdict stage with no `day:2` transition gets the old button back and erases the save, so deleting this one line is how a verdict is made to end the game outright."
     },
     "wrong": {
       "objective": "Someone hangs. Not the one who did it.",
       "dialogueState": "default",
-      "terminal": true,
       "enter": [
         "showEpilogue"
-      ]
+      ],
+      "transitions": [
+        {
+          "on": "day:2",
+          "to": "morning"
+        }
+      ],
+      "comment": "NOT TERMINAL SINCE #537. The epilogue pane is up and the only thing on it is the button, which reads \"The next morning\" now and dispatches `day:2`. A verdict stage with no `day:2` transition gets the old button back and erases the save, so deleting this one line is how a verdict is made to end the game outright."
     },
     "fall": {
       "objective": "A fall. The inspector signs the sheet.",
       "dialogueState": "default",
-      "terminal": true,
       "enter": [
         "showEpilogue"
-      ]
+      ],
+      "transitions": [
+        {
+          "on": "day:2",
+          "to": "morning"
+        }
+      ],
+      "comment": "NOT TERMINAL SINCE #537. The epilogue pane is up and the only thing on it is the button, which reads \"The next morning\" now and dispatches `day:2`. A verdict stage with no `day:2` transition gets the old button back and erases the save, so deleting this one line is how a verdict is made to end the game outright."
+    },
+    "morning": {
+      "objective": "Lauds, the morning after. Walk the castle, then take yourself to the King's inspector in the King's Hall.",
+      "dialogueState": "default",
+      "enter": [
+        "applyDay"
+      ],
+      "transitions": [
+        {
+          "on": "lock:muniment",
+          "do": [
+            "openRiddle"
+          ]
+        },
+        {
+          "on": "riddle:solved",
+          "do": [
+            "openLock"
+          ]
+        },
+        {
+          "on": "ask:journal",
+          "do": [
+            "openJournal"
+          ]
+        },
+        {
+          "on": "talked:inspector",
+          "to": "end"
+        }
+      ],
+      "comment": "One watch, no clues, no bell and no accusation. `applyDay` is on `enter` rather than on the transition into here so that a save resumed in this stage comes back to Lauds with the cast where the verdict put them, which is the same reason `accusing` carries `openAccusation` on `enter`. The word-lock is repeated for the reason the three day-one stages repeat it: a door that does nothing reads as a broken door, and the ledger is still worth opening on the morning after. `talked:inspector` is the only way out, and mystery.json's `day2.ends` names him; test/quest.mjs holds the two to each other."
+    },
+    "end": {
+      "objective": "The sheet goes to Caernarfon.",
+      "dialogueState": "default",
+      "terminal": true,
+      "enter": [
+        "applyDay",
+        "showEpilogue"
+      ],
+      "comment": "`applyDay` again, and not by accident: a save resumed straight into this stage has never run the morning, so without it the closing pane comes up over a castle still standing at Vespers with six people in the Great Hall. It is idempotent — `beginDay2` sets `day` to 2 and reads the same recorded verdict either way."
     }
   }
 }
