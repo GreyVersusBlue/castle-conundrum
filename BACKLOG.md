@@ -54,7 +54,8 @@ is the seams only, `mystery.mjs` owns the stations. One dead check deleted,
 three assertions moved or turned into preconditions, and **no new check written
 to replace them**, because three attempts at one could not be made to fail.
 
-**8 ranked items.** Nothing is claimed. Take rank 1.
+**8 ranked items.** Rank 4 is claimed on `claude/festive-hopper-nf7391`.
+Take rank 1.
 
 Two things are true of the whole list and worth saying once. **Nothing here has
 been seen on a GPU since Phase 5.** `npm run play` walks the whole intended day
@@ -102,7 +103,7 @@ your decisions and this file's header, ranks and `Claimed` column are updated
 | 1 | A fourth body, and a woman's in particular | ½ | Fable 5.1 |  | [A fourth body](SPECS.md#a-fourth-body) |
 | 2 | A real GPU run of `npm run play`, and somebody looks at the twelve | ¼ | Opus 5 |  | [The GPU run](SPECS.md#the-gpu-run) |
 | 3 | A new preview and og card, from that run | ¼ | Opus 5 |  | [The GPU run](SPECS.md#the-gpu-run) |
-| 4 | Touch: pointer lock has no phone form | 1 | Opus 5 |  | [Touch](SPECS.md#touch) |
+| 4 | Touch: pointer lock has no phone form | 1 | Opus 5 | `claude/festive-hopper-nf7391` | [Touch](SPECS.md#touch) |
 | 5 | Four texture sets: a second wall stone, a tower stone, a plaster, a floor | ½ | Fable 5.1 |  | [The texture sets](SPECS.md#the-texture-sets) |
 | 6 | The town side: a textured ground outside the west barbican, and a road | 1 | Fable 5.1 |  | [The town side](SPECS.md#the-town-side) |
 | 7 | A second day, in which the epilogue's consequences play | 2+ | Opus 5 |  | [A second day](SPECS.md#a-second-day) |
