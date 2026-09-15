@@ -1950,3 +1950,88 @@ second half of the same check caught the other side of the same edit,
 `data/sounds.json defines step class "carpet" that no surface in the castle
 resolves to`. `quest.mjs`, the sound put back to a no-op the way it was:
 `four rings, four bells — 0`.
+
+## Four tower roofs, and the turrets stop being holes (2026-09-15)
+
+**Ranked row 5 at the time it was taken, "The turrets and the tower tops"
+(rank 6 before sound shipped), claimed on `claude/festive-hopper-nf7391`
+(#283, PR #8).** Eight drums 12 m high, a level-2 room at 8 m, and a lid at 12
+with no surface on it: nobody had ever stood on a tower. Decisions #523 to
+#526.
+
+- **The roofs go on the four drums with no turret, not on the four with
+  one** (#523). `SPECS.md` recommended the inner four — stockhouse, King's,
+  bakehouse, chapel — because they carry a `turret: {radius: 2.5, height: 2}`
+  and the outer four would be "a helipad". The arithmetic says otherwise. A
+  drum is hollow to 2.8 m, so a 2.5 m turret standing on its top leaves a
+  0.3 m ledge; a body is 0.9 m across; and the stair well a third flight
+  needs reaches 2.23 m from the centre, which is under the turret in its
+  entirety. A floor at 12 m on a turreted drum is a floor nobody can stand
+  on and a flight that rises into solid stone. So the North-west, Kitchen,
+  South-west and Prison Towers get roofs and the four turrets stay exactly
+  where they are. `makePlan` refuses a drum that carries both, by name. The
+  "helipad" argument died with #514 anyway: every drum wears a built crown
+  now, so a roof at 12 m is a crenellated platform with 0.6 m crenels and
+  1.5 m merlons round it, and that is the parapet — nothing new was built
+  for it.
+- **A roof is a room, and nothing else** (#523). `data/scene-config.json`
+  gains four rooms at `level: 3` with `drum` and a `floor`, and every other
+  part of it falls out of machinery that was already there: `makePlan` reads
+  the drum's own height for which level is its top, the slab code cuts the
+  well from whichever ramps cross the slab's y range, `buildFloor` draws a
+  disc with holes, `walkability` floods it, `plan-vs-scene.mjs` stands the
+  camera in it, and `nav.roomAt` names it in the HUD. What had to be written
+  was the third flight, the lid turning off, and the level lists.
+- **The third flight stands directly on the second** (#524). Same tile, same
+  bearing, one storey up, which means its well in the roof IS the second
+  flight's well in the level-2 floor, and it takes **not one square metre of
+  walkable level-2 floor**. That floor is the wall walk's junction — two or
+  three doors at 8 m and a crossing between them — and it is 5.6 m across
+  with the second flight's well already in half of it. The two alternatives
+  were measured and both close the walk: along the first flight's footprint
+  leaves 0.71 m of clearance where a 0.90 m body has to pass, and against the
+  ring on the door side leaves 0.55 m. The cost is that the climb is not a
+  switchback — a body leaves the second flight at its head, walks round the
+  well the way it already can, and starts the third at the foot — and the
+  gain is that `layout.mjs` check 6b did not move a centimetre. Head room
+  between the two flights is the storey, 4 m.
+- **A turret is solid now** (#525). Four of them had been two metres of
+  cylinder that the drum's bounding box knew about and no collider did, since
+  Phase 3. Nothing could reach 12 m, which is how a hole like that lives for
+  four phases. `drumParts` emits 24 wedge colliders from the centre at 12 to
+  14, the same polygon the builder draws (#432), and `layout.mjs` check 13 is
+  6c one shape up: no reachable cell inside a turret, feet or head band.
+- **The castle says how many storeys it has** (#526). `plan.levels`, read off
+  the rooms. The list `[0, 1, 2]` was a literal in four places — the
+  validator's room rail in `mystery.js`, `stations.js`'s `talkable`, and one
+  loop in each of the two plan suites — and a fourth storey had to be
+  remembered into all four or it was silently out of reach and out of talking
+  range. `validateMystery` asks `nav.plan.levels` when it has a plan and
+  accepts any whole level when it does not, because a ceiling written into
+  that file is a second copy of `storey` that can disagree with the first.
+
+**What the roofs are.** 36 reachable cells each, `stone_pavers` tinted to its
+own drum (#516), one thing on each (#517): a signal pole on the North-west and
+South-west, a barrel of pitch on the Kitchen, a pile of sling-stone on the
+Prison. The view from 12 m is a GPU question and nobody in a session can
+answer it (#53).
+
+**The breaks, from green.** The well left out of every roof (the third
+flight filtered out of the slab's hole list): `nothing on level 3 can be
+reached from the spawn`, then `nw-tower-roof (outer ward, level 3) cannot be
+reached on foot from the spawn — 0 standable cells in x -38.8..-33.2, z
+-18.8..-13.2`, and `nw-tower-roof cannot be reached by nw-tower's own stairs`.
+The third flight moved onto the first's footprint, which is the arrangement
+#524 rejected: ten failures, including check 6b's `from the North-west
+Tower's stairs alone the walk does not reach kitchen-tower-2,
+stockhouse-walk, kings-tower-2, sw-tower-2, prison-tower-2,
+bakehouse-tower-2, chapel-tower-2, north-walk, south-walk, cross-walk`. The
+turret colliders deleted, with the both-at-once guard disabled and a roof
+added to the Chapel Tower on purpose: `a body at (24.25, 17.25) standing at
+10.25 is inside chapel-tower's turret, which runs 12.00 to 14.00 within 2.5 m
+of (24.00, 16.00)`, six of them, a body climbing the third flight with its
+head in the stone. The builder drawing a level-3 floor 4 m low:
+`"floor-nw-tower-roof" (floor) is 4.000 m off the plan`, four of them, in
+`plan-vs-scene.mjs`. And the level list, with `royal-apartments` moved to
+level 4 in `mystery.json`: `room royal-apartments: level 4 is not one of the
+castle's levels 0, 1, 2, 3`.

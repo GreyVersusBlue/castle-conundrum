@@ -102,7 +102,7 @@
       3.9,
       3.3
     ],
-    "comment": "Two flights per tower, both this piece, placed by src/castle-plan.js from the drum's `stairs` side. stairs-stone.glb is authored 0.5 x 1 x 1 and rises toward its own +z; at a uniform 4 it is 2 m wide and 4 m long, and two of those side by side are a 4 m square whose corners sit 2.83 m from a tower's centre, 0.03 m into a ring whose inner face is at 2.8 (#452). So the scale is per axis: 1.5 m wide, 3.9 m of rise over 3.3 m of run, and the last 0.1 m onto the slab is a step. The run was 3.9 until #512: a curtain run reaches 2 m into every tower it meets, so a 3.9 m flight centred on the tower ends 0.05 m from a pier at each end, and a 0.45 m body is held 0.40 m short of the foot, where the floor is a 0.40 m drop and STEP_UP is 0.35. At 3.3 each end has 0.35 m of clear floor, the body reaches within 0.1 m of either end, and at the head its feet are already at 7.78, over the 7.7 at which the pier's top stops being a wall. The lower flight runs along z in the tower's east half, rising toward the outer wall; the upper flight runs along x in the outer half, rising east, and its well in the level-2 floor sits where the walk does not cross. Their overlap is the lower flight's low half under the upper flight's high half, 2.05 m of headroom at the worst point."
+    "comment": "Two flights per tower, three where the drum has a roof room at its own height (#523), all this piece, placed by src/castle-plan.js from the drum's `stairs` side. stairs-stone.glb is authored 0.5 x 1 x 1 and rises toward its own +z; at a uniform 4 it is 2 m wide and 4 m long, and two of those side by side are a 4 m square whose corners sit 2.83 m from a tower's centre, 0.03 m into a ring whose inner face is at 2.8 (#452). So the scale is per axis: 1.5 m wide, 3.9 m of rise over 3.3 m of run, and the last 0.1 m onto the slab is a step. The run was 3.9 until #512: a curtain run reaches 2 m into every tower it meets, so a 3.9 m flight centred on the tower ends 0.05 m from a pier at each end, and a 0.45 m body is held 0.40 m short of the foot, where the floor is a 0.40 m drop and STEP_UP is 0.35. At 3.3 each end has 0.35 m of clear floor, the body reaches within 0.1 m of either end, and at the head its feet are already at 7.78, over the 7.7 at which the pier's top stops being a wall. The lower flight runs along z in the tower's east half, rising toward the outer wall; the upper flight runs along x in the outer half, rising east, and its well in the level-2 floor sits where the walk does not cross. Their overlap is the lower flight's low half under the upper flight's high half, 2.05 m of headroom at the worst point. The third flight stands directly on the second, same tile and same bearing one storey up, so its well in the roof IS the second's well in the level-2 floor and it takes no walkable metre of that floor, which is the walk's junction and has none to spare."
   },
   "materials": {
     "castle_wall_slates": {
@@ -1642,6 +1642,42 @@
       "floor": "wood_planks"
     },
     {
+      "id": "nw-tower-roof",
+      "name": "North-west Tower, the roof",
+      "level": 3,
+      "ward": "outer",
+      "drum": "nw-tower",
+      "floor": "stone_pavers",
+      "tint": "#c9d2dc"
+    },
+    {
+      "id": "kitchen-tower-roof",
+      "name": "Kitchen Tower, the roof",
+      "level": 3,
+      "ward": "outer",
+      "drum": "kitchen-tower",
+      "floor": "stone_pavers",
+      "tint": "#d9cfbf"
+    },
+    {
+      "id": "sw-tower-roof",
+      "name": "South-west Tower, the roof",
+      "level": 3,
+      "ward": "outer",
+      "drum": "sw-tower",
+      "floor": "stone_pavers",
+      "tint": "#c4d2c6"
+    },
+    {
+      "id": "prison-tower-roof",
+      "name": "Prison Tower, the roof",
+      "level": 3,
+      "ward": "outer",
+      "drum": "prison-tower",
+      "floor": "stone_pavers",
+      "tint": "#b4b6c2"
+    },
+    {
       "id": "north-walk",
       "level": 2,
       "ward": "outer",
@@ -2000,6 +2036,10 @@
       {"model": "detail-crate.glb", "tile": [6.0, -4.55], "rotationY": 30, "scale": 1.5, "base": 8, "comment": "King's Tower, top room: a crate on the outer edge beside the well."},
       {"model": "detail-crate-small.glb", "tile": [-9.0, 4.55], "rotationY": 0, "scale": 1.5, "base": 8, "comment": "South-west Tower, top room: a small crate on the outer edge beside the well."},
       {"model": "bricks.glb", "tile": [-5.0, 4.55], "rotationY": 0, "scale": 1.6, "base": 8, "comment": "Prison Tower, top room: a pile of stone on the outer edge beside the well."},
+      {"model": "structure-pole.glb", "tile": [-8.625, -3.575], "rotationY": 0, "scale": 2.0, "base": 12, "comment": "North-west Tower roof: a signal pole in the south half, the half the stair well is not in."},
+      {"model": "detail-barrel.glb", "tile": [-4.625, -3.575], "rotationY": 20, "scale": 1.5, "base": 12, "comment": "Kitchen Tower roof: a barrel of pitch in the south half."},
+      {"model": "structure-pole.glb", "tile": [-8.625, 3.575], "rotationY": 0, "scale": 2.0, "base": 12, "comment": "South-west Tower roof: a signal pole in the north half, the half the stair well is not in."},
+      {"model": "bricks.glb", "tile": [-4.625, 3.575], "rotationY": 15, "scale": 1.6, "base": 12, "comment": "Prison Tower roof: a pile of sling-stone in the north half."},
       {"model": "detail-barrel.glb", "tile": [0.0, 4.55], "rotationY": 0, "scale": 1.5, "base": 8, "comment": "Bakehouse Tower, top room: a small barrel on the outer edge beside the well."},
       {"model": "detail-crate.glb", "tile": [6.0, 4.55], "rotationY": -20, "scale": 1.5, "base": 8, "comment": "Chapel Tower, top room: a crate on the outer edge beside the well."},
       {"model": "detail-crate.glb", "tile": [-7.5, -3.6], "rotationY": 10, "scale": 1.5, "base": 8, "comment": "North wall walk: a crate at the inner edge of the decking, west of the sentry's post at (-18, -15)."},
@@ -2199,5 +2239,5 @@
     }
   ],
   "drumsComment": "Eight drums. `interior.doors` is every opening in the ring: `base` is the opening's floor (0, 4 or 8, a level's height), `theta` its bearing in three's cylinder angle (0 is +z, south; 90 is +x, east), `arc` its width in degrees, and both have to land on the drum's own vertices. The level-0 door is the room's; the level-1 doors (three of them) lead to the chambers built over the rooms beside those towers; the level-2 doors are where the wall walk passes through the tower's top room, sixty degrees wide because a 2 m deck's cells cross the ring over about thirty degrees and the grid's sector boxes bulge past that. The Stockhouse Tower's west door at level 2 carries `bar`: it is the walk door the porter swears he bars every night, it ships open because he did not, and `bar.closed` is the one thing test/layout.mjs forces shut to prove the wards would separate if he had. `stairs` names the side of the tower the upper flight and its well go on, which is the outer side, away from where the walk crosses. `lowerFlight: false` on the two towers whose ground room is shut leaves them the upper flight only.",
-  "roomsComment": "Fourteen ground rooms (Phase 4), then the upper ones. A room is a rectangle of whole tiles, a tower interior (`drum`, and its disc is the drum's), or a `bounds` rectangle in world metres, which is how a stretch of decking is named. `level` 1 and 2 rooms with a `floor` get a slab from src/castle-plan.js: a rectangle cut back to any drum it runs into, or a disc with a well cut where a stair comes up through it. Tower rooms above the ground that the mystery never names (nw-tower-1, sw-tower-2 and so on) are here so the suite can hold every tower's upper floors reachable from its own stairs; the four the mystery does name at level 1 and the four at level 2 have to match data/mystery.json by id, level and ward, and test/layout.mjs says so."
+  "roomsComment": "Fourteen ground rooms (Phase 4), then the upper ones. A room is a rectangle of whole tiles, a tower interior (`drum`, and its disc is the drum's), or a `bounds` rectangle in world metres, which is how a stretch of decking is named. A room above the ground with a `floor` gets a slab from src/castle-plan.js: a rectangle cut back to any drum it runs into, or a disc with a well cut where a stair comes up through it. A room at level 3 in a drum is that drum's ROOF (#523): it is at the drum's own 12 m, its slab replaces the lid the drum used to draw there, the drum grows a third flight to reach it, and the crown built in #514 is its parapet. Four of the eight have one — the four with no turret, because a 2.5 m turret inside a 2.8 m ring leaves a 0.3 m ledge and a 0.45 m body cannot stand on it. Tower rooms above the ground that the mystery never names (nw-tower-1, sw-tower-2 and so on) are here so the suite can hold every tower's upper floors reachable from its own stairs; the four the mystery does name at level 1 and the four at level 2 have to match data/mystery.json by id, level and ward, and test/layout.mjs says so."
 }

@@ -29,14 +29,20 @@ anything **A fourth body** and **The texture sets** add has to come through it.
 merlons hanging in the air, no two faces share a plane so nothing flickers,
 and the castle says where you are: a HUD room line, a tint per drum, and
 something in every room. What did not ship is new texture sets, because this
-container cannot reach Poly Haven or KTX-Software (#518); that is rank 6 now.
+container cannot reach Poly Haven or KTX-Software (#518); that is rank 5 now.
 
-**Sound shipped on 2026-09-15** (#519 to #521): a footstep per surface class
+**Sound shipped on 2026-09-15** (#519 to #522): a footstep per surface class
 and the chapel bell, both synthesised out of `data/sounds.json`, no audio file
 in the repo at all. What it sounds like is a question for a machine with
 speakers (#53).
 
-**10 ranked items.** Ranks 5, 8 and 10 are claimed on
+**The tower roofs shipped on 2026-09-15** (#523 to #526): the North-west,
+Kitchen, South-west and Prison Towers have a third flight and a floor at 12 m,
+36 walkable cells each under the crown #514 built. The four turreted drums did
+not get one and the reason is arithmetic: a 2.5 m turret in a 2.8 m ring leaves
+a 0.3 m ledge. The turrets are solid now, which they had never been.
+
+**9 ranked items.** Ranks 7 and 9 are claimed on
 `claude/festive-hopper-nf7391`. Take rank 1.
 
 Two things are true of the whole list and worth saying once. **Nothing here has
@@ -86,12 +92,11 @@ your decisions and this file's header, ranks and `Claimed` column are updated
 | 2 | A real GPU run of `npm run play`, and somebody looks at the twelve | ¼ | Opus 5 |  | [The GPU run](SPECS.md#the-gpu-run) |
 | 3 | A new preview and og card, from that run | ¼ | Opus 5 |  | [The GPU run](SPECS.md#the-gpu-run) |
 | 4 | Touch: pointer lock has no phone form | 1 | Opus 5 |  | [Touch](SPECS.md#touch) |
-| 5 | The turrets and the tower tops: four cylinders nobody can climb | 1 | Fable 5.1 | `claude/festive-hopper-nf7391` | [The turrets](SPECS.md#the-turrets) |
-| 6 | Four texture sets: a second wall stone, a tower stone, a plaster, a floor | ½ | Fable 5.1 |  | [The texture sets](SPECS.md#the-texture-sets) |
-| 7 | The town side: a textured ground outside the west barbican, and a road | 1 | Fable 5.1 |  | [The town side](SPECS.md#the-town-side) |
-| 8 | Stirling's Great Hall roof: a hammerbeam from `structure-cross.glb` | ½ | Sonnet 5 | `claude/festive-hopper-nf7391` | [The hall roof](SPECS.md#the-hall-roof) |
-| 9 | A second day, in which the epilogue's consequences play | 2+ | Opus 5 |  | [A second day](SPECS.md#a-second-day) |
-| 10 | `test/layout.mjs` and `test/plan-vs-scene.mjs` overlap; decide what each is for | ¼ | Sonnet 5 | `claude/festive-hopper-nf7391` | [The two plan suites](SPECS.md#the-two-plan-suites) |
+| 5 | Four texture sets: a second wall stone, a tower stone, a plaster, a floor | ½ | Fable 5.1 |  | [The texture sets](SPECS.md#the-texture-sets) |
+| 6 | The town side: a textured ground outside the west barbican, and a road | 1 | Fable 5.1 |  | [The town side](SPECS.md#the-town-side) |
+| 7 | Stirling's Great Hall roof: a hammerbeam from `structure-cross.glb` | ½ | Sonnet 5 | `claude/festive-hopper-nf7391` | [The hall roof](SPECS.md#the-hall-roof) |
+| 8 | A second day, in which the epilogue's consequences play | 2+ | Opus 5 |  | [A second day](SPECS.md#a-second-day) |
+| 9 | `test/layout.mjs` and `test/plan-vs-scene.mjs` overlap; decide what each is for | ¼ | Sonnet 5 | `claude/festive-hopper-nf7391` | [The two plan suites](SPECS.md#the-two-plan-suites) |
 
 ## A fourth body
 
@@ -131,16 +136,9 @@ thumb on it. This is a second input scheme, not a HUD addition: look, move,
 sprint, and a single E that has to mean talk, examine and ring depending on
 what is in front of it.
 
-## The turrets
-
-**Rank 5.** Four cylinders nobody can climb. A third stair per inner tower and
-a view over the whole plan from 12 m. Phase 5 built the upper level and the
-wall walk and stopped below the tower tops. The parapet up there is the drum's
-own crown since #514, not kit merlons.
-
 ## The texture sets
 
-**Rank 6.** Ten texture sets dress the whole castle and 27 of 31 runs are
+**Rank 5.** Ten texture sets dress the whole castle and 27 of 31 runs are
 `castle_wall_slates`; every upper floor is `wood_planks`. #516's tints tell
 the eight drums apart with no new bytes, and the next step is bytes: four
 Poly Haven sets, chosen in `SPECS.md`, through `tools/encode-assets.mjs`
@@ -150,7 +148,7 @@ part of PR #7.
 
 ## The town side
 
-**Rank 7.** The world ends at the curtain by budget. A textured ground outside
+**Rank 6.** The world ends at the curtain by budget. A textured ground outside
 the west barbican and a road is one texture set Devon dropped
 (`forest_ground_06`) and a different ending — the clerk arrives from somewhere
 and currently that somewhere is a hard edge. The texture set goes through
@@ -159,13 +157,13 @@ and currently that somewhere is a hard edge. The texture set goes through
 
 ## The hall roof
 
-**Rank 8.** The Great Hall is full height and open to the sky: `PLAN.md` says
+**Rank 7.** The Great Hall is full height and open to the sky: `PLAN.md` says
 "a flat ceiling", and no piece in the plan roofs it. A hammerbeam from
 `structure-cross.glb` is a day's work and not a gameplay change.
 
 ## A second day
 
-**Rank 9, and a 2+.** The save schema already has `watch` and `accusations[]`
+**Rank 8, and a 2+.** The save schema already has `watch` and `accusations[]`
 and nothing stops a day two in which the epilogue's consequences play. The
 content does not exist — that is the whole row, and it is a writing job the
 size of `PLAN.md`'s mystery section before it is a code job. Do one increment,
@@ -173,7 +171,7 @@ ship it, leave the row standing.
 
 ## The two plan suites
 
-**Rank 10.** `test/layout.mjs` checks the plan's arithmetic in Node and
+**Rank 9.** `test/layout.mjs` checks the plan's arithmetic in Node and
 `test/plan-vs-scene.mjs` checks the scene against the same plan in a browser,
 and the second is slower than the whole rest of the suite put together. Phase 2
 wrote `layout.mjs` when it was the only check there was; some of what it asserts

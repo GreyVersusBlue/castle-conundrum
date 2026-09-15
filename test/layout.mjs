@@ -229,7 +229,10 @@ else pass(`the spawn at [${config.spawn.position.join(', ')}] stands on a floor`
 const rooms = walk.rooms();
 const groundRooms = rooms.filter(r => r.level === 0);
 if (groundRooms.length !== 14) fail(`${groundRooms.length} ground rooms in the plan, not the fourteen PLAN.md's room table names`);
-for (const level of [1, 2]) {
+// The levels the castle has, read off the plan (#523), not a literal `[1, 2]`
+// that a fourth storey has to be remembered into.
+const upper = plan.levels.filter(l => l > 0);
+for (const level of upper) {
   if (!walk.perLevel().some(([l]) => l === level)) fail(`nothing on level ${level} can be reached from the spawn`);
 }
 
@@ -325,7 +328,7 @@ console.log('\nthe rooms, against mystery.json');
   for (const id of missing) fail(`mystery.json puts people or evidence in "${id}" and the castle has no such room`);
   for (const id of extra) fail(`the castle builds a room "${id}" that the mystery has never heard of`);
   if (!missing.length && !extra.length) pass(`${got.length} ground rooms, the same ids in both files`);
-  for (const level of [1, 2]) {
+  for (const level of upper) {
     const named = mystery.rooms.filter(r => r.level === level && !r.open);
     for (const m of named) {
       const r = plan.rooms.find(x => x.id === m.id);
@@ -492,7 +495,9 @@ console.log('\neach tower\'s upper rooms, by its own stairs alone');
     const wanted = plan.rooms.filter(r => r.drum === drum.id && r.level > 0).map(r => r.id);
     if (serves[drum.id]) wanted.push(serves[drum.id]);
     const missed = wanted.filter(id => !own.find(r => r.id === id)?.reachable);
-    const how = drum.lowerFlight === false ? 'its own upper flight, from its top room' : 'its own two flights';
+    const flights = plan.pieces.filter(p => p.kind === 'stair' && p.id.startsWith(`${drum.id}-stair-`)).length;
+    const n = `its own ${flights} flight${flights === 1 ? '' : 's'}`;
+    const how = drum.lowerFlight === false ? `${n}, from its top room` : n;
     if (missed.length) fail(`${missed.join(' and ')} cannot be reached by ${drum.id}'s ${drum.lowerFlight === false ? 'upper flight' : 'own stairs'} — ${missed.map(id => `${id} unreachable`).join(', ')}`);
     else pass(`${drum.id}: ${wanted.join(', ')} reached by ${how}`);
     if (drum.lowerFlight === false) {
@@ -803,6 +808,36 @@ console.log('\nsomething in every room');
   }
   const open = plan.rooms.filter(r => r.locked).length;
   if (filled + open === plan.rooms.length) pass(`${filled} rooms each hold at least one thing, ${open} shut rooms not asked`);
+}
+
+/* ------------------------------- 13: nothing stands inside a turret ---
+ * A turret is two metres of solid cylinder on four drums' tops, and until #523
+ * it had no collider at all: the drum's box knew about it and nothing else did.
+ * Nothing could reach 12 m, which is exactly how a hole like this lives for
+ * four phases — and this row builds a floor at 12 m, so the question stops
+ * being hypothetical. The rule is 6c's, one shape up: no reachable cell may lie
+ * inside a turret's own disc between its base and its top. A turret over a
+ * reachable floor fails here rather than being walked through in a render.
+ */
+console.log('\nnothing stands inside a turret');
+{
+  const turrets = plan.pieces.filter(p => p.drum && p.drum.turret).map(p => ({ id: p.id, t: p.drum.turret }));
+  if (!turrets.length) fail('no drum carries a turret — this check measured nothing');
+  const inside = [];
+  for (const c of walk.cells) {
+    const x = c.i * GRID + GRID / 2, z = c.j * GRID + GRID / 2;
+    for (const { id, t } of turrets) {
+      if (Math.hypot(x - t.cx, z - t.cz) > t.radius) continue;
+      // The feet inside it, or the head band crossing it: a body standing 0.2 m
+      // under a turret's base is in the turret from the chest up.
+      if (c.h >= t.base + t.height - 1e-6 || c.h + HEAD_LOW >= t.base + t.height - 1e-6) continue;
+      if (c.h + HEAD_HIGH <= t.base + 1e-6) continue;
+      inside.push(`a body at (${f2(x)}, ${f2(z)}) standing at ${f2(c.h)} is inside ${id}'s turret, which runs ${f2(t.base)} to ${f2(t.base + t.height)} within ${t.radius} m of (${f2(t.cx)}, ${f2(t.cz)})`);
+    }
+  }
+  for (const line of inside.slice(0, 6)) fail(line);
+  if (inside.length > 6) fail(`... and ${inside.length - 6} more cells inside a turret`);
+  if (!inside.length) pass(`${turrets.length} turrets, ${walk.cells.length} reachable cells, none of them in one`);
 }
 
 /* ---------------------- 12: every surface a foot can land on makes a noise ---

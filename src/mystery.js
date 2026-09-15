@@ -282,9 +282,17 @@ export function validateMystery(mystery, npcs, quest, nav = null) {
   for (const l of locks.values()) if (!l.room || !rooms.has(l.room)) say(`lock ${l.id}: in no room`);
 
   // --- Rooms and the schedule.
+  // THE STOREYS ARE THE CASTLE'S, NOT A LITERAL HERE (#523). This read
+  // `[0, 1, 2]` and the tower roofs at level 3 would have been refused by the
+  // validator while the plan built them. With no plan to ask — a suite calling
+  // this on the data alone — any whole level from the ground up passes, because
+  // a ceiling invented in this file is a second copy of `storey` that can
+  // disagree with the one in castle-plan.js.
+  const storeys = nav?.plan?.levels || null;
   for (const r of rooms.values()) {
     if (!['outer', 'inner'].includes(r.ward)) say(`room ${r.id}: ward ${JSON.stringify(r.ward)} is not outer or inner`);
-    if (![0, 1, 2].includes(r.level)) say(`room ${r.id}: level ${JSON.stringify(r.level)} is not 0, 1 or 2`);
+    const bad = storeys ? !storeys.includes(r.level) : !(Number.isInteger(r.level) && r.level >= 0);
+    if (bad) say(`room ${r.id}: level ${JSON.stringify(r.level)} is not ${storeys ? `one of the castle's levels ${storeys.join(', ')}` : 'a whole number of storeys above the ground'}`);
   }
   for (const npcId of cast.keys()) {
     if (!ix.schedule[npcId]) { say(`${npcId}: no schedule`); continue; }

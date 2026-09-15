@@ -205,7 +205,7 @@ try {
     else if (Math.abs(s.camY - (s.got + EYE_HEIGHT)) > TOL) fail(`in ${s.id} the eye settled at y ${s.camY.toFixed(3)} over a floor at ${s.got.toFixed(3)}, not ${EYE_HEIGHT} above it`);
     else stoodOk++;
   }
-  const perLevel = [0, 1, 2].map((l) => `${stood.filter((s) => s.level === l).length} on level ${l}`).join(', ');
+  const perLevel = plan.levels.map((l) => `${stood.filter((s) => s.level === l).length} on level ${l}`).join(', ');
   if (stoodOk === stood.length) pass(`the camera stands on the plan's floor in all ${stood.length} rooms (${perLevel}), worst ${Math.max(0, worstStand).toFixed(4)} m in ${worstRoom}`);
 
   /* AND THE HUD SAYS WHERE (#515). The room line is written by the page's own
