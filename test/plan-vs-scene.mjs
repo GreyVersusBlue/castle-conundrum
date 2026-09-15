@@ -321,7 +321,7 @@ try {
     };
   }));
   const seen = new Map(bodies.map((b) => [b.id, b]));
-  check(bodies.length === 12, `the page spawns ${bodies.length} bodies`, 'twelve is the cast');
+  check(bodies.length === 13, `the page spawns ${bodies.length} bodies`, "twelve for the day and the King's inspector for the morning after (#534)");
   let offStation = 0;
   for (const { id, at } of due) {
     const b = seen.get(id);
@@ -344,14 +344,14 @@ try {
   check(grounded.length === 0,
     `${upstairs.length} of them stand above the ground floor, on their own floor: ${upstairs.map((n) => `${n.id} at y ${(seen.get(n.id)?.y ?? 0).toFixed(1)}`).join(', ')}`,
     grounded.map((n) => n.id).join(', ') + ' on the ground');
-  const absent = bodies.filter((b) => !b.visible).map((b) => b.id);
-  check(absent.join() === 'merchant', 'the one who is not in the castle at Prime is hidden rather than standing at the origin', `hidden: ${absent.join(', ') || 'nobody'}`);
-  // The tint (#419). Three bodies, twelve people: the cloth has to differ
-  // twelve ways and the skin must not differ at all, or the tint went onto
+  const absent = bodies.filter((b) => !b.visible).map((b) => b.id).sort();
+  check(absent.join() === 'inspector,merchant', 'the two who are not in the castle at Prime are hidden rather than standing at the origin', `hidden: ${absent.join(', ') || 'nobody'}`);
+  // The tint (#419). Three bodies, thirteen people: the cloth has to differ
+  // thirteen ways and the skin must not differ at all, or the tint went onto
   // faces. Reading the live materials is the only thing that can say so —
-  // npcs.json's twelve hexes being distinct is a fact about the file.
+  // npcs.json's thirteen hexes being distinct is a fact about the file.
   const cloth = new Set(bodies.map((b) => b.cloth));
-  check(cloth.size === 12, `the twelve read as twelve: ${cloth.size} distinct sets of cloth colours off three bodies`);
+  check(cloth.size === 13, `the thirteen read as thirteen: ${cloth.size} distinct sets of cloth colours off three bodies`);
   const skins = new Set(bodies.map((b) => b.skin).filter(Boolean));
   check(skins.size === 1, `and one skin colour across all of them`, [...skins].join(' | '));
 

@@ -1,9 +1,9 @@
 # Castle Conundrum — how this repo works
 
 A first-person medieval murder mystery in three.js. Twelve suspects, four
-bells, one accusation. `index.html` at the repo root, source in `src/`, the
-mystery and the castle as data in `data/`, 39 MB of glTF and textures in
-`assets/`, nine suites in `test/`.
+bells, one accusation, and a morning after it. `index.html` at the repo root,
+source in `src/`, the mystery and the castle as data in `data/`, 39 MB of glTF
+and textures in `assets/`, nine suites in `test/`.
 
 **`PLAN.md` is the most valuable file here.** It is 64 K of phase plans — what
 the castle is, why the order is what it is, and the seven phases that built it,
@@ -69,8 +69,8 @@ The project lived in `GreyVersusBlue/tools-and-games` under
   visible only in the shape of the files, which is exactly how a rule gets lost.
 - **Never change a storage key** (#36, from the old repo, and it crosses).
   Changing a key silently abandons anyone mid-use. The key is
-  `castleConundrumSave_v1` (#413). Unversioned saves read as version 0 and come
-  through `repair`.
+  `castleConundrumSave_v1` (#413) and the version inside it is **2** (#533).
+  Unversioned saves read as version 0 and come through `repair`.
 - **`migrate` is for version drift; `repair` is for every load** (#37).
 - **Assert against the DOM for anything that just happened, and against the
   save only for what a reload has to survive** (#39).

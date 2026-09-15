@@ -26,6 +26,86 @@ const UI_LINES = ['asleep', 'absent', 'gone', 'locked', 'known', 'empty', 'fall'
 
 const asList = (v) => (v == null ? [] : Array.isArray(v) ? v : [v]);
 
+/* ------------------------------------------------------------- the second day ---
+ * THE MORNING AFTER IS A `day` FIELD, NOT A FIFTH BELL (#533). `watches` is
+ * asserted to be exactly four in this file, `ring()`'s fourth is the Constable
+ * demanding an answer, and every rail about a two-to-three-watch path is
+ * written against one day. Eight watches would have made all of that say
+ * nothing. So `day2.watch` is a fifth watch id that is deliberately NOT in
+ * `watches`: the schedule for it lives under `day2.schedule`, src/stations.js
+ * indexes it beside the four, and `ring()` never reaches it because a day with
+ * a verdict in it has already ended.
+ *
+ * WHAT THE PLAYER SAID IS THE ONLY INPUT. Seven endings, and every one of them
+ * is a different castle on the morning after: a different man missing, a
+ * different thing for everyone else to say about it. `outcomeOf` reads the
+ * recorded accusation and returns the three names a day two is keyed by — the
+ * `key` (one of `accusation.verdicts`' own seven), the `class` (one of the four
+ * the engine emits as `verdict:<class>`), and `who` hangs. */
+
+/** The outcome of a finished day, or null while it is still running. */
+export function outcomeOf(mystery, state) {
+  const a = (state?.accusations ?? []).filter((x) => x && x.verdict).at(-1);
+  if (!a) return null;
+  return { key: a.verdict === 'full' ? 'full' : a.who, class: a.verdict, who: a.who };
+}
+
+/**
+ * Every outcome a day can end in, read off `accusation.verdicts` rather than
+ * listed here: `full`, one per accusable, and `nobody`. The validator walks all
+ * seven, so a sixth accusable added to the data is a sixth morning the day-two
+ * rails ask about without anybody editing this file.
+ */
+export function dayTwoOutcomes(mystery) {
+  const acc = mystery?.accusation ?? {};
+  const truth = acc.truth?.who;
+  return Object.keys(acc.verdicts ?? {}).map((key) => {
+    if (key === 'full') return { key, class: 'full', who: truth };
+    if (key === 'nobody') return { key, class: 'fall', who: 'nobody' };
+    return { key, class: key === truth ? 'right' : 'wrong', who: key };
+  });
+}
+
+/**
+ * Who is not in the castle on the morning after. `accused` is the man the last
+ * accusation named, hanged at first light; `also` is whoever else that ending
+ * takes, which for the full ending is the Steward in irons and the merchant
+ * taken in the town. Both halves are data: the file cannot know what the
+ * player said, and this file must not know who the Steward is.
+ */
+export function dayTwoAbsent(mystery, outcome) {
+  const rule = mystery?.day2?.absent ?? {};
+  const gone = new Set();
+  if (rule.accused && outcome?.who && outcome.who !== 'nobody') gone.add(outcome.who);
+  for (const id of asList(rule.also?.[outcome?.key])) gone.add(id);
+  return gone;
+}
+
+/**
+ * One person's lines for one outcome: the exact ending first, then the verdict
+ * class, then `default`. Two vocabularies on purpose — the laundress has one
+ * thing to say when it is her own husband who hanged and another when it is
+ * anybody else, and the Constable has seven — and one resolver, so nothing
+ * downstream has to know which of the two a given entry was written in.
+ */
+export function dayTwoLines(mystery, npcId, outcome) {
+  const table = mystery?.day2?.lines?.[npcId];
+  if (!table || !outcome) return null;
+  const pick = table[outcome.key] ?? table[outcome.class] ?? table.default;
+  return Array.isArray(pick) && pick.length && pick.every((l) => typeof l === 'string' && l.trim()) ? pick : null;
+}
+
+/** Which key in a line table `outcome` would read, or null when none would. */
+function dayTwoLineKey(mystery, npcId, outcome) {
+  const table = mystery?.day2?.lines?.[npcId];
+  if (!table) return null;
+  for (const k of [outcome.key, outcome.class, 'default']) if (k in table) return k;
+  return null;
+}
+
+/** True for a cast member who is not in the castle until the second day. */
+const arrivesLate = (npc) => (npc?.arrives ?? 1) > 1;
+
 /** Index the data once. Every validator rail and the engine read from this. */
 function index(mystery, npcs) {
   const watches = Array.isArray(mystery?.watches) ? mystery.watches : [];
@@ -294,7 +374,15 @@ export function validateMystery(mystery, npcs, quest, nav = null) {
     const bad = storeys ? !storeys.includes(r.level) : !(Number.isInteger(r.level) && r.level >= 0);
     if (bad) say(`room ${r.id}: level ${JSON.stringify(r.level)} is not ${storeys ? `one of the castle's levels ${storeys.join(', ')}` : 'a whole number of storeys above the ground'}`);
   }
-  for (const npcId of cast.keys()) {
+  for (const [npcId, npc] of cast) {
+    // A cast member with `arrives: 2` is not in the castle on day one and has
+    // no day-one schedule to check; the day-two section below is where he is
+    // held to a station instead. The other direction still fires: a day-one
+    // person with no schedule is a person the bell cannot place.
+    if (arrivesLate(npc)) {
+      if (ix.schedule[npcId]) say(`${npcId}: arrives on day ${npc.arrives} and still has a day-one schedule`);
+      continue;
+    }
     if (!ix.schedule[npcId]) { say(`${npcId}: no schedule`); continue; }
     for (const w of watches) {
       if (!(w in ix.schedule[npcId])) say(`${npcId}: no station at ${w} (use null for not in the castle)`);
@@ -364,6 +452,127 @@ export function validateMystery(mystery, npcs, quest, nav = null) {
           }
         }
       }
+    }
+  }
+
+  /* --- The second day (#533 to #537). Everything below is about `day2`, and
+   * the five nav rails it reuses are the five above: floor under the station,
+   * inside the room it names, 1.5 m clear of everybody else at that bell,
+   * somewhere the player can reach, and a walk from where the body stood at
+   * the bell before — which for the morning after is the Vespers station, so a
+   * cast that teleports overnight is caught the same way a cast that teleports
+   * at Terce is. What is new is that a day two has seven shapes, one per
+   * ending, and every one of them has to hold. */
+  const d2 = mystery.day2;
+  if (!d2 || typeof d2 !== 'object') {
+    say('day2: no second day, so the epilogue is the end of the game');
+  } else {
+    const w2 = d2.watch;
+    if (typeof w2 !== 'string' || !w2.trim()) say(`day2.watch: ${JSON.stringify(w2)} is not a watch id`);
+    else if (ix.watchIdx.has(w2)) say(`day2.watch: ${w2} is one of the four bells, and a second day is a day and not a fifth ring`);
+    const outcomes = dayTwoOutcomes(mystery);
+    if (!outcomes.length) say('day2: the accusation table has no verdicts, so no morning has a shape');
+
+    // Everybody in the cast is somewhere on the morning after, or nowhere on purpose.
+    for (const npcId of cast.keys()) {
+      if (!(npcId in (d2.schedule ?? {}))) say(`${npcId}: no station at ${w2} (use null for not in the castle)`);
+    }
+    for (const npcId of Object.keys(d2.schedule ?? {})) if (!cast.has(npcId)) say(`day2.schedule: ${npcId} is not in the cast`);
+
+    // The one whose conversation ends it.
+    const ends = d2.ends;
+    if (!cast.has(ends)) say(`day2.ends: ${JSON.stringify(ends)} is not in the cast, so nothing ends the second day`);
+    else if (!d2.schedule?.[ends]) say(`day2.ends: ${ends} has no station at ${w2}, so the one conversation that ends the day cannot be had`);
+
+    // The stations themselves, against the castle, exactly as day one is.
+    if (nav && w2) {
+      const code = (id) => rooms.get(id)?.code ?? id;
+      const here = [];
+      for (const [npcId, st] of Object.entries(d2.schedule ?? {})) {
+        if (!cast.has(npcId) || !st) continue;
+        if (!rooms.has(st.room)) { say(`${npcId}: station at ${w2} is in no room (${JSON.stringify(st.room)})`); continue; }
+        if (st.level != null && rooms.get(st.room).level !== st.level) say(`${npcId}: station at ${w2} says level ${st.level} but ${st.room} is on ${rooms.get(st.room).level}`);
+        const point = nav.at(npcId, w2);
+        if (!point) { say(`${npcId}: station at ${w2} has no tile`); continue; }
+        if (!nav.standable(point)) { say(`${npcId}: station at ${w2} is at tile (${st.tile.join(', ')}) on level ${point.level}, where there is no floor to stand on`); continue; }
+        if (nav.inNamedRoom(point) === false) say(`${npcId}: station at ${w2} is at tile (${st.tile.join(', ')}), which is not inside ${st.room}`);
+        if (rooms.get(st.room)?.barred) {
+          if (!nav.talkable(point)) say(`${npcId}: station at ${w2} is in ${code(st.room)}, behind bars with nowhere within ${TALK_RANGE} m of them to stand`);
+        } else if (!nav.walkable(point)) {
+          say(`${npcId}: station at ${w2} is at tile (${st.tile.join(', ')}) in ${code(st.room)}, which the player cannot walk to`);
+        }
+        // Overnight is still a walk. Whoever was in the castle at the last bell
+        // of day one has to be able to get from there to here on his own feet.
+        const last = watches.length ? nav.at(npcId, watches[watches.length - 1]) : null;
+        if (last && !nav.route(last, point)) say(`${npcId}: no path from ${code(last.room)} at ${watches[watches.length - 1]} to ${code(st.room)} at ${w2}`);
+        here.push([npcId, point]);
+      }
+      for (let a = 0; a < here.length; a++) {
+        for (let b = a + 1; b < here.length; b++) {
+          const [idA, pA] = here[a], [idB, pB] = here[b];
+          if (pA.level !== pB.level) continue;
+          const gap = Math.hypot(pA.x - pB.x, pA.z - pB.z);
+          if (gap < STATION_CLEARANCE) say(`${idA} and ${idB} stand ${gap.toFixed(2)} m apart at ${w2}, inside the ${STATION_CLEARANCE} m two bodies need`);
+        }
+      }
+    }
+
+    /* THE MAN WHO HANGS IS NOT AT HIS STATION IN THE MORNING. `absent` is the
+     * rule that takes him out and it is one field, which makes it exactly the
+     * kind of thing that can be switched off without anything on the screen
+     * saying so: the castle would open at Lauds with the Clerk at his desk on
+     * the morning he was hanged from the Stockhouse Tower, and every other rail
+     * in this file would still pass. SPECS.md proposed breaking this by writing
+     * the Clerk a day-two station; that does not break it and should not, since
+     * the Clerk has a morning in the four endings he lives through. The rule
+     * itself is the thing worth guarding (#535). */
+    const hangsAndStands = new Map();
+    for (const o of outcomes) {
+      if (!o.who || o.who === 'nobody') continue;
+      if (!d2.schedule?.[o.who]) continue;
+      if (dayTwoAbsent(mystery, o).has(o.who)) continue;
+      if (!hangsAndStands.has(o.who)) hangsAndStands.set(o.who, []);
+      hangsAndStands.get(o.who).push(o.key);
+    }
+    for (const [who, keys] of hangsAndStands) say(`${who}: has a station at ${d2.watch} and hangs in ${keys.join(', ')}`);
+    for (const o of outcomes) {
+      for (const id of dayTwoAbsent(mystery, o)) if (!cast.has(id)) say(`day2.absent: ${o.key} takes ${id}, who is not in the cast`);
+    }
+
+    /* EVERY MORNING RESOLVES TO LINES, AND EVERY SET OF LINES IS SOME MORNING'S.
+     * Both halves, because they fail in opposite directions and neither shows
+     * on the screen: a missing set opens the dialogue box on `undefined`, and a
+     * set nothing reaches is content written for an ending that cannot happen,
+     * which reads as work done. */
+    for (const o of outcomes) {
+      const gone = dayTwoAbsent(mystery, o);
+      for (const npcId of cast.keys()) {
+        if (gone.has(npcId) || !d2.schedule?.[npcId]) continue;
+        if (!dayTwoLines(mystery, npcId, o)) say(`${npcId}: no day-two lines after the verdict ${o.key} (a ${o.class})`);
+      }
+    }
+    for (const npcId of Object.keys(d2.lines ?? {})) {
+      if (!cast.has(npcId)) { say(`day2.lines: ${npcId} is not in the cast`); continue; }
+      const used = new Set();
+      for (const o of outcomes) {
+        if (dayTwoAbsent(mystery, o).has(npcId) || !d2.schedule?.[npcId]) continue;
+        const k = dayTwoLineKey(mystery, npcId, o);
+        if (k) used.add(k);
+      }
+      for (const k of Object.keys(d2.lines[npcId])) {
+        if (!used.has(k)) say(`${npcId}: day-two lines for ${k} that no ending ever reaches`);
+      }
+    }
+
+    // The closing pane, one per ending.
+    for (const o of outcomes) {
+      const e = d2.endings?.[o.key];
+      if (!e || typeof e.signed !== 'string' || !e.signed.trim() || typeof e.after !== 'string' || !e.after.trim()) {
+        say(`day2.endings: ${o.key} has no signed/after text, so the second day would end on a blank pane`);
+      }
+    }
+    for (const key of Object.keys(d2.endings ?? {})) {
+      if (!outcomes.some((o) => o.key === key)) say(`day2.endings: ${key} is not an ending the accusation table can reach`);
     }
   }
 
@@ -482,6 +691,7 @@ export function validateMystery(mystery, npcs, quest, nav = null) {
 export function freshState(quest) {
   return {
     stage: quest?.start ?? 'start',
+    day: 1,
     watch: 0,
     clues: [],
     pressed: {},
@@ -507,9 +717,11 @@ export function createMystery({ mystery, npcs, state }) {
   const { watches, clues, evidence, presses, accusation } = ix;
   const st = state ?? freshState();
   st.clues ??= []; st.pressed ??= {}; st.taken ??= []; st.locks ??= []; st.accusations ??= [];
-  st.refusals ??= 0; st.watch ??= 0;
+  st.refusals ??= 0; st.watch ??= 0; st.day ??= 1;
 
-  const watchId = () => watches[Math.min(st.watch, watches.length - 1)];
+  const day2 = mystery?.day2 ?? null;
+  const onDayTwo = () => st.day === 2 && !!day2;
+  const watchId = () => (onDayTwo() ? day2.watch : watches[Math.min(st.watch, watches.length - 1)]);
   const holds = (id) => st.clues.includes(id);
   const npcState = (npcId) => st.pressed[npcId]?.at(-1) ?? 'default';
   const ended = () => st.accusations.some((a) => a.verdict);
@@ -551,11 +763,41 @@ export function createMystery({ mystery, npcs, state }) {
     holds,
     npcState,
 
-    stationOf(npcId, watch = watchId()) { return ix.station(npcId, watch); },
+    /** Which day the save is on: 1 until the epilogue's button, 2 after it. */
+    get day() { return onDayTwo() ? 2 : 1; },
+
+    /** The ending the recorded accusation is, or null while the day is running. */
+    outcome() { return outcomeOf(mystery, st); },
+
+    /**
+     * Where somebody stands, at a watch on whichever day this is. The day-two
+     * lookup is the day-two schedule with `absent` already taken out of it, so
+     * a caller that asks "is there anybody there" gets the hanged man's answer
+     * without knowing there was a hanging. main.js is that caller.
+     */
+    stationOf(npcId, watch = watchId()) {
+      if (day2 && watch === day2.watch) {
+        if (!onDayTwo()) return null;
+        if (dayTwoAbsent(mystery, outcomeOf(mystery, st)).has(npcId)) return null;
+        return day2.schedule?.[npcId] ?? null;
+      }
+      return ix.station(npcId, watch);
+    },
+
+    /** The lines somebody speaks on the morning after, or null on day one. */
+    dayTwoLinesFor(npcId) { return onDayTwo() ? dayTwoLines(mystery, npcId, outcomeOf(mystery, st)) : null; },
 
     /** Null when the NPC is not in the castle or asleep; else their state, station and the statements a talk would grant. */
     available(npcId) {
-      if (!ix.cast.has(npcId) || !ix.speakable(npcId, watchId())) return null;
+      if (!ix.cast.has(npcId)) return null;
+      if (onDayTwo()) {
+        const station = api.stationOf(npcId);
+        // NOBODY IS ASLEEP ON THE MORNING AFTER. `asleep` is a day-one station
+        // flag; a day-two station is somewhere a body stands and can be spoken
+        // to, and there are no statements to grant because there are no clues.
+        return station ? { npc: npcId, state: npcState(npcId), station, statements: [] } : null;
+      }
+      if (!ix.speakable(npcId, watchId())) return null;
       return { npc: npcId, state: npcState(npcId), station: ix.station(npcId, watchId()), statements: statementsOf(npcId) };
     },
 
@@ -574,7 +816,11 @@ export function createMystery({ mystery, npcs, state }) {
     /** Present a held clue. Moves the NPC only if a press leaves from their current state on that clue. */
     press(npcId, clueId) {
       const a = api.available(npcId);
-      if (!a || !holds(clueId)) return [{ type: 'shrug', npc: npcId, clue: clueId }];
+      // The journal is still in the player's hand on the morning after and the
+      // presses are still in the data. Nobody is moved by any of them: the day
+      // they belonged to is over, and a Steward pressed into `admits` at Lauds
+      // would be granting a clue against a verdict already written down.
+      if (onDayTwo() || !a || !holds(clueId)) return [{ type: 'shrug', npc: npcId, clue: clueId }];
       const p = presses.find((x) => x.npc === npcId && x.on === clueId && asList(x.from).includes(a.state));
       if (!p) return [{ type: 'shrug', npc: npcId, clue: clueId }];
       (st.pressed[npcId] ??= []).push(p.to);
@@ -682,6 +928,36 @@ export function createMystery({ mystery, npcs, state }) {
         }
         return [asked, { type: 'refused', who, refusals: st.refusals, text: accusation.refused ?? '' }];
       }
+    },
+
+    /**
+     * The morning after. Sets `day` to 2 on the save and hands back the shape
+     * of the castle it makes: which watch, who is where, who is gone and what
+     * each of them says, all read off the one accusation the player actually
+     * made. Idempotent — calling it twice reads the same recorded verdict and
+     * returns the same morning — which is what lets a save resumed in either
+     * day-two stage run it again on the way in.
+     */
+    beginDay2() {
+      const outcome = outcomeOf(mystery, st);
+      if (!day2 || !outcome) return null;
+      st.day = 2;
+      const gone = dayTwoAbsent(mystery, outcome);
+      const stations = {}, lines = {};
+      for (const npcId of ix.cast.keys()) {
+        const station = gone.has(npcId) ? null : (day2.schedule?.[npcId] ?? null);
+        stations[npcId] = station;
+        if (!station) continue;
+        const said = dayTwoLines(mystery, npcId, outcome);
+        if (said) lines[npcId] = said;
+      }
+      return { day: 2, watch: day2.watch, outcome, stations, lines, absent: [...gone], ends: day2.ends ?? null };
+    },
+
+    /** The second day's closing pane for the recorded ending, or null. */
+    dayTwoEnding() {
+      const outcome = outcomeOf(mystery, st);
+      return outcome ? (day2?.endings?.[outcome.key] ?? null) : null;
     },
 
     /** Held clues in the order found, with their text. */

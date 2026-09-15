@@ -287,6 +287,28 @@
           "I did not think it my business. I have been married to a Constable eleven years."
         ]
       }
+    },
+    {
+      "id": "inspector",
+      "name": "Master Adam Fraunceys",
+      "role": "The King's inspector",
+      "ward": "inner",
+      "arrives": 2,
+      "arrivesComment": "THE THIRTEENTH, AND HE IS NOT IN THE CASTLE ON DAY ONE (#534). `arrives: 2` is what tells src/mystery.js not to ask him for a day-one schedule and src/quest-manager.js to keep him out of the accusation panel: twelve names and a fall is the choice the Constable offers, and a man who has not dismounted yet is not one of them. His lines for the morning after are in mystery.json's `day2.lines`, keyed by what the player said, and not here, because there are seven of them and which one he speaks is a fact about the mystery rather than about the body. The one `default` line below is the fallback and is only reachable if `applyDay` never ran.",
+      "modelPath": "assets/NPCs/King.glb",
+      "tint": "#8a8f9c",
+      "hideMaterials": [
+        "Gold"
+      ],
+      "placeholder": {
+        "color": "#8a8f9c"
+      },
+      "heldProp": null,
+      "dialogue": {
+        "default": [
+          "The King's inspector has not dismounted yet."
+        ]
+      }
     }
   ]
 }

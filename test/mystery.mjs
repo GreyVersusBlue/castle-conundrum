@@ -29,7 +29,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { validateMystery, createMystery, earliest, shortestPath, freshState } from '../src/mystery.js';
+import { validateMystery, createMystery, earliest, shortestPath, freshState, dayTwoOutcomes } from '../src/mystery.js';
 import { QuestGraph, validateQuest, validateAgainstNpcs } from '../src/quest-graph.js';
 import { QuestManager, MANAGER_PAIRS } from '../src/quest-manager.js';
 import { makePlan } from '../src/castle-plan.js';
@@ -72,12 +72,15 @@ console.log('mystery.json validates');
   check(problems.length === 0, 'validateMystery finds nothing wrong, the castle included', problems.join('; '));
   const herrings = mystery.clues.filter((c) => c.herring).length;
   check(mystery.clues.length === 39 && herrings === 3, `${mystery.clues.length} clues, ${herrings} herrings (the plan's table lists 39 rows: 36 on a path, 3 herrings)`);
-  check(cast.length === 12, `${cast.length} in the cast`);
+  const dayOne = cast.filter((n) => (n.arrives ?? 1) === 1);
+  const dayTwo = cast.filter((n) => (n.arrives ?? 1) > 1);
+  check(cast.length === 13 && dayOne.length === 12 && dayTwo.length === 1,
+    `${cast.length} in the cast: the twelve of the day, and ${dayTwo.map((n) => n.name).join(', ')} who rides in the morning after`);
   check(Object.keys(mystery.schedule).length === 12 && mystery.watches.length === 4, 'twelve schedules across four watches');
   check(mystery.presses.length === 8, `${mystery.presses.length} presses`);
   const bodies = new Set(cast.map((n) => n.modelPath));
-  check(bodies.size === 3 && cast.every((n) => /^#[0-9a-f]{6}$/i.test(n.tint)), 'three bodies, twelve tints (#419)', [...bodies].join(', '));
-  check(new Set(cast.map((n) => n.tint)).size === 12, 'no two of the twelve share a tint');
+  check(bodies.size === 3 && cast.every((n) => /^#[0-9a-f]{6}$/i.test(n.tint)), 'three bodies, thirteen tints (#419)', [...bodies].join(', '));
+  check(new Set(cast.map((n) => n.tint)).size === 13, 'no two of the thirteen share a tint');
   // Every evidence row names a prop that is already on disk (Phase 1 ships no
   // asset): a kit .glb, or a Poly Haven .gltf under the project's own folder.
   const missing = mystery.evidence.filter((e) => {
@@ -188,6 +191,35 @@ console.log('the validator rejects');
   // walked to her there, and no rail before this one could say so.
   expect('a station the player cannot walk to', (m) => { m.schedule.lady.sext = { room: 'garden', tile: [7, -1.5] }; }, /^lady: station at sext is at tile \(7, -1.5\) in GD, which the player cannot walk to$/);
   expect('a station with no tile', (m) => { delete m.schedule.porter.prime.tile; }, /^porter: station at prime has no tile$/);
+
+  /* THE SECOND DAY'S OWN BREAKS (#533 to #537). The morning after has seven
+   * shapes and none of them is on the screen in Node, so what stands between a
+   * day two and a castle that opens with a hanged man at his desk is these two
+   * rails and nothing else. */
+  expect('the `absent` rule switched off, so the man who hanged is at his station in the morning',
+    (m) => { m.day2.absent.accused = false; },
+    /^clerk: has a station at lauds and hangs in full, clerk$/);
+  expect("the inspector's lines for a fall deleted",
+    (m) => { delete m.day2.lines.inspector.nobody; },
+    /^inspector: no day-two lines after the verdict nobody \(a fall\)$/);
+  expect('a day-two line set no ending can reach',
+    (m) => { m.day2.lines.cook.merchant = ['A merchant hanged and I am short a cart.']; m.day2.absent.also.merchant = ['cook']; },
+    /^cook: day-two lines for merchant that no ending ever reaches$/);
+  expect('a day-two station inside a wall',
+    (m) => { m.day2.schedule.cook.tile = [-3.5, -2.5]; },
+    /^cook: station at lauds is at tile \(-3.5, -2.5\) on level 0, where there is no floor to stand on$/);
+  expect('two of the thirteen on one tile on the morning after',
+    (m) => { m.day2.schedule.inspector.tile = [...m.day2.schedule.constable.tile]; },
+    /^constable and inspector stand 0.00 m apart at lauds, inside the 1.5 m two bodies need$/);
+  expect('the one whose conversation ends the day left out of the morning',
+    (m) => { m.day2.schedule.inspector = null; },
+    /^day2.ends: inspector has no station at lauds/);
+  expect('a second day with no closing pane for one of the endings',
+    (m) => { delete m.day2.endings.prisoner; },
+    /^day2.endings: prisoner has no signed\/after text/);
+  expect('the King\'s inspector given a day-one schedule as well',
+    (m) => { m.schedule.inspector = { prime: null, terce: null, sext: null, vespers: null }; },
+    /^inspector: arrives on day 2 and still has a day-one schedule$/);
 }
 
 /* -------------------------------------- 2b: the twelve on the castle floor ---
@@ -202,7 +234,7 @@ console.log('\nthe twelve, at their stations');
 {
   const barred = new Set(mystery.rooms.filter((r) => r.barred).map((r) => r.id));
   const absent = cast.filter((n) => !nav.at(n.id, 'prime')).map((n) => n.id);
-  check(absent.join() === 'merchant', `eleven of the twelve are in the castle at Prime; Thomas Wykes rides in at Terce`, `absent: ${absent.join(', ') || 'nobody'}`);
+  check(absent.join() === 'merchant,inspector', `eleven of the twelve are in the castle at Prime; Thomas Wykes rides in at Terce and the King's inspector not until the next morning`, `absent: ${absent.join(', ') || 'nobody'}`);
   const offTheFloor = cast.filter((n) => { const p = nav.at(n.id, 'prime'); return p && !nav.standable(p); });
   check(offTheFloor.length === 0, 'every Prime station is floor a body stands on', offTheFloor.map((n) => n.id).join(', '));
   // THE COVERAGE GUARD FOR A CHECK IN ANOTHER FILE (#529). plan-vs-scene.mjs
@@ -367,7 +399,8 @@ function play(state = freshState(frame)) {
   fx = feed(m.accuse('clerk', ['sentry-sighting', 'wax-matches', 'lead-sold']));
   const v = fx.find((e) => e.type === 'verdict');
   check(v && v.class === 'full' && /Ferrour hangs/.test(v.convicted) && /Wykes/.test(v.epilogue), 'the Clerk on the sighting, the wax and the lead: the full ending', JSON.stringify(v?.class));
-  check(g.stage === 'full' && g.done, 'the frame ends in `full`');
+  // `full` is not terminal since #537: the epilogue's button goes to `morning`.
+  check(g.stage === 'full' && !g.done, 'the frame reaches `full`, and it is a pane with a button on it rather than the end');
   check(state.accusations.length === 1 && state.accusations[0].verdict === 'full' && state.accusations[0].watch === 'vespers', 'the accusation is recorded');
   check(m.ring().length === 0 && m.accuse('steward', []).length === 0, 'after the verdict the bell and the Constable are done');
 }
@@ -447,8 +480,11 @@ console.log('the frame');
   const q = validateAgainstNpcs(frame, cast, { pairs: MANAGER_PAIRS });
   check(q.length === 0, 'every stage has lines on every one of the twelve, and both token pairs match', q.join('; '));
   const terminals = Object.entries(frame.stages).filter(([, s]) => s.terminal).map(([id]) => id).sort();
-  check(JSON.stringify(terminals) === JSON.stringify(['fall', 'full', 'right', 'wrong']), 'one terminal per verdict class', terminals.join(', '));
-  check(['ringBell', 'openJournal', 'openAccusation', 'showEpilogue'].every((a) => QuestManager.actions.includes(a)), 'the manager lists the four new actions');
+  check(JSON.stringify(terminals) === JSON.stringify(['end']), 'one terminal, and it is the end of the second day (#537)', terminals.join(', '));
+  const verdictStages = ['full', 'right', 'wrong', 'fall'];
+  check(verdictStages.every((id) => frame.stages[id] && !frame.stages[id].terminal), 'one stage per verdict class, none of them terminal any more', verdictStages.join(', '));
+  check(verdictStages.every((id) => (frame.stages[id].transitions ?? []).some((t) => t.on === 'day:2' && t.to === 'morning')), 'and every one of them has a morning after to go to');
+  check(['ringBell', 'openJournal', 'openAccusation', 'showEpilogue', 'applyDay'].every((a) => QuestManager.actions.includes(a)), 'the manager lists the five actions the graph names');
   check(frame.start === 'arrive' && frame.stages.investigate.transitions.some((t) => t.on === 'bell:4' && t.to === 'accusing'), 'arrive first; the fourth bell moves investigate to accusing');
   // Phase 7 deleted the riddle quest. Nothing in this file should be able to
   // find a second graph in quest.json, and the three stages it had are gone.
@@ -458,6 +494,121 @@ console.log('the frame');
   }
   for (const dead of ['openGate', 'showVictory']) {
     check(!QuestManager.actions.includes(dead), `the manager no longer lists ${dead}, which only the riddle quest used`);
+  }
+}
+
+/* --------------------------------------------- 6: the morning after (#533) ---
+ * Seven endings, seven mornings, and none of them is on a screen anywhere in
+ * Node. What is driven here is the whole of a day two: end the first day in
+ * each of the seven ways the accusation table can end it, press the button the
+ * epilogue pane now carries, and walk into the castle it makes. The three
+ * things that have to be true of every one of them are that the man who hanged
+ * is not standing at a station, that the King's inspector is, and that talking
+ * to him is the end of the game.
+ */
+console.log('\nthe morning after, seven times');
+{
+  const acc = mystery.accusation;
+  const day2 = mystery.day2;
+  /** End day one as `key` — an ending the accusation table can reach — and hand back the engine and the graph. */
+  const endDayAs = (key) => {
+    const { m, g, feed, state } = play();
+    feed(m.talk('constable'));
+    feed(m.ring());
+    if (key === 'nobody') { feed(m.accuse('nobody', [])); return { m, g, feed, state }; }
+    const who = key === 'full' ? acc.truth.who : key;
+    const clues = (acc.convicts[who] ?? []).slice(0, acc.needs);
+    if (key === 'full' && !clues.includes(acc.truth.motive)) clues.push(acc.truth.motive);
+    for (const id of clues) m.discover(id);
+    feed(m.accuse(who, clues));
+    return { m, g, feed, state };
+  };
+
+  const outcomes = dayTwoOutcomes(mystery);
+  check(outcomes.length === 7 && outcomes.map((o) => o.key).join() === Object.keys(acc.verdicts).join(),
+    `${outcomes.length} endings, read off the accusation table rather than listed here`, outcomes.map((o) => `${o.key}/${o.class}`).join(', '));
+
+  for (const o of outcomes) {
+    const { m, g, feed, state } = endDayAs(o.key);
+    if (!state.accusations.some((a) => a.verdict === o.class)) { fail(`${o.key}: the day did not end as a ${o.class}`); continue; }
+    check(m.day === 1 && m.watch === 'vespers' || m.day === 1, `${o.key}: the day ends judged and still day one`, `day ${m.day}`);
+
+    // The button. `day:2` is the event the epilogue pane dispatches.
+    const before = g.stage;
+    g.dispatch('day:2');
+    check(g.stage === 'morning', `${o.key}: the button on the ${before} pane opens the morning`, g.stage);
+
+    const day = m.beginDay2();
+    check(day && day.watch === day2.watch && m.day === 2 && state.day === 2,
+      `${o.key}: the engine is on day two at ${day2.watch}, and the save says so`, `${day?.watch} / day ${state.day}`);
+    check(day.outcome.key === o.key && day.outcome.class === o.class && day.outcome.who === o.who,
+      `${o.key}: and it read the ending off the accusation, not off a flag`, JSON.stringify(day.outcome));
+
+    // The hanged man is not at a station, and neither is anyone the ending took.
+    if (o.who !== 'nobody') {
+      check(day.stations[o.who] === null && day.absent.includes(o.who),
+        `${o.key}: ${o.who} hanged at first light and is not in the castle`, JSON.stringify(day.stations[o.who]));
+      check(m.available(o.who) === null, `${o.key}: and cannot be spoken to`);
+    } else {
+      check(day.absent.length === 0, `a fall hangs nobody, so all thirteen are there`, day.absent.join(', '));
+    }
+
+    // The inspector, and the end.
+    check(!!day.stations.inspector && day.ends === 'inspector', `${o.key}: the King's inspector is in ${day.stations.inspector?.room}`, JSON.stringify(day.ends));
+    const said = m.available('inspector');
+    check(!!said && day.lines.inspector?.length >= 2, `${o.key}: with ${day.lines.inspector?.length} lines of his own for this ending`, day.lines.inspector?.[0]?.slice(0, 48));
+    // Everybody still standing has something to say, and nobody who is gone does.
+    const silent = Object.keys(day.stations).filter((id) => day.stations[id] && !day.lines[id]);
+    check(silent.length === 0, `${o.key}: all ${Object.values(day.stations).filter(Boolean).length} of them who are there have lines`, silent.join(', '));
+    const ghosts = Object.keys(day.lines).filter((id) => !day.stations[id]);
+    check(ghosts.length === 0, `${o.key}: and nobody who is gone was handed any`, ghosts.join(', '));
+
+    feed(m.talk('inspector'));
+    check(g.stage === 'end' && g.done, `${o.key}: the conversation with him is the end of the game`, g.stage);
+
+    const ending = m.dayTwoEnding();
+    check(ending && ending.signed.trim() && ending.after.trim(), `${o.key}: and the pane it ends on has a sheet and an after`, ending?.signed?.slice(0, 48));
+  }
+}
+
+{
+  // NOTHING FROM DAY ONE STILL WORKS ON DAY TWO. The bell is rung out, the
+  // Constable has written his sheet, and the journal in the player's hand is
+  // full of clues that moved people yesterday. A press that fired at Sext and
+  // fires again at Lauds would be granting evidence against a verdict that is
+  // already in the ground.
+  const { m, g, feed, state } = play();
+  feed(m.talk('constable'));
+  feed(m.ring());
+  m.discover('summons-is-stewards');
+  feed(m.accuse('nobody', []));
+  g.dispatch('day:2');
+  m.beginDay2();
+  check(m.press('steward', 'summons-is-stewards')[0].type === 'shrug' && m.npcState('steward') === 'default',
+    'a press that would have moved the Steward at Sext moves nobody at Lauds');
+  check(m.ring().length === 0 && m.watch === 'lauds', 'the bell rings nothing and the watch stays at Lauds', m.watch);
+  check(m.accuse('clerk', []).length === 0, 'and there is no second accusation to make');
+  check(m.examine('body')[0].type === 'absent', 'the body is not at the foot of the stair on the second morning');
+  check(state.clues.length > 0 && m.journal().length === state.clues.length, 'the journal is still in his hand, though', `${m.journal().length} clues`);
+}
+
+{
+  // A RELOAD ON THE MORNING AFTER. `day` is the one field version 2 added and
+  // this is what it buys: a second engine on the same state comes back on day
+  // two, at Lauds, with the same people missing.
+  const { m, g, feed, state } = endDayTwoFall();
+  const copy = clone(state);
+  const m2 = createMystery({ mystery, npcs: cast, state: copy });
+  check(m2.day === 2 && m2.watch === 'lauds', 'a second engine on a copied state resumes on the second day', `day ${m2.day} at ${m2.watch}`);
+  check(!!m2.stationOf('inspector') && m2.beginDay2().outcome.class === 'fall', 'with the inspector where he was and the same verdict behind it');
+  function endDayTwoFall() {
+    const r = play();
+    r.feed(r.m.talk('constable'));
+    r.feed(r.m.ring());
+    r.feed(r.m.accuse('nobody', []));
+    r.g.dispatch('day:2');
+    r.m.beginDay2();
+    return r;
   }
 }
 
@@ -477,8 +628,15 @@ console.log('the frame');
 console.log('\nthe HUD room line, at every station');
 {
   let agreed = 0, either = 0;
-  for (const [npcId, byWatch] of Object.entries(mystery.schedule)) {
-    for (const watch of mystery.watches) {
+  // The morning after is a fifth watch in the nav (#533), so its thirteen
+  // stations go through the same resolver as the forty-five.
+  const everyStation = { ...mystery.schedule };
+  for (const [npcId, station] of Object.entries(mystery.day2.schedule)) {
+    everyStation[npcId] = { ...(everyStation[npcId] ?? {}), [mystery.day2.watch]: station };
+  }
+  const everyWatch = [...mystery.watches, mystery.day2.watch];
+  for (const [npcId, byWatch] of Object.entries(everyStation)) {
+    for (const watch of everyWatch) {
       const point = nav.at(npcId, watch);
       if (!point || point.h == null) continue;
       const here = nav.roomAt(point.x, point.z, point.h);

@@ -384,16 +384,20 @@ export class UI {
   }
 
   /**
-   * The verdict, in place of the picker. The day is over: the only way out is
-   * the button, which erases the save and starts again.
+   * The verdict, in place of the picker. The only way out is the button, and
+   * what the button says is the caller's (#537): "The next morning" at the end
+   * of a day one that has a second day behind it, "Play Again" at the end of
+   * the second day or of a verdict that has none. The pane is the same pane
+   * both times, because the second day ends where the first one did.
    */
-  showEpilogue({ convicted, epilogue }, onRestart) {
+  showEpilogue({ convicted, epilogue }, onButton, { label = 'Play Again' } = {}) {
     this.el.accusationPick.classList.add('hidden');
     this.el.verdict.classList.remove('hidden');
     this.el.verdictConvicted.textContent = convicted;
     this.el.verdictEpilogue.textContent = epilogue;
     this.el.accusation.classList.remove('hidden');
-    this.el.restartBtn.onclick = onRestart;
+    this.el.restartBtn.textContent = label;
+    this.el.restartBtn.onclick = onButton;
     document.exitPointerLock?.();
   }
 }

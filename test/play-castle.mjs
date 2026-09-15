@@ -186,7 +186,7 @@ try {
       animating: before !== after,
     };
   });
-  assert(rigs.count === 12, 'twelve rigged NPC bodies in the scene', `found ${rigs.count}`);
+  assert(rigs.count === 13, "thirteen rigged NPC bodies in the scene: the twelve of the day and the King's inspector, who is hidden until the morning after (#534)", `found ${rigs.count}`);
   assert(rigs.allRebound, 'every skeleton rebound into the scene tree (SkeletonUtils clone)');
   assert(rigs.animating, 'rigs are animating', `${rigs.handBones} hand bones tracked`);
 
@@ -952,7 +952,8 @@ try {
     dead: document.getElementById('accusation-say').disabled,
   }));
   assert(panel.open, 'his {ACCUSE} line opens the accusation panel');
-  assert(panel.names.length === 13 && panel.names.includes('nobody'), 'twelve names and a fall', `${panel.names.length}: ${panel.names.join(', ')}`);
+  assert(panel.names.length === 13 && panel.names.includes('nobody') && !panel.names.includes('inspector'),
+    "twelve names and a fall, and not the King's inspector", `${panel.names.length}: ${panel.names.join(', ')}`);
   assert(panel.clues.length === (await held()).length, `and the ${panel.clues.length} clues held`, panel.clues.length ? '' : 'the journal did not reach the panel');
   assert(/0 of 3/.test(panel.count), 'nothing presented yet, up to three allowed', panel.count);
   assert(panel.dead, 'and the button is dead until somebody is named');
@@ -974,16 +975,66 @@ try {
       convicted: document.getElementById('verdict-convicted').textContent.trim(),
       epilogue: document.getElementById('verdict-epilogue').textContent.trim(),
       stage: window.__quest.stage,
-      done: window.__quest.victory,
+      judged: window.__quest.judged,
+      button: document.getElementById('restart-button').textContent.trim(),
     };
   }, ['sentry-sighting', 'wax-matches', 'lead-sold']);
   assert(/3 of 3/.test(said.count), 'three clues selected', said.count);
   assert(!said.dead, 'and the button came alive once the Clerk was named');
-  assert(said.stage === 'full' && said.done === true, 'the Clerk on the sighting, the wax and the lead: the full ending', `stage ${said.stage}`);
+  assert(said.stage === 'full' && said.judged === true, 'the Clerk on the sighting, the wax and the lead: the full ending', `stage ${said.stage}`);
   assert(said.verdictShown && !said.pickerShown, 'the panel becomes the verdict');
   assert(/Ferrour hangs/.test(said.convicted), 'Master Robert Ferrour hangs', said.convicted.slice(0, 60));
   assert(/Wykes/.test(said.epilogue), "and the lead is found in Thomas Wykes's yard", said.epilogue.slice(0, 60));
+  assert(said.button === 'The next morning', 'and the pane\'s button offers the second day (#537)', said.button);
   await snap('epilogue');
+
+  /* --- THE MORNING AFTER (#533 to #537). Two beats: the button, and the
+   * inspector. The full ending is the one being played, so the castle the
+   * button opens is three men short — the Clerk hanged, the Steward in irons,
+   * the merchant taken in the town — and what is asserted here is the world
+   * that comes back, because this is the suite with a GPU under it. */
+  await page.click('#restart-button');
+  await wait(600);
+  const morning = await page.evaluate(() => {
+    const cast = window.__cast || [];
+    return {
+      stage: window.__quest.stage,
+      day: window.__quest.day,
+      watch: document.getElementById('quest-watch').textContent.trim(),
+      objective: document.getElementById('quest-objective').textContent.trim(),
+      paneShut: document.getElementById('accusation-overlay').classList.contains('hidden'),
+      visible: cast.filter((n) => n.group.visible).map((n) => n.id).sort(),
+      hidden: cast.filter((n) => !n.group.visible).map((n) => n.id).sort(),
+      saved: JSON.parse(localStorage.getItem('castleConundrumSave_v1') || '{}').day,
+    };
+  });
+  assert(morning.stage === 'morning' && morning.day === 2, 'the button opens the second day', `${morning.stage}, day ${morning.day}`);
+  assert(morning.paneShut, 'the epilogue pane is closed and the castle is walkable again');
+  assert(morning.watch === 'Lauds', 'the HUD reads Lauds', String(morning.watch));
+  assert(morning.hidden.join() === 'clerk,merchant,steward',
+    'the Clerk hanged, the Steward is in irons and the merchant is taken: three bodies are gone from the castle',
+    `hidden: ${morning.hidden.join(', ')}`);
+  assert(morning.visible.includes('inspector'), "and the King's inspector is standing in it", morning.visible.join(', '));
+  assert(morning.saved === 2, 'and the save on disk says day two, so a reload comes back here', String(morning.saved));
+  await snap('the-morning-after');
+
+  // Walk to him in the King's Hall and have the conversation that ends it.
+  // `converse` asks the engine where he is due at the watch the game is on,
+  // which on day two is the day-two schedule, so no coordinate is written here.
+  const heard = await converse('inspector', /Fraunceys/, "King's inspector");
+  assert(heard && heard.lines.length >= 3, `the inspector says ${heard?.lines.length ?? 0} lines about the ending that was played`, heard?.lines?.[0]?.slice(0, 60));
+  await wait(500);
+  const signed = await page.evaluate(() => ({
+    stage: window.__quest.stage,
+    done: window.__quest.victory,
+    shown: !document.getElementById('verdict-pane').classList.contains('hidden'),
+    convicted: document.getElementById('verdict-convicted').textContent.trim(),
+    button: document.getElementById('restart-button').textContent.trim(),
+  }));
+  assert(signed.stage === 'end' && signed.done === true, 'and the conversation with him is the end of the game', `stage ${signed.stage}`);
+  assert(signed.shown && /Fraunceys signs/.test(signed.convicted), 'the pane comes back with the sheet signed', signed.convicted.slice(0, 60));
+  assert(signed.button === 'Play Again', 'and the button is the old one again', signed.button);
+  await snap('the-sheet-is-signed');
 
   // The button erases the save and starts the day again from nothing.
   await page.click('#restart-button');
@@ -994,7 +1045,7 @@ try {
     watch: window.__mystery?.watch,
     clues: window.__mystery?.state.clues.length,
   }));
-  assert(wiped.stage === 'arrive' && wiped.watch === 'prime' && wiped.clues === 0, 'Play Again starts a fresh day at Prime with an empty journal', JSON.stringify(wiped));
+  assert(wiped.stage === 'arrive' && wiped.watch === 'prime' && wiped.clues === 0 && !wiped.stored, 'Play Again starts a fresh day at Prime with an empty journal and no key in storage', JSON.stringify(wiped));
   await snap('a-fresh-day');
 
   // --- Nothing broke, and nothing reached for a CDN.

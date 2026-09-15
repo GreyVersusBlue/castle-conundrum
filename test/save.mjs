@@ -46,11 +46,11 @@ console.log('the slot');
 {
   const { slot, storage } = slotWith();
   check(slot.key === 'castleConundrumSave_v1' && SAVE_KEY === slot.key, 'the key is castleConundrumSave_v1 (#36, #413)');
-  check(slot.game === 'castle-conundrum' && SAVE_GAME === slot.game && slot.version === 1 && SAVE_VERSION === 1, 'game castle-conundrum, version 1');
+  check(slot.game === 'castle-conundrum' && SAVE_GAME === slot.game && slot.version === 2 && SAVE_VERSION === 2, 'game castle-conundrum, version 2 (#533)');
   const fresh = slot.fresh();
-  const shape = ['stage', 'watch', 'clues', 'pressed', 'taken', 'locks', 'accusations', 'refusals', 'riddleWrong', 'player'];
-  check(same(Object.keys(fresh), shape), 'a fresh state has the ten fields of the schema, in order', Object.keys(fresh).join(', '));
-  check(fresh.stage === quest.start && fresh.watch === 0 && fresh.player === null && fresh.refusals === 0, 'fresh: the start stage, Prime, no player, no refusals');
+  const shape = ['stage', 'day', 'watch', 'clues', 'pressed', 'taken', 'locks', 'accusations', 'refusals', 'riddleWrong', 'player'];
+  check(same(Object.keys(fresh), shape), 'a fresh state has the eleven fields of the schema, in order', Object.keys(fresh).join(', '));
+  check(fresh.stage === quest.start && fresh.day === 1 && fresh.watch === 0 && fresh.player === null && fresh.refusals === 0, 'fresh: the start stage, day one, Prime, no player, no refusals');
   check(slot.load() === null, 'nothing stored loads as null');
   fresh.clues.push('body-stair');
   fresh.player = { x: 1, y: 1.7, z: 2, yaw: 0.5 };
@@ -168,13 +168,14 @@ const riddle = read('data/riddle.json');
 /** A UI stand-in that records rather than renders. */
 const stubUI = () => ({
   toasts: [], objective: null, epilogue: null,
-  setObjective(t) { this.objective = t; }, setWatch() {},
+  setObjective(t) { this.objective = t; }, setWatch(t) { this.watch = t; },
   toast(t) { this.toasts.push(t); },
   openDialogue(name, lines, onEnd) { this.dialogue = { name, lines }; this.dialogueEnd = onEnd; },
   openRiddle() { this.riddleOpen = true; }, closeRiddle() { this.riddleOpen = false; }, setRiddleFeedback(t) { this.feedback = t; },
   openJournal(entries) { this.journal = entries; }, closeJournal() { this.journal = null; },
   openAccusation(o) { this.accusation = o; }, setAccusationNote(t) { this.note = t; },
-  showEpilogue(v, onRestart) { this.epilogue = v; this.restart = onRestart; },
+  showEpilogue(v, onButton, { label = 'Play Again' } = {}) { this.epilogue = v; this.restart = onButton; this.epilogueLabel = label; },
+  closeAccusation() { this.accusation = null; },
 });
 const stubCastle = () => ({ opened: [], hidden: [], openLock(id) { this.opened.push(id); }, setEvidenceVisible(id, v) { if (!v) this.hidden.push(id); } });
 {
@@ -199,7 +200,7 @@ const stubCastle = () => ({ opened: [], hidden: [], openLock(id) { this.opened.p
   check(qm.journal().some((c) => c.id === 'summons-note'), 'the journal came back with the clue in it');
 }
 {
-  // Resumed in a terminal stage: `showEpilogue` has no verdict in hand and
+  // Resumed in a verdict stage: `showEpilogue` has no verdict in hand and
   // rebuilds it from the save's own `accusations`. Without that a reload after
   // the ending comes back to a blank panel with no way out of it.
   const ui = stubUI();
@@ -207,11 +208,15 @@ const stubCastle = () => ({ opened: [], hidden: [], openLock(id) { this.opened.p
   const engine = createMystery({ mystery, npcs: cast, state });
   const restarts = { n: 0 };
   const qm = new QuestManager({ quest, mystery, riddle, npcs: [], ui, castle: stubCastle(), controlsRef: { lock() {} }, engine, saved: state, restart: () => { restarts.n++; } });
-  check(qm.victory && !!ui.epilogue, 'resumed at `fall`: the epilogue is on the screen again');
+  check(qm.judged && !qm.victory && !!ui.epilogue, 'resumed at `fall`: the epilogue is on the screen again, and the day is judged without the game being over (#537)');
   check(ui.epilogue.epilogue === mystery.accusation.verdicts.nobody.epilogue, 'and it is the fall\'s own epilogue, rebuilt from the save', ui.epilogue.epilogue?.slice(0, 40));
+  check(ui.epilogueLabel === 'The next morning', 'its button offers the second day rather than a fresh one', JSON.stringify(ui.epilogueLabel));
   ui.restart();
-  check(restarts.n === 1, 'its button calls the injected restart, which erases the save');
+  check(restarts.n === 0 && qm.stage === 'morning' && engine.day === 2 && state.day === 2,
+    'and pressing it opens the morning instead of erasing the save', `${qm.stage}, day ${engine.day}`);
+  check(ui.epilogue.epilogue === mystery.accusation.verdicts.nobody.epilogue, 'the pane it left behind is the one it was, until the inspector re-draws it');
 }
+
 {
   // A fresh save, or a save at start, begins at start with no onChange surprises.
   const ui = stubUI();
@@ -220,5 +225,74 @@ const stubCastle = () => ({ opened: [], hidden: [], openLock(id) { this.opened.p
   check(qm.stage === quest.start && changes.length === 1 && changes[0].stage === quest.start, 'no save: begins at start and reports it');
 }
 
+/* ---------------------------------------------------- 5: the second day --- */
+console.log('the second day, through the save');
+{
+  // WHAT A VERSION-1 SAVE IS. It was written before there was a second day, so
+  // it is a save of the first one. `migrate` says that and `repair` never
+  // touches it, which is the whole of #37's distinction in four lines.
+  const { slot, storage } = slotWith();
+  storage.setItem(SAVE_KEY, JSON.stringify({ __v: 1, stage: 'investigate', watch: 2, clues: ['summons-note'] }));
+  const back = slot.load();
+  check(back && back.day === 1, 'a version-1 save comes back as day one', JSON.stringify(back?.day));
+  check(back.stage === 'investigate' && back.watch === 2 && same(back.clues, ['summons-note']), 'and nothing else about it moved');
+  // The unversioned case, which reads as version 0 and takes the same branch.
+  storage.setItem(SAVE_KEY, JSON.stringify({ stage: 'arrive' }));
+  check(slot.load()?.day === 1, 'an unversioned save reads as version 0 and lands on day one too');
+  /* AND THIS IS THE ONE THAT CAN TELL MIGRATE FROM REPAIR (#147). The two
+   * lines above cannot: a version-1 save carries no `day` at all, and repair's
+   * clamp answers a missing `day` with 1 whether migrate ran or not, so
+   * deleting migrate leaves both of them green and the word "migrate" in an
+   * assertion name would have been a lie. What only migrate can say is that a
+   * version-1 save is a save of the FIRST day whatever is written in it: day
+   * two did not exist when it was written, so a stray `day: 2` in one — hand
+   * edited, or forged — is not a second day the player was on. Repair would
+   * take it, because the verdict beside it makes it coherent. */
+  storage.setItem(SAVE_KEY, JSON.stringify({ __v: 1, stage: 'fall', day: 2, accusations: [{ who: 'nobody', clues: [], verdict: 'fall', watch: 'vespers' }] }));
+  check(slot.load()?.day === 1, 'a version-1 save claiming day 2 is still day one: version 1 had no second day to be on', JSON.stringify(slot.load()?.day));
+  // And a version-2 save is left alone.
+  const two = { __v: 2, stage: 'morning', day: 2, accusations: [{ who: 'nobody', clues: [], verdict: 'fall', watch: 'vespers' }] };
+  storage.setItem(SAVE_KEY, JSON.stringify(two));
+  check(slot.load()?.day === 2, 'a version-2 save keeps its day');
+}
+{
+  // THE INCOHERENT SAVE, BOTH WAYS. A `day: 2` with no verdict behind it is a
+  // morning after a day that never ended: the engine would look up an outcome
+  // that is not there, place nobody at all and hand the manager no lines, and
+  // the castle would open at Lauds with thirteen invisible people in it.
+  const verdict = [{ who: 'nobody', clues: [], verdict: 'fall', watch: 'vespers' }];
+  check(repaired({ day: 2, accusations: verdict }).day === 2, 'day 2 with a verdict behind it stays day 2');
+  check(repaired({ day: 2 }).day === 1, 'day 2 with no accusation at all falls back to day 1');
+  check(repaired({ day: 2, accusations: [{ who: 'porter', clues: [], verdict: null, watch: 'terce' }] }).day === 1,
+    'and so does day 2 behind a refusal, which is an accusation with no verdict in it');
+  // The accusation is repaired first, so a verdict the catalog refuses does not
+  // hold the day open either.
+  check(repaired({ day: 2, accusations: [{ who: 'nobody', clues: [], verdict: 'acquitted', watch: 'vespers' }] }).day === 1,
+    'a verdict the catalog has never heard of is stripped, and the day goes with it');
+  check(repaired({ day: 7, accusations: verdict }).day === 1 && repaired({ day: '2', accusations: verdict }).day === 1 && repaired({ day: null, accusations: verdict }).day === 1,
+    'a 7, a "2" and a null are all day one');
+  // And the engine agrees with the save about which day it is on.
+  const state = repaired({ stage: 'morning', day: 2, accusations: verdict });
+  const engine = createMystery({ mystery, npcs: cast, state });
+  check(engine.day === 2 && engine.watch === mystery.day2.watch, `the engine on that save is on day two at ${mystery.day2.watch}`, `day ${engine.day} at ${engine.watch}`);
+  const undone = createMystery({ mystery, npcs: cast, state: repaired({ stage: 'morning', day: 2 }) });
+  check(undone.day === 1 && undone.watch === 'prime', 'and on the repaired incoherent one it is back on day one at Prime', `day ${undone.day} at ${undone.watch}`);
+}
+{
+  // A reload in `morning`: `applyDay` is on that stage's `enter`, so the cast
+  // is placed and everybody's day-two lines are in hand before the player has
+  // moved. Without it the morning opens with nobody moved.
+  const ui = stubUI();
+  const npcs = read('data/npcs.json').cast.map((def) => ({ id: def.id, name: def.name, def, dialogueState: 'default', getDialogueLines() { return this.def.dialogue[this.dialogueState]; } }));
+  const state = repaired({ stage: 'morning', day: 2, accusations: [{ who: 'prisoner', clues: [], verdict: 'wrong', watch: 'terce' }] });
+  const engine = createMystery({ mystery, npcs: cast, state });
+  const watches = [];
+  const qm = new QuestManager({ quest, mystery, riddle, npcs, ui, castle: stubCastle(), controlsRef: { lock() {} }, engine, saved: state, onWatch: (w) => watches.push(w) });
+  check(qm.stage === 'morning' && watches.at(-1) === mystery.day2.watch, 'a save in `morning` resumes there and puts the world at Lauds', `${qm.stage} / ${watches.at(-1)}`);
+  check(ui.watch === 'Lauds', 'and the HUD says which bell it is', JSON.stringify(ui.watch));
+  check(engine.stationOf('prisoner') === null, 'Madoc hanged and his cell is empty');
+  qm.handleInteract(npcs.find((n) => n.id === 'laundress'));
+  check(ui.dialogue && /hanged my husband/.test(ui.dialogue.lines.join(' ')), 'and Nest, at the laundry, says what that morning made of her', ui.dialogue?.lines?.[0]?.slice(0, 48));
+}
 console.log(failures ? `\n${failures} failure(s)` : '\nall good');
 process.exit(failures ? 1 : 0);
