@@ -2154,3 +2154,81 @@ cook are due at Prime where the grid finds no floor — test/mystery.mjs's
 validateMystery should have failed first`, exit 1. And the two failed attempts
 at a Node check, above, which are breaks that did NOT fire and are the reason
 the check is not there.
+
+## The game gets a thumb (2026-09-15)
+
+**Ranked row "Touch: pointer lock has no phone form", claimed on
+`claude/festive-hopper-nf7391` — after the work had started rather than before
+it, which #283 says is the wrong order and is recorded here rather than
+tidied away (PR #13).** Seven phases of a first-person game whose only input is
+pointer lock, WASD, E and J: on a phone the start button worked and nothing
+after it did. Decisions #530 to #532.
+
+- **A second input scheme, and the controller cannot tell which is driving it**
+  (#530). `src/touch-controls.js` reads touches off the canvas and writes two
+  things: an axis triple `{forward, strafe, sprint}` shaped exactly like the one
+  `PlayerController.update` derived from the key set, and yaw/pitch onto the
+  camera in `YXZ` — the order `PointerLockControls` writes and `drive.mjs`'s
+  `aimAt` reads. The controller's `axes()` takes whichever of the two is pushing
+  harder on each axis, so a laptop with a touchscreen answers to both without a
+  mode switch mid-frame, and `update`'s only change below that is that the
+  stick's magnitude survives the normalise: half over is half speed, where a key
+  is 0 or 1. Pointer lock stops being what says the player is playing — a phone
+  has none — so `isLocked` answers `enabled` on touch and `lock()`/`unlock()`
+  are no-ops. No three import in the new file; it takes the camera as a thing
+  with a `.rotation`.
+- **A tap on the stick must not advance the dialogue it is standing in front
+  of** (#531). This is the bug the row would otherwise have shipped, and it is
+  two guards with one job each rather than one guard with two. A tap fires a
+  synthetic `click`, and `src/interaction.js` listens for clicks on the document
+  because a click is how a dialogue is advanced with a mouse — so a thumb
+  landing on the movement stick would step the conversation, every step, for the
+  whole game. `touchend` is `preventDefault()`ed for every touch the zones
+  handled, which is what tells the browser not to synthesise that click;
+  `touchmove` is prevented for the ordinary reason (the page scrolls under the
+  thumb); `touchstart` is left alone, because preventing it in Chrome cancels
+  the gesture and the move events with it. The second guard is one line in
+  `interaction.js`: a click inside `#touch-hud` is the HUD's, never the game's,
+  which stops the E button firing `tryInteract` twice — once from the button and
+  once from the document — and stepping two lines on one tap.
+- **One button, and it wears the prompt** (#530). `setInteractPrompt` already
+  wrote the HUD's line; the touch E button now wears the same words with the key
+  that is not there stripped off, so one button means talk, examine or ring
+  depending on what is in front of the player, which is what the row asked for.
+  Both touch buttons call `InteractionSystem`'s own `tryInteract` and
+  `tryJournal`, so the scheme adds no second path into the quest. An overlay is
+  drawn over the HUD and owns the screen while it is up, which is
+  `tryInteract`'s existing rule with a z-index behind it.
+- **Detected, with a toggle** (#532). `isTouchLikely()` asks two questions
+  because neither alone is right: `(pointer: coarse)` is the honest one and
+  `navigator.maxTouchPoints` is true of a laptop with a touchscreen whose owner
+  is using the mouse. Detection picks the default and the start panel's toggle
+  overrides it, which is the hybrid case both of them get wrong. Two render
+  numbers come down with the detection and not with the toggle: pixel ratio 2 to
+  1.5 and the sun's shadow map 2048 to 1024. Both are laptop numbers, both are
+  the biggest per-frame costs in this scene, and neither has been measured on a
+  phone by anybody.
+- **`test/touch.mjs`, the ninth suite** (#530). Headless, on a 412 x 915 page
+  with `hasTouch` and `isMobile` — `prepPage` grew the option and both engines
+  spell `page.touchscreen.tap` the same way. Nothing moves and nothing is timed,
+  which is the line #53 draws: the camera is placed, taps are dispatched, and
+  what is read back is a class on a div and a string in the DOM. Twenty-two
+  assertions.
+
+**What is outstanding, and it is the whole feel of it.** Nobody has had a thumb
+on this. The stick throw (56 px), the sprint threshold (80 percent of it), the
+look rate (0.0042 rad/px), the 92 px E button and the two render numbers are all
+guesses, written as named constants in one file each so that arguing with them
+is one edit. A phone is real compositing and real input latency and there is not
+one in this container (#53), exactly as the Phase 5 to 7 GPU criteria are
+outstanding.
+
+**The breaks, from green.** The `touchend` guard removed: `a stick touch did
+not advance the dialogue — moved on to "The King's inspector rides in
+tomorrow. "` — the thumb stepping the conversation, which is the bug itself.
+The E button unhooked in `ui.js`: `a tap on E at the word-lock opened the
+riddle`, and three more behind it, including `nothing to tap: #riddle-cancel is
+not on the screen`. The detection forced to false: `the touch HUD is shown under
+a coarse pointer — hidden true, body.touch false`, `and the start panel says
+thumbs, not keys`, `the toggle reads on — Touch controls: off`, and `the player
+is enabled and on the touch scheme, with no pointer lock to take`.

@@ -3,7 +3,7 @@
 A first-person medieval murder mystery in three.js. Twelve suspects, four
 bells, one accusation. `index.html` at the repo root, source in `src/`, the
 mystery and the castle as data in `data/`, 39 MB of glTF and textures in
-`assets/`, eight suites in `test/`.
+`assets/`, nine suites in `test/`.
 
 **`PLAN.md` is the most valuable file here.** It is 64 K of phase plans — what
 the castle is, why the order is what it is, and the seven phases that built it,
@@ -125,7 +125,7 @@ file keeps a pointer saying which band left.
 | `npm run build` | `dist/`: the hashed bundle in `dist/bundle/`, `assets/` and `data/` copied in whole, the Basis transcoder into `dist/decoders/basis/`. |
 | `npm run preview` | Serves `dist/`. |
 | `npm run assets:encode` | Re-encodes `assets/` in place, KTX2 and meshopt. Hand-run, needs `ktx` (#506). |
-| `npm test` | All eight suites, cheapest first, non-zero on any failure. `npm test layout built` runs a subset. |
+| `npm test` | All nine suites, cheapest first, non-zero on any failure. `npm test layout built` runs a subset. |
 | `npm run play` | **Opens a real visible window** and plays the whole day with pointer lock, WASD and real key presses. Hand-run, on a GPU (#53). Screenshots land in `shots/play/`. |
 
 `npm test` is what CI runs. `npm run play` is not in CI and is not going to be.

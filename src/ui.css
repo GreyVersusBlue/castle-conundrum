@@ -217,3 +217,72 @@ button.journal-row:hover { background: rgba(212, 163, 73, 0.18); border-color: v
 #verdict-pane { text-align: center; }
 #verdict-pane p { line-height: 1.55; }
 #verdict-epilogue { color: #c6b892; font-style: italic; }
+
+/* ---------- The thumb's HUD (#530) ----------
+ * Hidden unless the page decides it is on a touch device or the start panel's
+ * toggle says so. The sticks are halves of the canvas, not elements: what is
+ * here is the ring that follows the left thumb and the two buttons that are E
+ * and J. `touch-action: none` on the HUD and the canvas is what stops the
+ * browser turning a drag into a scroll before the page ever sees the move.
+ */
+#touch-hud {
+  position: fixed;
+  inset: 0;
+  pointer-events: none; /* the sticks are the canvas underneath; only the buttons take taps */
+  z-index: 40;
+  touch-action: none;
+}
+body.touch canvas { touch-action: none; }
+#touch-ring {
+  position: absolute;
+  width: 112px; height: 112px;
+  margin: -56px 0 0 -56px;
+  border: 2px solid rgba(212, 163, 73, 0.45);
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.18);
+}
+#touch-knob {
+  position: absolute;
+  width: 46px; height: 46px;
+  left: 33px; top: 33px;
+  border-radius: 50%;
+  background: rgba(212, 163, 73, 0.38);
+  border: 1px solid rgba(212, 163, 73, 0.7);
+}
+#touch-e, #touch-j {
+  position: absolute;
+  pointer-events: auto;
+  margin: 0;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+  border: 2px solid var(--accent-dim);
+  color: var(--parchment);
+  font-family: inherit;
+  letter-spacing: 0.04em;
+}
+#touch-e {
+  right: 5vw; bottom: 16vh;
+  width: 92px; height: 92px;
+  font-size: 0.82em;
+  line-height: 1.15;
+  padding: 0 0.4em;
+}
+#touch-j {
+  right: 5vw; bottom: 5vh;
+  width: 66px; height: 66px;
+  font-size: 0.66em;
+}
+#touch-e:active, #touch-j:active { background: rgba(212, 163, 73, 0.3); }
+.link-button {
+  background: none;
+  border: none;
+  color: var(--accent-dim);
+  font-family: inherit;
+  font-size: 0.78em;
+  letter-spacing: 0.06em;
+  text-decoration: underline;
+  cursor: pointer;
+  margin-top: 0.6em;
+  padding: 0.3em;
+}
+.link-button:hover { color: var(--accent); }

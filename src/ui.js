@@ -46,7 +46,22 @@ export class UI {
       verdictConvicted: document.getElementById('verdict-convicted'),
       verdictEpilogue: document.getElementById('verdict-epilogue'),
       restartBtn: document.getElementById('restart-button'),
+      hint: document.getElementById('controls-hint'),
+      touchToggle: document.getElementById('touch-toggle'),
+      touchHud: document.getElementById('touch-hud'),
+      touchRing: document.getElementById('touch-ring'),
+      touchKnob: document.getElementById('touch-knob'),
+      touchE: document.getElementById('touch-e'),
+      touchJ: document.getElementById('touch-j'),
     };
+
+    // The two control hints, one per scheme (#530). Held here rather than in
+    // index.html's markup so the toggle can swap them without a reload.
+    this._hints = {
+      mouse: this.el.hint ? this.el.hint.innerHTML : '',
+      touch: 'Left thumb — move &nbsp;·&nbsp; Right thumb — look &nbsp;·&nbsp; Push the stick over — sprint &nbsp;·&nbsp; E — talk / examine / ring &nbsp;·&nbsp; Journal',
+    };
+    this._touch = false;
 
     this._dialogueLines = [];
     this._dialogueIndex = 0;
@@ -77,6 +92,50 @@ export class UI {
 
   /** Anything modal: E and J are the overlay's while one of these is up. */
   isOverlayOpen() { return this.isRiddleOpen() || this.isJournalOpen() || this.isAccusationOpen(); }
+
+  /* ---- The thumb's HUD (#530) ---- */
+
+  /** Is the touch scheme showing? */
+  isTouch() { return this._touch; }
+
+  /**
+   * Show or hide the touch HUD and swap the start panel's control hint. The
+   * page picks the first value by detection and the toggle changes it; both go
+   * through here, so there is one place that knows what "touch mode" looks
+   * like on the screen.
+   */
+  setTouch(on) {
+    this._touch = !!on;
+    this.el.touchHud?.classList.toggle('hidden', !this._touch);
+    document.body.classList.toggle('touch', this._touch);
+    if (this.el.hint) this.el.hint.innerHTML = this._touch ? this._hints.touch : this._hints.mouse;
+    if (this.el.touchToggle) this.el.touchToggle.textContent = `Touch controls: ${this._touch ? 'on' : 'off'}`;
+    if (!this._touch) this.setStick(null);
+  }
+
+  /** The toggle on the start panel: `fn(next)` is called with the new state. */
+  onTouchToggle(fn) {
+    if (!this.el.touchToggle) return;
+    this.el.touchToggle.onclick = () => fn(!this._touch);
+  }
+
+  /** The E and Journal buttons. Both call straight into InteractionSystem. */
+  onTouchButtons({ interact, journal }) {
+    if (this.el.touchE) this.el.touchE.onclick = () => interact();
+    if (this.el.touchJ) this.el.touchJ.onclick = () => journal();
+  }
+
+  /** Where the left thumb is, in CSS pixels, or null when it has let go. */
+  setStick(at) {
+    const ring = this.el.touchRing, knob = this.el.touchKnob;
+    if (!ring || !knob) return;
+    if (!at) { ring.classList.add('hidden'); return; }
+    ring.classList.remove('hidden');
+    ring.style.left = `${at.x0}px`;
+    ring.style.top = `${at.y0}px`;
+    knob.style.left = `${33 + (at.x - at.x0)}px`;
+    knob.style.top = `${33 + (at.y - at.y0)}px`;
+  }
 
   // ---- Loading ----
   setLoadingProgress(loaded, total) {
@@ -114,6 +173,15 @@ export class UI {
   setInteractPrompt(visible, text = '') {
     this.el.prompt.classList.toggle('hidden', !visible);
     if (text) this.el.prompt.innerHTML = text.replace(' E ', ' <b>E</b> ');
+    // The touch E button wears the prompt's own words, minus the key that is
+    // not there: one button that means talk, examine or ring depending on what
+    // is in front of the player, which is what the row asked for (#530).
+    if (this.el.touchE) {
+      this.el.touchE.textContent = visible && text
+        ? text.replace(/^Press E to\s*/i, '').trim() || 'E'
+        : 'E';
+      this.el.touchE.disabled = false;
+    }
   }
 
   /**

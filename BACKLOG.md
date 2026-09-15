@@ -29,7 +29,7 @@ anything **A fourth body** and **The texture sets** add has to come through it.
 merlons hanging in the air, no two faces share a plane so nothing flickers,
 and the castle says where you are: a HUD room line, a tint per drum, and
 something in every room. What did not ship is new texture sets, because this
-container cannot reach Poly Haven or KTX-Software (#518); that is rank 5 now.
+container cannot reach Poly Haven or KTX-Software (#518); that is rank 4 now.
 
 **Sound shipped on 2026-09-15** (#519 to #522): a footstep per surface class
 and the chapel bell, both synthesised out of `data/sounds.json`, no audio file
@@ -54,8 +54,13 @@ is the seams only, `mystery.mjs` owns the stations. One dead check deleted,
 three assertions moved or turned into preconditions, and **no new check written
 to replace them**, because three attempts at one could not be made to fail.
 
-**8 ranked items.** Rank 4 is claimed on `claude/festive-hopper-nf7391`.
-Take rank 1.
+**Touch shipped on 2026-09-15** (#530 to #532): a stick under each thumb, one
+E button that wears the prompt, a Journal button, a toggle on the start panel,
+and `test/touch.mjs` as the ninth suite. What it FEELS like is unknown — nobody
+has had a thumb on it, and the six numbers that decide that are named constants
+in one file each (#53).
+
+**7 ranked items.** Nothing is claimed. Take rank 1.
 
 Two things are true of the whole list and worth saying once. **Nothing here has
 been seen on a GPU since Phase 5.** `npm run play` walks the whole intended day
@@ -63,8 +68,8 @@ been seen on a GPU since Phase 5.** `npm run play` walks the whole intended day
 accusation and the epilogue, 102 assertions — and no run of it since Phase 5 has
 happened on a machine with real compositing (#53). Rank 2 is that run, and it
 now carries a job it did not have: nobody has looked at a compressed texture.
-And **the game has never had a thumb on it**: pointer lock has no phone form at
-all.
+The second is gone: **the game has a thumb on it since #530**, and what is left
+of that one is that nobody has put a real thumb on a real phone.
 
 ## How this repo is worked
 
@@ -103,11 +108,10 @@ your decisions and this file's header, ranks and `Claimed` column are updated
 | 1 | A fourth body, and a woman's in particular | ½ | Fable 5.1 |  | [A fourth body](SPECS.md#a-fourth-body) |
 | 2 | A real GPU run of `npm run play`, and somebody looks at the twelve | ¼ | Opus 5 |  | [The GPU run](SPECS.md#the-gpu-run) |
 | 3 | A new preview and og card, from that run | ¼ | Opus 5 |  | [The GPU run](SPECS.md#the-gpu-run) |
-| 4 | Touch: pointer lock has no phone form | 1 | Opus 5 | `claude/festive-hopper-nf7391` | [Touch](SPECS.md#touch) |
-| 5 | Four texture sets: a second wall stone, a tower stone, a plaster, a floor | ½ | Fable 5.1 |  | [The texture sets](SPECS.md#the-texture-sets) |
-| 6 | The town side: a textured ground outside the west barbican, and a road | 1 | Fable 5.1 |  | [The town side](SPECS.md#the-town-side) |
-| 7 | A second day, in which the epilogue's consequences play | 2+ | Opus 5 |  | [A second day](SPECS.md#a-second-day) |
-| 8 | The hall's covering, and the two windows under it | ¼ | Sonnet 5 |  | [The hall covering](SPECS.md#the-hall-covering) |
+| 4 | Four texture sets: a second wall stone, a tower stone, a plaster, a floor | ½ | Fable 5.1 |  | [The texture sets](SPECS.md#the-texture-sets) |
+| 5 | The town side: a textured ground outside the west barbican, and a road | 1 | Fable 5.1 |  | [The town side](SPECS.md#the-town-side) |
+| 6 | A second day, in which the epilogue's consequences play | 2+ | Opus 5 |  | [A second day](SPECS.md#a-second-day) |
+| 7 | The hall's covering, and the two windows under it | ¼ | Sonnet 5 |  | [The hall covering](SPECS.md#the-hall-covering) |
 
 ## A fourth body
 
@@ -140,16 +144,9 @@ Rank 3 depends on rank 2 having happened. The board preview and og card in
 (#374, #379). New images come out of the same run. **Where they go is Devon's**
 — those two files live in `tools-and-games/assets/` and he relinks.
 
-## Touch
-
-**Rank 4.** Pointer lock has no phone form and the project has never had a
-thumb on it. This is a second input scheme, not a HUD addition: look, move,
-sprint, and a single E that has to mean talk, examine and ring depending on
-what is in front of it.
-
 ## The texture sets
 
-**Rank 5.** Ten texture sets dress the whole castle and 27 of 31 runs are
+**Rank 4.** Ten texture sets dress the whole castle and 27 of 31 runs are
 `castle_wall_slates`; every upper floor is `wood_planks`. #516's tints tell
 the eight drums apart with no new bytes, and the next step is bytes: four
 Poly Haven sets, chosen in `SPECS.md`, through `tools/encode-assets.mjs`
@@ -159,7 +156,7 @@ part of PR #7.
 
 ## The town side
 
-**Rank 6.** The world ends at the curtain by budget. A textured ground outside
+**Rank 5.** The world ends at the curtain by budget. A textured ground outside
 the west barbican and a road is one texture set Devon dropped
 (`forest_ground_06`) and a different ending — the clerk arrives from somewhere
 and currently that somewhere is a hard edge. The texture set goes through
@@ -168,7 +165,7 @@ and currently that somewhere is a hard edge. The texture set goes through
 
 ## A second day
 
-**Rank 7, and a 2+.** The save schema already has `watch` and `accusations[]`
+**Rank 6, and a 2+.** The save schema already has `watch` and `accusations[]`
 and nothing stops a day two in which the epilogue's consequences play. The
 content does not exist — that is the whole row, and it is a writing job the
 size of `PLAN.md`'s mystery section before it is a code job. Do one increment,
@@ -176,7 +173,7 @@ ship it, leave the row standing.
 
 ## The hall covering
 
-**Rank 8.** The Great Hall has seven trusses over it since #527 and nothing
+**Rank 7.** The Great Hall has seven trusses over it since #527 and nothing
 between them. The kit's `roof*.glb` pieces would cover it, and two windows at
 `base` 5 in `great-hall-north` would keep the daylight the covering takes
 away. Both halves need somebody to look: nothing in a container that cannot

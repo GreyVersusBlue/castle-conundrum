@@ -14,6 +14,7 @@ import { castleNav } from './stations.js';
 import { EYE_HEIGHT } from './castle-plan.js';
 import { UI } from './ui.js';
 import { createAudio } from './audio.js';
+import { createTouchControls, isTouchLikely } from './touch-controls.js';
 
 const ui = new UI();
 
@@ -39,7 +40,12 @@ async function init() {
   const state = saved ?? slot.fresh();
 
   // --- Scene ---
-  const { scene, renderer, camera, setWatch, audioListener } = createScene(config);
+  // Whether this is a thumb or a mouse is decided once, before the renderer is
+  // made, because two render numbers come down with the answer (#530). The
+  // start panel's toggle can change the input scheme afterwards; it does not
+  // change those two, and the comment in scene-setup.js says so.
+  let touchMode = isTouchLikely();
+  const { scene, renderer, camera, setWatch, audioListener } = createScene(config, { touch: touchMode });
 
   // --- Sound ---
   // Two sounds, both synthesised out of data/sounds.json: a footstep per
@@ -83,6 +89,15 @@ async function init() {
   // what the player stands on: a floor, a slab, the wall walk, a flight of
   // stairs, all through castle-plan.js's standAt.
   const player = new PlayerController(camera, renderer.domElement, () => castle.colliders, () => castle.plan, audio);
+  // The thumb (#530). Built whichever scheme is showing, because the toggle can
+  // turn it on after the page has loaded and a listener that was never attached
+  // cannot be turned on; what the toggle changes is whether the controller
+  // reads it and whether the HUD is on the screen.
+  const touch = createTouchControls({
+    dom: renderer.domElement,
+    aim: camera,
+    onStick: (at) => ui.setStick(at),
+  });
   if (state.player) {
     camera.position.set(state.player.x, state.player.y, state.player.z);
     camera.rotation.set(0, state.player.yaw, 0, 'YXZ');
@@ -161,6 +176,21 @@ async function init() {
     quest.handleInteract(target);
   };
   interaction.onJournal = () => quest.handleJournal();
+  // One button that means talk, examine or ring, and one that is J. Both go
+  // through InteractionSystem's own methods, so the touch scheme adds no second
+  // path into the quest (#530).
+  ui.onTouchButtons({
+    interact: () => interaction.tryInteract(),
+    journal: () => interaction.tryJournal(),
+  });
+  const applyTouch = (on) => {
+    touchMode = on;
+    player.useTouch(on ? touch : null);
+    if (!on) touch.release();
+    ui.setTouch(on);
+  };
+  ui.onTouchToggle(applyTouch);
+  applyTouch(touchMode);
   // The castle opens on the watch the save is at, without anybody walking there.
   quest.applyWatch(engine.watch, { walk: false });
   // A save with the word already answered comes back to an open muniment room.
@@ -177,8 +207,12 @@ async function init() {
     player.enabled = true;
     player.lock();
   });
-  // if the player Escs out of pointer lock (outside overlays), offer re-entry
+  // if the player Escs out of pointer lock (outside overlays), offer re-entry.
+  // There is no pointer lock to lose on a phone, so there is nothing to offer:
+  // an unlock event on a touch device would put the start panel back over a
+  // castle the player is standing in (#530).
   player.controls.addEventListener('unlock', () => {
+    if (touchMode) return;
     if (!ui.isOverlayOpen() && !ui.isDialogueOpen() && !quest.victory) {
       ui.showStartAgain();
     }
@@ -208,7 +242,7 @@ async function init() {
       const here = nav.roomAt(camera.position.x, camera.position.z, camera.position.y - EYE_HEIGHT);
       if (here.id !== roomShown) { roomShown = here.id; ui.setRoom(here.name); }
     }
-    if (player.isLocked && (player.keys.size > 0)) {
+    if (player.isLocked && player.moving) {
       auto.mark(); // walking: the position is dirty
       const feet = camera.position.y - EYE_HEIGHT;
       for (const c of placeClues) {

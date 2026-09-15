@@ -62,7 +62,14 @@ export class InteractionSystem {
       if (e.code === 'KeyE') this.tryInteract();
       if (e.code === 'KeyJ') this.tryJournal();
     });
-    document.addEventListener('click', () => {
+    document.addEventListener('click', (e) => {
+      // A CLICK INSIDE THE TOUCH HUD IS THE HUD'S, NEVER THE GAME'S (#530).
+      // The E button's own tap already calls `tryInteract`; without this line
+      // the same tap would call it again from here, which with a dialogue open
+      // steps two lines at once. What keeps a thumb on a STICK out of here is
+      // a different guard, in src/touch-controls.js, which stops the browser
+      // synthesising the click at all.
+      if (e.target && e.target.closest && e.target.closest('#touch-hud')) return;
       // click advances dialogue only when a dialogue is open (pointer lock swallows other clicks)
       if (this.ui.isDialogueOpen()) this.tryInteract();
     });

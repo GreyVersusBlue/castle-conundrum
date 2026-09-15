@@ -9,8 +9,8 @@ ships the row is the one that records the call with a number.
 Written 2026-09-15 against `main` at `bb61958`, from the code and data as they
 are, not from the briefs. **Two rows shipped the same day and their sections are
 gone: asset compression (#506 to #510), sound (#519 to #522), the tower tops
-(#523 to #526), the hall's roof frame (#527, #528) and the two plan suites
-(#529).** What asset
+(#523 to #526), the hall's roof frame (#527, #528), the two plan suites (#529)
+and touch (#530 to #532).** What asset
 compression left behind for the rows that touch assets is named in their
 Dependencies; what sound left behind is `data/sounds.json`, a `material` and a
 `kind` on every `plan.surfaces` entry, and `layout.mjs` check 12. Where a brief and the code disagree, the code is
@@ -54,7 +54,7 @@ Four facts every row below leans on, stated once:
   aborts every offsite request and `test/built.mjs` fails on a non-empty
   `page.__blocked`. Decoder files, fonts, sound files and images all land under
   this repo.
-- **The eight suites are `npm test`; `npm run play` is not** (#53). A row whose
+- **The nine suites are `npm test`; `npm run play` is not** (#53). A row whose
   proof needs a real-time walk or a look at a render has a GPU criterion nobody
   in a session can meet. Every row below also names a Node or headless criterion
   so the row is not blocked on hardware.
@@ -238,96 +238,9 @@ and og card from that run.
 
 ---
 
-## Touch
-
-**Rank 4. Size 1.** `PlayerController` is `PointerLockControls` plus WASD off
-`document` keydown; `InteractionSystem` listens for `KeyE` and `KeyJ` on the
-document; `main.js` gates movement on `player.isLocked` and re-shows the start
-overlay on `unlock`. A phone has none of that. This is a second input scheme.
-
-### Scope
-
-- **`src/touch-controls.js`, new.** Two thumb zones on the canvas: left half
-  is a virtual stick that writes the same forward/strafe pair `update` derives
-  from the key set today; right half is look, writing `camera.rotation` in
-  `YXZ` order the way `PointerLockControls` does (which is also what
-  `drive.mjs`'s `aimAt` relies on). Sprint on a second finger or a stick past
-  80 percent. `touchstart`/`touchmove` with `preventDefault`, or the browser
-  scrolls and fires a `click` that `InteractionSystem`'s document click handler
-  reads as "advance dialogue".
-- **`src/player-controller.js`.** `update` returns early unless
-  `controls.isLocked && enabled`. It needs an input source it reads from
-  (`{forward, strafe, sprint}`) with two providers, keys and touch, and a
-  notion of "active" that is pointer lock on a mouse machine and "started" on
-  a touch one. `lock()`/`unlock()` become no-ops on touch.
-- **`src/interaction.js`.** `tryInteract` and `tryJournal` are already methods;
-  the E button calls the first, the J button the second. `update` already
-  writes the prompt text through `ui.setInteractPrompt`; the touch E button's
-  label is that text, so one button means talk, examine and ring depending on
-  what is in front of the player, which is the row's stated requirement.
-- **`src/ui.js`, `src/ui.css`, `index.html`.** A touch HUD (`#touch-hud`): two
-  stick pads, E, J. Shown when `matchMedia('(pointer: coarse)')` matches or a
-  touch event arrives; the `controls-hint` line on the start panel says taps
-  instead of keys. Every overlay already scrolls with `safe center` (#488), so
-  the journal and accusation work on a short screen. The riddle's `<input>`
-  opens the soft keyboard; its `keydown` already stops propagation.
-- **`src/main.js`.** Chooses the provider, passes it in, and stops re-showing
-  the start overlay on `unlock` when there is no pointer lock to lose.
-- **`test/plan-vs-scene.mjs`** or a new `test/touch.mjs` (headless, static,
-  #53-safe): open the page with touch emulated (puppeteer `emulate` with
-  `hasTouch: true` and a coarse-pointer viewport), assert the touch HUD is
-  shown and the key hint is not, place the camera at the word-lock the way the
-  existing beat does, and `tap` the E button; the riddle overlay opens. Then
-  tap J; the journal opens. Nothing moves, nothing is timed.
-
-### Acceptance
-
-- On a phone: look, move, sprint, E, J, dialogue advance by tap, the riddle
-  answered with the soft keyboard, the journal and accusation usable. GPU-class
-  (#53): a phone is real compositing and nobody in a session has one. Stated
-  as outstanding in `HISTORY.md` exactly as the Phase 5 to 7 GPU criteria are.
-- Node/headless: the static beat above. Breaks: unhook the E button's handler
-  (`tap on E at the word-lock opened no riddle`); hide the touch HUD's media
-  query (`touch HUD not shown under a coarse pointer`); leave the document
-  `click` handler unguarded and dispatch a touch on the stick while a dialogue
-  is open (`a stick touch advanced the dialogue`). The third is the one that
-  matters: it is the bug that will otherwise ship.
-- Desktop unchanged: every existing suite green with no touch emulation, and
-  `play-castle.mjs`'s pointer-lock assertions still pass.
-
-### Open calls
-
-- **Auto-detect or a toggle?** Recommend **detect, with a toggle on the start
-  panel** so a laptop with a touchscreen can pick. Detection alone gets the
-  hybrid case wrong in both directions.
-- **Look on the right half, or drag anywhere not on the stick?** Recommend
-  **right half**. Simpler, and the E button lives there too.
-- **Gyroscope look?** Recommend **no** for this row; it needs a permission
-  prompt on iOS and a second code path.
-- **Lower the render load on a phone?** `setPixelRatio(min(dpr, 2))` and
-  2048 shadow maps are laptop numbers. Recommend **`dpr` capped at 1.5 and
-  shadow map 1024 when touch is active**, recorded as a number to revisit.
-
-### Dependencies
-
-- None to start. Rewrites `player-controller.js`, which sound edited for the
-  footstep accumulator (#519); that has shipped, so nothing is in its way.
-- Verification on a real phone is **The GPU run**'s class of problem: Devon's
-  device, not a session's.
-
-### Constraints
-
-- #53 (movement by stick is a real-time assertion; the CI beat is static).
-- #488 (overlays already scroll; keep `safe center`).
-- #34 (three breaks above; the stick-advances-dialogue one is the guard that
-  earns its place).
-- No new asset; #493 untouched.
-
----
-
 ## The texture sets
 
-**Rank 5. Size ½.** The castle is dressed in ten sets and reads as one: 27 of
+**Rank 4. Size ½.** The castle is dressed in ten sets and reads as one: 27 of
 31 runs are `castle_wall_slates`, all eight drums `defense_wall`, every upper
 floor `wood_planks`. #516 gave each drum a `tint` over the same maps, which is
 free and is not a second stone. This row is the second stone. It was meant
@@ -391,7 +304,7 @@ PR was built in answers 403 to Poly Haven and to KTX-Software's release page
 
 ## The town side
 
-**Rank 6. Size 1.** The ground is the curtain's footprint plus a 2 m margin,
+**Rank 5. Size 1.** The ground is the curtain's footprint plus a 2 m margin,
 worked out from the placed stone (#436); beyond it is fog from 30 to 150 m.
 `barbican-west` has no archway and PLAN.md's answered question 5 says both
 barbican gates stay shut forever. The spawn is in the barbican facing east. So
@@ -486,7 +399,7 @@ a road, and "a different ending".
 
 ## A second day
 
-**Rank 7. Size 2+.** The save has `watch` and `accusations[]`. The engine's
+**Rank 6. Size 2+.** The save has `watch` and `accusations[]`. The engine's
 `ring()` stops at the fourth bell and `accuse()` records a verdict; the epilogue
 pane's one button is `restart`, which erases the save and reloads. The content
 for a day two does not exist. This section is about the first increment, what
@@ -613,7 +526,7 @@ increment 1 shipped and what is left.
 
 ## The hall covering
 
-**Rank 8. Size ¼.** #527 put seven trusses across the Great Hall at 8 m and
+**Rank 7. Size ¼.** #527 put seven trusses across the Great Hall at 8 m and
 #528 left the space between them open, because neither half of a covering can
 be judged from this container. This row is both halves, for a session with a
 GPU.

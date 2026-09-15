@@ -170,20 +170,28 @@ export async function launch({ headed = false } = {}) {
  * hotlinked Google Fonts, because the font shim satisfied those requests before
  * the block saw them. Here an empty `__blocked` means what it looks like.
  */
-export async function prepPage(browser, { width = 1280, height = 1000, dsf = 1, jsEnabled = true } = {}) {
+/**
+ * `touch: true` gives the page a thumb: touch events, `navigator.maxTouchPoints`
+ * over zero, and the mobile device-metrics flag that makes `(pointer: coarse)`
+ * answer yes (#530). Both engines then take taps through `page.touchscreen`,
+ * which is the one API `test/touch.mjs` needs and the one both of them spell
+ * the same way.
+ */
+export async function prepPage(browser, { width = 1280, height = 1000, dsf = 1, jsEnabled = true, touch = false } = {}) {
   const playwright = browser.__engine === 'playwright';
   let page, context;
 
   if (playwright) {
     context = await browser.newContext({
       viewport: { width, height }, deviceScaleFactor: dsf, javaScriptEnabled: jsEnabled,
+      hasTouch: touch, isMobile: touch,
     });
     page = await context.newPage();
     const closePage = page.close.bind(page);
     page.close = async opts => { await closePage(opts); await context.close(); };
   } else {
     page = await browser.newPage();
-    await page.setViewport({ width, height, deviceScaleFactor: dsf });
+    await page.setViewport({ width, height, deviceScaleFactor: dsf, hasTouch: touch, isMobile: touch });
     if (!jsEnabled) await page.setJavaScriptEnabled(false);
   }
 
