@@ -97,7 +97,10 @@ export function castleNav(plan, mystery) {
         for (let j = j0 - span; j <= j0 + span; j++) {
           const x = i * grid + grid / 2, z = j * grid + grid / 2;
           if (Math.hypot(x - point.x, z - point.z) > range) continue;
-          for (const level of [0, 1, 2]) {
+          // Every storey the castle has, off the plan (#523): the list was
+          // `[0, 1, 2]` here and in three other places, and a tower roof at
+          // level 3 is out of talking range of all four until each is found.
+          for (const level of plan.levels) {
             if (walk.fromSpawn(x, z, level)) return true;
           }
         }

@@ -8,7 +8,8 @@ ships the row is the one that records the call with a number.
 
 Written 2026-09-15 against `main` at `bb61958`, from the code and data as they
 are, not from the briefs. **Two rows shipped the same day and their sections are
-gone: asset compression (#506 to #510) and sound (#519 to #521).** What asset
+gone: asset compression (#506 to #510), sound (#519 to #522) and the tower
+tops (#523 to #526).** What asset
 compression left behind for the rows that touch assets is named in their
 Dependencies; what sound left behind is `data/sounds.json`, a `material` and a
 `kind` on every `plan.surfaces` entry, and `layout.mjs` check 12. Where a brief and the code disagree, the code is
@@ -308,8 +309,8 @@ overlay on `unlock`. A phone has none of that. This is a second input scheme.
 
 ### Dependencies
 
-- None to start. Rewrites `player-controller.js`, which **The turrets** also
-  edits; do not run them together. Sound edited it too and has shipped (#519).
+- None to start. Rewrites `player-controller.js`, which sound edited for the
+  footstep accumulator (#519); that has shipped, so nothing is in its way.
 - Verification on a real phone is **The GPU run**'s class of problem: Devon's
   device, not a session's.
 
@@ -323,121 +324,9 @@ overlay on `unlock`. A phone has none of that. This is a second input scheme.
 
 ---
 
-## The turrets
-
-**Rank 5. Size 1.** Eight drums are 12 m high with a level-2 room whose floor
-is at 8 m; the builder draws a lid at 12 (`buildDrum`, `d.roof`) as a
-`CircleGeometry` inside the drum piece, with no surface, so nothing stands on
-it. The four inner drums (stockhouse, kings, bakehouse, chapel) carry a
-`turret: {radius: 2.5, height: 2}` drawn as a solid cylinder at 12 to 14. The
-drum's parapet is its **crown** (#514): the ring's own 24 sectors carry on
-above 12, every other one to 13.5 and the rest to 12.6, built stone with
-sector colliders 0 to 13.5 and 0 to 12.6. (Until #514 this section said twelve
-kit merlons stood on the rim at radius 4; their bodies hung at radius 5.2 to
-6.4, in the air, and `layout.mjs` check 9 now refuses a merlon over nothing.)
-So the parapet is there, the top is not: a third flight per inner tower and a
-floor at 12 m is the row.
-
-### Scope
-
-- **`data/scene-config.json`.** Per inner drum: a third flight (the `stairs`
-  block builds two; it needs a count or a `top: true`), and a new room
-  `<drum>-top` at `level: 3`, `drum: <id>`, `floor: "stone_pavers"` or a
-  stone from the list (planks on a tower top read wrong in rain). The turret
-  stays. The outer four drums keep their lid.
-- **`src/castle-plan.js`.**
-  - `levelOfBase(12)` is 3 on a 4 m storey with no change. The flight code
-    (`castle-plan.js` around line 1000 to 1075, `f.n`, `f.level`) generates
-    two flights per drum with stairs and an L layout; a third rises 8 to 12
-    inside the level-2 room, which is also where the walk crosses (the deck
-    enters through a 60 degree door and leaves through another). The flight's
-    footprint (1.5 x 3.9 m) has to sit clear of the chord between the two
-    level-2 doors and clear of flight 2's well; `layout.mjs` checks 6 and 6b
-    will say whether it does.
-  - The lid becomes a plan piece: `floor-<drum>-top`, `built: 'floor'`, a disc
-    of the drum's **outer** radius (the ring's top is stone that needs a
-    surface too; the interior radius alone leaves a 1.2 m ring of wall-top the
-    grid has no floor for), with a well cut for flight 3 the way tower slabs
-    cut theirs (`holes` from `ramps`), at `y` 11.8 to 12. `d.roof` on the drum
-    piece turns off for drums that have a top floor, so the lid is not drawn
-    twice and the drum's box does not change.
-  - The turret gets colliders: today `drumParts` only unions it into the box.
-    Twenty-four sector boxes at 12 to 14, same polygon as the geometry (#432's
-    rule), or a body on the top walks through it.
-  - **Level lists.** `[0, 1, 2]` is hard-coded in `stations.js`'s `talkable`,
-    `validateMystery`'s room-level rail (`![0, 1, 2].includes(r.level)`),
-    `layout.mjs` check 3 (`for (const level of [1, 2])`) and
-    `plan-vs-scene.mjs`'s `perLevel`. Each needs 3, or better, `plan.levels`
-    read off the surfaces once.
-- **`src/castle-builder.js`.** `buildFloor` already draws a disc with holes;
-  `buildDrum` stops drawing `d.roof` when the plan says the floor piece has it.
-  Turret colliders need nothing drawn; the cylinder is already there.
-- **`data/mystery.json`.** Nothing required: `layout.mjs` 3d allows a tower's
-  own unnamed rooms. If a station or a location clue goes up there, the room
-  goes in `rooms` with `level: 3`.
-- **`test/layout.mjs`.** Check 6 (each tower's rooms by its own stairs) picks
-  up `<drum>-top` automatically through `plan.rooms.filter(r => r.drum === id
-  && r.level > 0)`. Check 7 (head room) sees the new floor piece over the
-  level-2 room: 11.8 minus 8 is 3.8, fine. Check 4 (`sealed()`) is a plan test
-  and the top is inside the curtain in plan. New: no reachable cell inside the
-  turret (a collider test of the same shape as 6c).
-- **`test/plan-vs-scene.mjs`.** The standing beat runs over `grid.rooms()` and
-  will stand the camera on the four tops at 12 with no code change once the
-  level list grows.
-
-### Acceptance
-
-- Four tower tops reachable from their own tower's flights and from the walk
-  (`layout.mjs` 6 and 6b), the level-2 walk still one circuit, the shut rooms
-  still shut from above (#455: the King's Tower has no lower flight, so its top
-  is reached from the walk only, and that still must not open the muniment
-  room).
-- `plan-vs-scene.mjs`: `floor-<drum>-top` within 0.01 m, camera stands at 12.0
-  on all four.
-- Node breaks: leave the well out of one top floor (`<drum>-top cannot be
-  reached by <drum>'s own stairs`); delete the turret colliders (the new
-  turret check counts cells inside it); put the third flight across the walk's
-  chord (6b: `south-walk is reached only over ...`). Builder break: draw the
-  top floor at `y` 8 (`"floor-chapel-tower-top" (floor) is 4.000 m off the
-  plan`).
-- GPU: the view over the whole plan from 12 m. Screenshot in a later run of the
-  **The GPU run** kind; not a CI claim.
-
-### Open calls
-
-- **Inner four only, or all eight?** Recommend **inner four**, as the row says.
-  The outer four have no turret and an 8 m open disc at 12 m is a helipad, not
-  a tower top.
-- **A parapet on the top, or the drum's crown?** The crown is already there
-  with colliders (#514). Recommend **nothing new**: a crenel is 0.6 m of stone
-  over the lid, over HEAD_LOW, so a body on the top cannot step through one,
-  and `layout.mjs` check 9b holds every sector to that.
-- **Anything to do up there?** Recommend **one location clue in a later row,
-  not this one**. This row is geometry.
-
-### Dependencies
-
-- **The two plan suites first is cheaper.** It decides what `layout.mjs` and
-  `plan-vs-scene.mjs` each keep, and this row edits the level lists in both.
-  Not blocking.
-- **The texture sets** are visible from here; no dependency either way.
-
-### Constraints
-
-- #500 (the lid becomes a plan piece or `plan-vs-scene.mjs` cannot see it; the
-  turret colliders are plan boxes over the geometry's own vertices, #432).
-- #455 (no stair may open a shut room from above; check 6's second half is the
-  rail).
-- #456 and #514 (run merlons stop at the drum's face and the crown is the
-  drum's own; adding none avoids re-trimming).
-- #458 (a floor is a collider whatever its thickness: `thin: true`).
-- #34 (four breaks above).
-
----
-
 ## The texture sets
 
-**Rank 6. Size ½.** The castle is dressed in ten sets and reads as one: 27 of
+**Rank 5. Size ½.** The castle is dressed in ten sets and reads as one: 27 of
 31 runs are `castle_wall_slates`, all eight drums `defense_wall`, every upper
 floor `wood_planks`. #516 gave each drum a `tint` over the same maps, which is
 free and is not a second stone. This row is the second stone. It was meant
@@ -501,12 +390,12 @@ PR was built in answers 403 to Poly Haven and to KTX-Software's release page
 
 ## The town side
 
-**Rank 7. Size 1.** The ground is the curtain's footprint plus a 2 m margin,
+**Rank 6. Size 1.** The ground is the curtain's footprint plus a 2 m margin,
 worked out from the placed stone (#436); beyond it is fog from 30 to 150 m.
 `barbican-west` has no archway and PLAN.md's answered question 5 says both
 barbican gates stay shut forever. The spawn is in the barbican facing east. So
-today the only place the outside is visible from is the west walk and, after
-**The turrets**, the tower tops. The row: a textured ground outside the west barbican,
+today the outside is visible from the west walk and from the North-west and
+South-west Towers' roofs (#523). The row: a textured ground outside the west barbican,
 a road, and "a different ending".
 
 ### Scope
@@ -579,7 +468,7 @@ a road, and "a different ending".
 - **The restored jpgs go through `tools/encode-assets.mjs`** (#506, shipped)
   before they
   are referenced.
-- **The turrets** makes this visible from four more places; not blocking.
+- The four tower roofs (#523) make this visible from four more places.
 
 ### Constraints
 
@@ -596,7 +485,7 @@ a road, and "a different ending".
 
 ## The hall roof
 
-**Rank 8. Size ½.** PLAN.md says the Great Hall is "full height with a flat
+**Rank 7. Size ½.** PLAN.md says the Great Hall is "full height with a flat
 ceiling". The config says otherwise: `great-hall` is a `tiles` room at level 0
 with `rock_tile_floor`, its north and east partitions are 8 m runs, its south
 and west walls are the curtain, and **no piece in the plan roofs it**. It is
@@ -675,7 +564,7 @@ day's work and not a gameplay change.
 
 ## A second day
 
-**Rank 9. Size 2+.** The save has `watch` and `accusations[]`. The engine's
+**Rank 8. Size 2+.** The save has `watch` and `accusations[]`. The engine's
 `ring()` stops at the fourth bell and `accuse()` records a verdict; the epilogue
 pane's one button is `restart`, which erases the save and reloads. The content
 for a day two does not exist. This section is about the first increment, what
@@ -802,7 +691,7 @@ increment 1 shipped and what is left.
 
 ## The two plan suites
 
-**Rank 10. Size ¼.** `test/layout.mjs` (608 lines, Node, ~1 s) checks the
+**Rank 9. Size ¼.** `test/layout.mjs` (608 lines, Node, ~1 s) checks the
 plan's arithmetic; `test/plan-vs-scene.mjs` (528 lines, headless Chromium
 against `vite dev`, about a minute) checks the page against the same plan.
 Both import `makePlan`, `walkability` and `partsOf`. The row: decide what each
@@ -900,8 +789,8 @@ Constable's two conversations and the panel.
 
 ### Dependencies
 
-- None. **Doing this before The turrets** means that row edits the level lists
-  in files whose purpose is written down.
+- None. The tower tops row got there first and edited the level lists in both
+  files (#526); this one writes down what each file is for.
 
 ### Constraints
 

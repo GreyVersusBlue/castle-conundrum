@@ -821,6 +821,21 @@ function drumParts(drum, tileSize, { shut = new Set(), crown = null } = {}) {
       expand(box, { x: pt.x, y: drum.height, z: pt.z });
       expand(box, { x: pt.x, y: drum.height + drum.turret.height, z: pt.z });
     }
+    /* AND IT IS SOLID (#523). Until now the turret was two metres of cylinder
+     * the box knew about and no collider did, so a body that ever reached
+     * `height` walked through it. Nothing could, which is exactly how a hole
+     * like this survives: the sectors below are the same polygon the builder
+     * draws (#432), and these are that polygon two metres higher, wedges from
+     * the centre because the turret is solid. */
+    const t0 = drum.height, t1 = drum.height + drum.turret.height;
+    for (let i = 0; i < segments; i++) {
+      const seg = EMPTY();
+      for (const pt of [ringPoint(cx, cz, drum.turret.radius, i * step), ringPoint(cx, cz, drum.turret.radius, (i + 1) * step), { x: cx, z: cz }]) {
+        expand(seg, { x: pt.x, y: t0, z: pt.z });
+        expand(seg, { x: pt.x, y: t1, z: pt.z });
+      }
+      colliders.push({ id: `${drum.id}-turret-${i}`, sector: i, y0: t0, y1: t1, door: null, box: seg });
+    }
   }
 
   return { cx, cz, radius: r, segments, step, box, colliders, turret, inner, doors, shut, stoneVisual, crown: inner && crown ? crown : null };
@@ -1005,6 +1020,15 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
     });
 
     const d = drumParts(drum, tileSize, { crown: battle.crown || null, shut });
+    /* THE TOWER TOP (#523). A room of this drum's at the level of the drum's own
+     * height is its top: the lid at `height` becomes that room's floor, and the
+     * flights below grow one to reach it. Read off `rooms` rather than off a
+     * flag, so a tower top is added by writing the room down and nothing else. */
+    const topLevel = levelOfBase(drum.height);
+    const topRoom = d.inner && rooms.get(topLevel) ? rooms.get(topLevel) : null;
+    if (topRoom && !topRoom.floor) throw new Error(`[castle-plan] room "${topRoom.id}" is ${drum.id}'s top at ${drum.height} m and names no floor, so the drum would be open to the sky`);
+    if (topRoom && !drum.stairs) throw new Error(`[castle-plan] room "${topRoom.id}" is ${drum.id}'s top and the drum has no stairs, so nothing reaches it`);
+    if (topRoom && drum.turret) throw new Error(`[castle-plan] ${drum.id} has a top room and a ${drum.turret.radius} m turret standing on it; one or the other (#523)`);
     drumShapes.push({ drum, room: rooms.has(0) ? rooms.get(0).id : null, rooms, ...d });
     addPiece({
       id: drum.id, kind: 'tower', built: 'drum', level: drum.level || 0, curtain: !!drum.curtain,
@@ -1022,10 +1046,12 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
         // drum's bounds are a hollow one's bounds, to the millimetre. It came out
         // of deleting the lintel on purpose and watching nothing happen (#34).
         inner: d.inner,
-        // A hollow drum is roofed at its top: a disc the walk cannot reach (the
-        // level-three stairs are not built) but the eye can see from the walk of
-        // the tower next door, where an open ring reads as a ruin.
-        roof: !!d.inner,
+        // A hollow drum is roofed at its top: a disc the eye sees from the walk
+        // of the tower next door, where an open ring reads as a ruin. A drum
+        // with a room AT ITS OWN HEIGHT has a floor there instead (#523) and
+        // draws no lid, or the lid and the floor are two faces on one plane at
+        // 12 m, which is what check 10 exists to refuse (#513).
+        roof: !!d.inner && !topRoom,
         // What the builder draws: per sector, the y ranges that are stone with
         // every door OPEN. A shut leaf is drawn as a leaf in an open doorway and
         // blocks through the colliders below, not through the ring's geometry.
@@ -1162,10 +1188,25 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
       // bars, and the first time every tower had both flights the cell and the
       // muniment room both read reachable from the spawn, down from the walk
       // (#455). Its upper flight stands on a first floor reached from the walk.
+      /* THE THIRD FLIGHT STANDS DIRECTLY ON THE SECOND (#523): same tile, same
+       * bearing, one storey up, so its well in the top floor is the second
+       * flight's well in the level-2 floor and IT TAKES NOT ONE SQUARE METRE OF
+       * THE LEVEL-2 FLOOR THAT WAS WALKABLE. That floor is the wall walk's
+       * junction — two or three doors at 8 m and a crossing between them — and
+       * it is 5.6 m across with the second flight's well already in half of it.
+       * Every other arrangement was measured and closes the crossing: along the
+       * first flight's footprint leaves the walk 0.71 m of clearance where a
+       * 0.90 m body has to pass, and against the ring on the door side leaves
+       * 0.55 m. The cost is that the climb is not a switchback: a body leaves
+       * the second flight at its head, walks round its well the way it already
+       * can, and starts the third at the foot, four metres over where it
+       * started. Head room between the two is the storey, 4 m. */
       const flights = [
         { n: 1, tile: [(d.cx + sideX * width / 2) / tileSize, d.cz / tileSize], rotationY: outer < 0 ? 0 : 180, level: 0 },
         { n: 2, tile: [d.cx / tileSize, (d.cz + outer * width / 2) / tileSize], rotationY: sideX > 0 ? 90 : 270, level: 1 },
-      ].filter((f) => f.n !== 1 || drum.lowerFlight !== false);
+        { n: 3, tile: [d.cx / tileSize, (d.cz + outer * width / 2) / tileSize], rotationY: sideX > 0 ? 90 : 270, level: 2 },
+      ].filter((f) => f.n !== 1 || drum.lowerFlight !== false)
+        .filter((f) => f.n !== 3 || !!topRoom);
       for (const f of flights) {
         const { transform, box } = place({ parts, tileSize, tile: f.tile, rotationY: f.rotationY, scaleRule: scale, lift: floorTop(f.level) });
         const id = `${drum.id}-stair-${f.n}`;
@@ -1582,8 +1623,15 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
 
   oneFacePerPlane(pieces);
 
+  /* The storeys the castle has, read off its own rooms rather than written down
+   * (#523). Four places held the list `[0, 1, 2]` as a literal — the validator's
+   * room rail, `stations.js`'s `talkable`, and a loop in each of the two plan
+   * suites — and a fourth storey had to be found in all four or it was silently
+   * out of reach. */
+  const levels = [...new Set(rooms.map((r) => r.level))].sort((a, b) => a - b);
+
   return {
-    tile: tileSize, storey, slab: slabT,
+    tile: tileSize, storey, slab: slabT, levels,
     spawn: { position: spawnAt.position.slice(), lookAt: config.spawn.lookAt.slice(), level: spawnAt.level || 0 },
     pieces, colliders, surfaces, rooms, curtain, gates, grounds, ramps, drums: drumShapes,
   };
