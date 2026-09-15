@@ -240,9 +240,14 @@ function buildDrum(d, material, metres) {
   if (d.inner) {
     const step = 360 / d.segments;
     const shell = new THREE.Group();
-    const sig = (i) => JSON.stringify(d.stone[((i % d.segments) + d.segments) % d.segments]);
     // start the grouping at a sector whose list differs from the one before it,
     // so no group has to wrap through 0
+    // The ring to the drum's height, grouped; a sector's stone may go on above
+    // it into the crown, which is drawn per sector below, so a range that
+    // reaches past `height` is clipped here and capped only if it stops short.
+    const below = (i) => d.stone[((i % d.segments) + d.segments) % d.segments]
+      .map(([y0, y1]) => [y0, Math.min(y1, d.height)]).filter(([y0, y1]) => y1 > y0 + 1e-9);
+    const sig = (i) => JSON.stringify(below(i));
     let start = 0;
     for (let i = 0; i < d.segments; i++) if (sig(i) !== sig(i - 1)) { start = i; break; }
     let i = 0;
@@ -250,8 +255,9 @@ function buildDrum(d, material, metres) {
       const s0 = (start + i) % d.segments;
       let n = 1;
       while (i + n < d.segments && sig(s0 + n) === sig(s0)) n++;
-      for (const [y0, y1] of d.stone[s0]) {
-        const caps = [y1];
+      for (const [y0, y1] of below(s0)) {
+        const caps = [];
+        if (y1 < d.height - 1e-9 || !d.crown) caps.push(y1);
         if (y0 > 1e-9) caps.push(y0);
         shell.add(ringSection(d.inner, d.radius, y0, y1,
           THREE.MathUtils.degToRad(s0 * step), THREE.MathUtils.degToRad(n * step),
@@ -259,9 +265,24 @@ function buildDrum(d, material, metres) {
       }
       i += n;
     }
+    // THE CROWN (#514): each sector's stone above the drum's height, capped at
+    // its own top. Merlons and crenels alternate, so no two neighbours share
+    // a top and every merlon's two sides come out of the jamb rule below,
+    // which is given the crown's height as the ring's.
+    const crownTop = d.crown ? d.height + Math.max(d.crown.merlon, d.crown.crenel) : d.height;
+    if (d.crown) {
+      for (let k = 0; k < d.segments; k++) {
+        for (const [y0, y1] of d.stone[k]) {
+          if (y1 <= d.height + 1e-9) continue;
+          const lo = Math.max(y0, d.height);
+          shell.add(ringSection(d.inner, d.radius, lo, y1,
+            THREE.MathUtils.degToRad(k * step), THREE.MathUtils.degToRad(step), 1, material, metres, [y1]));
+        }
+      }
+    }
     for (let k = 0; k < d.segments; k++) {
-      const here = openingsIn(d.stone[k], d.height);
-      const before = openingsIn(d.stone[(k - 1 + d.segments) % d.segments], d.height);
+      const here = openingsIn(d.stone[k], crownTop);
+      const before = openingsIn(d.stone[(k - 1 + d.segments) % d.segments], crownTop);
       for (const [y0, y1] of [...subtractIntervals(here, before), ...subtractIntervals(before, here)]) {
         shell.add(ringJamb(d.inner, d.radius, y0, y1, k * step, material));
       }

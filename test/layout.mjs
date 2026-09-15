@@ -40,7 +40,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { partsOf } from './gltf.mjs';
-import { makePlan, walkability, moveBody, GRID, HEAD_HIGH, BODY_RADIUS } from '../src/castle-plan.js';
+import { makePlan, walkability, moveBody, GRID, HEAD_LOW, HEAD_HIGH, BODY_RADIUS } from '../src/castle-plan.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, '..');
@@ -658,6 +658,68 @@ console.log('\na body up and down every flight');
   }
   if (!plan.ramps.length) fail('the plan has no flights, so nothing was climbed');
   else if (climbed === plan.ramps.length * 2) pass(`${plan.ramps.length} flights, each climbed and descended by a ${BODY_RADIUS} m body onto the floor beyond, ${sidestepped} of the ${climbed} walks leaving through the crescent beside the flight`);
+}
+
+/* ------------------------------ 9: every merlon stands on stone ---
+ * battlement.glb is authored with its body 0.3 to 0.6 behind its origin, and
+ * `place` moves nothing in plan, so at scale 4 a merlon's stone stands 1.2 to
+ * 2.4 m outward of wherever it is anchored. On a 4 m thick run that is the
+ * outer 0.8 m of the wall top and 0.4 m over the face. On a drum of radius 4,
+ * anchored on the rim, it was radius 5.2 to 6.4: twelve merlons per tower
+ * hanging in the air with 1.2 m of nothing between them and the stone, seen
+ * by nobody until Devon saw them (#514). plan-vs-scene.mjs could not: the
+ * plan box carries the same offset the scene does. So: at least half of every
+ * merlon's footprint lies over a collider whose top is the merlon's base.
+ */
+console.log('\nevery merlon stands on stone');
+{
+  const merlons = plan.pieces.filter(p => p.label === 'battlement');
+  const tops = plan.colliders;
+  let floating = 0;
+  for (const m of merlons) {
+    const area = (m.box.max.x - m.box.min.x) * (m.box.max.z - m.box.min.z);
+    let over = 0;
+    for (const c of tops) {
+      if (Math.abs(c.box.max.y - m.box.min.y) > 1e-6) continue;
+      const ox = Math.min(c.box.max.x, m.box.max.x) - Math.max(c.box.min.x, m.box.min.x);
+      const oz = Math.min(c.box.max.z, m.box.max.z) - Math.max(c.box.min.z, m.box.min.z);
+      if (ox > 0 && oz > 0) over += ox * oz;
+    }
+    if (over / area >= 0.5) continue;
+    floating++;
+    const near = tops.filter(c => Math.abs(c.box.max.y - m.box.min.y) < 1e-6)
+      .map(c => ({ id: c.id, d: Math.hypot(Math.max(c.box.min.x - m.box.max.x, m.box.min.x - c.box.max.x, 0), Math.max(c.box.min.z - m.box.max.z, m.box.min.z - c.box.max.z, 0)) }))
+      .sort((p, q) => p.d - q.d)[0];
+    fail(`${m.id} at y ${m.box.min.y.toFixed(2)} has ${Math.round(100 * over / area)}% of its footprint over stone; nearest stone with a top at ${m.box.min.y.toFixed(2)} is ${near ? `${near.id}, ${near.d.toFixed(2)} m away` : 'nowhere'}`);
+  }
+  if (!merlons.length) fail('the plan has no merlons, so nothing was checked');
+  else if (!floating) pass(`${merlons.length} merlons, every one at least half over stone whose top is its base`);
+}
+
+/* ----------------------------- 9b: every hollow drum wears a crown ---
+ * The drum's parapet is stone in its own sectors (#514), and a sector that
+ * stops at the drum's height is a gap in it that a body on a future tower top
+ * would walk off. Every sector reaches over HEAD_LOW above the drum, and at
+ * least one reaches the crown's merlon height.
+ */
+console.log('\nthe drums\' crowns');
+{
+  const crown = config.battlements.crown;
+  if (!crown) fail('config.battlements has no crown');
+  for (const drum of config.drums) {
+    if (!drum.interior) continue;
+    const sectors = plan.colliders.filter(c => c.id.startsWith(`${drum.id}-sector-`));
+    const top = new Map();
+    for (const c of sectors) {
+      const i = +c.id.split('-sector-')[1].split('-')[0];
+      top.set(i, Math.max(top.get(i) || 0, c.box.max.y));
+    }
+    const low = [...top.entries()].filter(([, y]) => y < drum.height + HEAD_LOW + 1e-6);
+    const merlon = [...top.values()].some(y => Math.abs(y - (drum.height + (crown ? crown.merlon : 0))) < 1e-6);
+    if (low.length) fail(`${drum.id} sector ${low[0][0]} crowns at ${low[0][1].toFixed(2)}, under the ${(drum.height + HEAD_LOW).toFixed(2)} a body on the lid would need stopping by`);
+    else if (!merlon) fail(`${drum.id} has no sector at the crown's merlon height ${drum.height + (crown ? crown.merlon : 0)}`);
+    else pass(`${drum.id}: ${top.size} sectors, none under ${(drum.height + HEAD_LOW).toFixed(2)}, merlons at ${(drum.height + crown.merlon).toFixed(2)}`);
+  }
 }
 
 /* ------------------------- 10: no two upward faces share a plane ---

@@ -1728,3 +1728,88 @@ headless Chromium, which is fine for bytes and geometry and says nothing about
 whether an ETC1S diffuse bands on a 8 m wall or a UASTC normal holds up at a
 grazing angle (#53). Ranked row 4 is the GPU run, and a look at the walls is
 now part of what it is for.
+
+## Stairs, crowns and floors: three things a GPU saw and no suite could (2026-09-15)
+
+**Not a ranked row.** Devon walked the castle on a real machine and reported
+four things: a player who cannot leave a flight at its top, turret parapets
+with air under them, ground floors that flicker, and rooms that all look the
+same. The first three are geometry and shipped as one PR on
+`claude/fervent-clarke-566ery`; the fourth is the next PR. Decisions #511 to
+#514. Every one was invisible to `npm test` for the same reason: the grid
+samples a point, `plan-vs-scene.mjs` compares boxes that carry the same offset
+the scene does, and a depth fight is not a property of a plan. Each fix came
+with the check that would have caught it, and each check was broken on
+purpose from green first (#34).
+
+- **A slab's collider well is a body's radius wider than its surface well, and
+  the controller's move is a plan function** (#511). The slab beside a stair-well
+  is a collider (#458) and a wall to a body whose feet are more than HEAD_LOW
+  under its top; on a 1:1 flight that is everything but the last 0.2 m of run.
+  A 0.45 m body pushed clear of the strip past the well's head stopped with its
+  feet at 3.45, where the floor at 4.0 was a 0.55 m climb against a 0.35 m
+  step. The grid's top cell sat exactly a step under the slab (#459) and every
+  suite was green. No rule keyed on the feet can fix it: the body is held a
+  radius short of the edge whatever the band says. So the collider holes are
+  grown by `BODY_RADIUS` and the surface holes are not, which keeps the well's
+  edge a wall to a body on the slab. `moveBody` in `castle-plan.js` is the
+  controller's one-axis move over the plan's colliders, so Node can walk it:
+  `layout.mjs` check 8 walks a body up and down all 14 flights.
+- **A flight's run is 3.3 m, and the grid reads a flight at the cell edge**
+  (#512). Check 8's first run said something else as well: a body descending an
+  upper flight stopped at feet 4.40, 0.40 m short of the foot, pushed by
+  `north-curtain-west-2`. A curtain run drives 2 m into every tower it meets,
+  and a 3.9 m flight centred on the tower ended 0.05 m from that pier at both
+  ends. Widening nothing fixes that; clearance does. At 3.3 m of run each end
+  has 0.35 m of floor, the body reaches within 0.1 m of either end, and at the
+  head its feet are at 7.78, past the 7.7 where the pier's top stops being a
+  wall. The steeper flight then broke the grid, which connected two cells only
+  when their centre heights were within a step, and a 0.5 m cell on a 3.9 over
+  3.3 flight is 0.59 m of rise; `nothing on level 1 can be reached`. Two cells
+  meet at the edge between them, so a cell on a flight is now compared at the
+  flight's height at that edge, which is where a body crosses. Headroom where
+  the two flights overlap went from 2.05 m to 4.0. 11 of the 28 walks in check
+  8 leave the flight through the crescent beside it, as `play-castle.mjs` has
+  always described the walk.
+- **No two upward faces share a plane** (#513). The clerk's office, the kitchen
+  and the Great Hall flickered: base pavers, the outer ward's grass and the
+  room's floor were three meshes at y 0 over one footprint, and the polygon
+  offset meant to settle it was the same offset on two of them, on materials
+  shared by every mesh of that texture. `oneFacePerPlane` in `castle-plan.js`
+  makes the plan say who owns every top: a ground piece is cut round every
+  ground piece after it, a run's top under a floor stops at the floor's
+  underside, and the later of two runs sharing a top gives way round the
+  earlier. Only the drawn boxes and their union change; colliders and surfaces
+  keep the whole stone. `buildGround` draws the strips with world-space UVs and
+  the offsets are gone. `layout.mjs` check 10 listed 77 pairs on the baseline:
+  17 at y 0, 24 decks flush in curtain tops, the curtain stubs and sills level
+  with the tower slabs, and 11 wall corners.
+- **A drum wears a crown, and a run's merlons reach the drum's face** (#514).
+  `battlement.glb` is authored with its body 0.3 to 0.6 behind its origin, and
+  `place` moves nothing in plan, so at scale 4 every merlon stands 1.2 to 2.4 m
+  outward of its anchor. On a 4 m run that is the outer 0.8 m of the wall and
+  0.4 m over the face. On a drum, anchored on the rim at radius 4, it was
+  radius 5.2 to 6.4: twelve merlons per tower hanging in the air. The drum's
+  parapet is now its own sectors carried on above 12, alternating 13.5 and
+  12.6, built stone with the sector colliders the drum already had (#432), so
+  the drum's box grows and `plan-vs-scene.mjs` would see a builder that forgot
+  it. The merlon is 0.1 under the kit's 1.6 so the last run merlon, whose trim
+  is now taken at its body's outer edge so it meets the drum's face, shares no
+  top with it. 157 merlons to 61. `SPECS.md`'s turret row said the merlons stood
+  on the rim; it says what is there now.
+
+**The breaks, from green.** Check 8 with the exact well: `nw-tower flight 1
+cannot be climbed: the body stops at feet 3.37, 0.45 m short of the top edge at
+3.90, pushed by floor-nw-tower-1-3`. Check 8 with the 3.9 m run: `kitchen-tower
+flight 2 cannot be descended: the body stops at feet 4.40, 0.40 m short of the
+bottom edge at 4.00, pushed by north-curtain-west-2`. Check 10 with the Great
+Hall's hole skipped: `outer-ward and floor-great-hall share a top at 0.000 over
+64.00 m² at x -14.0..-6.0, z 6.0..14.0`; with the decks left flush:
+`north-curtain-west and north-curtain-west-walk share a top at 8.000 over 16.76
+m²`. Check 9 with the rim merlons back: `merlon-0 at y 12.00 has 0% of its
+footprint over stone`. Check 9b with a 0.2 m crenel: `nw-tower sector 1 crowns
+at 12.20, under the 12.30 a body on the lid would need stopping by`.
+
+**What this did not do.** None of it has been seen on a GPU (#53). Check 10
+closes the flicker as a matter of geometry, and the GPU run (ranked row 3) is
+where somebody looks.

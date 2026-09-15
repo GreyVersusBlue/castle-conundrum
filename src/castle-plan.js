@@ -730,7 +730,7 @@ function doorArc(drum, door, index, segments, step) {
  * sectors lose its y range; every door's sectors are still boxes over the same
  * vertices.
  */
-function drumParts(drum, tileSize, { shut = new Set() } = {}) {
+function drumParts(drum, tileSize, { shut = new Set(), crown = null } = {}) {
   const [cx, , cz] = tileToWorld(tileSize, drum.tile[0], drum.tile[1]);
   const r = drum.radius;
   const segments = drum.segments || 24;
@@ -765,6 +765,14 @@ function drumParts(drum, tileSize, { shut = new Set() } = {}) {
     .filter((d) => d.sectors.has(i))
     .map((d) => ({ lo: d.base, hi: d.top, index: d.index, shut: shut.has(d.index) }))
     .sort((p, q) => p.lo - q.lo);
+  /* THE CROWN (#514). A hollow drum's top sector is stone to `merlon` over the
+   * drum's height on the even sectors and to `crenel` on the odd, which is the
+   * parapet the kit's twelve merlons were meant to be and never were: their
+   * bodies hung 1.2 m outside the drum. Built in the drum's own sectors so the
+   * colliders are the geometry's own polygon (#432) and the drum's box grows
+   * with it, which is how test/plan-vs-scene.mjs sees a builder that forgot
+   * to draw it. A solid drum keeps its flat top. */
+  const topOf = (i) => (inner && crown) ? drum.height + (i % 2 ? crown.crenel : crown.merlon) : drum.height;
   const stoneAt = (i, respectShut) => {
     const out = [];
     let y = 0;
@@ -773,7 +781,7 @@ function drumParts(drum, tileSize, { shut = new Set() } = {}) {
       if (respectShut && o.shut) out.push({ y0: o.lo, y1: o.hi, door: o.index });
       y = Math.max(y, o.hi);
     }
-    if (drum.height > y + 1e-9) out.push({ y0: y, y1: drum.height, door: null });
+    if (topOf(i) > y + 1e-9) out.push({ y0: y, y1: topOf(i), door: null });
     return out;
   };
   const stoneVisual = (i) => stoneAt(i, false).map((st) => [st.y0, st.y1]);
@@ -788,12 +796,12 @@ function drumParts(drum, tileSize, { shut = new Set() } = {}) {
     const seg = EMPTY();
     for (const pt of ring) {
       expand(seg, { x: pt.x, y: 0, z: pt.z });
-      expand(seg, { x: pt.x, y: drum.height, z: pt.z });
+      expand(seg, { x: pt.x, y: topOf(i), z: pt.z });
     }
     // The drum's own box is the stone's, doorway or not: the lintel reaches the
     // same ring vertices the missing wall would have.
     expand(box, seg.min); expand(box, seg.max);
-    const stone = inner ? stoneAt(i, true) : [{ y0: 0, y1: drum.height, door: null }];
+    const stone = inner ? stoneAt(i, true) : [{ y0: 0, y1: topOf(i), door: null }];
     stone.forEach(({ y0, y1, door }, k) => colliders.push({
       id: stone.length === 1 ? `${drum.id}-sector-${i}` : `${drum.id}-sector-${i}-${k}`,
       sector: i, y0, y1, door,
@@ -815,7 +823,7 @@ function drumParts(drum, tileSize, { shut = new Set() } = {}) {
     }
   }
 
-  return { cx, cz, radius: r, segments, step, box, colliders, turret, inner, doors, shut, stoneVisual };
+  return { cx, cz, radius: r, segments, step, box, colliders, turret, inner, doors, shut, stoneVisual, crown: inner && crown ? crown : null };
 }
 
 /**
@@ -891,6 +899,14 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
   /* --- the curtain, the cross-wall and the two barbicans, as built boxes --- */
   const battle = config.battlements;
   const merlons = []; // { at: [worldX, worldZ], rotationY, y }
+  // How far outward of its anchor the kit merlon's body reaches: the piece is
+  // authored with its body behind its origin, and `place` moves nothing in
+  // plan, so a run's merlons stand on its outer 0.8 m and 0.4 m past its face.
+  const merlonReach = () => {
+    const raw = boxOfParts(boundsOf(kBase + battle.model).parts);
+    const scale = Array.isArray(battle.scale) ? battle.scale[2] : battle.scale;
+    return -raw.min.z * scale;
+  };
   const runSpans = []; // a run's merlons wait until the drums are placed
   const merlonRun = (from, to, y, rotationY) => {
     // one per `spacing` metres, centred in the run so a 12 m run gets three
@@ -932,7 +948,7 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
     const lo = axis === 'x' ? box.min.x : box.min.z, hi = axis === 'x' ? box.max.x : box.max.z;
     const from = axis === 'x' ? [lo, cross] : [cross, lo];
     const to = axis === 'x' ? [hi, cross] : [cross, hi];
-    runSpans.push({ id: run.id, from, to, y: box.max.y, rotationY: theta + 180, axis, along: axis === 'x' ? 0 : 1, thickness: run.thickness });
+    runSpans.push({ id: run.id, from, to, y: box.max.y, rotationY: theta + 180, axis, along: axis === 'x' ? 0 : 1, thickness: run.thickness, merlonReach: merlonReach() });
 
     /* THE WALL WALK. `walk: true` lays `config.walk.width` metres of decking along
      * the run's INNER edge — the face away from the merlons, which is the face
@@ -985,7 +1001,7 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
       return { spec, level, room, isShut };
     });
 
-    const d = drumParts(drum, tileSize, { shut });
+    const d = drumParts(drum, tileSize, { crown: battle.crown || null, shut });
     drumShapes.push({ drum, room: rooms.has(0) ? rooms.get(0).id : null, rooms, ...d });
     addPiece({
       id: drum.id, kind: 'tower', built: 'drum', level: drum.level || 0, curtain: !!drum.curtain,
@@ -993,6 +1009,9 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
       drum: {
         cx: d.cx, cz: d.cz, radius: d.radius, height: drum.height,
         segments: d.segments, turret: d.turret,
+        // The parapet, as extra height on the ring's own sectors above
+        // `height`; `stone` below already carries each sector's own top (#514).
+        crown: d.crown,
         // The ring and its doorways. These were left off the first time and the
         // builder read `inner` as undefined, so every tower rendered as the solid
         // cylinder Phase 3 shipped while the plan, the colliders and the whole
@@ -1168,12 +1187,7 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
       }
     }
 
-    // merlons round the drum's rim, one every 360/perDrum degrees
-    for (let i = 0; i < battle.perDrum; i++) {
-      const th = (i / battle.perDrum) * 360;
-      const at = ringPoint(d.cx, d.cz, d.radius, th);
-      merlons.push({ at: [at.x, at.z], y: drum.height, rotationY: th + 180 });
-    }
+    // No kit merlons round a drum: the crown above is its parapet (#514).
   }
 
   /* A run's merlons stop at the towers. Every curtain run ends 2 m short of a
@@ -1193,9 +1207,16 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
       if (a[k] >= lo - 1e-9 && a[k] < hi - 1e-9) a[k] = hi;
       if (b[k] > lo + 1e-9 && b[k] <= hi + 1e-9) b[k] = lo;
     };
+    // The trim is taken at the merlon body's OUTER edge, 2.4 m outward of the
+    // centreline the span runs along, not at the centreline: a round drum is
+    // nearer along that edge, and trimmed at the centreline the last merlon
+    // stopped up to 0.8 m short of the drum's face with air between (#514).
+    // Trimmed here its outer corner touches the face and its inner corner is
+    // inside the ring's stone, under the crown.
+    const outward = Math.sign(a[c]) || 1;
     for (const d of drumShapes) {
       const dc = [d.cx, d.cz];
-      const off = a[c] - dc[c];
+      const off = a[c] + outward * span.merlonReach - dc[c];
       if (Math.abs(off) >= d.radius) continue;
       const reach = Math.sqrt(d.radius * d.radius - off * off);
       trim(dc[k] - reach, dc[k] + reach);

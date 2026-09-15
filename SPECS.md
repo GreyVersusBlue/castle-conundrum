@@ -402,9 +402,13 @@ is at 8 m; the builder draws a lid at 12 (`buildDrum`, `d.roof`) as a
 `CircleGeometry` inside the drum piece, with no surface, so nothing stands on
 it. The four inner drums (stockhouse, kings, bakehouse, chapel) carry a
 `turret: {radius: 2.5, height: 2}` drawn as a solid cylinder at 12 to 14. The
-drums' twelve merlons each stand at `y: drum.height`, 12 m, on the rim at
-radius 4, and they already carry colliders. So the parapet is there, the top is
-not: a third flight per inner tower and a floor at 12 m is the row.
+drum's parapet is its **crown** (#514): the ring's own 24 sectors carry on
+above 12, every other one to 13.5 and the rest to 12.6, built stone with
+sector colliders 0 to 13.5 and 0 to 12.6. (Until #514 this section said twelve
+kit merlons stood on the rim at radius 4; their bodies hung at radius 5.2 to
+6.4, in the air, and `layout.mjs` check 9 now refuses a merlon over nothing.)
+So the parapet is there, the top is not: a third flight per inner tower and a
+floor at 12 m is the row.
 
 ### Scope
 
@@ -476,11 +480,10 @@ not: a third flight per inner tower and a floor at 12 m is the row.
 - **Inner four only, or all eight?** Recommend **inner four**, as the row says.
   The outer four have no turret and an 8 m open disc at 12 m is a helipad, not
   a tower top.
-- **A merlon-height parapet on the top, or the drum's existing merlons?** The
-  drum's twelve merlons already stand at 12 on the rim with colliders. Recommend
-  **nothing new**; check that a body on the top cannot leave the disc between
-  merlons (merlons are 4 m runs on a 25 m circumference, so they overlap and
-  the rim is closed).
+- **A parapet on the top, or the drum's crown?** The crown is already there
+  with colliders (#514). Recommend **nothing new**: a crenel is 0.6 m of stone
+  over the lid, over HEAD_LOW, so a body on the top cannot step through one,
+  and `layout.mjs` check 9b holds every sector to that.
 - **Anything to do up there?** Recommend **one location clue in a later row,
   not this one**. This row is geometry.
 
@@ -497,7 +500,8 @@ not: a third flight per inner tower and a floor at 12 m is the row.
   turret colliders are plan boxes over the geometry's own vertices, #432).
 - #455 (no stair may open a shut room from above; check 6's second half is the
   rail).
-- #456 (merlons stop at towers; adding none avoids re-trimming).
+- #456 and #514 (run merlons stop at the drum's face and the crown is the
+  drum's own; adding none avoids re-trimming).
 - #458 (a floor is a collider whatever its thickness: `thin: true`).
 - #34 (four breaks above).
 

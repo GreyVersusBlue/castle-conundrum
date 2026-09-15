@@ -1233,8 +1233,11 @@
     "model": "battlement.glb",
     "scale": 4,
     "spacing": 4,
-    "perDrum": 12,
-    "comment": "battlement.glb is 1.0 x 0.4 x 0.3 as authored, so scale 4 is a 4 m merlon run, one per tile along every wall and `perDrum` around every drum. Decoration: they carry no collider and Phase 5 puts the wall walk under them."
+    "crown": {
+      "merlon": 1.5,
+      "crenel": 0.6
+    },
+    "comment": "battlement.glb is 1.0 x 0.4 x 0.3 as authored, so scale 4 is a 4 m merlon run, one per tile along every wall. Its body is authored 0.3 to 0.6 behind its origin, so at scale 4 it stands 1.2 to 2.4 m outward of the run's centreline, on the outer 0.8 m of a 4 m wall and 0.4 m over its face. A drum gets no kit merlons: `perDrum` 12 used to anchor them on the rim, and the same offset hung them in the air at radius 5.2 to 6.4 round a 4 m drum (#514). A drum wears a `crown` instead, built stone in its own sectors: every other sector rises `merlon` over the drum's height and the rest `crenel`, so 24 sectors are 12 merlons and 12 crenels of 1.05 m of arc. The crenel is over HEAD_LOW so a body on a tower top cannot step through it; the merlon is 0.1 under the kit piece's 1.6 so the last run merlon, which reaches into the crown, shares no top with it. Colliders since Phase 5: the wall walk runs under the run merlons and the parapet is what a body on it walks into."
   },
   "gates": [
     {
