@@ -3,7 +3,15 @@
 import * as THREE from 'three';
 import { setTextureQuality } from './assets.js';
 
-export function createScene(config) {
+/**
+ * @param touch  true on a device the page has decided is driven by a thumb.
+ *   Two render numbers come down with it (#530): the pixel ratio from 2 to 1.5
+ *   and the sun's shadow map from 2048 to 1024. Both are laptop numbers, both
+ *   are the two biggest per-frame costs in this scene, and neither has been
+ *   measured on a phone by anybody — they are written here so the measurement
+ *   is one edit when somebody has one (#53).
+ */
+export function createScene(config, { touch = false } = {}) {
   const scene = new THREE.Scene();
 
   // Fog / sky tint
@@ -14,7 +22,7 @@ export function createScene(config) {
   // Renderer
   const renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, touch ? 1.5 : 2));
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -46,7 +54,7 @@ export function createScene(config) {
   const sun = new THREE.DirectionalLight(sunCfg.color, sunCfg.intensity);
   sun.position.set(...sunCfg.position);
   sun.castShadow = true;
-  sun.shadow.mapSize.set(2048, 2048);
+  sun.shadow.mapSize.set(touch ? 1024 : 2048, touch ? 1024 : 2048);
   sun.shadow.camera.left = -40;
   sun.shadow.camera.right = 40;
   sun.shadow.camera.top = 40;

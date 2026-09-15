@@ -47,8 +47,9 @@
     <div class="panel">
       <h1>Castle Conundrum</h1>
       <p>Hywel ap Gruffudd, master mason, is dead at the foot of the Chapel Tower stair. The Constable wants it written down as a fall before Vespers. You have four bells to find out otherwise.</p>
-      <p class="controls-hint">WASD — move &nbsp;·&nbsp; Mouse — look &nbsp;·&nbsp; Shift — sprint &nbsp;·&nbsp; E — talk / examine / ring &nbsp;·&nbsp; J — journal</p>
+      <p class="controls-hint" id="controls-hint">WASD — move &nbsp;·&nbsp; Mouse — look &nbsp;·&nbsp; Shift — sprint &nbsp;·&nbsp; E — talk / examine / ring &nbsp;·&nbsp; J — journal</p>
       <button id="start-button">Enter the Castle</button>
+      <button id="touch-toggle" class="link-button">Touch controls: off</button>
     </div>
   </div>
 
@@ -63,6 +64,16 @@
   </div>
 
   <div id="interact-prompt" class="hidden">Press <b>E</b> to talk</div>
+
+  <!-- The thumb's HUD (#530). Hidden on a mouse machine; the sticks are regions
+       of the canvas, and what is drawn here is the ring that follows the thumb
+       and the two buttons that are E and J. A click anywhere inside this div is
+       the HUD's and never the game's — src/interaction.js. -->
+  <div id="touch-hud" class="hidden">
+    <div id="touch-ring" class="hidden"><div id="touch-knob"></div></div>
+    <button id="touch-e" type="button">E</button>
+    <button id="touch-j" type="button">Journal</button>
+  </div>
   <div id="toast" class="hidden"></div>
 
   <!-- Dialogue -->

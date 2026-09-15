@@ -43,6 +43,7 @@ export class PlayerController {
     // built once off the plan the first time a foot lands (#519).
     this.walked = 0;
     this.stepClass = null;
+    this.touch = null;
     this.controls = new PointerLockControls(camera, domElement);
     this.keys = new Set();
     this.enabled = false;
@@ -54,9 +55,18 @@ export class PlayerController {
     window.addEventListener('blur', () => this.keys.clear());
   }
 
-  lock() { this.controls.lock(); }
-  unlock() { this.controls.unlock(); }
-  get isLocked() { return this.controls.isLocked; }
+  /**
+   * The second input scheme (#530). `touch` is `src/touch-controls.js` or null.
+   * With one attached, pointer lock stops being the thing that says the player
+   * is playing — a phone has none — and `enabled` alone does, so `lock()` and
+   * `unlock()` become no-ops and `isLocked` answers the same question the rest
+   * of the game was really asking: is this body under the player's hand?
+   */
+  useTouch(touch) { this.touch = touch; }
+  get onTouch() { return !!this.touch; }
+  lock() { if (!this.touch) this.controls.lock(); }
+  unlock() { if (!this.touch) this.controls.unlock(); }
+  get isLocked() { return this.touch ? this.enabled : this.controls.isLocked; }
 
   /**
    * Put the feet on the floor under the camera and the eye above it. Called
@@ -78,19 +88,36 @@ export class PlayerController {
     return on;
   }
 
-  update(dt) {
-    if (!this.controls.isLocked || !this.enabled) return;
-
-    const forward =
+  /**
+   * What the player is asking for this frame, from both schemes at once: the
+   * keys, and the thumb if there is one. Whichever is pushing harder on an axis
+   * wins, so a laptop with a touchscreen answers to either without a mode
+   * switch mid-frame. The triple is the same shape either way, which is the
+   * whole point of #530: nothing below here knows which hand it came from.
+   */
+  axes() {
+    const keyF =
       (this.keys.has('KeyW') || this.keys.has('ArrowUp') ? 1 : 0) -
       (this.keys.has('KeyS') || this.keys.has('ArrowDown') ? 1 : 0);
-    const strafe =
+    const keyS =
       (this.keys.has('KeyD') || this.keys.has('ArrowRight') ? 1 : 0) -
       (this.keys.has('KeyA') || this.keys.has('ArrowLeft') ? 1 : 0);
+    const keySprint = this.keys.has('ShiftLeft') || this.keys.has('ShiftRight');
+    if (!this.touch) return { forward: keyF, strafe: keyS, sprint: keySprint };
+    const t = this.touch.read();
+    const bigger = (a, b) => (Math.abs(a) >= Math.abs(b) ? a : b);
+    return { forward: bigger(keyF, t.forward), strafe: bigger(keyS, t.strafe), sprint: keySprint || t.sprint };
+  }
 
+  /** Is the player asking to move right now, by key or by thumb? */
+  get moving() { const a = this.axes(); return a.forward !== 0 || a.strafe !== 0; }
+
+  update(dt) {
+    if (!this.isLocked || !this.enabled) return;
+
+    const { forward, strafe, sprint } = this.axes();
     if (forward === 0 && strafe === 0) return;
 
-    const sprint = this.keys.has('ShiftLeft') || this.keys.has('ShiftRight');
     const speed = WALK_SPEED * (sprint ? SPRINT_MULT : 1);
 
     // Movement in camera-yaw space, flattened to the ground plane
@@ -100,11 +127,14 @@ export class PlayerController {
     dir.normalize();
     const right = new THREE.Vector3().crossVectors(dir, new THREE.Vector3(0, 1, 0));
 
+    // A key is 0 or 1 and a thumb is anything between, so the stick's own
+    // magnitude has to survive the normalise: half over is half speed.
+    const over = Math.min(1, Math.hypot(forward, strafe));
     const move = new THREE.Vector3()
       .addScaledVector(dir, forward)
       .addScaledVector(right, strafe)
       .normalize()
-      .multiplyScalar(speed * dt);
+      .multiplyScalar(speed * over * dt);
 
     const pos = this.camera.position;
     // resolve each axis separately so we slide along walls, and stand each axis

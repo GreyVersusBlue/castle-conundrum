@@ -40,7 +40,7 @@ concurrency:
 
 jobs:
   suites:
-    name: build and the eight suites
+    name: build and the nine suites
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:

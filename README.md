@@ -19,6 +19,11 @@ which is the fact the mystery turns on.
 **WASD** move · **mouse** look · **Shift** sprint · **E** talk, examine, ring ·
 **J** journal.
 
+On a touchscreen: **left thumb** move · **right thumb** look · **push the stick
+over** sprint · one **E** button that says what it will do · **Journal**. The
+page picks the scheme by `(pointer: coarse)` and `maxTouchPoints`, and the
+start panel has a toggle for the laptop that is both (#530).
+
 It is live at <https://greyversusblue.github.io/castle-conundrum/>, published
 by `.github/workflows/pages.yml` on every push to `main`. That workflow runs
 `npm run build` and serves `dist/`, **not the repo root** — since the import map
@@ -49,7 +54,7 @@ Run it on anything you add before you commit it.
 ## The suites
 
 ```
-npm test              # all eight, cheapest first, non-zero on any failure
+npm test              # all nine, cheapest first, non-zero on any failure
 npm test layout       # or any subset by name
 ```
 
@@ -57,9 +62,11 @@ Six of them are Node against source and take seconds: `gltf`, `assets`,
 `layout`, `quest`, `mystery`, `save`. `plan-vs-scene` drives a headless
 Chromium over `npm run dev`, waits for the castle to finish building, and diffs
 every placed object's live `Box3` against `src/castle-plan.js`'s box at 0.01 m.
-`built` is the one check that loads what `npm run build` produced.
+`touch` drives the same dev server on a 412 x 915 page with a touchscreen and
+taps its way through the HUD. `built` is the one check that loads what
+`npm run build` produced.
 
-`npm run play` is the ninth and is not in `npm test`. It opens a real visible
+`npm run play` is the tenth and is not in `npm test`. It opens a real visible
 window, takes pointer lock, and plays the whole day with real input — twelve
 people, ten pieces of evidence, three bells, a reload at Sext and the full
 ending — leaving a screenshot per beat in `shots/play/`. It needs a machine

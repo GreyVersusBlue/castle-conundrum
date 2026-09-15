@@ -30,6 +30,7 @@ const SUITES = [
   ['save', "the save's repair rails"],
   // Headless browser against `vite dev`: source, not the bundle.
   ['plan-vs-scene', 'the plan against the castle the browser actually builds'],
+  ['touch', 'the second input scheme, on a page with a touchscreen'],
   // Headless browser against dist/: the one check that loads the build.
   ['built', 'the built page fetches the same castle the source page does'],
 ];
