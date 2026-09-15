@@ -42,8 +42,14 @@ Kitchen, South-west and Prison Towers have a third flight and a floor at 12 m,
 not get one and the reason is arithmetic: a 2.5 m turret in a 2.8 m ring leaves
 a 0.3 m ledge. The turrets are solid now, which they had never been.
 
-**9 ranked items.** Ranks 7 and 9 are claimed on
-`claude/festive-hopper-nf7391`. Take rank 1.
+**The Great Hall's roof frame shipped on 2026-09-15** (#527 and #528): seven
+trusses across the hall at 8 m, and no covering over them, because nothing in
+a container that cannot render can tell which way a kit roof piece slopes or
+whether a covered hall goes dark. The covering is rank 8 below, behind the GPU
+run.
+
+**9 ranked items.** Rank 9 is claimed on `claude/festive-hopper-nf7391`.
+Take rank 1.
 
 Two things are true of the whole list and worth saying once. **Nothing here has
 been seen on a GPU since Phase 5.** `npm run play` walks the whole intended day
@@ -94,9 +100,9 @@ your decisions and this file's header, ranks and `Claimed` column are updated
 | 4 | Touch: pointer lock has no phone form | 1 | Opus 5 |  | [Touch](SPECS.md#touch) |
 | 5 | Four texture sets: a second wall stone, a tower stone, a plaster, a floor | ½ | Fable 5.1 |  | [The texture sets](SPECS.md#the-texture-sets) |
 | 6 | The town side: a textured ground outside the west barbican, and a road | 1 | Fable 5.1 |  | [The town side](SPECS.md#the-town-side) |
-| 7 | Stirling's Great Hall roof: a hammerbeam from `structure-cross.glb` | ½ | Sonnet 5 | `claude/festive-hopper-nf7391` | [The hall roof](SPECS.md#the-hall-roof) |
-| 8 | A second day, in which the epilogue's consequences play | 2+ | Opus 5 |  | [A second day](SPECS.md#a-second-day) |
-| 9 | `test/layout.mjs` and `test/plan-vs-scene.mjs` overlap; decide what each is for | ¼ | Sonnet 5 | `claude/festive-hopper-nf7391` | [The two plan suites](SPECS.md#the-two-plan-suites) |
+| 7 | A second day, in which the epilogue's consequences play | 2+ | Opus 5 |  | [A second day](SPECS.md#a-second-day) |
+| 8 | `test/layout.mjs` and `test/plan-vs-scene.mjs` overlap; decide what each is for | ¼ | Sonnet 5 | `claude/festive-hopper-nf7391` | [The two plan suites](SPECS.md#the-two-plan-suites) |
+| 9 | The hall's covering, and the two windows under it | ¼ | Sonnet 5 |  | [The hall covering](SPECS.md#the-hall-covering) |
 
 ## A fourth body
 
@@ -155,15 +161,9 @@ and currently that somewhere is a hard edge. The texture set goes through
 `tools/encode-assets.mjs` first (#506), which rewrites the paths
 `data/scene-config.json` needs as it encodes.
 
-## The hall roof
-
-**Rank 7.** The Great Hall is full height and open to the sky: `PLAN.md` says
-"a flat ceiling", and no piece in the plan roofs it. A hammerbeam from
-`structure-cross.glb` is a day's work and not a gameplay change.
-
 ## A second day
 
-**Rank 8, and a 2+.** The save schema already has `watch` and `accusations[]`
+**Rank 7, and a 2+.** The save schema already has `watch` and `accusations[]`
 and nothing stops a day two in which the epilogue's consequences play. The
 content does not exist — that is the whole row, and it is a writing job the
 size of `PLAN.md`'s mystery section before it is a code job. Do one increment,
@@ -171,7 +171,7 @@ ship it, leave the row standing.
 
 ## The two plan suites
 
-**Rank 9.** `test/layout.mjs` checks the plan's arithmetic in Node and
+**Rank 8.** `test/layout.mjs` checks the plan's arithmetic in Node and
 `test/plan-vs-scene.mjs` checks the scene against the same plan in a browser,
 and the second is slower than the whole rest of the suite put together. Phase 2
 wrote `layout.mjs` when it was the only check there was; some of what it asserts
@@ -180,3 +180,15 @@ a check (#34). Read both, decide what each is for, and delete what is doubled �
 but break whatever you keep on purpose first, because "these two overlap" is
 exactly the reasoning that leaves two lines guarding the same absence and both
 of them dead.
+
+## The hall covering
+
+**Rank 9.** The Great Hall has seven trusses over it since #527 and nothing
+between them. The kit's `roof*.glb` pieces would cover it, and two windows at
+`base` 5 in `great-hall-north` would keep the daylight the covering takes
+away. Both halves need somebody to look: nothing in a container that cannot
+render can tell which way a kit roof piece slopes (`partsOf` gives all four of
+`roof.glb`'s parts the same 1 x 1 x 1 box), and whether a covered hall is dark
+is a luma read off a real render (#438). Six of the twelve stand in this room
+at Vespers and the accusation is made there, which is why #528 would not guess
+at it.
