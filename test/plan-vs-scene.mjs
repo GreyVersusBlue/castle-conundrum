@@ -31,7 +31,7 @@ import { fileURLToPath } from 'node:url';
 import { serve, launch, prepPage } from '../../../Tools/board-check/harness.mjs';
 import { attachSceneProbe, waitForProbe } from '../../../Tools/board-check/drive.mjs';
 import { partsOf } from './gltf.mjs';
-import { makePlan } from '../src/castle-plan.js';
+import { makePlan, walkability, surfacesAt, EYE_HEIGHT } from '../src/castle-plan.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, '..');
@@ -160,6 +160,53 @@ try {
   if (!lock.riddleOpen) fail(`E at the word-lock opened no riddle (stage ${lock.stage})`);
   else if (lock.riddleText !== riddleText) fail(`the overlay shows ${JSON.stringify(lock.riddleText)}, and riddle.json says ${JSON.stringify(riddleText)}`);
   else pass('E at it opens the riddle overlay with riddle.json\'s riddle');
+
+  /* ---------------------------------------------- standing, on every level ---
+   * Phase 5 gave the player a y, and every Node suite can still only say that
+   * the plan's floors connect. This is the seam for the floors: the camera is
+   * put at every room's anchor on every level, at that room's floor height plus
+   * the eye, and the runtime's own PlayerController.settle() — the same code
+   * that runs after every step of a walk — is asked what it stands on. Its
+   * answer has to be the plan's floor to 0.01 m: a slab the browser built a
+   * storey too low, a deck the builder forgot, a flight standing on nothing,
+   * would each put the camera somewhere else. THE CAMERA IS PUT A STEP TOO
+   * HIGH, 0.3 m over the floor plus the eye, and settle() has to bring it
+   * down: placed exactly right, a settle() that did nothing would pass, and
+   * the first version of this beat did exactly that (#34). Nothing moves and
+   * nothing is timed; the anchor is the reachable grid cell nearest the room's centre,
+   * from the same fill test/layout.mjs runs, and for the two rooms nothing
+   * reaches — the cell, the muniment room — the plan's surface at the centre.
+   */
+  console.log('');
+  const grid = walkability(plan);
+  const anchors = grid.rooms().map((r) => {
+    const cx = (r.bounds.min.x + r.bounds.max.x) / 2, cz = (r.bounds.min.z + r.bounds.max.z) / 2;
+    if (r.reachable) {
+      const near = r.at.slice().sort((a, b) => Math.hypot(a.x - cx, a.z - cz) - Math.hypot(b.x - cx, b.z - cz))[0];
+      return { id: r.id, level: r.level, x: near.x, z: near.z, h: near.h };
+    }
+    const on = surfacesAt(plan, cx, cz).find((f) => f.level === r.level);
+    return on ? { id: r.id, level: r.level, x: cx, z: cz, h: on.h } : { id: r.id, level: r.level, x: cx, z: cz, h: null };
+  });
+  const stood = await page.evaluate(async ({ anchors, eye }) => anchors.map((a) => {
+    if (a.h == null) return { ...a, got: null };
+    window.__cam.position.set(a.x, a.h + 0.3 + eye, a.z);
+    const on = window.__player.settle();
+    return { ...a, got: on ? on.h : null, camY: window.__cam.position.y, surface: on ? on.surface : null };
+  }), { anchors, eye: EYE_HEIGHT });
+  let worstStand = -1, worstRoom = null, stoodOk = 0;
+  for (const s of stood) {
+    if (s.h == null) { fail(`${s.id} (level ${s.level}) has no floor at its centre in the plan — nothing to stand the camera on`); continue; }
+    if (s.got == null) { fail(`standing the camera at (${s.x.toFixed(2)}, ${s.z.toFixed(2)}) in ${s.id}, level ${s.level}, the runtime finds nothing under it within a step of the plan's floor at ${s.h.toFixed(2)}`); continue; }
+    const d = Math.abs(s.got - s.h);
+    if (d > worstStand) { worstStand = d; worstRoom = s.id; }
+    if (d > TOL) fail(`in ${s.id} (level ${s.level}) the plan's floor is at ${s.h.toFixed(3)} and the runtime stands on ${s.surface} at ${s.got.toFixed(3)}, ${d.toFixed(3)} m off`);
+    else if (Math.abs(s.camY - (s.got + EYE_HEIGHT)) > TOL) fail(`in ${s.id} the eye settled at y ${s.camY.toFixed(3)} over a floor at ${s.got.toFixed(3)}, not ${EYE_HEIGHT} above it`);
+    else stoodOk++;
+  }
+  const perLevel = [0, 1, 2].map((l) => `${stood.filter((s) => s.level === l).length} on level ${l}`).join(', ');
+  if (stoodOk === stood.length) pass(`the camera stands on the plan's floor in all ${stood.length} rooms (${perLevel}), worst ${Math.max(0, worstStand).toFixed(4)} m in ${worstRoom}`);
+
 } catch (err) {
   fail(`the run threw: ${err && err.message ? err.message : err}`);
 } finally {

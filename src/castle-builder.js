@@ -173,10 +173,10 @@ function ringCap(inner, outer, y, thetaStart, thetaLength, segs, metres, up) {
  * rather than a plane, because the two jambs face opposite ways and a plane is
  * only visible from one of them.
  */
-function ringJamb(inner, outer, height, theta, material) {
-  const m = mesh(new THREE.BoxGeometry(outer - inner, height, 0.02), material);
+function ringJamb(inner, outer, y0, y1, theta, material) {
+  const m = mesh(new THREE.BoxGeometry(outer - inner, y1 - y0, 0.02), material);
   const t = theta * Math.PI / 180, r = (inner + outer) / 2;
-  m.position.set(r * Math.sin(t), height / 2, r * Math.cos(t));
+  m.position.set(r * Math.sin(t), (y0 + y1) / 2, r * Math.cos(t));
   m.rotation.y = t + Math.PI / 2;
   return m;
 }
@@ -196,35 +196,89 @@ function flipInward(geo) {
   return geo;
 }
 
+/** The y ranges of `[0, height]` that `stone` (sorted, disjoint) leaves open. */
+function openingsIn(stone, height) {
+  const out = [];
+  let y = 0;
+  for (const [y0, y1] of stone) { if (y0 > y + 1e-9) out.push([y, y0]); y = y1; }
+  if (height > y + 1e-9) out.push([y, height]);
+  return out;
+}
+
+/** The parts of the intervals in `a` that no interval in `b` covers. */
+function subtractIntervals(a, b) {
+  let pieces = a.map((iv) => iv.slice());
+  for (const [b0, b1] of b) {
+    const next = [];
+    for (const [a0, a1] of pieces) {
+      if (b1 <= a0 + 1e-9 || b0 >= a1 - 1e-9) { next.push([a0, a1]); continue; }
+      if (b0 > a0 + 1e-9) next.push([a0, b0]);
+      if (b1 < a1 - 1e-9) next.push([b1, a1]);
+    }
+    pieces = next;
+  }
+  return pieces;
+}
+
 /**
- * One drum: a solid cylinder on the tile the plan names, and a turret on the four
- * inner-ward ones. `radialSegments` comes from the plan, because the plan's
+ * One drum: a hollow cylinder on the tile the plan names, and a turret on the
+ * four inner-ward ones. `radialSegments` comes from the plan, because the plan's
  * collider sectors are the boxes between these very vertices — the same polygon,
  * not two roundings of the same circle.
+ *
+ * THE RING IS DRAWN FROM THE PLAN'S OWN ANSWER. `d.stone[i]` is, for sector i,
+ * the list of y ranges that are stone with every door open — under a raised
+ * door, between two doors, over a door — and that list came out of the same
+ * function that made the colliders. Consecutive sectors with the same list are
+ * drawn as one arc so the shell has as few seams as it did with one door; a
+ * jamb face goes wherever two neighbouring sectors disagree about what is open,
+ * for exactly the range they disagree about, so two openings that meet at a
+ * vertex share no jamb between them.
  */
 function buildDrum(d, material, metres) {
   const group = new THREE.Group();
   if (d.inner) {
-    // A ring, and a doorway in it. Everything but the doorway's arc runs the
-    // tower's full height; over the doorway the same ring runs from the opening's
-    // head to the top, which is the lintel and is what keeps the drum's bounds
-    // exactly what the plan says they are.
     const step = 360 / d.segments;
-    const arc = d.door ? d.door.arc : 0;
-    const from = d.door ? d.door.from : 0;
-    const wallSegs = d.segments - (d.door ? d.door.count : 0);
     const shell = new THREE.Group();
-    if (wallSegs > 0) {
-      shell.add(ringSection(d.inner, d.radius, 0, d.height,
-        THREE.MathUtils.degToRad(from + arc), THREE.MathUtils.degToRad(360 - arc),
-        wallSegs, material, metres, [d.height]));
+    const sig = (i) => JSON.stringify(d.stone[((i % d.segments) + d.segments) % d.segments]);
+    // start the grouping at a sector whose list differs from the one before it,
+    // so no group has to wrap through 0
+    let start = 0;
+    for (let i = 0; i < d.segments; i++) if (sig(i) !== sig(i - 1)) { start = i; break; }
+    let i = 0;
+    while (i < d.segments) {
+      const s0 = (start + i) % d.segments;
+      let n = 1;
+      while (i + n < d.segments && sig(s0 + n) === sig(s0)) n++;
+      for (const [y0, y1] of d.stone[s0]) {
+        const caps = [y1];
+        if (y0 > 1e-9) caps.push(y0);
+        shell.add(ringSection(d.inner, d.radius, y0, y1,
+          THREE.MathUtils.degToRad(s0 * step), THREE.MathUtils.degToRad(n * step),
+          n, material, metres, caps));
+      }
+      i += n;
     }
-    if (d.door) {
-      shell.add(ringSection(d.inner, d.radius, d.door.height, d.height,
-        THREE.MathUtils.degToRad(from), THREE.MathUtils.degToRad(arc),
-        d.door.count, material, metres, [d.door.height, d.height]));
-      shell.add(ringJamb(d.inner, d.radius, d.door.height, from, material));
-      shell.add(ringJamb(d.inner, d.radius, d.door.height, from + arc, material));
+    for (let k = 0; k < d.segments; k++) {
+      const here = openingsIn(d.stone[k], d.height);
+      const before = openingsIn(d.stone[(k - 1 + d.segments) % d.segments], d.height);
+      for (const [y0, y1] of [...subtractIntervals(here, before), ...subtractIntervals(before, here)]) {
+        shell.add(ringJamb(d.inner, d.radius, y0, y1, k * step, material));
+      }
+    }
+    if (d.roof) {
+      // The lid: a disc across the ring at the top, the same stone. Seen from
+      // the walk of the tower next door; without it the drum is a chimney.
+      const geo = new THREE.CircleGeometry(d.inner, d.segments);
+      const uv = geo.attributes.uv;
+      for (let i = 0; i < uv.count; i++) uv.setXY(i, (uv.getX(i) - 0.5) * (2 * d.inner / metres), (uv.getY(i) - 0.5) * (2 * d.inner / metres));
+      uv.needsUpdate = true;
+      secondUV(geo);
+      const lid = new THREE.Mesh(geo, material);
+      lid.rotation.x = -Math.PI / 2;
+      lid.position.y = d.height;
+      lid.receiveShadow = true;
+      shell.add(lid);
     }
     shell.position.set(d.cx, 0, d.cz);
     group.add(shell);
@@ -246,6 +300,74 @@ function buildDrum(d, material, metres) {
     cap.position.set(d.cx, t.base + t.height / 2, d.cz);
     group.add(cap);
   }
+  return group;
+}
+
+/**
+ * An upper floor: the plan's outline (a rectangle cut back to the drums it
+ * runs into) or its disc with its wells, extruded `slab` thick and laid flat
+ * with its top at the level's height. The plan hands over the shape and this
+ * draws it; the bounds are the plan's box because the outline's extremes are
+ * the plan's own points and the disc's 48 segments put a vertex on each axis.
+ *
+ * UVs are world-space like every built surface: the top and bottom read (x, z),
+ * a side reads its run and y, chosen by the vertex normal three computed for the
+ * extrusion, so a well's edge shows planks rather than a smear.
+ *
+ * A `flush` floor is decking sunk into a wall's top, coplanar with the stone,
+ * and is drawn polygon-offset for the same reason buildGround's patches are:
+ * winning the depth test on this machine is not a property of the geometry.
+ * The offset sits on the material, which is shared by every plank floor; the
+ * other plank floors are coplanar with nothing, so it costs them nothing.
+ */
+function buildFloor(piece, material, metres) {
+  const shape = new THREE.Shape();
+  if (piece.disc) {
+    shape.absarc(piece.disc.cx, -piece.disc.cz, piece.disc.radius, 0, Math.PI * 2, false);
+    for (const h of piece.holes || []) {
+      const path = new THREE.Path();
+      path.moveTo(h.min.x, -h.min.z);
+      path.lineTo(h.max.x, -h.min.z);
+      path.lineTo(h.max.x, -h.max.z);
+      path.lineTo(h.min.x, -h.max.z);
+      path.closePath();
+      shape.holes.push(path);
+    }
+  } else {
+    piece.outline.forEach(([x, z], i) => (i ? shape.lineTo(x, -z) : shape.moveTo(x, -z)));
+    shape.closePath();
+  }
+  const y0 = piece.box.min.y, y1 = piece.box.max.y;
+  // Shape space is xy; rotateX(-90) sends shape y to -z, which is why the
+  // points above are written with -z.
+  const geo = new THREE.ExtrudeGeometry(shape, { depth: y1 - y0, bevelEnabled: false, curveSegments: 48 });
+  geo.rotateX(-Math.PI / 2);
+  geo.translate(0, y0, 0);
+  const pos = geo.attributes.position, nor = geo.attributes.normal, uv = geo.attributes.uv;
+  for (let i = 0; i < pos.count; i++) {
+    const x = pos.getX(i), y = pos.getY(i), z = pos.getZ(i);
+    if (Math.abs(nor.getY(i)) > 0.5) uv.setXY(i, x / metres, z / metres);
+    else if (Math.abs(nor.getX(i)) > Math.abs(nor.getZ(i))) uv.setXY(i, z / metres, y / metres);
+    else uv.setXY(i, x / metres, y / metres);
+  }
+  uv.needsUpdate = true;
+  secondUV(geo);
+  const m = mesh(geo, material);
+  if (piece.flush) {
+    material.polygonOffset = true;
+    material.polygonOffsetFactor = -1;
+    material.polygonOffsetUnits = -1;
+    m.renderOrder = 1;
+  }
+  return m;
+}
+
+/** The plank plate the suite stands in a barred doorway: one box, centred on x, grounded. */
+function buildPlate({ width, height, thickness }, material) {
+  const m = mesh(new THREE.BoxGeometry(width, height, thickness), material);
+  m.position.set(0, height / 2, 0);
+  const group = new THREE.Group();
+  group.add(m);
   return group;
 }
 
@@ -419,6 +541,7 @@ function modelPaths(config) {
   for (const g of config.gates) out.add(config.kenneyBase + g.archModel);
   for (const p of config.courtyard.placements) out.add(config.kenneyBase + p.model);
   for (const p of config.interiorProps) out.add(config.polyhavenBase + p.model);
+  if (config.stairs) out.add(config.kenneyBase + config.stairs.model);
   return [...out];
 }
 
@@ -505,11 +628,13 @@ export class CastleBuilder {
       else if (piece.built === 'gate-leaf') obj = buildGateLeaf(piece.leaf, this.material(piece.material));
       else if (piece.built === 'bars') obj = buildBars(piece.bars, this.material(piece.material));
       else if (piece.built === 'slab') obj = buildSlab(piece.box, this.material(piece.material));
+      else if (piece.built === 'floor') obj = buildFloor(piece, this.material(piece.material), repeat);
+      else if (piece.built === 'plate') obj = buildPlate(piece.plate, this.material(piece.material));
       else obj = await loadModel(piece.model);
 
       obj.userData.planId = piece.id;
 
-      if (piece.built === 'run' || piece.built === 'drum' || piece.built === 'ground' || piece.built === 'slab') {
+      if (piece.built === 'run' || piece.built === 'drum' || piece.built === 'ground' || piece.built === 'slab' || piece.built === 'floor') {
         // These carry their world position inside their own geometry, so the
         // plan's transform is the identity and there is nothing to apply.
         this.scene.add(obj);
@@ -517,7 +642,10 @@ export class CastleBuilder {
       }
 
       const t = piece.transform;
-      obj.scale.setScalar(t.scale);
+      // The stairs are scaled per axis (see the plan's placementMatrix); everything
+      // else by one number.
+      if (Array.isArray(t.scale)) obj.scale.set(t.scale[0], t.scale[1], t.scale[2]);
+      else obj.scale.setScalar(t.scale);
       obj.rotation.y = THREE.MathUtils.degToRad(t.rotationY);
 
       if (piece.kind === 'gate-leaf') {

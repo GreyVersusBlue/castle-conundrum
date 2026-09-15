@@ -302,10 +302,13 @@ console.log('the locks the quest listens for');
   check(listened.size > 0, 'the quest listens for at least one lock', [...listened].join(', '));
   const doors = new Map();
   for (const d of scene.drums) {
-    const leaf = d.interior?.door?.leaf;
-    if (!leaf) continue;
-    const room = scene.rooms.find((r) => r.drum === d.id);
-    if (room) doors.set(room.id, { leaf, drum: d.id });
+    for (const door of d.interior?.doors || []) {
+      if (!door.leaf) continue;
+      // the room the door belongs to is the tower's room on the door's level
+      const level = Math.round((door.base || 0) / (scene.storey || 4));
+      const room = scene.rooms.find((r) => r.drum === d.id && (r.level || 0) === level);
+      if (room) doors.set(room.id, { leaf: door.leaf, drum: d.id });
+    }
   }
   for (const id of listened) {
     const door = doors.get(id);

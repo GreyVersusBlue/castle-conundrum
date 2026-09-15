@@ -51,12 +51,19 @@ async function init() {
 
   // --- Player ---
   // castle.colliders is seeded from castle.plan.colliders and grows only by
-  // scene-setup.js's brazier stands. Nothing here measures a box.
-  const player = new PlayerController(camera, renderer.domElement, () => castle.colliders);
+  // scene-setup.js's brazier stands. Nothing here measures a box. The plan is
+  // what the player stands on: a floor, a slab, the wall walk, a flight of
+  // stairs, all through castle-plan.js's standAt.
+  const player = new PlayerController(camera, renderer.domElement, () => castle.colliders, () => castle.plan);
   if (state.player) {
     camera.position.set(state.player.x, state.player.y, state.player.z);
     camera.rotation.set(0, state.player.yaw, 0, 'YXZ');
   }
+  // A saved y is where the eye was; the floor under it is what the feet resume
+  // on. A save from before the player had a y is at 1.7 on the ground and
+  // settles there.
+  player.settle();
+  window.__player = player; // read by test/plan-vs-scene.mjs's standing beat
 
   // --- Interaction + quest ---
   // The word-locked doors are targets too: the riddle is carved over the

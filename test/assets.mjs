@@ -72,6 +72,7 @@ console.log('model references in data/');
 // in a hand rather than an archway.
 const refs = [
   [config.kenneyBase + config.battlements.model, 'the battlements'],
+  ...(config.stairs ? [[config.kenneyBase + config.stairs.model, 'the tower stairs']] : []),
   ...config.gates.map(g => [config.kenneyBase + g.archModel, `${g.id}'s archway`]),
   ...config.courtyard.placements.map(p => [config.kenneyBase + p.model, p.id || p.model]),
   ...config.interiorProps.map(p => [config.polyhavenBase + p.model, p.model]),
@@ -250,17 +251,20 @@ console.log('\nevery built thing names a material that exists');
   for (const w of config.walls) named.push([w.material, `wall run ${w.id}`]);
   for (const d of config.drums) {
     named.push([d.material, `drum ${d.id}`]);
-    const door = d.interior?.door;
-    if (door?.leaf) named.push([door.leaf.material, `${d.id}'s door leaf`]);
-    if (door?.bars) named.push([door.bars.material, `${d.id}'s bars`]);
+    for (const [i, door] of (d.interior?.doors || []).entries()) {
+      if (door.leaf) named.push([door.leaf.material, `${d.id}'s door ${i} leaf`]);
+      if (door.bars) named.push([door.bars.material, `${d.id}'s door ${i} bars`]);
+      if (door.bar) named.push([door.bar.material, `${d.id}'s door ${i} bar`]);
+    }
   }
+  if (config.walk) named.push([config.walk.material, 'the wall walk\'s decking']);
   named.push([config.ground.base.material, 'the base ground']);
   for (const patch of config.ground.patches || []) named.push([patch.material, `ground patch ${patch.id}`]);
   for (const r of config.rooms || []) if (r.floor) named.push([r.floor, `${r.id}'s floor`]);
   for (const b of config.builtProps || []) named.push([b.material, `built prop ${b.id}`]);
   const bad = named.filter(([m]) => !known.has(m));
   for (const [m, where] of bad) fail(`${where} names material "${m}", which scene-config.json does not define`);
-  if (!bad.length) pass(`${named.length} material names across the walls, drums, doors, grounds, floors and built props, every one of them defined`);
+  if (!bad.length) pass(`${named.length} material names across the walls, drums, doors, the walk, grounds, floors and built props, every one of them defined`);
 }
 
 /* ------------------------------------------------- 4: nothing dead on disk ---

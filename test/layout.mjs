@@ -25,12 +25,22 @@
 // really does apply the plan's transform to the object the plan names.
 // `test/plan-vs-scene.mjs` is that check, headless, and `npm run play` is the
 // walk.
+//
+// PHASE 5 GAVE THE CASTLE THREE LEVELS, and this file three more questions:
+// can every upper room be reached (check 3, now on every level), by its own
+// tower's stairs and not only along the walk from the next tower (check 6), and
+// does the walk cross the wards over the porter's head while his bar, were it
+// in place, would stop it (check 4b). The head room under every slab is check
+// 7. A player falling through a floor is silent to all of them; what they hold
+// is that the floors, the flights and the doors the plan describes connect the
+// way the mystery needs, and plan-vs-scene.mjs holds that the page stands the
+// camera on those same floors.
 
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { partsOf } from './gltf.mjs';
-import { makePlan, walkability, GRID } from '../src/castle-plan.js';
+import { makePlan, walkability, GRID, HEAD_HIGH } from '../src/castle-plan.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, '..');
@@ -61,12 +71,17 @@ const props = plan.pieces.filter(p => p.kind === 'prop');
 
 /* --------------------------------------- 1: no interior prop is in a wall ---
  * Every prop against every wall run, tower and column, not the four the browser
- * beat names. Overlap in x and z is enough: the walls run the full height of the
- * hall, so a prop that overlaps one in plan overlaps it in space.
+ * beat names. Overlap in all three axes: until Phase 5 x and z were enough,
+ * because every wall ran the full height of its room and every prop stood on
+ * the ground, and a prop that overlapped a wall in plan overlapped it in space.
+ * The bar beside the Stockhouse walk door stands on the top of a curtain stub
+ * that reaches into the tower, 8 m over the ground, in plan exactly where that
+ * stub is.
  */
 console.log('interior props against the stone around them');
 const overlaps = (a, b) =>
   Math.min(a.max.x, b.max.x) - Math.max(a.min.x, b.min.x) > 0 &&
+  Math.min(a.max.y, b.max.y) - Math.max(a.min.y, b.min.y) > 0 &&
   Math.min(a.max.z, b.max.z) - Math.max(a.min.z, b.min.z) > 0;
 for (const prop of props) {
   // Against each piece's OWN collider boxes, not the box that bounds them. A
@@ -75,7 +90,7 @@ for (const prop of props) {
   // corner; reading `box` here called the Great Hall's cabinet "inside
   // South-west Tower" while it stood 0.2 m clear of the tower's actual stone.
   const hit = stone.find(s => s.boxes.some(b => overlaps(prop.box, b)));
-  if (hit) fail(`${prop.id} at x ${f2(prop.box.min.x)}..${f2(prop.box.max.x)}, z ${f2(prop.box.min.z)}..${f2(prop.box.max.z)} is inside ${hit.label}`);
+  if (hit) fail(`${prop.id} at x ${f2(prop.box.min.x)}..${f2(prop.box.max.x)}, y ${f2(prop.box.min.y)}..${f2(prop.box.max.y)}, z ${f2(prop.box.min.z)}..${f2(prop.box.max.z)} is inside ${hit.label}`);
 }
 if (!failures) pass(`${props.length} interior props, none of them inside any of the ${stone.length} stone pieces`);
 
@@ -149,22 +164,32 @@ for (const name of ['GothicCabinet_01', 'GothicCommode_01']) {
 }
 
 /* ------------------------------------------ 3: every room can be walked to ---
- * The plan's rooms against the walkability flood fill from the spawn. A room
- * nobody can reach is a room that may as well not be built, and this is the
- * check Phase 4's deliberate break is aimed at: wall a doorway shut and the room
- * behind it names itself here.
+ * The plan's rooms against the walkability flood fill from the spawn, on all
+ * three levels now. A room nobody can reach is a room that may as well not be
+ * built, and this is the check Phase 4's deliberate break is aimed at: wall a
+ * doorway shut and the room behind it names itself here. Phase 5's first break
+ * — delete the Kitchen Tower's lower flight — does NOT fire here, and that is a
+ * finding rather than a gap: with sixteen flights in place the wall walk joins
+ * every tower at level 2, so a tower that has lost its way up is still reached
+ * from the tower next door, along the walk and down. Check 6 is the one that
+ * fires, by flooding with one tower's stairs at a time.
  *
- * TWO OF THE FOURTEEN ARE NOT WALKED INTO, AND THAT IS THE POINT OF THEM. The
- * muniment room is behind the word-lock until the riddle is answered, and the
- * cell is behind bars that never open. Both are asserted below rather than
- * excused: the muniment room opens when the lock does and not before, and the
- * cell stays shut while the player can stand at its bars and talk through them.
+ * TWO OF THE FOURTEEN GROUND ROOMS ARE NOT WALKED INTO, AND THAT IS THE POINT
+ * OF THEM. The muniment room is behind the word-lock until the riddle is
+ * answered, and the cell is behind bars that never open. Both are asserted
+ * below rather than excused: the muniment room opens when the lock does and not
+ * before, and the cell stays shut while the player can stand at its bars and
+ * talk through them.
  */
-console.log(`\nwalkability: ${walk.cells.length} cells on a ${GRID} m grid from the spawn`);
+console.log(`\nwalkability: ${walk.cells.length} cells on a ${GRID} m grid from the spawn, ${walk.perLevel().map(([l, n]) => `${n} on level ${l}`).join(', ')}`);
 if (!walk.started) fail(`the spawn at ${config.spawn.position} stands on nothing the grid calls a floor`);
 else pass(`the spawn at [${config.spawn.position.join(', ')}] stands on a floor`);
 const rooms = walk.rooms();
-if (rooms.length !== 14) fail(`${rooms.length} rooms in the plan, not the fourteen WISHLIST.md's room table names`);
+const groundRooms = rooms.filter(r => r.level === 0);
+if (groundRooms.length !== 14) fail(`${groundRooms.length} ground rooms in the plan, not the fourteen WISHLIST.md's room table names`);
+for (const level of [1, 2]) {
+  if (!walk.perLevel().some(([l]) => l === level)) fail(`nothing on level ${level} can be reached from the spawn`);
+}
 
 /* WHICH ROOMS ARE SHUT IS MYSTERY.JSON'S ANSWER, NOT THE CASTLE'S. The first
  * version of this took the expectation from `room.locked`, which the plan derives
@@ -174,7 +199,7 @@ if (rooms.length !== 14) fail(`${rooms.length} rooms in the plan, not the fourte
  * independent half: `locks` names the rooms a riddle opens and the cell carries
  * `barred`, and those are facts about the crime, not about the geometry. */
 const expected = new Map(rooms.map(r => {
-  const m = mystery.rooms.find(x => x.id === r.id && x.level === 0);
+  const m = mystery.rooms.find(x => x.id === r.id && x.level === r.level);
   const lock = (mystery.locks ?? []).find(l => l.room === r.id);
   return [r.id, lock ? 'riddle' : (m && m.barred ? 'bars' : null)];
 }));
@@ -190,7 +215,7 @@ for (const room of rooms) {
   } else if (!room.reachable) {
     fail(`${room.id} (${room.ward} ward, level ${room.level}) cannot be reached on foot from the spawn — 0 standable cells in ${shut}`);
   } else {
-    pass(`${room.id} reachable, ${room.cells} cells`);
+    pass(`${room.id} reachable, ${room.cells} cells (level ${room.level})`);
   }
 }
 
@@ -236,33 +261,56 @@ console.log('\nthe cell');
  * id, and `data/scene-config.json` builds rooms by id. Nothing made those two
  * lists agree until now; Phase 1 wrote room ids that the scene config did not
  * have (`clerk-office` against `clerks-office`, `lodge` against `masons-lodge`)
- * and nothing said so. They are the same fourteen ids now and this is what keeps
- * them that way. The four level-0 rooms mystery.json marks `open` are the two
- * wards, the barbican and the garden — ground, not rooms with doors.
+ * and nothing said so. They are the same fourteen ids at level 0 and this is
+ * what keeps them that way. The four level-0 rooms mystery.json marks `open`
+ * are the two wards, the barbican and the garden — ground, not rooms with
+ * doors.
+ *
+ * ABOVE THE GROUND THE MATCH IS ONE WAY. The mystery names four rooms on level
+ * 1 and four on level 2, and every one of them has to be built at that level in
+ * that ward. The castle builds more: every tower has a first floor and a top
+ * room whether anybody's schedule puts them there or not, so that the suite can
+ * hold each tower's flights to reaching them. Those may exist unnamed only if
+ * they are a tower's own (`drum`); a stretch of decking the mystery has never
+ * heard of is a mistake in one file or the other.
  */
-console.log('\nthe fourteen rooms, against mystery.json');
+console.log('\nthe rooms, against mystery.json');
 {
   const want = mystery.rooms.filter(r => r.level === 0 && !r.open).map(r => r.id).sort();
-  const got = plan.rooms.map(r => r.id).sort();
+  const got = plan.rooms.filter(r => r.level === 0).map(r => r.id).sort();
   const missing = want.filter(id => !got.includes(id));
   const extra = got.filter(id => !want.includes(id));
   for (const id of missing) fail(`mystery.json puts people or evidence in "${id}" and the castle has no such room`);
   for (const id of extra) fail(`the castle builds a room "${id}" that the mystery has never heard of`);
-  if (!missing.length && !extra.length) pass(`${got.length} rooms, the same ids in both files`);
+  if (!missing.length && !extra.length) pass(`${got.length} ground rooms, the same ids in both files`);
+  for (const level of [1, 2]) {
+    const named = mystery.rooms.filter(r => r.level === level && !r.open);
+    for (const m of named) {
+      const r = plan.rooms.find(x => x.id === m.id);
+      if (!r) fail(`mystery.json puts people or evidence in "${m.id}" on level ${level} and the castle builds no such room`);
+      else if (r.level !== level) fail(`${m.id} is on level ${r.level} in scene-config.json and level ${level} in mystery.json`);
+    }
+    const unnamed = plan.rooms.filter(r => r.level === level && !named.some(m => m.id === r.id) && !r.drum);
+    for (const r of unnamed) fail(`the castle builds "${r.id}" on level ${level}, which is not a tower's own room and which the mystery has never heard of`);
+    if (named.every(m => plan.rooms.find(x => x.id === m.id && x.level === level)) && !unnamed.length) {
+      pass(`level ${level}: the mystery's ${named.length} rooms are built, and the ${plan.rooms.filter(r => r.level === level).length - named.length} others are towers' own`);
+    }
+  }
   for (const r of plan.rooms) {
-    const m = mystery.rooms.find(x => x.id === r.id && x.level === 0);
+    const m = mystery.rooms.find(x => x.id === r.id && x.level === r.level);
     if (m && m.ward !== r.ward) fail(`${r.id} is in the ${r.ward} ward in scene-config.json and the ${m.ward} ward in mystery.json`);
   }
 }
 
 /* ------------------------------ 3e: the evidence has something to stand on ---
- * Every level-0 row in mystery.json's `evidence` names a room and a prop. Phase
- * 7 makes them examinable; Phase 4 owes them an object in the right room, and
- * this is the check that the object is where the mystery thinks it is rather
- * than somewhere that merely looked right in a screenshot.
+ * Every row in mystery.json's `evidence` names a room and a prop. Phase 7 makes
+ * them examinable; Phase 4 owed the ground ones an object in the right room and
+ * Phase 5 owes the two on the walk theirs, and this is the check that the
+ * object is where the mystery thinks it is rather than somewhere that merely
+ * looked right in a screenshot.
  */
 console.log('\nthe evidence the mystery names, as objects');
-for (const e of mystery.evidence.filter(e => e.level === 0)) {
+for (const e of mystery.evidence) {
   const piece = plan.pieces.find(p => p.evidence === e.id);
   const room = plan.rooms.find(r => r.id === e.room);
   const ground = mystery.rooms.find(r => r.id === e.room && r.level === 0 && r.open);
@@ -270,6 +318,7 @@ for (const e of mystery.evidence.filter(e => e.level === 0)) {
   if (!room && !ground) { fail(`evidence "${e.id}" names room "${e.room}", which the castle does not build`); continue; }
   const cx2 = (piece.box.min.x + piece.box.max.x) / 2, cz2 = (piece.box.min.z + piece.box.max.z) / 2;
   if (piece.model && !piece.model.endsWith(e.prop)) { fail(`evidence "${e.id}" is ${piece.model}, and mystery.json says ${e.prop}`); continue; }
+  if (room && (e.level ?? 0) !== room.level) { fail(`evidence "${e.id}" is on level ${e.level} in mystery.json and its room ${room.id} is on level ${room.level}`); continue; }
   if (piece.built === 'gate-leaf' || piece.built === 'bars') {
     // A room's own door stands in its wall, which is outside the room's bounds by
     // half the ring's thickness. What it has to be is that room's door.
@@ -278,7 +327,8 @@ for (const e of mystery.evidence.filter(e => e.level === 0)) {
   } else if (room) {
     const inside = cx2 >= room.bounds.min.x && cx2 <= room.bounds.max.x && cz2 >= room.bounds.min.z && cz2 <= room.bounds.max.z;
     if (!inside) fail(`evidence "${e.id}" stands at (${f2(cx2)}, ${f2(cz2)}), outside ${e.room} (x ${room.bounds.min.x}..${room.bounds.max.x}, z ${room.bounds.min.z}..${room.bounds.max.z})`);
-    else pass(`${e.id}: ${piece.id} in ${e.room}`);
+    else if (piece.box.min.y < room.top - 0.01 || piece.box.min.y > room.top + 1.5) fail(`evidence "${e.id}" stands with its base at y ${f2(piece.box.min.y)} in ${e.room}, whose floor is at ${room.top}`);
+    else pass(`${e.id}: ${piece.id} in ${e.room}${room.level ? ` (level ${room.level}, base y ${f2(piece.box.min.y)})` : ''}`);
   } else {
     // Open ground has no bounds to be inside. What it has instead is that the
     // player can walk up to it, which a rectangle would not have told us anyway.
@@ -294,48 +344,152 @@ for (const e of mystery.evidence.filter(e => e.level === 0)) {
  * carried `noCollide: true`, which exempted the whole 4 m piece rather than its
  * 1.9 m doorway, and a player could walk through the stone beside a shut gate.
  * `castle-plan.js`'s archColliders gives the piece two jambs and a lintel now.
+ * On the walk it is the parapet: the merlons are colliders and the strip of
+ * wall-top outside the decking is no surface, so nothing reachable stands past
+ * the outer face two storeys up either.
  */
 console.log('\nthe curtain');
 if (walk.sealed()) {
-  pass(`nothing reachable outside x ${f2(plan.curtain.min.x)}..${f2(plan.curtain.max.x)}, z ${f2(plan.curtain.min.z)}..${f2(plan.curtain.max.z)}`);
+  pass(`nothing reachable outside x ${f2(plan.curtain.min.x)}..${f2(plan.curtain.max.x)}, z ${f2(plan.curtain.min.z)}..${f2(plan.curtain.max.z)}, on any level`);
 } else {
-  const where = walk.breaches(3).map(c => `(${c.x}, ${c.z})`).join(', ') || 'nowhere the fill crossed — the spawn is already outside';
+  const where = walk.breaches(3).map(c => `(${c.x}, ${c.z}, level ${c.level})`).join(', ') || 'nowhere the fill crossed — the spawn is already outside';
   fail(`the castle leaks: ${walk.leaked} reachable cells outside the curtain at x ${f2(plan.curtain.min.x)}..${f2(plan.curtain.max.x)}, z ${f2(plan.curtain.min.z)}..${f2(plan.curtain.max.z)}. The fill stepped through at ${where}`);
 }
 
-/* ------------------------- 4b: the cross-wall is the only ground crossing ---
+/* ---------------------------- 4b: two crossings, one logged and one not ---
  *
  * The fact the whole mystery turns on. "The porter's gate is the only crossing
  * at ground level and the porter logs it" — so who was in which ward at which
- * bell is knowable, and an NPC who says they never crossed can be caught. If a
- * second way through the cross-wall exists, every one of the thirty-nine clues
- * that rests on a logged crossing rests on nothing.
+ * bell is knowable, and an NPC who says they never crossed can be caught. And
+ * "the wall walk is the crossing nobody logs": it runs over the cross-wall and
+ * through the Stockhouse Tower's top room, past a door the porter swears he
+ * bars and did not. If a second way through the cross-wall exists at ground
+ * level, every clue that rests on a logged crossing rests on nothing; if the
+ * walk does NOT cross, the Clerk could not have done what the clues say he did;
+ * and if the walk door's bar would not have stopped him, the porter's lie is
+ * not a lie that matters.
  *
- * Flooded a second time with the porter's gate forced shut, which is what
- * `closed` is for: with the one crossing sealed, NOTHING in the inner ward can
- * be reached from a spawn in the west barbican. That is the opposite assertion
- * to check 3's, not a restatement of it — check 3 says the inner ward IS
- * reachable with the gate as the castle actually ships it, open. Deleting either
- * leaves a real hole: without check 3 the cross-wall could be solid and the
- * inner ward dead; without this one it could be a colander.
+ * Three floods. With the porter's gate forced shut and the walk door as it
+ * ships (open), the inner ward is still reachable, and only over the top: level
+ * 2 connects the wards. With the walk door barred as well, NOTHING in the inner
+ * ward can be reached on any level: the bar separates them, and the gate was
+ * the only ground crossing. The third is check 3 itself, with everything as
+ * shipped. Deleting any one leaves a real hole: without the first the walk
+ * could be two dead ends; without the second the cross-wall could be a
+ * colander, or the bar a curtain.
  */
-console.log('\nthe cross-wall, with the porter\'s gate shut');
+console.log('\nthe crossings, with the porter\'s gate shut');
 {
-  const shut = makePlan(config, boundsOf, { closed: ['porter-gate'] });
-  const sealedWalk = walkability(shut);
-  const inner = sealedWalk.rooms().filter(r => r.ward === 'inner');
-  if (!inner.length) fail('no inner-ward rooms in config.rooms — nothing to divide');
-  const open = inner.filter(r => r.reachable);
-  if (open.length) {
-    fail(`inner ward reachable at level 0 with the porter's gate closed: ${open.map(r => `${r.id} (${r.cells} cells)`).join(', ')}. The cross-wall has a second way through it`);
+  const walkDoor = plan.gates.find(g => g.id === 'stockhouse-walk');
+  if (!walkDoor) fail('no walk door in the plan: the Stockhouse Tower\'s top room has nothing in its west doorway that could be barred');
+  else if (walkDoor.closed) fail('the Stockhouse walk door ships barred in scene-config.json, and the mystery needs it open: door-unbarred is the porter\'s lie');
+  else pass('the Stockhouse walk door is in the plan, and ships open');
+
+  const over = walkability(makePlan(config, boundsOf, { closed: ['porter-gate'] })).rooms();
+  const innerOver = over.filter(r => r.ward === 'inner' && r.reachable);
+  const need = ['cross-walk', 'stockhouse-walk', 'kings-hall', 'royal-apartments'];
+  const missed = need.filter(id => !innerOver.some(r => r.id === id));
+  if (missed.length) {
+    fail(`level 2 does not connect the wards: with the porter's gate shut and the walk door open, ${missed.join(', ')} cannot be reached — ${innerOver.length} inner-ward rooms can (${innerOver.map(r => r.id).join(', ') || 'none'})`);
   } else {
-    pass(`inner ward sealed off at level 0 with the porter's gate closed — ${inner.map(r => r.id).join(', ')} all at 0 cells, against ${walk.rooms().filter(r => r.ward === 'inner').reduce((n, r) => n + r.cells, 0)} with it open`);
+    pass(`level 2 connects the wards: with the porter's gate shut, ${innerOver.length} inner-ward rooms are still reached over the walk, ${need.join(', ')} among them`);
+  }
+
+  const barred = walkability(makePlan(config, boundsOf, { closed: ['porter-gate', 'stockhouse-walk'] }));
+  const innerBarred = barred.rooms().filter(r => r.ward === 'inner' && r.reachable);
+  if (innerBarred.length) {
+    fail(`the barred door does not separate the wards: with the porter's gate shut and the Stockhouse walk door barred, ${innerBarred.map(r => `${r.id} (level ${r.level}, ${r.cells} cells)`).join(', ')} can still be reached. There is a second way across`);
+  } else {
+    pass(`the barred door separates them: with the porter's gate shut and the walk door barred, every inner-ward room is at 0 cells, against ${walk.rooms().filter(r => r.ward === 'inner').reduce((n, r) => n + r.cells, 0)} with both open`);
   }
   // and the outer ward is still there, so a fill that simply died proves nothing
-  const outerShut = sealedWalk.rooms().filter(r => r.ward === 'outer' && r.reachable).length;
+  const outerBarred = barred.rooms().filter(r => r.ward === 'outer' && r.reachable).length;
   const outerOpen = walk.rooms().filter(r => r.ward === 'outer' && r.reachable).length;
-  if (outerShut !== outerOpen) fail(`shutting the porter's gate changed the OUTER ward too, ${outerOpen} rooms to ${outerShut} — the second fill did not run the castle it was meant to`);
-  else pass(`the outer ward is unchanged by it, ${outerShut} rooms either way`);
+  if (outerBarred !== outerOpen) fail(`shutting the crossings changed the OUTER ward too, ${outerOpen} rooms to ${outerBarred} — the fill did not run the castle it was meant to`);
+  else pass(`the outer ward is unchanged by it, ${outerBarred} rooms either way`);
+
+  // the cross-wall walk is one deck from tower to tower, not two stubs
+  const cross = rooms.find(r => r.id === 'cross-walk');
+  if (!cross) fail('no cross-walk room in the plan');
+  else {
+    const zs = cross.at.map(c => c.z);
+    const [lo, hi] = [Math.min(...zs), Math.max(...zs)];
+    if (!cross.reachable || lo > -12 || hi < 12) fail(`the cross-wall walk is not one deck: its reachable cells run z ${f2(lo)}..${f2(hi)}, and it has to reach both towers`);
+    else pass(`the cross-wall walk is one deck, z ${f2(lo)}..${f2(hi)}, over the porter's gate`);
+  }
+}
+
+/* ------------------- 6: every tower's upper rooms, by its own stairs ---
+ * Check 3 floods with every flight in place, and the walk joins the towers at
+ * level 2, so it cannot tell a tower that has lost a flight from one that has
+ * not: the Kitchen Tower's first floor is reached from the North-west Tower's
+ * stairs, along the north walk and down. So each tower is flooded on its own,
+ * with only its flights built and every other tower's left out, and its
+ * level-1 room, its level-2 room and the chamber its level-1 door serves all
+ * have to be reached. This is the check the phase's first deliberate break is
+ * aimed at.
+ *
+ * TWO TOWERS HAVE NO LOWER FLIGHT (#455). The Prison Tower's ground room is the
+ * cell and the King's Tower's is the muniment room, both shut, and a stair from
+ * a shut room to the walk is a way round what shuts it: the first time every
+ * tower had both flights, check 3 read the cell reachable with its bars in
+ * place and the muniment room reachable with its word-lock unanswered. Those
+ * two are flooded from their own top room instead, and asked two things: that
+ * the upper flight reaches the first floor, and that nothing reaches the ground
+ * room, which is the lock holding from above.
+ */
+console.log('\neach tower\'s upper rooms, by its own stairs alone');
+{
+  const serves = { 'nw-tower': 'clerk-chamber', 'kitchen-tower': 'dormitory', 'kings-tower': 'royal-apartments' };
+  for (const drum of config.drums) {
+    if (!drum.stairs) { fail(`${drum.id} has no stairs`); continue; }
+    const top = plan.rooms.find(r => r.drum === drum.id && r.level === 2);
+    const fromTop = drum.lowerFlight === false && top
+      ? { spawn: { position: [top.shape.cx, top.top + 1.7, top.shape.cz], level: 2 } } : {};
+    const own = walkability(makePlan(config, boundsOf, { stairs: drum.id, ...fromTop })).rooms();
+    const wanted = plan.rooms.filter(r => r.drum === drum.id && r.level > 0).map(r => r.id);
+    if (serves[drum.id]) wanted.push(serves[drum.id]);
+    const missed = wanted.filter(id => !own.find(r => r.id === id)?.reachable);
+    const how = drum.lowerFlight === false ? 'its own upper flight, from its top room' : 'its own two flights';
+    if (missed.length) fail(`${missed.join(' and ')} cannot be reached by ${drum.id}'s ${drum.lowerFlight === false ? 'upper flight' : 'own stairs'} — ${missed.map(id => `${id} unreachable`).join(', ')}`);
+    else pass(`${drum.id}: ${wanted.join(', ')} reached by ${how}`);
+    if (drum.lowerFlight === false) {
+      const ground = own.find(r => r.drum === drum.id && r.level === 0);
+      if (!ground) fail(`${drum.id} has no ground room`);
+      else if (ground.reachable) fail(`${ground.id} can be reached down ${drum.id}'s stairs from the walk — ${ground.cells} cells — and it is shut for a reason`);
+      else pass(`${ground.id} cannot be reached from above`);
+    }
+  }
+}
+
+/* ------------------------------- 7: head room under every upper floor ---
+ * A slab is a collider, and the grid refuses a cell whose head band a collider
+ * crosses, so no reachable cell ever has a ceiling under HEAD_HIGH: that claim
+ * is true by construction and a check of it would change no answer (#13). What
+ * CAN go wrong silently is a slab written too low over a room the fill never
+ * enters anyway — the cell, the muniment room — or over a room whose loss looks
+ * like a walled doorway. So this reads the geometry: every upper floor against
+ * every room beneath it in plan, slab bottom less room floor, no less than the
+ * height a standing body needs. The phase's second break lowers the royal
+ * apartments to 1.6 m and this is the line that names it.
+ */
+console.log('\nhead room under the upper floors');
+{
+  const slabs = plan.pieces.filter(p => p.built === 'floor' && !p.flush);
+  let checked = 0;
+  for (const slab of slabs) {
+    for (const r of plan.rooms) {
+      if (r.level >= slab.level) continue;
+      const over = Math.min(slab.box.max.x, r.bounds.max.x) - Math.max(slab.box.min.x, r.bounds.min.x) > 0.5 &&
+        Math.min(slab.box.max.z, r.bounds.max.z) - Math.max(slab.box.min.z, r.bounds.min.z) > 0.5;
+      if (!over) continue;
+      checked++;
+      const clear = slab.box.min.y - r.top;
+      if (clear < HEAD_HIGH - 1e-9) fail(`${slab.id} hangs ${clear.toFixed(2)} m over ${r.id}'s floor at ${r.top} — a standing body needs ${HEAD_HIGH}`);
+    }
+  }
+  if (!checked) fail('no upper floor lies over any room — nothing was measured');
+  else pass(`${slabs.length} upper floors over ${checked} rooms beneath them, every one ${HEAD_HIGH} m or more clear`);
 }
 
 /* ------------------------------------- 5: every NPC stands somewhere real ---
