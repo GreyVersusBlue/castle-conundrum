@@ -1,8 +1,9 @@
 # Castle Conundrum Feature Wishlist
 
-**Status: this is the v2 plan, written 2026-09-14. Phases 1 and 2 shipped the
-same day (PR #306 and PR #309, #421 to #431); Phases 3 to 7 are open, at ranks
-1 to 5 in `BACKLOG.md`.** Seven phases, each sized to one session, each taken in
+**Status: this is the v2 plan, written 2026-09-14. Phases 1 to 4 shipped that
+day (PRs #306, #309, #312 and #314, #421 to #450) and Phase 5 on 2026-09-15
+(PR #316, #451 to #464); Phases 6 and 7 are open, at ranks 1 and 2 in
+`BACKLOG.md`.** Seven phases, each sized to one session, each taken in
 order because each reads what the one before it wrote.
 The game today is `Projects/Castle Conundrum/index.html`: a fifteen minute walk
 across one 28 m courtyard to one riddle, three NPCs, 3,089 lines of code, 29 MB
@@ -570,7 +571,7 @@ that basis, and the ceiling is Devon's number either way):
 | Phase 2 | none | 29.0 |
 | Phase 3 | castle_wall_slates 2.1, defense_wall 2.0, grassy_cobblestone 2.1 | 35.2 |
 | Phase 4 | rock_tile_floor 2.8, floor_tiles_02 0.8, old_planks_02 1.0 | 39.8 |
-| Phase 5 | wood_planks 1.6, dirty_carpet 3.0 | 44.4 |
+| Phase 5 | wood_planks 1.6, dirty_carpet 3.0 | 44.4 (`du` reads 44) |
 | Phase 6 | none (tints, not bodies) | 44.4 |
 | Phase 7 | none | 44.4 |
 
@@ -899,17 +900,81 @@ Great Hall, the chapel and the cell's bars (GPU). **Weight:** 39.8 MB
 
 ## Phase 5: The upper level and the wall walk
 
+**Shipped 2026-09-15, PR #316, under Claude Fable 5.1** (#451 to #464). Three
+levels: slabs at 3.8..4.0 over the Clerk's office, the kitchen and the King's
+Hall and in every tower, the wall walk flush with the top of every curtain run
+and the cross-wall, fourteen flights, doors in the rings at levels 1 and 2, and
+a player whose feet stand on `src/castle-plan.js`'s `standAt`, which is the
+function the walkability grid stands on. 307 pieces at 0.0000 m against the
+live scene, the camera on the plan's floor in all 36 rooms at 0.0000 m; 39.8 MB
+to 44, the two sets restored, the ceiling.
+
+What the plan below said and what shipped differ in eight places, each a
+locked decision:
+
+- **The flights are 1.5 m wide, not 2** (#452). Two 2 m flights side by side
+  are a 4 m square whose corners sit 2.83 m from the tower's centre, in a ring
+  whose inner face is at 2.8. `stairs-stone.glb` is placed per axis at
+  3 x 3.9 x 3.9, in an L: the lower flight along z with its foot on the outer
+  wall, the upper along x in the outer half rising toward it, 2.05 m of head
+  room where they overlap, and the last 0.1 m onto each slab a step.
+- **The lower flight stands on the half away from the ground door** (#460). It
+  splits the tower floor into two halves joined only through its own footprint,
+  and the ring's sector boxes cut the crescents at the diagonals; a body coming
+  in on the flight's side cannot reach its foot. Found when the flight's body
+  stopped being walkable floor and five towers went dark at once. The chapel's
+  candles, lantern and pouch and the laundry's crate moved out of the flights,
+  and `layout.mjs` now refuses a prop in one.
+- **Two towers have no lower flight** (#455). The cell and the muniment room are
+  shut, and a stair from a shut room to the walk is a way round what shuts it:
+  the first time every tower had both flights, both rooms read reachable from
+  the spawn, down from the walk. The Prison Tower and the King's Tower keep the
+  upper flight, standing on a first floor reached from the walk, and the suite
+  floods each from its own top room and asks that the ground room stay dark.
+- **The level-1 rooms are walled, not railed** (#453). The five partitions
+  under them go to 8 m; `wood-floor-railing.glb` is not placed, because no slab
+  meets a drop. Lady Alys's window is a doorway with a `base` a metre above her
+  floor, and its sill is a box like any other.
+- **A level-2 door is sixty degrees** (#454), and its bearing is where the
+  decking actually is: the west curtain's inner face is at x -34, which is the
+  EAST half of the towers centred at -36, and two doors were first cut on the
+  west (#457). The Stockhouse Tower's walk door is a `bar` — an opening with
+  nothing to draw while it is open, sealed by its own ring sectors when the
+  suite bars it — and the bar leaning beside it is the evidence object.
+- **The walk is the curtain and the cross-wall, and the Stockhouse door is its
+  one crossing** (#461). Decking is 2 m, flush with the wall's top, sunk into
+  the stone and drawn polygon-offset, cut back to every drum's outer circle.
+  The Bakehouse Tower has no west door, so the outer ward's south walk ends at
+  its ring and only the Stockhouse door joins the wards two storeys up; the
+  barbican and garden walls carry no walk. Three runs of stone go over the
+  gates, so the west and east walks are continuous and the cross-wall walk runs
+  over the porter's head.
+- **A floor is a collider whatever its thickness** (#458). Slabs and decks were
+  under the 0.3 m decor threshold and never blocked anyone, so the wells cut for
+  the flights were needed by nothing; taking them out left every suite green.
+- **Merlons stop at towers and at T-junctions** (#456). A run's last merlon
+  reached through the ring into the tower's top room, and the barbicans' last
+  merlons stood across the west walk. Two walls turning a corner each keep
+  theirs. The hollow drums are roofed.
+
+**Still open from this phase:** `npm run play` is unrun (#53). Its walk beat
+climbs the Kitchen Tower, walks the north curtain east, crosses the cross-wall
+and comes down the Bakehouse Tower, reading 5.7, 9.7 and 1.7 off the camera;
+none of it has been seen on a GPU, and the wishlist's own warning stands: a
+walk that clips through a deck on a software renderer is a walk to re-run on a
+real one before it is called a bug.
+
 **Size 1. Claude Fable 5.1.** The part of this plan that is genuinely
 unsolved: the player standing on floor two, and the suite knowing it.
 
-- [ ] **Surfaces with height.** Level-one slabs as built `BoxGeometry`
+- [x] **Surfaces with height.** Level-one slabs as built `BoxGeometry`
   3.8..4.0 m carrying `wood_planks`, `dirty_carpet` over the King's Hall;
   the wall walk as 2 m decking at y 8 along every run and the cross-wall;
   `stairs-stone.glb` in the eight towers, two per tower, entered in the plan
   as ramps (`slope: {from: 0, to: 4}` over the piece's own run, read from
   its bounds). Floor edges from `wood-floor-railing.glb` where a slab meets a
   drop; battlements already on the outer edge of the walk.
-- [ ] **The player has a `y`.** `PlayerController` asks the plan for the
+- [x] **The player has a `y`.** `PlayerController` asks the plan for the
   highest standable surface under the player within 0.35 m of the current
   feet height and stands the eye 1.7 m above it; ramps interpolate. Colliders
   are tested in a band relative to the feet (`feet + 0.3` to `feet + 1.9`),
@@ -918,14 +983,14 @@ unsolved: the player standing on floor two, and the suite knowing it.
   The interaction ray already uses world positions and needs no change; NPCs
   gain `level` in their station so a level-two porter is not walked to at
   ground.
-- [ ] **`walkability` grows the second and third levels** for real, and the
+- [x] **`walkability` grows the second and third levels** for real, and the
   checks that the mystery's geometry holds: the cross-wall walk connects the
   north and south curtain walks at level 2 (`walk-crosses` is a place a
   player can stand on); with the Stockhouse Tower's walk door collider
   closed, the wards do *not* connect at level 2 (the porter's bar works when
   it is barred); every tower's level 1 and level 2 rooms are reachable from
   its stair; no reachable cell has a ceiling under 1.9 m.
-- [ ] **`plan-vs-scene.mjs` grows a standing beat:** teleport the camera to
+- [x] **`plan-vs-scene.mjs` grows a standing beat:** teleport the camera to
   every room's anchor on every level and assert the plan's floor height there
   equals the surface the runtime reports, to 0.01 m. Headless, no movement.
 
