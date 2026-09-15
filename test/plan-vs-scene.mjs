@@ -208,6 +208,35 @@ try {
   const perLevel = [0, 1, 2].map((l) => `${stood.filter((s) => s.level === l).length} on level ${l}`).join(', ');
   if (stoodOk === stood.length) pass(`the camera stands on the plan's floor in all ${stood.length} rooms (${perLevel}), worst ${Math.max(0, worstStand).toFixed(4)} m in ${worstRoom}`);
 
+  /* AND THE HUD SAYS WHERE (#515). The room line is written by the page's own
+   * `nav.roomAt` on the next frame after the camera moves, so with the camera
+   * settled in each room the line has to read what the same resolver, run
+   * here in Node over the same plan, names for that point. Two frames are
+   * waited for, not timed. Assert against the DOM for what just happened
+   * (#39): a resolver that is right and a HUD line nobody writes to would pass
+   * everything above. */
+  {
+    const hudNav = castleNav(plan, JSON.parse(fs.readFileSync(path.join(ROOT, 'data/mystery.json'), 'utf8')));
+    const want = stood.filter((s) => s.h != null).map((s) => ({ ...s, name: hudNav.roomAt(s.x, s.z, s.h).name }));
+    const read = await page.evaluate(async ({ want, eye }) => {
+      const out = [];
+      const frame = () => new Promise((r) => requestAnimationFrame(() => r()));
+      for (const a of want) {
+        window.__cam.position.set(a.x, a.h + 0.3 + eye, a.z);
+        window.__player.settle();
+        await frame(); await frame();
+        out.push({ id: a.id, shown: document.getElementById('hud-room')?.textContent ?? null });
+      }
+      return out;
+    }, { want, eye: EYE_HEIGHT });
+    let named = 0;
+    for (let i = 0; i < want.length; i++) {
+      if (read[i].shown === want[i].name) named++;
+      else fail(`standing in ${want[i].id} the HUD's room line reads ${JSON.stringify(read[i].shown)}, and roomAt names it ${JSON.stringify(want[i].name)}`);
+    }
+    if (named === want.length) pass(`the HUD's room line names the room the camera stands in, all ${named} rooms`);
+  }
+
   /* ------------------------------------------- the twelve, and the bell ---
    * Phase 6 put the cast on the screen and the day on a bell, and the Node
    * suites can see neither: test/mystery.mjs holds the schedule to the castle's

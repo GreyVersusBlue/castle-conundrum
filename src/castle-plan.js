@@ -1344,6 +1344,7 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
       id: g.id, quest: g.quest || null, closed: isClosed,
       shutAngle: shut, openAngle: shut + (g.openDegrees || 0),
       blocks: isClosed ? [g.id] : [],
+      x: gx, z: gz, // where it stands; stations.js tells the wards apart by it (#515)
     });
   }
 
@@ -1450,7 +1451,7 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
       b = { min: { x: r.bounds.min[0], z: r.bounds.min[1] },
             max: { x: r.bounds.max[0], z: r.bounds.max[1] } };
     }
-    return { id: r.id, level, ward: r.ward || null, drum: r.drum || null, floor: r.floor || null, locked, bounds: b, shape, top: floorTop(level) };
+    return { id: r.id, name: r.name || null, level, ward: r.ward || null, drum: r.drum || null, floor: r.floor || null, locked, bounds: b, shape, top: floorTop(level) };
   });
 
   /* --- the upper floors: a slab per room above the ground that names a floor ---

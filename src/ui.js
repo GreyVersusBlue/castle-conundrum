@@ -17,6 +17,7 @@ export class UI {
       tracker: document.getElementById('quest-tracker'),
       objective: document.getElementById('quest-objective'),
       watch: document.getElementById('quest-watch'),
+      room: document.getElementById('hud-room'),
       prompt: document.getElementById('interact-prompt'),
       toast: document.getElementById('toast'),
       dialogue: document.getElementById('dialogue-box'),
@@ -106,6 +107,9 @@ export class UI {
 
   /** Which of the four bells the castle is on. */
   setWatch(text) { if (this.el.watch) this.el.watch.textContent = text; }
+
+  /** Where the player is, by name (#515). */
+  setRoom(text) { if (this.el.room) this.el.room.textContent = text; }
 
   setInteractPrompt(visible, text = '') {
     this.el.prompt.classList.toggle('hidden', !visible);

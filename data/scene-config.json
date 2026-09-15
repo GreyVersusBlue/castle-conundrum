@@ -1508,6 +1508,7 @@
     },
     {
       "id": "nw-tower-1",
+      "name": "North-west Tower, first floor",
       "level": 1,
       "ward": "outer",
       "drum": "nw-tower",
@@ -1515,6 +1516,7 @@
     },
     {
       "id": "kitchen-tower-1",
+      "name": "Kitchen Tower, first floor",
       "level": 1,
       "ward": "outer",
       "drum": "kitchen-tower",
@@ -1522,6 +1524,7 @@
     },
     {
       "id": "stockhouse-tower-1",
+      "name": "Stockhouse Tower, first floor",
       "level": 1,
       "ward": "inner",
       "drum": "stockhouse-tower",
@@ -1529,6 +1532,7 @@
     },
     {
       "id": "kings-tower-1",
+      "name": "King's Tower, first floor",
       "level": 1,
       "ward": "inner",
       "drum": "kings-tower",
@@ -1536,6 +1540,7 @@
     },
     {
       "id": "sw-tower-1",
+      "name": "South-west Tower, first floor",
       "level": 1,
       "ward": "outer",
       "drum": "sw-tower",
@@ -1543,6 +1548,7 @@
     },
     {
       "id": "prison-tower-1",
+      "name": "Prison Tower, first floor",
       "level": 1,
       "ward": "outer",
       "drum": "prison-tower",
@@ -1550,6 +1556,7 @@
     },
     {
       "id": "bakehouse-tower-1",
+      "name": "Bakehouse Tower, first floor",
       "level": 1,
       "ward": "inner",
       "drum": "bakehouse-tower",
@@ -1564,6 +1571,7 @@
     },
     {
       "id": "nw-tower-2",
+      "name": "North-west Tower, top room",
       "level": 2,
       "ward": "outer",
       "drum": "nw-tower",
@@ -1571,6 +1579,7 @@
     },
     {
       "id": "kitchen-tower-2",
+      "name": "Kitchen Tower, top room",
       "level": 2,
       "ward": "outer",
       "drum": "kitchen-tower",
@@ -1585,6 +1594,7 @@
     },
     {
       "id": "kings-tower-2",
+      "name": "King's Tower, top room",
       "level": 2,
       "ward": "inner",
       "drum": "kings-tower",
@@ -1592,6 +1602,7 @@
     },
     {
       "id": "sw-tower-2",
+      "name": "South-west Tower, top room",
       "level": 2,
       "ward": "outer",
       "drum": "sw-tower",
@@ -1599,6 +1610,7 @@
     },
     {
       "id": "prison-tower-2",
+      "name": "Prison Tower, top room",
       "level": 2,
       "ward": "outer",
       "drum": "prison-tower",
@@ -1606,6 +1618,7 @@
     },
     {
       "id": "bakehouse-tower-2",
+      "name": "Bakehouse Tower, top room",
       "level": 2,
       "ward": "inner",
       "drum": "bakehouse-tower",
@@ -1613,6 +1626,7 @@
     },
     {
       "id": "chapel-tower-2",
+      "name": "Chapel Tower, top room",
       "level": 2,
       "ward": "inner",
       "drum": "chapel-tower",

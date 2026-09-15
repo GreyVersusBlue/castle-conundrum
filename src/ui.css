@@ -111,6 +111,9 @@ button:hover { background: #e6bb63; }
 /* The bell the castle is on. Sits above the objective because it is the thing
    that changes under the player rather than the thing they are doing. */
 .tracker-watch { color: var(--accent); font-size: 1.05em; margin-bottom: 0.35em; }
+/* Where the player is, by the mystery's own room names (#515). Under the
+   objective, dimmer than it: a bearing, not a task. */
+.tracker-room { color: var(--parchment); opacity: 0.7; font-size: 0.9em; margin-top: 0.45em; font-style: italic; }
 
 #interact-prompt {
   position: fixed; bottom: 22%; left: 50%;
