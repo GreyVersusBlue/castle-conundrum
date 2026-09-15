@@ -7,9 +7,11 @@ mystery and the castle as data in `data/`, 43 MB of glTF and textures in
 
 **`PLAN.md` is the most valuable file here.** It is 64 K of phase plans — what
 the castle is, why the order is what it is, and the seven phases that built it,
-all seven of which shipped. **`BACKLOG.md` is the entry point for open work.
-`HISTORY.md` is the record**, and it carries every locked decision this project
-has, by number.
+all seven of which shipped. **`BACKLOG.md` is the entry point for open work,
+and `SPECS.md` is the spec behind each of its rows** (scope by file, acceptance,
+open calls with a recommendation, dependencies, the rules that bite). Read a
+row's spec before its brief. **`HISTORY.md` is the record**, and it carries
+every locked decision this project has, by number.
 
 The project lived in `GreyVersusBlue/tools-and-games` under
 `Projects/Castle Conundrum/` until 2026-09-15 and moved here with its history

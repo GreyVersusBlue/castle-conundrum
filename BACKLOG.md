@@ -1,10 +1,16 @@
 # BACKLOG
 
 Open work on Castle Conundrum, ranked. **`HISTORY.md` records what shipped;
-this file ranks what is open; `PLAN.md` is the plan the seven shipped phases
-came out of** and its "What this leaves for a later arc" list is where most of
-the rows below came from. Nothing open lives in `HISTORY.md` and nothing that
-shipped belongs here.
+this file ranks what is open; `SPECS.md` is the spec for each row below;
+`PLAN.md` is the plan the seven shipped phases came out of** and its "What this
+leaves for a later arc" list is where most of the rows below came from. Nothing
+open lives in `HISTORY.md` and nothing that shipped belongs here.
+
+Each row's `Detail` link goes to its section in `SPECS.md`: scope by file,
+acceptance criteria and the suite that holds them, the open judgement calls with
+a recommended answer, dependencies, and the house rules that bite. The sections
+under the table here are the one-paragraph summaries; where a summary and
+`SPECS.md` differ, `SPECS.md` was written against the code and wins.
 
 ## Where things stand
 
@@ -56,17 +62,17 @@ your decisions and this file's header, ranks and `Claimed` column are updated
 
 | Rank | Item | Size | Model | Claimed | Detail |
 | --- | --- | --- | --- | --- | --- |
-| 1 | KTX2/Basis, meshopt and Draco over the 43 MB of assets, via `@gltf-transform/cli` | 1 | Opus 5 |  | [Asset compression](#asset-compression) |
-| 2 | Sound: footsteps by surface, and the bell | ½ | Fable 5.1 |  | [Sound](#sound) |
-| 3 | A fourth body, and a woman's in particular | ½ | Fable 5.1 |  | [A fourth body](#a-fourth-body) |
-| 4 | A real GPU run of `npm run play`, and somebody looks at the twelve | ¼ | Opus 5 |  | [The GPU run](#the-gpu-run) |
-| 5 | A new preview and og card, from that run | ¼ | Opus 5 |  | [The GPU run](#the-gpu-run) |
-| 6 | Touch: pointer lock has no phone form | 1 | Opus 5 |  | [Touch](#touch) |
-| 7 | The turrets and the tower tops: four cylinders nobody can climb | 1 | Fable 5.1 |  | [The turrets](#the-turrets) |
-| 8 | The town side: a textured ground outside the west barbican, and a road | 1 | Fable 5.1 |  | [The town side](#the-town-side) |
-| 9 | Stirling's Great Hall roof: a hammerbeam from `structure-cross.glb` | ½ | Sonnet 5 |  | [The hall roof](#the-hall-roof) |
-| 10 | A second day, in which the epilogue's consequences play | 2+ | Opus 5 |  | [A second day](#a-second-day) |
-| 11 | `test/layout.mjs` and `test/plan-vs-scene.mjs` overlap; decide what each is for | ¼ | Sonnet 5 |  | [The two plan suites](#the-two-plan-suites) |
+| 1 | KTX2/Basis, meshopt and Draco over the 43 MB of assets, via `@gltf-transform/cli` | 1 | Opus 5 |  | [Asset compression](SPECS.md#asset-compression) |
+| 2 | Sound: footsteps by surface, and the bell | ½ | Fable 5.1 |  | [Sound](SPECS.md#sound) |
+| 3 | A fourth body, and a woman's in particular | ½ | Fable 5.1 |  | [A fourth body](SPECS.md#a-fourth-body) |
+| 4 | A real GPU run of `npm run play`, and somebody looks at the twelve | ¼ | Opus 5 |  | [The GPU run](SPECS.md#the-gpu-run) |
+| 5 | A new preview and og card, from that run | ¼ | Opus 5 |  | [The GPU run](SPECS.md#the-gpu-run) |
+| 6 | Touch: pointer lock has no phone form | 1 | Opus 5 |  | [Touch](SPECS.md#touch) |
+| 7 | The turrets and the tower tops: four cylinders nobody can climb | 1 | Fable 5.1 |  | [The turrets](SPECS.md#the-turrets) |
+| 8 | The town side: a textured ground outside the west barbican, and a road | 1 | Fable 5.1 |  | [The town side](SPECS.md#the-town-side) |
+| 9 | Stirling's Great Hall roof: a hammerbeam from `structure-cross.glb` | ½ | Sonnet 5 |  | [The hall roof](SPECS.md#the-hall-roof) |
+| 10 | A second day, in which the epilogue's consequences play | 2+ | Opus 5 |  | [A second day](SPECS.md#a-second-day) |
+| 11 | `test/layout.mjs` and `test/plan-vs-scene.mjs` overlap; decide what each is for | ¼ | Sonnet 5 |  | [The two plan suites](SPECS.md#the-two-plan-suites) |
 
 ## Asset compression
 
@@ -147,8 +153,9 @@ and currently that somewhere is a hard edge.
 
 ## The hall roof
 
-**Rank 9.** The Great Hall is full height with a flat ceiling. A hammerbeam
-from `structure-cross.glb` is a day's work and not a gameplay change.
+**Rank 9.** The Great Hall is full height and open to the sky: `PLAN.md` says
+"a flat ceiling", and no piece in the plan roofs it. A hammerbeam from
+`structure-cross.glb` is a day's work and not a gameplay change.
 
 ## A second day
 
