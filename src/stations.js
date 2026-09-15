@@ -72,6 +72,11 @@ export function castleNav(plan, mystery) {
     point.h = cell ? cell.h : null;
   }
   const planRooms = new Map(plan.rooms.map((r) => [`${r.id}/${r.level}`, r]));
+  // the three gates' x, which is what tells the wards apart in open ground
+  const gateX = {};
+  for (const g of plan.gates || []) {
+    if (g.id === 'west-gate') gateX.west = g.x; else if (g.id === 'east-gate') gateX.east = g.x; else if (g.id === 'porter-gate') gateX.porter = g.x;
+  }
 
   const api = {
     walk,
@@ -136,6 +141,30 @@ export function castleNav(plan, mystery) {
      * tell the King's Tower's muniment room from the walk over its roof.
      * `feet` is the player's floor height, not the eye's.
      */
+    /**
+     * WHICH ROOM IS THIS POINT IN, for the HUD's one line saying so (#515).
+     * `inRoom` above asks about one room on purpose; this asks the same
+     * question of every room and settles the overlap it warns about: a disc
+     * beats a box, so the cell beats the Great Hall's square round it and a
+     * tower's top room beats the walk crossing it. Storeys need no rule:
+     * `inRoom` reads the feet against the floor, and no two floors are within
+     * a metre, so the first version's "highest level wins" was found dead by
+     * flipping it and watching nothing fail (#34). Nothing matched is open
+     * ground, read off the three gates: west of the west gate is the
+     * barbican, east of the east gate the garden, east of the cross-wall the
+     * inner ward, and the rest the outer ward.
+     */
+    roomAt(x, z, feet) {
+      let best = null;
+      for (const r of plan.rooms) {
+        if (!api.inRoom(r.id, r.level, x, z, feet)) continue;
+        if (!best || (r.shape?.kind === 'disc' && best.shape?.kind !== 'disc')) best = r;
+      }
+      const id = best ? best.id : x < gateX.west ? 'west-barbican' : x > gateX.east ? 'garden' : x > gateX.porter ? 'inner-ward' : 'outer-ward';
+      const level = best ? best.level : 0;
+      const name = rooms.get(id)?.name ?? best?.name ?? id;
+      return { id, level, name, open: !best };
+    },
     inRoom(roomId, level, x, z, feet) {
       const r = planRooms.get(`${roomId}/${level ?? 0}`);
       if (!r) return false;

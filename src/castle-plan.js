@@ -925,7 +925,7 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
     const boxes = runBoxes(run, tileSize);
     addPiece({
       id: run.id, kind: 'wall', built: 'run', level: run.level || 0, curtain: !!run.curtain,
-      material: run.material, repeatMetres: run.repeatMetres || null,
+      material: run.material, tint: run.tint || null, repeatMetres: run.repeatMetres || null,
       label: run.comment ? run.comment.split(/[.,]/)[0] : run.id,
       transform: { position: [0, 0, 0], rotationY: 0, scale: 1 }, box, boxes,
     });
@@ -1005,7 +1005,7 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
     drumShapes.push({ drum, room: rooms.has(0) ? rooms.get(0).id : null, rooms, ...d });
     addPiece({
       id: drum.id, kind: 'tower', built: 'drum', level: drum.level || 0, curtain: !!drum.curtain,
-      material: drum.material, label: drum.comment ? drum.comment.split(/[.,]/)[0] : drum.id,
+      material: drum.material, tint: drum.tint || null, label: drum.comment ? drum.comment.split(/[.,]/)[0] : drum.id,
       drum: {
         cx: d.cx, cz: d.cz, radius: d.radius, height: drum.height,
         segments: d.segments, turret: d.turret,
@@ -1344,6 +1344,7 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
       id: g.id, quest: g.quest || null, closed: isClosed,
       shutAngle: shut, openAngle: shut + (g.openDegrees || 0),
       blocks: isClosed ? [g.id] : [],
+      x: gx, z: gz, // where it stands; stations.js tells the wards apart by it (#515)
     });
   }
 
@@ -1450,7 +1451,7 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
       b = { min: { x: r.bounds.min[0], z: r.bounds.min[1] },
             max: { x: r.bounds.max[0], z: r.bounds.max[1] } };
     }
-    return { id: r.id, level, ward: r.ward || null, drum: r.drum || null, floor: r.floor || null, locked, bounds: b, shape, top: floorTop(level) };
+    return { id: r.id, name: r.name || null, level, ward: r.ward || null, drum: r.drum || null, floor: r.floor || null, locked, bounds: b, shape, top: floorTop(level) };
   });
 
   /* --- the upper floors: a slab per room above the ground that names a floor ---
@@ -1501,7 +1502,7 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
     })));
     addPiece({
       id, kind: 'floor', built: 'floor', level: r.level, curtain: false,
-      material: r.floor, repeatMetres: r.repeatMetres || null, flush: false, label: id,
+      material: r.floor, tint: r.tint || null, repeatMetres: r.repeatMetres || null, flush: false, label: id,
       outline, cutouts, disc: d ? { cx: d.cx, cz: d.cz, radius: d.inner } : null, holes,
       transform: { position: [0, 0, 0], rotationY: 0, scale: 1 }, box: pbox, boxes,
     });
@@ -1545,7 +1546,7 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
     if (!r.floor || r.level !== 0) continue;
     const d = r.drum ? drumShapes.find((x) => x.drum.id === r.drum) : null;
     grounds.push({
-      id: `floor-${r.id}`, material: r.floor, patch: true, fallbackColor: null,
+      id: `floor-${r.id}`, material: r.floor, tint: r.tint || null, patch: true, fallbackColor: null,
       disc: d ? { cx: d.cx, cz: d.cz, radius: d.inner } : null,
       box: { min: { x: r.bounds.min.x, y: 0, z: r.bounds.min.z },
              max: { x: r.bounds.max.x, y: 0, z: r.bounds.max.z } },
@@ -1555,7 +1556,7 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
   for (const g of grounds) {
     addPiece({
       id: g.id, kind: 'ground', built: 'ground', level: 0, curtain: false,
-      material: g.material, label: g.id, patch: g.patch, disc: g.disc || null,
+      material: g.material, tint: g.tint || null, label: g.id, patch: g.patch, disc: g.disc || null,
       transform: { position: [0, 0, 0], rotationY: 0, scale: 1 }, box: g.box,
     });
     surfaces.push({ id: g.id, box: g.box, top: 0, level: 0, slope: null });

@@ -187,29 +187,51 @@ function makePlaceholder(path) {
  * slots exist and each pack declares the one it actually ships;
  * `test/assets.mjs` fails a material that declares both or neither.
  */
-export function loadPBRMaterial({ diffuse, normal, arm, rough }, repeat = 1, fallbackColor = '#888888') {
+/**
+ * ONE TEXTURE PER URL, however many materials read it (#516). A tinted variant
+ * of a stone is a second MeshStandardMaterial over the same maps, and the
+ * maps are the whole cost: eight towers in eight tints off one defense_wall
+ * set is one set on the GPU, not eight. Loading is deduplicated by URL and the
+ * callbacks queue behind the first load.
+ */
+const textures = new Map(); // url -> { tex: Texture | null, waiting: [(tex) => void] }
+function loadTexture(url, repeat, onOk) {
+  let entry = textures.get(url);
+  if (entry) {
+    if (entry.tex) onOk(entry.tex); else entry.waiting.push(onOk);
+    return;
+  }
+  entry = { tex: null, waiting: [onOk] };
+  textures.set(url, entry);
+  loaderFor(url).load(
+    url,
+    (tex) => {
+      tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(repeat, repeat);
+      tuneTexture(tex);
+      entry.tex = tex;
+      for (const fn of entry.waiting) fn(tex);
+      entry.waiting = [];
+    },
+    undefined,
+    () => { textures.delete(url); console.error(`[Castle Conundrum] MISSING TEXTURE: "${url}" — using fallback color`); }
+  );
+}
+
+export function loadPBRMaterial({ diffuse, normal, arm, rough }, repeat = 1, fallbackColor = '#888888', tint = null) {
   const mat = new THREE.MeshStandardMaterial({ color: fallbackColor, roughness: 1 });
 
   const tryTex = (url, onOk) => {
     if (!url) return;
-    loaderFor(url).load(
-      url,
-      (tex) => {
-        tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-        tex.repeat.set(repeat, repeat);
-        tuneTexture(tex);
-        onOk(tex);
-        mat.needsUpdate = true;
-      },
-      undefined,
-      () => console.error(`[Castle Conundrum] MISSING TEXTURE: "${url}" — using fallback color`)
-    );
+    loadTexture(url, repeat, (tex) => { onOk(tex); mat.needsUpdate = true; });
   };
 
   tryTex(diffuse, (t) => {
     t.colorSpace = THREE.SRGBColorSpace;
     mat.map = t;
-    mat.color.set('#ffffff');
+    // The tint multiplies the diffuse: white is the stone as shot, and a
+    // tower's own hue is what tells it from the seven others (#516).
+    mat.color.set(tint || '#ffffff');
   });
   tryTex(normal, (t) => { mat.normalMap = t; });
   tryTex(arm, (t) => {

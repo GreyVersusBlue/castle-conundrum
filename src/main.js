@@ -180,12 +180,19 @@ async function init() {
   const placeClues = mysteryData.clues
     .filter((c) => c.kind === 'L' && c.source?.room)
     .map((c) => ({ room: c.source.room, level: c.source.level ?? 0, was: false }));
+  let roomShown = null;
   renderer.setAnimationLoop(() => {
     const dt = Math.min(clock.getDelta(), 0.05);
     const t = clock.elapsedTime;
 
     player.update(dt);
     castle.update(dt);
+    // The HUD's room line: asked every frame, written only when the answer
+    // changes (#515). Thirty-six rooms is nothing; a DOM write a frame is not.
+    {
+      const here = nav.roomAt(camera.position.x, camera.position.z, camera.position.y - EYE_HEIGHT);
+      if (here.id !== roomShown) { roomShown = here.id; ui.setRoom(here.name); }
+    }
     if (player.isLocked && (player.keys.size > 0)) {
       auto.mark(); // walking: the position is dirty
       const feet = camera.position.y - EYE_HEIGHT;

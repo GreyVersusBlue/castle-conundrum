@@ -451,5 +451,36 @@ console.log('the frame');
   }
 }
 
+/* ---------------- the HUD's room line agrees with the schedule (#515) ---
+ * `nav.roomAt` answers "which room is this point in" for the HUD, over every
+ * room, with the overlaps settled by level and then disc over box. The
+ * schedule is 45 stations whose room each was written by hand, open ground
+ * included, so it is the one list that can say whether the resolver's answer
+ * is the castle's. Where a station lies in two rooms at once, which is the
+ * overlap `inRoom`'s own comment warns of, the resolver may name either, and
+ * the sentry "by the Kitchen Tower" on the north walk stands 2.24 m from the
+ * tower's centre, inside its top room: the answer is the tower. The other
+ * way round is not allowed: a station the schedule puts in a tower is in the
+ * tower, and the cell is never the Great Hall. A room on the wrong floor is
+ * wrong too, because `inRoom` reads the feet.
+ */
+console.log('\nthe HUD room line, at every station');
+{
+  let agreed = 0, either = 0;
+  for (const [npcId, byWatch] of Object.entries(mystery.schedule)) {
+    for (const watch of mystery.watches) {
+      const point = nav.at(npcId, watch);
+      if (!point || point.h == null) continue;
+      const here = nav.roomAt(point.x, point.z, point.h);
+      if (here.id === point.room) agreed++;
+      else if (!here.open && !nav.plan.rooms.some((r) => r.id === point.room && r.shape?.kind === 'disc') &&
+        nav.inRoom(point.room, point.level, point.x, point.z, point.h) && nav.inRoom(here.id, here.level, point.x, point.z, point.h)) either++;
+      else fail(`at ${watch}, ${npcId} stands in ${point.room} and roomAt says ${here.id}`);
+    }
+  }
+  if (agreed) pass(`${agreed + either} stations: roomAt names the schedule's room at ${agreed}, and at ${either} a room the station is also inside`);
+  else fail('no station had a floor to ask about');
+}
+
 console.log(failures ? `\n${failures} failure(s)` : '\nall good');
 process.exit(failures ? 1 : 0);

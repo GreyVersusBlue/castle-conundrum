@@ -1813,3 +1813,59 @@ at 12.20, under the 12.30 a body on the lid would need stopping by`.
 **What this did not do.** None of it has been seen on a GPU (#53). Check 10
 closes the flicker as a matter of geometry, and the GPU run (ranked row 3) is
 where somebody looks.
+
+## Knowing where you are: a room line, eight tints, thirty-six landmarks (2026-09-15)
+
+**Not a ranked row; the fourth thing Devon saw**, after #511 to #514 shipped
+the other three (PR #6). "It feels like you're constantly going in circles,
+because we might be." Read against the data it was true: 25 of 36 rooms held
+nothing, every room above the ground among them, every upper floor was the
+same plank, all eight drums were one stone at one size, and the HUD had the
+bell and the objective and no bearing. Decisions #515 to #517, one PR on
+`claude/fervent-clarke-566ery-variation`.
+
+- **The HUD says where you are** (#515). `nav.roomAt(x, z, feet)` in
+  `stations.js` asks `inRoom` of every room and settles the overlap that
+  function's comment warns about: a disc beats a box, so the cell beats the
+  Great Hall's square round it and a tower's top room beats the walk crossing
+  it. Storeys need no rule, and the first version had one: "highest level
+  wins" was flipped to lowest and nothing failed, because `inRoom` reads the
+  feet against the floor and no two floors are within a metre (#34). Open
+  ground is told apart by the three gates' x, which the gates now carry. The
+  names are `mystery.json`'s, and the fourteen tower rooms it does not name
+  got one in `scene-config.json`. The line is written on the frame the
+  answer changes. Two rails: `mystery.mjs` holds `roomAt` to the schedule at
+  all 45 stations, allowing a walk station that is also inside the tower the
+  walk crosses (the sentry "by the Kitchen Tower" stands 2.24 m from its
+  centre) and never the other way round; `plan-vs-scene.mjs` reads the DOM
+  with the camera settled in each of the 36 rooms (#39).
+- **Eight drums, eight tints, one texture set** (#516). A `tint` on a drum,
+  run or room multiplies the stone's diffuse for that piece; `assets.js`
+  caches every texture by URL so the eight materials read one set and the
+  GPU holds one. The outer four are cool (blue-grey, warm grey, green-grey,
+  slate) and the inner four warm (sand, gold, ochre, pale). The rail reads
+  each drum's live material colour against the tint the plan gives it: the
+  first version asked only for eight distinct colours, and a drum whose tint
+  was deleted came back white, which is distinct too (#34).
+- **Something in every room** (#517). 36 `courtyard.placements` from the kit
+  pieces already committed and never used: barrels, crates, a ladder, a hoist,
+  a pile of stone, a timber frame, one or two per room, each clear of the
+  flights, the stations and the wells, on the room's own floor by `base`.
+  `layout.mjs` check 11 refuses a room that is not open ground and not shut
+  with nothing in it. The porter's lodge read as furnished and was not: the
+  one thing over it was the walk-bar, 8 m up on the walk.
+- **New texture sets did not happen here, and are a row** (#518). Devon said
+  yes to downloading Poly Haven sets and KTX-Software in this session; the
+  container's network policy answers 403 to both hosts (npm is the only
+  registry it reaches, and `ktx` is not on it). The sets are chosen and the
+  row is written against the encode pipeline (#506), for a machine with
+  `ktx`.
+
+**The breaks, from green.** `mystery.mjs`, box over disc: `at prime,
+prisoner stands in cell and roomAt says great-hall`; one ward for all open
+ground: `at sext, lady stands in inner-ward and roomAt says outer-ward`.
+`plan-vs-scene.mjs`, the HUD write deleted: `standing in clerk-office the
+HUD's room line reads "", and roomAt names it "Clerk of Works' office"`; the
+Prison Tower's tint deleted: `prison-tower wants no tint at all and shows
+ffffff`. `layout.mjs` check 11, the dormitory emptied: `dormitory (level 1)
+has nothing in it`.

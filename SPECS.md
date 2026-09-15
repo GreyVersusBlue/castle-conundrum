@@ -489,7 +489,7 @@ floor at 12 m is the row.
 
 ### Dependencies
 
-- **Rank 10 first is cheaper.** It decides what `layout.mjs` and
+- **Rank 11 first is cheaper.** It decides what `layout.mjs` and
   `plan-vs-scene.mjs` each keep, and this row edits the level lists in both.
   Not blocking.
 - Rank 7 is visible from here; no dependency either way.
@@ -507,14 +507,78 @@ floor at 12 m is the row.
 
 ---
 
+## The texture sets
+
+**Rank 7. Size ½.** The castle is dressed in ten sets and reads as one: 27 of
+31 runs are `castle_wall_slates`, all eight drums `defense_wall`, every upper
+floor `wood_planks`. #516 gave each drum a `tint` over the same maps, which is
+free and is not a second stone. This row is the second stone. It was meant
+to be part of the wayfinding PR (#7) and was not, because the container that
+PR was built in answers 403 to Poly Haven and to KTX-Software's release page
+(#518): it can reach npm and nothing else, and `ktx` is not on npm.
+
+### Scope
+
+- **Four CC0 sets at 1k, `diff`, `nor_gl`, and `arm` or `rough`, never
+  both (#437):**
+  - `medieval_blocks_02` for the inner ward's runs (the King's Hall, the
+    steward's chamber, the cross-wall's inner face): dressed ashlar against
+    the outer ward's rubble slates.
+  - `castle_brick_02` for the four inner drums, so a tower tells you which
+    ward you are in before its tint does.
+  - `plastered_wall_04` or `plaster_wall_02` for the level-1 rooms' interior
+    partitions and the royal apartments: lime plaster upstairs, stone below.
+  - `wood_floor_deck` or `wooden_planks_02` for the tower first floors, so
+    the walk's decking and a tower room's boards are not one plank.
+  Exact names are whatever Poly Haven lists that day; the four roles are the
+  row.
+- **`tools/encode-assets.mjs`** encodes them in place and rewrites the paths
+  `data/scene-config.json`'s `materials` needs (#506). The jpgs are not
+  committed.
+- **`data/scene-config.json`:** four `materials` entries, referenced from at
+  least one run, drum or room each in the same commit (#390; `test/assets.mjs`
+  check 4 fails an unreferenced Poly Haven byte). Runs, drums and rooms take
+  `material` today and `tint` since #516; nothing new in the schema.
+- **`src/`:** nothing. `loadPBRMaterial` reads whichever of `arm` and `rough`
+  the set ships.
+
+### Acceptance
+
+- `test/assets.mjs`: the four sets referenced and complete, every file
+  `.ktx2`, no jpg or png under `assets/poly-haven`. Break: reference a set
+  without encoding it; `built.mjs` fails `neither asked for a jpg or a png`.
+- `test/built.mjs`: `dist/` under 200 MB (#499); expect about 12 MB more.
+- `plan-vs-scene.mjs`: no change; a material is not a box.
+- GPU: the inner ward reads as a different build from the outer. Ranked row
+  3's run.
+
+### Open calls
+
+- **Which four.** The roles above; recommend the first name listed for each
+  and no agonising.
+- **Tint on top of a new stone, or one or the other?** Recommend **both**:
+  the inner drums keep their warm tints over the new brick.
+
+### Dependencies
+
+- A machine with `ktx` on PATH. Devon's Windows machine has it (#506). Not
+  this container (#518).
+
+### Constraints
+
+- #506 (encode before commit; originals are git history), #437, #390, #503
+  (no spaces in paths), #499.
+
+---
+
 ## The town side
 
-**Rank 7. Size 1.** The ground is the curtain's footprint plus a 2 m margin,
+**Rank 8. Size 1.** The ground is the curtain's footprint plus a 2 m margin,
 worked out from the placed stone (#436); beyond it is fog from 30 to 150 m.
 `barbican-west` has no archway and PLAN.md's answered question 5 says both
 barbican gates stay shut forever. The spawn is in the barbican facing east. So
 today the only place the outside is visible from is the west walk and, after
-rank 7, the tower tops. The row: a textured ground outside the west barbican,
+rank 6, the tower tops. The row: a textured ground outside the west barbican,
 a road, and "a different ending".
 
 ### Scope
@@ -604,7 +668,7 @@ a road, and "a different ending".
 
 ## The hall roof
 
-**Rank 8. Size ½.** PLAN.md says the Great Hall is "full height with a flat
+**Rank 9. Size ½.** PLAN.md says the Great Hall is "full height with a flat
 ceiling". The config says otherwise: `great-hall` is a `tiles` room at level 0
 with `rock_tile_floor`, its north and east partitions are 8 m runs, its south
 and west walls are the curtain, and **no piece in the plan roofs it**. It is
@@ -683,7 +747,7 @@ day's work and not a gameplay change.
 
 ## A second day
 
-**Rank 9. Size 2+.** The save has `watch` and `accusations[]`. The engine's
+**Rank 10. Size 2+.** The save has `watch` and `accusations[]`. The engine's
 `ring()` stops at the fourth bell and `accuse()` records a verdict; the epilogue
 pane's one button is `restart`, which erases the save and reloads. The content
 for a day two does not exist. This section is about the first increment, what
@@ -810,7 +874,7 @@ increment 1 shipped and what is left.
 
 ## The two plan suites
 
-**Rank 10. Size ¼.** `test/layout.mjs` (608 lines, Node, ~1 s) checks the
+**Rank 11. Size ¼.** `test/layout.mjs` (608 lines, Node, ~1 s) checks the
 plan's arithmetic; `test/plan-vs-scene.mjs` (528 lines, headless Chromium
 against `vite dev`, about a minute) checks the page against the same plan.
 Both import `makePlan`, `walkability` and `partsOf`. The row: decide what each
@@ -908,7 +972,7 @@ Constable's two conversations and the panel.
 
 ### Dependencies
 
-- None. **Doing this before rank 7** means rank 7 edits the level lists in
+- None. **Doing this before rank 6** means rank 6 edits the level lists in
   files whose purpose is written down.
 
 ### Constraints

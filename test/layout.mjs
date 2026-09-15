@@ -777,6 +777,33 @@ console.log('\nno two upward faces on one plane');
   if (!shared.length) pass(`${entries.length} boxes over ${faced.length} pieces, no two tops on one plane over a common footprint`);
 }
 
+/* ------------------------------ 11: every room has something in it ---
+ * Twenty-five of thirty-six rooms had nothing in them, every room above the
+ * ground among them, and eight identical drums on one stone: Devon could not
+ * tell where he was (#517). A room that is not open ground and not shut has
+ * at least one prop or piece of decor standing on its own floor, with its
+ * box centre inside the room's bounds; a room emptied by a later move reads
+ * `has nothing in it` here rather than in a walk.
+ */
+console.log('\nsomething in every room');
+{
+  const things = plan.pieces.filter(p => p.kind === 'prop' || (p.kind === 'decor' && p.label !== 'battlement'));
+  let filled = 0;
+  for (const r of plan.rooms) {
+    if (r.locked) continue;
+    const inside = things.filter(p => {
+      const x = (p.box.min.x + p.box.max.x) / 2, z = (p.box.min.z + p.box.max.z) / 2;
+      return x >= r.bounds.min.x && x <= r.bounds.max.x && z >= r.bounds.min.z && z <= r.bounds.max.z &&
+        (r.shape?.kind !== 'disc' || Math.hypot(x - r.shape.cx, z - r.shape.cz) <= r.shape.radius) &&
+        Math.abs(p.box.min.y - r.top) < 1.0;
+    });
+    if (inside.length) filled++;
+    else fail(`${r.id} (level ${r.level}) has nothing in it`);
+  }
+  const open = plan.rooms.filter(r => r.locked).length;
+  if (filled + open === plan.rooms.length) pass(`${filled} rooms each hold at least one thing, ${open} shut rooms not asked`);
+}
+
 /* ------------------------------------- 5: every NPC stands somewhere real ---
  * Both lists in npcs.json: the three the page spawns today and the twelve under
  * `cast` that Phase 1 wrote. The cast carry no `position` yet — Phase 6 fills
