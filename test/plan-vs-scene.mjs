@@ -237,6 +237,30 @@ try {
     if (named === want.length) pass(`the HUD's room line names the room the camera stands in, all ${named} rooms`);
   }
 
+  /* ------------------------------------ eight drums, eight tints, one set ---
+   * The drums are one stone at one size and from the walk they were eight of
+   * one thing; each carries a `tint` now (#516). The tint lands on the
+   * material's colour when the diffuse arrives, and the maps are cached by
+   * URL so the eight materials read one texture. Both halves are read off the
+   * live scene: every drum's material colour is the tint the plan gives it,
+   * eight tints all different, and one map object between them. The first
+   * version asked only for eight distinct colours, and a drum whose tint was
+   * deleted on purpose came back white, which is distinct too (#34).
+   */
+  {
+    const want = plan.pieces.filter((p) => p.built === 'drum').map((p) => ({ id: p.id, tint: p.tint ? p.tint.replace('#', '').toLowerCase() : null }));
+    const drums = await page.evaluate((ids) => ids.map((id) => {
+      let mesh = null;
+      window.__scene.traverse((o) => { if (!mesh && o.userData?.planId === id) o.traverse((m) => { if (!mesh && m.isMesh) mesh = m; }); });
+      const mat = mesh && (Array.isArray(mesh.material) ? mesh.material[0] : mesh.material);
+      return { id, colour: mat ? mat.color.getHexString() : null, map: mat && mat.map ? mat.map.uuid : null };
+    }), want.map((w) => w.id));
+    const wrong = want.filter((w, i) => !w.tint || drums[i].colour !== w.tint).map((w, i) => `${w.id} wants ${w.tint ?? 'no tint at all'} and shows ${drums[want.indexOf(w)].colour}`);
+    const tints = new Set(want.map((w) => w.tint)), maps = new Set(drums.map((d) => d.map));
+    check(want.length === 8 && tints.size === 8 && !wrong.length, `${want.length} drums, each the colour of its own tint, ${tints.size} tints all different`, wrong.join('; ') || `${tints.size} distinct tints`);
+    check(maps.size === 1 && !maps.has(null), `and one diffuse map between them`, `${maps.size} maps`);
+  }
+
   /* ------------------------------------------- the twelve, and the bell ---
    * Phase 6 put the cast on the screen and the day on a bell, and the Node
    * suites can see neither: test/mystery.mjs holds the schedule to the castle's

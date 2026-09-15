@@ -24,13 +24,14 @@ every texture, meshopt over the Poly Haven props and the NPC bodies, and 317.9
 MB of video memory down to 79.9. `tools/encode-assets.mjs` is the pipeline, and
 anything ranks 2 and 7 add has to come through it.
 
-**Three things a GPU saw shipped on 2026-09-15** (#511 to #514): a body can
-climb every flight, the drums wear built crowns instead of merlons hanging in
-the air, and no two faces share a plane, so nothing flickers. `layout.mjs`
-checks 8, 9 and 10 hold each. The fourth thing Devon saw, that every room
-looks like the last, is the next PR.
+**Four things a GPU saw shipped on 2026-09-15** (#511 to #517, PRs #6 and
+#7): a body can climb every flight, the drums wear built crowns instead of
+merlons hanging in the air, no two faces share a plane so nothing flickers,
+and the castle says where you are: a HUD room line, a tint per drum, and
+something in every room. What did not ship is new texture sets, because this
+container cannot reach Poly Haven or KTX-Software (#518); that is rank 7 now.
 
-**10 ranked items.** Take rank 1.
+**11 ranked items.** Take rank 1.
 
 Two things are true of the whole list and worth saying once. **Nothing here has
 been seen on a GPU since Phase 5.** `npm run play` walks the whole intended day
@@ -81,10 +82,11 @@ your decisions and this file's header, ranks and `Claimed` column are updated
 | 4 | A new preview and og card, from that run | ¼ | Opus 5 |  | [The GPU run](SPECS.md#the-gpu-run) |
 | 5 | Touch: pointer lock has no phone form | 1 | Opus 5 |  | [Touch](SPECS.md#touch) |
 | 6 | The turrets and the tower tops: four cylinders nobody can climb | 1 | Fable 5.1 |  | [The turrets](SPECS.md#the-turrets) |
-| 7 | The town side: a textured ground outside the west barbican, and a road | 1 | Fable 5.1 |  | [The town side](SPECS.md#the-town-side) |
-| 8 | Stirling's Great Hall roof: a hammerbeam from `structure-cross.glb` | ½ | Sonnet 5 |  | [The hall roof](SPECS.md#the-hall-roof) |
-| 9 | A second day, in which the epilogue's consequences play | 2+ | Opus 5 |  | [A second day](SPECS.md#a-second-day) |
-| 10 | `test/layout.mjs` and `test/plan-vs-scene.mjs` overlap; decide what each is for | ¼ | Sonnet 5 |  | [The two plan suites](SPECS.md#the-two-plan-suites) |
+| 7 | Four texture sets: a second wall stone, a tower stone, a plaster, a floor | ½ | Fable 5.1 |  | [The texture sets](SPECS.md#the-texture-sets) |
+| 8 | The town side: a textured ground outside the west barbican, and a road | 1 | Fable 5.1 |  | [The town side](SPECS.md#the-town-side) |
+| 9 | Stirling's Great Hall roof: a hammerbeam from `structure-cross.glb` | ½ | Sonnet 5 |  | [The hall roof](SPECS.md#the-hall-roof) |
+| 10 | A second day, in which the epilogue's consequences play | 2+ | Opus 5 |  | [A second day](SPECS.md#a-second-day) |
+| 11 | `test/layout.mjs` and `test/plan-vs-scene.mjs` overlap; decide what each is for | ¼ | Sonnet 5 |  | [The two plan suites](SPECS.md#the-two-plan-suites) |
 
 ## Sound
 
@@ -139,9 +141,19 @@ a view over the whole plan from 12 m. Phase 5 built the upper level and the
 wall walk and stopped below the tower tops. The parapet up there is the drum's
 own crown since #514, not kit merlons.
 
+## The texture sets
+
+**Rank 7.** Ten texture sets dress the whole castle and 27 of 31 runs are
+`castle_wall_slates`; every upper floor is `wood_planks`. #516's tints tell
+the eight drums apart with no new bytes, and the next step is bytes: four
+Poly Haven sets, chosen in `SPECS.md`, through `tools/encode-assets.mjs`
+(#506) on a machine with `ktx`. This container cannot reach Poly Haven or the
+KTX-Software release (#518), which is the only reason it is a row and not
+part of PR #7.
+
 ## The town side
 
-**Rank 7.** The world ends at the curtain by budget. A textured ground outside
+**Rank 8.** The world ends at the curtain by budget. A textured ground outside
 the west barbican and a road is one texture set Devon dropped
 (`forest_ground_06`) and a different ending — the clerk arrives from somewhere
 and currently that somewhere is a hard edge. The texture set goes through
@@ -150,13 +162,13 @@ and currently that somewhere is a hard edge. The texture set goes through
 
 ## The hall roof
 
-**Rank 8.** The Great Hall is full height and open to the sky: `PLAN.md` says
+**Rank 9.** The Great Hall is full height and open to the sky: `PLAN.md` says
 "a flat ceiling", and no piece in the plan roofs it. A hammerbeam from
 `structure-cross.glb` is a day's work and not a gameplay change.
 
 ## A second day
 
-**Rank 9, and a 2+.** The save schema already has `watch` and `accusations[]`
+**Rank 10, and a 2+.** The save schema already has `watch` and `accusations[]`
 and nothing stops a day two in which the epilogue's consequences play. The
 content does not exist — that is the whole row, and it is a writing job the
 size of `PLAN.md`'s mystery section before it is a code job. Do one increment,
@@ -164,7 +176,7 @@ ship it, leave the row standing.
 
 ## The two plan suites
 
-**Rank 10.** `test/layout.mjs` checks the plan's arithmetic in Node and
+**Rank 11.** `test/layout.mjs` checks the plan's arithmetic in Node and
 `test/plan-vs-scene.mjs` checks the scene against the same plan in a browser,
 and the second is slower than the whole rest of the suite put together. Phase 2
 wrote `layout.mjs` when it was the only check there was; some of what it asserts

@@ -610,20 +610,24 @@ export class CastleBuilder {
    * which have no texture set on disk and are kept out of `materials` so that
    * section can go on meaning "a complete diffuse, normal and arm/rough set".
    */
-  material(name) {
-    if (!this.materials.has(name)) {
+  material(name, tint = null) {
+    // A tint is a second material over the same maps (#516); the maps are
+    // cached by URL in assets.js, so the variant costs a material and nothing
+    // on the GPU.
+    const key = tint ? `${name}@${tint}` : name;
+    if (!this.materials.has(key)) {
       const spec = this.config.materials[name];
       const plain = this.config.plainMaterials && this.config.plainMaterials[name];
       if (!spec && !plain) throw new Error(`[Castle Conundrum] no material named "${name}" in scene-config.json`);
-      this.materials.set(name, spec
-        ? loadPBRMaterial(spec, 1, spec.fallbackColor || '#8a8175')
+      this.materials.set(key, spec
+        ? loadPBRMaterial(spec, 1, spec.fallbackColor || '#8a8175', tint)
         : new THREE.MeshStandardMaterial({
             color: plain.color,
             roughness: plain.roughness ?? 1,
             metalness: plain.metalness ?? 0,
           }));
     }
-    return this.materials.get(name);
+    return this.materials.get(key);
   }
 
   async build() {
@@ -637,13 +641,13 @@ export class CastleBuilder {
       // A run may carry its own texture repeat: the interior partitions are 1 m
       // of wall between two rooms and want a smaller course than a 4 m curtain.
       const repeat = piece.repeatMetres || metres;
-      if (piece.built === 'run') obj = buildRun(piece.boxes, this.material(piece.material), repeat);
-      else if (piece.built === 'drum') obj = buildDrum(piece.drum, this.material(piece.material), metres);
-      else if (piece.built === 'ground') obj = buildGround(piece, this.material(piece.material), repeat);
+      if (piece.built === 'run') obj = buildRun(piece.boxes, this.material(piece.material, piece.tint), repeat);
+      else if (piece.built === 'drum') obj = buildDrum(piece.drum, this.material(piece.material, piece.tint), metres);
+      else if (piece.built === 'ground') obj = buildGround(piece, this.material(piece.material, piece.tint), repeat);
       else if (piece.built === 'gate-leaf') obj = buildGateLeaf(piece.leaf, this.material(piece.material));
       else if (piece.built === 'bars') obj = buildBars(piece.bars, this.material(piece.material));
       else if (piece.built === 'slab') obj = buildSlab(piece.box, this.material(piece.material));
-      else if (piece.built === 'floor') obj = buildFloor(piece, this.material(piece.material), repeat);
+      else if (piece.built === 'floor') obj = buildFloor(piece, this.material(piece.material, piece.tint), repeat);
       else if (piece.built === 'plate') obj = buildPlate(piece.plate, this.material(piece.material));
       else obj = await loadModel(piece.model);
 

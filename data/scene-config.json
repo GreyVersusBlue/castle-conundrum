@@ -843,9 +843,11 @@
       "comment": "The mason's lodge is a roof on four poles and no walls, so its `run` is the roof: `base` lifts a run off the ground, which is also how Phase 5's floor slabs will be written. It carries a collider and cannot be reached under it at head height, 4 m up."
     }
   ],
+  "drumsComment": "Every drum is defense_wall, radius 4, 12 m high, 24 sectors, hollow to 2.8, and from the walk they were eight of one thing (#516). `tint` multiplies the stone's diffuse for that drum only: the outer four cool (blue-grey, warm grey, green-grey, slate), the inner four warm (sand, gold, ochre, pale). Eight materials over one texture set; src/assets.js caches the maps by URL. Runs and rooms take `tint` the same way.",
   "drums": [
     {
       "id": "nw-tower",
+      "tint": "#c9d2dc",
       "tile": [
         -9,
         -4
@@ -893,6 +895,7 @@
     },
     {
       "id": "kitchen-tower",
+      "tint": "#d9cfbf",
       "tile": [
         -5,
         -4
@@ -939,6 +942,7 @@
     },
     {
       "id": "stockhouse-tower",
+      "tint": "#e3cfae",
       "tile": [
         0,
         -4
@@ -995,6 +999,7 @@
     },
     {
       "id": "kings-tower",
+      "tint": "#f1dfc0",
       "tile": [
         6,
         -4
@@ -1056,6 +1061,7 @@
     },
     {
       "id": "sw-tower",
+      "tint": "#c4d2c6",
       "tile": [
         -9,
         4
@@ -1096,6 +1102,7 @@
     },
     {
       "id": "prison-tower",
+      "tint": "#b4b6c2",
       "tile": [
         -5,
         4
@@ -1144,6 +1151,7 @@
     },
     {
       "id": "bakehouse-tower",
+      "tint": "#dcc29e",
       "tile": [
         0,
         4
@@ -1187,6 +1195,7 @@
     },
     {
       "id": "chapel-tower",
+      "tint": "#f3eadb",
       "tile": [
         6,
         4
@@ -1959,7 +1968,43 @@
         "id": "chapel-bell",
         "bell": true,
         "comment": "The chapel bell's crank and rope, and the only examinable in Phase 6: pressing E at it rings the next watch in. The kit has no bell, and a rope over a crank in the corner of the chapel tower is what it does have. Its first tile put the BOX 0.9 m into the tower's ring while its own tile point stood on clear floor — the model reaches 1.4 m north of its origin at this rotation — so the prompt never appeared and the line-of-sight check was right to refuse it. test/layout.mjs holds every piece the player presses E at clear of the stone now."
-      }
+      },
+      {"model": "barrels.glb", "tile": [-8.25, -1.85], "rotationY": 20, "scale": 1.6, "comment": "Clerk of Works' office, a landmark per empty room (#517): two barrels by the west wall, well off the clerk's station at (-30, -10)."},
+      {"model": "detail-crate-ropes.glb", "tile": [-8.1, -1.85], "rotationY": 0, "scale": 1.5, "comment": "and a roped crate beside them"},
+      {"model": "barrels.glb", "tile": [-3.85, -1.9], "rotationY": 80, "scale": 1.6, "comment": "Kitchen: barrels along the east wall, off the cook's station at (-20, -10)."},
+      {"model": "detail-crate.glb", "tile": [-3.85, -2.25], "rotationY": 15, "scale": 1.5, "comment": "and a crate"},
+      {"model": "detail-barrel.glb", "tile": [-4.1, -1.85], "rotationY": 0, "scale": 1.5, "comment": "and a small barrel"},
+      {"model": "barrels.glb", "tile": [-8.6, -3.8], "rotationY": -70, "scale": 1.6, "comment": "Guardroom, North-west Tower: barrels in the east half; the lower flight has the west (#460)."},
+      {"model": "barrels.glb", "tile": [-5.45, -3.75], "rotationY": 100, "scale": 1.6, "comment": "Larder, Kitchen Tower: barrels in the west half; the lower flight has the east."},
+      {"model": "detail-crate.glb", "tile": [-5.4, -4.1], "rotationY": 30, "scale": 1.5, "comment": "and a crate"},
+      {"model": "barrels.glb", "tile": [5.15, -1.85], "rotationY": 0, "scale": 1.6, "comment": "King's Hall: barrels by the east wall, off the stations at (8, -10) and (12, -10)."},
+      {"model": "detail-crate-ropes.glb", "tile": [4.9, -1.85], "rotationY": 40, "scale": 1.5, "comment": "and a roped crate"},
+      {"model": "detail-crate-ropes.glb", "tile": [2.2, 3.2], "rotationY": -20, "scale": 1.5, "comment": "Steward's chamber: crates in the south-east corner, off the steward's station at (6, 10)."},
+      {"model": "detail-crate-small.glb", "tile": [2.05, 3.25], "rotationY": 10, "scale": 1.5, "comment": "and a small one"},
+      {"model": "ladder.glb", "tile": [-6.75, -3.4], "rotationY": 0, "scale": 2.5, "base": 4, "comment": "Clerk's chamber, level 1: a ladder against the north wall."},
+      {"model": "detail-crate.glb", "tile": [-6.8, -1.75], "rotationY": 25, "scale": 1.5, "base": 4, "comment": "and a crate by the south wall"},
+      {"model": "structure-cross.glb", "tile": [-4.375, -3.05], "rotationY": 0, "scale": 2.5, "base": 4, "comment": "Garrison dormitory, level 1: a timber frame, the room's landmark."},
+      {"model": "barrels.glb", "tile": [-6.15, -1.85], "rotationY": 60, "scale": 1.6, "base": 4, "comment": "and barrels at the west end"},
+      {"model": "detail-crate-ropes.glb", "tile": [5.15, -3.15], "rotationY": -30, "scale": 1.5, "base": 4, "comment": "Royal apartments, level 1: a roped chest in the north-east corner, off Lady Alys's station at (12, -7.2)."},
+      {"model": "detail-crate-small.glb", "tile": [5.0, -3.25], "rotationY": 50, "scale": 1.5, "base": 4, "comment": "and a small one"},
+      {"model": "ladder.glb", "tile": [-8.65, -3.6], "rotationY": -90, "scale": 2.5, "base": 4, "comment": "North-west Tower, first floor: a ladder, east half, inner side."},
+      {"model": "barrels.glb", "tile": [-5.4, -3.6], "rotationY": 10, "scale": 1.6, "base": 4, "comment": "Kitchen Tower, first floor: barrels, west half, inner side."},
+      {"model": "pulley.glb", "tile": [0.35, -3.6], "rotationY": 180, "scale": 2.5, "base": 4, "comment": "Stockhouse Tower, first floor: a hoist, east half, inner side."},
+      {"model": "detail-crate-ropes.glb", "tile": [6.35, -3.6], "rotationY": 20, "scale": 1.5, "base": 4, "comment": "King's Tower, first floor: a roped crate, east half, inner side."},
+      {"model": "bricks.glb", "tile": [-8.65, 3.6], "rotationY": 0, "scale": 2.0, "base": 4, "comment": "South-west Tower, first floor: a pile of stone, east half, inner side."},
+      {"model": "barrels.glb", "tile": [-4.65, 3.6], "rotationY": -30, "scale": 1.6, "base": 4, "comment": "Prison Tower, first floor: barrels, east half, inner side."},
+      {"model": "detail-barrel.glb", "tile": [0.35, 3.6], "rotationY": 0, "scale": 1.6, "base": 4, "comment": "Bakehouse Tower, first floor: a small barrel, east half, inner side."},
+      {"model": "detail-crate.glb", "tile": [5.65, 3.6], "rotationY": 45, "scale": 1.5, "base": 4, "comment": "Chaplain's chamber, Chapel Tower: a crate, west half, inner side."},
+      {"model": "detail-crate-small.glb", "tile": [-9.0, -4.55], "rotationY": 0, "scale": 1.5, "base": 8, "comment": "North-west Tower, top room: a small crate on the outer edge beside the well."},
+      {"model": "detail-barrel.glb", "tile": [-5.0, -4.55], "rotationY": 0, "scale": 1.5, "base": 8, "comment": "Kitchen Tower, top room: a small barrel on the outer edge beside the well."},
+      {"model": "detail-crate.glb", "tile": [6.0, -4.55], "rotationY": 30, "scale": 1.5, "base": 8, "comment": "King's Tower, top room: a crate on the outer edge beside the well."},
+      {"model": "detail-crate-small.glb", "tile": [-9.0, 4.55], "rotationY": 0, "scale": 1.5, "base": 8, "comment": "South-west Tower, top room: a small crate on the outer edge beside the well."},
+      {"model": "bricks.glb", "tile": [-5.0, 4.55], "rotationY": 0, "scale": 1.6, "base": 8, "comment": "Prison Tower, top room: a pile of stone on the outer edge beside the well."},
+      {"model": "detail-barrel.glb", "tile": [0.0, 4.55], "rotationY": 0, "scale": 1.5, "base": 8, "comment": "Bakehouse Tower, top room: a small barrel on the outer edge beside the well."},
+      {"model": "detail-crate.glb", "tile": [6.0, 4.55], "rotationY": -20, "scale": 1.5, "base": 8, "comment": "Chapel Tower, top room: a crate on the outer edge beside the well."},
+      {"model": "detail-crate.glb", "tile": [-7.5, -3.6], "rotationY": 10, "scale": 1.5, "base": 8, "comment": "North wall walk: a crate at the inner edge of the decking, west of the sentry's post at (-18, -15)."},
+      {"model": "detail-barrel.glb", "tile": [-0.1, 1.5], "rotationY": 0, "scale": 1.5, "base": 8, "comment": "The walk over the cross-wall: a small barrel at its east edge, south of the porter's post at (-1, 0)."},
+      {"model": "barrels.glb", "tile": [0.4, -3.65], "rotationY": -40, "scale": 1.6, "comment": "Porter's lodge, Stockhouse Tower: barrels in the east half, off the porter's station at (0.4, -16); the lower flight has the west. The walk-bar over this room is on the walk, not in it."}
     ]
   },
   "interiorProps": [
