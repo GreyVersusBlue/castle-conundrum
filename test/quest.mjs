@@ -280,9 +280,13 @@ function rig({ saved = null } = {}) {
   // beat can ask what is on the ground at this bell rather than only what was
   // ever hidden.
   const castle = {
-    opened: [], hidden: [], shown: {},
+    opened: [], hidden: [], shown: {}, days: [],
     openLock(id) { this.opened.push(id); },
     setEvidenceVisible(id, v) { this.shown[id] = v; if (!v) this.hidden.push(id); },
+    // The second day's half (#539). The manager hands over rows already
+    // resolved for the ending the player reached; what the builder does with a
+    // row is castle-builder.js's and is asserted in the browser.
+    applyDay(changes) { this.days.push(changes); },
   };
   const controls = { locks: 0, lock() { this.locks++; } };
   // The recorder standing in for src/audio.js. It has the one method the
@@ -484,6 +488,11 @@ function rig({ saved = null } = {}) {
   check(ui.accusation === null && r.watches.at(-1) === mystery.day2.watch && ui.watch === 'Lauds',
     'the panel is closed, the world is at Lauds and the HUD says so', `${r.watches.at(-1)} / ${ui.watch}`);
   check(Object.values(r.castle.shown).every((v) => v === false), 'nothing examinable is on the ground: no evidence is listed at Lauds');
+  // And the stone moved too (#539). The full ending lets Madoc out and leaves
+  // the inspector's own door standing open behind him.
+  check(r.castle.days.length >= 1 && same(r.castle.days.at(-1), [{ piece: 'cell-bars', set: 'gone' }, { piece: 'muniment', set: 'open' }]),
+    'the castle is handed the full ending\'s own changes: the cell opens and the muniment door stands open',
+    JSON.stringify(r.castle.days.at(-1)));
 
   // The full ending takes three men out of the castle.
   check(r.engine.stationOf('clerk') === null && r.engine.stationOf('steward') === null && r.engine.stationOf('merchant') === null,
@@ -530,6 +539,13 @@ function rig({ saved = null } = {}) {
   check(r.engine.stationOf('inspector')?.room === 'kings-hall' && r.watches.at(-1) === mystery.day2.watch,
     'the morning opens with the cast moved: the inspector is in the King\'s Hall at Lauds',
     `${r.engine.stationOf('inspector')?.room} / ${r.watches.at(-1)}`);
+  // A DIFFERENT ENDING IS A DIFFERENT CASTLE (#539). Madoc hangs in nobody's
+  // fall — he is still in the cell for the knife — so the bars stay on, which
+  // is the one row that does not fire here and does fire in the full ending
+  // above. Two endings, two rosters of stone.
+  check(same(r.castle.days.at(-1), [{ piece: 'muniment', set: 'shut' }]),
+    'a fall shuts the muniment door and leaves the cell barred: Madoc is still in it',
+    JSON.stringify(r.castle.days.at(-1)));
   r.talk('inspector');
   check(r.qm.stage === 'end' && /straight face/.test(r.ui.epilogue.epilogue + r.ui.epilogue.convicted) === false, 'and talking to him ends it', r.qm.stage);
 }

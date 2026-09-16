@@ -60,20 +60,24 @@ and `test/touch.mjs` as the ninth suite. What it FEELS like is unknown — nobod
 has had a thumb on it, and the six numbers that decide that are named constants
 in one file each (#53).
 
-**The second day's first increment shipped on 2026-09-15** (#533 to #538, PR
-#16): the
-epilogue's button reads "The next morning" now. One watch, `lauds`, thirteen
-stations, sixty line sets keyed by which of the seven endings the player
-reached, seven closing panes, and a thirteenth cast entry — the King's
-inspector — whose conversation is the end of the game. The save is version 2
-with a `day` field; the key did not move (#36). **Rank 6 is still open**: it is
-a 2+ and increment 2 is the castle's half of the consequences, which `SPECS.md`
-now specs.
+**The second day shipped in two increments, on 2026-09-15 and 2026-09-16**
+(#533 to #540, PRs #16 and #PRNUM). The epilogue's button reads "The next
+morning" now. One watch, `lauds`, thirteen stations, sixty line sets keyed by
+which of the seven endings the player reached, seven closing panes, and a
+thirteenth cast entry — the King's inspector — whose conversation is the end of
+the game. The save is version 2 with a `day` field; the key did not move (#36).
+Increment 2 gave the stone its half: the cell's bars come off on the five
+mornings Madoc walks out, which opens to the player the one ground room nobody
+has ever stood in, and the muniment door stands open in the full ending and is
+shut again in the other six. **Rank 6 is still open**: it is a 2+ and increment
+3 is a second mystery for the morning, most of which waits on a town to walk
+to.
 
-**7 ranked items.** Rank 6 is claimed by `claude/second-day-epilogue-pzfxie`,
-which is taking increment 2 of it in the same sitting increment 1 shipped in.
-Rank 1 is the only other row a container without a GPU and without Poly Haven
-can start; ranks 2, 3, 4, 5 and 7 all need a machine this one is not (#518).
+**7 ranked items. Nothing is claimed. Take rank 1.** It is the only row a
+container without a GPU and without Poly Haven can finish outright. Rank 6's
+next increment is the other thing a container can start, and `SPECS.md` names
+the one thread of it that does not wait on the town: the gaol roll. Ranks 2, 3,
+4, 5 and 7 all need a machine this one is not (#518).
 
 One thing is true of the whole list and worth saying once. **Nothing here has
 been seen on a GPU since Phase 5.** `npm run play` walks the whole intended day
@@ -125,7 +129,7 @@ your decisions and this file's header, ranks and `Claimed` column are updated
 | 3 | A new preview and og card, from that run | ¼ | Opus 5 |  | [The GPU run](SPECS.md#the-gpu-run) |
 | 4 | Four texture sets: a second wall stone, a tower stone, a plaster, a floor | ½ | Fable 5.1 |  | [The texture sets](SPECS.md#the-texture-sets) |
 | 5 | The town side: a textured ground outside the west barbican, and a road | 1 | Fable 5.1 |  | [The town side](SPECS.md#the-town-side) |
-| 6 | A second day: increment 2, consequences that change the castle | 2+ | Opus 5 | `claude/second-day-epilogue-pzfxie` | [A second day](SPECS.md#a-second-day) |
+| 6 | A second day: increment 3, a second mystery for the morning | 2+ | Opus 5 |  | [A second day](SPECS.md#a-second-day) |
 | 7 | The hall's covering, and the two windows under it | ¼ | Sonnet 5 |  | [The hall covering](SPECS.md#the-hall-covering) |
 
 ## A fourth body
@@ -180,16 +184,17 @@ and currently that somewhere is a hard edge. The texture set goes through
 
 ## A second day
 
-**Rank 6, and a 2+. Increment 1 shipped on 2026-09-15** (#533 to #537): the
-morning after is there, seven shapes of it, and the cast says what the verdict
-made of them. **What is left is the castle's half.** The consequences are all in
-people at the moment — an empty desk, an empty cell, a laundress at the foot of
-a tower — and the stone does not know anything happened: the cell's bars are
-still shut on the morning Madoc is let out, the muniment room is still open on
-the morning the Clerk goes on keeping the works, and the merchant's cart is
-still in the outer ward. `SPECS.md` specs increment 2 file by file, with the two
-open calls answered. The two after it want a road the castle does not have
-(**The town side**) and a fifth bell that #533 would have to be argued with.
+**Rank 6, and a 2+. Increments 1 and 2 shipped on 2026-09-15 and 2026-09-16**
+(#533 to #540): the morning after is there in seven shapes, the cast says what
+the verdict made of them, and the castle moves with them. **What is left is a
+second mystery for the morning**, and most of it waits on things this repo has
+not got. The inspector asks questions the player cannot answer; increment 3 is
+where some of them become answerable. Two of its three threads are blocked —
+the missing 128 sheets are in a town **The town side** has not built, and a
+schedule with more than one watch has to argue with #533 rather than work
+around it. The third is not: the gaol roll is a piece of evidence in a room the
+castle already builds, it convicts nobody, and its whole content is the dates
+that were in front of everybody and that nobody read. `SPECS.md` specs it.
 
 ## The hall covering
 

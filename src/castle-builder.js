@@ -688,6 +688,9 @@ export class CastleBuilder {
           // its own box; a door in a tower ring is the ring sectors the doorway
           // was cut from, put back while it is shut.
           blocks: (spec.blocks || []).map((id) => this.colliders.find((c) => c.id === id)).filter(Boolean),
+          // The ids, kept as well as the objects, because `openLock` empties
+          // `blocks` and the second day may shut the leaf again (#539).
+          blockIds: spec.blocks || [],
           // 90 degrees, not the 105 this swung when the leaf was a sphere. A ball
           // does not care how far past flush it goes; a 1.9 m leaf hinged 0.95 m off
           // centre in a 2.0 m opening does — at 105 its outer corner ends up 0.44 m
@@ -859,6 +862,73 @@ export class CastleBuilder {
       if (!visible && i !== -1) this.colliders.splice(i, 1);
     }
     return true;
+  }
+
+  /**
+   * Show or hide any piece of the castle by its `planId`, collider and all.
+   * `setEvidenceVisible` above does the same thing for the ten examinables and
+   * finds its piece by evidence id; this is the general form, and the second
+   * day is what wanted it (#539). A hidden piece that still blocks the player
+   * is a wall nobody can see, which is why the collider goes with it.
+   */
+  setPieceVisible(planId, visible) {
+    const obj = this.objects.get(planId);
+    if (!obj) return false;
+    obj.visible = visible;
+    const planned = this.plan.colliders.filter((c) => c.id === planId);
+    for (const c of planned) {
+      const i = this.colliders.findIndex((x) => x.id === c.id && x.box === c.box);
+      if (visible && i === -1) this.colliders.push({ id: c.id, box: c.box });
+      if (!visible && i !== -1) this.colliders.splice(i, 1);
+    }
+    return true;
+  }
+
+  /**
+   * Swing a leaf back to shut and put the stone it stands in for back with it.
+   * The inverse of `openLock`, and the second day is the first thing that ever
+   * needed one: the Clerk keeps the works in five of the seven endings, and the
+   * first thing he does with them is put a new word over the muniment door
+   * (#539). `openLock` empties `gd.blocks`, so the ids are rebuilt from
+   * `blockIds` rather than from what is left of the list.
+   */
+  shutLeaf(id) {
+    const gd = this.gates.get(id);
+    if (!gd) return false;
+    gd.opening = false;
+    gd.progress = 0;
+    gd.pivot.rotation.y = gd.closedAngle;
+    gd.blocks = [];
+    for (const blockId of gd.blockIds) {
+      const planned = this.plan.colliders.find((c) => c.id === blockId);
+      if (!planned) continue;
+      let live = this.colliders.find((c) => c.id === blockId && c.box === planned.box);
+      if (!live) { live = { id: planned.id, box: planned.box }; this.colliders.push(live); }
+      gd.blocks.push(live);
+    }
+    return true;
+  }
+
+  /**
+   * The morning after, applied to the stone (#539). One pass over the rows
+   * `src/mystery.js` resolved for the ending the player reached, each naming a
+   * `planId` and one of `castle-plan.js`'s `DAY_SETS` verbs. Nothing here knows
+   * what a verdict is, which is the whole point of the split: the mystery says
+   * what changed and this says how a piece of castle changes.
+   *
+   * It is idempotent, because `applyDay` in the quest manager is: it runs on
+   * entering `morning` and again on entering `end`, so a save resumed in either
+   * one comes back to a castle the verdict has already rearranged.
+   */
+  applyDay(changes = []) {
+    for (const ch of changes || []) {
+      if (!ch || typeof ch.piece !== 'string') continue;
+      if (ch.set === 'open') this.openLock(ch.piece, { instant: true });
+      else if (ch.set === 'shut') this.shutLeaf(ch.piece);
+      else if (ch.set === 'gone') this.setPieceVisible(ch.piece, false);
+      else if (ch.set === 'shown') this.setPieceVisible(ch.piece, true);
+    }
+    return this;
   }
 
   /**

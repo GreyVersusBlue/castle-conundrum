@@ -47,6 +47,7 @@ import { attachSceneProbe, waitForProbe } from './drive.mjs';
 import { partsOf } from './gltf.mjs';
 import { makePlan, walkability, surfacesAt, EYE_HEIGHT } from '../src/castle-plan.js';
 import { castleNav } from '../src/stations.js';
+import { dayTwoCastle, dayTwoOutcomes } from '../src/mystery.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, '..');
@@ -400,6 +401,78 @@ try {
         seen.hidden ? `the HUD said "${seen.hidden}" over a body nobody can see` : '');
     }
   }
+  /* AND WHAT THE VERDICT DOES TO THE STONE (#539). `castle-builder.js`'s
+   * `applyDay` is the one half of the second day that Node cannot run: it takes
+   * a mesh out of a live scene and its box out of a live collider list, and
+   * `test/layout.mjs` can only say what the plan would allow. The rows are not
+   * copied in here — they come out of `src/mystery.js` for a named ending, the
+   * same way the manager gets them — and what is asserted is that the piece the
+   * data names really goes, collider and all, and really comes back.
+   *
+   * THE COLLIDER IS THE HALF WORTH THE BEAT. Hiding a mesh is one line and hard
+   * to get wrong; leaving its box in `castle.colliders` is a wall nobody can
+   * see, standing in an open cell on the morning the smith was let out of it.
+   */
+  {
+    const full = dayTwoCastle(mystery, dayTwoOutcomes(mystery).find((o) => o.key === 'full'));
+    const hide = full.find((c) => c.set === 'gone');
+    if (!hide) fail('no ending hides a piece of the castle, so this beat has nothing to watch');
+    else {
+      const swung = await page.evaluate(async ({ changes, id }) => {
+        const castle = window.__castle;
+        const boxes = () => castle.colliders.filter((c) => c.id === id).length;
+        const obj = castle.objects.get(id);
+        const before = { visible: obj.visible, boxes: boxes() };
+        castle.applyDay(changes);
+        const after = { visible: obj.visible, boxes: boxes() };
+        castle.applyDay(changes.map((c) => ({ ...c, set: c.set === 'gone' ? 'shown' : c.set })));
+        const back = { visible: obj.visible, boxes: boxes() };
+        return { before, after, back, planned: castle.plan.colliders.filter((c) => c.id === id).length };
+      }, { changes: full, id: hide.piece });
+      check(swung.before.visible && swung.before.boxes === swung.planned && swung.planned > 0,
+        `${hide.piece} starts the day standing, with its ${swung.planned} collider${swung.planned === 1 ? '' : 's'} in the live list`,
+        JSON.stringify(swung.before));
+      check(swung.after.visible === false, `and the full ending's own rows take it out of the scene`, JSON.stringify(swung.after));
+      check(swung.after.boxes === 0, `and its box out of the colliders, so the cell is not a wall nobody can see`, `${swung.after.boxes} left`);
+      check(swung.back.visible === true && swung.back.boxes === swung.planned, 'and putting it back puts both back', JSON.stringify(swung.back));
+    }
+
+    /* AND `shut` PUTS THE STONE BACK, which is the half of `applyDay` that no
+     * fill in Node can reach. `test/layout.mjs` can only say that shutting a
+     * leaf the plan already builds shut takes nothing away; what it cannot say
+     * is that `shutLeaf` restores the boxes `openLock` spliced out of the LIVE
+     * list, because `openLock` empties `gd.blocks` on its way past and the ids
+     * have to be rebuilt. Six of the seven endings shut this door. */
+    const leaf = (mystery.day2.castle ?? []).find((c) => c.set === 'shut');
+    if (!leaf) fail('no ending shuts a door, so there is nothing to watch here');
+    else {
+      const shut = await page.evaluate(async ({ id }) => {
+        const castle = window.__castle;
+        const gd = castle.gates.get(id);
+        const boxes = () => gd.blockIds.filter((b) => castle.colliders.some((c) => c.id === b)).length;
+        const angle = () => +gd.pivot.rotation.y.toFixed(4);
+        // The word-lock beat above answered the riddle, so this leaf is open
+        // when we get here. Drive it round the whole cycle rather than assume
+        // either end of it, and put it back to open on the way out so the beats
+        // below see the castle they were written against.
+        castle.applyDay([{ piece: id, set: 'shut' }]);
+        const closed = { boxes: boxes(), angle: angle() };
+        castle.openLock(id, { instant: true });
+        const open = { boxes: boxes(), angle: angle() };
+        castle.applyDay([{ piece: id, set: 'shut' }]);
+        const back = { boxes: boxes(), angle: angle() };
+        castle.openLock(id, { instant: true });
+        return { wants: gd.blockIds.length, closed, open, back, left: { boxes: boxes(), angle: angle() } };
+      }, { id: leaf.piece });
+      check(shut.wants > 0 && shut.closed.boxes === shut.wants, `${leaf.piece} shut again stands in for all ${shut.wants} pieces of stone the plan gives it`, JSON.stringify(shut.closed));
+      check(shut.open.boxes === 0 && shut.open.angle !== shut.closed.angle, 'answering the word swings it and takes that stone away again', JSON.stringify(shut.open));
+      check(shut.back.boxes === shut.wants && shut.back.angle === shut.closed.angle,
+        'and the morning after puts the leaf and every one of its boxes back a second time',
+        JSON.stringify(shut.back));
+      check(shut.left.boxes === 0, 'and the beat leaves the door as it found it, open', JSON.stringify(shut.left));
+    }
+  }
+
   // The tint (#419). Three bodies, thirteen people: the cloth has to differ
   // thirteen ways and the skin must not differ at all, or the tint went onto
   // faces. Reading the live materials is the only thing that can say so —

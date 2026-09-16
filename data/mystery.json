@@ -1742,5 +1742,34 @@
         "after": "The lead goes on leaving by daylight. Father Anselm goes on saying that he heard two men on the stair, to anybody who will stand still for it, and by Michaelmas there is nobody left who will."
       }
     }
+,
+    "castleComment": "WHAT THE VERDICT DOES TO THE STONE (#539, #540). Increment 1's consequences were all in people: an empty desk, an empty cell, a laundress at the foot of a tower. The castle did not know anything had happened. Each row here names a `planId` src/castle-plan.js already builds and one of src/castle-plan.js's `DAY_SETS` verbs to do to it, and applies in the endings `when` names and not in the ones `unless` names — the same vocabulary `lines` uses, so an entry may be keyed by an exact ending (`full`, one of the five accusables, `nobody`) or by a verdict class (`full`, `right`, `wrong`, `fall`). `why` is not decoration: a change to the castle that nobody can say the reason for is a change nobody can argue with, and validateMystery makes it compulsory. Nothing here may take floor away or shut somebody in — every verb that could is refused against the plan, and test/layout.mjs holds the whole overlay to \"the morning after is never a smaller castle than the day before it\".",
+    "castle": [
+      {
+        "piece": "cell-bars",
+        "set": "gone",
+        "unless": [
+          "prisoner",
+          "nobody"
+        ],
+        "why": "Madoc the smith walks out at noon, and the bars were taken off before Lauds. It is the one thing in this castle that is better on the second morning, and it is the only ending where the player can walk into the cell and stand where he stood. In `prisoner` the cell is empty because he was taken out to the rope and it was barred again behind him, which is the gaoler's habit and does not change for a hanging; in `nobody` there was no killing at all, so he is still in it for a knife he did not draw, and the laundress says so."
+      },
+      {
+        "piece": "muniment",
+        "set": "open",
+        "when": [
+          "full"
+        ],
+        "why": "\"I have read the sheet, and then I read the ledger it was drawn from, which I am told nobody in this castle thought to open until yesterday afternoon.\" The inspector has been in the muniment room since first light and the door is standing open behind him, whether or not the player ever answered the word."
+      },
+      {
+        "piece": "muniment",
+        "set": "shut",
+        "unless": [
+          "full"
+        ],
+        "why": "\"But the ledger stays shut.\" The Clerk keeps the works in four of the six endings the inspector signs off on, and the first thing he does with them is put a new word over that door; in `clerk` he is dead and the Steward does it for him. A player who answered the riddle yesterday finds it answered again, which is the point: nothing was mended."
+      }
+    ]
   }
 }

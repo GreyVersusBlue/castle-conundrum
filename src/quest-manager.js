@@ -224,7 +224,13 @@ export class QuestManager {
    */
   handleLock(id, evidenceId = null) {
     this._lockAsked = id;
-    if (evidenceId) this.handleExamine(evidenceId);
+    // THE READING IS DAY ONE'S (#539). The muniment door is shut again on the
+    // morning after in six of the seven endings, and it is a lock target again
+    // with it, so the riddle can be answered a second time. What must not
+    // happen is the examine: `word-lock` is not listed at Lauds, so the engine
+    // answers `absent` and the HUD says "Nothing there now." about a door the
+    // player is standing in front of.
+    if (evidenceId && this.engine?.day !== 2) this.handleExamine(evidenceId);
     this._apply(this.graph.dispatch(`lock:${id}`));
   }
 
@@ -411,6 +417,9 @@ export class QuestManager {
     if (!day) return;
     this._dayLines = day.lines;
     this.ui.closeAccusation?.();
+    // The stone's half (#539). `day.castle` is already resolved for the ending
+    // the player reached, so nothing here knows what a verdict is.
+    this.castle?.applyDay?.(day.castle ?? []);
     this.applyWatch(day.watch, { walk: false });
     this._syncStates();
     this._onChange?.(this._snapshot());

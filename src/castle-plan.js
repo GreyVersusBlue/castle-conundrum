@@ -1790,8 +1790,46 @@ export function moveBody(plan, colliders, body, dx, dz, radius = BODY_RADIUS) {
  * they are in the game's collider list and not in this grid. They are 0.42 m
  * posts standing in open ground; nothing this answers turns on them.
  */
-export function walkability(plan, { grid = GRID, stepUp = STEP_UP, seeds = [] } = {}) {
+/**
+ * The verbs a day-two overlay may use on a piece of the castle (#539).
+ * `castle-builder.js` implements exactly these and `validateMystery` refuses
+ * anything else, which is the same arrangement `QuestManager.actions` has with
+ * `quest.json`: a verb nobody implements is caught at load rather than on the
+ * morning it was meant to happen.
+ *
+ *   open   swing a gate leaf wide, and take the stone it stands in for away
+ *   shut   swing it back, and put that stone back
+ *   gone   hide a piece and drop its colliders
+ *   shown  put it back
+ */
+export const DAY_SETS = ['open', 'shut', 'gone', 'shown'];
+
+/**
+ * The castle's colliders once a day-two overlay is applied (#539).
+ *
+ * ONLY TWO OF THE FOUR VERBS CAN CHANGE THIS LIST, AND BOTH ONLY SUBTRACT.
+ * `plan.colliders` is the castle as the plan builds it, which is the muniment
+ * leaf shut and the cell's bars standing, so `shut` and `shown` put back
+ * exactly what is already in the list and have nothing to add. That is not a
+ * detail, it is what makes the morning after cheap to check: every ending's
+ * day-two castle is the day-one castle with cells added and none taken away,
+ * so two fills bound all seven and `validateMystery`'s day-two rails can go on
+ * asking the day-one grid and be conservative rather than wrong.
+ * `test/layout.mjs` asserts that property rather than trusting this comment.
+ */
+export function collidersWith(plan, changes = []) {
+  const gone = new Set();
+  for (const ch of changes || []) {
+    if (!ch || typeof ch.piece !== 'string') continue;
+    if (ch.set === 'gone') gone.add(ch.piece);
+    else if (ch.set === 'open') for (const id of plan.gates?.find((g) => g.id === ch.piece)?.blocks ?? []) gone.add(id);
+  }
+  return gone.size ? plan.colliders.filter((c) => !gone.has(c.id)) : plan.colliders;
+}
+
+export function walkability(plan, { grid = GRID, stepUp = STEP_UP, seeds = [], colliders = null } = {}) {
   const half = grid / 2;
+  const solid = colliders || plan.colliders;
   const bounds = EMPTY();
   for (const s of plan.surfaces) { expand(bounds, s.box.min); expand(bounds, s.box.max); }
 
@@ -1812,7 +1850,7 @@ export function walkability(plan, { grid = GRID, stepUp = STEP_UP, seeds = [] } 
    * not test every pair: each collider is filed under every grid column its
    * box spans, once. */
   const columns = new Map();
-  for (const c of plan.colliders) {
+  for (const c of solid) {
     const a = Math.floor(c.box.min.x / grid), b = Math.floor(c.box.max.x / grid);
     for (let i = a; i <= b; i++) {
       if (!columns.has(i)) columns.set(i, []);
