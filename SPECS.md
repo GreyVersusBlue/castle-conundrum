@@ -415,7 +415,7 @@ a road, and "a different ending".
 ## A second day
 
 **Rank 6. Size 2+. Increments 1 and 2 shipped on 2026-09-15 and 2026-09-16
-(#533 to #540, PRs #16 and #PRNUM).** The morning after exists and the castle
+(#533 to #540, PRs #16 and #18).** The morning after exists and the castle
 knows about it: one watch (`lauds`), thirteen stations, sixty line sets keyed
 by what the player said, seven closing panes, a thirteenth cast entry whose
 conversation ends the game, and three rows of stone that move depending on
@@ -435,7 +435,7 @@ increment 3, which is the next one to take.
   a `day` field), **`src/quest-manager.js`**, **`src/ui.js`**, **`src/npc.js`**
   (`get active()`, #538) and **`data/scene-config.json`** (a `lauds` sky).
 
-### What increment 2 shipped (PR #PRNUM, #539 and #540)
+### What increment 2 shipped (PR #18, #539 and #540)
 
 - **`data/mystery.json`** grew `day2.castle`: rows of `{piece, set, when?,
   unless?, why}` naming a `planId` and one of `DAY_SETS`' verbs. It is here and

@@ -61,7 +61,7 @@ has had a thumb on it, and the six numbers that decide that are named constants
 in one file each (#53).
 
 **The second day shipped in two increments, on 2026-09-15 and 2026-09-16**
-(#533 to #540, PRs #16 and #PRNUM). The epilogue's button reads "The next
+(#533 to #540, PRs #16 and #18). The epilogue's button reads "The next
 morning" now. One watch, `lauds`, thirteen stations, sixty line sets keyed by
 which of the seven endings the player reached, seven closing panes, and a
 thirteenth cast entry — the King's inspector — whose conversation is the end of

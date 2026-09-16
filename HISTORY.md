@@ -2417,7 +2417,7 @@ rather than in the code.
 ## A second day, increment 2: what the verdict does to the stone (2026-09-16)
 
 **Ranked row 6 again, claimed on `main` on the same branch before the work
-started (#283, PR #17) and shipped as PR #PRNUM.** Increment 1 (PR #16) put the
+started (#283, PR #17) and shipped as PR #18.** Increment 1 (PR #16) put the
 morning after in people: an empty desk, an empty cell, a laundress at the foot
 of the Stockhouse Tower. The castle itself did not know anything had happened —
 the cell's bars were still on the morning Madoc the smith walks home, and the
