@@ -48,6 +48,9 @@ const GAME = `${BASE}/`;
 // says, at whichever of the four bells the game is on, and `stationOf` below
 // asks the running game where somebody is due rather than carrying a number.
 const TILE = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'scene-config.json'), 'utf8')).tileSize;
+// The mystery itself, for the second day's own beats (#539): where the cell is,
+// and what the HUD calls it once the bars are off it.
+const mystery = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'mystery.json'), 'utf8'));
 // Where to stand to read the muniment room's word-lock. Phase 4 took the riddle
 // off the Scholar and carved it over that door, which is in the King's Tower's
 // ring at world (21.06, -14.30), facing south-west into the King's Hall. This is
@@ -1006,6 +1009,10 @@ try {
       visible: cast.filter((n) => n.group.visible).map((n) => n.id).sort(),
       hidden: cast.filter((n) => !n.group.visible).map((n) => n.id).sort(),
       saved: JSON.parse(localStorage.getItem('castleConundrumSave_v1') || '{}').day,
+      // And the stone (#539): the full ending lets Madoc out, so the cell's
+      // bars are off and their box is out of the player's collider list.
+      bars: window.__castle.objects.get('cell-bars')?.visible ?? null,
+      barsBlock: window.__castle.colliders.filter((c) => c.id === 'cell-bars').length,
     };
   });
   assert(morning.stage === 'morning' && morning.day === 2, 'the button opens the second day', `${morning.stage}, day ${morning.day}`);
@@ -1016,7 +1023,26 @@ try {
     `hidden: ${morning.hidden.join(', ')}`);
   assert(morning.visible.includes('inspector'), "and the King's inspector is standing in it", morning.visible.join(', '));
   assert(morning.saved === 2, 'and the save on disk says day two, so a reload comes back here', String(morning.saved));
+  assert(morning.bars === false && morning.barsBlock === 0,
+    "the cell's bars are off and the player can walk in: Madoc the smith goes home at noon",
+    `visible ${morning.bars}, ${morning.barsBlock} collider(s)`);
   await snap('the-morning-after');
+  /* AND THE PLAYER WALKS INTO THE CELL. It is the one ground room of the
+   * fourteen nobody has ever been able to stand in: the bars never opened, and
+   * Madoc's whole clue was spoken through them. On the morning he is let out
+   * they are off, and this is a real walk under real compositing, which is why
+   * it is here and not in test/plan-vs-scene.mjs (#53). The HUD's own room line
+   * is what says he got there; nothing here measures a distance. */
+  {
+    const cellTile = mystery.day2.schedule.prisoner.tile;
+    const cellName = mystery.rooms.find((r) => r.id === 'cell').name;
+    const got = await driveTo(page, [cellTile[0] * TILE, cellTile[1] * TILE],
+      async () => (await page.evaluate(() => document.getElementById('hud-room').textContent.trim())) === cellName);
+    const where = await page.evaluate(() => document.getElementById('hud-room').textContent.trim());
+    assert(where === cellName, `the player walks into the cell and the HUD says so: "${where}"`,
+      got ? '' : 'never got inside the bars that were taken off this morning');
+    await snap('the-empty-cell');
+  }
 
   // Walk to him in the King's Hall and have the conversation that ends it.
   // `converse` asks the engine where he is due at the watch the game is on,

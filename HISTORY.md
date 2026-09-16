@@ -2413,3 +2413,126 @@ rather than in the code.
   verdict beside it makes it coherent. That assertion is in the file now and it
   fails on the break: `a version-1 save claiming day 2 is still day one: version
   1 had no second day to be on — 2`.
+
+## A second day, increment 2: what the verdict does to the stone (2026-09-16)
+
+**Ranked row 6 again, claimed on `main` on the same branch before the work
+started (#283, PR #17) and shipped as PR #18.** Increment 1 (PR #16) put the
+morning after in people: an empty desk, an empty cell, a laundress at the foot
+of the Stockhouse Tower. The castle itself did not know anything had happened —
+the cell's bars were still on the morning Madoc the smith walks home, and the
+muniment door was still standing open on the morning the Clerk keeps the works
+and puts a new word over it. Decisions #539 and #540. The row is a 2+ and
+**stays in the table**: what is left after this is the two items that want
+something this repo has not got.
+
+- **The overlay lives in `mystery.json`, not in `scene-config.json`** (#540),
+  which overrules `SPECS.md`'s own recommendation and is recorded so it can be
+  reversed cheaply. `SPECS.md` argued that `mystery.json` is who and what and
+  `scene-config.json` is where and how big, and a piece of castle is the
+  castle's. What settled it the other way is that a day-two change is neither:
+  it is **when and why**, and what decides it is the verdict. Putting it in
+  `scene-config.json` would have put `accusation.verdicts`' seven keys into a
+  file that has never heard of an accusation, and the alternative — a castle
+  file that changes unconditionally — is not the row. So `day2.castle` is a
+  list of rows in `mystery.json`, each naming a `planId` the plan already
+  builds, and `scene-config.json` is untouched.
+- **Four verbs, and `castle-plan.js` owns the list** (#539). `DAY_SETS` is
+  `open`, `shut`, `gone`, `shown`; `castle-builder.js` implements exactly those
+  and `validateMystery` refuses anything else, which is the arrangement
+  `QuestManager.actions` already has with `quest.json`. A verb nobody
+  implements is caught at load rather than on the one morning it was meant to
+  happen.
+- **Only two of the four can change the collider list, and both only subtract**
+  (#539). `plan.colliders` is the castle as the plan builds it, which is the
+  muniment leaf shut and the cell's bars standing, so `shut` and `shown` put
+  back exactly what is already there and have nothing to add. That is not a
+  detail: it is what makes seven endings cost two fills instead of seven, and
+  what lets `validateMystery`'s day-two station rails go on asking the day-one
+  grid and be conservative rather than wrong. Every ending's morning is the
+  day-one castle with cells added and none taken away.
+- **Three rows, and every ending changes at least one of them.** The cell's
+  bars come off in the five endings where Madoc walks out at noon, and stay on
+  in the two where he does not: in `prisoner` he was taken out to the rope and
+  the door was barred again behind him, in `nobody` there was no killing at all
+  so he is still in it for a knife he did not draw. The muniment door stands
+  open in `full`, because the inspector has been in it since first light, and
+  is shut again in the other six, which is the `clerk` epilogue's own words:
+  "the ledger stays shut". **The cell is the payoff.** It is one of the
+  fourteen ground rooms and the only one nobody has ever been able to stand in
+  — Madoc's whole clue is spoken through the bars — and on the morning he is
+  let out it opens to the player: 122 cells that were not there the day before,
+  the cell and the muniment room between them.
+- **`why` is compulsory** (#539). A change to the castle that nobody wrote the
+  reason for is a change nobody can argue with, so `validateMystery` refuses a
+  row without one, the way it already refuses a piece of evidence without a
+  `name`.
+- **E at a re-locked door stops saying "Nothing there now."** The muniment leaf
+  is a lock target again once it is shut, which is right — the riddle can be
+  answered a second time, and a door that does nothing reads as a broken door.
+  What was wrong is that `handleLock` also examines the leaf, and `word-lock`
+  is not listed at Lauds, so the engine answered `absent` and the HUD said
+  "Nothing there now." about a door the player was standing in front of. The
+  reading is day one's now.
+
+**What is left of the row, in order.** A second mystery for day two (the
+inspector's audit, and the missing 128 sheets as evidence in the town, which
+needs **The town side**'s road, which does not exist). Bells on day two and a
+schedule with more than one watch, which is the one that has to argue with
+#533. And **somebody looks at a Lauds sky**, which belongs to **The GPU run**.
+
+**The breaks, from green.** Thirteen: nine validator rails that break
+themselves inside `test/mystery.mjs`, and four on the code.
+
+- Every `day2.castle` rail, each one a mutation of a copy of the real file:
+  `day2.castle[0]: the castle builds no piece called "gallows"`,
+  `day2.castle[0]: \`set\` "burn" is not one of open, shut, gone, shown`,
+  `day2.castle[0]: cell-bars is a fixture, and only a gate leaf can be open`,
+  `day2.castle[1]: muniment is a gate leaf, so say open or shut rather than
+  gone`, `day2.castle[0]: no \`why\`, so nothing says what the verdict did to
+  cell-bars`, `day2.castle[0]: \`unless\` names "acquitted", which is neither an
+  ending nor a verdict class`, `day2.castle[0]: applies to no ending, so
+  cell-bars never changes`, `day2.castle: cell-bars is set twice after the
+  verdict full (rows 0 and 3), and only the last would show`, and
+  `day2.castle[0]: floor-muniment is floor the player stands on, and hiding it
+  leaves a hole nothing else can see`.
+- `this.castle?.applyDay?.()` deleted from the quest manager: `the castle is
+  handed the full ending's own changes: the cell opens and the muniment door
+  stands open`, and `a fall shuts the muniment door and leaves the cell barred:
+  Madoc is still in it`.
+- `collidersWith` made to ignore `gone`: `"cell-bars gone" takes 0 collider(s)
+  out of the castle and the plan gives that piece 1`. Made to ignore `open`:
+  `"muniment open" takes 0 collider(s) out of the castle and the plan gives
+  that piece 4`.
+- `setPieceVisible` made to hide the mesh and leave the box: `and its box out
+  of the colliders, so the cell is not a wall nobody can see — 1 left`.
+- `shutLeaf` made to stop rebuilding the boxes `openLock` spliced out:
+  `muniment shut again stands in for all 4 pieces of stone the plan gives it —
+  {"boxes":0,...}`, and `and the morning after puts the leaf and every one of
+  its boxes back a second time`.
+
+**And two findings, both from breaks that did not fail first time.**
+
+- **The first version of the layout rail was too weak.** It asserted that the
+  union of every change adds at least one cell, and `collidersWith` broken to
+  ignore `gone` entirely left it **green**: the other row still opened the
+  muniment room, the union still grew, and the row that had stopped working hid
+  behind the row beside it. The rail counts boxes per row now, against what the
+  plan gives that piece, and both halves of the break fail on it by name.
+- **"The morning after is never a smaller castle" cannot fail against today's
+  plan, and the comment says so** (#147). `shut` is the only verb that can
+  close anything, and a leaf carries `blocks` — the stone it stands in for —
+  only while the plan builds it shut, so shutting a leaf the plan ships open
+  puts back an empty list. Tried: `{ piece: "west-gate", set: "shut" }` takes
+  nothing away and the comparison stays green. It is kept as a guard against a
+  plan that does not exist yet, said out loud as one, with the falsifiable rail
+  underneath it.
+
+**And one break that found a beat asserting nothing.** The new
+`plan-vs-scene.mjs` beat for `shut` was written assuming the muniment door
+starts shut. It does not: the word-lock beat above it answers the riddle, so
+the door is open when the beat gets there, and the first run reported
+`muniment starts shut, standing in for 4 pieces of stone — {"boxes":0,"angle":
+6.8068}`. The beat drives the leaf round the whole cycle now rather than
+assuming either end of it, and puts it back open on the way out so the beats
+below see the castle they were written against.

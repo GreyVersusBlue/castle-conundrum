@@ -49,7 +49,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { partsOf } from './gltf.mjs';
-import { makePlan, walkability, moveBody, GRID, HEAD_LOW, HEAD_HIGH, BODY_RADIUS } from '../src/castle-plan.js';
+import { makePlan, walkability, collidersWith, moveBody, GRID, HEAD_LOW, HEAD_HIGH, BODY_RADIUS, DAY_SETS } from '../src/castle-plan.js';
+import { dayTwoOutcomes, dayTwoCastle } from '../src/mystery.js';
 import { stepClassOf } from '../src/audio.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -307,6 +308,87 @@ console.log('\nthe cell');
     const near = standableNear(bx, bz);
     if (!near) fail(`nothing within 1.5 m of the cell's bars at (${f2(bx)}, ${f2(bz)}) can be reached — the player cannot get close enough to talk through them`);
     else pass(`${near} standable cells within 1.5 m of the bars at (${f2(bx)}, ${f2(bz)})`);
+  }
+}
+
+/* ------------------------- 3c2: the morning after is not a smaller castle ---
+ * `data/mystery.json`'s `day2.castle` changes pieces of the castle depending on
+ * which of the seven endings the player reached (#539). Every one of those is a
+ * fact about the plan, so it is checked here.
+ *
+ * WHY THE PROPERTY AND NOT THE THREE ROWS. Writing "the cell opens and the
+ * muniment shuts" here would be copying the data into the check, which is the
+ * thing #34 calls not a check at all. The property that matters is the one the
+ * whole design rests on: an overlay may only ever GIVE the player castle, never
+ * take it away. That is what lets `validateMystery`'s day-two station rails go
+ * on asking the day-one grid and be conservative rather than wrong, and it is
+ * what makes seven endings cost two fills instead of seven. The union of every
+ * change is the most open the castle ever gets; the plan itself is the least.
+ * Both are flooded and the day-one cells have to be a subset of the union's.
+ *
+ * AND NO ROW IN THE DATA TODAY CAN MAKE THAT ASSERTION FAIL. Say it rather
+ * than imply it (#147). `shut` is the only verb that can close anything, and a
+ * leaf only carries `blocks` — the stone it stands in for — while the plan
+ * builds it shut, so shutting a leaf the plan ships open puts back an empty
+ * list. Tried: `{ piece: "west-gate", set: "shut" }` takes nothing away and
+ * this comparison stays green. It is a guard against a plan that does not exist
+ * yet, and the rail under it, which counts stone rather than cells, is the one
+ * that bites today.
+ */
+console.log('\nthe morning after, against the plan');
+{
+  const every = [];
+  const seen = new Set();
+  for (const o of dayTwoOutcomes(mystery)) {
+    for (const ch of dayTwoCastle(mystery, o)) {
+      const k = `${ch.piece}/${ch.set}`;
+      if (seen.has(k)) continue;
+      seen.add(k);
+      every.push(ch);
+    }
+  }
+  if (!every.length) fail('data/mystery.json has a second day and nothing in it changes the castle');
+  else {
+    pass(`${every.length} distinct change${every.length === 1 ? '' : 's'} across the seven endings: ${every.map(c => `${c.piece} ${c.set}`).join(', ')}`);
+    for (const ch of every) {
+      if (!DAY_SETS.includes(ch.set)) fail(`day2.castle: "${ch.set}" is not one of castle-plan.js's DAY_SETS`);
+      if (!plan.pieces.some(pc => pc.id === ch.piece)) fail(`day2.castle: the plan builds no piece "${ch.piece}"`);
+    }
+    // Two fills: the castle the plan builds, and the castle with every change
+    // that any ending makes. The second must contain the first.
+    const open = walkability(plan, { colliders: collidersWith(plan, every) });
+    const was = new Set(walk.cells.map(c => `${c.i},${c.j},${c.h.toFixed(3)}`));
+    const now = new Set(open.cells.map(c => `${c.i},${c.j},${c.h.toFixed(3)}`));
+    const lost = [...was].filter(k => !now.has(k));
+    if (lost.length) fail(`the morning after loses ${lost.length} cells the player could stand on the day before, the first at ${lost[0]}`);
+    else pass(`the morning after keeps all ${was.size} of the day's cells and adds ${now.size - was.size}`);
+    if (now.size === was.size) fail('no change to the castle adds a single cell — the whole overlay is decoration');
+    else {
+      const woke = open.rooms().filter(r => r.reachable && !rooms.find(x => x.id === r.id && x.level === r.level)?.reachable);
+      pass(`and it opens ${woke.length ? woke.map(r => r.id).join(', ') : 'no new room'} to the player`);
+    }
+
+    /* AND EACH ROW ON ITS OWN TAKES EXACTLY THE STONE IT SAYS IT DOES. The
+     * comparison above is over the union, so a row that quietly stopped doing
+     * anything would hide behind the rows beside it — which is not a guess:
+     * `collidersWith` was broken on purpose to ignore `gone` entirely and the
+     * fill comparison stayed green, because the other row still opened the
+     * muniment room and the union still grew. This counts boxes instead, per
+     * row, against what the plan says that row should reach: a `gone` takes
+     * the piece's own colliders, an `open` takes the stone its leaf stands in
+     * for, and `shut` and `shown` take nothing because the plan already has
+     * what they put back. */
+    for (const ch of every) {
+      const owns = ch.set === 'gone'
+        ? plan.colliders.filter(c => c.id === ch.piece).length
+        : ch.set === 'open'
+          ? (plan.gates.find(g => g.id === ch.piece)?.blocks?.length ?? 0)
+          : 0;
+      const removed = plan.colliders.length - collidersWith(plan, [ch]).length;
+      if (removed !== owns) fail(`"${ch.piece} ${ch.set}" takes ${removed} collider(s) out of the castle and the plan gives that piece ${owns}`);
+      else if (owns) pass(`"${ch.piece} ${ch.set}" takes all ${owns} of its own collider(s) with it`);
+      else pass(`"${ch.piece} ${ch.set}" takes no stone out, which is what the plan already has`);
+    }
   }
 }
 

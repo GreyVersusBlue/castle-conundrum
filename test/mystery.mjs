@@ -220,6 +220,37 @@ console.log('the validator rejects');
   expect('the King\'s inspector given a day-one schedule as well',
     (m) => { m.schedule.inspector = { prime: null, terce: null, sext: null, vespers: null }; },
     /^inspector: arrives on day 2 and still has a day-one schedule$/);
+
+  /* AND THE CASTLE'S HALF OF THE MORNING (#539). Six rails, each one a way for
+   * `day2.castle` to name something the castle cannot do, and every one of them
+   * silent until the one ending it was written for. */
+  expect('a day-two change to a piece the castle does not build',
+    (m) => { m.day2.castle[0].piece = 'gallows'; },
+    /^day2\.castle\[0\]: the castle builds no piece called "gallows"$/);
+  expect('a day-two change with a verb the builder does not have',
+    (m) => { m.day2.castle[0].set = 'burn'; },
+    /^day2\.castle\[0\]: `set` "burn" is not one of open, shut, gone, shown$/);
+  expect('opening something that is not a gate leaf',
+    (m) => { m.day2.castle[0].set = 'open'; },
+    /^day2\.castle\[0\]: cell-bars is a fixture, and only a gate leaf can be open$/);
+  expect('hiding a gate leaf instead of shutting it',
+    (m) => { m.day2.castle[1].set = 'gone'; },
+    /^day2\.castle\[1\]: muniment is a gate leaf, so say open or shut rather than gone$/);
+  expect('a day-two change with no reason written down',
+    (m) => { delete m.day2.castle[0].why; },
+    /^day2\.castle\[0\]: no `why`, so nothing says what the verdict did to cell-bars$/);
+  expect('a day-two change keyed on an ending that does not exist',
+    (m) => { m.day2.castle[0].unless = ['acquitted']; },
+    /^day2\.castle\[0\]: `unless` names "acquitted", which is neither an ending nor a verdict class$/);
+  expect('a day-two change no ending ever reaches',
+    (m) => { m.day2.castle[0].when = ['full']; m.day2.castle[0].unless = ['full']; },
+    /^day2\.castle\[0\]: applies to no ending, so cell-bars never changes$/);
+  expect('one piece set twice on one morning',
+    (m) => { m.day2.castle.push({ piece: 'cell-bars', set: 'shown', why: 'x' }); },
+    /^day2\.castle: cell-bars is set twice after the verdict full \(rows 0 and 3\), and only the last would show$/);
+  expect('the floor of a room made to vanish',
+    (m) => { m.day2.castle[0].piece = 'floor-muniment'; },
+    /^day2\.castle\[0\]: floor-muniment is floor the player stands on, and hiding it leaves a hole nothing else can see$/);
 }
 
 /* -------------------------------------- 2b: the twelve on the castle floor ---

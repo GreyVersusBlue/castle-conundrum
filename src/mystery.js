@@ -19,6 +19,7 @@
 // with the message written there.
 
 import { STATION_CLEARANCE, TALK_RANGE } from './stations.js';
+import { DAY_SETS } from './castle-plan.js';
 
 const KINDS = new Set(['S', 'E', 'D', 'L']);
 /** The seven `ui` lines the HUD reads out of mystery.json. */
@@ -101,6 +102,27 @@ function dayTwoLineKey(mystery, npcId, outcome) {
   if (!table) return null;
   for (const k of [outcome.key, outcome.class, 'default']) if (k in table) return k;
   return null;
+}
+
+/** Does one `when`/`unless` list name this ending, by its key or its class? */
+const namesOutcome = (list, outcome) => asList(list).some((k) => k === outcome.key || k === outcome.class);
+
+/** Does one day-two castle change apply to this ending? */
+function changeApplies(change, outcome) {
+  if (!change || !outcome) return false;
+  if (change.when != null && !namesOutcome(change.when, outcome)) return false;
+  if (change.unless != null && namesOutcome(change.unless, outcome)) return false;
+  return true;
+}
+
+/**
+ * What the verdict does to the stone (#539). The rows of `day2.castle` that
+ * apply to this ending, in the order they are written, each naming a `planId`
+ * and one of `castle-plan.js`'s `DAY_SETS` verbs. `castle-builder.js` applies
+ * them and nothing here knows what a collider is.
+ */
+export function dayTwoCastle(mystery, outcome) {
+  return (mystery?.day2?.castle ?? []).filter((c) => changeApplies(c, outcome)).map((c) => ({ piece: c.piece, set: c.set }));
 }
 
 /** True for a cast member who is not in the castle until the second day. */
@@ -564,6 +586,50 @@ export function validateMystery(mystery, npcs, quest, nav = null) {
       }
     }
 
+    /* --- The castle's own half (#539). The rows name pieces the plan builds
+     * and verbs the builder implements, and the two lists are held to each
+     * other here rather than discovered on the one morning the change was
+     * meant to happen. What this cannot check is what the change looks like;
+     * what it can check is that it is possible at all, that somebody wrote
+     * down why, and that nothing in it takes the castle away from the player
+     * — the last of which is `test/layout.mjs`'s, against two real fills. */
+    const piecesById = new Map((nav?.plan?.pieces ?? []).map((pc) => [pc.id, pc]));
+    const gateIds = new Set((nav?.plan?.gates ?? []).map((g) => g.id));
+    const surfaceIds = new Set((nav?.plan?.surfaces ?? []).map((sf) => sf.id));
+    (d2.castle ?? []).forEach((ch, i) => {
+      const where = `day2.castle[${i}]`;
+      if (!ch || typeof ch !== 'object') { say(`${where}: not an object`); return; }
+      if (!DAY_SETS.includes(ch.set)) { say(`${where}: \`set\` ${JSON.stringify(ch.set)} is not one of ${DAY_SETS.join(', ')}`); return; }
+      if (typeof ch.why !== 'string' || !ch.why.trim()) say(`${where}: no \`why\`, so nothing says what the verdict did to ${ch.piece}`);
+      for (const [field, list] of [['when', ch.when], ['unless', ch.unless]]) {
+        if (list == null) continue;
+        for (const k of asList(list)) {
+          if (!outcomes.some((o) => o.key === k || o.class === k)) say(`${where}: \`${field}\` names ${JSON.stringify(k)}, which is neither an ending nor a verdict class`);
+        }
+      }
+      if (!outcomes.some((o) => changeApplies(ch, o))) say(`${where}: applies to no ending, so ${ch.piece} never changes`);
+      if (nav?.plan) {
+        const piece = piecesById.get(ch.piece);
+        if (!piece) { say(`${where}: the castle builds no piece called ${JSON.stringify(ch.piece)}`); return; }
+        const isGate = gateIds.has(ch.piece);
+        if ((ch.set === 'open' || ch.set === 'shut') && !isGate) say(`${where}: ${ch.piece} is a ${piece.kind}, and only a gate leaf can be ${ch.set}`);
+        if ((ch.set === 'gone' || ch.set === 'shown') && isGate) say(`${where}: ${ch.piece} is a gate leaf, so say open or shut rather than ${ch.set}`);
+        // A floor that vanishes is a hole the player falls through, and the
+        // walkability grid reads `surfaces` rather than colliders, so nothing
+        // downstream would notice it had gone.
+        if (ch.set === 'gone' && surfaceIds.has(ch.piece)) say(`${where}: ${ch.piece} is floor the player stands on, and hiding it leaves a hole nothing else can see`);
+      }
+    });
+    // Two rows on one piece must not both fire on one morning.
+    for (const o of outcomes) {
+      const seen = new Map();
+      (d2.castle ?? []).forEach((ch, i) => {
+        if (!changeApplies(ch, o)) return;
+        if (seen.has(ch.piece)) say(`day2.castle: ${ch.piece} is set twice after the verdict ${o.key} (rows ${seen.get(ch.piece)} and ${i}), and only the last would show`);
+        else seen.set(ch.piece, i);
+      });
+    }
+
     // The closing pane, one per ending.
     for (const o of outcomes) {
       const e = d2.endings?.[o.key];
@@ -951,7 +1017,7 @@ export function createMystery({ mystery, npcs, state }) {
         const said = dayTwoLines(mystery, npcId, outcome);
         if (said) lines[npcId] = said;
       }
-      return { day: 2, watch: day2.watch, outcome, stations, lines, absent: [...gone], ends: day2.ends ?? null };
+      return { day: 2, watch: day2.watch, outcome, stations, lines, absent: [...gone], ends: day2.ends ?? null, castle: dayTwoCastle(mystery, outcome) };
     },
 
     /** The second day's closing pane for the recorded ending, or null. */

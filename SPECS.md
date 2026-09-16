@@ -414,111 +414,98 @@ a road, and "a different ending".
 
 ## A second day
 
-**Rank 6. Size 2+. Increment 1 shipped on 2026-09-15 (#533 to #538, PR #16).**
-The morning after exists: one watch (`lauds`), thirteen stations, sixty line
-sets keyed by what the player said, seven closing panes, and a thirteenth cast
-entry whose conversation ends the game. What follows is what increment 1
-actually built, then increment 2, which is the next one to take.
+**Rank 6. Size 2+. Increments 1 and 2 shipped on 2026-09-15 and 2026-09-16
+(#533 to #540, PRs #16 and #18).** The morning after exists and the castle
+knows about it: one watch (`lauds`), thirteen stations, sixty line sets keyed
+by what the player said, seven closing panes, a thirteenth cast entry whose
+conversation ends the game, and three rows of stone that move depending on
+which of the seven endings was reached. What follows is what shipped, then
+increment 3, which is the next one to take.
 
-### What increment 1 shipped
+### What increment 1 shipped (PR #16, #533 to #538)
 
 - **`data/mystery.json`** grew a `day2` block: `watch` (`lauds`, deliberately
-  not in `watches`), `ends` (the npc whose conversation is the terminal),
-  `absent` (`{accused: true, also: {full: [steward, merchant]}}`, applied by the
-  engine at runtime), `schedule` (one station per cast member, the inspector
-  included), `lines` (per npc, keyed exact ending then verdict class then
-  `default`) and `endings` (`signed` and `after`, one per ending).
-- **`data/npcs.json`** grew a thirteenth `cast` entry: `inspector`, Master Adam
-  Fraunceys, `King.glb`, `hideMaterials: ["Gold"]`, tint `#8a8f9c`, and
-  `arrives: 2`, which is the field that keeps him out of day one.
-- **`data/quest.json`**: `full`, `right`, `wrong` and `fall` are no longer
-  terminal; each carries `day:2` to `morning`, whose `enter` is `applyDay` and
-  whose one way out is `talked:inspector` to `end`, terminal, `applyDay` then
-  `showEpilogue`.
-- **`src/mystery.js`**: `outcomeOf`, `dayTwoOutcomes`, `dayTwoAbsent`,
-  `dayTwoLines` exported; `state.day`; `beginDay2()`; `stationOf`, `available`
-  and `press` day-aware. `validateMystery` grew the whole day-two section.
-- **`src/stations.js`** indexes the day-two watch beside the four, which is what
-  lets the day-two schedule reuse all five nav rails.
-- **`src/save.js`**: `SAVE_VERSION` 2, `day` in the schema, `migrate` from
-  under 2 adds `day: 1`, `repair` clamps it and resets a `day: 2` with no
-  verdict. Key unchanged (#36).
-- **`src/quest-manager.js`**: the `applyDay` action, `_dayLines`, `judged` and
-  `day` getters, the two-state epilogue button, the accusation panel filtered to
-  day-one cast.
-- **`src/ui.js`** `showEpilogue` takes a button label. **`src/main.js`** asks the
-  engine for a station before asking the nav where it is. **`src/npc.js`** grew
-  `get active()` (#538), without which the hanged man's invisible body goes on
-  offering the HUD his name. **`data/scene-config.json`** grew a `lauds` sky.
-- **Suites**: `test/mystery.mjs` drives all seven endings into day two and
-  carries eight day-two validator breaks; `test/save.mjs` has a fifth section on
-  version 2; `test/quest.mjs` walks the full ending through the button, the
-  morning and the inspector, and holds `day2.ends` to the graph's own exit;
-  `test/plan-vs-scene.mjs` counts thirteen bodies; `test/play-castle.mjs` has the
-  two new beats.
+  not in `watches`), `ends`, `absent`, `schedule`, `lines` (keyed exact ending
+  then verdict class then `default`) and `endings`.
+- **`data/npcs.json`** grew a thirteenth `cast` entry, `inspector`, with
+  `arrives: 2`. **`data/quest.json`**: the four verdict stages stopped being
+  terminal and gained `day:2` to `morning`, whose one way out is
+  `talked:inspector` to `end`.
+- **`src/mystery.js`**, **`src/stations.js`**, **`src/save.js`** (version 2 and
+  a `day` field), **`src/quest-manager.js`**, **`src/ui.js`**, **`src/npc.js`**
+  (`get active()`, #538) and **`data/scene-config.json`** (a `lauds` sky).
 
-### Increment 2: consequences that change the castle, not only the cast
+### What increment 2 shipped (PR #18, #539 and #540)
 
-This is the next one to take, and it is the third item on the old list rather
-than the first, because the first two both want something this repo does not
-have yet.
+- **`data/mystery.json`** grew `day2.castle`: rows of `{piece, set, when?,
+  unless?, why}` naming a `planId` and one of `DAY_SETS`' verbs. It is here and
+  not in `scene-config.json`, which overrules this file's own earlier
+  recommendation; #540 says why.
+- **`src/castle-plan.js`** exports `DAY_SETS` and `collidersWith(plan,
+  changes)`, and `walkability` takes a `colliders` list.
+- **`src/castle-builder.js`** grew `applyDay(changes)`, `setPieceVisible` (the
+  general form of `setEvidenceVisible`) and `shutLeaf` (the inverse of
+  `openLock`, which the second day is the first thing ever to need).
+- **`src/quest-manager.js`**'s `_applyDay` hands the builder rows already
+  resolved for the ending; `handleLock` stops examining a re-locked door on day
+  two. **`src/main.js`** exposes `window.__castle`.
+- **Suites**: `test/layout.mjs` holds the whole overlay to "the morning after
+  is never a smaller castle" and counts each row's stone against the plan;
+  `test/mystery.mjs` carries nine `day2.castle` validator breaks;
+  `test/quest.mjs` asserts two endings hand the builder two different rosters;
+  `test/plan-vs-scene.mjs` watches a piece and its collider go and come back,
+  and a leaf shut, opened and shut again; `test/play-castle.mjs` walks into the
+  cell.
 
-Scope:
+### Increment 3: a second mystery for the morning
 
-- **`data/scene-config.json` and `src/castle-plan.js`.** A `day2` overlay on the
-  plan: a small list of pieces that change on the morning after. The three the
-  content already implies are the cell's bars standing open when Madoc is let
-  out (every ending but `prisoner` and `nobody`), the muniment room's leaf shut
-  and re-locked in the endings where the Clerk keeps the works, and the
-  merchant's cart gone from the outer ward. Every one of them is a piece the
-  plan already builds, so the overlay is a visibility and a transform, not a new
-  asset.
-- **`src/castle-builder.js`.** One method, `applyDay(2, overlay)`, that walks
-  the tagged `planId`s the overlay names. `test/plan-vs-scene.mjs` is the suite
-  that can see it, and its existing box diff is the check.
-- **`src/quest-manager.js`.** `applyDay` already exists; it grows the castle
-  half beside the cast half.
-- **`test/layout.mjs`.** The overlay's `planId`s are all in the plan, and the
-  walkability of the morning after is still one component: opening the cell's
-  bars must not strand anybody, and shutting the muniment leaf must not shut
-  anybody in.
+The next one, and it is the biggest of the three. The inspector asks questions
+the player cannot answer, and increment 3 is where some of them become
+answerable: the missing 128 sheets as evidence that can be found, the gaol
+roll's dates, the passes in the Steward's hand. Two of the three want something
+this repo has not got.
 
-Open calls for increment 2:
+- **It needs a town to walk to.** The lead is in Thomas Wykes's yard and the
+  yard is outside the west barbican, where the world currently ends at a hard
+  edge. **The town side** (rank 5) is the dependency and it is blocked on
+  `forest_ground_06` from Poly Haven.
+- **It needs bells on day two**, or a single-watch mystery, which is the one
+  design question worth settling first. A second day with more than one watch
+  has to argue with #533 rather than work around it: `watches` is four because
+  `ring()`'s fourth is the Constable's demand and both length rails are written
+  against one day. The cheapest shape that does not is `day2.watches`, its own
+  list, with the engine reading whichever list the day says.
+- **What does not need either**: the gaol roll. It is a piece of evidence in a
+  room the castle already builds, it convicts nobody, and its whole content is
+  the dates that were in front of everybody and that nobody read. It is the one
+  thread of increment 3 a container can finish.
 
-- **Does the walkability grid change on day two?** Recommend **yes, and it is
-  computed once per day** rather than per ending: the overlay is small and the
-  fill is cheap, and a grid that is right for six endings and wrong for the
-  seventh is the class of thing nothing catches.
-- **Where does the plan's day-two overlay live?** Recommend
-  **`scene-config.json`**, beside the pieces it names, not in `mystery.json`.
-  `mystery.json` is who and what; `scene-config.json` is where and how big.
+### What is left after increment 3
 
-### What is left after increment 2, in order
-
-1. A second mystery for day two (the inspector's audit; the missing 128 sheets
-   as evidence the player can find in the town, which needs **The town side**'s
-   road to be walkable, which it is not).
-2. Bells on day two, and a schedule with more than one watch. This is the one
-   that reopens `watches`, and #533 is the decision it has to argue with.
-3. **Somebody looks at a Lauds sky.** The five numbers in
+1. **Somebody looks at a Lauds sky.** The five numbers in
    `lighting.watches.lauds` were written against the four already there and
    checked by nothing but the four (#53). It belongs to **The GPU run**.
+2. Consequences on the third day, which nobody has asked for.
 
 ### Dependencies
 
-- None, but **do not run alongside anything else that touches `save.js`**.
-- **The texture sets** do not block; the road is scenery until the town-side
-  mystery.
+- Increment 3's town half waits on **The town side** (rank 5), which waits on
+  Poly Haven.
+- **Do not run alongside anything else that touches `save.js`.**
 
 ### Constraints
 
 - #36 and #413 (key unchanged; the version moved to 2 in increment 1).
-- #37 (`repair` every load; `day` clamped and made consistent with
-  `accusations`).
+- #37 (`repair` every load).
 - #39, #481, #34 throughout.
-- #533: a second day is a `day` field and `watches` is four. Anything that wants
-  a fifth bell has to overturn that decision rather than work around it.
+- #533: a second day is a `day` field and `watches` is four. A fifth bell has to
+  overturn that decision rather than work around it.
 - #535: there is no body at the gallows, and a gallows is Devon's call.
+- #539: an overlay may only ever give the player castle, never take it away.
+  Every verb that could is refused against the plan, and `test/layout.mjs`
+  holds the property.
+- #540: the overlay lives in `mystery.json`, because what decides it is the
+  verdict.
 
 ---
 

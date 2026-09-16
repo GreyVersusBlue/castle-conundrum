@@ -170,6 +170,10 @@ async function init() {
   });
   window.__save = { slot, state }; // read by play-castle.mjs's reload beat
   window.__quest = quest; // the one game-side hook play-castle.mjs reads; __cam and __scene come from its scene probe
+  // The builder, for the one thing only a live castle can answer: whether a
+  // day-two change to a piece really takes its collider with it (#539).
+  // test/plan-vs-scene.mjs calls `applyDay` on it and puts it back.
+  window.__castle = castle;
   // The cast and the day, for the two suites that drive the real page:
   // play-castle.mjs looks up where somebody is due rather than carrying a
   // coordinate of its own, and test/plan-vs-scene.mjs reads the twelve bodies.
