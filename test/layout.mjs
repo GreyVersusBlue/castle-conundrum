@@ -492,6 +492,40 @@ if (walk.sealed()) {
   fail(`the castle leaks: ${walk.leaked} reachable cells outside the curtain at x ${f2(plan.curtain.min.x)}..${f2(plan.curtain.max.x)}, z ${f2(plan.curtain.min.z)}..${f2(plan.curtain.max.z)}. The fill stepped through at ${where}`);
 }
 
+/* --------------- new in rank 5 (#541): every outside ground piece ---
+ * `config.ground.outside` lies past the base's own margin, in world metres
+ * rather than tiles (src/castle-plan.js). Two things have to be true of every
+ * piece in it: wholly outside the curtain box (so sealed() above is testing
+ * something rather than nothing — an outside piece that leaked INSIDE the
+ * curtain would make the walk floor and the outside ground the same surface),
+ * and touching the base box on at least one edge, so there is no gap between
+ * the castle's own ground and the world beyond it.
+ */
+console.log('\noutside ground, past the base');
+{
+  const TOL = 1e-6;
+  const base = plan.grounds.find(g => g.id === 'ground');
+  const outside = plan.grounds.filter(g => (config.ground.outside || []).some(o => o.id === g.id));
+  if (!outside.length) fail('config.ground.outside names no pieces, or none of them reached plan.grounds');
+  for (const g of outside) {
+    const clearOfCurtain = g.box.max.x <= plan.curtain.min.x || g.box.min.x >= plan.curtain.max.x
+      || g.box.max.z <= plan.curtain.min.z || g.box.min.z >= plan.curtain.max.z;
+    if (!clearOfCurtain) {
+      fail(`${g.id} at x ${f2(g.box.min.x)}..${f2(g.box.max.x)}, z ${f2(g.box.min.z)}..${f2(g.box.max.z)} overlaps the curtain box x ${f2(plan.curtain.min.x)}..${f2(plan.curtain.max.x)}, z ${f2(plan.curtain.min.z)}..${f2(plan.curtain.max.z)}`);
+      continue;
+    }
+    // Two axis-aligned rectangles have no gap between them exactly when their
+    // projections overlap or touch on BOTH axes — touching (an edge in
+    // common, like outside-ground's) and overlapping (a corner shared, like
+    // outside-road's 2 m into the base margin) both count; only a rectangle
+    // whose projection clears the base's on some axis leaves a gap.
+    const meetsX = g.box.max.x >= base.box.min.x - TOL && g.box.min.x <= base.box.max.x + TOL;
+    const meetsZ = g.box.max.z >= base.box.min.z - TOL && g.box.min.z <= base.box.max.z + TOL;
+    if (!meetsX || !meetsZ) fail(`${g.id} at x ${f2(g.box.min.x)}..${f2(g.box.max.x)}, z ${f2(g.box.min.z)}..${f2(g.box.max.z)} does not meet the base ground's box x ${f2(base.box.min.x)}..${f2(base.box.max.x)}, z ${f2(base.box.min.z)}..${f2(base.box.max.z)} — a gap between the castle's ground and the world`);
+    else pass(`${g.id} lies wholly outside the curtain and meets the base ground with no gap`);
+  }
+}
+
 /* ---------------------------- 4b: two crossings, one logged and one not ---
  *
  * The fact the whole mystery turns on. "The porter's gate is the only crossing

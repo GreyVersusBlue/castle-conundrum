@@ -276,6 +276,7 @@ console.log('\nevery built thing names a material that exists');
   if (config.walk) named.push([config.walk.material, 'the wall walk\'s decking']);
   named.push([config.ground.base.material, 'the base ground']);
   for (const patch of config.ground.patches || []) named.push([patch.material, `ground patch ${patch.id}`]);
+  for (const out of config.ground.outside || []) named.push([out.material, `outside ground ${out.id}`]);
   for (const r of config.rooms || []) if (r.floor) named.push([r.floor, `${r.id}'s floor`]);
   for (const b of config.builtProps || []) named.push([b.material, `built prop ${b.id}`]);
   const bad = named.filter(([m]) => !known.has(m));

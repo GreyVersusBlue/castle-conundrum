@@ -22,14 +22,16 @@ a hand-vendored `libs/`, and a 200 MB asset ceiling instead of 44.4.
 **Asset compression shipped on 2026-09-15** (#506 to #510): KTX2/Basis over
 every texture, meshopt over the Poly Haven props and the NPC bodies, and 317.9
 MB of video memory down to 79.9. `tools/encode-assets.mjs` is the pipeline, and
-anything **A fourth body** and **The texture sets** add has to come through it.
+anything **A fourth body** adds has to come through it, the way the texture
+sets and the town side already did.
 
 **Four things a GPU saw shipped on 2026-09-15** (#511 to #517, PRs #6 and
 #7): a body can climb every flight, the drums wear built crowns instead of
 merlons hanging in the air, no two faces share a plane so nothing flickers,
 and the castle says where you are: a HUD room line, a tint per drum, and
-something in every room. What did not ship is new texture sets, because this
-container cannot reach Poly Haven or KTX-Software (#518); that is rank 4 now.
+something in every room. New texture sets did not ship with it, because that
+container could not reach Poly Haven or KTX-Software (#518); a later one
+could, and the row that came out of that is below.
 
 **Sound shipped on 2026-09-15** (#519 to #522): a footstep per surface class
 and the chapel bell, both synthesised out of `data/sounds.json`, no audio file
@@ -69,26 +71,38 @@ the game. The save is version 2 with a `day` field; the key did not move (#36).
 Increment 2 gave the stone its half: the cell's bars come off on the five
 mornings Madoc walks out, which opens to the player the one ground room nobody
 has ever stood in, and the muniment door stands open in the full ending and is
-shut again in the other six. **Rank 6 is still open**: it is a 2+ and increment
-3 is a second mystery for the morning, most of which waits on a town to walk
+shut again in the other six. **Rank 4 is still open**: it is a 2+ and increment
+3 is a second mystery for the morning, most of which waited on a town to walk
 to.
 
-**7 ranked items. Nothing is claimed. Take rank 1.** It is the only row a
-container without a GPU and without Poly Haven can finish outright. Rank 6's
-next increment is the other thing a container can start, and `SPECS.md` names
-the one thread of it that does not wait on the town: the gaol roll. Ranks 2, 3,
-4, 5 and 7 all need a machine this one is not (#518).
+**The texture sets and the town side shipped on 2026-09-16** (#541 to #546):
+`ktx` was on PATH and Poly Haven answered this time, so both rows that #518
+had blocked came due together. Five materials over four roles — a dressed
+ashlar for the inner ward, a red brick for the four inner drums, a plaster for
+the two walls that exist only at level 1, and a deck plank for the eight tower
+first floors — plus a sixth, `forest_ground_06`, restored out of this repo's
+own history to texture the ground west of the barbican, with a road and four
+trees. `dist/` grew by about 17 MB against 200. Increment 3's town half is
+unblocked; what it still needs is Thomas Wykes's yard built on the ground this
+row laid, and the bells-on-day-two question #533 raises.
+
+**5 ranked items. Nothing is claimed. Take rank 1.** It is the only row a
+container without a GPU can finish outright. Rank 4's next increment is the
+other thing a container can start, and `SPECS.md` names the one thread of it
+that does not wait on a design call: the gaol roll. Ranks 2, 3 and 5 all need
+a machine this one is not (#518).
 
 One thing is true of the whole list and worth saying once. **Nothing here has
 been seen on a GPU since Phase 5.** `npm run play` walks the whole intended day
 — twelve people, ten pieces of evidence, three bells, a reload at Sext, the
 accusation and the epilogue, 102 assertions — and no run of it since Phase 5 has
 happened on a machine with real compositing (#53). Rank 2 is that run, and it
-carries four jobs it did not have: nobody has looked at a compressed texture
-(#507), at a tower roof from 12 m (#523), at seven trusses over the hall (#527),
-or at a Lauds sky (#533) — and nobody has put a thumb on a phone (#530). The second standing line, "the
-game has never had a thumb on it", came out with #530: the scheme is there, it
-is in CI, and what is left of it is the feel.
+carries five jobs it did not have: nobody has looked at a compressed texture
+(#507) or at the five that shipped after it (#541 to #546), at a tower roof
+from 12 m (#523), at seven trusses over the hall (#527), or at a Lauds sky
+(#533) — and nobody has put a thumb on a phone (#530). The second standing
+line, "the game has never had a thumb on it", came out with #530: the scheme
+is there, it is in CI, and what is left of it is the feel.
 
 ## How this repo is worked
 
@@ -127,10 +141,8 @@ your decisions and this file's header, ranks and `Claimed` column are updated
 | 1 | A fourth body, and a woman's in particular | ½ | Fable 5.1 |  | [A fourth body](SPECS.md#a-fourth-body) |
 | 2 | A real GPU run of `npm run play`, and somebody looks at the twelve | ¼ | Opus 5 |  | [The GPU run](SPECS.md#the-gpu-run) |
 | 3 | A new preview and og card, from that run | ¼ | Opus 5 |  | [The GPU run](SPECS.md#the-gpu-run) |
-| 4 | Four texture sets: a second wall stone, a tower stone, a plaster, a floor | ½ | Fable 5.1 | texture-sets-and-town-side | [The texture sets](SPECS.md#the-texture-sets) |
-| 5 | The town side: a textured ground outside the west barbican, and a road | 1 | Fable 5.1 | texture-sets-and-town-side | [The town side](SPECS.md#the-town-side) |
-| 6 | A second day: increment 3, a second mystery for the morning | 2+ | Opus 5 |  | [A second day](SPECS.md#a-second-day) |
-| 7 | The hall's covering, and the two windows under it | ¼ | Sonnet 5 |  | [The hall covering](SPECS.md#the-hall-covering) |
+| 4 | A second day: increment 3, a second mystery for the morning | 2+ | Opus 5 |  | [A second day](SPECS.md#a-second-day) |
+| 5 | The hall's covering, and the two windows under it | ¼ | Sonnet 5 |  | [The hall covering](SPECS.md#the-hall-covering) |
 
 ## A fourth body
 
@@ -163,42 +175,25 @@ Rank 3 depends on rank 2 having happened. The board preview and og card in
 (#374, #379). New images come out of the same run. **Where they go is Devon's**
 — those two files live in `tools-and-games/assets/` and he relinks.
 
-## The texture sets
-
-**Rank 4.** Ten texture sets dress the whole castle and 27 of 31 runs are
-`castle_wall_slates`; every upper floor is `wood_planks`. #516's tints tell
-the eight drums apart with no new bytes, and the next step is bytes: four
-Poly Haven sets, chosen in `SPECS.md`, through `tools/encode-assets.mjs`
-(#506) on a machine with `ktx`. This container cannot reach Poly Haven or the
-KTX-Software release (#518), which is the only reason it is a row and not
-part of PR #7.
-
-## The town side
-
-**Rank 5.** The world ends at the curtain by budget. A textured ground outside
-the west barbican and a road is one texture set Devon dropped
-(`forest_ground_06`) and a different ending — the clerk arrives from somewhere
-and currently that somewhere is a hard edge. The texture set goes through
-`tools/encode-assets.mjs` first (#506), which rewrites the paths
-`data/scene-config.json` needs as it encodes.
-
 ## A second day
 
-**Rank 6, and a 2+. Increments 1 and 2 shipped on 2026-09-15 and 2026-09-16**
+**Rank 4, and a 2+. Increments 1 and 2 shipped on 2026-09-15 and 2026-09-16**
 (#533 to #540): the morning after is there in seven shapes, the cast says what
 the verdict made of them, and the castle moves with them. **What is left is a
 second mystery for the morning**, and most of it waits on things this repo has
 not got. The inspector asks questions the player cannot answer; increment 3 is
-where some of them become answerable. Two of its three threads are blocked —
-the missing 128 sheets are in a town **The town side** has not built, and a
-schedule with more than one watch has to argue with #533 rather than work
-around it. The third is not: the gaol roll is a piece of evidence in a room the
-castle already builds, it convicts nobody, and its whole content is the dates
-that were in front of everybody and that nobody read. `SPECS.md` specs it.
+where some of them become answerable. Of its three threads, the town has
+shipped now (#541 to #546): the missing 128 sheets are in a yard nobody has
+placed yet, on ground that now exists to place it on. A schedule with more
+than one watch still has to argue with #533 rather than work around it. The
+third thread is not blocked at all: the gaol roll is a piece of evidence in a
+room the castle already builds, it convicts nobody, and its whole content is
+the dates that were in front of everybody and that nobody read. `SPECS.md`
+specs it.
 
 ## The hall covering
 
-**Rank 7.** The Great Hall has seven trusses over it since #527 and nothing
+**Rank 5.** The Great Hall has seven trusses over it since #527 and nothing
 between them. The kit's `roof*.glb` pieces would cover it, and two windows at
 `base` 5 in `great-hall-north` would keep the daylight the covering takes
 away. Both halves need somebody to look: nothing in a container that cannot

@@ -7,10 +7,11 @@ decision. Every "recommendation" below is exactly that, and the session that
 ships the row is the one that records the call with a number.
 
 Written 2026-09-15 against `main` at `bb61958`, from the code and data as they
-are, not from the briefs. **Two rows shipped the same day and their sections are
-gone: asset compression (#506 to #510), sound (#519 to #522), the tower tops
-(#523 to #526), the hall's roof frame (#527, #528), the two plan suites (#529)
-and touch (#530 to #532).** What asset
+are, not from the briefs. **Rows shipped since and their sections are gone:
+asset compression (#506 to #510), sound (#519 to #522), the tower tops
+(#523 to #526), the hall's roof frame (#527, #528), the two plan suites (#529),
+touch (#530 to #532), the texture sets (#541 to #545) and the town
+side (#546).** What asset
 compression left behind for the rows that touch assets is named in their
 Dependencies; what sound left behind is `data/sounds.json`, a `material` and a
 `kind` on every `plan.surfaces` entry, and `layout.mjs` check 12. Where a brief and the code disagree, the code is
@@ -253,165 +254,6 @@ and og card from that run.
 
 ---
 
-## The texture sets
-
-**Rank 4. Size ½.** The castle is dressed in ten sets and reads as one: 27 of
-31 runs are `castle_wall_slates`, all eight drums `defense_wall`, every upper
-floor `wood_planks`. #516 gave each drum a `tint` over the same maps, which is
-free and is not a second stone. This row is the second stone. It was meant
-to be part of the wayfinding PR (#7) and was not, because the container that
-PR was built in answers 403 to Poly Haven and to KTX-Software's release page
-(#518): it can reach npm and nothing else, and `ktx` is not on npm.
-
-### Scope
-
-- **Four CC0 sets at 1k, `diff`, `nor_gl`, and `arm` or `rough`, never
-  both (#437):**
-  - `medieval_blocks_02` for the inner ward's runs (the King's Hall, the
-    steward's chamber, the cross-wall's inner face): dressed ashlar against
-    the outer ward's rubble slates.
-  - `castle_brick_02` for the four inner drums, so a tower tells you which
-    ward you are in before its tint does.
-  - `plastered_wall_04` or `plaster_wall_02` for the level-1 rooms' interior
-    partitions and the royal apartments: lime plaster upstairs, stone below.
-  - `wood_floor_deck` or `wooden_planks_02` for the tower first floors, so
-    the walk's decking and a tower room's boards are not one plank.
-  Exact names are whatever Poly Haven lists that day; the four roles are the
-  row.
-- **`tools/encode-assets.mjs`** encodes them in place and rewrites the paths
-  `data/scene-config.json`'s `materials` needs (#506). The jpgs are not
-  committed.
-- **`data/scene-config.json`:** four `materials` entries, referenced from at
-  least one run, drum or room each in the same commit (#390; `test/assets.mjs`
-  check 4 fails an unreferenced Poly Haven byte). Runs, drums and rooms take
-  `material` today and `tint` since #516; nothing new in the schema.
-- **`src/`:** nothing. `loadPBRMaterial` reads whichever of `arm` and `rough`
-  the set ships.
-
-### Acceptance
-
-- `test/assets.mjs`: the four sets referenced and complete, every file
-  `.ktx2`, no jpg or png under `assets/poly-haven`. Break: reference a set
-  without encoding it; `built.mjs` fails `neither asked for a jpg or a png`.
-- `test/built.mjs`: `dist/` under 200 MB (#499); expect about 12 MB more.
-- `plan-vs-scene.mjs`: no change; a material is not a box.
-- GPU: the inner ward reads as a different build from the outer. Ranked row
-  3's run.
-
-### Open calls
-
-- **Which four.** The roles above; recommend the first name listed for each
-  and no agonising.
-- **Tint on top of a new stone, or one or the other?** Recommend **both**:
-  the inner drums keep their warm tints over the new brick.
-
-### Dependencies
-
-- A machine with `ktx` on PATH. Devon's Windows machine has it (#506). Not
-  this container (#518).
-
-### Constraints
-
-- #506 (encode before commit; originals are git history), #437, #390, #503
-  (no spaces in paths), #499.
-
----
-
-## The town side
-
-**Rank 5. Size 1.** The ground is the curtain's footprint plus a 2 m margin,
-worked out from the placed stone (#436); beyond it is fog from 30 to 150 m.
-`barbican-west` has no archway and PLAN.md's answered question 5 says both
-barbican gates stay shut forever. The spawn is in the barbican facing east. So
-today the outside is visible from the west walk and from the North-west and
-South-west Towers' roofs (#523). The row: a textured ground outside the west barbican,
-a road, and "a different ending".
-
-### Scope
-
-- **`assets/poly-haven/forest_ground_06_1k.gltf/textures/`, restored.** The set
-  is in this repo's history: the subtree split carried it, and
-  `git log --all --diff-filter=D --name-only` lists
-  `assets/Poly Haven/forest_ground_06_1k.gltf/textures/forest_ground_06_{diff,nor_gl,arm}_1k.jpg`.
-  Restore `textures/` only (#390: the `.gltf` and `.bin` beside it are a
-  preview ball), move it under the renamed `assets/poly-haven/` (#503), and
-  declare it in `materials` with `arm`, not `rough`, because that is what the
-  pack ships (#437). Roughly 2 to 3 MB by the sibling sets.
-- **`data/scene-config.json`.** `ground` grows an `outside` list (or `patches`
-  learn to lie outside the base): a `forest_ground_06` rectangle from the
-  curtain's west face out to the fog, and a `stone_pavers` or
-  `grassy_cobblestone` road 4 m wide running west from the barbican's west
-  face and fading into the fog. A few `tree-large.glb` from the kit as
-  placements beside the road, since `courtyard.placements` already places kit
-  pieces anywhere in tile coordinates.
-- **`src/castle-plan.js`.** `grounds` is derived from the curtain; the outside
-  pieces are further `ground` pieces with `patch: true` at `y` 0 and surfaces
-  like the rest. `walkability`'s grid bounds expand to every surface, so the
-  grid grows by the outside area (a 60 x 60 m patch is 14,400 more cells at
-  0.5 m, tens of milliseconds).
-- **`data/mystery.json`.** The "different ending": the verdict epilogues
-  (`accusation.verdicts.*.epilogue`) can name the road the inspector rides in
-  on; three or four sentences, content only. Optional.
-- **`test/assets.mjs`** sees a new complete set and every file referenced,
-  automatically. **`test/layout.mjs`** check 4 (`sealed()`) is the constraint
-  below.
-
-### Acceptance
-
-- From the west walk, looking west over the parapet: ground, a road, trees,
-  fog. GPU for the look; `plan-vs-scene.mjs` for the boxes (every outside
-  piece within 0.01 m).
-- `layout.mjs` check 4 still passes: **nothing reachable outside the curtain**.
-  The outside ground is a surface the fill never reaches because no opening
-  leads to it. Break: cut a doorway in `barbican-west`; `sealed()` fails with
-  `the castle leaks: N reachable cells outside the curtain ... stepped through
-  at (-46.25, ...)`. That break proves the outside ground is walkable floor
-  that the wall, not the absence of floor, keeps the player off, which is the
-  claim.
-- `assets.mjs`: the three restored files referenced (`material
-  forest_ground_06's diffuse` etc.), and the set complete. Break: restore the
-  set without the material entry; check 4 lists the three files.
-- New in `layout.mjs`: every outside ground piece lies wholly outside the
-  curtain box and touches the base box (no gap between the castle's ground and
-  the world). Break: move the forest patch 3 m west; the line names the gap.
-
-### Open calls
-
-- **Open the barbican's west face?** Recommend **no**. It reverses answered
-  question 5, breaks `sealed()` by design, and the mystery's clue graph rests
-  on the porter's gate being the one logged crossing at ground level with the
-  world sealed around it. A road you can see and cannot take is the brief's
-  "hard edge" made into a picture; a road you can walk is a new ward. If Devon
-  wants the ending to walk out, that is its own row with a new curtain rule.
-- **How far out?** Recommend **to the fog's far, 150 m, west only**, and 40 m
-  north and south of the road's line. Anything the fog hides is bytes drawn
-  for nobody.
-- **Road material.** No road set is on the list. Recommend
-  **`grassy_cobblestone`** (a cart track through grass) over pavers, which
-  read as a courtyard.
-- **Change the epilogues?** Recommend **one sentence in `nobody` and `full`**,
-  the two endings that mention the inspector's arrival, and nothing else.
-
-### Dependencies
-
-- **The restored jpgs go through `tools/encode-assets.mjs`** (#506, shipped)
-  before they
-  are referenced.
-- The four tower roofs (#523) make this visible from four more places.
-
-### Constraints
-
-- #390 (restore `textures/` only, reference in the same commit).
-- #437 (`arm` and `rough` are different images; this pack is `arm`).
-- #503 (no spaces: the restored path is renamed on the way in).
-- #436 (the base is derived from the curtain; the outside pieces are added
-  beside that derivation, not by widening the margin, which would move the
-  base's `plan-vs-scene` box for every existing check).
-- #500 and #34 as above.
-- #499: about 3 MB against 158 MB of headroom.
-
----
-
 ## A second day
 
 **Rank 6. Size 2+. Increments 1 and 2 shipped on 2026-09-15 and 2026-09-16
@@ -466,9 +308,10 @@ roll's dates, the passes in the Steward's hand. Two of the three want something
 this repo has not got.
 
 - **It needs a town to walk to.** The lead is in Thomas Wykes's yard and the
-  yard is outside the west barbican, where the world currently ends at a hard
-  edge. **The town side** (rank 5) is the dependency and it is blocked on
-  `forest_ground_06` from Poly Haven.
+  yard is outside the west barbican. The town side shipped (#546): there is
+  ground, a road and fog past the barbican now, but nothing built on it —
+  Thomas Wykes's yard itself, and whatever stands in it, is still increment
+  3's to place.
 - **It needs bells on day two**, or a single-watch mystery, which is the one
   design question worth settling first. A second day with more than one watch
   has to argue with #533 rather than work around it: `watches` is four because
@@ -489,8 +332,9 @@ this repo has not got.
 
 ### Dependencies
 
-- Increment 3's town half waits on **The town side** (rank 5), which waits on
-  Poly Haven.
+- Increment 3's town half no longer waits on Poly Haven access (#546); it
+  waits on someone placing Thomas Wykes's yard on the ground the town side
+  built.
 - **Do not run alongside anything else that touches `save.js`.**
 
 ### Constraints

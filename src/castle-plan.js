@@ -1587,6 +1587,22 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
       },
     });
   }
+  /* Rank 5 (#541): ground outside the curtain, past the base's own margin. In
+   * world metres rather than tiles because it lies off the tile grid the
+   * castle is drawn on, and in `oneFacePerPlane` order — the road listed after
+   * the ground it crosses — so the same hole-cutting rule that keeps
+   * outer-ward and chapel-vestibule from fighting the base handles this too.
+   * Nothing here is reachable: test/layout.mjs's sealed() is what says so, not
+   * this loop, which only ever adds a surface. */
+  for (const out of config.ground.outside || []) {
+    grounds.push({
+      id: out.id, material: out.material, patch: true, fallbackColor: out.fallbackColor,
+      box: {
+        min: { x: out.box.min[0], y: 0, z: out.box.min[1] },
+        max: { x: out.box.max[0], y: 0, z: out.box.max[1] },
+      },
+    });
+  }
   /* A ground room's floor is a patch of its own material laid inside it: a
    * rectangle for a walled room, a disc for a tower. At the base's y, like every
    * other patch, so the walkability grid's 1e-6 dedupe reads one floor and not a
