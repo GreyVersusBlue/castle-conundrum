@@ -2639,3 +2639,42 @@ fifteen; `dist/` grew from 50.7 to roughly 68 MB against the 200 MB ceiling.
   35050428182) is green. It is a local rendering difference, not a code
   regression this PR introduced or one this PR's own scope covers, and is left
   for whoever next touches the chapel or the bell to chase.
+
+## The wishlist, and Devon's ten answers (2026-09-16)
+
+`WISHLIST.md` is new: the arc after `BACKLOG.md`, written from Devon's brief
+of the day (depth, life, side quests, a castle to get lost in, lore, a castle
+that is lived in), seven themes, three tools, and ten questions. Devon
+answered all ten the same day. Decisions #547 to #550.
+
+- **The wishlist falls in line behind the backlog, and ranks nothing**
+  (#547). The five ranked rows in `BACKLOG.md` stay as they are. A wishlist
+  row moves into `SPECS.md` and `BACKLOG.md` when it is taken up and not
+  before, and the first to move when the table empties is the populace file
+  and the first ten bodies of life. `PLAN.md` carried the name `WISHLIST.md`
+  before the move (#491) and about ten citations still use it; a citation of
+  that name dated before 2026-09-16 means `PLAN.md`.
+- **Recorded audio is admitted, reversing the synthesis-only half of #519**
+  (#548). Devon's words: "we want to grab audio now." #519's reasons were a
+  licence question, a new directory for `test/assets.mjs`'s sweep to grow,
+  and no codec in the encode pipeline; the answer to each is the one every
+  glTF already has. A recording is CC0, named by `data/sounds.json` so the
+  reachability sweep (#390) covers it, and goes through
+  `tools/encode-assets.mjs` before it is committed (#506), which needs an
+  audio codec added to that script. What #519 built stays: the footstep
+  and the bell are synthesised until a recording beats them, and a sound
+  synthesis does well is not replaced for the sake of it. Nothing lands in
+  `assets/` under this decision until a wishlist row asks for it.
+- **The world is invented, and leans into the fantasy** (#549). Conwy's plan
+  and the 1280s' feel stay; the kingdom, the King, the war and the saints are
+  the game's own, and the lore may carry what people believe and the game
+  never confirms. Nobody casts anything on screen. The reason is the one
+  the plan's Q1 was written against: an invented world lets the second
+  mystery and the tenth be about anything.
+- **Five smaller calls, in one number** (#550). Side quests are independent
+  of the mystery (they never gate or remove a clue) and may connect to each
+  other or deepen what the player understands. Many run at once, in one open
+  castle, rather than one a day. Bodies are low-poly and CC0 for now, so a
+  session can make a drop-in when a pack has no child or dog. Laptop first;
+  the phone gets a cap, not a different castle. Text only; voice acting is
+  much later. Bells stay as the clock (Q3), the default taken.

@@ -14,8 +14,9 @@ name in about ten places. **A citation of `WISHLIST.md` dated before
 
 When a row here is taken up, it leaves this file, gets a spec in `SPECS.md`
 and a rank in `BACKLOG.md`, the same as every row before it. Until then it is
-a wish, and the open questions at the bottom are Devon's to answer before
-the first of them moves.
+a wish. The ten questions at the bottom were Devon's to answer and he
+answered them the same day (#547 to #550); the themes below are written to
+his answers.
 
 ## What the castle is today, so the wishes are measured against it
 
@@ -32,7 +33,9 @@ the first of them moves.
 - **Three bodies and 51 MB of assets, against a 200 MB ceiling** (#499). The
   kit has no woman, no child, no animal. Every asset that lands goes through
   `tools/encode-assets.mjs` first (#506).
-- **Two sounds, both synthesised.** No audio file exists in the repo (#519).
+- **Two sounds, both synthesised.** No audio file exists in the repo yet;
+  #519's synthesis-only half was reversed on 2026-09-16 (#548) and recorded
+  CC0 audio is admitted, through the encode pipeline like any asset.
 - **Nothing here has been seen on a GPU since Phase 5** (#53). Every row
   below that is about how something looks or feels is gated on `npm run play`
   on a real machine, and most of them are.
@@ -96,7 +99,9 @@ when nobody is being questioned.
 - **The cost.** Fifty skinned bodies is a draw-call and a skinning bill this
   page has never paid. Instanced skinned meshes, an animation LOD that
   freezes bodies more than 30 m away, and a per-ward population cap are the
-  three levers, and the phone (#530) is the machine that decides them.
+  three levers. **Laptop first** (#550, question 8): the laptop's number is
+  the one the population is built to, and the phone (#530) gets a cap, not a
+  different castle.
 
 ### 2. Sound: the castle is audible before it is visible
 
@@ -113,25 +118,41 @@ mostly heard: the bell was the obvious one, and the next twenty are ambient.
   only the player, at a gain that falls with distance.
 - **The bells become a soundscape.** Four bells a day and each has a
   character: Prime is one bell, Vespers is the whole peal.
-- **The rule that bites.** #519 is synthesis only and the repo has no audio
-  file. A dog's bark and rain are the two sounds that synthesis will not do
-  well, and this is **Question 4** below: whether the rule admits recorded
-  CC0 samples, encoded and committed like any other asset, or whether the
-  castle's animals bark in sine waves.
+- **The rule that bit, and does not any more.** #519 was synthesis only.
+  Devon reversed it on 2026-09-16 (#548): recorded CC0 samples come in,
+  named by `data/sounds.json`, swept by `test/assets.mjs` for reachability
+  the way every glTF is (#390), and given a codec in
+  `tools/encode-assets.mjs` (Opus in an Ogg container is the one to reach
+  for; #506 says nothing lands uncompressed). Synthesis stays for what it
+  does well, which is the footstep and the bell, and a sound stays
+  synthesised until a recording beats it.
 
 ### 3. Lore: the castle has a history, and the player can read it
 
-The mystery is one night. The castle is forty years of building and a
-conquest before that, and none of it is anywhere in the game.
+The mystery is one night. The castle is forty years of building and a war
+before that, and none of it is anywhere in the game.
+
+**The world is invented, and it leans into the fantasy** (#549, Devon's
+answer to question 1). The plan is Conwy's and the feel is the 1280s, but
+the kingdom, the King, the war and the saints are made up, and the kit is
+called a retro *fantasy* kit for a reason: v1 had a Wizard, and the castle
+can have a hedge-witch in the outer ward, a relic in the chapel that the
+chaplain half believes in, a well the garrison will not drink from after
+dark, and a story about what is under the Prison Tower that Madoc has
+heard through the floor. Not high fantasy. Nobody casts anything on screen.
+The fantasy is what the people believe and what the player is never quite
+told is untrue, and an invented world is what lets the second mystery and
+the tenth be about anything at all.
 
 - **A canon, in one file.** `data/lore.json`: who built the castle and why,
   when each tower went up and who died on it, what the war before it was,
   what the town outside owes and to whom, who was Constable before this one,
-  what the garrison is owed in wages and how far behind the King is, what the
-  Welsh in the outer ward think of the English in the inner. Every fact
-  carries an id, and every place it is said (a document, a line, a chatter
-  pair, an epilogue pane) cites the id, so the validator can say which facts
-  are never told and which two tellings disagree.
+  what the garrison is owed in wages and how far behind the King is, what
+  the people of the outer ward think of the household in the inner, and the
+  handful of things nobody can prove. Every fact carries an id, and every
+  place it is said (a document, a line, a chatter pair, an epilogue pane)
+  cites the id, so the validator can say which facts are never told and
+  which two tellings disagree.
 - **Documents everywhere.** The works ledger, the gaol roll (already on
   rank 4's path), the chaplain's obituary roll, the porter's gate book, the
   cook's accounts, the steward's letters, the mason's own marks cut into the
@@ -140,11 +161,12 @@ conquest before that, and none of it is anywhere in the game.
   with a `read` verb that opens a pane, in the period's own voice, and each
   one the player reads goes into the journal under a new tab, **Things
   read**. Most convict nobody. That is the point.
-- **A castle that says where it is in history.** The 1280s in north Wales is
-  a specific place: a castle built after a conquest, by Savoyard masons, with
-  Welsh labourers, for a King who is not there and whose money is late. A
-  player who finishes the game should know that without having been told it
-  once as exposition.
+- **A castle that says where it is in its own history.** A castle built
+  after a conquest, by foreign masons, with the conquered as labourers, for a
+  King who is not there and whose money is late. That much is Conwy's shape
+  and it stays; the names on it are the game's own. A player who finishes
+  the game should know all of it without having been told it once as
+  exposition.
 - **The chaplain's sermon at Vespers and a song in the hall at Sext** are
   the two set pieces where lore is performed, not read, and each is a
   pool of texts so a second day does not repeat the first.
@@ -176,12 +198,21 @@ machine that knows no NPC by id. Every side quest is a small one of those.
   candle account that does not add up. Every one of these is under ten
   lines of dialogue and one prop, and every one of them makes the main
   mystery's facts land in a second place.
-- **Favours, not gates.** A finished side quest never unlocks a clue the
-  murder needs. It unlocks a *line*: the NPC says the thing they would have
-  said anyway, sooner, or says one more thing. The mystery stays solvable
-  by a player who does none of them, and richer for one who does all of
-  them. This is **Question 6** below and it is the one that changes the
-  most.
+- **Independent of the mystery, connected to each other** (#550, Devon's
+  answer to question 6). A side quest never gates a clue the murder needs
+  and never takes one away, so the mystery stays solvable by a player who
+  does none of them. What a side quest may do is open another side quest,
+  and deepen what the player understands: the sentry's dice debt is why the
+  walk door was not barred, and a player who has done that quest reads the
+  porter's lie differently without the game saying so. The set validator
+  holds the two rules apart: no quest effect touches a `mystery.json` clue,
+  and quest-to-quest links are a graph the validator can walk.
+- **Many at once** (#550, question 7). The castle is one open place with a
+  dozen small cases running at the same time, not one case a day. A quest
+  starts when the player walks into it and waits for as long as the player
+  leaves it, so the journal needs a tab that lists what is open and what
+  the last thing said was. The second day (rank 4) is not contradicted by
+  this: it is a day, and the quests run through it.
 - **Reputation, by ward.** Two counters the save carries. The outer ward
   trusts a clerk who does its errands; the inner ward trusts a clerk who
   keeps its confidences. Some chatter, one or two lines, and one closing
@@ -223,11 +254,11 @@ The plan bet the project on tints (#419) and rank 1 is the first fourth
 body. Life, children, dogs and a garrison are all bodies, and the kit has
 none of them.
 
-- **A body source with a shared rig.** Whatever the fourth body is, the
-  fiftieth has to come from the same place and carry the same clips. The
-  choice is between low-poly CC0 packs that match the kit's look and share a
-  rig, and higher-fidelity bodies that do not match anything else in the
-  castle. **Question 5** below.
+- **Low-poly, one shared rig, CC0** (#550, question 5), for now. Devon's
+  reason is the useful one: a low-poly body is something a session can make
+  or edit as a drop-in when the packs have no child or no dog, and a
+  high-fidelity one is not. Whatever the fourth body is, the fiftieth comes
+  from the same place and carries the same clips.
 - **Variation without files.** Tint is one axis. Height scale, a hood or hat
   as a hidden node, a held prop, and a beard material toggle give six axes,
   and six axes over four bodies is a crowd. `npc.js` already hides named
@@ -282,54 +313,37 @@ a hundred documents, a dozen quests, a town. Three tools first.
   lights and draw calls per ward off the plan and fails on the number the
   phone cannot carry.
 
-## Open questions for Devon
+## Devon's answers, 2026-09-16
 
-Each with the answer I would take if none came, because under this repo's
-rule a session may answer (BACKLOG, "How this repo is worked"), and because
-the ones below change the work.
+Ten questions were put on the day this file was written and Devon answered
+every one the same day. They are locked as #547 to #550 in `HISTORY.md`.
+The questions are kept here so the answers read against them.
 
-1. **Real history or a castle like it?** The game is "a Welsh castle of the
-   1280s" with a fictional cast. The lore row can name Edward, Master James
-   of St George and the conquest of 1282, or it can keep a fictional King
-   and a castle that is Conwy in plan only. *Default: real history around a
-   fictional cast.* The dates and the war are true, the people in the castle
-   are not, which is how most historical fiction does it and how the second
-   mystery can be about anything.
-2. **Bigger how, first?** Volume (tower floors, undercrofts, cellars), the
-   town outside the west barbican, the rock and the river, or Stirling as a
-   second castle. *Default: volume, then the town, and Stirling last.*
-3. **Does time stay on the bells?** Four discrete watches the player advances
-   by ringing. A continuous clock with the bells as its markers is more alive
-   and breaks every time gate the mystery has. *Default: the bells stay, and
-   life happens inside a watch as loops rather than as a clock.* A sun that
-   moves is a per-watch position, not a real clock.
-4. **Does the no-audio-file rule hold?** #519 is synthesis only. Dogs, rain
-   and a crowd are the three sounds synthesis does badly. *Default: admit
-   recorded CC0 samples, encoded and committed like any other asset, and
-   keep synthesis for everything it does well.* This is a locked decision
-   being reopened and it needs Devon's word.
-5. **What do the bodies look like?** Low-poly packs that match the kit and
-   share a rig, or higher-fidelity bodies that do not. Children and animals
-   in particular. *Default: low-poly, kit-matched, one shared rig, CC0.* The
-   castle's walls are photographic and its props are pixel art already (#411)
-   and the eye has accepted that.
-6. **Do side quests touch the mystery?** Favours that unlock lines only, or
-   quests that gate clues and endings. *Default: favours only.* The mystery
-   stays solvable by a player who does none of them.
-7. **One day, or a season?** The second day exists. Is the shape of the game
-   one long day, a week of days with a case each, or one open castle with
-   many small cases at once. *Default: a week, one case a day, with the
-   castle's own life carrying between them.* It is the shape the save
-   already has.
-8. **Who is this for?** Devon's own bar, or a public audience on a phone.
-   Fifty bodies and twelve point lights are a laptop's castle. *Default:
-   laptop first with a phone cap.* The phone gets a smaller population, not
-   a different game.
-9. **Voice?** Text only, or recorded lines. A recorded cast is the one row
-   here that is not a session's to do. *Default: text, and the chatter
-   captions are written to be read at a glance.*
-10. **What is the first row?** If Devon says nothing, the first row to move
-    from here to `BACKLOG.md` after the backlog empties is **the populace
-    file and the first ten bodies of life**: a validator, a routine per
-    body, one activity clip, children running in the outer ward and a dog
-    at the barbican. It is the row that makes every other row visible.
+1. **Real history or a castle like it?** *Invented history around a
+   fictional cast, and lean into the fantasy* (#549). Conwy's plan and the
+   1280s' feel; the kingdom, the King, the war and the saints are the game's
+   own. See theme 3.
+2. **Bigger how, first?** *The default: volume, then the town, Stirling
+   last.* See theme 5.
+3. **Does time stay on the bells?** *The default: the bells stay.* In plain
+   words: the game's clock is the four bells the player rings, and it does
+   not move between them. Life in the castle happens as loops inside a watch
+   (a boy fetches water again and again until the next bell), not as a
+   minute hand. The sun moves once per bell. Every time gate the mystery has
+   is written against a bell and none of them has to change.
+4. **Does the no-audio-file rule hold?** *No. Grab audio now* (#548). #519's
+   synthesis-only half is reversed. See theme 2 for how a recording lands.
+5. **What do the bodies look like?** *Low-poly for now* (#550), so that a
+   session can make a drop-in body when a pack has none. See theme 6.
+6. **Do side quests touch the mystery?** *No. Independent of the mystery,
+   and they may connect to each other or deepen what the player
+   understands* (#550). See theme 4.
+7. **One day, or a season?** *Many at once* (#550). One open castle, a
+   dozen small cases running together. See theme 4.
+8. **Who is this for?** *Laptop first* (#550). The phone gets a cap.
+9. **Voice?** *Text for now. Voice acting much later.*
+10. **What is the first row?** *The current backlog stays as it is, and this
+    list falls in line behind it* (#547). When `BACKLOG.md` empties, the
+    first row out of here is the populace file and the first ten bodies of
+    life (theme 1), because it is the row that makes every other row
+    visible.

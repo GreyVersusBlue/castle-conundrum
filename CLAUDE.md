@@ -13,8 +13,8 @@ open calls with a recommendation, dependencies, the rules that bite). Read a
 row's spec before its brief. **`HISTORY.md` is the record**, and it carries
 every locked decision this project has, by number.
 
-**`WISHLIST.md` is the arc after the backlog**: seven themes and ten open
-questions for Devon, written 2026-09-16, ranking nothing and claiming nothing.
+**`WISHLIST.md` is the arc after the backlog**: seven themes and ten questions
+Devon answered on 2026-09-16 (#547 to #550), ranking nothing and claiming nothing.
 A row moves out of it into `SPECS.md` and `BACKLOG.md` when it is taken up.
 `PLAN.md` was itself called `WISHLIST.md` before the move (#491), so a citation
 of that name dated before 2026-09-16 means `PLAN.md`.
