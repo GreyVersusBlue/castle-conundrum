@@ -1279,7 +1279,7 @@
     "verdicts": {
       "full": {
         "convicted": "Sir Roger reads the three clues twice, and the ledger's sevens a third time. Master Robert Ferrour hangs from the Stockhouse Tower at first light. Piers Marrable is taken in his chamber with the gate passes still in his coffer.",
-        "epilogue": "The inspector finds a hundred and twenty-eight sheets of the King's lead in Thomas Wykes's yard in the town, and a Clerk of Works who went up a stair to buy a mason and came down it alone. Hywel's tallies were right to the sheet. Ieuan lays the roof."
+        "epilogue": "The inspector finds a hundred and twenty-eight sheets of the King's lead in Thomas Wykes's yard in the town, and a Clerk of Works who went up a stair to buy a mason and came down it alone. Hywel's tallies were right to the sheet. Ieuan lays the roof. The inspector rides out the way he rode in, west along the road past the yard, and does not look back at it."
       },
       "clerk": {
         "convicted": "Sir Roger weighs the cloak against the walk and does not like the sum. Master Robert Ferrour hangs from the Stockhouse Tower at first light.",
@@ -1303,7 +1303,7 @@
       },
       "nobody": {
         "convicted": "A fall. Sir Roger is relieved, and says so. The inspector signs the sheet in the morning and is gone by noon.",
-        "epilogue": "Hywel ap Gruffudd is buried as a drunk who fell. The lead goes on leaving by daylight, a cartload at a time, and the tallies that would have counted it are ash in the Clerk's hearth."
+        "epilogue": "Hywel ap Gruffudd is buried as a drunk who fell. The lead goes on leaving by daylight, a cartload at a time, and the tallies that would have counted it are ash in the Clerk's hearth. The carts keep to the west road, past the barbican, same as they always have."
       }
     }
   },

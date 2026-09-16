@@ -2536,3 +2536,106 @@ the door is open when the beat gets there, and the first run reported
 6.8068}`. The beat drives the leaf round the whole cycle now rather than
 assuming either end of it, and puts it back open on the way out so the beats
 below see the castle they were written against.
+
+## The texture sets and the town side (2026-09-16)
+
+**Ranked rows 4 and 5, claimed on `main` before the work started (#283, PR
+#19) and shipped as one PR.** `ktx` was on PATH and Poly Haven answered
+(neither refused this container the way #518 says they refused the one PR #7
+was built in), so both rows that were blocked on that came due at once. Four
+new stone, brick, plaster and plank sets dress the inner ward and the tower
+floors; a fifth, restored out of this repo's own history, textures the ground
+west of the barbican, with a road and four trees. Ten materials became
+fifteen; `dist/` grew from 50.7 to roughly 68 MB against the 200 MB ceiling.
+
+- **`castle_brick_02` is not a Poly Haven id; `castle_brick_02_red` is**
+  (#541). The pack ships a red and a white variant and neither is plain
+  `castle_brick_02`. Red is the first one the API lists, which is the row's
+  own tie-break rule ("recommend the first name listed for each and no
+  agonising") applied to a name that turned out to need it.
+- **`kings-hall-south` takes `medieval_blocks_02`, and the Royal Apartments
+  gets no wall of its own** (#542). The row's scope claims `src: nothing` for
+  the four texture roles, and for this one wall that is not true: King's Hall
+  and the Royal Apartments directly above it share one run, one box, height 8
+  from the ground to the wall-top, and a run has exactly one material for its
+  whole height (`castle-builder.js`'s `buildRun`). Splitting it by storey is a
+  geometry change, which is a different row. Between the two names on the
+  role's own list — "the King's Hall, the steward's chamber, the cross-wall's
+  inner face" — the King's Hall is the more specific, so it wins; the Royal
+  Apartments keeps the signature it already had, the one carpet in the castle.
+  Reversible by cutting `kings-hall-south` into two boxes at y 4 the day
+  someone wants the split for real.
+- **`plastered_wall_04` lands on `west-gate-over` and `east-gate-over`, not on
+  any room's own wall** (#543). "The level-1 rooms' interior partitions" names
+  no run in `scene-config.json`: every level-1 room is floored by a slab over
+  a ground room and walled by the same curtain or drum ring that walls the
+  room below it, at one material for the whole height, the same limit #542
+  hit. The two gate-over runs are the only walls that exist AT level 1 and
+  nowhere else — the missing top half over each gate archway (#453) — so they
+  are the closest concrete thing to "upstairs" this castle's walls have, and
+  they took the plaster.
+- **`wood_floor_deck` is the eight tower first-floor rooms' own `floor`, and
+  nothing else's** (#544). Read directly off the rooms that carry a `drum`
+  field at `level` 1 — nw-tower-1, kitchen-tower-1, stockhouse-tower-1,
+  kings-tower-1, sw-tower-1, prison-tower-1, bakehouse-tower-1,
+  chaplain-chamber — which is exactly "the tower first floors" the row names.
+  `clerk-chamber`, `dormitory` and `royal-apartments` have no `drum` and keep
+  `wood_planks`, and so does `config.walk.material`, the decking itself: the
+  row's own text is "so the walk's decking and a tower room's boards are not
+  one plank," and the walk was never a candidate to begin with.
+- **Both `cross-wall-north` and `cross-wall-south` take `medieval_blocks_02`,
+  not one of them** (#545). "The cross-wall's inner face" is not a thing this
+  data model can build: `buildRun` textures a box on every face from the one
+  material it is given, so a run has no inner or outer side to give
+  separately. The two runs together are the whole cross-wall, on both sides of
+  the porter's gate, and reading "inner face" as "the wall that faces the
+  inner ward" rather than as a literal half of one box was the reading that
+  did not leave one of the two porter's-gate segments looking like a seam.
+- **`ground.outside` is a new list, in world metres rather than tiles, and it
+  reuses `oneFacePerPlane`'s existing hole-cutting instead of a rule of its
+  own** (#546). `config.ground.patches` is tile-based because every patch it
+  has ever carried lies inside the base's own footprint; the outside ground
+  lies past the tile grid the castle is drawn on, so `src/castle-plan.js` reads
+  its `box.min`/`box.max` as metres directly and pushes it into the same
+  `grounds` array `patches` already fills, in list order — the forest patch
+  first, the road listed after it — so the same "a ground piece is cut round
+  every ground piece after it that meets it" rule that already keeps
+  `outer-ward` and `chapel-vestibule` from fighting the base cuts the forest
+  patch's hole for the road for free. **150 m is the fog's own `far`, read
+  literally as the outside ground's whole depth west of the base's edge**,
+  because the row's own recommendation ties the two together ("anything the
+  fog hides is bytes drawn for nobody") and picking a different number would
+  have needed a reason the row does not give one. The road starts at the
+  barbican's own west face, 2 m inside the base's margin, which is an overlap
+  and not a touch — `test/layout.mjs`'s new check treats meeting the base
+  (touching OR overlapping, on both axes) as "no gap," because the only thing
+  that check exists to catch is a piece that clears the base on some axis and
+  leaves empty space between the castle's ground and the world. Broken once,
+  from green, by moving the forest patch 3 m west: the check named the gap in
+  both edges and passed again the moment the box moved back.
+- **Ten drums, one map each, became two.** The four inner drums —
+  Stockhouse, King's, Bakehouse, Chapel — read `castle_brick_02_red` now and
+  the four outer stay `defense_wall`; `tint` sits over either the same way it
+  always did. `test/plan-vs-scene.mjs`'s drum beat asked for exactly one
+  diffuse map across all eight drums, which stopped being true the moment this
+  landed and is not a regression: it now asks for one map per material and
+  fails if any drum's map disagrees with its own plan piece, which is a
+  stricter claim than the one it replaces.
+- **`data/sounds.json`'s `byMaterial` grew five entries**: the four rank-4
+  sets and `forest_ground_06` as `stone`, `stone`, `stone`, `planks` and
+  `grass` respectively, matching the class the nearest existing set of the
+  same kind already carries. `test/layout.mjs` check 12 (every surface has a
+  step sound) is what asked for this; without it, the eight new tower floors
+  and the ground west of the barbican would be silent underfoot.
+- **The two epilogues that mention the inspector's arrival — `full` and
+  `nobody` — each grew one sentence naming the west road**, the
+  recommendation SPECS.md made for **the town side**'s optional last line. No
+  other epilogue changed.
+- **One suite failure this batch did not cause and did not fix**:
+  `plan-vs-scene.mjs`'s chapel-candle beat fails locally ("none of the 12
+  cells between 0.9 and 2.8 m of the chapel candles offers them") on an
+  unmodified checkout of this branch's claim commit, before any of the above
+  landed, and GitHub Actions' own run of that same commit (PR #19, run
+  35050428182) is green. It is a local rendering difference, not a code
+  regression this PR introduced or one this PR's own scope covers, and is left
+  for whoever next touches the chapel or the bell to chase.

@@ -16,7 +16,12 @@
       "wood_planks": "planks",
       "old_planks_02": "planks",
       "wooden_gate": "planks",
-      "dirty_carpet": "carpet"
+      "dirty_carpet": "carpet",
+      "medieval_blocks_02": "stone",
+      "castle_brick_02_red": "stone",
+      "plastered_wall_04": "stone",
+      "wood_floor_deck": "planks",
+      "forest_ground_06": "grass"
     },
     "byKind": {
       "stair": "stone",

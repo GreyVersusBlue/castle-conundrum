@@ -166,9 +166,34 @@
       "diffuse": "assets/poly-haven/dirty_carpet_1k.gltf/textures/dirty_carpet_diff_1k.ktx2",
       "normal": "assets/poly-haven/dirty_carpet_1k.gltf/textures/dirty_carpet_nor_gl_1k.ktx2",
       "arm": "assets/poly-haven/dirty_carpet_1k.gltf/textures/dirty_carpet_arm_1k.ktx2"
+    },
+    "medieval_blocks_02": {
+      "diffuse": "assets/poly-haven/medieval_blocks_02_1k.gltf/textures/medieval_blocks_02_diff_1k.ktx2",
+      "normal": "assets/poly-haven/medieval_blocks_02_1k.gltf/textures/medieval_blocks_02_nor_gl_1k.ktx2",
+      "arm": "assets/poly-haven/medieval_blocks_02_1k.gltf/textures/medieval_blocks_02_arm_1k.ktx2"
+    },
+    "castle_brick_02_red": {
+      "diffuse": "assets/poly-haven/castle_brick_02_red_1k.gltf/textures/castle_brick_02_red_diff_1k.ktx2",
+      "normal": "assets/poly-haven/castle_brick_02_red_1k.gltf/textures/castle_brick_02_red_nor_gl_1k.ktx2",
+      "arm": "assets/poly-haven/castle_brick_02_red_1k.gltf/textures/castle_brick_02_red_arm_1k.ktx2"
+    },
+    "plastered_wall_04": {
+      "diffuse": "assets/poly-haven/plastered_wall_04_1k.gltf/textures/plastered_wall_04_diff_1k.ktx2",
+      "normal": "assets/poly-haven/plastered_wall_04_1k.gltf/textures/plastered_wall_04_nor_gl_1k.ktx2",
+      "arm": "assets/poly-haven/plastered_wall_04_1k.gltf/textures/plastered_wall_04_arm_1k.ktx2"
+    },
+    "wood_floor_deck": {
+      "diffuse": "assets/poly-haven/wood_floor_deck_1k.gltf/textures/wood_floor_deck_diff_1k.ktx2",
+      "normal": "assets/poly-haven/wood_floor_deck_1k.gltf/textures/wood_floor_deck_nor_gl_1k.ktx2",
+      "arm": "assets/poly-haven/wood_floor_deck_1k.gltf/textures/wood_floor_deck_arm_1k.ktx2"
+    },
+    "forest_ground_06": {
+      "diffuse": "assets/poly-haven/forest_ground_06_1k.gltf/textures/forest_ground_06_diff_1k.ktx2",
+      "normal": "assets/poly-haven/forest_ground_06_1k.gltf/textures/forest_ground_06_nor_gl_1k.ktx2",
+      "arm": "assets/poly-haven/forest_ground_06_1k.gltf/textures/forest_ground_06_arm_1k.ktx2"
     }
   },
-  "materialsComment": "Every built surface names one of these. rock_tile_floor, wood_planks, dirty_carpet and the two that were always here (stone_pavers, wooden_gate) ship a three-channel `arm`; the five others ship a single-channel `rough`. src/assets.js reads whichever key is present and test/assets.mjs fails a material declaring both or neither. `repeatMetres` is the world-space texture repeat: one repeat per 3 m on the curtain, so a 4 m tile shows 1.33 repeats of the 1k map and reads as coursed stone. A wall run or a floor may override it with its own `repeatMetres`; the interior partitions do, at 1.5 m, because a 1 m thick room wall wants a smaller course than a 4 m curtain.",
+  "materialsComment": "Every built surface names one of these. rock_tile_floor, wood_planks, dirty_carpet, the four rank-4 sets (medieval_blocks_02, castle_brick_02_red, plastered_wall_04, wood_floor_deck), forest_ground_06 and the two that were always here (stone_pavers, wooden_gate) ship a three-channel `arm`; the five original stone sets ship a single-channel `rough`. src/assets.js reads whichever key is present and test/assets.mjs fails a material declaring both or neither. `repeatMetres` is the world-space texture repeat: one repeat per 3 m on the curtain, so a 4 m tile shows 1.33 repeats of the 1k map and reads as coursed stone. A wall run or a floor may override it with its own `repeatMetres`; the interior partitions do, at 1.5 m, because a 1 m thick room wall wants a smaller course than a 4 m curtain.",
   "ground": {
     "base": {
       "material": "stone_pavers",
@@ -208,7 +233,29 @@
         "comment": "The one patch that is not a room: the paved bay in the inner ward outside the Chapel Tower's door, which is where WISHLIST.md's stone table sends the third share of rock_tile_floor."
       }
     ],
-    "comment": "Two outdoor surfaces and no third. The base is the curtain's own footprint plus `margin` metres, worked out from the placed pieces rather than typed in, so it cannot drift from the castle; the 140 m plane it replaces ran 50 m past the walls in every direction. Patches lie on the base at the same y, and walkability's cell dedupe (src/castle-plan.js) means a patch adds no second floor height."
+    "outside": [
+      {
+        "id": "outside-ground",
+        "material": "forest_ground_06",
+        "box": {
+          "min": [-198, -40],
+          "max": [-48, 40]
+        },
+        "fallbackColor": "#4a4632",
+        "comment": "Rank 5 (#541). West of the west barbican only, where the walk and the two tower roofs (#523) can see over the parapet. Its east edge is the base box's own west edge (-48, curtain.min.x - margin) so the two touch with no gap; its west edge is 150 m out, the fog's own `far`, because anything past that is bytes drawn for nobody. 40 m north and south of the road's line, z 0."
+      },
+      {
+        "id": "outside-road",
+        "material": "grassy_cobblestone",
+        "box": {
+          "min": [-198, -2],
+          "max": [-46, 2]
+        },
+        "fallbackColor": "#5c6340",
+        "comment": "A cart track, not pavers, which would read as a courtyard this far from one. Starts at the barbican's own west face (-46, the same x as barbican-west's box) and fades into the fog at -198 with outside-ground. Listed after outside-ground so oneFacePerPlane cuts the ground's hole for it (src/castle-plan.js), the same rule outer-ward and chapel-vestibule already use against the base."
+      }
+    ],
+    "comment": "Two outdoor surfaces plus, since rank 5 (#541), what lies outside the curtain. The base is the curtain's own footprint plus `margin` metres, worked out from the placed pieces rather than typed in, so it cannot drift from the castle; the 140 m plane it replaces ran 50 m past the walls in every direction. Patches lie on the base at the same y, and walkability's cell dedupe (src/castle-plan.js) means a patch adds no second floor height. `outside` entries are further ground pieces at the same y, in world metres rather than tiles because they lie beyond the tile grid the castle itself is drawn on; nothing reaches them on foot (test/layout.mjs's `sealed()`), so they cost surfaces and a wider walkability grid and nothing else."
   },
   "kenneyBase": "assets/kenney_retro-fantasy-kit/Models/glb-format/",
   "polyhavenBase": "assets/poly-haven/",
@@ -449,11 +496,11 @@
         0,
         -1
       ],
-      "material": "defense_wall",
+      "material": "medieval_blocks_02",
       "height": 8,
       "thickness": 4,
       "level": 0,
-      "comment": "The cross-wall, `||` in the map. Not curtain: it divides the two wards, it does not enclose the castle. The porter's gate at tile (0,0) is the only gap in it, and test/layout.mjs asserts that with that gate shut the inner ward cannot be reached at all.",
+      "comment": "The cross-wall, `||` in the map. Not curtain: it divides the two wards, it does not enclose the castle. The porter's gate at tile (0,0) is the only gap in it, and test/layout.mjs asserts that with that gate shut the inner ward cannot be reached at all. Dressed ashlar since rank 4 (#541): the whole run is one box, so there is no way to give only the inner face the new stone, and the cross-wall is what the row's own text calls out by name.",
       "walk": true
     },
     {
@@ -466,7 +513,7 @@
         0,
         3
       ],
-      "material": "defense_wall",
+      "material": "medieval_blocks_02",
       "height": 8,
       "thickness": 4,
       "level": 0,
@@ -588,14 +635,14 @@
         0
       ],
       "axis": "z",
-      "material": "castle_wall_slates",
+      "material": "plastered_wall_04",
       "height": 4,
       "thickness": 4,
       "level": 1,
       "base": 4,
       "curtain": true,
       "walk": true,
-      "comment": "The wall over the west gate. wall-fortified-gate.glb is a 4 m cube in an 8 m curtain, and Phase 3 left the 4 m above it open air; this is the missing top half, so the west walk runs over the gate rather than stopping at each side of a notch."
+      "comment": "The wall over the west gate. wall-fortified-gate.glb is a 4 m cube in an 8 m curtain, and Phase 3 left the 4 m above it open air; this is the missing top half, so the west walk runs over the gate rather than stopping at each side of a notch. Plastered since rank 4 (#541): the only two runs that exist at level 1 and nowhere else, so the closest concrete match to \"the level-1 rooms' interior partitions\" the row asks for."
     },
     {
       "id": "east-gate-over",
@@ -608,7 +655,7 @@
         0
       ],
       "axis": "z",
-      "material": "castle_wall_slates",
+      "material": "plastered_wall_04",
       "height": 4,
       "thickness": 4,
       "level": 1,
@@ -778,7 +825,8 @@
       ],
       "height": 8,
       "thickness": 1,
-      "material": "castle_wall_slates",
+      "material": "medieval_blocks_02",
+      "materialComment": "Dressed ashlar since rank 4 (#541). This one run is the shared south wall of the King's Hall AND the Royal Apartments above it (Lady Alys's window is cut into its level-1 half), and a run has one material for its whole height — the row's own scope says `src: nothing`, which this box makes untrue for the split it describes. The King's Hall is the more specific of the two names on the row's list, so it wins; the Royal Apartments keeps its own signature, the one carpet in the castle.",
       "repeatMetres": 1.5,
       "interior": true,
       "doorways": [
@@ -809,7 +857,7 @@
       ],
       "height": 4,
       "thickness": 1,
-      "material": "castle_wall_slates",
+      "material": "medieval_blocks_02",
       "repeatMetres": 1.5,
       "interior": true,
       "doorways": [
@@ -832,7 +880,7 @@
       ],
       "height": 4,
       "thickness": 1,
-      "material": "castle_wall_slates",
+      "material": "medieval_blocks_02",
       "repeatMetres": 1.5,
       "interior": true
     },
@@ -855,7 +903,7 @@
       "comment": "The mason's lodge is a roof on four poles and no walls, so its `run` is the roof: `base` lifts a run off the ground, which is also how Phase 5's floor slabs will be written. It carries a collider and cannot be reached under it at head height, 4 m up."
     }
   ],
-  "drumsComment": "Every drum is defense_wall, radius 4, 12 m high, 24 sectors, hollow to 2.8, and from the walk they were eight of one thing (#516). `tint` multiplies the stone's diffuse for that drum only: the outer four cool (blue-grey, warm grey, green-grey, slate), the inner four warm (sand, gold, ochre, pale). Eight materials over one texture set; src/assets.js caches the maps by URL. Runs and rooms take `tint` the same way.",
+  "drumsComment": "Every drum is radius 4, 12 m high, 24 sectors, hollow to 2.8, and from the walk they were eight of one thing (#516) until rank 4 (#541) split them by ward: the four outer drums stay defense_wall, the four inner ones (Stockhouse, King's, Bakehouse, Chapel) are castle_brick_02_red, so a tower tells you which ward you are in before its tint does. `tint` multiplies the stone's diffuse for that drum only, kept over the new brick as over the old: the outer four cool (blue-grey, warm grey, green-grey, slate), the inner four warm (sand, gold, ochre, pale). Ten materials over two texture sets; src/assets.js caches the maps by URL. Runs and rooms take `tint` the same way.",
   "drums": [
     {
       "id": "nw-tower",
@@ -961,7 +1009,7 @@
       ],
       "radius": 4,
       "height": 12,
-      "material": "defense_wall",
+      "material": "castle_brick_02_red",
       "level": 0,
       "curtain": true,
       "segments": 24,
@@ -1018,7 +1066,7 @@
       ],
       "radius": 4,
       "height": 12,
-      "material": "defense_wall",
+      "material": "castle_brick_02_red",
       "level": 0,
       "curtain": true,
       "segments": 24,
@@ -1170,7 +1218,7 @@
       ],
       "radius": 4,
       "height": 12,
-      "material": "defense_wall",
+      "material": "castle_brick_02_red",
       "level": 0,
       "curtain": true,
       "segments": 24,
@@ -1214,7 +1262,7 @@
       ],
       "radius": 4,
       "height": 12,
-      "material": "defense_wall",
+      "material": "castle_brick_02_red",
       "level": 0,
       "curtain": true,
       "segments": 24,
@@ -1533,7 +1581,7 @@
       "level": 1,
       "ward": "outer",
       "drum": "nw-tower",
-      "floor": "wood_planks"
+      "floor": "wood_floor_deck"
     },
     {
       "id": "kitchen-tower-1",
@@ -1541,7 +1589,7 @@
       "level": 1,
       "ward": "outer",
       "drum": "kitchen-tower",
-      "floor": "wood_planks"
+      "floor": "wood_floor_deck"
     },
     {
       "id": "stockhouse-tower-1",
@@ -1549,7 +1597,7 @@
       "level": 1,
       "ward": "inner",
       "drum": "stockhouse-tower",
-      "floor": "wood_planks"
+      "floor": "wood_floor_deck"
     },
     {
       "id": "kings-tower-1",
@@ -1557,7 +1605,7 @@
       "level": 1,
       "ward": "inner",
       "drum": "kings-tower",
-      "floor": "wood_planks"
+      "floor": "wood_floor_deck"
     },
     {
       "id": "sw-tower-1",
@@ -1565,7 +1613,7 @@
       "level": 1,
       "ward": "outer",
       "drum": "sw-tower",
-      "floor": "wood_planks"
+      "floor": "wood_floor_deck"
     },
     {
       "id": "prison-tower-1",
@@ -1573,7 +1621,7 @@
       "level": 1,
       "ward": "outer",
       "drum": "prison-tower",
-      "floor": "wood_planks"
+      "floor": "wood_floor_deck"
     },
     {
       "id": "bakehouse-tower-1",
@@ -1581,14 +1629,14 @@
       "level": 1,
       "ward": "inner",
       "drum": "bakehouse-tower",
-      "floor": "wood_planks"
+      "floor": "wood_floor_deck"
     },
     {
       "id": "chaplain-chamber",
       "level": 1,
       "ward": "inner",
       "drum": "chapel-tower",
-      "floor": "wood_planks"
+      "floor": "wood_floor_deck"
     },
     {
       "id": "nw-tower-2",
@@ -2063,7 +2111,11 @@
       {"model": "detail-crate.glb", "tile": [6.0, 4.55], "rotationY": -20, "scale": 1.5, "base": 8, "comment": "Chapel Tower, top room: a crate on the outer edge beside the well."},
       {"model": "detail-crate.glb", "tile": [-7.5, -3.6], "rotationY": 10, "scale": 1.5, "base": 8, "comment": "North wall walk: a crate at the inner edge of the decking, west of the sentry's post at (-18, -15)."},
       {"model": "detail-barrel.glb", "tile": [-0.1, 1.5], "rotationY": 0, "scale": 1.5, "base": 8, "comment": "The walk over the cross-wall: a small barrel at its east edge, south of the porter's post at (-1, 0)."},
-      {"model": "barrels.glb", "tile": [0.4, -3.65], "rotationY": -40, "scale": 1.6, "comment": "Porter's lodge, Stockhouse Tower: barrels in the east half, off the porter's station at (0.4, -16); the lower flight has the west. The walk-bar over this room is on the walk, not in it."}
+      {"model": "barrels.glb", "tile": [0.4, -3.65], "rotationY": -40, "scale": 1.6, "comment": "Porter's lodge, Stockhouse Tower: barrels in the east half, off the porter's station at (0.4, -16); the lower flight has the west. The walk-bar over this room is on the walk, not in it."},
+      {"id": "town-tree-1", "model": "tree-large.glb", "tile": [-13, 2], "rotationY": 15, "comment": "Rank 5 (#541). Beside the road, south side, closest to the barbican."},
+      {"id": "town-tree-2", "model": "tree-large.glb", "tile": [-13, -2.5], "rotationY": 200, "comment": "Rank 5 (#541). Beside the road, north side, across from town-tree-1."},
+      {"id": "town-tree-3", "model": "tree-large.glb", "tile": [-20, 3], "rotationY": 80, "comment": "Rank 5 (#541). Beside the road, south side, further out."},
+      {"id": "town-tree-4", "model": "tree-large.glb", "tile": [-27, -2], "rotationY": 260, "comment": "Rank 5 (#541). Beside the road, north side, fading toward the fog."}
     ]
   },
   "interiorProps": [
