@@ -403,3 +403,49 @@ GPU.
 - #438 (measure the pixel).
 - #411 (kit for shapes the maps lack).
 - #53, #528 (what a covered hall looks like is not a CI question).
+
+---
+
+## Lore
+
+**Rank 6. Size 1.** `WISHLIST.md`'s theme 3, taken up whole rather than in slices: Devon's #549 says the world is invented and leans into the fantasy, and #547 says the first row out of the wishlist is whichever one a session takes up next. This is that row. The mystery is one night; this gives the castle forty years and a kingdom around it, without moving a single fact `PLAN.md`'s crime already fixed.
+
+### Scope
+
+- **`data/lore.json`, new.** The canon: a flat list of facts, each `{id, kind, text, sources, contradicts?}`. `kind` is one of `history`, `person`, `place`, `belief`, `rumour`. `text` is one paragraph, period voice, no exposition about the game. `sources` is a list of `{kind: "document"|"npc"|"chatter"|"epilogue", ...}` naming where the fact is told; empty is allowed. `contradicts` names another fact's id and is only legal when at least one of the pair is `belief` or `rumour`.
+- **`data/documents.json`, new.** The six readable props: `works-ledger` (Clerk of Works' office), `obituary-roll` (chaplain's chamber), `gate-book` (porter's lodge), `builder-graffito` (the garrison dormitory, over the Kitchen Tower's stair), `gravestone` (chapel floor), `kings-writ` (muniment room). Each carries its room, a tile placement in `scene-config.json`'s own units, a size and material for a built slab (the pattern `builtProps` already has for the cloak and the walk-bar), a `title`, the `text` shown in the reading pane, and `cites`: the lore ids it tells. No new room, no new asset: every document is a coloured box the same way the cloak is one.
+- **`data/scene-config.json`.** Six `builtProps` entries, one per document, each carrying a `read` field the way an evidence prop carries `evidence`. Two new `plainMaterials`: `parchment` and `slate`.
+- **`src/castle-plan.js`.** The `read` field passed through on all three prop loops (courtyard placements, interior props, built props), the way `evidence` already is.
+- **`src/castle-builder.js`.** A `readables(titles)` method beside `evidence()`: one target per `read` id, `isReadable: true`, `prompt: "Press E to read the <name>"`.
+- **`src/main.js`, `src/interaction.js`.** A target with `isReadable` routes to a new `quest.handleRead(id)` rather than `handleExamine`.
+- **`src/quest-manager.js`.** `handleRead(id)` opens the document through `ui.openDialogue` (a title and one long line, the same overlay a conversation already uses) and marks the id into `engine.state.read`, a new save field sitting beside `taken` and `clues`. `_openJournal` grows a second list.
+- **`src/ui.js`.** The journal overlay grows a tab: "What you know" and "Things read", both reading the same list widget. The Present picker (offered mid-conversation) shows only clues; the tabs appear only when the journal is opened cold, on J.
+- **`src/save.js`.** `SAVE_VERSION` 2 to 3. `buildCatalog` takes a fourth data file, `documents`, and builds a `documents` id set; `repairState` filters `s.read` against it the way `taken` is filtered against evidence. `migrate` gets one more line: `from < 3` defaults `read: []`.
+- **`data/npcs.json`.** A `chatter` block: pairs of lines keyed by ward then watch, each naming the two speakers (existing cast ids only) and, optionally, the lore ids the pair tells.
+- **`src/lore.js`, new.** A pure validator, `validateLore(lore, { documents, npcs, mystery, chatter })`, in the style of `src/mystery.js`: no DOM, no three, returns a list of problems. A second export, `untoldFacts(lore)`, is a report and not a failure.
+- **`test/lore.mjs`, new,** wired into `test/run.mjs` as the tenth suite, cheap (Node only, no browser).
+
+### Acceptance
+
+- `validateLore` fails on: a source naming a document, npc/state, chatter pair or epilogue key that does not exist (**unknown source**); a `contradicts` naming a fact id that does not exist, or a document's `cites` naming a fact id that does not exist (**dangling id**); two facts that contradict each other where neither is `belief` nor `rumour` (**contradiction**); a document placed in a room that is permanently barred with no lock that ever opens it, i.e. `cell` (**unreachable**). It reports, but does not fail on, a fact with an empty `sources` list.
+- `npm run build` and `npm test` both green, all ten suites.
+- `test/save.mjs` gains the version-3 migration and repair rails for `read`; `test/plan-vs-scene.mjs` sees the six new pieces at 0.0000 m like every other built prop.
+- The guard-rail broken once from green (#34): an unknown document id in a `sources` entry, caught by name.
+
+### Open calls
+
+- **Whether chatter checks room-level adjacency or only ward membership.** Recommend **ward membership only**: `npcs.json`'s cast already carries a static `ward` per person, and holding a chatter pair to the schedule's exact station at that watch is `mystery.js`'s kind of cross-check, not a first pass. Reversible by tightening the validator later without touching the data's shape.
+- **Where `read` ids live relative to the mystery engine.** Recommend **`engine.state.read`**, sharing the one save object mutated in place, rather than a second state object: `state` is already the single thing `auto.mark()` persists, and a second tracked object would be a second place a reload could disagree with itself.
+
+### Dependencies
+
+- None open in `BACKLOG.md`; independent of ranks 1 through 5.
+- Documents' placement depends on nothing but the plan the eight phases already built: no room, no floor, no doorway is new.
+
+### Constraints
+
+- #549 (invented kingdom, King, war, saints; Conwy's plan and the names of the twelve stay).
+- #390 is not engaged: no new files under `assets/`, so `test/assets.mjs`'s reachability sweep is untouched.
+- #36, #37, #413 (the save key never changes; version 3 is a real schema change, so it goes through `migrate`, and `repair` runs on every load regardless).
+- #13, #34 (a check that only prints is not a check; break a guard-rail once from green and say what it said).
+- #500 (`castle-plan.js` computes every box; `plan-vs-scene.mjs` is the net that catches a document floating or buried).
