@@ -136,7 +136,7 @@ runs them off the same event stream the frame hears without a second class, and
 the cook's missing knife is the first of them. The save is version 4 for
 `quests`; the key did not move (#36). The journal's open-quests tab shipped
 the same day (#595), four more errands after it (#597 to #599), and
-**reputation by ward the same day again** (#607 to #610): two counters at save
+**reputation by ward the same day again** (#612 to #615): two counters at save
 version 6, a line per ward threshold on the end of what anybody in that ward
 says, and one line under the verdict. **Rank 8 is still open**: what is left
 in it is the seven errands of the dozen still unwritten.
@@ -212,10 +212,14 @@ bells on day two. Of ranks 6 to 12, the ones whose next increment is data and
 validators rather than a render (6, 8 and 12) are the ones a container can
 start; 7, 10 and 11 all want either a recorded sound, a body on disk, or a GPU
 before their first increment closes, and 9 has nothing left in it that does
-not wait on rank 4's yard. **Rank 12 shipped a first increment on
-2026-09-17 and rank 8 shipped four** (#576 to #581, #595, #597 to #599, #607
-to #610); both next increments are a container's: rank 8's seven errands left,
-rank 12's budget suite. **Rank 9's map shipped the same day** (#588 to #591),
+not wait on rank 4's yard. **Rank 8 shipped four increments on 2026-09-17 and
+rank 12 two** — rank 8's first errand, the journal's tab, four more errands
+(#597 to #599) and reputation by ward (#612 to #615), rank 12's placement
+editor and then its budget suite (#607 to #611). Rank 8's next increment is a
+container's: the seven errands left.
+**Rank 12 is down to the dialogue format**, and whoever takes move-and-delete
+walks into a live failure: `test/tools.mjs`, the byte-exactness rail that
+increment has to keep, is red on a Windows checkout and green on a Linux one. **Rank 9's map shipped the same day** (#588 to #591),
 and what is left of that row is the town, behind rank 4's yard. Of them all, 6
 is the one that reads `data/npcs.json`'s `cast`, which is what ranks 1 and 10
 are both for, so a session running beside one of those is better off on 8 or
@@ -312,8 +316,10 @@ hard gates on the whole list** and everything else is preference:
 
 Three softer ones are worth naming and are not gates: rank 6's populace
 unlocks two of rank 8's seven errands and rank 7's event sounds, rank 10 and
-rank 6 trade activity clips both ways, and rank 12's budget suite counts more
-once there are fifty bodies to count. None of the three blocks a start.
+rank 6 trade activity clips both ways, and rank 12's budget suite was more
+useful once there were more bodies to count. None of the three blocked a start,
+and the budget suite went first anyway (#609) — a ceiling on a castle with
+twelve bodies in it is still the ceiling rank 6's ten are spent against.
 
 **Lane.** The file that two sessions would collide on. **One row per lane at a
 time** (#602); rows in different lanes, or with no lane, may be claimed
@@ -340,8 +346,8 @@ already names them separately: **4a** is the bells-on-day-two design call and
 `day2.watches`, **4b** is the `since` field on a fact that changes (#596), and
 **4c** is Thomas Wykes's yard. 4a and 4b are a container's; 4c wants the
 editor walked and the yard looked at. Rank 12 splits the same way and for the
-same reason: **12a** the budget suite, **12b** move-and-delete in the editor,
-**12c** the dialogue format.
+same reason: **12a** the budget suite (shipped, #607 to #611), **12b** move-and-delete
+in the editor, **12c** the dialogue format.
 
 ## The ranked table
 
@@ -358,7 +364,7 @@ same reason: **12a** the budget suite, **12b** move-and-delete in the editor,
 | 9 | A castle to get lost in: the town, the rock and river | 2+ | Opus 5 | Container | **after 4c** | B | | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
 | 10 | Bodies: a shared low-poly rig for the fifty | 1 | Fable 5.1 | Local: net | — | C | | [Bodies](SPECS.md#bodies) |
 | 11 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 | Container to the Node line, local: GPU past it | **after 2** | D | | [Feel](SPECS.md#feel) |
-| 12 | The tooling: the budget suite, move-and-delete, a dialogue format | 2+ | Opus 5 | Container | — | — (12a), B (12b), C (12c) | | [The tooling](SPECS.md#the-tooling) |
+| 12 | The tooling: move-and-delete, a dialogue format (the budget suite shipped, #607 to #611) | 2+ | Opus 5 | Container | — | B (12b), C (12c) | `claude/r12a-budget-suite` (12a) | [The tooling](SPECS.md#the-tooling) |
 
 **`ROADMAP.md` is these three columns turned into an order**: which row to
 take first, what each one unblocks, and which ones two sessions may hold at
@@ -489,7 +495,7 @@ rank 6's activity clips. Recorded CC0 audio is admitted since #548, named by
 *Where: container. Gate: none, but two of the seven errands want rank 6. Lane: A.*
 
 **Rank 8, and a 2+. Four increments shipped on 2026-09-17** (#576 to #581,
-#595, #597 to #599, #607 to #610): the format, the set validator and the
+#595, #597 to #599, #612 to #615): the format, the set validator and the
 cook's missing knife; then the journal's tab; then four more errands; then
 reputation by ward.
 `data/quests/` holds one `QuestGraph` per file with two fields the frame does
@@ -519,7 +525,7 @@ reaching a stage that waits on a clue the player already holds is walked
 forward at the end of the batch (#597), and every file names its `ward`
 (#599). Five errands, three outer and two inner.
 
-**Reputation by ward shipped fourth** (#607 to #610): `outer` and `inner`,
+**Reputation by ward shipped fourth** (#612 to #615): `outer` and `inner`,
 two counters the save carries at version 6, one moved per errand finished in
 that ward. `migrate` counts what a version-5 save had already finished rather
 than writing zeroes, and `repair` clamps each to the errands that ward has.
@@ -591,7 +597,7 @@ until **The GPU run** (ranks 2 and 3) has happened.
 
 ## The tooling
 
-*Where: container. Gate: none. Lanes: none (12a), B (12b), C (12c).*
+*Where: container. Gate: none. Lanes: B (12b), C (12c). 12a had no lane and is done.*
 
 **Rank 12, and a 2+. The placement editor shipped on 2026-09-17** (#583 to
 #587). `?edit=1` on the dev server mounts a panel that reads the tile under
@@ -609,8 +615,19 @@ Dev-only is two independent halves — `import.meta.env.DEV` around the import,
 greps every shipped file for the module's sentinel, because the served-set
 diff cannot see a module that neither page ever asks for (#586).
 
-**What is left** is the budget suite (skinned bodies, point lights and draw
-calls per ward against a number a phone cannot carry), a move-and-delete in
-the editor so correcting a placement is not still hand-editing, and the
-dialogue format. `SPECS.md` specs the next increment.
+**The budget suite shipped the same day** (#607 to #611). `test/budget.mjs` is the
+thirteenth suite: three counts per ward against three ceilings held as named
+constants with a comment saying they are guesses. **965 draw calls in the outer
+ward and 643 in the inner against 1200; three point lights, all outer, against
+6 and 8; a peak of 7 skinned bodies in the outer ward against 20 per ward and
+32 in the cast.** The draw-call count calls `castle-builder.js`'s own
+`buildPiece` and counts the meshes it really returns rather than deriving them,
+because a suite that re-derives a number agrees with itself (#34, #500). **The
+finding: 970 of the castle's 1539 meshes, 63 % of everything it draws, is the
+eight tower drums.** Rank 10's fifty bodies fit neither skinned ceiling, which
+is the answer the row was taken to produce.
+
+**What is left** is a move-and-delete in the editor so correcting a placement
+is not still hand-editing, and the dialogue format. `SPECS.md` specs the next
+increment.
 

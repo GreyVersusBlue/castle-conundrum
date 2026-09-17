@@ -28,11 +28,13 @@ NOW, in parallel, no gates:
   Devon's machine                    A container
   ---------------                    -----------
   R2  GPU run        --+             R8   quests: the seven errands      lane A
-  R1  fourth body      |             R6   populace: the first ten        lanes C D
-                       |             R12a budget suite                   no lane
-                       |             R7   ambient beds                   lane E
+                       |             R6   populace: the first ten        lanes C D
                        |             R4a  the bells call   (lane A: not beside R8)
                        |             R4b  the since field  (lane A: not beside R8)
+
+  Wave A shipped three of its six on 2026-09-17, in parallel, as written:
+    R1  fourth body    #603-606      R7  ambient beds  #620-623
+    R12a budget suite  #607-611
                        |
 R2 lands --------------+--> unlocks R3, R5, R11
 
@@ -126,7 +128,7 @@ alongside anything else that touches `save.js`"* is written into R4's
 dependencies, and R8's next increment was a version bump to 6 with a clamp in
 `repair`. Two sessions bumping the same version number produce a merge that
 compiles and a save that does not migrate. **Version 6 landed on 2026-09-17**
-(#607), so the next session in this lane bumps to 7 and the same rule holds.
+(#612), so the next session in this lane bumps to 7 and the same rule holds.
 
 Lane B is sharp for a different reason. `test/tools.mjs` holds
 `data/scene-config.json` to byte-exactness by cutting an added row back out and
@@ -137,7 +139,7 @@ sessions splicing into it is two splices neither one tested against.
 Lane C is the `cast` block **specifically**, not all of `data/npcs.json`. R8
 and R12c write per-person `states` and `default` line arrays, which is a
 different region of the same file and merges cleanly. R8 also owns the
-file's `reputation` block outright (#609), which is a third region again and
+file's `reputation` block outright (#614), which is a third region again and
 is nobody else's. A session doing either
 should still say so in its PR.
 
@@ -148,8 +150,28 @@ suites, no gate on any of them, and the backlog's existing advice already
 points here: *"a session running beside one of those is better off on 8 or
 12."*
 
-Add **R2** and **R1** on Devon's machine and that is five things moving at once
-without a single collision.
+**The claim was tested the same afternoon and it held.** Five sessions ran at
+once — R1, R6, R7, R8 and R12a — and three of them shipped (#603 to #606, #607
+to #611, #620 to #623) without one collision in a source file. R12a ran beside
+R8 in the same working tree and touched `src/castle-builder.js`, `test/run.mjs`
+and a new `test/budget.mjs`, none of which is in any lane.
+
+**What the lanes did not cover was `HISTORY.md`.** Three branches wrote #603
+the same afternoon; rank 1's merged and holds it, and the other two
+renumbered — and then collided *again* on #607, because both picked the next
+free band from the same stale view. R12a merged first and kept #607 to #611;
+R8 moved a second time, to #612 to #615. Two renumbers for one row is the
+cost of picking a number before merging.
+A lane is a file (#602) and `HISTORY.md` is a file every row writes to, so by
+the letter of the rule only one row could ever be in flight — which is not the
+rule anybody wants. **The working answer, which costs nothing: read
+`HISTORY.md` on `origin/main` when you write the entry, not when you branched.**
+A decision number is picked at the end of a row, not the start.
+
+With R1, R7, R12a and R8's reputation increment landed, lane A is free:
+version 6 is in and R8's remaining work is quest files and dialogue, not
+`save.js`. So the rows safe together now are **R8, R6 and R4a or R4b**, three
+of them, plus **R2** on Devon's machine.
 
 ### What not to pair
 
@@ -181,14 +203,21 @@ Nothing is gated on R2 *starting*, so everything in wave A runs alongside it.
 
 One row per lane. All of these are startable today.
 
+**Three of the six below shipped on 2026-09-17, the same afternoon this file
+was written, running at once and not colliding**: R1's `Woman.glb` and the
+three women who wear it (#603 to #606), R7's seven ambient beds (#620 to
+#623), and R12a's budget suite (#607 to #611). Their rows are struck through
+rather than deleted, because what this table was claiming is that they could
+run together, and they did.
+
 | Row | Model | Where | Lane | Next increment |
 | --- | --- | --- | --- | --- |
-| **R2** The GPU run | Opus 5 | **Local: GPU** | none | Gate 1, above. |
-| **R8** Side quests | Opus 5 | Container | A | ~~Reputation by ward~~ shipped 2026-09-17 (#607 to #610): two counters at save version 6, a line per ward threshold, one line under the verdict. What is left is the seven errands of the dozen; five of the seven need nobody new. |
-| **R6** Life: a populace | Opus 5 | Container | C, D | `data/populace.json`, `src/populace.js`, and ten bodies off the `cast` that already exists. No new asset, no new clip, so the row that makes every other wishlist row visible does not itself wait on one. |
-| **R12a** The budget suite | Opus 5 | Container | none | Skinned bodies, point lights and draw calls per ward, off the plan, in Node, failing against ceilings held as named constants with a comment saying they are guesses. |
-| **R1** A fourth body | Fable 5.1 | **Local: net** | C | Fetch, check against the three name lists, encode, add to `cast`. Not beside R6. |
-| **R7** Sound | Fable 5.1 | Container | E | The ambient beds and the cross-fade. Alone in its lane, which makes it the right row for a session when A, C and D are all held. |
+| **R2** The GPU run | Opus 5 | **Local: GPU** | none | Gate 1, above. And now four more things nobody has looked at: a fourth body, seven ambient beds nobody has heard, and what the eight tower drums actually cost. |
+| **R8** Side quests | Opus 5 | Container | A | ~~Reputation by ward~~ shipped 2026-09-17 (#612 to #615): two counters at save version 6, a line per ward threshold, one line under the verdict. What is left is the seven errands of the dozen; five of the seven need nobody new. |
+| **R6** Life: a populace | Opus 5 | Container | C, D | `data/populace.json`, `src/populace.js`, and ten bodies off the `cast` that already exists. No new asset, no new clip, so the row that makes every other wishlist row visible does not itself wait on one. **It now has a number to answer to**: 20 skinned bodies per ward against a peak of 7 (#609). |
+| ~~**R1** A fourth body~~ | Fable 5.1 | Local: net | C | **Shipped** (#603 to #606). Quaternius's Ultimate Modular Women Pack, meshopt to 1.02 MB, worn by the cook, the laundress and the lady. |
+| ~~**R7** Sound~~ | Fable 5.1 | Container | E | **First increment shipped** (#620 to #623). Seven synthesised room tones and the cross-fade. What is left needs speakers (#53). |
+| ~~**R12a** The budget suite~~ | Opus 5 | Container | none | **Shipped** (#607 to #611). 965 draw calls in the outer ward against 1200, 3 point lights, a peak of 7 bodies. 63 % of the castle's meshes is eight tower drums. |
 
 R4a (the bells call) and R4b (the `since` field) are startable today too, but
 both are lane A and R8 is the better use of that lane: R8's next increment is
@@ -235,7 +264,7 @@ plan's list and not a second one (#588 to #591).
 | Row | Model | Where | Lane | Note |
 | --- | --- | --- | --- | --- |
 | **R10** Bodies | Fable 5.1 | Local: net | C | Trades activity clips with R6 in both directions; neither strictly gates the other. Try a scaled-down child before fetching anything. |
-| **R12b** Move-and-delete | Opus 5 | Container | B | Turns the editor from a stopwatch into an editor. Every content row got cheaper the day the editor landed and none was blocked on it; the same is true of this. |
+| **R12b** Move-and-delete | Opus 5 | Container | B | Turns the editor from a stopwatch into an editor. Every content row got cheaper the day the editor landed and none was blocked on it; the same is true of this. **Starts from a red suite**: `test/tools.mjs`'s byte-exactness rail passes on LF and fails on CRLF, so it is red on the dev machine and green in CI, written up under #607 to #611. |
 | **R12c** The dialogue format | Opus 5 | Container | C | Deliberately unspecified. `WISHLIST.md`'s paragraph is the whole brief. |
 | **R4a** The bells call | Opus 5 | Container | A | Has to overturn #533 rather than work around it. The cheapest shape that does not fight it: `day2.watches`, its own list, with the engine reading whichever list the day names. |
 | **R4b** The `since` field | Opus 5 | Container | A | A fact in `data/lore.json` that changes with what the player did on day one. It needs second-day state to be about, and `day2.knew` (#575) is that state, shipped. |

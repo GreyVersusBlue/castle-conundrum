@@ -25,6 +25,7 @@ const SUITES = [
   ['gltf', 'the glTF reader the other suites measure with'],
   ['assets', 'every reference resolves, and nothing on disk is unasked for'],
   ['layout', 'the plan: rooms, doors, head room, walkability'],
+  ['budget', 'what the plan costs: draw calls, point lights and bodies per ward'],
   ['quest', 'the quest graph against the cast'],
   ['mystery', "the mystery's validator and engine"],
   ['save', "the save's repair rails"],

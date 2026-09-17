@@ -548,6 +548,47 @@ function partsOfObject(root) {
   return { parts };
 }
 
+/**
+ * ONE PIECE OF BUILT STONE, AS THE OBJECT THE SCENE GETS. Every branch of the
+ * `built` ladder, in one place, so there is exactly one answer to "what does
+ * the plan's `built: 'drum'` become". `build()` below calls it and so does
+ * `test/budget.mjs`, which counts the meshes these functions really make
+ * rather than a Node re-implementation of that count (#34, #607): a suite that
+ * re-derives a drum as "24 sectors, so 48 shells" is a suite agreeing with
+ * itself, the same way `layout.mjs` agreed with itself about placement until
+ * the plan took the math off it (#500).
+ *
+ * Returns null for a piece with no `built`. That piece is a model, and a model
+ * is loaded rather than built: `build()` falls through to `loadModel` and the
+ * budget suite falls through to `partsOf` on the file.
+ */
+export function buildPiece(piece, material, metres) {
+  // A run may carry its own texture repeat: the interior partitions are 1 m
+  // of wall between two rooms and want a smaller course than a 4 m curtain.
+  const repeat = piece.repeatMetres || metres;
+  if (piece.built === 'run') return buildRun(piece.boxes, material, repeat);
+  if (piece.built === 'drum') return buildDrum(piece.drum, material, metres);
+  if (piece.built === 'ground') return buildGround(piece, material, repeat);
+  if (piece.built === 'gate-leaf') return buildGateLeaf(piece.leaf, material);
+  if (piece.built === 'bars') return buildBars(piece.bars, material);
+  if (piece.built === 'slab') return buildSlab(piece.box, material);
+  if (piece.built === 'floor') return buildFloor(piece, material, repeat);
+  if (piece.built === 'plate') return buildPlate(piece.plate, material);
+  return null;
+}
+
+/**
+ * Whether a built piece carries its world position inside its own geometry.
+ * `build()` adds these to the scene with no transform at all, and everything
+ * else is placed by `piece.transform`. Exported for the same reason
+ * `buildPiece` is: `test/budget.mjs` has to know which meshes it may read a
+ * world box off directly and which ones it may not (#607).
+ */
+export function carriesOwnWorldPosition(piece) {
+  return piece.built === 'run' || piece.built === 'drum' || piece.built === 'ground'
+    || piece.built === 'slab' || piece.built === 'floor';
+}
+
 /** Every model path `makePlan` will ask about, once each. */
 function modelPaths(config) {
   const out = new Set();
@@ -637,24 +678,17 @@ export class CastleBuilder {
     const metres = this.config.repeatMetres;
 
     for (const piece of this.plan.pieces) {
-      let obj;
-      // A run may carry its own texture repeat: the interior partitions are 1 m
-      // of wall between two rooms and want a smaller course than a 4 m curtain.
-      const repeat = piece.repeatMetres || metres;
-      if (piece.built === 'run') obj = buildRun(piece.boxes, this.material(piece.material, piece.tint), repeat);
-      else if (piece.built === 'drum') obj = buildDrum(piece.drum, this.material(piece.material, piece.tint), metres);
-      else if (piece.built === 'ground') obj = buildGround(piece, this.material(piece.material, piece.tint), repeat);
-      else if (piece.built === 'gate-leaf') obj = buildGateLeaf(piece.leaf, this.material(piece.material));
-      else if (piece.built === 'bars') obj = buildBars(piece.bars, this.material(piece.material));
-      else if (piece.built === 'slab') obj = buildSlab(piece.box, this.material(piece.material));
-      else if (piece.built === 'floor') obj = buildFloor(piece, this.material(piece.material, piece.tint), repeat);
-      else if (piece.built === 'plate') obj = buildPlate(piece.plate, this.material(piece.material));
-      else obj = await loadModel(piece.model);
+      // `buildPiece` is the whole `built` ladder, and it hands back null for a
+      // piece that names a model rather than a shape.
+      let obj = piece.built
+        ? buildPiece(piece, this.material(piece.material, piece.tint), metres)
+        : null;
+      if (!obj) obj = await loadModel(piece.model);
 
       obj.userData.planId = piece.id;
       this.objects.set(piece.id, obj);
 
-      if (piece.built === 'run' || piece.built === 'drum' || piece.built === 'ground' || piece.built === 'slab' || piece.built === 'floor') {
+      if (carriesOwnWorldPosition(piece)) {
         // These carry their world position inside their own geometry, so the
         // plan's transform is the identity and there is nothing to apply.
         this.scene.add(obj);
