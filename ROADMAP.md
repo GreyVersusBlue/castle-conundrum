@@ -28,11 +28,13 @@ NOW, in parallel, no gates:
   Devon's machine                    A container
   ---------------                    -----------
   R2  GPU run        --+             R8   quests: reputation + errands   lane A
-  R1  fourth body      |             R6   populace: the first ten        lanes C D
-                       |             R7   ambient beds                   lane E
-                       |             (R12a budget suite SHIPPED, #607-611)
+                       |             R6   populace: the first ten        lanes C D
                        |             R4a  the bells call   (lane A: not beside R8)
                        |             R4b  the since field  (lane A: not beside R8)
+
+  Wave A shipped three of its six on 2026-09-17, in parallel, as written:
+    R1  fourth body    #603-606      R7  ambient beds  #620-623
+    R12a budget suite  #607-611
                        |
 R2 lands --------------+--> unlocks R3, R5, R11
 
@@ -145,13 +147,23 @@ suites, no gate on any of them, and the backlog's existing advice already
 points here: *"a session running beside one of those is better off on 8 or
 12."*
 
-**R12a shipped on 2026-09-17** (#607 to #611), which was the test of that claim: it ran
-beside R8 in the same working tree and beside R6, R1 and R7 in worktrees, and
-touched `src/castle-builder.js`, `test/run.mjs` and a new `test/budget.mjs`,
-none of which is in any lane. **R7 is the replacement third**, alone in lane E.
+**The claim was tested the same afternoon and it held.** Five sessions ran at
+once — R1, R6, R7, R8 and R12a — and three of them shipped (#603 to #606, #607
+to #611, #620 to #623) without one collision in a source file. R12a ran beside
+R8 in the same working tree and touched `src/castle-builder.js`, `test/run.mjs`
+and a new `test/budget.mjs`, none of which is in any lane.
 
-Add **R2** and **R1** on Devon's machine and that is five things moving at once
-without a single collision.
+**What the lanes did not cover was `HISTORY.md`.** Three branches wrote #603
+the same afternoon; rank 1's merged and holds it, and the other two renumbered.
+A lane is a file (#602) and `HISTORY.md` is a file every row writes to, so by
+the letter of the rule only one row could ever be in flight — which is not the
+rule anybody wants. **The working answer, which costs nothing: read
+`HISTORY.md` on `origin/main` when you write the entry, not when you branched.**
+A decision number is picked at the end of a row, not the start.
+
+With R1 and R7 landed, the three safe together now are **R8, R6 and R4a or
+R4b** — except that R4a and R4b are lane A and R8 has it, so the honest answer
+is two, plus **R2** on Devon's machine.
 
 ### What not to pair
 
@@ -181,13 +193,21 @@ Nothing is gated on R2 *starting*, so everything in wave A runs alongside it.
 
 One row per lane. All of these are startable today.
 
+**Three of the six below shipped on 2026-09-17, the same afternoon this file
+was written, running at once and not colliding**: R1's `Woman.glb` and the
+three women who wear it (#603 to #606), R7's seven ambient beds (#620 to
+#623), and R12a's budget suite (#607 to #611). Their rows are struck through
+rather than deleted, because what this table was claiming is that they could
+run together, and they did.
+
 | Row | Model | Where | Lane | Next increment |
 | --- | --- | --- | --- | --- |
-| **R2** The GPU run | Opus 5 | **Local: GPU** | none | Gate 1, above. |
-| **R8** Side quests | Opus 5 | Container | A | Reputation by ward: two save counters, version 6 through `migrate`, a clamp in `repair`, a chatter line per threshold and one line in one closing pane. Then the seven errands left of the dozen; five of the seven need nobody new. |
-| **R6** Life: a populace | Opus 5 | Container | C, D | `data/populace.json`, `src/populace.js`, and ten bodies off the `cast` that already exists. No new asset, no new clip, so the row that makes every other wishlist row visible does not itself wait on one. |
-| **R1** A fourth body | Fable 5.1 | **Local: net** | C | Fetch, check against the three name lists, encode, add to `cast`. Not beside R6. |
-| **R7** Sound | Fable 5.1 | Container | E | The ambient beds and the cross-fade. Alone in its lane, which makes it the right row for a session when A, C and D are all held. |
+| **R2** The GPU run | Opus 5 | **Local: GPU** | none | Gate 1, above. And now four more things nobody has looked at: a fourth body, seven ambient beds nobody has heard, and what the eight tower drums actually cost. |
+| **R8** Side quests | Opus 5 | Container | A | Reputation by ward: two save counters, a version bump through `migrate`, a clamp in `repair`, a chatter line per threshold and one line in one closing pane. Then the seven errands left of the dozen; five of the seven need nobody new. |
+| **R6** Life: a populace | Opus 5 | Container | C, D | `data/populace.json`, `src/populace.js`, and ten bodies off the `cast` that already exists. No new asset, no new clip, so the row that makes every other wishlist row visible does not itself wait on one. **It now has a number to answer to**: 20 skinned bodies per ward against a peak of 7 (#609). |
+| ~~**R1** A fourth body~~ | Fable 5.1 | Local: net | C | **Shipped** (#603 to #606). Quaternius's Ultimate Modular Women Pack, meshopt to 1.02 MB, worn by the cook, the laundress and the lady. |
+| ~~**R7** Sound~~ | Fable 5.1 | Container | E | **First increment shipped** (#620 to #623). Seven synthesised room tones and the cross-fade. What is left needs speakers (#53). |
+| ~~**R12a** The budget suite~~ | Opus 5 | Container | none | **Shipped** (#607 to #611). 965 draw calls in the outer ward against 1200, 3 point lights, a peak of 7 bodies. 63 % of the castle's meshes is eight tower drums. |
 
 R4a (the bells call) and R4b (the `since` field) are startable today too, but
 both are lane A and R8 is the better use of that lane: R8's next increment is
