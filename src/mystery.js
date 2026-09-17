@@ -108,13 +108,13 @@ export function dayTwoLines(mystery, npcId, outcome, held = null) {
 }
 
 /**
- * THE MORNING AFTER KNOWS WHAT THE PLAYER READ (#573). Every line on day two is keyed
- * by what the player SAID (`outcomeOf`) and nothing at all by what he FOUND,
- * and that made two of the shipped line sets say the wrong thing to a player
- * who had done the work: the inspector telling a clerk who had the gaol roll
- * off the barrel-head that nobody in the castle had ever looked at it, and
- * Nest saying nobody asked her whether Madoc had a wife to the one clerk who
- * had asked her exactly that. A `knew` row is `{npc, clue, when?, unless?,
+ * THE MORNING AFTER KNOWS WHAT THE PLAYER READ (#573). Every line on day two
+ * is keyed by what the player SAID (`outcomeOf`) and nothing at all by what he
+ * FOUND, and that made two of the shipped line sets say the wrong thing to a
+ * player who had done the work: the inspector telling a clerk who had the gaol
+ * roll off the barrel-head that nobody in the castle had ever looked at it,
+ * and Nest saying nobody asked her whether Madoc had a wife to the one clerk
+ * who had asked her exactly that. A `knew` row is `{npc, clue, when?, unless?,
  * lines, why}` and it wins over the cascade when the clue is in the journal
  * the save carried over. It may only ever REPLACE a line set that already
  * resolves, never supply the only one — see `dayTwoLines`.
@@ -624,16 +624,19 @@ export function validateMystery(mystery, npcs, quest, nav = null) {
       }
     }
 
-    /* --- WHAT THE PLAYER READ, ON THE MORNING AFTER. `day2.knew` rows replace
-     * a line set for a player holding a named clue. Six ways one can be dead
-     * and none of them shows on the screen, because the cascade behind the row
-     * still answers: a row for somebody with no station, a row for a clue
-     * nothing in the castle yields, a row whose `when` names no ending the
-     * accusation table can reach, a row on a morning its speaker is hanged on,
-     * a row with no lines, and two rows on one person that both fire on one
-     * morning, where only the first would ever be read. The seventh — a row
-     * that is the ONLY answer for some ending — cannot happen by construction,
-     * because the rail above calls `dayTwoLines` with no journal. */
+    /* --- WHAT THE PLAYER READ, ON THE MORNING AFTER (#573). `day2.knew` rows
+     * replace a line set for a player holding a named clue. Nine ways one can
+     * be dead and none of them shows on the screen, because the cascade behind
+     * the row still answers and the morning reads exactly as it did before the
+     * row was written: a speaker not in the cast, a speaker with no station at
+     * this watch, a clue the mystery does not have, a clue nothing in the
+     * castle yields (that one is below, beside `held`), no lines, no `why`, a
+     * `when` naming no ending the accusation table can reach, a row on a
+     * morning its speaker is hanged on, and two rows on one person and one
+     * clue that both fire on one morning, where only the first is read. The
+     * tenth — a row that is the ONLY answer for some ending — cannot happen by
+     * construction, because the rail above calls `dayTwoLines` with no
+     * journal. */
     (d2.knew ?? []).forEach((row, i) => {
       const where = `day2.knew[${i}]`;
       if (!row || typeof row !== 'object') { say(`${where}: not an object`); return; }
