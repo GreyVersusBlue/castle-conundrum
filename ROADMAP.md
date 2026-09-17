@@ -126,7 +126,7 @@ alongside anything else that touches `save.js`"* is written into R4's
 dependencies, and R8's next increment was a version bump to 6 with a clamp in
 `repair`. Two sessions bumping the same version number produce a merge that
 compiles and a save that does not migrate. **Version 6 landed on 2026-09-17**
-(#603), so the next session in this lane bumps to 7 and the same rule holds.
+(#607), so the next session in this lane bumps to 7 and the same rule holds.
 
 Lane B is sharp for a different reason. `test/tools.mjs` holds
 `data/scene-config.json` to byte-exactness by cutting an added row back out and
@@ -137,7 +137,7 @@ sessions splicing into it is two splices neither one tested against.
 Lane C is the `cast` block **specifically**, not all of `data/npcs.json`. R8
 and R12c write per-person `states` and `default` line arrays, which is a
 different region of the same file and merges cleanly. R8 also owns the
-file's `reputation` block outright (#605), which is a third region again and
+file's `reputation` block outright (#609), which is a third region again and
 is nobody else's. A session doing either
 should still say so in its PR.
 
@@ -184,7 +184,7 @@ One row per lane. All of these are startable today.
 | Row | Model | Where | Lane | Next increment |
 | --- | --- | --- | --- | --- |
 | **R2** The GPU run | Opus 5 | **Local: GPU** | none | Gate 1, above. |
-| **R8** Side quests | Opus 5 | Container | A | ~~Reputation by ward~~ shipped 2026-09-17 (#603 to #606): two counters at save version 6, a line per ward threshold, one line under the verdict. What is left is the seven errands of the dozen; five of the seven need nobody new. |
+| **R8** Side quests | Opus 5 | Container | A | ~~Reputation by ward~~ shipped 2026-09-17 (#607 to #610): two counters at save version 6, a line per ward threshold, one line under the verdict. What is left is the seven errands of the dozen; five of the seven need nobody new. |
 | **R6** Life: a populace | Opus 5 | Container | C, D | `data/populace.json`, `src/populace.js`, and ten bodies off the `cast` that already exists. No new asset, no new clip, so the row that makes every other wishlist row visible does not itself wait on one. |
 | **R12a** The budget suite | Opus 5 | Container | none | Skinned bodies, point lights and draw calls per ward, off the plan, in Node, failing against ceilings held as named constants with a comment saying they are guesses. |
 | **R1** A fourth body | Fable 5.1 | **Local: net** | C | Fetch, check against the three name lists, encode, add to `cast`. Not beside R6. |

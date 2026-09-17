@@ -136,7 +136,7 @@ runs them off the same event stream the frame hears without a second class, and
 the cook's missing knife is the first of them. The save is version 4 for
 `quests`; the key did not move (#36). The journal's open-quests tab shipped
 the same day (#595), four more errands after it (#597 to #599), and
-**reputation by ward the same day again** (#603 to #606): two counters at save
+**reputation by ward the same day again** (#607 to #610): two counters at save
 version 6, a line per ward threshold on the end of what anybody in that ward
 says, and one line under the verdict. **Rank 8 is still open**: what is left
 in it is the seven errands of the dozen still unwritten.
@@ -200,8 +200,8 @@ validators rather than a render (6, 8 and 12) are the ones a container can
 start; 7, 10 and 11 all want either a recorded sound, a body on disk, or a GPU
 before their first increment closes, and 9 has nothing left in it that does
 not wait on rank 4's yard. **Rank 12 shipped a first increment on
-2026-09-17 and rank 8 shipped four** (#576 to #581, #595, #597 to #599, #603
-to #606); both next increments are a container's: rank 8's seven errands left,
+2026-09-17 and rank 8 shipped four** (#576 to #581, #595, #597 to #599, #607
+to #610); both next increments are a container's: rank 8's seven errands left,
 rank 12's budget suite. **Rank 9's map shipped the same day** (#588 to #591),
 and what is left of that row is the town, behind rank 4's yard. Of them all, 6
 is the one that reads `data/npcs.json`'s `cast`, which is what ranks 1 and 10
@@ -465,7 +465,7 @@ found yet.
 *Where: container. Gate: none, but two of the seven errands want rank 6. Lane: A.*
 
 **Rank 8, and a 2+. Four increments shipped on 2026-09-17** (#576 to #581,
-#595, #597 to #599, #603 to #606): the format, the set validator and the
+#595, #597 to #599, #607 to #610): the format, the set validator and the
 cook's missing knife; then the journal's tab; then four more errands; then
 reputation by ward.
 `data/quests/` holds one `QuestGraph` per file with two fields the frame does
@@ -495,7 +495,7 @@ reaching a stage that waits on a clue the player already holds is walked
 forward at the end of the batch (#597), and every file names its `ward`
 (#599). Five errands, three outer and two inner.
 
-**Reputation by ward shipped fourth** (#603 to #606): `outer` and `inner`,
+**Reputation by ward shipped fourth** (#607 to #610): `outer` and `inner`,
 two counters the save carries at version 6, one moved per errand finished in
 that ward. `migrate` counts what a version-5 save had already finished rather
 than writing zeroes, and `repair` clamps each to the errands that ward has.

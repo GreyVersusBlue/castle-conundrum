@@ -632,7 +632,7 @@ Everything else in the castle is silent.
 
 **Rank 8. Size 2+. Four increments shipped on 2026-09-17** (#576 to #581,
 the journal's tab at #595, four more errands at #597 to #599, and reputation
-by ward at #603 to #606).
+by ward at #607 to #610).
 `WISHLIST.md` theme 4. The format, the set validator and the cook's missing
 knife are in: `data/quests/` is the directory, `data/quests/index.json` names
 its files because a browser cannot read a directory, `validateQuestSet` in
@@ -695,7 +695,7 @@ asked for anything. A terminal quest goes under a Done heading with its title
 struck through rather than off the page. The Present picker inside a
 conversation is still clues alone.
 
-### What reputation shipped as (#603 to #606)
+### What reputation shipped as (#607 to #610)
 
 Two counters the save carries, `outer` and `inner`, one moved per errand
 finished in that ward (the file's `ward` is which, #599). `SAVE_VERSION` is
@@ -763,7 +763,7 @@ holds every one of them to an errand that exists to be finished.
 ### Open calls
 
 - **Where reputation is read out.** Recommended a line per ward threshold
-  and one in a closing pane, and that is what shipped (#605), with the ward
+  and one in a closing pane, and that is what shipped (#609), with the ward
   lines appended to what a person was going to say rather than replacing it.
   The `chatter` pool was the obvious-looking home and is not one: nothing
   plays it yet, and a pair is two bodies talking, which needs rank 6.
@@ -797,7 +797,7 @@ holds every one of them to an errand that exists to be finished.
   diffed like anything else). No increment yet has added a prop; the merlin
   is a line and not a bird.
 - #36, #37 (the key does not move; a new field is a version bump through
-  `migrate` and a rail in `repair`). Met at version 6 (#603).
+  `migrate` and a rail in `repair`). Met at version 6 (#607).
 - #13, #34 (the set validator exits non-zero and every rule gets broken on
   purpose once).
 

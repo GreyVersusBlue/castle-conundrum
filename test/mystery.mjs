@@ -84,7 +84,16 @@ console.log('mystery.json validates');
   check(Object.keys(mystery.schedule).length === 12 && mystery.watches.length === 4, 'twelve schedules across four watches');
   check(mystery.presses.length === 9, `${mystery.presses.length} presses`);
   const bodies = new Set(cast.map((n) => n.modelPath));
-  check(bodies.size === 3 && cast.every((n) => /^#[0-9a-f]{6}$/i.test(n.tint)), 'three bodies, thirteen tints (#419)', [...bodies].join(', '));
+  check(bodies.size === 4 && cast.every((n) => /^#[0-9a-f]{6}$/i.test(n.tint)), 'four bodies, thirteen tints (#419, #603)', [...bodies].join(', '));
+  // What the fourth is for (#603). Read off the data, so a woman put back on a
+  // man's body is named, and so is a man put on hers.
+  const WOMEN = ['cook', 'laundress', 'lady'];
+  const hers = new Set(cast.filter((n) => WOMEN.includes(n.id)).map((n) => n.modelPath));
+  const strays = [
+    ...(hers.size === 1 ? [] : cast.filter((n) => WOMEN.includes(n.id)).map((n) => `${n.id} wears ${n.modelPath}`)),
+    ...cast.filter((n) => !WOMEN.includes(n.id) && hers.has(n.modelPath)).map((n) => `${n.id} wears ${n.modelPath} too`),
+  ];
+  check(strays.length === 0, "four bodies, and the three women share the one that is a woman's", strays.join('; '));
   check(new Set(cast.map((n) => n.tint)).size === 13, 'no two of the thirteen share a tint');
   // Every evidence row names a prop that is already on disk (Phase 1 ships no
   // asset): a kit .glb, or a Poly Haven .gltf under the project's own folder.

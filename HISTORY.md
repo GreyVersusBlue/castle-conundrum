@@ -4077,17 +4077,121 @@ move at once with no collision. The column values are a judgement over the
 specs as they stand on 2026-09-17; a row whose scope changes changes its lane,
 and the session that changes it owns the label.
 
+## A fourth body: found, and worn by all three women (2026-09-17)
+
+**Ranked row 1, on `claude/r1-fourth-body`, under Claude Fable 5.1, on Devon's
+machine.** #568's container could not reach quaternius.com. This machine
+could, and `ktx` v4.4.2 is on its PATH. Decisions #603 to #606. Ten suites
+green and `npm run build` green; `tools` and `plan-vs-scene` fail on this
+machine on untouched `main` as well, and both are written up at the bottom
+rather than waved through. `dist/` is 53 MB against the 200 MB ceiling (#499),
+which is the line #419 priced at "a new ceiling" and is not a constraint any
+more. `npm run play` was not run: the GPU run is another session's row today.
+
+- **The fourth body is the Ultimate Modular Women Pack's `Medieval.gltf`,
+  committed as `assets/NPCs/Woman.glb`, and Marged, Nest and Lady Alys all
+  wear it at 1.65 m** (#603). The pack page at
+  `quaternius.com/packs/ultimatemodularwomen.html` says CC0 and links a
+  public Google Drive folder; `Individual Characters/glTF/` holds ten bodies
+  (Adventurer, Casual, Formal, Medieval, Punk, SciFi, Soldier, Suit, Witch,
+  Worker), which is not the eight names the search index gave #568. Three were
+  fetched, 3.1 to 3.2 MB each, and checked against `SPECS.md`'s three lists:
+  all three carry the same 24 clips by the same names as the three on disk,
+  `Wrist.R`, `Head` at 1.548 m against the men's 1.547, `Skin` at the same
+  0.617, 0.418, 0.238, and zero textures. It is the same rig, so `pickClip`,
+  `_findHandBone` and `HAND_BONES` needed nothing, and the `Palm.R` warning
+  #570 left was about a different pack. Worker wears a hard hat and a hi-vis
+  vest and Witch a pointed hat; Medieval is a hooded woman in a jerkin and
+  breeches, and is the only one of the three that belongs in 1280. The other
+  seven were not fetched. One oddity for the record: the pack's `License.txt`
+  is headed "Ultimate Modular Males". The licence text under it is CC0 1.0 and
+  so is the pack page, so this reads as the author's copy-paste and not as a
+  different licence.
+
+- **The file is not the pack's file, in four ways, and all four are in the
+  re-export rather than in `npc.js`** (#604). The pack names the hair `White`
+  and the eyes `Brown`, which `BARE_MATERIALS` does not match, so the tint
+  would have dyed three women's hair: the head's two primitives take clones
+  named `Hair` and `Eye`, the names the three on disk use. `DarkBrown` on the
+  head is the hood and stays cloth on purpose, because a tinted hood is the
+  largest thing that tells the three apart from the front. The boots take
+  clones named `Boot` and `Boot_Trim` so they keep their leather. And the
+  cloth itself was lifted: the pack's `Black`, `DarkBrown` and `LightBrown`
+  are 0.03 to 0.16 linear, and a tint is a multiply, so cream, blue and gold
+  all came out as the same near-black leather. That was seen, not reasoned:
+  the first render of the three side by side could not be told apart. They are
+  now 0.42, 0.62 and 0.80 grey-warm, undyed wool, and the tint is the colour.
+  The dagger is a node named `Sword` and the pauldrons are the `Metal`
+  material; both are hidden per person by `hideNodes` and `hideMaterials`, the
+  way the clerk's backpack and the steward's gold already are. Lady Alys keeps
+  the `Gold` trim and the cook and the laundress do not.
+
+- **`test/assets.mjs` has a fifth check, and it exists because this session
+  tripped the thing `SPECS.md` warned about** (#605). `npm run assets:encode`
+  finds the bodies through `cast`. Run before `cast` named the new file, it
+  said nothing about `Woman.glb`, left it at 1.55 MB of raw floats, and every
+  suite was green. Check 5 reads `extensionsUsed` off every Poly Haven prop
+  and every body `data/` names and fails a file with no
+  `EXT_meshopt_compression`, naming the script to run. The Kenney kit stays
+  exempt (#508). Encoded, the body is 1.02 MB. The same run rewrote ten
+  untouched Poly Haven `.gltf` files with LF on a CRLF checkout, ten diffs of
+  nothing, so `encodeGLTF` now returns before `io.write` when it has encoded
+  neither a texture nor a mesh.
+
+- **Nobody has seen her in the castle** (#606). What was looked at is a
+  scratch page that loaded the encoded file beside `Farmer.glb` and
+  `King.glb` and applied `cast`'s tints and hides the way `npc.js` does:
+  three women in cream, blue and gold, a head shorter than the chaplain and
+  the Constable. That is a look at a body on a grey background, not at
+  Vespers in the hall. The evidence is still **The GPU run**'s
+  `twelve-at-vespers` photograph. One tell is known going in: `Hair` is bare,
+  so all three have the same grey-white hair under their hoods, the way the
+  Constable, the Steward and the inspector share the King's.
+
+**Broken on purpose, from a green baseline** (#34). Three breaks, each
+reverted, green again after.
+
+1. Lady Alys put back on `King.glb`. `mystery` exited 1 on `four bodies, and
+   the three women share the one that is a woman's — ... lady wears
+   assets/NPCs/King.glb; constable wears assets/NPCs/King.glb too; ...`.
+2. `Woman.glb` replaced by the un-encoded re-export. `assets` exited 1 on
+   `assets/NPCs/Woman.glb has no EXT_meshopt_compression — run npm run
+   assets:encode before committing it (#506)`.
+3. `data/npcs.json` stashed with the file left on disk. `assets` exited 1 on
+   `nothing references assets/NPCs/Woman.glb`, which is #390's check 4 doing
+   its job.
+
+**Two suites that fail on this machine and did before this branch.** Both
+were run against untouched `main` in Devon's checkout and fail there the same
+way. `tools` fails three times on `and every other byte is the byte it was —
+96758 bytes in, 96757 back out`: `core.autocrlf` is `true` here, the checkout
+of `data/scene-config.json` ends `}\r\n`, and the splice writes one byte
+fewer. `plan-vs-scene` fails on `none of the 12 cells between 0.9 and 2.8 m
+of the chapel candles offers them (the nearest offered "Press E to ring the
+bell")`, three runs of three on `main` and two of three here. Neither is in
+this row's lane and neither was touched. CI is Linux and sees neither.
+
+**A numbering note.** #600 to #602 are `ROADMAP.md`'s and were uncommitted
+in Devon's checkout when this was written, so this entry starts at #603. Other
+wave A sessions were running at the same time; if one of them also took #603,
+the later merge renumbers.
+
+**What this branch does not do.** `BACKLOG.md` and `SPECS.md` still carry the
+row. Devon's checkout held uncommitted rewrites of both when this was written
+(the `Where`, `Claimed` and `Lane` columns and `ROADMAP.md`), and deleting rank
+1 and renumbering eleven rows underneath that is a conflict in every line of
+the table. The row comes out in the pass that lands those files.
 ## Side quests: reputation by ward (2026-09-17)
 
 **Rank 8's next increment, wave A, lane A.** The two counters `#599` named a
 ward for, the save version that carries them, and the two places in the game
-that read them out. Decisions #603 to #606. Ten of twelve suites green; the
+that read them out. Decisions #607 to #610. Ten of twelve suites green; the
 two that are not are `tools` and `plan-vs-scene`, neither of them this
 batch's and both described at the bottom. `npm run build` green. `npm run
 play` was not run and could not be (#53).
 
 - **Reputation is two counters the save carries, and version 6 is how they
-  arrive** (#603). `outer` and `inner`, one moved per side quest finished in
+  arrive** (#607). `outer` and `inner`, one moved per side quest finished in
   that ward, where the ward is the quest file's own (#599) and finished is a
   terminal stage. `SAVE_VERSION` goes 5 to 6 and the key does not move (#36).
 
@@ -4116,7 +4220,7 @@ play` was not run and could not be (#53).
   rest of the day.
 
 - **Where the counter moves is `_settleSide` and nowhere else, and once is
-  the graph rather than a guard** (#604). An errand arriving at a terminal
+  the graph rather than a guard** (#608). An errand arriving at a terminal
   stage adds one to its ward, at the end of the batch of events that moved
   it, on the same line the toast is written from. It cannot double-count,
   because `validateQuest` has refused a terminal stage with a transition that
@@ -4133,7 +4237,7 @@ play` was not run and could not be (#53).
   `which moves the inner counter and not the outer one — {"outer":0,"inner":2}`.
 
 - **Two things read the counters, and the list of what they are not is
-  longer** (#605). `data/npcs.json` gains a `reputation` block: `outer` and
+  longer** (#609). `data/npcs.json` gains a `reputation` block: `outer` and
   `inner`, each a list of `{at, line}` in ascending order, and `closing`,
   keyed to both counters added together. The ward lines go on the **end** of
   whatever the person you walked up to was going to say, which is #598's
@@ -4168,7 +4272,7 @@ play` was not run and could not be (#53).
   nothing is worse than a pane that says nothing.
 
 - **A threshold nobody can reach fails a suite instead of sitting silent**
-  (#606). `validateQuestSet` takes the block as a fifth option and holds
+  (#610). `validateQuestSet` takes the block as a fifth option and holds
   every `at` to the number of quests `data/quests/` actually has in that ward
   — three outer, two inner, five in all today — plus ascending order, a whole
   number of one or more, and a `line` that is a string. This is the rule
@@ -4239,6 +4343,13 @@ screenshot of it is in the PR. What no suite can answer is whether a
 one-sentence aside on the end of a fourth conversation reads as the castle
 noticing or as the castle nagging, and whether the inner ward's first line
 firing on a single errand is too eager (#53). Both are a screen and a person.
+
+**A numbering note.** This entry was written as #603 to #606, which is what
+`ROADMAP.md`'s #600 to #602 left free. Rank 1's fourth body took the same
+four the same afternoon and merged first, and its own note says the later
+merge renumbers, so this one is #607 to #610. Nothing in `src/` or `test/`
+cited either band: every number this row's code comments carry is older
+than both.
 
 **What is left in rank 8.** The seven errands of `WISHLIST.md`'s dozen still
 unwritten: five need nobody new (the letter for the town that needs a gate

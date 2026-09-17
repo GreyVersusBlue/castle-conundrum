@@ -110,8 +110,16 @@
       "name": "Marged",
       "role": "Cook",
       "ward": "outer",
-      "modelPath": "assets/NPCs/Farmer.glb",
+      "modelPath": "assets/NPCs/Woman.glb",
+      "modelHeight": 1.65,
       "tint": "#e3d8c0",
+      "hideNodes": [
+        "Sword"
+      ],
+      "hideMaterials": [
+        "Metal",
+        "Gold"
+      ],
       "placeholder": {
         "color": "#e3d8c0"
       },
@@ -278,8 +286,16 @@
       "name": "Nest",
       "role": "Laundress",
       "ward": "outer",
-      "modelPath": "assets/NPCs/Farmer.glb",
+      "modelPath": "assets/NPCs/Woman.glb",
+      "modelHeight": 1.65,
       "tint": "#7fa6c0",
+      "hideNodes": [
+        "Sword"
+      ],
+      "hideMaterials": [
+        "Metal",
+        "Gold"
+      ],
       "placeholder": {
         "color": "#7fa6c0"
       },
@@ -351,10 +367,14 @@
       "name": "Lady Alys",
       "role": "The Constable's wife",
       "ward": "inner",
-      "modelPath": "assets/NPCs/King.glb",
+      "modelPath": "assets/NPCs/Woman.glb",
+      "modelHeight": 1.65,
       "tint": "#d9c26b",
+      "hideNodes": [
+        "Sword"
+      ],
       "hideMaterials": [
-        "Gold"
+        "Metal"
       ],
       "placeholder": {
         "color": "#d9c26b"
