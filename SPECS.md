@@ -55,7 +55,7 @@ Four facts every row below leans on, stated once:
   aborts every offsite request and `test/built.mjs` fails on a non-empty
   `page.__blocked`. Decoder files, fonts, sound files and images all land under
   this repo.
-- **The nine suites are `npm test`; `npm run play` is not** (#53). A row whose
+- **The ten suites are `npm test`; `npm run play` is not** (#53). A row whose
   proof needs a real-time walk or a look at a render has a GPU criterion nobody
   in a session can meet. Every row below also names a Node or headless criterion
   so the row is not blocked on hardware.

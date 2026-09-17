@@ -2812,3 +2812,143 @@ before this row), all within 0.0000 m of the plan. `npm run play` was not run
 and could not be (#53); nothing in this row moves the player, the walk or a
 render, so the honest gap is only that nobody has looked at the six documents
 or heard the chatter with eyes and ears rather than a Node assertion.
+
+## Lore, reviewed and expanded: a timeline, thirteen documents, twenty-seven pairs (2026-09-17)
+
+**The lore row (#551 to #555, PR #23) read back as a whole, and then
+expanded.** The brief was to check the merge "makes sense together" and then
+deepen it: more facts, more objects. `data/lore.json` goes from 31 facts to 61,
+`data/documents.json` from six documents to thirteen, `data/npcs.json`'s
+chatter pool from 17 pairs to 27, and `src/lore.js` gains one more
+cross-reference to hold. Nothing in `data/mystery.json`, `data/quest.json`,
+`data/riddle.json` or the cast's own dialogue moved. Decisions #556 to #559.
+
+- **The canon has a timeline, written into the file, and every `history` and
+  `person` fact is held to it** (#556). In years of the works, year 40 being
+  this Michaelmas: the March War from year -9 to 0, the first stone at 0, the
+  well at 2, the bell and Gruffudd's fall at 3, the cross-wall at 4, the
+  curtain closed at 6, the gaol at 9, Aldous dead and Osric crowned at 15, the
+  towers done at 16, Sir Walter dead and Sir Roger come at 32, the Sunder War
+  from 32 to 38, the inspections yearly from 34. The review that wrote it
+  found the shipped canon disagreeing with itself in three places and with
+  `mystery.json` in one, none of which the validator could see, because a
+  validator reads ids and not arithmetic:
+  1. `king-aldous` had him die "in the fifteenth year of the works with the
+     curtain barely closed", and `castle-founding` had the curtain closed in
+     six. Now he dies with the towers still open to the sky, which year 15 is.
+  2. Lady Alys says in `npcs.json` that she has "been married to a Constable
+     eleven years", and Sir Walter's two and thirty years from year 0 put Sir
+     Roger in this post eight. Reconciled by a new `person` fact rather than
+     by moving the gravestone: Sir Roger was Constable of Bryn Adda, a March
+     post of twelve men, three years before he came here, and married one
+     year into it.
+  3. `hywel-rise` had him a journeyman before twenty and "twenty years a
+     mason and eleven a master", which from a boy of nine in year 3 does not
+     add up to any one age. Now seven and twenty years a mason, eleven of them
+     a master, forty-six years old.
+  4. `works-ledger` was titled "The works ledger" and stood in the Clerk of
+     Works' office, while the mystery's own evidence `ledger`, "works ledger",
+     is the thing behind the word-lock in the muniment room. A player reading
+     one and then finding the other would have been right to ask which was
+     the ledger. The document is now "The old works ledgers", the closed
+     volumes of years one to thirty-nine, and says in its own first line that
+     this year's book is under the Clerk's own lock and is not here.
+
+  Two `npc` sources were dropped because the line they named did not say the
+  fact: `king-osric` cited the Constable's default lines, which mention the
+  inspector and never the King, and `saint-osyth` cited the chaplain's, which
+  never name a saint. The validator checks that an `npc` source names a
+  dialogue state that exists and cannot check what the state says, so this
+  is the one source kind where "told" is still a claim a reader has to
+  verify by hand; the file's comment now says so. The count was wrong too:
+  `WISHLIST.md` and `test/lore.mjs`'s header said eighteen pairs and the pool
+  had seventeen. The weak contradiction was sharpened: `prison-tower-origin`
+  now says what is under the floor (rock, sounded by the engineer), so that
+  Madoc's dragging sound actually disagrees with it, and `the-well` says it is
+  a spring in the rock so that the new `well-depth` rumour (it goes down to
+  the river and the tide comes up in it) has something to contradict.
+
+- **Thirteen documents, and a document's slab is one placement written twice
+  and held to** (#557). Seven new readable props, each a built slab in a room
+  the castle already builds (#553's pattern, #506's rule): the foundation
+  stone on end against the cross-wall's west face in the outer ward, the
+  engineer's drawing flat on the Clerk's chamber floor, the cook's slate
+  against the kitchen's west wall, the exchequer's letters on the Steward's
+  floor, the lodge's ordinances on a board at the mason's lodge's south-west
+  post, the bakers' notches in the floor by the bakehouse oven, and the
+  watch-bill in the guardroom. `data/documents.json` and
+  `data/scene-config.json`'s `builtProps` each carry the slab, because the
+  room check runs on the document without the scene config and the builder
+  reads slabs from the scene config alone, and two copies of one placement
+  drift. So `validateLore` takes `builtProps` and fails on a document whose
+  tile, base, size or material differs from the entry carrying `read: <its
+  id>`, on a document with no such entry, and on an entry naming no document.
+
+  **Placed in Node, not by eye.** A scratch script loaded the real plan the
+  way `test/layout.mjs` does (`makePlan` with `test/gltf.mjs`'s `partsOf`)
+  and tested each candidate box against every stone sector, every flight,
+  every other prop's box, the room's rectangle or disc, and the walkable
+  cells within 1.5 m at that level, the same questions the suite asks. Two
+  candidates failed it before `layout.mjs` ever ran: the cook's slate at
+  0.3 m from the kitchen's west wall stood inside the CL/KI party wall, and
+  the first idea, a memorial stone in the east barbican garden for the
+  garden's planter, could not be placed at all, because the garden has no
+  walkable cell: the ground east of x = 26 is the barbican's own stone. That
+  is why "more gravestones" stays open in `WISHLIST.md` and why the garden
+  being walkable is noted there as a castle question before a lore one. The
+  gaol roll is not a document on purpose: `SPECS.md`'s increment 3 names it
+  as evidence, and a lore document with the same content would pre-empt that
+  row's one thread a container can finish.
+
+  **Broken on purpose, from a green baseline** (#34). The gate book's tile
+  moved from 0.375 to 0.625 in `scene-config.json` alone; `node
+  test/lore.mjs` exited 1, five assertions down, and the one that names it
+  said `gate-book: data/documents.json and the builtProps entry gate-book
+  describe different slabs (tile [0.375,-4.375] vs [0.625,-4.375])`.
+  Reverted from a copy taken before the break; green again. The suite also
+  carries the same break as synthetic data, plus a height, a material, a
+  document with no slab, a slab with no document, and the no-`builtProps`
+  call that skips the check rather than failing it.
+
+- **Chatter to twenty-seven pairs, two silent pairs now cite what they tell,
+  and the epilogue is used as a source for the first time** (#558). Ten new
+  pairs, the existing twelve only, each speaker in their own ward as #554
+  validates. `outer-terce-1` (eleven miles, the quay toll) and
+  `inner-terce-1` (Caernarfon) were telling `west-road`, `thomas-wykes` and
+  `caernarfon-seat` without a `cites`, which the validator cannot see either
+  way; they cite now. Four facts are told by the verdict and second-day text
+  in `mystery.json`: `stockhouse-gallows` by every convicted verdict (each
+  one hangs its man from the Stockhouse Tower), `caernarfon-seat` by the
+  merchant's, `west-road` by the acquittal ("The carts keep to the west road,
+  past the barbican"), `thomas-wykes` by the full one (the lead "in Thomas
+  Wykes's yard in the town"). `test/lore.mjs` now asserts all four source
+  kinds are in use, so the epilogue path in `src/lore.js` is exercised by
+  real data and not only by the synthetic break.
+
+- **The lore names no object of the mystery, and the mystery's own numbers
+  are canon the lore fits** (#559). The lead, the passes, the cloak, the
+  lantern and the summons do not appear in `data/lore.json` and the file's
+  comment says they are not to. The other direction is the one that bit:
+  `mystery.json` already said Caernarfon, eleven miles, forty mouths, eleven
+  years married, eleven years cooking and eleven days in the cell, and every
+  new fact was written to those rather than around them. Caernarfon is a real
+  Welsh name in an invented kingdom and stays, because `mystery.json`,
+  `quest.json` and the day-two text say it in twelve places and #549's line
+  was that the plan's Welsh-flavoured names are kept. New invented names are
+  Hensford (the market eleven miles up the valley), Bryn Adda (Sir Roger's
+  old post), Master Jocelin (the engineer), Ranulf and Hugh Bassett (the
+  first two Clerks of Works).
+
+**What was measured.** `data/lore.json` 545 lines (268 before), `data/documents.json` 315 (145),
+`src/lore.js` 220 (186), `test/lore.mjs` 210 (181); the `data/npcs.json`
+chatter diff is 94 lines added and the seven `builtProps` entries 113. Facts
+by kind: 24 `history`, 15 `person`, 9 `place`, 7 `belief`, 6 `rumour`; six
+contradiction pairs, every one with a `belief` or a `rumour` on one side; the
+same two facts untold on purpose. All ten suites green (`npm test`, in this
+container with its headless Chromium): `plan-vs-scene.mjs` 286 pieces (279
+before this pass), all within 0.01 m of the plan; `built.mjs` green;
+`npm run build` green, `dist/` 52 MB. `npm run play` was not run and could
+not be (#53); as with #555, nothing here moves the player or a render, so the
+gap is that nobody has read the thirteen with eyes rather than a Node
+assertion, and the chatter pool is still unspent by the game.
+

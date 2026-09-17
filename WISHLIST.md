@@ -129,13 +129,14 @@ mostly heard: the bell was the obvious one, and the next twenty are ambient.
 
 ### 3. Lore: the castle has a history, and the player can read it
 
-**Shipped, rank 6, 2026-09-16 (#551 to #555).** The mystery is one night; the
-castle now carries forty years of building and a war before it, in a
-validated canon, six documents the player can read, and a chatter pool for
-the twelve. What is below is what shipped and what is still open.
+**Shipped, rank 6, 2026-09-16 (#551 to #555), reviewed and expanded
+2026-09-17 (#556 to #559).** The mystery is one night; the castle now carries
+forty years of building and a war before it, in a validated canon written
+against one timeline, thirteen documents the player can read, and a chatter
+pool for the twelve. What is below is what shipped and what is still open.
 
 **The world is invented, and it leans into the fantasy** (#549, Devon's
-answer to question 1), and stayed invented: `data/lore.json`'s thirty-one
+answer to question 1), and stayed invented: `data/lore.json`'s sixty-one
 facts name a kingdom, Vantry, two Kings across the forty years (Aldous, who
 fought the March War and began the works; his son Osric, who reigns now and
 whose coin the Sunder War is still spending), and two saints (Osyth, the
@@ -154,24 +155,40 @@ in, every one of them a `belief` or a `rumour` the game never confirms.
   contradiction between two facts neither of which is a `belief` or a
   `rumour`, and a document placed somewhere permanently unreachable all fail
   the suite; a fact with no source is reported as untold rather than failed
-  on. `test/lore.mjs` is the tenth suite. The validator caught a real
+  on. A document's slab is one placement written twice, in
+  `data/documents.json` and in `data/scene-config.json`'s `builtProps`, and
+  the validator fails if the two copies differ by a tile, a base, a size or
+  a material (#557). `test/lore.mjs` is the tenth suite. **The canon has a
+  timeline** (#556), in years of the works, written into `data/lore.json`'s
+  own comment, and every `history` and `person` fact is held to it by hand:
+  the review that added it found three facts that did not fit each other and
+  two `npc` sources that named a line which did not say the fact. The validator caught a real
   authoring mistake before a single synthetic break was written: two facts
   claimed a document as a source that the document's own `cites` did not
   name back.
-- **Documents: six of them, shipped.** The works ledger (Clerk of Works'
-  office), the chaplain's obituary roll (his chamber), the porter's gate book
-  (his lodge), a builder's graffito cut into the floor at the top of the
-  Kitchen Tower's stair (the garrison dormitory), a gravestone in the chapel
-  floor (Sir Walter Esturmy, the Constable before this one), and the King's
-  writ (the muniment room). Each is a built slab — no new asset, the same
+- **Documents: thirteen of them, shipped.** The old works ledgers (Clerk of
+  Works' office; the open ledger of this year is the mystery's own evidence
+  in the muniment room, which is why these are the closed ones), the
+  chaplain's obituary roll (his chamber), the porter's gate book (his lodge),
+  a builder's graffito cut into the floor at the top of the Kitchen Tower's
+  stair (the garrison dormitory), a gravestone in the chapel floor (Sir Walter
+  Esturmy, the Constable before this one), the King's writ (the muniment
+  room), and, from #557, the foundation stone against the cross-wall in the
+  outer ward, the engineer's drawing (the Clerk's chamber), the cook's slate
+  (the kitchen), the exchequer's letters on the Steward's floor, the lodge's
+  ordinances on a board at its post, the bakers' notches by the oven, and the
+  watch-bill in the guardroom. Each is a built slab — no new asset, the same
   pattern the cloak and the walk-bar already used — with a `read` verb that
   opens the dialogue overlay and files itself into the journal's new tab,
   **Things read**, which persists through a reload: the save moved to
-  version 3 for it (`read: []`, #36, #37). Still open: the gaol roll (already
-  on rank 4's path), the cook's accounts, the steward's letters, the mason's
-  own marks cut into the stone elsewhere, and more gravestones.
+  version 3 for it (`read: []`, #36, #37). Still open: the gaol roll (it is
+  increment 3's evidence, not lore, and stays on rank 4's path), more
+  gravestones (the chapel floor is full; the east barbican garden has no
+  walkable cell, so a stone there would be unreachable, and the garden being
+  walkable is a castle question before it is a lore one), and the mason's own
+  marks cut into stone elsewhere than the dormitory.
 - **Chatter: shipped, for the twelve, not the fifty.** `data/npcs.json`
-  carries an eighteen-pair pool keyed by ward then watch, each pair naming
+  carries a twenty-seven-pair pool keyed by ward then watch, each pair naming
   its two speakers and, where it tells one, a lore id. It validates against
   each speaker's own `ward` field, not the schedule's exact station, which is
   this row's own recommended-and-taken open call — a later pass could hold it
@@ -183,7 +200,16 @@ in, every one of them a `belief` or a `rumour` the game never confirms.
   King who is not there (Osric) and whose money is late (the Sunder War),
   with the March's own people supplying the labour and, within a generation,
   its own master masons (Hywel is the fourth). That much is Conwy's shape and
-  it stays; the names on it are the game's own.
+  it stays; the names on it are the game's own. #556 to #559 added the
+  engineer who drew it and the cross-wall he put in on second thought, the
+  town's road, quay and fair, the seat at Caernarfon the sheet goes to, the
+  Stockhouse Tower as the gallows (told by the epilogues, the first use of
+  that source kind), and a person fact for most of the twelve, each written
+  to fit what `mystery.json` already says about them: eleven years married,
+  eleven years cooking, eleven days in the cell, eleven miles to go.
+  **The lore names no object of the mystery** (#559): the lead, the passes,
+  the cloak, the lantern and the summons are not in `data/lore.json` and are
+  not to be, because the lore sits around the mystery and never inside it.
 - **Still open.** The chaplain's sermon at Vespers and a song in the hall at
   Sext, the two set pieces where lore would be performed rather than read,
   each its own pool so a second day does not repeat the first. And facts

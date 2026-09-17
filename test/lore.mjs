@@ -5,14 +5,17 @@
 // Exits non-zero on any failure. In the CI matrix, Node only, cheap: no
 // browser, no build.
 //
-// WHY THIS EXISTS. data/lore.json is thirty-odd invented facts, six documents
-// and a chatter pool of eighteen pairs, and every cross-reference among them
-// is exactly the kind of mistake that is silent on the screen: a source
-// citing a document that does not cite it back opens a reading pane with no
-// journal entry to show for it, and a contradiction between two `history`
+// WHY THIS EXISTS. data/lore.json is sixty-odd invented facts, thirteen
+// documents and a chatter pool of twenty-seven pairs, and every cross-reference
+// among them is exactly the kind of mistake that is silent on the screen: a
+// source citing a document that does not cite it back opens a reading pane
+// with no journal entry to show for it, a contradiction between two `history`
 // facts is the canon disagreeing with itself in the one kind it promised not
-// to. src/lore.js is the net; this suite proves it actually catches what it
-// claims to (#34), the same discipline test/save.mjs and test/mystery.mjs use.
+// to, and a document whose slab in documents.json is not the slab
+// scene-config.json builds is a prompt on one spot and a room check on
+// another (#557). src/lore.js is the net; this suite proves it actually
+// catches what it claims to (#34), the same discipline test/save.mjs and
+// test/mystery.mjs use.
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -30,8 +33,9 @@ const npcsFile = read('data/npcs.json');
 const npcs = npcsFile.cast;
 const chatter = npcsFile.chatter;
 const mystery = read('data/mystery.json');
+const { builtProps } = read('data/scene-config.json');
 
-const args = { documents, npcs, chatter, mystery };
+const args = { documents, npcs, chatter, mystery, builtProps };
 
 let failures = 0;
 const fail = (msg) => { console.log(`  FAIL  ${msg}`); failures++; };
@@ -46,8 +50,12 @@ console.log('the canon, as shipped');
 {
   const problems = validateLore(lore, args);
   check(problems.length === 0, 'validates clean', JSON.stringify(problems));
-  check(lore.facts.length >= 25, `at least twenty-five facts (${lore.facts.length})`);
-  check(documents.length === 6, `six documents (${documents.length})`, documents.map((d) => d.id).join(', '));
+  check(lore.facts.length >= 60, `at least sixty facts (${lore.facts.length})`);
+  check(documents.length === 13, `thirteen documents (${documents.length})`, documents.map((d) => d.id).join(', '));
+  const pairs = Object.values(chatter).flatMap((w) => Object.values(w)).flat();
+  check(pairs.length === 27, `twenty-seven chatter pairs (${pairs.length})`);
+  const told = new Set(lore.facts.flatMap((f) => f.sources.map((s) => s.kind)));
+  check(['document', 'npc', 'chatter', 'epilogue'].every((k) => told.has(k)), 'all four source kinds are used, the epilogue included', [...told].join(', '));
   const kinds = new Set(lore.facts.map((f) => f.kind));
   check(['history', 'person', 'place', 'belief', 'rumour'].every((k) => kinds.has(k)), 'all five kinds are used', [...kinds].join(', '));
 }
@@ -136,7 +144,7 @@ console.log('a contradiction between two facts that are not belief or rumour');
 /* ------------------------------------------------ 6: an unreachable document --- */
 console.log('a document nobody can reach');
 {
-  check(validateLore(lore, args).length === 0, 'as shipped, all six documents sit somewhere the player can reach');
+  check(validateLore(lore, args).length === 0, 'as shipped, all thirteen documents sit somewhere the player can reach');
   const badDocs = clone(documents);
   badDocs.find((d) => d.id === 'kings-writ').room = 'cell';
   const problems = validateLore(lore, { ...args, documents: badDocs });
@@ -147,6 +155,27 @@ console.log('a document nobody can reach');
   const badRoom = clone(documents);
   badRoom.find((d) => d.id === 'gate-book').room = 'nowhere-at-all';
   check(names(validateLore(lore, { ...args, documents: badRoom }), 'gate-book: in no room'), 'a room id that does not exist at all is caught the same way');
+}
+
+/* ------------------------------------------- 8: one slab, written twice --- */
+console.log('a document and its slab');
+{
+  check(validateLore(lore, args).length === 0, 'as shipped, every document is the slab scene-config.json builds for it');
+  const moved = clone(builtProps);
+  moved.find((b) => b.read === 'gate-book').tile[0] += 0.25;
+  const problems = validateLore(lore, { ...args, builtProps: moved });
+  check(names(problems, 'gate-book: data/documents.json and the builtProps entry gate-book describe different slabs (tile'), 'a slab nudged a quarter of a metre in scene-config.json alone', problems.join(' | '));
+  const thinner = clone(builtProps);
+  thinner.find((b) => b.read === 'gravestone').size[1] = 0.1;
+  check(names(validateLore(lore, { ...args, builtProps: thinner }), 'gravestone: data/documents.json and the builtProps entry gravestone describe different slabs (size'), 'a slab given a different height in scene-config.json alone');
+  const recoloured = clone(builtProps);
+  recoloured.find((b) => b.read === 'kings-writ').material = 'oak';
+  check(names(validateLore(lore, { ...args, builtProps: recoloured }), 'describe different slabs (material "parchment" vs "oak")'), 'a slab given a different material in scene-config.json alone');
+  const unbuilt = builtProps.filter((b) => b.read !== 'watch-bill');
+  check(names(validateLore(lore, { ...args, builtProps: unbuilt }), 'watch-bill: no builtProps entry in data/scene-config.json carries read: "watch-bill"'), 'a document with no slab at all');
+  const orphan = [...clone(builtProps), { id: 'ghost', read: 'ghost', material: 'oak', tile: [0, 0], base: 0, size: [0.1, 0.1, 0.1] }];
+  check(names(validateLore(lore, { ...args, builtProps: orphan }), 'ghost: builtProps entry carries read: "ghost", which is not a document'), 'a slab whose read id is not a document');
+  check(validateLore(lore, { ...args, builtProps: undefined }).length === 0, 'and without builtProps the check is skipped rather than failed, so a caller with no scene config still validates the rest');
 }
 
 /* --------------------------------------------------------- 7: chatter --- */

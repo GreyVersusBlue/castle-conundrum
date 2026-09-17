@@ -1,11 +1,11 @@
 // lore.js — the canon (data/lore.json) as data, validated without a page. No
 // DOM, no three, no timers, in the style of src/mystery.js: `validateLore`
 // reads the canon against data/documents.json, data/npcs.json's `cast` and
-// `chatter`, and data/mystery.json, and returns every problem it finds, each
-// naming the id it is about. `untoldFacts` is a separate, non-failing report:
-// a fact with no source is allowed (WISHLIST.md, theme 3), and a check that
-// only prints is not a check (#13), so "untold" is never folded into the
-// list `validateLore` returns.
+// `chatter`, data/mystery.json and data/scene-config.json's `builtProps`, and
+// returns every problem it finds, each naming the id it is about.
+// `untoldFacts` is a separate, non-failing report: a fact with no source is
+// allowed (WISHLIST.md, theme 3), and a check that only prints is not a check
+// (#13), so "untold" is never folded into the list `validateLore` returns.
 //
 // WHY A FACT NEEDS A SOURCE TO BE "TOLD". Forty years of history is easy to
 // invent and easy to leave unreachable: a fact nobody ever says, in no
@@ -78,13 +78,19 @@ function indexChatter(chatter, { npcs, mystery, problems }) {
  * unless one of them is a `belief` or a `rumour`, and every document sits
  * somewhere the player can actually reach.
  *
- * @param lore      parsed data/lore.json
- * @param documents parsed data/documents.json's `documents`
- * @param npcs      data/npcs.json's `cast`
- * @param chatter   data/npcs.json's `chatter`
- * @param mystery   parsed data/mystery.json, for rooms, watches and epilogue keys
+ * @param lore       parsed data/lore.json
+ * @param documents  parsed data/documents.json's `documents`
+ * @param npcs       data/npcs.json's `cast`
+ * @param chatter    data/npcs.json's `chatter`
+ * @param mystery    parsed data/mystery.json, for rooms, watches and epilogue keys
+ * @param builtProps data/scene-config.json's `builtProps`, or undefined to skip
+ *                   the slab check (#557): a document and the `builtProps`
+ *                   entry carrying `read: <its id>` have to describe one slab,
+ *                   tile, base, size and material alike, because the reading
+ *                   pane opens on the entry and the room check above runs on
+ *                   the document, and two copies of one placement drift.
  */
-export function validateLore(lore, { documents, npcs, chatter, mystery } = {}) {
+export function validateLore(lore, { documents, npcs, chatter, mystery, builtProps } = {}) {
   const problems = [];
   const say = (m) => problems.push(m);
   if (!lore || typeof lore !== 'object') return ['lore is not an object'];
@@ -116,6 +122,34 @@ export function validateLore(lore, { documents, npcs, chatter, mystery } = {}) {
     else if (neverOpens.has(d.room)) say(`${d.id}: placed in ${d.room}, which is barred and behind no lock that ever opens — nobody can reach it`);
     for (const id of asList(d.cites)) {
       if (!factsById.has(id)) say(`${d.id}: cites ${id}, which is not a fact in data/lore.json`);
+    }
+  }
+
+  // The slab: one placement, written twice (#557). documents.json carries it so
+  // the room check above can run without the scene config; scene-config.json
+  // carries it because that is where the builder reads slabs from. Neither
+  // copy is allowed to move without the other.
+  if (Array.isArray(builtProps)) {
+    const byRead = new Map();
+    for (const b of builtProps) {
+      if (!b?.read) continue;
+      if (byRead.has(b.read)) say(`${b.read}: two builtProps entries carry read: ${JSON.stringify(b.read)} (${byRead.get(b.read).id} and ${b.id})`);
+      byRead.set(b.read, b);
+    }
+    const sameList = (a, b) => Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((v, i) => Math.abs(v - b[i]) < 1e-9);
+    for (const d of docs) {
+      if (!d || !d.id) continue;
+      const b = byRead.get(d.id);
+      if (!b) { say(`${d.id}: no builtProps entry in data/scene-config.json carries read: ${JSON.stringify(d.id)}, so nothing in the castle can be read as it`); continue; }
+      const drift = [];
+      if (!sameList(d.tile, b.tile)) drift.push(`tile ${JSON.stringify(d.tile)} vs ${JSON.stringify(b.tile)}`);
+      if ((d.base || 0) !== (b.base || 0)) drift.push(`base ${d.base || 0} vs ${b.base || 0}`);
+      if (!sameList(d.size, b.size)) drift.push(`size ${JSON.stringify(d.size)} vs ${JSON.stringify(b.size)}`);
+      if (d.material !== b.material) drift.push(`material ${JSON.stringify(d.material)} vs ${JSON.stringify(b.material)}`);
+      if (drift.length) say(`${d.id}: data/documents.json and the builtProps entry ${b.id} describe different slabs (${drift.join('; ')})`);
+    }
+    for (const [read, b] of byRead) {
+      if (!docsById.has(read)) say(`${b.id}: builtProps entry carries read: ${JSON.stringify(read)}, which is not a document in data/documents.json`);
     }
   }
 
