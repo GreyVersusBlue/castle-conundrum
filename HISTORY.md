@@ -3599,3 +3599,124 @@ against 795.31 before this row — the editor is not in it.
 by nothing. Whether 280 px of monospace in the top-left corner is usable beside
 the HUD, and whether the wireframe marker reads as a marker, are questions for
 a machine with a GPU and a person at it (#53).
+
+## A castle to get lost in: the map (2026-09-17)
+
+**Ranked row 10, on `claude/hopeful-feynman-mdnahz`.** The map half of the
+row's next increment, which `SPECS.md` said waited on nothing and a container
+could start; the town half still waits on rank 4's yard. Decisions #588 to
+#591. Twelve suites green, `npm run build` green, and `npm run play` was not
+run and could not be (#53).
+
+- **The HUD's room line is the one thing that enters a room** (#588). Until
+  this row `main.js` asked two questions of the same point every frame:
+  `roomAt`, for the line at the top of the screen (#515), and `inRoom` on the
+  one room `mystery.json` makes a clue of, the cross-wall walk, through a
+  `placeClues` list gated on the player walking. `inRoom` is the test
+  `roomAt` settles for every room, so the second question was the first
+  asked narrower. Now the line's own change is the event: when `roomAt`'s
+  answer changes and the answer is a room, `quest.handleEnter(id, level)`
+  runs, and `engine.enter` does both things a room entry does — grants every
+  `L` clue whose source is the room, which is how `walk-crosses` lands, and
+  puts the room on `visited` once, saying so with a `visited` effect the
+  first time and not the second. The manager marks the autosave on that
+  effect the way it does on a clue, so a doorway stepped through twice is one
+  mark and not two. **Open ground is not handed over.** `roomAt` answers
+  `west-barbican`, `outer-ward`, `inner-ward` or `garden` for a point in no
+  room, and none of those is a room the plan builds; `repair` would strip
+  them from the save on the next load, and a set the game writes knowing it
+  will be stripped is not a set. So `here.open` is the gate and the wards are
+  the ground between the rooms, on the map as the space the shapes sit in.
+
+- **The map is the journal's third tab, and it is the plan drawn** (#589).
+  "The castle", beside "What you know" and "Things read" (#551). The list is
+  `src/stations.js`'s new `nav.rooms()`: the plan's 40 rooms, each with the
+  name the HUD's line would show for it, resolved the same way the line
+  resolves it, and the plan's own bounds and disc handed over untouched, so
+  the map is drawn off the numbers the walls are placed by (#500) and nothing
+  computes a second shape. `ui.js` draws one inline SVG per storey, all four
+  on one viewBox so a tower's rooms stack under each other down the page,
+  in world metres with the plan's -z up because `north-walk` is at z -16 and
+  `south-walk` at z 14. A tower room is a `<circle>` on its drum's centre and
+  inner radius; everything else is a `<rect>` on its bounds. A room stood in
+  is filled and named; a room not yet stood in is an outline and its name
+  under the drawing is three dots, because forty named outlines is a
+  gazetteer and a map the player earns is the row's own words for it
+  (`WISHLIST.md` theme 5). The room the HUD names is ringed, off the id
+  `setRoom` now carries beside the text, so "you are here" and the line are
+  one answer. The four storey names live in `ui.js` as words, not in the
+  plan: the plan has levels and the levels are numbers.
+
+- **The save is version 5, and `visited` is `read`'s case** (#590). One room
+  id per room stood in, in the order first entered, after `read` in the
+  schema. Nothing a missing list could contradict, so `repair`'s empty
+  default is right on its own and `migrate`'s line only keeps the field's
+  arrival honest against the number (#37), exactly as #551 argued for `read`.
+  The catalog's rooms come off `data/scene-config.json`'s `rooms`, because
+  that list is what `makePlan` builds the castle's rooms from and nothing
+  else: a room cut from the config is cut from the walls, the HUD, the map
+  and the save on the same load. The key did not move (#36).
+
+- **`test/map.mjs` is the twelfth suite, and what it may not assert** (#591).
+  It is allowed in CI for the reason `touch.mjs` is: the camera is placed,
+  never walked, the render loop runs two frames, and what is read back is a
+  data attribute, so #53 does not bite. The probe stands in a room at its
+  centre, or failing that at one of eight points 2 m round it, and settles
+  on the first point the HUD's own line names the room — because the Great
+  Hall's centre at (-20, 10) is no cell at all (a prop stands on it) and a
+  room is entered only where there is floor. Three rooms make the tour, one
+  of each shape and axis `inRoom` reads: a ground box, a ground disc, a disc
+  two storeys up. It asserts the seams only (#529): that a step reaches the
+  DOM, that the DOM survives a reload through the save (#39), that the ring
+  follows the line, and, once, that a save carrying a room the plan does not
+  build loses it on load. That every room has a name that is not its id,
+  that `nav.rooms()` is the plan's list one for one, that every shape is a
+  box or a disc — those are Node facts and went into `test/layout.mjs`. The
+  reload beat reads the set and not the camera: a placed camera is not a
+  walking one and marks nothing dirty, so where it comes back is the
+  autosave timer's business and the first draft of the suite, which asserted
+  it, failed for exactly that reason.
+
+**Broken on purpose, from a green baseline** (#34). Five breaks, each
+reverted, green again after.
+
+1. `save.js`'s rail replaced with `Array.isArray(s.visited) ? s.visited : []`.
+   `npm test save` exited 1 on three assertions, the first of them `a room
+   the plan does not build is dropped from `visited` (#588), the wards with
+   it: they are ground, not rooms — great-hall, outer-ward, great-hall,
+   oubliette, 7`.
+2. `mystery.js`'s `st.visited.push(room)` deleted. `mystery` and `quest`
+   both exited 1: `and the walk is on `visited`, with a `visited` effect
+   saying so`, `a second step onto it is no effect and no second entry`, and
+   in the manager `and the second step into the same room does not — 2
+   marks`, which is the once-per-room rule failing from the other side.
+   `the first step into a room marks the autosave` stayed green, correctly:
+   the effect still fired, every time.
+3. `nav.rooms()` made to name every room by its id. `layout` exited 1 with
+   forty lines, one per room, the first `"clerk-office" on level 0 would go
+   on the map as "clerk-office": neither mystery.json's rooms nor
+   scene-config.json names it`.
+4. The `quest.handleEnter` call deleted from `main.js`'s room line. `map`
+   exited 1 on twelve assertions, the first `standing in great-hall puts it
+   on the engine's visited set`. Nothing else in CI noticed, which is the
+   point: before this row the cross-wall walk's clue had no check that a
+   page could grant it either.
+5. `ui.js` made to write `data-visited="0"` on every shape. `map` exited 1
+   on five, the first `the map fills in exactly those three`, while `and
+   says so in words — 3 of 40` stayed green because the count is rendered
+   from the same list the attribute was lying about.
+
+**What was measured.** `test/map.mjs` new, 196 lines. `src/ui.js` 438 lines
+to 523, `src/quest-manager.js` 658 to 678, `src/stations.js` 204 to 221,
+`src/save.js` 173 to 184, `src/mystery.js` 1133 to 1148, `src/main.js` 324
+to 324 (a loop out, a comment in). `test/save.mjs` 354 to 383, `test/quest.mjs`
+1003 to 1040, `test/layout.mjs` 1112 to 1137, `test/mystery.mjs` 805 to 812.
+`npm test map` takes about 67 s here, three page loads in it. The bundle is
+798.10 kB against 795.26 before this row; `dist/` did not move.
+
+**What nobody has seen.** The SVG has been read as a DOM and photographed by
+nothing. Whether four storeys of outlines at 620 px wide read as a castle,
+whether a filled disc against a dim outline reads as "been there", and
+whether the ring is visible at all are questions for a screen and a person
+(#53). The stroke widths are `non-scaling-stroke` pixels, 1 and 2, chosen
+by arithmetic.

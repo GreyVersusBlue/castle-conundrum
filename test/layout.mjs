@@ -52,6 +52,7 @@ import { partsOf } from './gltf.mjs';
 import { makePlan, walkability, collidersWith, moveBody, GRID, HEAD_LOW, HEAD_HIGH, BODY_RADIUS, DAY_SETS } from '../src/castle-plan.js';
 import { dayTwoOutcomes, dayTwoCastle } from '../src/mystery.js';
 import { stepClassOf } from '../src/audio.js';
+import { castleNav } from '../src/stations.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, '..');
@@ -466,6 +467,30 @@ console.log('\nthe rooms, against mystery.json');
     const m = mystery.rooms.find(x => x.id === r.id && x.level === r.level);
     if (m && m.ward !== r.ward) fail(`${r.id} is in the ${r.ward} ward in scene-config.json and the ${m.ward} ward in mystery.json`);
   }
+}
+
+/* ------------------------------ 3d2: the map has a name for every room ---
+ * The journal's map (#589) draws src/stations.js's `nav.rooms()`: the plan's
+ * rooms, each with the name the HUD's room line shows. A room the mystery
+ * has not named and the config has not named would go on the map as its id,
+ * `nw-tower-2`, which is a thing a player should never read. And the list is
+ * the plan's list, one for one, so the map can never show a room the walls
+ * do not build. Both are plan facts and belong here, not in the browser (#529).
+ */
+console.log('\nthe map: a name for every room');
+{
+  const named = castleNav(plan, mystery).rooms();
+  if (named.length !== plan.rooms.length) fail(`nav.rooms() lists ${named.length} rooms and the plan builds ${plan.rooms.length}`);
+  else pass(`nav.rooms() is the plan's ${plan.rooms.length} rooms, one for one`);
+  const bare = named.filter(r => !r.name || r.name === r.id || !/[A-Z]/.test(r.name));
+  for (const r of bare) fail(`"${r.id}" on level ${r.level} would go on the map as "${r.name}": neither mystery.json's rooms nor scene-config.json names it`);
+  if (!bare.length) pass('every room has a name that is not its id');
+  const dup = named.filter((r, i) => named.findIndex(x => x.name === r.name) !== i);
+  for (const r of dup) fail(`two rooms would go on the map as "${r.name}"`);
+  if (!dup.length) pass(`and the ${named.length} names are ${named.length} different names`);
+  const noShape = named.filter(r => !r.bounds || (r.shape && r.shape.kind !== 'disc'));
+  for (const r of noShape) fail(`"${r.id}" has nothing the map can draw: bounds ${JSON.stringify(r.bounds)}, shape ${JSON.stringify(r.shape)}`);
+  if (!noShape.length) pass(`every room is a box or a disc the map can draw (${named.filter(r => r.shape?.kind === 'disc').length} discs)`);
 }
 
 /* ------------------------------ 3e: the evidence has something to stand on ---

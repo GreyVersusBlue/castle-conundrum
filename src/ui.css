@@ -207,6 +207,23 @@ button.journal-row:hover { background: rgba(212, 163, 73, 0.18); border-color: v
 }
 .journal-tab.active { color: var(--accent); border-color: var(--accent); background: rgba(212, 163, 73, 0.12); }
 
+/* The map, the journal's third tab (#589): one SVG per storey in world
+   metres, the rooms the plan builds as the shapes the plan gives them. A
+   visited room is filled; the one the HUD names is ringed; the rest are
+   outlines, and their names are withheld under the drawing so the list is a
+   count of what is left rather than a spoiler of where it is. */
+.journal-map-count { color: #b9a884; font-style: italic; margin: 0 0 0.6em; }
+.map-storey { margin-bottom: 1em; }
+.map-storey h3 { font-weight: normal; font-size: 0.85em; letter-spacing: 0.06em; text-transform: uppercase; color: #b9a884; margin: 0.4em 0 0.3em; }
+.map-plan { display: block; width: 100%; height: auto; background: rgba(0, 0, 0, 0.25); border: 1px solid var(--accent-dim); border-radius: 4px; }
+.map-plan .map-room { fill: rgba(0, 0, 0, 0); stroke: var(--accent-dim); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.map-plan .map-room.visited { fill: rgba(212, 163, 73, 0.45); stroke: var(--accent); }
+.map-plan .map-room.here { stroke: var(--parchment); stroke-width: 2; }
+.map-names { display: flex; flex-wrap: wrap; gap: 0.25em 0.6em; margin-top: 0.4em; font-size: 0.8em; }
+.map-names .map-room { color: #7d6d52; }
+.map-names .map-room.visited { color: var(--parchment); }
+.map-names .map-room.here { color: var(--accent); }
+
 /* ---------- The accusation ---------- */
 #accusation-note { color: #d98f6a; font-style: italic; min-height: 1.2em; }
 #accusation-count { color: #b9a884; font-size: 0.8em; letter-spacing: 0; text-transform: none; }

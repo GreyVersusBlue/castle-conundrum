@@ -96,8 +96,11 @@ export class QuestManager {
    * @param onWatch    (watchId, {walk}) => void: the world half of a bell.
    * @param audio      src/audio.js, or anything with `bell()`. Injected the way
    *                   `ui` is, so test/quest.mjs hands in a recorder.
+   * @param rooms      src/stations.js's `nav.rooms()`: every room the plan
+   *                   builds, for the journal's map (BACKLOG.md rank 10). An
+   *                   empty list is a journal with no map tab.
    */
-  constructor({ quest, sideQuests = [], mystery = null, riddle, documents = [], npcs, ui, castle, controlsRef, schedule, restart, saved = null, onChange = null, engine = null, onWatch = null, audio = null }) {
+  constructor({ quest, sideQuests = [], mystery = null, riddle, documents = [], npcs, ui, castle, controlsRef, schedule, restart, saved = null, onChange = null, engine = null, onWatch = null, audio = null, rooms = [] }) {
     this.graph = new QuestGraph(quest, QuestManager.actions);
     this.mystery = mystery;
     this.riddle = riddle;
@@ -113,6 +116,7 @@ export class QuestManager {
     this.engine = engine;
     this._onWatch = onWatch;
     this.audio = audio;
+    this.rooms = rooms;
     // The lock the player last pressed E at. `openLock` unlocks that one, so no
     // door id is written down in this file.
     this._lockAsked = null;
@@ -340,13 +344,16 @@ export class QuestManager {
    * The player has walked into a room. `walk-crosses` is the only clue in
    * mystery.json granted this way, and without this the Clerk's `lady-window`
    * is unreachable in the browser while every Node suite that calls
-   * `engine.enter` directly says it is fine.
+   * `engine.enter` directly says it is fine. Since rank 10's map, main.js
+   * calls this for every room the HUD's room line changes to, and the first
+   * visit to any room is a save-worthy change the same way a clue is: the
+   * engine says so with a `visited` effect, once per room (#588).
    */
   handleEnter(room, level = null) {
     if (!this.engine || !room) return [];
     const effects = this.engine.enter(room, level);
     this._surface(effects);
-    if (effects.some((e) => e.type === 'clue')) this._onChange?.(this._snapshot());
+    if (effects.some((e) => e.type === 'clue' || e.type === 'visited')) this._onChange?.(this._snapshot());
     return effects;
   }
 
@@ -404,10 +411,23 @@ export class QuestManager {
     return ids.map((id) => this.documents.find((d) => d.id === id)).filter(Boolean).map((d) => ({ id: d.id, title: d.title, text: d.text }));
   }
 
+  /**
+   * Every room the plan builds, with whether the player has stood in it, as
+   * the journal's third tab draws them (BACKLOG.md rank 10). The set is the
+   * engine's `visited`, which the save carries and `repair` holds to the
+   * rooms the plan has; the list is the nav's, so a room the plan stops
+   * building leaves the map the same load it leaves the save.
+   */
+  mapJournal() {
+    const visited = new Set(this.engine?.state?.visited ?? []);
+    return this.rooms.map((r) => ({ ...r, visited: visited.has(r.id) }));
+  }
+
   _openJournal() {
     this.ui.openJournal(this.journal(), {
       empty: this.line('empty'), present: null,
       read: this.readJournal(), readEmpty: 'Nothing read yet.',
+      map: this.rooms.length ? this.mapJournal() : null,
     });
   }
 

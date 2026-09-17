@@ -196,6 +196,10 @@ the eight drums carry a room at every level they can, the castle has 40 rooms,
 and nineteen of them are empty. "An empty room is worse than no room" is why
 the row's next step is the map and the town rather than more floors.
 
+**The map shipped on 2026-09-17** (#588 to #591): the journal's third tab,
+the plan's 40 rooms drawn a storey at a time and filled in as they are stood
+in. What is left of the row is the town.
+
 ### 6. Bodies: the thing every row above waits on
 
 **Moved to `BACKLOG.md` rank 11, `SPECS.md`'s "Bodies" section** (#565).

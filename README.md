@@ -22,7 +22,8 @@ the floor above, and a wall walk that runs the whole circuit two storeys up —
 which is the fact the mystery turns on.
 
 **WASD** move · **mouse** look · **Shift** sprint · **E** talk, examine, ring ·
-**J** journal.
+**J** journal: what you know, things read, and a map of the castle that fills
+in room by room as you stand in them.
 
 On a touchscreen: **left thumb** move · **right thumb** look · **push the stick
 over** sprint · one **E** button that says what it will do · **Journal**. The
@@ -68,7 +69,7 @@ Run it on anything you add before you commit it.
 ## The suites
 
 ```
-npm test              # all eleven, cheapest first, non-zero on any failure
+npm test              # all twelve, cheapest first, non-zero on any failure
 npm test layout       # or any subset by name
 ```
 
@@ -77,10 +78,11 @@ Eight of them are Node against source and take seconds: `gltf`, `assets`,
 Chromium over `npm run dev`, waits for the castle to finish building, and diffs
 every placed object's live `Box3` against `src/castle-plan.js`'s box at 0.01 m.
 `touch` drives the same dev server on a 412 x 915 page with a touchscreen and
-taps its way through the HUD. `built` is the one check that loads what
-`npm run build` produced.
+taps its way through the HUD. `map` places the camera in three rooms and reads
+the journal's map back, before and after a reload. `built` is the one check
+that loads what `npm run build` produced.
 
-`npm run play` is the tenth and is not in `npm test`. It opens a real visible
+`npm run play` is the thirteenth and is not in `npm test`. It opens a real visible
 window, takes pointer lock, and plays the whole day with real input — twelve
 people, ten pieces of evidence, three bells, a reload at Sext and the full
 ending — leaving a screenshot per beat in `shots/play/`. It needs a machine

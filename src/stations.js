@@ -180,6 +180,23 @@ export function castleNav(plan, mystery) {
       const name = rooms.get(id)?.name ?? best?.name ?? id;
       return { id, level, name, open: !best };
     },
+    /**
+     * EVERY ROOM THE PLAN BUILDS, for the journal's map (BACKLOG.md rank 10):
+     * the plan's own list, each with the name the HUD's room line would show
+     * for it, resolved the way `roomAt` resolves it — mystery.json's `rooms`
+     * first, the config's own `name` second, the id last. The bounds and the
+     * disc are the plan's and are handed over as they are, so the map is drawn
+     * off the same numbers the walls are placed by (#500) and nothing here
+     * computes a second shape. Open ground is not in it: the wards and the
+     * barbican are what is between the rooms, and the map draws the rooms.
+     */
+    rooms() {
+      return plan.rooms.map((r) => ({
+        id: r.id, level: r.level, ward: r.ward, drum: r.drum,
+        name: rooms.get(r.id)?.name ?? r.name ?? r.id,
+        bounds: r.bounds, shape: r.shape,
+      }));
+    },
     inRoom(roomId, level, x, z, feet) {
       const r = planRooms.get(`${roomId}/${level ?? 0}`);
       if (!r) return false;
