@@ -4083,7 +4083,17 @@ anybody (#53).
    the first `out in the ward, the ward's bed and nothing else —
    {"bed":null,"sounding":[]}`.
 5. The teardown timer set to 0, which is a cut. `map` exited 1 on `and it is
-   a cross-fade: the ward is still sounding under it — hall`.
+   a cross-fade, not a cut: the ward has -19 ms left of a 1200 ms fade`.
+   **This assertion is the third version, and CI wrote the second.** The first
+   stood in the hall with `standIn`, read `sounding` afterwards and wanted two
+   names. It passed here and failed on the PR's first CI run, `— hall`: a
+   software rasteriser took longer than the fade to get from the change to the
+   read, which is a wall-clock assertion under exactly the renderer #53 names.
+   The second read from a requestAnimationFrame in the frame of the change,
+   went green, and then passed break 5 as well, because a 0 ms timer has not
+   run by then either. A fix that leaves the break green is not a fix (#34).
+   `ambience()` now carries how many ms each outgoing bed has left, and the
+   check holds more than half the fade.
 6. The same-bed early return deleted. `map` exited 1 on `the King's Tower top
    room to its first floor is the same bed, and nothing fades —
    {"bed":"tower","sounding":["tower","tower"]}`.

@@ -74,7 +74,7 @@ export function bedOf(sounds, zone) {
 /** A silent stand-in with the same shape, for a caller that has no listener. */
 export const SILENCE = {
   resume() {}, footstep() {}, bell() {}, bellAt() {}, enter() {},
-  ambience() { return { bed: null, sounding: [] }; },
+  ambience() { return { bed: null, sounding: [], fading: [] }; },
   stride() { return Infinity; },
   classesFor() { return new Map(); },
 };
@@ -274,12 +274,14 @@ export function createAudio(listener, sounds) {
     ramp(bed.master.gain, 0, amb.fadeSeconds);
     // A timer and not `onended`: a suspended context never ends anything, and
     // a page that was never started would keep every bed it was ever walked
-    // through.
+    // through. `until` is when that timer fires, for `ambience()`.
+    const ms = amb.fadeSeconds * 1000 + 50;
+    bed.until = performance.now() + ms;
     setTimeout(() => {
       for (const n of bed.running) { try { n.stop(); } catch { /* never started */ } }
       bed.master.disconnect();
       sounding.delete(bed);
-    }, amb.fadeSeconds * 1000 + 50);
+    }, ms);
   };
 
   const enter = (zone) => {
@@ -313,8 +315,18 @@ export function createAudio(listener, sounds) {
      */
     enter,
 
-    /** Which bed is up, and every bed making a noise, for test/map.mjs. */
-    ambience() { return { bed: bedNow?.name ?? null, sounding: [...sounding].map((b) => b.name) }; },
+    /**
+     * Which bed is up, every bed making a noise, and for the ones on their way
+     * out how many ms they have left, for test/map.mjs.
+     */
+    ambience() {
+      const now = performance.now();
+      return {
+        bed: bedNow?.name ?? null,
+        sounding: [...sounding].map((b) => b.name),
+        fading: [...sounding].filter((b) => !b.live).map((b) => ({ name: b.name, msLeft: b.until - now })),
+      };
+    },
 
     /**
      * One footfall of the given class. An unknown class is silent rather than
