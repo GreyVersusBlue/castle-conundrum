@@ -129,8 +129,10 @@ try {
   // A box on the ground, a disc on the ground, and a disc two storeys up: the
   // three shapes the plan has and the two axes `inRoom` reads (bounds and feet).
   const tour = ['great-hall', 'chapel', 'kings-tower-2'];
+  const stood = {}; // where each was stood in, for section 2b to go back to
   for (const id of tour) {
     const at = await standIn(id);
+    stood[id] = at;
     check(!!at, `placed in ${id}, and the HUD's room line says so`, at ? '' : 'no point in or round its centre the HUD calls that room');
     const w = await where();
     check(w.visited.includes(id), `standing in ${id} puts it on the engine's visited set`, w.visited.join(', '));
@@ -148,6 +150,67 @@ try {
   await frames();
   const out = await readMap();
   check(out.here.length === 0 && out.visited.length === tour.length, 'out in the ward: no ring, and the ward is not a room on the map', `${out.here.join(',')} / ${out.visited.length}`);
+
+  /* ------------------------------- 2b: the same change cross-fades the bed --- */
+  // The Sound row's seam. test/layout.mjs check 13 proves in Node that every
+  // zone has a bed; what it cannot see is that main.js hands the room change
+  // to the audio at all, which is one line in the render loop. No speaker is
+  // asked anything (#53): `ambience()` says which beds exist, not what they
+  // sound like.
+  //
+  // THE READ IS IN THE FRAME THE BED CHANGES, NOT AFTER IT. The first version
+  // stood in the hall with `standIn`, then read, and passed on a GPU and
+  // failed in CI: a software rasteriser took longer than the 1.2 s fade to get
+  // from the change to the read, so the ward was already torn down. `hop`
+  // polls from its own requestAnimationFrame, which runs in the same frame as
+  // the render loop's and before any timer can, so what it returns is the
+  // state the change left, however slow the frame was (#53). That cuts both
+  // ways and the second version missed it: a teardown on a 0 ms timer has not
+  // run by then either, so "still sounding" alone passed a cut. `fading`
+  // carries how long each outgoing bed has left, and that is what is held. The waits are
+  // the fade's own length on a timer. Only rooms already on the tour are
+  // stood in, and at the points the tour found, so section 3's counts do not
+  // move.
+  {
+    const fade = await page.evaluate(async () => (await (await fetch('data/sounds.json')).json()).ambient.fadeSeconds);
+    const hop = (p) => page.evaluate((at) => new Promise((resolve) => {
+      const before = window.__audio.ambience().bed;
+      window.__cam.position.set(at.x, at.y, at.z);
+      let n = 0;
+      const look = () => {
+        const now = window.__audio.ambience();
+        if (now.bed !== before || ++n > 120) resolve(now); else requestAnimationFrame(look);
+      };
+      requestAnimationFrame(look);
+    }), p);
+    const settle = () => page.evaluate((ms) => new Promise((r) => setTimeout(r, ms)), fade * 1000 + 300);
+    await settle();
+    const ward = await page.evaluate(() => window.__audio.ambience());
+    check(ward.bed === 'ward' && ward.sounding.join() === 'ward', 'out in the ward, the ward\'s bed and nothing else', JSON.stringify(ward));
+    const hall = await hop(stood['great-hall']);
+    check(hall.bed === 'hall', 'into the Great Hall and the bed is the hall\'s', JSON.stringify(hall));
+    check(hall.sounding.length === 2 && hall.sounding.includes('ward') && hall.sounding.includes('hall'),
+      'and the ward is still sounding under it', hall.sounding.join(', '));
+    // Still there in the frame of the change is true of a cut as well: the
+    // teardown is a timer and no timer has run yet. What makes it a fade is
+    // that the ward has most of `fadeSeconds` left to live.
+    const left = hall.fading.find((f) => f.name === 'ward')?.msLeft ?? 0;
+    check(left > fade * 500, `and it is a cross-fade, not a cut: the ward has ${Math.round(left)} ms left of a ${fade * 1000} ms fade`, JSON.stringify(hall.fading));
+    await settle();
+    const faded = await page.evaluate(() => window.__audio.ambience());
+    check(faded.sounding.join() === 'hall', 'a fade later the ward is torn down and the hall is alone', faded.sounding.join(', '));
+    // Two tower rooms are one bed: a storey climbed is not a fade. Said to the
+    // audio directly, because standing in the first floor would be a fourth room.
+    await hop(stood['kings-tower-2']);
+    await settle();
+    const same = await page.evaluate(() => {
+      window.__audio.enter({ id: 'kings-tower-1', level: 1, drum: 'kings-tower', open: false });
+      return window.__audio.ambience();
+    });
+    check(same.bed === 'tower' && same.sounding.join() === 'tower', 'the King\'s Tower top room to its first floor is the same bed, and nothing fades', JSON.stringify(same));
+    await page.evaluate(() => { window.__cam.position.set(-10, 1.7, 0); });
+    await frames();
+  }
 
   /* ----------------------------------------------- 3: a reload keeps them --- */
   // Where the camera comes back is the autosave's business and not the map's:
