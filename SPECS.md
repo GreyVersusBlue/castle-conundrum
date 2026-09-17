@@ -628,29 +628,57 @@ Everything else in the castle is silent.
 
 ## Side quests
 
-**Rank 8. Size 2+. Two increments shipped on 2026-09-17** (#576 to #581, and
-the journal's tab at #595). `WISHLIST.md` theme 4. The format, the set
-validator and the cook's missing knife are in: `data/quests/` is the
-directory, `data/quests/index.json` names its files because a browser cannot
-read a directory, `validateQuestSet` in `src/quest-graph.js` is the rail, and
-`src/quest-manager.js` runs every file in the set off the same event stream
-the frame hears without a second class. The save is version 4 for `quests`.
-The journal's fourth tab is in too. What is below is what is left.
+**Rank 8. Size 2+. Three increments shipped on 2026-09-17** (#576 to #581,
+the journal's tab at #595, and four more errands at #597 to #599).
+`WISHLIST.md` theme 4. The format, the set validator and the cook's missing
+knife are in: `data/quests/` is the directory, `data/quests/index.json` names
+its files because a browser cannot read a directory, `validateQuestSet` in
+`src/quest-graph.js` is the rail, and `src/quest-manager.js` runs every file
+in the set off the same event stream the frame hears without a second class.
+The save is version 4 for `quests`. The journal's fourth tab is in too, and
+five errands. What is below is what is left.
 
 ### What shipped, in one paragraph
 
 A quest file is the frame's own graph plus `id` (which has to be the file's
-name) and `npc` (whose lines it may change). It has no actions:
-`QuestManager.sideActions` is empty and a file naming any action is refused
-by name. Three set rules hold it apart from the mystery: no stage may put its
-person in a state `mystery.json`'s clue graph owns (#577, and `_syncStates`
-puts a press above a side quest as the second half of the same rule), only
-one quest per person may hold a non-default `dialogueState` (#578, the
-conservative form of "two states at one bell"), and every `on` has to be an
-event the game actually emits. The cook's knife turns on
-`clue:knife-missing`, `clue:knife-found` and `talked:cook`, grants nothing,
-and `test/quest.mjs` proves it by playing the same four presses of E with and
-without the quest and diffing the journals.
+name), `npc` (whose lines it may change) and `ward` (`outer` or `inner`,
+#599). It has no actions: `QuestManager.sideActions` is empty and a file
+naming any action is refused by name. Three set rules hold it apart from the
+mystery: no stage may put its person in a state `mystery.json`'s clue graph
+owns (#577, and `_syncStates` puts a press above a side quest as the second
+half of the same rule), only one quest per person may hold a non-default
+`dialogueState` (#578, the conservative form of "two states at one bell"),
+and every `on` has to be an event the game actually emits. A fourth holds
+every file to a ward. The cook's knife turns on `clue:knife-missing`,
+`clue:knife-found` and `talked:cook`, grants nothing, and `test/quest.mjs`
+proves it by playing the same four presses of E with and without the quest
+and diffing the journals; the four that followed are held to the same diff
+in one walk through all five.
+
+### The five errands (#576, #598)
+
+| File | Person | Ward | Turns on | The favour |
+| --- | --- | --- | --- | --- |
+| `cooks-knife.json` | Marged | outer | `clue:knife-missing`, `clue:knife-found`, `talked:cook` | She points back at the lantern. |
+| `ladys-hawk.json` | Lady Alys | inner | `talked:lady`, `clue:tally-on-walk` | What the south walk is, said sooner by somebody else. |
+| `candle-count.json` | Father Anselm | inner | `talked:chaplain`, `clue:chapel-candle` | How long a man stood at the turn of his stair; and "put it to me". |
+| `sentrys-dice.json` | Dafydd | outer | `talked:sentry`, `talked:porter`, `press:porter:door-unbarred` | One more man who knew about the bar, after the porter has said it. |
+| `hywels-chisel.json` | Ieuan | outer | `talked:apprentice`, `talked:prisoner`, `press:prisoner:prisoner-inside` | Two endings: his own edge, or the forge at Prime. |
+
+Every state a stage names is one the clue graph does not own, and once a
+press moves the person the press is what is heard (#578). Each person's
+`default` got a fourth line that opens the thread on the first conversation.
+
+### The catch-up (#597)
+
+`clue:<id>` fires once. A quest reaching a stage that waits on a clue the
+player already holds is walked forward, at the end of the batch of effects
+that moved it (`_surface` is the batch; `_settleSide` after its loop), through
+every such transition until a stage waits on something not yet done, with one
+toast for the stage it ends up in. `talked:` is never caught up. A save is
+settled the same way once at construction. The knife shipped without this
+and a barrel opened before Marged mentioned it stranded the thread in
+`hunting` for the day.
 
 ### What the tab shipped as (#595)
 
@@ -659,23 +687,31 @@ and the map (#589). `QuestManager.questJournal()` is what `_openJournal`
 hands the UI: every quest whose stage is no longer its `start`, with the
 objective of the stage it is at now, and null rather than an empty list when
 there are none, so the tab is not offered at all in a castle where nobody has
-asked for anything. `openQuests()` grew a `started` flag for it and is
-otherwise what #576 left. A terminal quest goes under a Done heading with its
-title struck through rather than off the page. The Present picker inside a
+asked for anything. A terminal quest goes under a Done heading with its title
+struck through rather than off the page. The Present picker inside a
 conversation is still clues alone.
 
 ### Scope, next increment
 
-- **The next quests, four per ward per pass** (#550, question 7's own
-  recommendation, unchanged). `WISHLIST.md` names the dozen. Several of them
-  — the apprentice's tool from the smith who is in gaol, the porter's boy,
-  the clerk — want rank 6's populace or an NPC state this repo does not
-  compute yet; the ones that want neither come first, the way the cook's
-  knife did.
-- **Reputation by ward** is two save-carried counters and a chatter line or
-  two, and stays deferred until there are enough quests for a moved counter
-  to be visible. It is a version bump on `save.js` when it comes, the same
-  shape `quests` was.
+- **Reputation by ward.** Two counters the save carries, `outer` and
+  `inner`, one moved per errand finished in that ward (the file's `ward` is
+  which, #599). A version bump on `save.js` to 6 through `migrate`, with a
+  rail in `repair` that clamps each to the number of terminal quests in that
+  ward (#36, #37). What reads them: a chatter line or two per ward keyed to a
+  threshold, and one line in one closing pane. Not a system, a tint
+  (`WISHLIST.md`). Five errands is enough for a moved counter to be seen,
+  which is what the deferral waited on.
+- **The seven left of the dozen.** `WISHLIST.md` named eight and five are
+  written. Of the three it named, one wants nobody new: a letter for the town
+  that needs a gate pass, and the Steward signs gate passes (Thomas Wykes is
+  at the cart at Terce and in the town by Sext, so it is a Terce errand on
+  him, or it is the porter's, whose one owned state is `admits`). Two want
+  rank 6's populace, because their person is not one of the twelve: a child's
+  dog in the east garden, and the porter's boy who wants his letters from the
+  clerk, who is the player. The four it never named are the next session's
+  to name, one voice each on the seven people no errand has yet (the
+  Constable, the Steward, the Clerk, the porter, Nest, Madoc, the merchant),
+  in any state the clue graph does not own.
 - **A second quest on one person**, if one is ever wanted, is what replaces
   #578's conservative rule with a real co-activity check. Nothing needs it
   yet and nothing should invent it before something does.
@@ -687,8 +723,11 @@ conversation is still clues alone.
 - A new quest shows up on the tab the moment it leaves its start stage, with
   no change to `src/ui.js`: the tab reads the graph, so a quest file is still
   the whole of a quest.
+- The walk through every errand with and without the set leaves the identical
+  journal (`test/quest.mjs`, the last block of "the next four").
 - The journal assertion is a DOM one and the save assertion is not: what a
-  reload has to survive is the stage, which version 4 already carries (#39).
+  reload has to survive is the stage, which version 4 already carries (#39),
+  and the counters, when they come.
 
 ### Open calls
 
@@ -699,21 +738,28 @@ conversation is still clues alone.
 - **Where a quest's objective lives when the tab exists.** Recommended the tab
   and the toast both, not the tracker, and that is what shipped (#595): the
   tracker is one line and it is the frame's (#393, #579).
+- **What a fourth `default` line costs.** Each errand opens on the fourth
+  line of a `default` set that was three, so a first conversation is one line
+  longer. Recommend leaving it: the line is last, so a player re-reading the
+  first three is not made to; and the alternative, a stage that opens on a
+  bell so the person starts on the errand's own lines, hides the mystery's
+  statements behind an errand, which is the thing #550 question 6 forbids.
 
 ### Dependencies
 
-- Rank 6's populace unlocks quests in `WISHLIST.md`'s dozen that this
-  increment could not reach; it does not block the quests that need nobody
-  new. The lore row that would have unlocked the rest has closed (#592 to
-  #596), and what it left for a quest to lean on is `data/lore.json`'s
-  sixty-one facts, thirteen documents and four performed pieces.
+- Rank 6's populace unlocks the four errands in `WISHLIST.md`'s dozen whose
+  person is not one of the twelve; it does not block the three that need
+  nobody new, nor reputation. What the lore row left for a quest to lean on
+  is `data/lore.json`'s sixty-five facts, thirteen documents and four
+  performed pieces.
 
 ### Constraints
 
 - #550 question 6 (a side quest never gates or removes a mystery clue), held
   by `validateQuestSet` and by `_syncStates`' order.
 - #500 (a quest prop that is not already a plan piece needs one, tagged and
-  diffed like anything else). Nothing in the first increment added a prop.
+  diffed like anything else). No increment yet has added a prop; the merlin
+  is a line and not a bird.
 - #36, #37 (the key does not move; a new field is a version bump through
   `migrate` and a rail in `repair`).
 - #13, #34 (the set validator exits non-zero and every rule gets broken on
