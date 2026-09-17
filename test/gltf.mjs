@@ -32,7 +32,7 @@ const COMPONENT = {
 const NUM = { SCALAR: 1, VEC2: 2, VEC3: 3, VEC4: 4 };
 
 /* --------------------------------------------- EXT_meshopt_compression ---
- * tools/encode-assets.mjs puts every Poly Haven prop and all three NPC bodies
+ * tools/encode-assets.mjs puts every Poly Haven prop and every NPC body
  * through meshopt (#508), and meshopt is not a container the raw reader below
  * can see through: a compressed bufferView carries no bytes of its own. It
  * names a byte range in some OTHER buffer, a mode and a filter, and its real
