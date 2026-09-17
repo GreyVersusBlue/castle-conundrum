@@ -3869,3 +3869,126 @@ this file picked, and whether "Asked of you" reads as a tab or as a scold are
 all questions for a screen and a person (#53). The pacing is one arithmetic
 expression in `src/quest-manager.js` and the band is one rule in `src/ui.css`,
 which is where somebody with a GPU should start.
+
+## Side quests: four more errands, and the catch-up (2026-09-17)
+
+**Rank 8's next increment, on `claude/intelligent-bell-4ehggz`.** Four of
+`WISHLIST.md`'s dozen, two per ward, on four people the cook's knife never
+touched, and the rule the second of them forced out of the manager. Decisions
+#597 to #599. Twelve suites green, `npm run build` green, and `npm run play`
+was not run and could not be (#53).
+
+- **A clue the player already holds is an event that already happened**
+  (#597). `clue:<id>` fires once, when the engine grants it; the barrel says
+  `gone` on a second E. So a side quest that reached a stage waiting on a
+  clue the player found earlier waited for the rest of the day. The knife
+  shipped with that hole (#576): open the bakehouse barrel before Marged
+  mentions her knife and the thread opened on `hunting` and never left it,
+  because the one event that moves it had fired an hour before the stage
+  existed to hear it. The hawk would have had it worse, since the south walk
+  is somewhere the mystery sends a player long before a lady mentions a
+  bird.
+
+  `QuestManager._catchUp` is the fix: on arriving anywhere, a quest walks
+  forward through every `clue:` transition the new stage has for a clue the
+  engine holds, and again for the stage that puts it in, until a stage waits
+  on something the player has not done. Conversations are not caught up:
+  `talked:` is a thing that happens, not a thing the player has, and
+  `test/quest.mjs` says so with the porter spoken to before the sentry ever
+  asked. **And it runs at the end of the batch, not on the move.** The first
+  version ran it inside `_dispatchSide` and the knife went `unheard`,
+  `hunting`, `found` on the clue and `settled` on the `talked:cook` three
+  effects later, in the one conversation where Marged first mentioned the
+  knife: the player heard her `default` lines and the errand was over, with
+  the two line sets that *are* the errand never said. `_surface` is the
+  batch now (`_inBatch` around its loop, cleared in a `finally`), an event
+  inside it marks a mover, and `_settleSide` after the loop does the
+  catch-up, one toast for the stage the quest ended up in, and the save. The
+  break that proved the order is number 3 below.
+
+  A save is settled the same way once at construction, so a save written
+  before this decision that is sitting in exactly that stage comes back
+  moved; and that changed one assertion: a save whose stage repair reset to
+  `start` (#581) but whose clues are still held now comes back at `found`,
+  one conversation from its end, rather than at `unheard` with an event it
+  can never hear again. The save key did not move and the version is still
+  5 (#36): a stage id is a stage id.
+
+- **Four errands, and the smith's answer stays in the smith's mouth** (#598).
+  `data/quests/` is five files. `ladys-hawk.json`: Lady Alys's merlin is
+  loose on the south walk parapet over the Bakehouse Tower door, the sentry
+  will not leave the north walk for a lady's bird, and the place she sends
+  the player is the tally stick's place, so the thread turns on
+  `clue:tally-on-walk`; the bird comes back on her own and what the lady
+  says instead is what the south walk is, which is `walk-crosses` said
+  sooner by somebody else. `candle-count.json`: Father Anselm's column is
+  one tallow short since Compline and the fourth candle is the mystery's
+  `candle` in the pricket at the first turn of his own stair, so the thread
+  turns on `clue:chapel-candle`; what he says for closing the column is what
+  a pooled candle's worth of tallow means about how long somebody stood at
+  the turn, and not what he heard, which is the press's. `sentrys-dice.json`:
+  Dafydd owes Gwilym four pence thrown for at the porter's table at Lauds,
+  the errand is `talked:porter` and back, and the branch is the mystery's:
+  only after `press:porter:door-unbarred` does he say he has known since
+  Lammas that the bar leans on the wall and owed the man four pence and
+  held his tongue. `hywels-chisel.json`: Hywel's good chisel went to Madoc
+  for the Michaelmas edge a week before Madoc went up the tower.
+
+  The chisel is the call. `SPECS.md` had it down as wanting rank 6's
+  populace or an NPC state the game does not compute, and what it actually
+  wanted was for Madoc's answer to be Madoc's: his lines are the mystery's
+  and a quest changes one person's, so what Ieuan hears back from the bars
+  is what the player heard, the lead, the cart, the Clerk's seal and not one
+  word about a chisel. That is one ending, `own-edge`, the boy on the lodge
+  stone. The other is the roll's: `press:prisoner:prisoner-inside` is the
+  player proving Madoc was out to the forge by day, and a smith who works at
+  the forge by day left the chisel where he works. Two terminals in one
+  graph, which `validateQuest` has allowed since #393 and nothing had used.
+  Every stage's state is one the clue graph does not own (`window`, `heard`,
+  `forge` are all refused by name); each person got a fourth `default` line
+  that opens the thread on the first conversation, the way Marged's did; the
+  sentry cannot open his before Terce because the schedule has him asleep at
+  Prime and `handleInteract` says so without an event. The walk through all
+  five with and without them leaves the identical journal, and every
+  pressed state still wins over its errand (#578). `data/lore.json` gained
+  four facts sourced from the new states, 61 to 65.
+
+- **A side quest names its ward** (#599). `ward` is which of the two counters
+  reputation-by-ward will move when it comes, and the knife already carried
+  one; `validateQuestSet` now refuses a file without it or with one the
+  castle does not have (`WARDS` is `outer` and `inner`, exported). Three
+  outer, two inner. Reputation itself stays deferred: five errands is enough
+  for a moved counter to be visible, and it is the next session's, because
+  it is a version bump on `save.js` and a chatter line or two and this PR
+  was the errands.
+
+**Broken on purpose, from a green baseline** (#34). Four breaks, each
+reverted, green again after.
+
+1. `_settleSide`'s `this._catchUp(q)` commented out. `quest` exited 1 on five,
+   including `then the lady: the errand opens already past the walk, because
+   the walk already happened — ... Go up and look for her. / hawk-loose` and
+   `the barrel before Marged: the knife thread opens at `found`, not stuck in
+   `hunting` waiting for a barrel that says gone — knife-hunting`.
+2. The `WARDS` check turned into `if (false)`. `quest` exited 1 on two:
+   `validateQuestSet rejects a quest with no ward — said nothing` and `and one
+   in a ward the castle does not have — said nothing`.
+3. `_catchUp(q)` put back inside `_dispatchSide`, on the move. `quest` exited
+   1 on one: `the barrel before Marged: the knife thread opens at `found` ...
+   — knife-settled`, which is the whole errand over in one conversation.
+4. The toast put back on the move as well as the settle. `quest` exited 1 on
+   `with one toast, for the stage the player is actually in`, showing both:
+   `... Go up and look for her. | ... Go back and tell Lady Alys what sits
+   there.`
+
+**What was measured.** `data/quests/` 1 file to 5, 308 lines in all.
+`data/npcs.json` 673 lines to 752 (four `default` lines and fourteen states),
+`data/lore.json` 556 to 593. `src/quest-manager.js` 808 to 887,
+`src/quest-graph.js` 368 to 375. `test/quest.mjs` 1243 to 1473 and its
+`check` count 238 to 298. Twelve suites green.
+
+**What nobody has seen.** Whether a lady who says "Ask." at the end of an
+errand reads as a nudge or a scold, and whether four `default` lines is one
+too many to click through on a first conversation, are questions for a
+screen and a person (#53). The fourth line is the last in each set, so a
+player who has the first three by heart is not made to re-read them.

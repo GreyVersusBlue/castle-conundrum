@@ -173,6 +173,18 @@ spec as its own open call recommended, and every row below it moved up one.
 tab, carrying every side quest the player has met and keeping the finished ones
 under a Done heading rather than dropping them off the page.
 
+**Four more errands shipped on 2026-09-17** (#597 to #599): Lady Alys's
+merlin, the chaplain's candle account, the sentry's four pence at dice and
+Hywel's good chisel, two per ward, on four people the knife never touched,
+each turning on events the mystery already emits and granting nothing. The
+chisel was specced as waiting on a populace and waited on nothing once the
+smith's answer was left in the smith's mouth. The rule it forced is #597: a
+quest reaching a stage that waits on a clue the player already holds is
+walked forward at the end of the batch that moved it, which closes the
+barrel-before-Marged hole the knife shipped with. `validateQuestSet` holds
+every file to a `ward`. **Rank 8 is still open**: seven of the dozen, and
+reputation by ward, which five errands is now enough to make visible.
+
 **12 ranked items. Nothing is claimed.** Every one of ranks 1, 2, 3 and 5
 needs a machine this one is not: ranks 2, 3 and 5 a GPU (#518), rank 1 a
 network that reaches quaternius.com (#568), which #541's did and this one's
@@ -184,8 +196,9 @@ validators rather than a render (6, 8 and 12) are the ones a container can
 start; 7, 10 and 11 all want either a recorded sound, a body on disk, or a GPU
 before their first increment closes, and 9 has nothing left in it that does
 not wait on rank 4's yard. **Ranks 8 and 12 both shipped a first increment on
-2026-09-17** and both next increments are a container's: rank 8's next quests,
-rank 12's budget suite. **Rank 9's map shipped the same day** (#588 to #591),
+2026-09-17, and rank 8 a second the same day** (#597 to #599); both next
+increments are a container's: rank 8's reputation by ward and the seven
+errands left, rank 12's budget suite. **Rank 9's map shipped the same day** (#588 to #591),
 and what is left of that row is the town, behind rank 4's yard. Of them all, 6
 is the one that reads `data/npcs.json`'s `cast`, which is what ranks 1 and 10
 are both for, so a session running beside one of those is better off on 8 or
@@ -246,7 +259,7 @@ your decisions and this file's header, ranks and `Claimed` column are updated
 | 5 | The hall's covering, and the two windows under it | ¼ | Sonnet 5 |  | [The hall covering](SPECS.md#the-hall-covering) |
 | 6 | Life: a populace, and the first ten bodies of it | 2+ | Opus 5 |  | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: ambient beds, event sounds, a bell that is a soundscape | 1 | Fable 5.1 |  | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
-| 8 | Side quests: the next eleven, and reputation by ward | 2+ | Opus 5 |  | [Side quests](SPECS.md#side-quests) |
+| 8 | Side quests: reputation by ward, and the seven left | 2+ | Opus 5 |  | [Side quests](SPECS.md#side-quests) |
 | 9 | A castle to get lost in: the town, the rock and river | 2+ | Opus 5 |  | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
 | 10 | Bodies: a shared low-poly rig for the fifty | 1 | Fable 5.1 |  | [Bodies](SPECS.md#bodies) |
 | 11 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 |  | [Feel](SPECS.md#feel) |
@@ -351,8 +364,9 @@ found yet.
 
 ## Side quests
 
-**Rank 8, and a 2+. Two increments shipped on 2026-09-17** (#576 to #581,
-#595): the format, the set validator and the cook's missing knife.
+**Rank 8, and a 2+. Three increments shipped on 2026-09-17** (#576 to #581,
+#595, #597 to #599): the format, the set validator and the cook's missing
+knife; then the journal's tab; then four more errands.
 `data/quests/` holds one `QuestGraph` per file with two fields the frame does
 not need, `id` and `npc`; `data/quests/index.json` names the files because a
 browser cannot read a directory, and `test/quest.mjs` holds that list to the
@@ -370,10 +384,22 @@ now, and a finished one under a Done heading rather than off the page. A quest
 nobody has met is not on it, and a castle where none has been met is not
 offered the tab at all.
 
-**What is left.** The next eleven quests of `WISHLIST.md`'s dozen, four per
-ward per pass, several of which want rank 6's populace first; and reputation
-by ward, still two save-carried counters and still deferred until a moved
-counter would be visible. `SPECS.md` specs the next increment.
+**Four more shipped third** (#597 to #599): the lady's merlin on the south
+walk, which is where the tally stick is; the chaplain's candle account, which
+the mystery's candle on his stair closes; the sentry's four pence, carried
+through the gate, with one more thing to say only after the porter has
+admitted the bar; and Hywel's chisel, with two endings, one for a player who
+hears the smith say nothing and one for a player who has the roll. A quest
+reaching a stage that waits on a clue the player already holds is walked
+forward at the end of the batch (#597), and every file names its `ward`
+(#599). Five errands, three outer and two inner.
+
+**What is left.** Reputation by ward, two save-carried counters and a chatter
+line or two, no longer deferred: five errands is a moved counter somebody
+could see. Then the seven of `WISHLIST.md`'s dozen still unwritten: three it
+named, of which two want rank 6's populace (a child's dog, the porter's boy
+who wants his letters) and one does not (a letter for the town that needs a
+gate pass), and four it never named. `SPECS.md` specs the next increment.
 
 ## A castle to get lost in
 

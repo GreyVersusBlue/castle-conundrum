@@ -194,8 +194,10 @@ missing knife as the first quest. **That increment shipped on 2026-09-17**
 (#576 to #581): `data/quests/`, `validateQuestSet`, and Marged's knife found
 in the bakehouse without a clue granted either way. **The journal's
 open-quests tab shipped the same day** (#595): "Asked of you", every quest the
-player has met and the objective it is at now. What is left of the theme is
-the next eleven quests and reputation by ward, and it is all in that row.
+player has met and the objective it is at now. **Four more errands shipped
+the same day** (#597 to #599): the merlin, the candle account, the dice and
+the chisel. What is left of the theme is reputation by ward and the seven
+quests still unwritten, and it is all in that row.
 
 ### 5. Size: a castle to get lost in
 

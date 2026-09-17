@@ -1,0 +1,50 @@
+{
+  "id": "ladys-hawk",
+  "title": "Lady Alys's merlin",
+  "npc": "lady",
+  "ward": "inner",
+  "comment": "The second side quest and the first in the inner ward (#598). WISHLIST.md's dozen had 'Lady Alys's hawk, loose on the wall walk, that the sentry will not leave his post to catch', and the point of it is where it sends the player: the bird sits on the south walk by the Bakehouse Tower door, which is where mystery.json's `tally` evidence has lain in the gutter since Phase 3 with nothing but the lady's `window` press pointing anywhere near it. So the thread moves on `clue:tally-on-walk`, a clue the mystery owns, and a player who goes up for a bird comes down with a tally stick. It grants nothing, presents nothing and writes nothing the engine reads; every stage's state is one the clue graph does not own (`window` is the press's and is refused by name). A player who walked the south walk BEFORE she mentioned the bird is caught up on the spot (#597): the stage that waits on the tally is skipped, because the event it waits for already happened.",
+  "voiceComment": "Her `window` lines are the mystery's payoff for presenting `walk-crosses` and this file never names that state. Once she is pressed the engine's state wins over every stage here (#578, `_syncStates`), so the last thing she says in this thread is a nudge toward that press and not the press itself.",
+  "start": "perched",
+  "stages": {
+    "perched": {
+      "objective": "Nobody has said anything about a bird.",
+      "dialogueState": "default",
+      "transitions": [
+        {
+          "on": "talked:lady",
+          "to": "loose"
+        }
+      ],
+      "comment": "Silent until the first conversation with her. Her fourth `default` line is the one that mentions the merlin, and the thread opens when that conversation ends, the same instant `lady-hand` lands."
+    },
+    "loose": {
+      "objective": "Lady Alys's merlin slipped her jesses at Prime and sits on the south walk by the Bakehouse Tower. Go up and look for her.",
+      "dialogueState": "hawk-loose",
+      "transitions": [
+        {
+          "on": "clue:tally-on-walk",
+          "to": "seen"
+        }
+      ],
+      "comment": "She says where the bird is and why nobody has fetched it (the sentry is right that a post is a post, and she minds that he is right). The place she names is the tally stick's place. Nothing here grants it: the player still has to climb to the south walk and press E on the gutter."
+    },
+    "seen": {
+      "objective": "You have been along the south walk by the Bakehouse Tower. Go back and tell Lady Alys what sits there.",
+      "dialogueState": "hawk-seen",
+      "transitions": [
+        {
+          "on": "talked:lady",
+          "to": "home"
+        }
+      ],
+      "comment": "The bird came back to the sill on her own while the player was climbing, as they do. What the lady says instead is what the south walk is: a long way from the Bakehouse Tower door to anywhere, by daylight, and nobody up there in any book. That is `walk-crosses` said sooner, by somebody else, which is the shape of a favour (#550, question 6)."
+    },
+    "home": {
+      "objective": "Ffion is back on her block. Whatever else is on the south walk is still there.",
+      "dialogueState": "hawk-home",
+      "terminal": true,
+      "comment": "Terminal. She is obliged, and she says once more that she sees a great deal from her window and has been asked about none of it, which is the line the press answers."
+    }
+  }
+}

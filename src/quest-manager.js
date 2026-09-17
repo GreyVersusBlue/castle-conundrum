@@ -200,6 +200,17 @@ export class QuestManager {
       if (typeof at === 'string' && def.stages[at]) graph.stage = at;
       return { def, graph };
     });
+    // And a save written before #597 may be sitting in exactly the stage that
+    // rule describes: a stage waiting on a clue the save already holds. The
+    // engine is built by now, so the same walk runs once here, and a quest it
+    // moves toasts the way a move does, because it is one.
+    for (const q of this.sideQuests) {
+      const before = q.graph.stage;
+      this._catchUp(q);
+      q.moved = q.graph.stage !== before;
+    }
+    this._inBatch = false;
+    this._settleSide();
 
     // Resume at a saved stage the graph has (save.js's repair has already reset
     // one it lacks to `start`), re-running that stage's enter effects so the
@@ -642,7 +653,13 @@ export class QuestManager {
    */
   _surface(effects) {
     let examined = false;
-    for (const e of effects) {
+    // One batch for the side quests (#597): an event inside it marks a mover,
+    // and `_settleSide` after the loop is where the catch-up and the toast are.
+    // Nested batches are not a thing, and a throw mid-loop must not leave the
+    // flag up, or every later event would settle nothing.
+    const outer = this._inBatch;
+    this._inBatch = true;
+    try { for (const e of effects) {
       switch (e.type) {
         case 'clue': this.ui.toast(`New clue: ${e.title}`); break;
         case 'taken': this.castle.setEvidenceVisible?.(e.evidence, false); break;
@@ -656,7 +673,8 @@ export class QuestManager {
         case 'event': this._event(e.name); break;
         default: break; // talked, state, shrug, watch, stations, entered, unlocked, demand: read by the caller
       }
-    }
+    } } finally { this._inBatch = outer; }
+    if (!this._inBatch) this._settleSide();
     // An `examined` with no clue after it is evidence already read. Saying so
     // beats an unchanged screen, which reads as a prompt that does not work.
     if (examined && !effects.some((e) => e.type === 'clue' || e.type === 'taken')) this.ui.toast(this.line('known'));
@@ -731,17 +749,78 @@ export class QuestManager {
       // The first real side action gets its own table beside this line.
       if (effects.some((e) => e.type === 'dialogueState')) this._syncStates();
       if (q.graph.stage === before) continue;
+      // The toast and the save are `_settleSide`'s, at the end of the batch
+      // this event is part of (#597): a quest can move twice in one
+      // conversation and the player is owed one line, for where it ended up.
+      q.moved = true;
+    }
+    if (!this._inBatch) this._settleSide();
+  }
+
+  /**
+   * The end of a batch of events, for the side quests: every quest that
+   * moved is walked forward through the clues the player already holds
+   * (`_catchUp`), and then toasted once for the stage it ended up in, and then
+   * the move reaches the save. Every caller of `_event` except `handleLock`
+   * and `handleJournal` marks the autosave afterwards on its own; those two do
+   * not, and a side quest that turns on a word-lock or the J key would move
+   * and be forgotten by the next reload.
+   *
+   * WHY THE END OF THE BATCH AND NOT THE MOVE. The engine's `talk()` returns
+   * its clues and then `talked:<npc>`, in one list. Caught up on the clue,
+   * Marged's knife thread went `unheard`, `hunting`, `found` on the clue and
+   * `settled` on the `talked:` three effects later, in the one conversation
+   * where she first mentioned the knife: the player heard her `default` lines
+   * and the errand was over, with the two line sets that are the errand never
+   * said. Catching up after the batch leaves the thread at `found` for the
+   * next conversation, which is the one the player would have had anyway.
+   * The tracker is the frame's one line and stays the frame's (#393); what a
+   * side quest gets is the toast a clue already gets, on the move and not on a
+   * resume, which is why a resume calls this only when a catch-up moved it.
+   */
+  _settleSide() {
+    let moved = false;
+    for (const q of this.sideQuests) {
+      if (!q.moved) continue;
+      q.moved = false;
       moved = true;
-      // The tracker is the frame's one line and stays the frame's (#393). What
-      // a side quest gets is the toast a clue already gets, on the move and not
-      // on a resume, which is why this is here and not in the constructor.
+      this._catchUp(q);
       this.ui.toast(`${q.def.title}: ${q.graph.objective}`);
     }
-    // And the move reaches the save. Every caller of `_event` except
-    // `handleLock` and `handleJournal` marks the autosave afterwards on its own;
-    // those two do not, and a side quest that turns on a word-lock or the J key
-    // would move and be forgotten by the next reload.
     if (moved) this._onChange?.(this._snapshot());
+  }
+
+  /**
+   * A CLUE THE PLAYER ALREADY HOLDS IS AN EVENT THAT ALREADY HAPPENED (#597).
+   * `clue:<id>` fires once, when the engine grants it, and never again: the
+   * barrel says `gone` on a second E. So a quest that reaches a stage listening
+   * for a clue the player found earlier would sit there for the rest of the day:
+   * open the bakehouse barrel before Marged mentions her knife and the knife
+   * thread opened on `hunting` and never left it, because the one event that
+   * moves it had fired an hour before the stage existed to hear it. The cook's
+   * knife shipped with that hole (#576) and the lady's hawk would have had it
+   * worse, since the walk is somewhere a player goes for the mystery long before
+   * a lady mentions a bird.
+   *
+   * So on arriving anywhere, a quest walks forward through every `clue:`
+   * transition the new stage has for a clue the engine already holds, and does
+   * it again for the stage that puts it in, until a stage waits on something the
+   * player has not done. The player never stood in the skipped stage, so the
+   * one toast is for the stage they arrive at. Conversations are not caught up:
+   * `talked:` is a thing that happens, not a thing the player has. Bounded by
+   * the stage count because a graph is allowed a cycle.
+   */
+  _catchUp(q) {
+    if (!this.engine) return;
+    for (let n = Object.keys(q.def.stages).length; n > 0; n--) {
+      const held = (q.graph.current.transitions ?? []).find((t) => {
+        const m = /^clue:(.+)$/.exec(t.on);
+        return m && t.to && this.engine.holds(m[1]);
+      });
+      if (!held) return;
+      const effects = q.graph.dispatch(held.on);
+      if (effects.some((e) => e.type === 'dialogueState')) this._syncStates();
+    }
   }
 
   /**

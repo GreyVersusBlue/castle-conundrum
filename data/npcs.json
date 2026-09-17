@@ -156,7 +156,23 @@
         "default": [
           "I found him with the Constable at first light. I have said the office for him. There is nothing more I can do for him now.",
           "My chamber is above the stair. I sleep sound, clerk. I heard nothing.",
-          "Sir Roger says a fall. Sir Roger is the King's Constable."
+          "Sir Roger says a fall. Sir Roger is the King's Constable.",
+          "And since you are the King's clerk and count things for a living: I am a candle short. Four tallow in the aumbry at Compline, three at Lauds. It is not a matter. I mention it."
+        ],
+        "candle-short": [
+          "Four tallow, of the kitchen's making, in the aumbry by the vestry door, and the aumbry has no lock because who would rob a chapel of tallow. Three this morning.",
+          "I keep the account for the exchequer's man. A candle a week for the office and one over for a burial. He will not care for one candle. I care for a column that does not add.",
+          "I did not take it up to my chamber; I have said I sleep sound. Look on the stair if you like. I do not use the stair after Compline, and I have not looked."
+        ],
+        "candle-found": [
+          "In the pricket at the first turn. That pricket has stood empty since Sir Walter's day. The office is said below, and nobody carries a light past the turn but me.",
+          "Then my four is four, and somebody stood at the turn of my stair long enough to pool a candle's worth of tallow on the step. That is not a moment. That is a man waiting.",
+          "Enter it in your column, clerk. I have my own to keep, and it adds now, which I find is not what I wanted."
+        ],
+        "candle-entered": [
+          "The column adds. One tallow, taken up the stair by a hand not mine, burnt to the socket. I have written it so.",
+          "I have said the office for him twice now. I find I have not finished saying it.",
+          "If you have anything the Steward has said that you would put to me, put it. I have been a coward once this week and I would rather not be asked to be one twice."
         ],
         "heard": [
           "The Steward said that? Then God forgive me, I will say what I heard.",
@@ -183,7 +199,28 @@
         "default": [
           "North walk, Compline to Lauds, every night this month. You see the whole north side from the Kitchen Tower door.",
           "Second bell, a man went east along the walk past my post. Fur-trimmed cloak. I know fur when the moon is on it.",
-          "The Clerk's the only man in the works with fur on him. I thought he was walking off a supper. I wish I had stopped him."
+          "The Clerk's the only man in the works with fur on him. I thought he was walking off a supper. I wish I had stopped him.",
+          "And since you go through the gate and I do not: Gwilym has four pence of mine at dice, and he has stopped playing and started asking. Tell him Saturday. Tell him I said it civil."
+        ],
+        "dice-owed": [
+          "Four pence. It was two, then a throw for the two, and it was four. His dice, his lodge, his ale, at Lauds when the watch is done and the gate opens. I have not been through that lodge door since, nor will I till I have the four.",
+          "He sits in there all day and all night with the book and the bar and the jug, and he does not forget a penny, that man, whatever else he forgets.",
+          "Saturday. Say it so he hears it, clerk. He is a hard man to make hear a thing he does not want to."
+        ],
+        "dice-told": [
+          "You told him. And he said nothing, I would wager. That is Gwilym. He writes a thing down and says nothing.",
+          "I will pay him Saturday and I will not sit at his table again, not at Lauds nor any other hour. That is my word and you may write it in your book.",
+          "You have been in his lodge, then, and seen him with the jug. Then you know what a bar looks like to a man who has been at the jug since Compline. I say no more than that."
+        ],
+        "dice-bar": [
+          "He has said it, then. About the bar. God help him, and I say that meaning it.",
+          "It has leaned on that wall since Lammas. Every man who walks the north walk has seen it lean there and every man of us has said the door is Gwilym's and not ours.",
+          "And I owed him four pence and held my tongue about it, and you may write that against me too. A man went east past my post at the second bell and that door was open at the far end of his walk."
+        ],
+        "dice-paid": [
+          "Saturday, and civil, and four pence he will have, and then I keep to my own walk and he keeps to his lodge.",
+          "North walk, Compline to Lauds, from the Kitchen Tower door. That is my post and I was at it.",
+          "Second bell, a man in a fur-trimmed cloak went east along it past me. I have said that to you already and I will say it to whoever asks."
         ]
       },
       "heldPropComment": "Dafydd is the only one of the twelve carrying anything. The mace came into the project on the Guard of v1 and stays referenced through him; it is also what reads as a soldier from across the ward, where a tint alone does not."
@@ -206,7 +243,33 @@
         "default": [
           "Drunk? Hywel? Not on a working day, clerk, and yesterday was one. Not a drop after the Sunday bell and not a drop till Saturday.",
           "He kept his own count of the lead. Eleven tally sticks on his belt, a notch a sheet. Two hundred and twelve laid, by his count, and he was going to show somebody.",
-          "He went out of the lodge at Compline with the sticks on him. I know because he told me mind the fire."
+          "He went out of the lodge at Compline with the sticks on him. I know because he told me mind the fire.",
+          "His tools lie where he left them, that is the custom, and I am the one that takes them up. Only the good chisel is not among them. Madoc had it for a new edge, and Madoc is in the tower, and nobody will let a lodge boy by the bars to ask him."
+        ],
+        "chisel-asking": [
+          "Ash haft, a hand and a half long, his mark on the tang. He cut every head in the chapel with it. Nobody has had it in hand in four years but him and me, and me only to carry it.",
+          "Madoc draws the lodge's chisels twice a year for ale, that is the custom, and that one went to him a week since with an edge on it like a spoon. Then they took him up the tower and the forge went cold.",
+          "You are the King's man. They will let you by the bars. Ask him where he left it. That is all I want. I will finish the head he was on, and then I will lay my course at Michaelmas as he said I would."
+        ],
+        "chisel-heard": [
+          "You went in to him. And he gave you the lead and the cart and the Clerk's seal, and not one word about a chisel. That is Madoc. He has said the same three things to every man who has stood at those bars for eleven days.",
+          "Then it is in the tower with him or wherever he put it, and I will not wait on it.",
+          "There is a stone in the lodge and I have watched him draw an edge two years running. Mine will not be his. It will cut."
+        ],
+        "chisel-forge": [
+          "Out to the forge at Prime and in at Vespers, eight days of the eleven, and the roll says so? Then it never went up the tower at all. It is at the forge, on the bench or in the trough, where he works and not where he sleeps.",
+          "Nobody stops a lodge boy at a forge. I will be there at Prime tomorrow when they walk him down, and he will hand it me over the wall as he has a hundred times.",
+          "You had that off a barrel-head in the guardroom, and not one man of the garrison thought to read it in eleven days. The lodge can count. It seems the lodge can read as well."
+        ],
+        "chisel-own-edge": [
+          "I put an edge on the second chisel myself, on the lodge stone, and it took me till the bell. It is not Madoc's edge. It cuts.",
+          "The head he was on is a king's, for the springing of the chapel arch. I will finish it as he began it and set the small cross under it as he did, and the chaplain need not know.",
+          "He told me mind the fire. I have minded it. The rest I am learning."
+        ],
+        "chisel-fetched": [
+          "Prime tomorrow, at the forge, and I will have it off him. I have his mark on the tang and the custom on my side, and now the roll, which is the King's.",
+          "I will finish the head he was on with his own iron. That is how it should be done, and I had given it up.",
+          "He told me mind the fire. I have minded it."
         ]
       }
     },
@@ -301,7 +364,23 @@
         "default": [
           "The King's clerk, in my chamber, about a mason. My husband will be so pleased.",
           "Piers Marrable? He writes his sevens like gallows. Everyone in this ward knows his hand; he signs everything, and he signs it large.",
-          "My window looks over the inner ward. I see a great deal from it and I am asked about none of it."
+          "My window looks over the inner ward. I see a great deal from it and I am asked about none of it.",
+          "And if you are going up on the walk, which everybody seems to be today: my merlin slipped her jesses at Prime and sits on the south walk as if she had bought it. The sentry will not fetch her. A post is a post, he says."
+        ],
+        "hawk-loose": [
+          "Ffion. A merlin, a year to my hand, and she went off the sill at Prime with her jesses trailing and sat down on the south walk by the Bakehouse Tower as if she had bought it.",
+          "I sent to the sentry. A post is a post, he says, and the King did not put him on the north walk to chase a lady's bird along the south one. He is right. I find I mind that he is right.",
+          "Go up by the Bakehouse Tower door. If she is on the parapet do not reach for her; tell me where she sits and I will send the boy with the lure."
+        ],
+        "hawk-seen": [
+          "You went up. No, do not tell me: the parapet over the Bakehouse Tower door, which is the one place the boy cannot get a ladder to.",
+          "She came back to the sill an hour after you went, on her own, as they do when the ward is quiet and nobody is looking at them. So you climbed for nothing, and I am obliged to you for it.",
+          "You have seen the south walk by daylight, then, which most of this castle never has. It is a long way from the Bakehouse Tower door to anywhere, and nobody up there is written in any book."
+        ],
+        "hawk-home": [
+          "She is on her block and sulking, and you went where the sentry would not. I do not forget that kind of thing.",
+          "The wards are one ward up on that walk, clerk. I have said so before and nobody has asked me what I meant by it.",
+          "My window looks over the inner ward. I see a great deal from it. Ask."
         ],
         "window": [
           "You have been up on the walk. Then you know what I know, that the wards are one ward up there.",

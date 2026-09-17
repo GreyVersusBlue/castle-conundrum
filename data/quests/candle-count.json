@@ -1,0 +1,50 @@
+{
+  "id": "candle-count",
+  "title": "The chaplain's candle account",
+  "npc": "chaplain",
+  "ward": "inner",
+  "comment": "WISHLIST.md's 'the chaplain's candle account that does not add up' (#598). Father Anselm keeps a candle account for the exchequer's man and it is one tallow short since Compline; the fourth candle is mystery.json's `candle` evidence, in the pricket at the first turn of his own stair with its wax pooled on the step. So the thread moves on `clue:chapel-candle`, a clue the mystery has owned since Phase 3 and half of the `wax-matches` deduction, and grants nothing. What the player gets for closing the column is the chaplain saying what a pooled candle's worth of tallow means about how long somebody stood at the turn of his stair, which is not `heard` (that state is the press's and is refused by name) but is the thing a man who says he sleeps sound would rather not have counted.",
+  "voiceComment": "`heard` is where the press on `steward-admits` puts him and the clue `chaplain-feet` is sourced from it. No stage here names it, and once he is pressed the engine's state wins over every stage here (#578). The last of his settled lines is the nudge toward that press: put to him what the Steward said.",
+  "start": "unlit",
+  "stages": {
+    "unlit": {
+      "objective": "Nobody has counted a candle.",
+      "dialogueState": "default",
+      "transitions": [
+        {
+          "on": "talked:chaplain",
+          "to": "short"
+        }
+      ],
+      "comment": "Silent until the first conversation with him. His fourth `default` line is the one that mentions the count: four tallow at Compline, three at Lauds, and it is not a matter."
+    },
+    "short": {
+      "objective": "Father Anselm's aumbry held four tallow candles at Compline and three at Lauds. Find the fourth.",
+      "dialogueState": "candle-short",
+      "transitions": [
+        {
+          "on": "clue:chapel-candle",
+          "to": "found"
+        }
+      ],
+      "comment": "He describes the aumbry (no lock; who robs a chapel of tallow), the account (a candle a week for the office, one over for a burial) and where he has not looked, which is his own stair after Compline. The candle is on it. A player who has already taken the candle off the pricket is caught up past this stage on the spot (#597)."
+    },
+    "found": {
+      "objective": "A tallow candle in the pricket at the first turn of the stair, and wax pooled on the step below it. Tell the chaplain his column adds.",
+      "dialogueState": "candle-found",
+      "transitions": [
+        {
+          "on": "talked:chaplain",
+          "to": "entered"
+        }
+      ],
+      "comment": "The resolution: the pricket at the turn has stood empty since Sir Walter's day, nobody carries a light past the turn but him, and a candle's worth of tallow pooled on a step is a candle that stood there a long while. He does not say what he heard. He says how long somebody stood there, which the wax already said to anyone who looked."
+    },
+    "entered": {
+      "objective": "The chaplain's account adds: four candles, and one of them burnt down on his own stair.",
+      "dialogueState": "candle-entered",
+      "terminal": true,
+      "comment": "Terminal. The column is entered, the office has been said twice, and he tells the clerk that if there is anything the Steward has said to put to him, to put it. That is the press on `steward-admits`, offered sooner and not made easier."
+    }
+  }
+}
