@@ -1,12 +1,12 @@
 // save.js — the one save slot for Castle Conundrum, through `./gvb-save.js`,
 // this repo's vendored copy of the site-wide save module (#502; relative
 // import so this file runs in Node too). Key `castleConundrumSave_v1`, game
-// `castle-conundrum`, version 3. The key never changes (#36), and it does not
+// `castle-conundrum`, version 4. The key never changes (#36), and it does not
 // change here either: what moved is the version number inside it.
 //
-//   { stage, day, watch, clues[], pressed{npc: state[]}, taken[], read[],
-//     locks[], accusations[{who, clues, verdict, watch}], refusals,
-//     riddleWrong, player{x, y, z, yaw} | null }
+//   { stage, quests{id: stage}, day, watch, clues[], pressed{npc: state[]},
+//     taken[], read[], locks[], accusations[{who, clues, verdict, watch}],
+//     refusals, riddleWrong, player{x, y, z, yaw} | null }
 //
 // VERSION 2 IS THE SECOND DAY (#533). #413 said the schema was complete so that
 // no later phase would add a field, and no phase did: all seven shipped against
@@ -25,6 +25,13 @@
 // `migrate` still gets the version, because #37's line is about the field's
 // arrival being honest, not about whether repair could have covered for it.
 //
+// VERSION 4 IS THE SIDE QUESTS (BACKLOG.md rank 9). `quests` is one stage id
+// per file in data/quests/, and it is `read`'s case rather than `day`'s: there
+// is no fact a missing `quests` could contradict, because a quest that has
+// never moved is a quest at its own `start`, which is what repair writes
+// anyway. The version goes up because the field arriving is what a version
+// number is for (#37), not because migrate has anything to do.
+//
 // `validate` refuses a non-object and a non-string stage and nothing else;
 // everything past that is `repair`'s, which runs on every load (#37) and
 // builds its catalog from data/mystery.json, data/quest.json and
@@ -39,7 +46,7 @@ import { createSaveSlot } from './gvb-save.js';
 
 export const SAVE_KEY = 'castleConundrumSave_v1';
 export const SAVE_GAME = 'castle-conundrum';
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 
 /**
  * Every id a save may carry, read off the data. `quest` is data/quest.json,
@@ -49,8 +56,17 @@ export const SAVE_VERSION = 3;
  * to `start` and the day begins again, which is the only honest answer when the
  * quest it was halfway through no longer exists. The key does not change (#36).
  */
-export function buildCatalog(mystery, quest, documents = []) {
+export function buildCatalog(mystery, quest, documents = [], sideQuests = []) {
   const stages = new Set(Object.keys(quest?.stages ?? {}));
+  // One entry per side quest, each with its own start and its own stage ids, so
+  // a save carrying a stage of a quest that has since been rewritten resets to
+  // that quest's start and a save naming a quest file that is gone drops it
+  // entirely — the same two rails `stage` has had since #413.
+  const quests = new Map();
+  for (const q of sideQuests ?? []) {
+    if (!q || typeof q.id !== 'string') continue;
+    quests.set(q.id, { start: q.start, stages: new Set(Object.keys(q.stages ?? {})) });
+  }
   const watches = Array.isArray(mystery?.watches) ? mystery.watches : [];
   const clues = new Set((mystery?.clues ?? []).map((c) => c.id));
   const evidence = new Set((mystery?.evidence ?? []).map((e) => e.id));
@@ -61,7 +77,7 @@ export function buildCatalog(mystery, quest, documents = []) {
   for (const p of mystery?.presses ?? []) { if (npcs.has(p.npc)) npcs.get(p.npc).add(p.to); }
   const accusables = new Set([...npcs.keys(), 'nobody']);
   const verdicts = new Set(['full', 'right', 'wrong', 'fall']);
-  return { start: quest?.start ?? 'start', stages, watches, clues, evidence, locks, documents: documentIds, npcs, accusables, verdicts };
+  return { start: quest?.start ?? 'start', stages, quests, watches, clues, evidence, locks, documents: documentIds, npcs, accusables, verdicts };
 }
 
 const nonNegInt = (v) => (Number.isInteger(v) && v >= 0 ? v : 0);
@@ -72,6 +88,15 @@ export function repairState(state, catalog) {
   const s = state && typeof state === 'object' ? state : {};
   const out = {};
   out.stage = typeof s.stage === 'string' && catalog.stages.has(s.stage) ? s.stage : catalog.start;
+  /* THE SIDE QUESTS. Keyed by quest id and written from the catalog rather than
+   * from what came in, so an unknown id is dropped by never being copied and a
+   * known id with a stage that quest does not have resets to its own start. */
+  out.quests = {};
+  const inQuests = s.quests && typeof s.quests === 'object' && !Array.isArray(s.quests) ? s.quests : {};
+  for (const [id, q] of catalog.quests ?? new Map()) {
+    const at = inQuests[id];
+    out.quests[id] = typeof at === 'string' && q.stages.has(at) ? at : q.start;
+  }
   /* THE DAY, AND THE ONE THING THAT MAKES IT INCOHERENT. `day` is 1 or 2 and
    * nothing else; a hand-edited 7, a "2", a NaN all read as day one. And a
    * `day: 2` with no verdict in `accusations` is a save that says the morning
@@ -120,8 +145,8 @@ export function repairState(state, catalog) {
  * The slot. `storage` is injectable for tests (a Map-backed stub); in the
  * browser it is localStorage with gvb-save's private-mode fallback.
  */
-export function createCastleSlot({ mystery, quest, documents = [], storage = null }) {
-  const catalog = buildCatalog(mystery, quest, documents);
+export function createCastleSlot({ mystery, quest, documents = [], sideQuests = [], storage = null }) {
+  const catalog = buildCatalog(mystery, quest, documents, sideQuests);
   const slot = createSaveSlot({
     game: SAVE_GAME,
     key: SAVE_KEY,
@@ -136,6 +161,7 @@ export function createCastleSlot({ mystery, quest, documents = [], storage = nul
     migrate: (s, from) => {
       let out = from < 2 ? { ...s, day: 1 } : s;
       if (from < 3) out = { ...out, read: out.read ?? [] };
+      if (from < 4) out = { ...out, quests: out.quests ?? {} };
       return out;
     },
     repair: (s) => repairState(s, catalog),

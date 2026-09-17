@@ -127,6 +127,15 @@ bodies the npm registry did carry were the wrong shape (KayKit, chibi) and the
 wrong licence (deskrpg, non-commercial derivative). The row stays at rank 1
 with what to fetch written into it.
 
+**The side quests got their format on 2026-09-17** (#576 to #581): `data/quests/`
+is a directory of one graph per file, `validateQuestSet` in `src/quest-graph.js`
+is the rail that keeps them out of the mystery's clue graph, `quest-manager.js`
+runs them off the same event stream the frame hears without a second class, and
+the cook's missing knife is the first of them. The save is version 4 for
+`quests`; the key did not move (#36). **Rank 9 is still open**: one quest is
+not a dozen, the journal has no open-quests tab, and reputation by ward waits
+on enough quests to make a moved counter visible.
+
 **13 ranked items. Nothing is claimed.** Every one of ranks 1, 2, 3 and 5
 needs a machine this one is not: ranks 2, 3 and 5 a GPU (#518), rank 1 a
 network that reaches quaternius.com (#568), which #541's did and this one's
@@ -136,7 +145,11 @@ increment 3 is a yard to build in the town and a design call to make about
 bells on day two. Of ranks 6 to 13, the ones whose first increment is data
 and validators rather than a render — 6, 8, 9, 10 and 13 — are the ones a
 container can start; 7, 11 and 12 all want either a recorded sound, a body on
-disk, or a GPU before their first increment closes.
+disk, or a GPU before their first increment closes. **Rank 9's first increment
+shipped on 2026-09-17** and its next one, the journal's open-quests tab and the
+next quests, is a container's too. Of the four, 6 is the one that reads
+`data/npcs.json`'s `cast`, which is what ranks 1 and 11 are both for, so a
+session running beside one of those is better off on 9, 10 or 13.
 
 One thing is true of the whole list and worth saying once. **Nothing here has
 been seen on a GPU since Phase 5.** `npm run play` walks the whole intended day
@@ -194,7 +207,7 @@ your decisions and this file's header, ranks and `Claimed` column are updated
 | 6 | Life: a populace, and the first ten bodies of it | 2+ | Opus 5 |  | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: ambient beds, event sounds, a bell that is a soundscape | 1 | Fable 5.1 |  | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
 | 8 | Lore: the sermon, the song, and facts that change | ¼ | Sonnet 5 |  | [Lore: what is still open](SPECS.md#lore-what-is-still-open) |
-| 9 | Side quests: the first dozen, and reputation by ward | 2+ | Opus 5 |  | [Side quests](SPECS.md#side-quests) |
+| 9 | Side quests: the next eleven, the journal tab, and reputation by ward | 2+ | Opus 5 |  | [Side quests](SPECS.md#side-quests) |
 | 10 | A castle to get lost in: the volume, the town, the rock and river | 2+ | Opus 5 |  | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
 | 11 | Bodies: a shared low-poly rig for the fifty | 1 | Fable 5.1 |  | [Bodies](SPECS.md#bodies) |
 | 12 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 |  | [Feel](SPECS.md#feel) |
@@ -307,16 +320,25 @@ this row's first increment.
 
 ## Side quests
 
-**Rank 9.** `src/quest-graph.js` (#393) is already a validated state machine
-that knows no NPC by id; every side quest is a small one of those, in its own
-`data/quests/*.json` file, on the frame `quest.json` already has. A quest
-never gates or removes a mystery clue (#550, question 6) and the set validator
-holds that apart from the graph of quest-to-quest links it may build. The
-first increment is the format, the set validator, and the first quest: the
-cook's missing knife, which needs no new prop and whose resolution points at
-a clue `mystery.json` already has without an effect that touches it.
-Reputation by ward is data the save carries and follows once more than one
-quest exists to move it.
+**Rank 9, and a 2+. The first increment shipped on 2026-09-17** (#576 to
+#581): the format, the set validator and the cook's missing knife.
+`data/quests/` holds one `QuestGraph` per file with two fields the frame does
+not need, `id` and `npc`; `data/quests/index.json` names the files because a
+browser cannot read a directory, and `test/quest.mjs` holds that list to the
+directory in both directions. `validateQuestSet` is what makes a file in
+there a side quest rather than a second mystery: no stage may put its person
+in a state `mystery.json`'s clue graph owns, only one quest per person may
+change what they say, and every event a transition turns on has to be one the
+game emits. The cook's knife turns on two clues the mystery has owned since
+Phase 3 and grants neither, which `test/quest.mjs` proves by playing the same
+four presses of E with and without the quest and diffing the journals.
+
+**What is left.** The journal's open-quests tab, which
+`QuestManager.openQuests()` already has the data for and nothing reads; the
+next eleven quests of `WISHLIST.md`'s dozen, four per ward per pass, several
+of which want rank 6's populace first; and reputation by ward, still two
+save-carried counters and still deferred until a moved counter would be
+visible. `SPECS.md` specs the next increment.
 
 ## A castle to get lost in
 

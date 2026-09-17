@@ -27,6 +27,7 @@ const mystery = read('data/mystery.json');
 const quest = read('data/quest.json');
 const { cast } = read('data/npcs.json');
 const { documents } = read('data/documents.json');
+const sideQuests = (read('data/quests/index.json').quests ?? []).map((f) => read(`data/quests/${f}`));
 
 let failures = 0;
 const fail = (msg) => { console.log(`  FAIL  ${msg}`); failures++; };
@@ -39,18 +40,18 @@ const memory = () => {
   const m = new Map();
   return { getItem: (k) => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: (k) => m.delete(k), keys: () => [...m.keys()] };
 };
-const slotWith = (storage = memory()) => ({ slot: createCastleSlot({ mystery, quest, documents, storage }), storage });
-const catalog = buildCatalog(mystery, quest, documents);
+const slotWith = (storage = memory()) => ({ slot: createCastleSlot({ mystery, quest, documents, sideQuests, storage }), storage });
+const catalog = buildCatalog(mystery, quest, documents, sideQuests);
 
 /* ----------------------------------------------------- 1: the slot itself --- */
 console.log('the slot');
 {
   const { slot, storage } = slotWith();
   check(slot.key === 'castleConundrumSave_v1' && SAVE_KEY === slot.key, 'the key is castleConundrumSave_v1 (#36, #413)');
-  check(slot.game === 'castle-conundrum' && SAVE_GAME === slot.game && slot.version === 3 && SAVE_VERSION === 3, 'game castle-conundrum, version 3 (#551)');
+  check(slot.game === 'castle-conundrum' && SAVE_GAME === slot.game && slot.version === 4 && SAVE_VERSION === 4, 'game castle-conundrum, version 4 (rank 9)');
   const fresh = slot.fresh();
-  const shape = ['stage', 'day', 'watch', 'clues', 'pressed', 'taken', 'read', 'locks', 'accusations', 'refusals', 'riddleWrong', 'player'];
-  check(same(Object.keys(fresh), shape), 'a fresh state has the twelve fields of the schema, in order', Object.keys(fresh).join(', '));
+  const shape = ['stage', 'quests', 'day', 'watch', 'clues', 'pressed', 'taken', 'read', 'locks', 'accusations', 'refusals', 'riddleWrong', 'player'];
+  check(same(Object.keys(fresh), shape), 'a fresh state has the thirteen fields of the schema, in order', Object.keys(fresh).join(', '));
   check(fresh.stage === quest.start && fresh.day === 1 && fresh.watch === 0 && fresh.player === null && fresh.refusals === 0, 'fresh: the start stage, day one, Prime, no player, no refusals');
   check(slot.load() === null, 'nothing stored loads as null');
   fresh.clues.push('body-stair');
@@ -270,6 +271,45 @@ console.log('the second day, through the save');
   // A version-3 save round-trips a real one.
   storage.setItem(SAVE_KEY, JSON.stringify({ __v: 3, stage: 'investigate', day: 1, read: ['works-ledger', 'gravestone'] }));
   check(same(slot.load()?.read, ['works-ledger', 'gravestone']), 'a version-3 save keeps the documents it read', JSON.stringify(slot.load()?.read));
+}
+{
+  /* WHAT `quests` IS (rank 9, version 4). One stage id per file in
+   * data/quests/, written from the catalog and never from what came in, so the
+   * three ways a save can be wrong about a side quest all land somewhere safe:
+   * a quest the save has never heard of gets its own start, a stage that quest
+   * no longer has resets to its start, and a quest id that is not in the
+   * directory any more is dropped by never being copied across. Without the
+   * middle one the manager resumes on a stage `QuestGraph` has no lines for and
+   * the dialogue box opens on undefined the first time the player presses E on
+   * whoever the quest names. */
+  const { slot, storage } = slotWith();
+  check(sideQuests.length > 0, `${sideQuests.length} side quest(s) to carry`);
+  const starts = Object.fromEntries(sideQuests.map((q) => [q.id, q.start]));
+  check(same(slot.fresh().quests, starts), 'a fresh state has every quest at its own start', JSON.stringify(slot.fresh().quests));
+  check(same(repaired({}).quests, starts), 'and so does a save that has never heard of any of them');
+
+  const real = sideQuests[0];
+  const other = Object.keys(real.stages).find((id) => id !== real.start);
+  check(same(repaired({ quests: { [real.id]: other } }).quests, { ...starts, [real.id]: other }),
+    `a real stage of ${real.id} survives repair (${other})`, JSON.stringify(repaired({ quests: { [real.id]: other } }).quests));
+  check(repaired({ quests: { [real.id]: 'gone-fishing' } }).quests[real.id] === real.start,
+    'a stage that quest does not have resets to its own start, not to the frame’s');
+  check(!('a-quest-that-was-deleted' in repaired({ quests: { 'a-quest-that-was-deleted': 'x' } }).quests),
+    'a quest id that is no longer a file is dropped');
+  for (const bad of [null, 'settled', [], 7]) {
+    check(same(repaired({ quests: bad }).quests, starts), `a \`quests\` of ${JSON.stringify(bad)} repairs to the starts`);
+  }
+  // A catalog built with no side quests at all carries none, which is what a
+  // Node caller that never loaded the directory gets.
+  check(same(repairState({ quests: { [real.id]: other } }, buildCatalog(mystery, quest, documents)).quests, {}),
+    'and a catalog built without the directory carries no quests rather than trusting the save');
+
+  // The version drift. A version-3 save was written before there were side
+  // quests and comes back with every one of them at its start.
+  storage.setItem(SAVE_KEY, JSON.stringify({ __v: 3, stage: 'investigate', day: 1, read: [] }));
+  check(same(slot.load()?.quests, starts), 'a version-3 save reads with every quest unstarted', JSON.stringify(slot.load()?.quests));
+  storage.setItem(SAVE_KEY, JSON.stringify({ __v: 4, stage: 'investigate', day: 1, quests: { [real.id]: other } }));
+  check(slot.load()?.quests?.[real.id] === other, 'a version-4 save keeps where its quests stand');
 }
 {
   // THE INCOHERENT SAVE, BOTH WAYS. A `day: 2` with no verdict behind it is a

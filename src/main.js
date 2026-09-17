@@ -8,6 +8,7 @@ import { PlayerController } from './player-controller.js';
 import { NPC } from './npc.js';
 import { InteractionSystem } from './interaction.js';
 import { QuestManager } from './quest-manager.js';
+import { validateQuestSet } from './quest-graph.js';
 import { createCastleSlot } from './save.js';
 import { createMystery } from './mystery.js';
 import { castleNav } from './stations.js';
@@ -22,7 +23,7 @@ loadingManager.onProgress = (_url, loaded, total) => ui.setLoadingProgress(loade
 
 async function init() {
   // --- Data ---
-  const [config, npcData, riddleData, questData, mysteryData, soundData, documentsData] = await Promise.all([
+  const [config, npcData, riddleData, questData, mysteryData, soundData, documentsData, questIndex] = await Promise.all([
     loadJSON('data/scene-config.json'),
     loadJSON('data/npcs.json'),
     loadJSON('data/riddle.json'),
@@ -30,14 +31,31 @@ async function init() {
     loadJSON('data/mystery.json'),
     loadJSON('data/sounds.json'),
     loadJSON('data/documents.json'),
+    loadJSON('data/quests/index.json'),
   ]);
+
+  // --- The side quests (BACKLOG.md rank 9). One file per quest under
+  // data/quests/, named in that directory's index.json because a browser cannot
+  // read a directory; test/quest.mjs holds the index to what is actually on
+  // disk. `validateQuestSet` runs here and throws rather than warns, for the
+  // reason QuestGraph's own constructor does (#393): a broken quest that loads
+  // is a quest that fails on the walk to the cook, and a loading screen that
+  // says why beats a castle that is subtly wrong.
+  const sideQuestFiles = questIndex.quests ?? [];
+  const sideQuests = await Promise.all(sideQuestFiles.map((f) => loadJSON(`data/quests/${f}`)));
+  const sideProblems = validateQuestSet(
+    sideQuestFiles.map((file, i) => ({ file, def: sideQuests[i] })),
+    { npcs: npcData.cast, mystery: mysteryData, actions: QuestManager.sideActions },
+  );
+  if (sideProblems.length) throw new Error(`data/quests/ is not a valid quest set:\n  - ${sideProblems.join('\n  - ')}`);
 
   // --- The save (src/save.js, key castleConundrumSave_v1). One slot; a reload
   // resumes the quest at its saved stage, with the riddle's wrong-answer count,
-  // the documents already read (#551, version 3) and the player's position.
+  // the documents already read (#551, version 3), where each side quest stands
+  // (version 4) and the player's position.
   // `repair` has already dropped anything the data does not know, so what
   // comes back here is safe to hand to the graph.
-  const slot = createCastleSlot({ mystery: mysteryData, quest: questData, documents: documentsData.documents });
+  const slot = createCastleSlot({ mystery: mysteryData, quest: questData, documents: documentsData.documents, sideQuests });
   const saved = slot.load();
   const state = saved ?? slot.fresh();
 
@@ -140,7 +158,7 @@ async function init() {
     return state;
   });
   const quest = new QuestManager({
-    quest: questData, mystery: mysteryData, riddle: riddleData, documents: documentsData.documents, npcs, ui, castle,
+    quest: questData, sideQuests, mystery: mysteryData, riddle: riddleData, documents: documentsData.documents, npcs, ui, castle,
     controlsRef: { lock: () => player.lock() },
     engine,
     audio,
@@ -167,7 +185,7 @@ async function init() {
       auto.mark();
     },
     saved,
-    onChange: ({ stage, riddleWrong, day }) => { state.stage = stage; state.riddleWrong = riddleWrong; state.day = day; auto.mark(); },
+    onChange: ({ stage, riddleWrong, day, quests }) => { state.stage = stage; state.riddleWrong = riddleWrong; state.day = day; state.quests = quests; auto.mark(); },
     // What the epilogue's button does when it reads "Play Again" — at the end
     // of the second day, or at the end of a verdict with no morning after it
     // (#537). Erase the save, then reload into a fresh day.

@@ -121,8 +121,25 @@
           "Hywel took my lantern. The good one, off the kitchen hook, at Compline, and I told him bring it back and he said in the morning.",
           "Called to the inner ward, he said. The chapel roof. At that hour. I said the roof will keep and he said the Steward would not.",
           "And now I am short a lantern and a knife both. A knife gone since yesterday, off this table, and nobody knows a thing."
+        ],
+        "knife-hunting": [
+          "A boning knife, a hand long, the haft bound with cord where it split. I would know it off any table in this castle.",
+          "Look in the bakehouse before you look at me. Everything that walks out of this kitchen walks that way first.",
+          "And the lantern. I have not forgotten the lantern, clerk, whatever else you find."
+        ],
+        "knife-found": [
+          "The bakehouse. Of course the bakehouse. Flour on it, was there?",
+          "That is the boy. He takes it for the dough and leaves it in the trough and swears on his mother he never touched it.",
+          "So I am short a lantern and not a knife. And the lantern is the one that went up the Chapel Tower stair. Ask me about the lantern."
+        ],
+        "knife-settled": [
+          "The knife is on its hook and the boy has had what I had for him.",
+          "My lantern is still out there, and the man who carried it off is laid out in the chapel.",
+          "Ask me about that one as often as you like."
         ]
-      }
+      },
+      "dialogueComment": "The three knife states are the cook's-knife side quest's (data/quests/cooks-knife.json), not the mystery's. mystery.json grants `cook-lantern` and `knife-missing` off `default` and off nothing else, and the engine reads its own `st.pressed` rather than the line set on screen, so none of these three can grant a clue however the quest walks. test/quest.mjs holds every dialogue key on every npc to a stage or a press that can reach it, the side quests now included.",
+      "dialogue2Comment": "The knife thread is day one's. On the morning after `_dayLines` replaces every line set in this file, which is why there is no Lauds variant of any of the three."
     },
     {
       "id": "chaplain",

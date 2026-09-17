@@ -226,3 +226,143 @@ export class QuestGraph {
     ];
   }
 }
+
+/* ------------------------------------------------------------ side quests ---
+ * BACKLOG.md rank 9. A side quest is the same graph this file already
+ * validates, in its own file under data/quests/, driving one person's lines
+ * and nothing else. What makes it a side quest rather than a second mystery is
+ * what it may not do, and that is what `validateQuestSet` is: the per-file
+ * checks `validateQuest` already runs, plus three rules across the set.
+ *
+ * WHY THE RULES ARE ABOUT `dialogueState` AND NOT ABOUT AN EFFECT. The obvious
+ * reading of "a quest never gates or removes a mystery clue" (#550, question 6)
+ * is an effect that writes a clue key, and there is no such effect: a side
+ * quest's action list is empty in this increment and the engine's idea of who
+ * is in what state is `st.pressed` (src/mystery.js:879), which nothing in
+ * data/quests/ can reach. So a side quest cannot grant a clue by accident, and
+ * a rule against an effect that does not exist would be a rule with nothing to
+ * bite.
+ *
+ * What a side quest CAN do is name a state the clue graph owns. Put the Clerk
+ * in `cornered` from a side quest and quest-manager.js's `_syncStates` will
+ * show his confession to a player who never pressed him: the clue is not
+ * granted, but the text that is the reward for granting it is on screen for
+ * free. That is the real shape of the violation, it is the key the rule names,
+ * and `test/quest.mjs` breaks it on purpose.
+ */
+
+/** The event shapes the game emits, for holding a quest's `on` to something real. */
+const EVENT_SHAPES = [
+  [/^clue:(.+)$/, 'clues'],
+  [/^talked:(.+)$/, 'npcs'],
+  [/^press:([^:]+):(.+)$/, 'press'],
+  [/^bell:(\d+)$/, 'bells'],
+  [/^lock:(.+)$/, 'locks'],
+  [/^accused:(.+)$/, 'accusables'],
+  [/^verdict:(full|right|wrong|fall)$/, null],
+  [/^(riddle:solved|ask:journal|ask:accuse|day:2)$/, null],
+];
+
+/**
+ * Every side quest in data/quests/, against each other, the cast and the
+ * mystery. Returns a flat list of problems naming the file, so a bad quest
+ * fails a Node suite rather than a walk.
+ *
+ * @param quests  [{ file, def }] — the parsed files, with the name they came from
+ * @param npcs    data/npcs.json's `cast`
+ * @param mystery data/mystery.json
+ * @param actions the action names quest-manager.js implements for side quests
+ */
+export function validateQuestSet(quests, { npcs = [], mystery = {}, actions = [] } = {}) {
+  const problems = [];
+  const cast = new Map(npcs.map((n) => [n.id, n]));
+  const clueIds = new Set((mystery.clues ?? []).map((c) => c.id));
+  const lockIds = new Set((mystery.locks ?? []).map((l) => l.id));
+  const bells = (mystery.watches ?? []).length;
+  const accusables = new Set([...Object.keys(mystery.schedule ?? {}), 'nobody']);
+
+  // Which states the clue graph owns, per npc: every state a statement is
+  // sourced from, and every state a press moves somebody into. `default` is
+  // nobody's to own — it is the floor every stage in every graph stands on.
+  const owned = new Map();
+  const own = (npc, state, why) => {
+    if (!npc || !state || state === 'default') return;
+    if (!owned.has(npc)) owned.set(npc, new Map());
+    if (!owned.get(npc).has(state)) owned.get(npc).set(state, why);
+  };
+  for (const c of mystery.clues ?? []) own(c.source?.npc, c.source?.state, `clue ${c.id}`);
+  for (const p of mystery.presses ?? []) own(p.npc, p.to, `press on ${p.on}`);
+
+  const seenIds = new Map();
+  const voices = new Map(); // npc -> [{file, states}]
+
+  for (const { file, def } of quests) {
+    const at = (msg) => problems.push(`${file}: ${msg}`);
+    for (const p of validateQuest(def, actions)) at(p);
+
+    const base = String(file).replace(/\.json$/, '');
+    if (typeof def.id !== 'string' || !def.id.trim()) at('`id` must be a non-empty string');
+    else {
+      if (def.id !== base) at(`\`id\` is ${JSON.stringify(def.id)} but the file is ${JSON.stringify(base)} — the save keys quests by id and a session reading the directory keys them by name`);
+      if (seenIds.has(def.id)) at(`a second quest with id ${JSON.stringify(def.id)} (${seenIds.get(def.id)})`);
+      else seenIds.set(def.id, file);
+    }
+    if (typeof def.title !== 'string' || !def.title.trim()) at('`title` must be a non-empty string');
+
+    const npc = cast.get(def.npc);
+    if (!npc) { at(`\`npc\` (${JSON.stringify(def.npc)}) is not an id in npcs.json's cast`); continue; }
+
+    const states = [...new Set(Object.values(def.stages ?? {}).map((s) => s.dialogueState).filter((s) => typeof s === 'string'))];
+    for (const state of states) {
+      if (!Array.isArray(npc.dialogue?.[state]) || !npc.dialogue[state].length) {
+        at(`${def.npc} has no \`dialogue.${state}\` lines — the dialogue box would open on undefined`);
+      }
+    }
+
+    // Rule 1, the clue-isolation rule (#550, question 6). A side quest may not
+    // put its person into a state the mystery's clue graph owns.
+    for (const state of states) {
+      const why = owned.get(def.npc)?.get(state);
+      if (why) at(`a stage puts ${def.npc} in \`${state}\`, which is a state mystery.json's clue graph owns (${why}) — a side quest never gates or removes a mystery clue (#550, question 6)`);
+    }
+
+    // Rule 2's half: collect who speaks for whom.
+    const spoken = states.filter((s) => s !== 'default');
+    if (spoken.length) {
+      if (!voices.has(def.npc)) voices.set(def.npc, []);
+      voices.get(def.npc).push({ file, states: spoken });
+    }
+
+    // Rule 3: every event a transition listens for is one the game emits.
+    for (const [id, s] of Object.entries(def.stages ?? {})) {
+      for (const t of s.transitions ?? []) {
+        if (typeof t.on !== 'string' || !t.on) continue;
+        const shape = EVENT_SHAPES.find(([re]) => re.test(t.on));
+        if (!shape) { at(`${id}: \`on\` is ${JSON.stringify(t.on)}, which is not an event this game emits`); continue; }
+        const [re, kind] = shape;
+        const m = re.exec(t.on);
+        const bad =
+          kind === 'clues' ? (!clueIds.has(m[1]) && `no clue ${m[1]} in mystery.json`)
+          : kind === 'npcs' ? (!cast.has(m[1]) && `no npc ${m[1]} in npcs.json`)
+          : kind === 'press' ? (!cast.has(m[1]) ? `no npc ${m[1]} in npcs.json` : !clueIds.has(m[2]) && `no clue ${m[2]} in mystery.json`)
+          : kind === 'bells' ? (!(Number(m[1]) >= 1 && Number(m[1]) <= bells) && `there are ${bells} bells`)
+          : kind === 'locks' ? (!lockIds.has(m[1]) && `no lock ${m[1]} in mystery.json`)
+          : kind === 'accusables' ? (!accusables.has(m[1]) && `${m[1]} cannot be accused`)
+          : false;
+        if (bad) at(`${id}: \`on\` is ${JSON.stringify(t.on)} and ${bad}`);
+      }
+    }
+  }
+
+  // Rule 2, one voice per person. Two quests that both change what somebody
+  // says have no order between them: which of the two the player hears is
+  // whichever the loader happened to read first, at every bell. The conservative
+  // form is what is enforced — only one quest per person may hold a non-default
+  // state at all — and an increment that wants two threads on one cook replaces
+  // it with a co-activity check rather than relaxing it.
+  for (const [npc, holders] of voices) {
+    if (holders.length < 2) continue;
+    problems.push(`${holders.map((h) => h.file).join(' and ')}: both change what ${npc} says (${holders.map((h) => `${h.file} wants ${h.states.join('/')}`).join('; ')}) — only one quest per person may hold a non-default dialogueState`);
+  }
+  return problems;
+}

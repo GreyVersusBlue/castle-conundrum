@@ -1,0 +1,50 @@
+{
+  "id": "cooks-knife",
+  "title": "The cook's knife",
+  "npc": "cook",
+  "ward": "outer",
+  "comment": "The first side quest, and the case that proves the independent-of-the-mystery rule (#550, question 6) rather than asserting it. Every event it turns on is one the mystery engine already emits about clues the mystery already owns: `knife-missing` is Marged's own herring statement, `knife-found` is the bakehouse barrel's. It grants neither, it presents neither, it writes nothing the engine reads. All it does is change which of Marged's lines come out of her mouth, and the engine's idea of her state is `st.pressed` and is untouched by that, so she still grants `cook-lantern` and `knife-missing` on the first conversation whatever stage this quest is in.",
+  "voiceComment": "`npc` is whose lines this quest may change. The set validator lets at most one quest per person hold a non-default `dialogueState`, and lets none of them name a state mystery.json's clue graph owns: a quest that put the Clerk in `cornered` would be handing the player the confession without the press.",
+  "start": "unheard",
+  "stages": {
+    "unheard": {
+      "objective": "Nobody has said anything about a knife.",
+      "dialogueState": "default",
+      "transitions": [
+        {
+          "on": "clue:knife-missing",
+          "to": "hunting"
+        }
+      ],
+      "comment": "The start stage is silent and holds Marged on `default`, so a player who never talks to the cook never has a side quest at all. `clue:knife-missing` lands in the same conversation as `cook-lantern`, because talk() grants every statement of the state at once, so the thread opens on the first conversation with her and not on a second."
+    },
+    "hunting": {
+      "objective": "Marged is short a boning knife, gone off her table since yesterday. Find it.",
+      "dialogueState": "knife-hunting",
+      "transitions": [
+        {
+          "on": "clue:knife-found",
+          "to": "found"
+        }
+      ],
+      "comment": "She describes the knife and says where to look, which is the bakehouse, which is where mystery.json's `knife` evidence has been sitting since Phase 3 with nothing pointing at it. Nothing here grants anything: the player still has to walk to the barrel and press E."
+    },
+    "found": {
+      "objective": "The knife is in the bakehouse with flour on it. Go back and tell Marged.",
+      "dialogueState": "knife-found",
+      "transitions": [
+        {
+          "on": "talked:cook",
+          "to": "settled"
+        }
+      ],
+      "comment": "The resolution: she says where it went, and the last of her three lines puts the player back on the lantern, which is the mystery's and is the one of the two that matters. The clue `knife-found` is `herring: true` in mystery.json and stays that way; what this quest changes is that a player now knows why the barrel was worth opening."
+    },
+    "settled": {
+      "objective": "The knife is back on its hook. The lantern is still out there.",
+      "dialogueState": "knife-settled",
+      "terminal": true,
+      "comment": "Terminal, and short. Marged goes back to talking about the lantern, which is what she was always for."
+    }
+  }
+}

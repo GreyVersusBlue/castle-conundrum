@@ -1,0 +1,6 @@
+{
+  "comment": "The side quests, one file per quest (BACKLOG.md rank 9). A browser cannot read a directory, so the files are named here and nowhere else; test/quest.mjs reads the directory off disk and holds this list to it exactly, in both directions, so a quest file added without a line here fails the suite rather than sitting unloaded.",
+  "quests": [
+    "cooks-knife.json"
+  ]
+}
