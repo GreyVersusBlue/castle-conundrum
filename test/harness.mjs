@@ -53,13 +53,36 @@ export async function threeUrl(base) {
 /**
  * The dev server, which is what the suites run against: source, not the bundle.
  * Returns { base, close }.
+ *
+ * `hmr: false` TURNS HMR OFF, and `npm run play` passes it.
+ * Vite full-reloads the page when anything in its module graph changes on disk,
+ * which is correct for a developer and fatal to a suite: the reload throws away
+ * `window.__cam` and `window.__scene` that test/drive.mjs's probe patched in,
+ * and the next `camState` fails with "Cannot read properties of undefined
+ * (reading 'updateWorldMatrix')" — an error that names the probe and says
+ * nothing about the page having restarted underneath it.
+ *
+ * It is not hypothetical and it is not rare. `npm run play` is a ten-minute
+ * walk on a machine somebody is USING, and this repo is on a synced drive with
+ * other sessions working in it. Measured on 2026-09-17: five screenshots
+ * written into `shots/play/` left the probe alive, and one touch of
+ * `src/main.js` with its own unchanged bytes killed it. The run that found this
+ * died between the wall walk and the north walk with fourteen beats left
+ * unplayed, and the log looked like a bug in the castle.
+ *
+ * No suite here wants HMR: each loads the page once and drives it. It is a
+ * dev-server convenience with nothing to offer them and one way to ruin a run.
+ *
+ * IT IS `hmr` AND NOT `watch`, and both were measured. `server.watch: null`
+ * reads like the lever and is not one: with the watcher nulled, the touch still
+ * reloaded the page and still killed the probe. `hmr: false` alone held.
  */
-export async function serveDev(port) {
+export async function serveDev(port, { hmr = true } = {}) {
   const server = await createServer({
     root: ROOT,
     configFile: path.join(ROOT, 'vite.config.js'),
     logLevel: 'warn',
-    server: { port, strictPort: true, host: '127.0.0.1' },
+    server: { port, strictPort: true, host: '127.0.0.1', ...(hmr ? {} : { hmr: false }) },
   });
   await server.listen();
   return { base: `http://127.0.0.1:${port}`, close: () => server.close() };
