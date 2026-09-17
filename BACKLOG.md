@@ -103,11 +103,26 @@ shipped and what is still open in it (the gaol roll and the rest of the
 "documents everywhere" list, the two performed set pieces, facts that
 change).
 
-**5 ranked items. Nothing is claimed.** Rank 1 is the only row a container
+**The wishlist came up whole on 2026-09-17** (#560 to #567): all seven of
+`WISHLIST.md`'s themes and its tooling section are ranks 6 to 13 below, and
+`WISHLIST.md` is rewritten to point at them rather than describe them twice.
+Devon asked for this directly rather than waiting on rank 5 to close, which is
+question 10's answer overtaken by the man who gave it; the order between the
+eight new rows and the content inside each one both come from the wishlist as
+written, not reinvented. Each names a model, defaulting to Opus 5, and Fable
+5.1 where the row is asset-sourcing in the shape rank 1 already is. None of
+the eight has shipped anything: `SPECS.md` specs a first increment for each,
+the way rank 4 already specs its own increments, and a shipping session picks
+up where that increment stops.
+
+**13 ranked items. Nothing is claimed.** Rank 1 is the only row a container
 without a GPU can finish outright. Rank 4's next increment is the other thing
 a container can start, and `SPECS.md` names the one thread of it that does
 not wait on a design call: the gaol roll. Ranks 2, 3 and 5 all need a machine
-this one is not (#518).
+this one is not (#518). Of ranks 6 to 13, the ones whose first increment is
+data and validators rather than a render — 6, 8, 9, 10 and 13 — are the ones a
+container can start; 7, 11 and 12 all want either a recorded sound, a body on
+disk, or a GPU before their first increment closes.
 
 One thing is true of the whole list and worth saying once. **Nothing here has
 been seen on a GPU since Phase 5.** `npm run play` walks the whole intended day
@@ -160,6 +175,14 @@ your decisions and this file's header, ranks and `Claimed` column are updated
 | 3 | A new preview and og card, from that run | ¼ | Opus 5 |  | [The GPU run](SPECS.md#the-gpu-run) |
 | 4 | A second day: increment 3, a second mystery for the morning | 2+ | Opus 5 |  | [A second day](SPECS.md#a-second-day) |
 | 5 | The hall's covering, and the two windows under it | ¼ | Sonnet 5 |  | [The hall covering](SPECS.md#the-hall-covering) |
+| 6 | Life: a populace, and the first ten bodies of it | 2+ | Opus 5 |  | [Life: a populace](SPECS.md#life-a-populace) |
+| 7 | Sound: ambient beds, event sounds, a bell that is a soundscape | 1 | Fable 5.1 |  | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
+| 8 | Lore: the sermon, the song, and facts that change | ¼ | Sonnet 5 |  | [Lore: what is still open](SPECS.md#lore-what-is-still-open) |
+| 9 | Side quests: the first dozen, and reputation by ward | 2+ | Opus 5 |  | [Side quests](SPECS.md#side-quests) |
+| 10 | A castle to get lost in: the volume, the town, the rock and river | 2+ | Opus 5 |  | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
+| 11 | Bodies: a shared low-poly rig for the fifty | 1 | Fable 5.1 |  | [Bodies](SPECS.md#bodies) |
+| 12 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 |  | [Feel](SPECS.md#feel) |
+| 13 | The tooling: a placement editor, a dialogue format, a budget suite | 2+ | Opus 5 |  | [The tooling](SPECS.md#the-tooling) |
 
 ## A fourth body
 
@@ -219,3 +242,101 @@ render can tell which way a kit roof piece slopes (`partsOf` gives all four of
 is a luma read off a real render (#438). Six of the twelve stand in this room
 at Vespers and the accusation is made there, which is why #528 would not guess
 at it.
+
+## Life: a populace
+
+**Rank 6.** The twelve are the mystery's; the castle needs the other fifty who
+were there before the mason died and will be there after. `data/populace.json`
+is a fourth data file with a validator, keyed to a body, a tint and a routine
+of `{room, tile, activity, facing?}` per watch, on `stations.js`'s own walk
+grid and `STATION_CLEARANCE`. The first increment, per Devon's own answer to
+question 10 in `WISHLIST.md`, is the file, the validator, and the first ten
+bodies off the models this repo already has — no new asset, no new clip — so
+the row that makes every other wishlist row visible does not itself wait on
+one.
+
+## Sound: a soundscape
+
+**Rank 7.** Two sounds exist and both are synthesised (#519, #548). This row
+is the other twenty: ambient beds per zone, spatialised at a point per room
+and cross-faded by the room the HUD already tracks (#515), event sounds tied
+to an activity clip, and the four bells given a character each. Recorded CC0
+audio is admitted since #548 reversed #519's synthesis-only half, named by
+`data/sounds.json` and run through `tools/encode-assets.mjs` like any asset
+(#506). The first increment is the ambient beds: the zones and the
+cross-fade, with synthesis standing in wherever a recording has not been
+found yet.
+
+## Lore: what is still open
+
+**Rank 8.** The bulk of the lore row shipped (#551 to #559): a 61-fact canon,
+thirteen documents, a chatter pool. Two pieces named in `WISHLIST.md` theme 3
+did not: the chaplain's sermon at Vespers and a song in the hall at Sext,
+each its own pool so a second day does not repeat the first, and a `since`
+field for a fact that changes with what the player did on day one. The second
+piece wants the second-day machinery **A second day** (rank 4) is still
+building and cannot start before it; the first does not, and is the whole of
+this row's first increment.
+
+## Side quests
+
+**Rank 9.** `src/quest-graph.js` (#393) is already a validated state machine
+that knows no NPC by id; every side quest is a small one of those, in its own
+`data/quests/*.json` file, on the frame `quest.json` already has. A quest
+never gates or removes a mystery clue (#550, question 6) and the set validator
+holds that apart from the graph of quest-to-quest links it may build. The
+first increment is the format, the set validator, and the first quest: the
+cook's missing knife, which needs no new prop and whose resolution points at
+a clue `mystery.json` already has without an effect that touches it.
+Reputation by ward is data the save carries and follows once more than one
+quest exists to move it.
+
+## A castle to get lost in
+
+**Rank 10.** Devon wants it huge; the plan's own risk section says why size
+is not the first move (an empty room is worse than no room), so the order
+inside this row is the wishlist's own: volume before area, area before a
+second castle. The first increment is the volume this castle already has and
+is not using — the unused floors across the eight drums, an undercroft, a
+well chamber, a latrine turret, the guardroom over the porter's gate — all of
+it `castle-plan.js` and a floor slab, all of it somewhere a rank-8 document
+or a rank-6 routine can go. The town, the rock and the river, the map, and a
+second castle are later increments of this same row, in that order, and none
+of them starts before the volume does.
+
+## Bodies
+
+**Rank 11.** Every row above this one that needs a new body is waiting on
+this one. Low-poly, one shared rig, CC0, for now (#550, question 5): a body a
+session can make or edit as a drop-in, the way **A fourth body** (rank 1)
+already had to answer once for a woman's body and this row answers at the
+scale of a child, a dog, a chicken and a garrison. Variation without files —
+tint, height scale, a hidden hood or hat node, a held prop, a beard toggle —
+is `npc.js`'s existing hide-node and hide-material machinery, not new code.
+Every body goes through `tools/encode-assets.mjs` before it is committed
+(#506); an uncompressed body is the one asset nothing else on this list would
+catch.
+
+## Feel
+
+**Rank 12.** Everything in this row is gated on `npm run play` on a real
+machine (#53), the same gate **The hall covering** already sits behind, and
+most of it is a day's work each once someone can see it: weather and sky, fire
+and a shadow budget, examine, doors that open, wear, sitting. The first
+increment is the two things `WISHLIST.md` itself calls the cheapest presence
+cues there are — a shadow on the pavers and a hand that reaches for the door —
+and nothing in this row ships past a `snap` and a sentence in `HISTORY.md`
+until **The GPU run** (ranks 2 and 3) has happened.
+
+## The tooling
+
+**Rank 13.** None of the seven themes above is a code problem; they are
+content problems at a scale the current tooling cannot carry, and the
+wishlist names three tools for it. The first increment is the placement
+editor: `?edit=1` on the dev server only, never in `dist/`, that writes a
+prop's tile coordinates into the JSON the builder reads instead of a session
+hand-typing them, which is how every prop in the castle got there so far and
+why there are so few. A dialogue format that compiles to the JSON the
+validators read, and a budget suite that counts skinned bodies, point lights
+and draw calls per ward against the number the phone cannot carry, are this
+row's next two.
