@@ -354,7 +354,7 @@ function stubUI() {
     openRiddle(text, onSubmit, onClose) { this.riddleOpen = true; this.riddleText = text; this._submit = onSubmit; this._close = onClose; this.log.push('riddle:open'); },
     setRiddleFeedback(t) { this.feedback.push(t); },
     closeRiddle() { this.riddleOpen = false; this.log.push('riddle:close'); this._close?.(); },
-    openJournal(entries, { empty = '', present = null } = {}) { this.journal = { entries, empty, present }; this.log.push(`journal:${present ? 'present' : 'read'}:${entries.length}`); },
+    openJournal(entries, { empty = '', present = null, map = null } = {}) { this.journal = { entries, empty, present, map }; this.log.push(`journal:${present ? 'present' : 'read'}:${entries.length}`); },
     closeJournal() { this.journal = null; },
     openAccusation(o) { this.accusation = o; this.note = null; this.log.push('accusation:open'); },
     setAccusationNote(t) { this.note = t; },
@@ -370,7 +370,7 @@ function stubUI() {
   };
 }
 
-function rig({ saved = null, withSideQuests = true, quests = null, cast = npcDefs } = {}) {
+function rig({ saved = null, withSideQuests = true, quests = null, cast = npcDefs, rooms = [] } = {}) {
   const ui = stubUI();
   const npcs = cast.map((def) => ({
     id: def.id, name: def.name, def, talking: false, dialogueState: 'default',
@@ -397,6 +397,7 @@ function rig({ saved = null, withSideQuests = true, quests = null, cast = npcDef
   const engine = createMystery({ mystery, npcs: cast, state });
   const restarts = { n: 0 };
   const watches = [];
+  const changes = { n: 0 }; // how often the manager asked main.js to mark the autosave
   const qm = new QuestManager({
     // `withSideQuests: false` is the control arm. The knife walk below runs the
     // same calls through both and compares the journal: a side quest that
@@ -404,17 +405,17 @@ function rig({ saved = null, withSideQuests = true, quests = null, cast = npcDef
     // question 6).
     quest, sideQuests: quests ?? (withSideQuests ? sideQuests : []),
     mystery, riddle, npcs, ui, castle, controlsRef: controls, engine, audio,
-    saved, restart: () => { restarts.n++; },
+    saved, restart: () => { restarts.n++; }, rooms,
     onWatch: (w) => watches.push(w),
     // What main.js does with onChange, because the stage and the wrong-answer
     // count are the only two things in the save the engine does not own. Leave
     // it out and the reload below comes back in `arrive` with a Sext watch,
     // which is exactly the bug it is here to catch.
-    onChange: ({ stage, riddleWrong, quests }) => { state.stage = stage; state.riddleWrong = riddleWrong; state.quests = quests; },
+    onChange: ({ stage, riddleWrong, quests }) => { changes.n++; state.stage = stage; state.riddleWrong = riddleWrong; state.quests = quests; },
   });
   const npc = (id) => npcs.find((n) => n.id === id);
   return {
-    qm, ui, npcs, castle, controls, engine, state, restarts, watches, npc, audio,
+    qm, ui, npcs, castle, controls, engine, state, restarts, watches, changes, npc, audio,
     /** E on somebody, then step through to the end of what they say. */
     talk(id) { qm.handleInteract(npc(id)); ui.endDialogue(); return ui.toasts; },
     /** E on somebody, the Present button, then a clue in the list that opens. */
@@ -997,6 +998,42 @@ console.log('the places that are clues');
     check(!!cell && nav.inRoom(room, level, cx, cz, cell.h), `${c.id}: ${room} on level ${level} is floor the player is recognised as standing on`, cell ? `h ${cell.h}` : 'no cell');
     check(!!cell && nav.walkable({ x: cx, z: cz, level }), `${c.id}: and the player can walk there from the spawn`);
   }
+}
+
+/* ------------------------------------------------- the map, through the manager ---
+ * The journal's third tab (#589) is `mapJournal()`: every room the nav lists,
+ * marked with whether the engine's `visited` has it. Rooms come in through the
+ * constructor, so a rig with three rooms is a castle with three rooms. Two
+ * things are the manager's here and nowhere else: that a first visit marks the
+ * autosave the way a clue does and a second does not, and that the map is
+ * what `openJournal` is handed on J.
+ */
+console.log('\nthe map, through the manager');
+{
+  const rooms = [
+    { id: 'great-hall', name: 'Great Hall', level: 0, bounds: { min: { x: 0, z: 0 }, max: { x: 4, z: 4 } }, shape: null },
+    { id: 'cross-walk', name: 'The walk over the cross-wall', level: 2, bounds: { min: { x: 0, z: 0 }, max: { x: 1, z: 4 } }, shape: null },
+    { id: 'cell', name: 'The cell', level: 0, bounds: { min: { x: 5, z: 5 }, max: { x: 8, z: 8 } }, shape: { kind: 'disc', cx: 6.5, cz: 6.5, radius: 1.5 } },
+  ];
+  const r = rig({ rooms });
+  check(r.qm.mapJournal().every((m) => !m.visited) && r.qm.mapJournal().length === 3, 'fresh: three rooms, none stood in');
+  const before = r.changes.n;
+  r.qm.handleEnter('great-hall', 0);
+  check(r.changes.n === before + 1, 'the first step into a room marks the autosave, the way a clue does', `${r.changes.n - before} marks`);
+  r.qm.handleEnter('great-hall', 0);
+  check(r.changes.n === before + 1, 'and the second step into the same room does not', `${r.changes.n - before} marks`);
+  check(same(r.qm.mapJournal().map((m) => [m.id, m.visited]), [['great-hall', true], ['cross-walk', false], ['cell', false]]), 'the map marks the hall and nothing else', JSON.stringify(r.qm.mapJournal().map((m) => [m.id, m.visited])));
+  r.qm.handleJournal();
+  check(r.ui.journal?.map?.length === 3 && r.ui.journal.map.find((m) => m.id === 'great-hall')?.visited === true && r.ui.journal.map.find((m) => m.id === 'great-hall')?.name === 'Great Hall',
+    'J hands the UI the map, with the hall marked and named', JSON.stringify(r.ui.journal?.map));
+  // The walk is a room AND a clue: one step onto it lands walk-crosses and
+  // marks the walk, through the one call main.js makes on a room change (#588).
+  r.qm.handleEnter('cross-walk', 2);
+  check(r.holds('walk-crosses') && r.state.visited.includes('cross-walk'), 'one step onto the cross-wall walk is both the clue and the visit');
+  // A castle with no rooms has no map: the tab is not offered.
+  const bare = rig();
+  bare.qm.handleJournal();
+  check(bare.ui.journal?.map === null, 'a manager given no rooms hands the UI no map, so the tab is not offered');
 }
 
 console.log(failures ? `\n${failures} failure(s)` : '\nall good');

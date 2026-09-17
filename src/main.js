@@ -52,10 +52,12 @@ async function init() {
   // --- The save (src/save.js, key castleConundrumSave_v1). One slot; a reload
   // resumes the quest at its saved stage, with the riddle's wrong-answer count,
   // the documents already read (#551, version 3), where each side quest stands
-  // (version 4) and the player's position.
-  // `repair` has already dropped anything the data does not know, so what
-  // comes back here is safe to hand to the graph.
-  const slot = createCastleSlot({ mystery: mysteryData, quest: questData, documents: documentsData.documents, sideQuests });
+  // (version 4), the rooms stood in (version 5, the map) and the player's
+  // position. `repair` has already dropped anything the data does not know,
+  // so what comes back here is safe to hand to the graph. `rooms` is the
+  // config's list because it is the list `makePlan` builds the rooms from: a
+  // room cut from the config is cut from the castle and from the save together.
+  const slot = createCastleSlot({ mystery: mysteryData, quest: questData, documents: documentsData.documents, sideQuests, rooms: config.rooms });
   const saved = slot.load();
   const state = saved ?? slot.fresh();
 
@@ -185,6 +187,9 @@ async function init() {
       auto.mark();
     },
     saved,
+    // The forty rooms, for the journal's map. The nav's list rather than the
+    // plan's, so the name on the map is the name the HUD's room line shows.
+    rooms: nav.rooms(),
     onChange: ({ stage, riddleWrong, day, quests }) => { state.stage = stage; state.riddleWrong = riddleWrong; state.day = day; state.quests = quests; auto.mark(); },
     // What the epilogue's button does when it reads "Play Again" — at the end
     // of the second day, or at the end of a verdict with no morning after it
@@ -277,15 +282,6 @@ async function init() {
 
   // --- Loop ---
   const clock = new THREE.Clock();
-  // The rooms that are themselves a clue. One row in mystery.json is kind `L`
-  // and it is the cross-wall walk: standing on it is how `walk-crosses` is
-  // found, and without somebody noticing the crossing the Clerk's `lady-window`
-  // cannot be reached in the browser at all, while every Node suite that calls
-  // `engine.enter` directly goes on saying it is fine. Read off the clue list,
-  // so a second location clue needs no code here.
-  const placeClues = mysteryData.clues
-    .filter((c) => c.kind === 'L' && c.source?.room)
-    .map((c) => ({ room: c.source.room, level: c.source.level ?? 0, was: false }));
   let roomShown = null;
   renderer.setAnimationLoop(() => {
     const dt = Math.min(clock.getDelta(), 0.05);
@@ -294,20 +290,24 @@ async function init() {
     player.update(dt);
     castle.update(dt);
     // The HUD's room line: asked every frame, written only when the answer
-    // changes (#515). Thirty-six rooms is nothing; a DOM write a frame is not.
+    // changes (#515). Forty rooms is nothing; a DOM write a frame is not.
+    // THE SAME CHANGE IS WHAT ENTERS A ROOM (#588). Until rank 10's map this
+    // loop asked a second question of the one room that is itself a clue —
+    // mystery.json's kind `L`, the cross-wall walk — through `inRoom`, which
+    // is the same test `roomAt` settles for every room. One answer, two
+    // consumers: the HUD line, and the engine, which grants `walk-crosses` on
+    // the walk and puts every room on the map's visited set. Open ground is
+    // not a room and is not handed over: `repair` would drop it from the save
+    // on the next load, and a set the game writes knowing that is not a set.
     {
       const here = nav.roomAt(camera.position.x, camera.position.z, camera.position.y - EYE_HEIGHT);
-      if (here.id !== roomShown) { roomShown = here.id; ui.setRoom(here.name); }
-    }
-    if (player.isLocked && player.moving) {
-      auto.mark(); // walking: the position is dirty
-      const feet = camera.position.y - EYE_HEIGHT;
-      for (const c of placeClues) {
-        const now = nav.inRoom(c.room, c.level, camera.position.x, camera.position.z, feet);
-        if (now && !c.was) quest.handleEnter(c.room, c.level);
-        c.was = now;
+      if (here.id !== roomShown) {
+        roomShown = here.id;
+        ui.setRoom(here.name, here.open ? null : here.id);
+        if (!here.open) quest.handleEnter(here.id, here.level);
       }
     }
+    if (player.isLocked && player.moving) auto.mark(); // walking: the position is dirty
     for (const npc of npcs) npc.update(dt, camera.position);
     interaction.update();
     editor?.update();

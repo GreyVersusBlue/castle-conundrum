@@ -40,18 +40,19 @@ const memory = () => {
   const m = new Map();
   return { getItem: (k) => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: (k) => m.delete(k), keys: () => [...m.keys()] };
 };
-const slotWith = (storage = memory()) => ({ slot: createCastleSlot({ mystery, quest, documents, sideQuests, storage }), storage });
-const catalog = buildCatalog(mystery, quest, documents, sideQuests);
+const { rooms } = read('data/scene-config.json');
+const slotWith = (storage = memory()) => ({ slot: createCastleSlot({ mystery, quest, documents, sideQuests, rooms, storage }), storage });
+const catalog = buildCatalog(mystery, quest, documents, sideQuests, rooms);
 
 /* ----------------------------------------------------- 1: the slot itself --- */
 console.log('the slot');
 {
   const { slot, storage } = slotWith();
   check(slot.key === 'castleConundrumSave_v1' && SAVE_KEY === slot.key, 'the key is castleConundrumSave_v1 (#36, #413)');
-  check(slot.game === 'castle-conundrum' && SAVE_GAME === slot.game && slot.version === 4 && SAVE_VERSION === 4, 'game castle-conundrum, version 4 (rank 9)');
+  check(slot.game === 'castle-conundrum' && SAVE_GAME === slot.game && slot.version === 5 && SAVE_VERSION === 5, 'game castle-conundrum, version 5 (rank 10, the map)');
   const fresh = slot.fresh();
-  const shape = ['stage', 'quests', 'day', 'watch', 'clues', 'pressed', 'taken', 'read', 'locks', 'accusations', 'refusals', 'riddleWrong', 'player'];
-  check(same(Object.keys(fresh), shape), 'a fresh state has the thirteen fields of the schema, in order', Object.keys(fresh).join(', '));
+  const shape = ['stage', 'quests', 'day', 'watch', 'clues', 'pressed', 'taken', 'read', 'visited', 'locks', 'accusations', 'refusals', 'riddleWrong', 'player'];
+  check(same(Object.keys(fresh), shape), 'a fresh state has the fourteen fields of the schema, in order', Object.keys(fresh).join(', '));
   check(fresh.stage === quest.start && fresh.day === 1 && fresh.watch === 0 && fresh.player === null && fresh.refusals === 0, 'fresh: the start stage, day one, Prime, no player, no refusals');
   check(slot.load() === null, 'nothing stored loads as null');
   fresh.clues.push('body-stair');
@@ -113,7 +114,7 @@ const repaired = (s) => repairState(s, catalog);
   // Unknown ids are dropped from every list. Without them: the journal shows a
   // clue with no title, and the engine's `holds` says yes to nothing it knows.
   const dirty = {
-    stage: 'x', clues: ['body-stair', 'the-butler', 'body-stair', 42], taken: ['pouch', 'crown'], read: ['works-ledger', 'the-lost-codex'], locks: ['muniment', 'gate'],
+    stage: 'x', clues: ['body-stair', 'the-butler', 'body-stair', 42], taken: ['pouch', 'crown'], read: ['works-ledger', 'the-lost-codex'], visited: ['great-hall', 'outer-ward', 'great-hall', 'oubliette', 7], locks: ['muniment', 'gate'],
     pressed: { steward: ['admits', 'furious', 'default'], clerk: ['admits'], butler: ['pressed'], cook: 'admits' },
     accusations: [{ who: 'clerk', clues: ['tally-on-walk', 'nothing'], verdict: 'full', watch: 'sext' }, { who: 'butler', clues: [], verdict: 'wrong', watch: 'prime' }, { who: 'nobody', clues: [], verdict: 'nonsense', watch: 'noon' }, 'garbage', null],
   };
@@ -121,6 +122,13 @@ const repaired = (s) => repairState(s, catalog);
   check(same(r.clues, ['body-stair']), 'unknown and duplicate clues are dropped', r.clues.join(', '));
   check(same(r.taken, ['pouch']) && same(r.locks, ['muniment']), 'unknown evidence and locks are dropped');
   check(same(r.read, ['works-ledger']), 'an unknown document id is dropped from `read` (#551) the same way taken evidence is', r.read.join(', '));
+  check(same(r.visited, ['great-hall']), 'a room the plan does not build is dropped from `visited` (#588), the wards with it: they are ground, not rooms', r.visited.join(', '));
+  // Without it: the map counts a room that is not on it. The count the tab
+  // shows is over the plan's rooms, so a stray id never reaches the DOM — but
+  // the SAVE would carry it forever, and the next room cut from the config
+  // would be a room the player had "stood in" on every load after.
+  check(dirty.visited.filter((id) => typeof id === 'string').some((id) => !rooms.some((room) => room.id === id)),
+    'without it: the dirty set names rooms that are not in scene-config.json, so this rail is doing something');
   check(same(r.pressed, { steward: ['admits'] }), "pressed keeps only states that npc's presses reach; `default` and empty lists go", JSON.stringify(r.pressed));
   check(r.accusations.length === 2 && same(r.accusations[0], { who: 'clerk', clues: ['tally-on-walk'], verdict: 'full', watch: 'sext' }) && same(r.accusations[1], { who: 'nobody', clues: [], verdict: null, watch: null }), 'accusations keep known accusables, drop unknown clues, null an unknown verdict or watch, and skip non-objects', JSON.stringify(r.accusations));
   const raw = createMystery({ mystery, npcs: cast, state: { ...repaired({ stage: 'x' }), clues: ['the-butler'] } });
@@ -310,6 +318,27 @@ console.log('the second day, through the save');
   check(same(slot.load()?.quests, starts), 'a version-3 save reads with every quest unstarted', JSON.stringify(slot.load()?.quests));
   storage.setItem(SAVE_KEY, JSON.stringify({ __v: 4, stage: 'investigate', day: 1, quests: { [real.id]: other } }));
   check(slot.load()?.quests?.[real.id] === other, 'a version-4 save keeps where its quests stand');
+}
+{
+  /* WHAT `visited` IS (rank 10, version 5). One room id per room the player
+   * has stood in, in the order they were first entered, held to the rooms
+   * data/scene-config.json builds. It is `read`'s case: nothing a missing
+   * list could contradict, so repair's own default is right and the version
+   * only keeps the field's arrival honest (#37). */
+  const { slot, storage } = slotWith();
+  check(same(slot.fresh().visited, []), 'a fresh state has stood in no room');
+  for (const bad of [null, 'great-hall', { 'great-hall': true }, 7]) {
+    check(same(repaired({ visited: bad }).visited, []), `a \`visited\` of ${JSON.stringify(bad)} repairs to none`);
+  }
+  check(same(repaired({ visited: ['cell', 'kings-tower-2', 'cell'] }).visited, ['cell', 'kings-tower-2']), 'known rooms survive, once each, in the order they were entered');
+  check(same(repairState({ visited: ['cell'] }, buildCatalog(mystery, quest, documents, sideQuests)).visited, []),
+    'and a catalog built without the config carries no rooms rather than trusting the save');
+  storage.setItem(SAVE_KEY, JSON.stringify({ __v: 4, stage: 'investigate', day: 1, quests: {} }));
+  check(same(slot.load()?.visited, []), 'a version-4 save reads with no room stood in', JSON.stringify(slot.load()?.visited));
+  storage.setItem(SAVE_KEY, JSON.stringify({ __v: 3, stage: 'investigate', day: 1, visited: ['great-hall'] }));
+  check(same(slot.load()?.visited, ['great-hall']), 'a version-3 save carrying a `visited` from before the field existed keeps what is real in it, the way a stray `read` did');
+  storage.setItem(SAVE_KEY, JSON.stringify({ __v: 5, stage: 'investigate', day: 1, visited: ['great-hall', 'nw-tower-roof'] }));
+  check(same(slot.load()?.visited, ['great-hall', 'nw-tower-roof']), 'a version-5 save keeps the rooms it stood in', JSON.stringify(slot.load()?.visited));
 }
 {
   // THE INCOHERENT SAVE, BOTH WAYS. A `day: 2` with no verdict behind it is a

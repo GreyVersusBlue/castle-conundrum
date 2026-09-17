@@ -147,6 +147,15 @@ filling a room cost a key press was taken up instead: `?edit=1` on the dev
 server writes a prop's tile straight into `data/scene-config.json`.
 `test/tools.mjs` is the eleventh suite.
 
+**The map shipped on 2026-09-17** (#588 to #591): the journal's third tab,
+"The castle", draws the plan's 40 rooms a storey at a time as the discs and
+boxes `castle-plan.js` computes, fills a room in the first time the player
+stands in it, withholds the name of every room not yet stood in, and rings
+the one the HUD names. The set is `visited` on a version-5 save; the key did
+not move (#36). The HUD's room line is now the one thing that enters a room,
+the cross-wall walk's clue included, and `test/map.mjs` is the twelfth
+suite. **Rank 10 is still open**: the town half waits on rank 4's yard.
+
 **13 ranked items. Nothing is claimed.** Every one of ranks 1, 2, 3 and 5
 needs a machine this one is not: ranks 2, 3 and 5 a GPU (#518), rank 1 a
 network that reaches quaternius.com (#568), which #541's did and this one's
@@ -158,8 +167,9 @@ and validators rather than a render — 6, 8, 9, 10 and 13 — are the ones a
 container can start; 7, 11 and 12 all want either a recorded sound, a body on
 disk, or a GPU before their first increment closes. **Ranks 9 and 13 both shipped a
 first increment on 2026-09-17** and both next increments are a container's:
-rank 9's journal tab and next quests, rank 13's budget suite. So is rank 10's
-map, which is the part of that row nothing gates. Of them all, 6 is the one
+rank 9's journal tab and next quests, rank 13's budget suite. **Rank 10's map
+shipped the same day** (#588 to #591), and what is left of that row is the
+town, behind rank 4's yard. Of them all, 6 is the one
 that reads `data/npcs.json`'s `cast`, which is what ranks 1 and 11 are both
 for, so a session running beside one of those is better off on 8, 9, 10 or 13.
 
@@ -366,12 +376,14 @@ four roofs and the larder — which is `PLAN.md`'s "an empty room is worse than
 no room" as a fact rather than a risk. A latrine turret and a well chamber
 were considered and refused for that reason: they would make it 22.
 
-**What is next is area, and the map.** The town half still waits on rank 4's
-Thomas Wykes yard proving the ground west of the barbican can carry a
-building. The map does not wait on anything and is the part of this row a
-container can start: a journal page over the 40 rooms the plan already
-computes and the HUD already names (#515), with a visited set on the save.
-Filling the nineteen is ranks 8 and 6, made cheap by rank 13's editor.
+**The map shipped on 2026-09-17** (#588 to #591): the journal's third tab,
+over the 40 rooms the plan computes and the HUD names (#515), with a
+`visited` set on a version-5 save and `test/map.mjs` as the twelfth suite.
+Every room is drawn from the first; a room gives up its name and its fill
+the first time the player stands in it. **What is next is area.** The town
+half still waits on rank 4's Thomas Wykes yard proving the ground west of the
+barbican can carry a building. Filling the nineteen is ranks 8 and 6, made
+cheap by rank 13's editor.
 
 ## Bodies
 

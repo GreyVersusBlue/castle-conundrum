@@ -750,7 +750,7 @@ without the quest and diffing the journals.
 
 **Rank 10. Size 2+. The first increment as this section first specced it was
 already built, and the row's premise was corrected on 2026-09-17** (#582).
-`WISHLIST.md` theme 5.
+**The map shipped the same day** (#588 to #591). `WISHLIST.md` theme 5.
 
 ### What was measured, and what it changed
 
@@ -784,22 +784,33 @@ castle — and the volume step is done, so what is next is area.
   the rest of a walled town's street, church and quay, and it still starts
   only once that yard has proven the ground can carry a building. That
   dependency is unchanged and is the one thing genuinely gating this row.
-- **The map**, which this section used to gate on the unused floors giving it
-  something to fill in with. They already do, and have since #526. A journal
-  page that fills in as rooms are entered, over the 40 rooms
-  `castle-plan.js` already computes and the HUD already names every frame
-  (#515), is the cheapest thing in this row and the only part of it a
-  container can start today. `src/mystery.js` already has `enter(room,
-  level)`; the save carries a visited set, which is a version bump through
-  `migrate` (#37); the journal already has three tabs to be a fourth beside.
+- **The map: shipped** (#588 to #591). The journal's third tab, "The
+  castle", is `src/stations.js`'s `nav.rooms()` drawn by `src/ui.js`: one
+  inline SVG per storey in world metres, a `<circle>` for a tower room and a
+  `<rect>` for everything else, off the plan's own bounds and discs (#500).
+  `src/mystery.js`'s `enter(room, level)` puts the room on `visited` once and
+  says so with a `visited` effect; `src/main.js`'s room line is the one call
+  that enters a room, for every room, and the cross-wall walk's own clue
+  rides it (#588). The save is version 5 (#590) and `repair` holds the set
+  to `data/scene-config.json`'s `rooms`. `test/map.mjs` is the suite (#591).
+  What the tab looks like on a screen is unseen (#53): the SVG has been read
+  as a DOM and photographed by nothing.
 
-### Acceptance, next increment
+### Acceptance, the map (met)
 
 - The map lists every room the plan builds, marks the ones entered, and
   survives a reload (#39: the DOM for what just happened, the save for what a
-  reload has to survive).
+  reload has to survive). `test/map.mjs`.
 - A room the plan stops building is dropped from a save's visited set by
   `repair`, the same rail `read` and `quests` already go through.
+  `test/save.mjs`, and seen once from the page in `test/map.mjs`.
+
+### Scope, the town
+
+The town half is what is left of this row, and it starts only once rank 4's
+yard has proven the ground west of the barbican can carry a building. When
+it does, the town's rooms go on the map the day they go in `config.rooms`,
+because the map is the plan's list and not a second one.
 
 ### Open calls
 
@@ -815,7 +826,8 @@ castle — and the volume step is done, so what is next is area.
 
 ### Dependencies
 
-- **The town half waits on rank 4's yard.** The map waits on nothing.
+- **The town half waits on rank 4's yard.** The map waited on nothing and
+  shipped.
 
 ### Constraints
 

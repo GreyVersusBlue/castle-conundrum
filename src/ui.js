@@ -5,6 +5,9 @@
 // the accusation panel, which is also where the verdict and the epilogue are
 // read. The victory screen went with the riddle quest.
 
+/** What the map calls each storey (#589). The levels are the plan's; the words are here. */
+const STOREY_NAMES = { 0: 'The ground', 1: 'The first floor', 2: 'The wall walks and the top rooms', 3: 'The tower roofs' };
+
 export class UI {
   constructor() {
     this.el = {
@@ -35,6 +38,7 @@ export class UI {
       journalTabs: document.getElementById('journal-tabs'),
       journalTabClues: document.getElementById('journal-tab-clues'),
       journalTabRead: document.getElementById('journal-tab-read'),
+      journalTabMap: document.getElementById('journal-tab-map'),
       journalList: document.getElementById('journal-list'),
       journalClose: document.getElementById('journal-close'),
       accusation: document.getElementById('accusation-overlay'),
@@ -75,11 +79,15 @@ export class UI {
     this._onJournalPick = null;
     this._acc = null;
     this._toastTimer = null;
-    // The journal's two tabs (#551): only meaningful cold, on J; `openJournal`
-    // resets it to `clues` every time the journal opens fresh.
+    // The journal's three tabs (#551, #589): only meaningful cold, on J;
+    // `openJournal` resets it to `clues` every time the journal opens fresh.
     this._journalTab = 'clues';
     this._journalClues = { entries: [], empty: '' };
     this._journalRead = { entries: [], empty: '' };
+    this._journalMap = null;
+    // The id of the room the HUD's line names, or null on open ground: the
+    // map's "you are here" is read off the same answer as the line (#515).
+    this._roomHere = null;
 
     this.el.riddleSubmit.addEventListener('click', () => this._submitRiddle());
     this.el.riddleInput.addEventListener('keydown', (e) => {
@@ -97,6 +105,7 @@ export class UI {
     this.el.journalClose.addEventListener('click', () => this.closeJournal());
     this.el.journalTabClues?.addEventListener('click', () => this._setJournalTab('clues'));
     this.el.journalTabRead?.addEventListener('click', () => this._setJournalTab('read'));
+    this.el.journalTabMap?.addEventListener('click', () => this._setJournalTab('map'));
     this.el.accusationCancel.addEventListener('click', () => this.closeAccusation());
   }
 
@@ -178,7 +187,8 @@ export class UI {
   setWatch(text) { if (this.el.watch) this.el.watch.textContent = text; }
 
   /** Where the player is, by name (#515). */
-  setRoom(text) { if (this.el.room) this.el.room.textContent = text; }
+  /** The HUD's room line (#515), and with it the room id the map marks as here. */
+  setRoom(text, id = null) { if (this.el.room) this.el.room.textContent = text; this._roomHere = id; }
 
   setInteractPrompt(visible, text = '') {
     this.el.prompt.classList.toggle('hidden', !visible);
@@ -286,14 +296,19 @@ export class UI {
    * person in front of you with it. The two tabs only appear when `present` is
    * null: presenting is about clues alone, and offering "Things read" as
    * something to present would open a document on a press of the button that
-   * is supposed to hand over evidence.
+   * is supposed to hand over evidence. `map` is the third tab (#589): every
+   * room the plan builds, `{id, name, level, bounds, shape, visited}`, drawn
+   * as the castle's plan a storey at a time and filled in as they are entered.
    */
-  openJournal(entries, { empty = '', present = null, read = null, readEmpty = '' } = {}) {
+  openJournal(entries, { empty = '', present = null, read = null, readEmpty = '', map = null } = {}) {
     this._onJournalPick = present;
     this._journalClues = { entries, empty };
     this._journalRead = { entries: read ?? [], empty: readEmpty };
+    this._journalMap = map;
     this._journalTab = 'clues';
-    this.el.journalTabs?.classList.toggle('hidden', !!present || read === null);
+    this.el.journalTabs?.classList.toggle('hidden', !!present || (read === null && map === null));
+    this.el.journalTabRead?.classList.toggle('hidden', read === null);
+    this.el.journalTabMap?.classList.toggle('hidden', map === null);
     this.el.journal.classList.remove('hidden');
     document.exitPointerLock?.();
     this._renderJournalTab();
@@ -308,12 +323,16 @@ export class UI {
 
   _renderJournalTab() {
     const present = this._onJournalPick;
-    const showingRead = !present && this._journalTab === 'read';
-    this.el.journalTitle.textContent = present ? 'Present what?' : showingRead ? 'Things read' : 'What you know';
-    this.el.journalTabClues?.classList.toggle('active', !showingRead);
+    const tab = present ? 'clues' : this._journalTab;
+    const showingRead = tab === 'read';
+    const showingMap = tab === 'map' && !!this._journalMap;
+    this.el.journalTitle.textContent = present ? 'Present what?' : showingRead ? 'Things read' : showingMap ? 'The castle' : 'What you know';
+    this.el.journalTabClues?.classList.toggle('active', !showingRead && !showingMap);
     this.el.journalTabRead?.classList.toggle('active', showingRead);
-    const { entries, empty } = showingRead ? this._journalRead : this._journalClues;
+    this.el.journalTabMap?.classList.toggle('active', showingMap);
     this.el.journalList.replaceChildren();
+    if (showingMap) { this._renderJournalMap(this._journalMap); return; }
+    const { entries, empty } = showingRead ? this._journalRead : this._journalClues;
     if (!entries.length) {
       const p = document.createElement('p');
       p.className = 'journal-empty';
@@ -331,6 +350,72 @@ export class UI {
       row.append(h, t);
       if (present) row.addEventListener('click', () => this._onJournalPick?.(c.id));
       this.el.journalList.append(row);
+    }
+  }
+
+  /**
+   * THE MAP (#589). One drawing per storey, every storey on the same frame so
+   * a tower's rooms stack under each other down the page, each room the
+   * shape the plan gives it — a disc for a tower interior, a box for
+   * everything else — in world metres straight into the SVG's user space,
+   * north up because the plan's -z is north. A room stood in is filled, a
+   * room not yet stood in is an outline, and the one the HUD's line names is
+   * ringed. Under each drawing the same rooms by name, because forty unlabelled
+   * shapes is a puzzle and the journal is not where the puzzles are. Every
+   * room is a `.map-room[data-id][data-visited]` twice over, shape and name,
+   * which is what test/map.mjs reads.
+   */
+  _renderJournalMap(rooms) {
+    const NS = 'http://www.w3.org/2000/svg';
+    const svgEl = (tag, attrs = {}) => {
+      const el = document.createElementNS(NS, tag);
+      for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, String(v));
+      return el;
+    };
+    const stood = rooms.filter((r) => r.visited).length;
+    const count = document.createElement('p');
+    count.id = 'journal-map-count';
+    count.className = 'journal-map-count';
+    count.textContent = `${stood} of ${rooms.length} rooms stood in`;
+    this.el.journalList.append(count);
+    if (!rooms.length) return;
+    // One frame for every storey: the castle's whole extent plus a metre.
+    const pad = 1;
+    const minX = Math.min(...rooms.map((r) => r.bounds.min.x)) - pad;
+    const maxX = Math.max(...rooms.map((r) => r.bounds.max.x)) + pad;
+    const minZ = Math.min(...rooms.map((r) => r.bounds.min.z)) - pad;
+    const maxZ = Math.max(...rooms.map((r) => r.bounds.max.z)) + pad;
+    const levels = [...new Set(rooms.map((r) => r.level))].sort((a, b) => a - b);
+    for (const level of levels) {
+      const here = rooms.filter((r) => r.level === level);
+      const section = document.createElement('section');
+      section.className = 'map-storey';
+      section.dataset.level = level;
+      const h = document.createElement('h3');
+      h.textContent = `${STOREY_NAMES[level] ?? `Level ${level}`} — ${here.filter((r) => r.visited).length} of ${here.length}`;
+      const svg = svgEl('svg', { viewBox: `${minX} ${minZ} ${maxX - minX} ${maxZ - minZ}`, class: 'map-plan', role: 'img', 'aria-label': h.textContent });
+      const names = document.createElement('div');
+      names.className = 'map-names';
+      for (const r of here) {
+        const isHere = r.id === this._roomHere;
+        const attrs = { class: `map-room${r.visited ? ' visited' : ''}${isHere ? ' here' : ''}`, 'data-id': r.id, 'data-visited': r.visited ? '1' : '0' };
+        const shape = r.shape?.kind === 'disc'
+          ? svgEl('circle', { cx: r.shape.cx, cy: r.shape.cz, r: r.shape.radius, ...attrs })
+          : svgEl('rect', { x: r.bounds.min.x, y: r.bounds.min.z, width: r.bounds.max.x - r.bounds.min.x, height: r.bounds.max.z - r.bounds.min.z, ...attrs });
+        const title = svgEl('title');
+        title.textContent = r.visited ? r.name : `${r.name} (not yet)`;
+        shape.append(title);
+        svg.append(shape);
+        const name = document.createElement('span');
+        name.className = attrs.class;
+        name.dataset.id = r.id;
+        name.dataset.visited = attrs['data-visited'];
+        name.textContent = r.visited ? r.name : '· · ·';
+        name.title = r.visited ? r.name : 'Not yet stood in';
+        names.append(name);
+      }
+      section.append(h, svg, names);
+      this.el.journalList.append(section);
     }
   }
 

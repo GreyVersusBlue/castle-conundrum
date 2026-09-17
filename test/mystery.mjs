@@ -434,6 +434,13 @@ function play(state = freshState(frame)) {
   check(clueIds(fx).includes('sentry-sighting'), 'the sentry, awake, saw fur on the walk');
   fx = m.enter('cross-walk', 2);
   check(clueIds(fx).includes('walk-crosses'), 'walking the cross-wall walk grants walk-crosses');
+  // THE MAP'S SET (#588). The first step into a room is a `visited` effect and
+  // a room on the list; the second is neither, so the manager marks the
+  // autosave once per room and not once per doorway.
+  check(fx.some((e) => e.type === 'visited' && e.room === 'cross-walk') && state.visited.includes('cross-walk'), 'and the walk is on `visited`, with a `visited` effect saying so');
+  fx = m.enter('cross-walk', 2);
+  check(!fx.some((e) => e.type === 'visited') && state.visited.filter((r) => r === 'cross-walk').length === 1, 'a second step onto it is no effect and no second entry');
+  check(clueIds(fx).length === 0, 'and grants nothing twice');
   fx = m.examine('walk-door');
   check(clueIds(fx).includes('door-unbarred'), 'the Stockhouse door, unbarred');
   fx = m.examine('tally');

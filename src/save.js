@@ -1,11 +1,11 @@
 // save.js — the one save slot for Castle Conundrum, through `./gvb-save.js`,
 // this repo's vendored copy of the site-wide save module (#502; relative
 // import so this file runs in Node too). Key `castleConundrumSave_v1`, game
-// `castle-conundrum`, version 4. The key never changes (#36), and it does not
+// `castle-conundrum`, version 5. The key never changes (#36), and it does not
 // change here either: what moved is the version number inside it.
 //
 //   { stage, quests{id: stage}, day, watch, clues[], pressed{npc: state[]},
-//     taken[], read[], locks[], accusations[{who, clues, verdict, watch}],
+//     taken[], read[], visited[], locks[], accusations[{who, clues, verdict, watch}],
 //     refusals, riddleWrong, player{x, y, z, yaw} | null }
 //
 // VERSION 2 IS THE SECOND DAY (#533). #413 said the schema was complete so that
@@ -32,6 +32,14 @@
 // anyway. The version goes up because the field arriving is what a version
 // number is for (#37), not because migrate has anything to do.
 //
+// VERSION 5 IS `visited` (BACKLOG.md rank 10, the map). One room id per room
+// the player has stood in, in the order they were first entered, and it is
+// `read`'s case again: a room never entered is a room not on the list, which
+// is what repair writes for a save with no list at all. The catalog's rooms
+// come off data/scene-config.json's `rooms`, which is the list `makePlan`
+// builds the castle's rooms from and nothing else, so a room the plan stops
+// building is a room repair drops from the set on the next load.
+//
 // `validate` refuses a non-object and a non-string stage and nothing else;
 // everything past that is `repair`'s, which runs on every load (#37) and
 // builds its catalog from data/mystery.json, data/quest.json and
@@ -46,7 +54,7 @@ import { createSaveSlot } from './gvb-save.js';
 
 export const SAVE_KEY = 'castleConundrumSave_v1';
 export const SAVE_GAME = 'castle-conundrum';
-export const SAVE_VERSION = 4;
+export const SAVE_VERSION = 5;
 
 /**
  * Every id a save may carry, read off the data. `quest` is data/quest.json,
@@ -56,7 +64,7 @@ export const SAVE_VERSION = 4;
  * to `start` and the day begins again, which is the only honest answer when the
  * quest it was halfway through no longer exists. The key does not change (#36).
  */
-export function buildCatalog(mystery, quest, documents = [], sideQuests = []) {
+export function buildCatalog(mystery, quest, documents = [], sideQuests = [], rooms = []) {
   const stages = new Set(Object.keys(quest?.stages ?? {}));
   // One entry per side quest, each with its own start and its own stage ids, so
   // a save carrying a stage of a quest that has since been rewritten resets to
@@ -72,12 +80,13 @@ export function buildCatalog(mystery, quest, documents = [], sideQuests = []) {
   const evidence = new Set((mystery?.evidence ?? []).map((e) => e.id));
   const locks = new Set((mystery?.locks ?? []).map((l) => l.id));
   const documentIds = new Set((documents ?? []).map((d) => d.id));
+  const roomIds = new Set((rooms ?? []).map((r) => r?.id).filter((id) => typeof id === 'string'));
   const npcs = new Map();
   for (const id of Object.keys(mystery?.schedule ?? {})) npcs.set(id, new Set(['default']));
   for (const p of mystery?.presses ?? []) { if (npcs.has(p.npc)) npcs.get(p.npc).add(p.to); }
   const accusables = new Set([...npcs.keys(), 'nobody']);
   const verdicts = new Set(['full', 'right', 'wrong', 'fall']);
-  return { start: quest?.start ?? 'start', stages, quests, watches, clues, evidence, locks, documents: documentIds, npcs, accusables, verdicts };
+  return { start: quest?.start ?? 'start', stages, quests, watches, clues, evidence, locks, documents: documentIds, rooms: roomIds, npcs, accusables, verdicts };
 }
 
 const nonNegInt = (v) => (Number.isInteger(v) && v >= 0 ? v : 0);
@@ -120,6 +129,7 @@ export function repairState(state, catalog) {
   }
   out.taken = idsIn(s.taken, catalog.evidence);
   out.read = idsIn(s.read, catalog.documents);
+  out.visited = idsIn(s.visited, catalog.rooms ?? new Set());
   out.locks = idsIn(s.locks, catalog.locks);
   out.accusations = [];
   for (const a of Array.isArray(s.accusations) ? s.accusations : []) {
@@ -145,8 +155,8 @@ export function repairState(state, catalog) {
  * The slot. `storage` is injectable for tests (a Map-backed stub); in the
  * browser it is localStorage with gvb-save's private-mode fallback.
  */
-export function createCastleSlot({ mystery, quest, documents = [], sideQuests = [], storage = null }) {
-  const catalog = buildCatalog(mystery, quest, documents, sideQuests);
+export function createCastleSlot({ mystery, quest, documents = [], sideQuests = [], rooms = [], storage = null }) {
+  const catalog = buildCatalog(mystery, quest, documents, sideQuests, rooms);
   const slot = createSaveSlot({
     game: SAVE_GAME,
     key: SAVE_KEY,
@@ -162,6 +172,7 @@ export function createCastleSlot({ mystery, quest, documents = [], sideQuests = 
       let out = from < 2 ? { ...s, day: 1 } : s;
       if (from < 3) out = { ...out, read: out.read ?? [] };
       if (from < 4) out = { ...out, quests: out.quests ?? {} };
+      if (from < 5) out = { ...out, visited: out.visited ?? [] };
       return out;
     },
     repair: (s) => repairState(s, catalog),

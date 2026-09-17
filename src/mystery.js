@@ -858,6 +858,7 @@ export function freshState(quest) {
     pressed: {},
     taken: [],
     read: [],
+    visited: [],
     locks: [],
     accusations: [],
     refusals: 0,
@@ -878,7 +879,7 @@ export function createMystery({ mystery, npcs, state }) {
   const ix = index(mystery, npcs);
   const { watches, clues, evidence, presses, accusation } = ix;
   const st = state ?? freshState();
-  st.clues ??= []; st.pressed ??= {}; st.taken ??= []; st.read ??= []; st.locks ??= []; st.accusations ??= [];
+  st.clues ??= []; st.pressed ??= {}; st.taken ??= []; st.read ??= []; st.visited ??= []; st.locks ??= []; st.accusations ??= [];
   st.refusals ??= 0; st.watch ??= 0; st.day ??= 1;
 
   const day2 = mystery?.day2 ?? null;
@@ -1010,8 +1011,22 @@ export function createMystery({ mystery, npcs, state }) {
       return effects;
     },
 
+    /**
+     * The player has walked into a room. Two things come of it. Every `L` clue
+     * whose source is the room lands, which is how `walk-crosses` is found;
+     * and the room goes on `visited`, the map's set (BACKLOG.md rank 10), once
+     * — a `visited` effect the first time and nothing the second, so the
+     * manager can mark the autosave on a first visit and not on every step
+     * back through a doorway. The engine does not know which rooms the plan
+     * builds; main.js only calls this for one that is, and `repair` drops
+     * anything that is not (src/save.js).
+     */
     enter(room, level = null) {
       const effects = [{ type: 'entered', room, level }];
+      if (typeof room === 'string' && room && !st.visited.includes(room)) {
+        st.visited.push(room);
+        effects.push({ type: 'visited', room, level });
+      }
       for (const c of clues.values()) {
         if (c.kind === 'L' && c.source?.room === room && (c.source.level == null || level == null || c.source.level === level)) grant(c.id, effects);
       }
