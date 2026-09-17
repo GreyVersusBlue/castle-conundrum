@@ -26,6 +26,7 @@ const read = (rel) => JSON.parse(fs.readFileSync(path.join(ROOT, rel), 'utf8'));
 const mystery = read('data/mystery.json');
 const quest = read('data/quest.json');
 const { cast } = read('data/npcs.json');
+const { documents } = read('data/documents.json');
 
 let failures = 0;
 const fail = (msg) => { console.log(`  FAIL  ${msg}`); failures++; };
@@ -38,18 +39,18 @@ const memory = () => {
   const m = new Map();
   return { getItem: (k) => (m.has(k) ? m.get(k) : null), setItem: (k, v) => m.set(k, String(v)), removeItem: (k) => m.delete(k), keys: () => [...m.keys()] };
 };
-const slotWith = (storage = memory()) => ({ slot: createCastleSlot({ mystery, quest, storage }), storage });
-const catalog = buildCatalog(mystery, quest);
+const slotWith = (storage = memory()) => ({ slot: createCastleSlot({ mystery, quest, documents, storage }), storage });
+const catalog = buildCatalog(mystery, quest, documents);
 
 /* ----------------------------------------------------- 1: the slot itself --- */
 console.log('the slot');
 {
   const { slot, storage } = slotWith();
   check(slot.key === 'castleConundrumSave_v1' && SAVE_KEY === slot.key, 'the key is castleConundrumSave_v1 (#36, #413)');
-  check(slot.game === 'castle-conundrum' && SAVE_GAME === slot.game && slot.version === 2 && SAVE_VERSION === 2, 'game castle-conundrum, version 2 (#533)');
+  check(slot.game === 'castle-conundrum' && SAVE_GAME === slot.game && slot.version === 3 && SAVE_VERSION === 3, 'game castle-conundrum, version 3 (#551)');
   const fresh = slot.fresh();
-  const shape = ['stage', 'day', 'watch', 'clues', 'pressed', 'taken', 'locks', 'accusations', 'refusals', 'riddleWrong', 'player'];
-  check(same(Object.keys(fresh), shape), 'a fresh state has the eleven fields of the schema, in order', Object.keys(fresh).join(', '));
+  const shape = ['stage', 'day', 'watch', 'clues', 'pressed', 'taken', 'read', 'locks', 'accusations', 'refusals', 'riddleWrong', 'player'];
+  check(same(Object.keys(fresh), shape), 'a fresh state has the twelve fields of the schema, in order', Object.keys(fresh).join(', '));
   check(fresh.stage === quest.start && fresh.day === 1 && fresh.watch === 0 && fresh.player === null && fresh.refusals === 0, 'fresh: the start stage, day one, Prime, no player, no refusals');
   check(slot.load() === null, 'nothing stored loads as null');
   fresh.clues.push('body-stair');
@@ -111,13 +112,14 @@ const repaired = (s) => repairState(s, catalog);
   // Unknown ids are dropped from every list. Without them: the journal shows a
   // clue with no title, and the engine's `holds` says yes to nothing it knows.
   const dirty = {
-    stage: 'x', clues: ['body-stair', 'the-butler', 'body-stair', 42], taken: ['pouch', 'crown'], locks: ['muniment', 'gate'],
+    stage: 'x', clues: ['body-stair', 'the-butler', 'body-stair', 42], taken: ['pouch', 'crown'], read: ['works-ledger', 'the-lost-codex'], locks: ['muniment', 'gate'],
     pressed: { steward: ['admits', 'furious', 'default'], clerk: ['admits'], butler: ['pressed'], cook: 'admits' },
     accusations: [{ who: 'clerk', clues: ['tally-on-walk', 'nothing'], verdict: 'full', watch: 'sext' }, { who: 'butler', clues: [], verdict: 'wrong', watch: 'prime' }, { who: 'nobody', clues: [], verdict: 'nonsense', watch: 'noon' }, 'garbage', null],
   };
   const r = repaired(dirty);
   check(same(r.clues, ['body-stair']), 'unknown and duplicate clues are dropped', r.clues.join(', '));
   check(same(r.taken, ['pouch']) && same(r.locks, ['muniment']), 'unknown evidence and locks are dropped');
+  check(same(r.read, ['works-ledger']), 'an unknown document id is dropped from `read` (#551) the same way taken evidence is', r.read.join(', '));
   check(same(r.pressed, { steward: ['admits'] }), "pressed keeps only states that npc's presses reach; `default` and empty lists go", JSON.stringify(r.pressed));
   check(r.accusations.length === 2 && same(r.accusations[0], { who: 'clerk', clues: ['tally-on-walk'], verdict: 'full', watch: 'sext' }) && same(r.accusations[1], { who: 'nobody', clues: [], verdict: null, watch: null }), 'accusations keep known accusables, drop unknown clues, null an unknown verdict or watch, and skip non-objects', JSON.stringify(r.accusations));
   const raw = createMystery({ mystery, npcs: cast, state: { ...repaired({ stage: 'x' }), clues: ['the-butler'] } });
@@ -250,10 +252,24 @@ console.log('the second day, through the save');
    * take it, because the verdict beside it makes it coherent. */
   storage.setItem(SAVE_KEY, JSON.stringify({ __v: 1, stage: 'fall', day: 2, accusations: [{ who: 'nobody', clues: [], verdict: 'fall', watch: 'vespers' }] }));
   check(slot.load()?.day === 1, 'a version-1 save claiming day 2 is still day one: version 1 had no second day to be on', JSON.stringify(slot.load()?.day));
-  // And a version-2 save is left alone.
+  // And a version-2 save keeps its day; `day` is not what version 3 touches.
   const two = { __v: 2, stage: 'morning', day: 2, accusations: [{ who: 'nobody', clues: [], verdict: 'fall', watch: 'vespers' }] };
   storage.setItem(SAVE_KEY, JSON.stringify(two));
   check(slot.load()?.day === 2, 'a version-2 save keeps its day');
+}
+{
+  // WHAT `read` IS (#551). A version-1 or version-2 save was written before
+  // there were documents to read, and comes back with an empty list — through
+  // repair alone, the same as a `taken` that was never there, since there is
+  // no coherence question a missing `read` could get wrong.
+  const { slot, storage } = slotWith();
+  storage.setItem(SAVE_KEY, JSON.stringify({ __v: 1, stage: 'investigate', clues: ['summons-note'] }));
+  check(same(slot.load()?.read, []), 'a version-1 save reads with no documents read', JSON.stringify(slot.load()?.read));
+  storage.setItem(SAVE_KEY, JSON.stringify({ __v: 2, stage: 'investigate', day: 1, read: ['no-such-document'] }));
+  check(same(slot.load()?.read, []), 'a version-2 save carrying a stray `read` of an id from before this row is still filtered, not merely defaulted');
+  // A version-3 save round-trips a real one.
+  storage.setItem(SAVE_KEY, JSON.stringify({ __v: 3, stage: 'investigate', day: 1, read: ['works-ledger', 'gravestone'] }));
+  check(same(slot.load()?.read, ['works-ledger', 'gravestone']), 'a version-3 save keeps the documents it read', JSON.stringify(slot.load()?.read));
 }
 {
   // THE INCOHERENT SAVE, BOTH WAYS. A `day: 2` with no verdict behind it is a

@@ -28,6 +28,7 @@ const SUITES = [
   ['quest', 'the quest graph against the cast'],
   ['mystery', "the mystery's validator and engine"],
   ['save', "the save's repair rails"],
+  ['lore', 'the canon, the documents and the chatter pool'],
   // Headless browser against `vite dev`: source, not the bundle.
   ['plan-vs-scene', 'the plan against the castle the browser actually builds'],
   ['touch', 'the second input scheme, on a page with a touchscreen'],

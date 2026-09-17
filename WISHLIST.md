@@ -129,51 +129,66 @@ mostly heard: the bell was the obvious one, and the next twenty are ambient.
 
 ### 3. Lore: the castle has a history, and the player can read it
 
-The mystery is one night. The castle is forty years of building and a war
-before that, and none of it is anywhere in the game.
+**Shipped, rank 6, 2026-09-16 (#551 to #555).** The mystery is one night; the
+castle now carries forty years of building and a war before it, in a
+validated canon, six documents the player can read, and a chatter pool for
+the twelve. What is below is what shipped and what is still open.
 
 **The world is invented, and it leans into the fantasy** (#549, Devon's
-answer to question 1). The plan is Conwy's and the feel is the 1280s, but
-the kingdom, the King, the war and the saints are made up, and the kit is
-called a retro *fantasy* kit for a reason: v1 had a Wizard, and the castle
-can have a hedge-witch in the outer ward, a relic in the chapel that the
-chaplain half believes in, a well the garrison will not drink from after
-dark, and a story about what is under the Prison Tower that Madoc has
-heard through the floor. Not high fantasy. Nobody casts anything on screen.
-The fantasy is what the people believe and what the player is never quite
-told is untrue, and an invented world is what lets the second mystery and
-the tenth be about anything at all.
+answer to question 1), and stayed invented: `data/lore.json`'s thirty-one
+facts name a kingdom, Vantry, two Kings across the forty years (Aldous, who
+fought the March War and began the works; his son Osric, who reigns now and
+whose coin the Sunder War is still spending), and two saints (Osyth, the
+crown's; Cadeyrn, the March's own, kept by the masons without troubling the
+chaplain about it). The plan is Conwy's and the feel is the 1280s; the Welsh
+names PLAN.md already gave the twelve are untouched, and the kingdom is laid
+over them rather than replacing anything. Nobody casts anything on screen.
+The hedge-witch, the chapel relic, the well the garrison will not drink from
+after dark and the thing Madoc hears under the Prison Tower's floor are all
+in, every one of them a `belief` or a `rumour` the game never confirms.
 
-- **A canon, in one file.** `data/lore.json`: who built the castle and why,
-  when each tower went up and who died on it, what the war before it was,
-  what the town outside owes and to whom, who was Constable before this one,
-  what the garrison is owed in wages and how far behind the King is, what
-  the people of the outer ward think of the household in the inner, and the
-  handful of things nobody can prove. Every fact carries an id, and every
-  place it is said (a document, a line, a chatter pair, an epilogue pane)
-  cites the id, so the validator can say which facts are never told and
-  which two tellings disagree.
-- **Documents everywhere.** The works ledger, the gaol roll (already on
-  rank 4's path), the chaplain's obituary roll, the porter's gate book, the
-  cook's accounts, the steward's letters, the mason's own marks cut into the
-  stone, a builder's graffito at the top of a stair, gravestones in the
-  chapel floor, the King's writ on the muniment room wall. Each is a prop
-  with a `read` verb that opens a pane, in the period's own voice, and each
-  one the player reads goes into the journal under a new tab, **Things
-  read**. Most convict nobody. That is the point.
-- **A castle that says where it is in its own history.** A castle built
-  after a conquest, by foreign masons, with the conquered as labourers, for a
-  King who is not there and whose money is late. That much is Conwy's shape
-  and it stays; the names on it are the game's own. A player who finishes
-  the game should know all of it without having been told it once as
-  exposition.
-- **The chaplain's sermon at Vespers and a song in the hall at Sext** are
-  the two set pieces where lore is performed, not read, and each is a
-  pool of texts so a second day does not repeat the first.
-- **Facts that change.** The second day (#533) already carries seven endings'
-  worth of consequences. Lore is the same shape over a longer clock: a fact
-  can carry a `since` field, and a rumour told on day two can be about what
-  the player did on day one.
+- **A canon, in one file, shipped.** `data/lore.json`: every fact has an id,
+  a `kind` (`history`, `person`, `place`, `belief`, `rumour`), one paragraph
+  in the period's own voice, and `sources` naming where it is actually told.
+  `src/lore.js` validates it — an unknown source, a dangling id, a
+  contradiction between two facts neither of which is a `belief` or a
+  `rumour`, and a document placed somewhere permanently unreachable all fail
+  the suite; a fact with no source is reported as untold rather than failed
+  on. `test/lore.mjs` is the tenth suite. The validator caught a real
+  authoring mistake before a single synthetic break was written: two facts
+  claimed a document as a source that the document's own `cites` did not
+  name back.
+- **Documents: six of them, shipped.** The works ledger (Clerk of Works'
+  office), the chaplain's obituary roll (his chamber), the porter's gate book
+  (his lodge), a builder's graffito cut into the floor at the top of the
+  Kitchen Tower's stair (the garrison dormitory), a gravestone in the chapel
+  floor (Sir Walter Esturmy, the Constable before this one), and the King's
+  writ (the muniment room). Each is a built slab — no new asset, the same
+  pattern the cloak and the walk-bar already used — with a `read` verb that
+  opens the dialogue overlay and files itself into the journal's new tab,
+  **Things read**, which persists through a reload: the save moved to
+  version 3 for it (`read: []`, #36, #37). Still open: the gaol roll (already
+  on rank 4's path), the cook's accounts, the steward's letters, the mason's
+  own marks cut into the stone elsewhere, and more gravestones.
+- **Chatter: shipped, for the twelve, not the fifty.** `data/npcs.json`
+  carries an eighteen-pair pool keyed by ward then watch, each pair naming
+  its two speakers and, where it tells one, a lore id. It validates against
+  each speaker's own `ward` field, not the schedule's exact station, which is
+  this row's own recommended-and-taken open call — a later pass could hold it
+  to the schedule the way `mystery.js`'s nav rails do. The pool is unused by
+  the game today: this repo has no populace yet (theme 1), and ambient talk
+  between two populace bodies in earshot is that row's to spend it on.
+- **A castle that says where it is in its own history.** Shipped in the
+  canon and the documents: built after a conquest (the March War), by a
+  King who is not there (Osric) and whose money is late (the Sunder War),
+  with the March's own people supplying the labour and, within a generation,
+  its own master masons (Hywel is the fourth). That much is Conwy's shape and
+  it stays; the names on it are the game's own.
+- **Still open.** The chaplain's sermon at Vespers and a song in the hall at
+  Sext, the two set pieces where lore would be performed rather than read,
+  each its own pool so a second day does not repeat the first. And facts
+  that change: a `since` field and a rumour that is about what the player did
+  on day one, which wants the second-day machinery this row did not touch.
 
 ### 4. Side quests: lore with a verb
 

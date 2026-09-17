@@ -2272,9 +2272,17 @@
     "oak": {
       "color": "#5a4128",
       "roughness": 0.9
+    },
+    "parchment": {
+      "color": "#c9b385",
+      "roughness": 0.85
+    },
+    "slate": {
+      "color": "#5b5f63",
+      "roughness": 0.8
     }
   },
-  "plainMaterialsComment": "Built surfaces with no texture set on disk and no set on the stone list: the cell's bars, the cloak over the laundry crate and the bar leaning beside the Stockhouse walk door. A colour, a roughness and a metalness, no maps. They are not in `materials` because every entry there has to be a complete diffuse + normal + arm/rough set, and these would have had to weaken that rail to live beside it. test/assets.mjs checks the opposite shape here: a colour and no path.",
+  "plainMaterialsComment": "Built surfaces with no texture set on disk and no set on the stone list: the cell's bars, the cloak over the laundry crate, the bar leaning beside the Stockhouse walk door, and the six readable documents (#551) — a vellum colour for a roll or a writ, a stone-grey for a floor mark or a grave. A colour, a roughness and a metalness, no maps. They are not in `materials` because every entry there has to be a complete diffuse + normal + arm/rough set, and these would have had to weaken that rail to live beside it. test/assets.mjs checks the opposite shape here: a colour and no path.",
   "builtProps": [
     {
       "id": "cloak",
@@ -2307,6 +2315,102 @@
         0.12
       ],
       "comment": "The bar that should be across the Stockhouse Tower's walk door, standing on end against the ring inside the tower's top room just north of that door, dust on the brackets. `door-unbarred` is read off it. The door itself is the ring's opening; the bar is the object. It stands over the stub of north-curtain-mid that reaches into the tower, whose top is the level-2 floor."
+    },
+    {
+      "id": "works-ledger",
+      "read": "works-ledger",
+      "material": "oak",
+      "tile": [
+        -7.15,
+        -2.15
+      ],
+      "base": 0,
+      "size": [
+        0.5,
+        0.25,
+        0.35
+      ],
+      "comment": "A stack of ledger books on the Clerk of Works' office floor, away from his own station at tile [-7.5, -2.5] and the barrels and roped crate against the west wall (#551, data/documents.json)."
+    },
+    {
+      "id": "obituary-roll",
+      "read": "obituary-roll",
+      "material": "parchment",
+      "tile": [
+        6.2,
+        3.9
+      ],
+      "base": 4,
+      "size": [
+        0.4,
+        0.2,
+        0.3
+      ],
+      "comment": "A small chest of the chaplain's rolls, in his chamber over the chapel, clear of the crate on the west half and the stairwell (#551). Sits inside the tower's own 2.8 m interior circle, verified by checking the built box against every stone sector and flight in the plan rather than by eye."
+    },
+    {
+      "id": "gate-book",
+      "read": "gate-book",
+      "material": "oak",
+      "tile": [
+        0.375,
+        -4.375
+      ],
+      "base": 0,
+      "size": [
+        0.45,
+        0.22,
+        0.32
+      ],
+      "comment": "The porter's gate book, east half of his lodge, clear of the barrels and the stairwell (#551)."
+    },
+    {
+      "id": "builder-graffito",
+      "read": "builder-graffito",
+      "material": "slate",
+      "tile": [
+        -5.5,
+        -2.15
+      ],
+      "base": 4,
+      "size": [
+        0.5,
+        0.05,
+        0.5
+      ],
+      "comment": "A floor slab at the head of the Kitchen Tower's stair, in the garrison dormitory, clear of the timber frame and the barrels: a mason's mark cut into the stone rather than a new asset (#551)."
+    },
+    {
+      "id": "gravestone",
+      "read": "gravestone",
+      "material": "slate",
+      "tile": [
+        5.45,
+        3.8
+      ],
+      "base": 0,
+      "size": [
+        0.6,
+        0.04,
+        1.2
+      ],
+      "comment": "Sir Walter Esturmy's gravestone, set into the chapel floor on the west side of the tower's interior, clear of the stairwell, the curtain, the garden wall beyond it and the body's lantern, candles, pouch and bell rope on the south-east side (#551). Sized down from an initial 0.9 x 1.8 m slab, which had nowhere in the interior circle it did not clip something."
+    },
+    {
+      "id": "kings-writ",
+      "read": "kings-writ",
+      "material": "parchment",
+      "tile": [
+        5.4,
+        -4.1
+      ],
+      "base": 0,
+      "size": [
+        0.5,
+        0.2,
+        0.35
+      ],
+      "comment": "The King's writ, posted in the muniment room on the west side of the tower's interior, clear of table-muniment, the word-lock's door arc and the garden wall on the east side (#551)."
     }
   ],
   "drumsComment": "Eight drums. `interior.doors` is every opening in the ring: `base` is the opening's floor (0, 4 or 8, a level's height), `theta` its bearing in three's cylinder angle (0 is +z, south; 90 is +x, east), `arc` its width in degrees, and both have to land on the drum's own vertices. The level-0 door is the room's; the level-1 doors (three of them) lead to the chambers built over the rooms beside those towers; the level-2 doors are where the wall walk passes through the tower's top room, sixty degrees wide because a 2 m deck's cells cross the ring over about thirty degrees and the grid's sector boxes bulge past that. The Stockhouse Tower's west door at level 2 carries `bar`: it is the walk door the porter swears he bars every night, it ships open because he did not, and `bar.closed` is the one thing test/layout.mjs forces shut to prove the wards would separate if he had. `stairs` names the side of the tower the upper flight and its well go on, which is the outer side, away from where the walk crosses. `lowerFlight: false` on the two towers whose ground room is shut leaves them the upper flight only.",

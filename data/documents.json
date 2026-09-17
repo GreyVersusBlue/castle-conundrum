@@ -1,0 +1,145 @@
+{
+  "comment": "The six readable documents (WISHLIST.md theme 3; #551). Each is a built prop the way data/scene-config.json's `builtProps` already builds the cloak and the walk-bar (#506 rules out a new asset for a shape nothing on disk has): `room` is one of data/mystery.json's own room ids, `tile`/`base`/`size`/`material` describe the same slab data/scene-config.json's own `builtProps` entry for it builds (a built slab is axis-aligned; there is no rotation to carry), and `title`/`text` are what src/ui.js shows in the reading pane. `cites` is the lore this document tells; data/lore.json's own `sources` point back at a document by this id, and src/lore.js fails if the two disagree \u2014 a document citing an id lore.json does not have, or a source naming a document that does not cite it back. Placed in rooms the castle already builds; no new room, no new asset.",
+  "documents": [
+    {
+      "id": "works-ledger",
+      "room": "clerk-office",
+      "tile": [
+        -7.15,
+        -2.15
+      ],
+      "base": 0,
+      "size": [
+        0.5,
+        0.25,
+        0.35
+      ],
+      "material": "oak",
+      "title": "The works ledger",
+      "text": "Here is set down the account of the works of this castle, begun the summer the March fell quiet, and kept by every Clerk of Works since.\n\nYear one: the King's engineer reckons the whole a two-year work. Year six: the curtain closed, and the reckoning proven wrong, as reckonings are.\nYear three: bell for the chapel, cast new at the King's cost, the founder's bill entered below in a hand none now living can name.\nYear forty, this Michaelmas: the garrison mustered at eight, where the muster roll of the busy years shows above eighty at hauling and watch together.\nItem, this year and the three before it in memory: wages three months in arrears, the coin being wanted elsewhere by the King's own word. Paid in the end. Always paid in the end.\nEvery sheet of lead, every load of stone and every day's wage a mason is owed is notched to a tally before it is written here, split stick and counterfoil, so that no clerk's hand need be taken on faith alone.",
+      "cites": [
+        "castle-founding",
+        "war-tax",
+        "kings-debt-wages",
+        "garrison-size",
+        "bell-cast-history",
+        "tally-stick-custom"
+      ]
+    },
+    {
+      "id": "obituary-roll",
+      "room": "chaplain-chamber",
+      "tile": [
+        6.2,
+        3.9
+      ],
+      "base": 4,
+      "size": [
+        0.4,
+        0.2,
+        0.3
+      ],
+      "material": "parchment",
+      "title": "The chaplain's obituary roll",
+      "text": "A roll of the dead of these works, kept by the chaplains of this chapel from its first stone, each soul commended to Saint Osyth whatever tongue was spoken over him first.\n\nOf the March-born who fell to the quarrying and the hauling in the building years, this roll runs to eleven pages and is not yet done being added to.\nSir Walter Esturmy, Constable two and thirty years, entered here as a man whose accounts were opened after him and found to balance, which this hand has set down because it was asked, more than once, whether it was true.\nOf the four master masons the March itself has given these works, one is entered here already and three are not, Hywel ap Gruffudd, God keep him, being the fourth and, God willing, the longest yet to live.",
+      "cites": [
+        "castle-founding",
+        "march-natives",
+        "sir-walter-esturmy",
+        "saint-osyth"
+      ]
+    },
+    {
+      "id": "gate-book",
+      "room": "porter-lodge",
+      "tile": [
+        0.375,
+        -4.375
+      ],
+      "base": 0,
+      "size": [
+        0.45,
+        0.22,
+        0.32
+      ],
+      "material": "oak",
+      "title": "The porter's gate book",
+      "text": "Every soul and every cart through this gate, by the day and the hour, as the porters of this tower have kept it since the wall first stood.\n\nCarts down to Mereford quay and back, most days, tolled at the King's own rate for the wall-tax the town has owed since its charter, in full, forty years running.\nCarts up from the quay with what the war-tax has not already taken off the top, which by the porters' own reckoning over the years is the better part of every load.\nA note, in an old porter's hand, long since dead: \"the King's toll-man come again, third time this twelvemonth, counting sacks of lime as if lime walked off on its own legs.\"",
+      "cites": [
+        "town-of-mereford",
+        "war-tax"
+      ]
+    },
+    {
+      "id": "builder-graffito",
+      "room": "dormitory",
+      "tile": [
+        -5.5,
+        -2.15
+      ],
+      "base": 4,
+      "size": [
+        0.5,
+        0.05,
+        0.5
+      ],
+      "material": "slate",
+      "title": "A mason's mark, cut in the floor stone",
+      "text": "Cut into a floor slab at the head of the Kitchen Tower stair, worn smooth by forty years of boots and still legible if a man kneels to it:\n\n\"GRUFFUDD SET THIS COURSE, YEAR THE THIRD OF THE WORKS. HE WENT OFF THIS SCAFFOLD THE SAME YEAR AND CADEYRN DID NOT CATCH HIM. HIS SON CARRIES STONE HERE NOW. MIND YOUR OWN FOOTING.\"\n\nBeside it, cut later and by a different, steadier hand, a small cross at the springing of an arch that is not otherwise there \u2014 Cadeyrn's mark, the mason's own, older than the chapel's Latin and kept without troubling anyone about it.",
+      "cites": [
+        "castle-founding",
+        "gruffudd-mason",
+        "march-natives",
+        "hywel-rise",
+        "saint-cadeyrn"
+      ]
+    },
+    {
+      "id": "gravestone",
+      "room": "chapel",
+      "tile": [
+        5.45,
+        3.8
+      ],
+      "base": 0,
+      "size": [
+        0.6,
+        0.04,
+        1.2
+      ],
+      "material": "slate",
+      "title": "A gravestone in the chapel floor",
+      "text": "SIR WALTER ESTURMY, CONSTABLE OF THIS CASTLE TWO AND THIRTY YEARS, WHO SAW ITS WALL CLOSED AND ITS ACCOUNTS BALANCED, AND ASKED TO LIE UNDER THE FLOOR HE PAID THE LAST STONE OF.\nCOMMENDED TO GOD AND TO SAINT OSYTH.\nHIS BOOKS ARE OPEN FOR ANY MAN WHO DOUBTS THEM.",
+      "cites": [
+        "sir-walter-esturmy",
+        "saint-osyth"
+      ]
+    },
+    {
+      "id": "kings-writ",
+      "room": "muniment",
+      "tile": [
+        5.4,
+        -4.1
+      ],
+      "base": 0,
+      "size": [
+        0.5,
+        0.2,
+        0.35
+      ],
+      "material": "parchment",
+      "title": "The King's writ",
+      "text": "ALDOUS, by the grace of God King of Vantry, to all men of the March, greeting.\n\nKnow that the March being now Ours by the sword and by nine years' war, We have set Our masons upon this ground to raise a castle of stone, that the peace so won be a peace so kept.\n\nAnd know further, under the hand of Our son and heir OSRIC, now King, that the war since fought upon the Sunder waters has not unmade this castle's purpose nor Our promise to pay for it, though the coin come slower than either King would have it; and that Our exchequer shall send a man once in every year to open every royal castle's books, that a shilling misspent be found the sooner for it.\n\nGiven under the great seal of Vantry.",
+      "cites": [
+        "kingdom-vantry",
+        "king-aldous",
+        "march-war",
+        "castle-founding",
+        "king-osric",
+        "sunder-war",
+        "royal-inspections"
+      ]
+    }
+  ]
+}

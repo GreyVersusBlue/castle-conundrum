@@ -141,7 +141,7 @@ button:hover { background: #e6bb63; }
   z-index: 20;
 }
 #dialogue-name { color: var(--accent); letter-spacing: 0.1em; font-size: 0.85em; text-transform: uppercase; margin-bottom: 0.4em; }
-#dialogue-text { line-height: 1.5; min-height: 2.6em; }
+#dialogue-text { line-height: 1.5; min-height: 2.6em; white-space: pre-wrap; }
 #dialogue-continue { text-align: right; font-size: 0.75em; color: #b9a884; margin-top: 0.5em; }
 
 /* ---------- Riddle ---------- */
@@ -196,6 +196,16 @@ button.journal-row:hover { background: rgba(212, 163, 73, 0.18); border-color: v
 .journal-row b { display: block; color: var(--accent); margin-bottom: 0.2em; }
 .journal-row span { line-height: 1.45; }
 .journal-empty { color: #b9a884; font-style: italic; }
+
+/* Two tabs (#551), shown only when the journal is opened cold on J; a
+   conversation's Present picker keeps the plain h2 it always had. */
+.journal-tabs { display: flex; gap: 0.5em; margin-bottom: 0.8em; }
+.journal-tab {
+  flex: 1; font-family: inherit; font-size: 0.85em; letter-spacing: 0.06em; text-transform: uppercase;
+  background: transparent; border: 1px solid var(--accent-dim); border-radius: 4px;
+  color: #b9a884; padding: 0.5em 0.6em; cursor: pointer;
+}
+.journal-tab.active { color: var(--accent); border-color: var(--accent); background: rgba(212, 163, 73, 0.12); }
 
 /* ---------- The accusation ---------- */
 #accusation-note { color: #d98f6a; font-style: italic; min-height: 1.2em; }
