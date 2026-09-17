@@ -3284,3 +3284,182 @@ beat was written for it, because a beat that cannot be run from here cannot
 be trusted (#53); `test/play-castle.mjs`'s header now says which piece of
 evidence it does not walk to and what to look at. The three `knew` line sets
 have been read in a terminal and not in the dialogue pane.
+
+## Side quests: the format, the set validator, and the cook's knife (2026-09-17)
+
+**Ranked row 9, on `claude/friendly-darwin-xdh53e`, under Claude Opus 5.**
+The first increment `SPECS.md` specs for this row is the format, the set
+validator and the cook's missing knife, and it was picked over the two rows
+above it that a container can also start because those two read
+`data/npcs.json`'s `cast`, which is what rank 1 and rank 11 are for and both
+of those are Fable 5.1's. This row reads the cast and never writes it.
+Decisions #576 to #581. Ten suites green, `npm run build` green, `dist/` 52 MB
+against the 200 MB ceiling (#499), and `npm run play` was not run and could
+not be (#53).
+
+- **A side quest is a `QuestGraph` in its own file, driving one person's
+  lines and nothing else** (#576). `data/quests/` is the directory,
+  `data/quests/index.json` names the files in it because a browser cannot
+  read a directory, and `data/quests/cooks-knife.json` is the first. A quest
+  file is the frame's own shape — `start`, `stages`, each stage an
+  `objective`, a `dialogueState` and `transitions` — plus two fields the
+  frame does not need: `id`, which has to be the file's own name, and `npc`,
+  which is whose lines this quest may change. `src/quest-manager.js` grew no
+  class for it: `_event` sends one event to the frame and then to every side
+  quest, `_dispatchSide` is twenty lines, and `_syncStates` gained one
+  layer between a press and the frame's floor. `_dispatchSide` cannot reach
+  the frame's `_actions` table and says why: a side action added later and
+  spelled `showEpilogue` would otherwise end the game out of a quest file.
+
+  The index is not a second place to forget. `test/quest.mjs` reads
+  `data/quests/` off disk and holds `index.json` to it in both directions, so
+  a quest file added and not named fails the suite rather than sitting
+  unloaded and unnoticed.
+
+- **The isolation rule is about `dialogueState`, because there is no effect
+  to make it about** (#577). `SPECS.md` wrote the rule as "no quest effect
+  names a key `mystery.json`'s clue graph owns", which reads as an action
+  that writes a clue key. There is no such action, and there cannot
+  accidentally be one: a side quest's action list
+  (`QuestManager.sideActions`) is empty, and the engine's idea of who is in
+  what state is `st.pressed` (`src/mystery.js:879`), which nothing in
+  `data/quests/` can reach. Marged still grants `cook-lantern` and
+  `knife-missing` on the first conversation whatever stage the knife quest is
+  in, and `test/quest.mjs` asserts exactly that by playing the same four
+  presses of E through a manager with the quest and a manager without it and
+  diffing the two journals.
+
+  What a side quest **can** do is name a state the clue graph owns. A quest
+  that put the Clerk in `cornered` would show his confession to a player who
+  never pressed him: the clue is not granted, but the text that is the reward
+  for granting it is on screen for free. That is the key the rule names, and
+  `validateQuestSet` refuses it by clue id. The second half of the same rule
+  is in `_syncStates`, where a press beats a side quest and not the other way
+  round, so even a quest that got past the validator could not cover a
+  payoff the player earned.
+
+- **One voice per person, in its conservative form** (#578). `SPECS.md`'s
+  second set rule is "no two quests want the same NPC in two states at one
+  bell". A side-quest stage is not keyed to a bell and two quests have no
+  order between them, so which of two competing line sets the player hears is
+  whichever file the loader read first, at every bell. Deciding that
+  statically means deciding whether two stages can be co-active, which
+  without simulating both graphs is undecidable, so the rule enforced is the
+  conservative one that implies it: **only one quest per person may hold a
+  non-default `dialogueState` at all.** A second quest may still name that
+  person and turn on their conversations; it just may not change what they
+  say. An increment that wants two threads on one cook replaces this with a
+  co-activity check rather than relaxing it.
+
+- **The frame keeps the tracker; a side quest gets a toast** (#579). One
+  objective line on the HUD is the frame's (#393) and a side quest writing to
+  it would put "find a knife" over the top of a dead mason. The journal's
+  open-quests tab `SPECS.md` defers is where a side quest's objective belongs
+  and this increment does not build it; what it builds is
+  `QuestManager.openQuests()`, which is the tab's data waiting for the tab,
+  and a toast on every move, under the quest's own title, through the same
+  `ui.toast` a new clue already uses. A resume does not toast, which is why
+  the toast is in `_dispatchSide` and not in the constructor.
+
+- **The save is version 4, and `quests` is one stage id per file** (#580).
+  The key does not move (#36); it is `castleConundrumSave_v1` still. `quests`
+  is `read`'s case and not `day`'s: there is no fact a missing `quests` can
+  contradict, because a quest that has never moved is a quest at its own
+  `start`, which is what `repair` writes anyway. The version goes up because
+  a field arriving is what a version number is for (#37), and `migrate` has
+  nothing to do but say so. `repair` writes the block from the catalog rather
+  than from what came in, so all three ways a save can be wrong land
+  somewhere safe: a quest the save never heard of gets its own start, a stage
+  that quest no longer has resets to that quest's start rather than the
+  frame's, and a quest id that is no longer a file is dropped by never being
+  copied across.
+
+- **The cook's knife connects to the mystery by reading it and writing
+  nothing** (#581). Every event the quest turns on is one the engine already
+  emits about a clue the mystery already owns. `clue:knife-missing` is
+  Marged's own herring statement and opens the thread; `clue:knife-found` is
+  the bakehouse barrel, which has been in `mystery.json` since Phase 3 with
+  nothing in the game pointing at it; `talked:cook` after that closes it.
+  Both clues are `herring: true` and stay that way. What the quest adds is
+  three line sets on Marged and a reason to have opened the barrel, and her
+  last word on it is "the lantern is the one that went up the Chapel Tower
+  stair", which is the mystery's and is the one of the two that matters. This
+  is #550 question 6's "independent of, connected to" as a worked case rather
+  than as a sentence.
+
+  **`validateMystery` had to learn the third answer.** Its dialogue
+  reachability rail said every non-default state is reached by a press or
+  named by a stage, and the cook's three knife states are neither. It takes
+  the side quests as a fifth argument now and keeps them per npc, so a knife
+  state on the cook is no excuse for the same key on the Steward.
+  `test/quest.mjs`'s own copy of that check learned the same thing the same
+  way.
+
+- **The row is not closed and rank 9 stays** (#581 continued). One quest is
+  not a dozen and one quest cannot move a reputation counter anyone could
+  tell was moved, which is the deferral `SPECS.md` already recommends. What
+  is left in the row is the next eleven quests by ward, the journal's
+  open-quests tab, and reputation as two save-carried counters once there are
+  enough quests to make one visible. `SPECS.md`'s section is rewritten to say
+  what shipped and what the next increment is.
+
+**Broken on purpose, from a green baseline** (#34). Five breaks, each from a
+green suite, each reverted, green again after.
+
+1. `data/quests/cooks-knife.json`'s `hunting` transition `on` changed from
+   `clue:knife-found` to `clue:knife-lost`. `node test/quest.mjs` exited 1
+   with eight failures, the first being `validateQuestSet finds nothing
+   wrong with the set as it ships — cooks-knife.json: hunting: 'on' is
+   "clue:knife-lost" and no clue knife-lost in mystery.json`. The other
+   seven are the knife walk itself, which stops at `hunting` and never
+   reaches the telling: the event rail and the walk fail separately, which
+   is what makes both worth having.
+2. A second quest file written into `data/quests/` and not named in
+   `index.json`. `node test/quest.mjs` exited 1: `index.json names exactly
+   the 2 quest file(s) on disk — index: cooks-knife.json / disk:
+   cooks-knife.json, second.json`.
+3. That same second file named in `index.json`, on `steward`, with a stage
+   whose `dialogueState` is `admits`. `node test/quest.mjs` exited 1:
+   `validateQuestSet finds nothing wrong with the set as it ships —
+   second.json: a stage puts steward in 'admits', which is a state
+   mystery.json's clue graph owns (clue steward-admits) — a side quest never
+   gates or removes a mystery clue (#550, question 6)`.
+4. The new clause deleted out of `validateMystery`'s reachability rail
+   (`&& !sideStates.get(id)?.has(state)`). `node test/mystery.mjs` exited 1
+   with three failures, the first being `validateMystery finds nothing
+   wrong, the castle included — cook: state knife-hunting is reached by no
+   press, no stage and no side quest`, and the same for `knife-found` and
+   `knife-settled`.
+5. **`_syncStates`'s press branch reordered so the side quest is consulted
+   first, and the suite stayed green** — which is #147's case, and the
+   comment was not the thing that was wrong; there was no assertion at all.
+   The rule that a press beats a side quest could not fire because the only
+   side quest that ships is on the cook and nothing in `mystery.json`
+   presses the cook, so the two layers are never both in the room. What
+   `test/quest.mjs` has now is a side quest on the Steward, held in a state
+   invented in the suite on a cast cloned in the suite (`validateQuestSet`
+   refuses `admits` outright, which is the point), pressed on
+   `summons-is-stewards` at Sext. With that assertion in, the same reorder
+   exits 1: `and the press is what comes out of his mouth, not the side
+   quest that was holding him — stocktaking`, and `which is the admission
+   the player earned` under it. `rig()` grew two parameters to make it
+   possible and neither reaches disk.
+
+The set validator's seven other rails are breaks by construction — each
+writes a second quest file into the set in memory and asserts the rule names
+it — and all seven fire with the message written for them, as do the two new
+`validateMystery` rails.
+
+**What was measured.** `src/quest-graph.js` 228 lines to 368,
+`src/quest-manager.js` 537 to 651, `src/save.js` 147 to 173, `src/mystery.js`
+1124 to 1133, `src/main.js` 291 to 309, `data/npcs.json` 584 to 601,
+`test/quest.mjs` 764 to 1003, `test/save.mjs` 314 to 354, `test/mystery.mjs`
+786 to 805. Two new data files, 3.6 KB together. One side quest, four stages,
+three new line sets on one of the twelve. `dist/` 52 MB, unmoved.
+
+**What nobody has seen.** Marged's three new line sets have been read in a
+terminal and not in the dialogue pane, and the quest's toast has been
+asserted as a string and not looked at on a HUD. `npm run play` does not walk
+into the kitchen or the bakehouse — the intended path reaches neither — so no
+beat was added for the knife, because a beat that cannot be run from here
+cannot be trusted (#53).

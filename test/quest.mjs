@@ -45,7 +45,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { QuestGraph, validateQuest, validateAgainstNpcs, judgeAnswer, renderLines } from '../src/quest-graph.js';
+import { QuestGraph, validateQuest, validateAgainstNpcs, validateQuestSet, judgeAnswer, renderLines } from '../src/quest-graph.js';
 import { QuestManager, MANAGER_PAIRS } from '../src/quest-manager.js';
 import { createMystery, freshState } from '../src/mystery.js';
 import { makePlan } from '../src/castle-plan.js';
@@ -60,6 +60,13 @@ const { cast: npcDefs } = read('data/npcs.json');
 const riddle = read('data/riddle.json');
 const scene = read('data/scene-config.json');
 const mystery = read('data/mystery.json');
+// The side quests (BACKLOG.md rank 9). `onDisk` is the directory itself, which
+// part 2c holds the index to in both directions.
+const questIndex = read('data/quests/index.json');
+const questFiles = questIndex.quests ?? [];
+const sideQuests = questFiles.map((f) => read(`data/quests/${f}`));
+const sideSet = questFiles.map((file, i) => ({ file, def: sideQuests[i] }));
+const questsOnDisk = fs.readdirSync(path.join(ROOT, 'data/quests')).filter((f) => f.endsWith('.json') && f !== 'index.json').sort();
 
 let failures = 0;
 const fail = (msg) => { console.log(`  FAIL  ${msg}`); failures++; };
@@ -102,9 +109,19 @@ console.log('quest.json against npcs.json');
   // A press in mystery.json is the other thing that moves an NPC's state, and
   // the states it moves them to are that file's to check (src/mystery.js does).
   for (const p of mystery.presses) states.add(p.to);
+  // And a side quest is the third (rank 9), for the one person it names. Kept
+  // per-npc rather than poured into the set above, so a knife state on the cook
+  // does not quietly excuse the same key appearing on the Steward.
+  const sideStates = new Map();
+  for (const q of sideQuests) {
+    for (const st of Object.values(q.stages ?? {})) {
+      if (!sideStates.has(q.npc)) sideStates.set(q.npc, new Set());
+      sideStates.get(q.npc).add(st.dialogueState);
+    }
+  }
   for (const npc of npcDefs) {
-    const extra = Object.keys(npc.dialogue).filter((k) => !states.has(k));
-    check(extra.length === 0, `${npc.id} has no dialogue no stage and no press can reach`, extra.join(', '));
+    const extra = Object.keys(npc.dialogue).filter((k) => !states.has(k) && !sideStates.get(npc.id)?.has(k));
+    check(extra.length === 0, `${npc.id} has no dialogue no stage, no press and no side quest can reach`, extra.join(', '));
   }
   const talkedTo = [...new Set(Object.values(quest.stages).flatMap((s) => (s.transitions ?? []).map((t) => /^talked:(.+)$/.exec(t.on)?.[1])).filter(Boolean))];
   const strangers = talkedTo.filter((id) => !npcDefs.some((n) => n.id === id));
@@ -168,6 +185,89 @@ console.log('the second day, against mystery.json');
     const st = quest.stages[cls];
     check((st.transitions ?? []).some((t) => t.on === 'day:2'), `the ${cls} pane carries the button that opens the morning`);
   }
+}
+
+/* ------------------------------ 2c: the side quests, as a set (rank 9) -------
+ * data/quests/ is a directory a browser cannot read, so index.json is the list
+ * and this is the check that the list is the directory. Past that,
+ * `validateQuestSet` is the rail: the per-file checks part 1 runs on the frame,
+ * plus the three rules that make a file in here a side quest rather than a
+ * second mystery. Every one of the three is broken on purpose below (#34).
+ */
+console.log('the side quests');
+{
+  check(same(questFiles.slice().sort(), questsOnDisk),
+    `index.json names exactly the ${questsOnDisk.length} quest file(s) on disk`,
+    `index: ${questFiles.join(', ') || '(none)'} / disk: ${questsOnDisk.join(', ') || '(none)'}`);
+  check(sideQuests.length > 0, `${sideQuests.length} side quest(s) load`);
+
+  const opts = { npcs: npcDefs, mystery, actions: QuestManager.sideActions };
+  const problems = validateQuestSet(sideSet, opts);
+  check(problems.length === 0, 'validateQuestSet finds nothing wrong with the set as it ships', problems.join('; '));
+
+  // Every side quest also has to satisfy the frame's own validator, which
+  // validateQuestSet folds in: reachable, terminal, one objective per stage.
+  for (const { file, def } of sideSet) {
+    check(validateQuest(def, QuestManager.sideActions).length === 0, `${file} is a valid graph on its own`);
+    check(Object.values(def.stages).some((st) => st.terminal), `${file} has an end`);
+  }
+
+  // THE BREAKS. Each writes a second quest file into the set in memory and
+  // asserts the rule names it. A rule that cannot be made to fire is not a rule
+  // (#34), and rank 9's own acceptance names the first of these three.
+  const withExtra = (extra) => validateQuestSet([...sideSet, { file: 'invented.json', def: extra }], opts);
+  const expect = (label, extra, re) => {
+    const p = withExtra(extra);
+    check(p.some((x) => re.test(x)), `validateQuestSet rejects ${label}`, p.length ? `said: ${p.join('; ')}` : 'said nothing');
+  };
+  const skeleton = (over = {}) => ({
+    id: 'invented', title: 'An invented quest', npc: 'clerk', start: 'a',
+    stages: {
+      a: { objective: 'One.', dialogueState: 'default', transitions: [{ on: 'talked:clerk', to: 'b' }] },
+      b: { objective: 'Two.', dialogueState: 'default', terminal: true },
+    },
+    ...over,
+  });
+
+  // Rule 1: a quest whose effect is a key the clue graph owns. `cornered` is
+  // where mystery.json's press on the lead puts the Clerk, and the clue
+  // `clerk-cornered` is sourced from it: a side quest that set it would put his
+  // confession on screen for a player who never pressed him.
+  expect('a stage that puts its npc in a state mystery.json owns', (() => {
+    const d = skeleton();
+    d.stages.b.dialogueState = 'cornered';
+    return d;
+  })(), /invented\.json: a stage puts clerk in `cornered`, which is a state mystery\.json's clue graph owns \(clue clerk-cornered\)/);
+
+  // Rule 2: two quests both changing what one person says.
+  expect('a second quest changing what the cook says', (() => {
+    const d = skeleton({ npc: 'cook' });
+    d.stages.b.dialogueState = 'knife-settled';
+    d.stages.a.transitions[0].on = 'talked:cook';
+    return d;
+  })(), /both change what cook says/);
+
+  // Rule 3: an event nothing in the game emits. A quest that listens for it is
+  // dead data and validates perfectly as a graph.
+  expect('a transition on an event the game never emits', (() => {
+    const d = skeleton();
+    d.stages.a.transitions[0].on = 'clue:bananas';
+    return d;
+  })(), /`on` is "clue:bananas" and no clue bananas in mystery\.json/);
+
+  // And the four housekeeping rails.
+  expect('an id that is not the file name', skeleton({ id: 'something-else' }), /`id` is "something-else" but the file is "invented"/);
+  expect('a quest on nobody in the cast', skeleton({ npc: 'gravedigger' }), /`npc` \("gravedigger"\) is not an id in npcs\.json's cast/);
+  expect('a dialogueState the npc has no lines for', (() => {
+    const d = skeleton();
+    d.stages.b.dialogueState = 'whistling';
+    return d;
+  })(), /clerk has no `dialogue\.whistling` lines/);
+  expect('an action no side quest may name', (() => {
+    const d = skeleton();
+    d.stages.a.transitions[0].do = ['openAccusation'];
+    return d;
+  })(), /unknown action "openAccusation"/);
 }
 
 /* ------------------------------------------------------ 3: the graph runs --- */
@@ -270,9 +370,9 @@ function stubUI() {
   };
 }
 
-function rig({ saved = null } = {}) {
+function rig({ saved = null, withSideQuests = true, quests = null, cast = npcDefs } = {}) {
   const ui = stubUI();
-  const npcs = npcDefs.map((def) => ({
+  const npcs = cast.map((def) => ({
     id: def.id, name: def.name, def, talking: false, dialogueState: 'default',
     getDialogueLines() { return this.def.dialogue[this.dialogueState]; },
   }));
@@ -294,18 +394,23 @@ function rig({ saved = null } = {}) {
   // is asserted is the call and never a sound.
   const audio = { bells: 0, bell() { this.bells++; } };
   const state = saved ?? freshState(quest);
-  const engine = createMystery({ mystery, npcs: npcDefs, state });
+  const engine = createMystery({ mystery, npcs: cast, state });
   const restarts = { n: 0 };
   const watches = [];
   const qm = new QuestManager({
-    quest, mystery, riddle, npcs, ui, castle, controlsRef: controls, engine, audio,
+    // `withSideQuests: false` is the control arm. The knife walk below runs the
+    // same calls through both and compares the journal: a side quest that
+    // granted, hid or gated one clue shows up as a difference of one id (#550,
+    // question 6).
+    quest, sideQuests: quests ?? (withSideQuests ? sideQuests : []),
+    mystery, riddle, npcs, ui, castle, controlsRef: controls, engine, audio,
     saved, restart: () => { restarts.n++; },
     onWatch: (w) => watches.push(w),
     // What main.js does with onChange, because the stage and the wrong-answer
     // count are the only two things in the save the engine does not own. Leave
     // it out and the reload below comes back in `arrive` with a Sext watch,
     // which is exactly the bug it is here to catch.
-    onChange: ({ stage, riddleWrong }) => { state.stage = stage; state.riddleWrong = riddleWrong; },
+    onChange: ({ stage, riddleWrong, quests }) => { state.stage = stage; state.riddleWrong = riddleWrong; state.quests = quests; },
   });
   const npc = (id) => npcs.find((n) => n.id === id);
   return {
@@ -666,6 +771,140 @@ function rig({ saved = null } = {}) {
   let err = null;
   try { new QuestManager({ quest: bad, riddle, npcs: [], ui: {}, castle: {}, controlsRef: {} }); } catch (e) { err = e; }
   check(err && /openPortcullis/.test(err.message), 'the manager refuses a graph naming an action it lacks, and says which', err?.message.split('\n')[0]);
+}
+
+/* ----------------------------- 4b: the cook's knife, end to end (rank 9) -----
+ * The first side quest, through the real manager, driven by the same three
+ * player actions a mystery clue is: E on Marged, E on the bakehouse barrel, E
+ * on Marged again. Nothing here calls a side-quest API: every move is a
+ * consequence of an event the mystery engine emitted about a clue the mystery
+ * owns, which is what "independent of, connected to" has to mean to be worth
+ * asserting (#550, question 6).
+ */
+console.log("the cook's knife");
+{
+  const knife = sideQuests.find((q) => q.id === 'cooks-knife');
+  check(!!knife, 'cooks-knife.json is in the set');
+
+  const r = rig();
+  const { qm, ui, engine, state, npc } = r;
+  const at = () => qm.openQuests().find((q) => q.id === 'cooks-knife');
+  const linesNow = () => { qm.handleInteract(npc('cook')); const l = ui.dialogue.lines; ui.endDialogue(); return l; };
+
+  check(at().id === 'cooks-knife' && qm._sideState('cook') === null, 'a fresh day has the quest at its start and Marged on the frame’s floor', npc('cook').dialogueState);
+  check(npc('cook').dialogueState === 'default', 'which is `default`');
+  check(ui.objective === quest.stages.arrive.objective, 'and the tracker is still the frame’s, not the quest’s', ui.objective);
+
+  // One conversation with Marged at Prime. The engine grants both her
+  // statements at once (talk() grants every statement of the state), and the
+  // herring is what opens the thread.
+  const before = ui.toasts.length;
+  const tracker = ui.objective;
+  r.talk('cook');
+  check(engine.holds('cook-lantern') && engine.holds('knife-missing'), 'her first conversation lands both of her statements');
+  check(qm.openQuests()[0].done === false && npc('cook').dialogueState === 'knife-hunting', 'and `clue:knife-missing` opens the knife thread', npc('cook').dialogueState);
+  const opened = ui.toasts.slice(before);
+  check(opened.some((t) => t.startsWith(`${knife.title}: `)), 'which toasts its own line under its own title', opened.join(' | '));
+  check(ui.objective === tracker, 'and does not touch the frame’s tracker, which is still the mason at the foot of the stair', ui.objective);
+  check(same(linesNow(), npcDefs.find((n) => n.id === 'cook').dialogue['knife-hunting']), 'she says where to look');
+
+  // The state the engine thinks she is in is untouched by any of that: the
+  // quest changed the line set on screen and nothing else (src/mystery.js:879).
+  check(engine.npcState('cook') === 'default', 'the engine still has her in `default`, so her statements are still hers to grant');
+
+  // The bakehouse barrel. A clue the mystery has owned since Phase 3, granted
+  // the way it always was.
+  r.examine('knife');
+  check(engine.holds('knife-found'), 'the barrel in the bakehouse lands `knife-found`');
+  check(npc('cook').dialogueState === 'knife-found', 'and the quest moves to the telling', npc('cook').dialogueState);
+  const told = linesNow();
+  check(same(told, npcDefs.find((n) => n.id === 'cook').dialogue['knife-found']), 'she says where it went');
+  check(told.some((l) => /lantern/.test(l)), 'and her last word on it points back at the lantern, which is the mystery’s');
+  check(at().done === true && npc('cook').dialogueState === 'knife-settled', 'that conversation ends the quest', `${at().objective} / ${npc('cook').dialogueState}`);
+
+  // A terminal side quest is inert: nothing moves it again and it does not
+  // start speaking over a press.
+  const settled = npc('cook').dialogueState;
+  r.talk('cook'); r.examine('knife');
+  check(npc('cook').dialogueState === settled && at().done, 'and stays ended through another conversation and another press of E');
+
+  // THE PROOF THAT IT TOUCHED NOTHING. The same four calls through a manager
+  // with no side quests at all, and the two journals compared by id and order.
+  const control = rig({ withSideQuests: false });
+  control.talk('cook'); control.examine('knife'); control.talk('cook'); control.examine('knife');
+  const ids = (x) => x.engine.journal().map((c) => c.id);
+  check(same(ids(r), ids(control)), 'the same walk with and without the quest leaves the identical journal', `${ids(r).join(',')} vs ${ids(control).join(',')}`);
+  check(control.npc('cook').dialogueState === 'default', 'and without it Marged never leaves `default`');
+
+  // A wrong clue presented to her mid-thread gets the thread's lines back, not
+  // `default`: a shrug is an answer, and the answer is whoever she is now.
+  const r2 = rig();
+  r2.talk('cook');
+  r2.present('cook', 'cook-lantern');
+  check(r2.ui.dialogue.lines[0] === npcDefs.find((n) => n.id === 'cook').dialogue['knife-hunting'][0],
+    'a shrug mid-thread answers in the thread’s own lines', r2.ui.dialogue.lines[0]);
+
+  // The save carries it. `_snapshot` writes one stage id per quest, `main.js`
+  // copies it onto the state, and a manager built on that state resumes there.
+  check(state.quests?.['cooks-knife'] === 'settled', 'the snapshot writes the quest’s stage into the save', JSON.stringify(state.quests));
+  const resumed = rig({ saved: JSON.parse(JSON.stringify(state)) });
+  check(resumed.qm.openQuests()[0].done === true, 'and a reload comes back with the quest ended');
+  check(resumed.npc('cook').dialogueState === 'knife-settled', 'with Marged still saying so', resumed.npc('cook').dialogueState);
+  const quiet = resumed.ui.toasts.length;
+  check(quiet === 0 || !resumed.ui.toasts.some((t) => t.startsWith(`${knife.title}: `)), 'and without re-toasting a quest the player finished before the reload', resumed.ui.toasts.join(' | '));
+
+  /* A PRESS BEATS A SIDE QUEST, AND THIS IS THE ONLY PLACE THAT SAYS SO.
+   * `_syncStates` puts the engine first, a side quest second and the frame's
+   * floor last, and reordering the first two left every assertion above this
+   * one green: nobody presses the cook, so the quest that ships can never be
+   * in the room when the rule matters (#147). What it takes is a side quest on
+   * somebody a press does move, which is a quest on the Steward, and
+   * `validateQuestSet` refuses `admits` outright — so the quest below holds a
+   * state invented here, on a cast cloned here, and never reaches disk.
+   *
+   * Without the ordering, pressing the Steward on the summons hands the player
+   * a clue whose text he then does not speak: `steward-admits` lands in the
+   * journal and the man says he is taking stock. */
+  {
+    const cast = JSON.parse(JSON.stringify(npcDefs));
+    cast.find((n) => n.id === 'steward').dialogue['stocktaking'] = ['Not now. I am counting candles.'];
+    const stock = {
+      id: 'stocktaking', title: 'The Steward’s count', npc: 'steward', start: 'counting',
+      stages: {
+        counting: { objective: 'The Steward is counting something.', dialogueState: 'stocktaking', transitions: [{ on: 'bell:3', to: 'done' }] },
+        done: { objective: 'He has finished counting.', dialogueState: 'default', terminal: true },
+      },
+    };
+    check(validateQuestSet([{ file: 'stocktaking.json', def: stock }], { npcs: cast, mystery, actions: QuestManager.sideActions }).length === 0,
+      'a side quest on the Steward in a state the clue graph does not own is legal');
+
+    const r4 = rig({ quests: [stock], cast });
+    check(r4.npc('steward').dialogueState === 'stocktaking', 'and it holds his lines while nothing has moved him', r4.npc('steward').dialogueState);
+    // Reach the press the short way. What this block is about is the order of
+    // the three layers, not the walk to the Steward, which the intended path
+    // above already drives at length.
+    r4.engine.discover('summons-note');
+    r4.engine.discover('lady-hand');
+    while (r4.engine.watch !== 'sext') r4.ring();
+    check(r4.engine.holds('summons-is-stewards'), 'the summons is deduced to be the Steward’s', r4.engine.journal().map((c) => c.id).join(','));
+    r4.present('steward', 'summons-is-stewards');
+    check(r4.engine.npcState('steward') === 'admits', 'the press moves him in the engine', r4.engine.npcState('steward'));
+    check(r4.npc('steward').dialogueState === 'admits',
+      'and the press is what comes out of his mouth, not the side quest that was holding him',
+      r4.npc('steward').dialogueState);
+    check(same(r4.ui.dialogue.lines, cast.find((n) => n.id === 'steward').dialogue['admits']),
+      'which is the admission the player earned');
+    // And the quest is not lost underneath: it is still where it was, and the
+    // moment the press is no longer the answer it speaks again.
+    check(r4.qm.openQuests()[0].objective === stock.stages.counting.objective, 'the side quest is still standing where it was');
+  }
+
+  // A save naming a stage the quest no longer has is repair's problem, not
+  // this manager's, and the manager does not trust it either way.
+  const bogus = JSON.parse(JSON.stringify(state));
+  bogus.quests = { 'cooks-knife': 'gone-fishing', 'a-quest-that-was-deleted': 'x' };
+  const r3 = rig({ saved: bogus });
+  check(r3.qm.openQuests()[0].objective === knife.stages[knife.start].objective, 'a saved stage the quest lacks starts the quest over rather than throwing', r3.qm.openQuests()[0].objective);
 }
 
 /* -------------------------------------------------------------- 5: the page --- */

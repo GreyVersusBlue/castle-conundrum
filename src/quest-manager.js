@@ -21,6 +21,16 @@
 // the class event walks the graph into a verdict stage whose `showEpilogue`
 // reads the stash. Nothing is scheduled and nothing is reordered.
 //
+// AND THE SIDE QUESTS (BACKLOG.md rank 9). data/quests/*.json are the same
+// QuestGraph this file already runs, one per file, each driving one person's
+// lines and nothing else. They are not a second manager and not a second class:
+// they hear the same event stream the frame hears, through `_event` below, and
+// the only thing they can do with it is move a stage, which `_syncStates` reads
+// as one more layer between a press and the frame's own floor. Everything that
+// makes them side quests rather than a second mystery is in
+// `validateQuestSet` (src/quest-graph.js) and is checked before any of them
+// runs.
+//
 // AND THE MORNING AFTER (#533 to #537). The four verdict stages are not the end
 // any more: their pane's button dispatches `day:2`, the graph moves to
 // `morning`, and `applyDay` is one call into the engine whose answer is the
@@ -54,7 +64,20 @@ export class QuestManager {
   static actions = ['openRiddle', 'openLock', 'ringBell', 'openJournal', 'openAccusation', 'showEpilogue', 'applyDay'];
 
   /**
+   * The actions a file in data/quests/ may name, which is none of them. A side
+   * quest in this increment is stages and lines: it moves, it changes what one
+   * person says, and it does nothing else. The list is here rather than absent
+   * so that the first side quest that needs an action adds it in one place and
+   * `validateQuestSet` rejects every other name by name, the way
+   * `QuestManager.actions` already does for the frame.
+   */
+  static sideActions = [];
+
+  /**
    * @param quest      parsed data/quest.json
+   * @param sideQuests parsed data/quests/*.json (BACKLOG.md rank 9), already
+   *                   through `validateQuestSet`. Each gets its own graph and
+   *                   hears every event the frame hears.
    * @param mystery    parsed data/mystery.json. Read for two things only: `ui`,
    *                   the lines the HUD says when the engine returns something
    *                   that is not a clue, and `accusation`, for how many clues
@@ -74,7 +97,7 @@ export class QuestManager {
    * @param audio      src/audio.js, or anything with `bell()`. Injected the way
    *                   `ui` is, so test/quest.mjs hands in a recorder.
    */
-  constructor({ quest, mystery = null, riddle, documents = [], npcs, ui, castle, controlsRef, schedule, restart, saved = null, onChange = null, engine = null, onWatch = null, audio = null }) {
+  constructor({ quest, sideQuests = [], mystery = null, riddle, documents = [], npcs, ui, castle, controlsRef, schedule, restart, saved = null, onChange = null, engine = null, onWatch = null, audio = null }) {
     this.graph = new QuestGraph(quest, QuestManager.actions);
     this.mystery = mystery;
     this.riddle = riddle;
@@ -126,6 +149,20 @@ export class QuestManager {
       showEpilogue: () => this._showEpilogue(),
       applyDay: () => this._applyDay(),
     };
+
+    // The side quests, before the frame begins, because the frame's own
+    // `begin()` ends in a `dialogueState` effect and `_syncStates` reads these.
+    // A saved stage this quest no longer has has already been reset to its
+    // `start` by save.js's repair, the same rail the frame's stage goes
+    // through; resuming is a stage assignment and nothing else, because a side
+    // quest has no `enter` actions to re-run and its lines come out of
+    // `_syncStates` below rather than out of an effect.
+    this.sideQuests = sideQuests.map((def) => {
+      const graph = new QuestGraph(def, QuestManager.sideActions);
+      const at = saved?.quests?.[def.id];
+      if (typeof at === 'string' && def.stages[at]) graph.stage = at;
+      return { def, graph };
+    });
 
     // Resume at a saved stage the graph has (save.js's repair has already reset
     // one it lacks to `start`), re-running that stage's enter effects so the
@@ -233,7 +270,7 @@ export class QuestManager {
     // answers `absent` and the HUD says "Nothing there now." about a door the
     // player is standing in front of.
     if (evidenceId && this.engine?.day !== 2) this.handleExamine(evidenceId);
-    this._apply(this.graph.dispatch(`lock:${id}`));
+    this._event(`lock:${id}`);
   }
 
   /**
@@ -284,7 +321,7 @@ export class QuestManager {
     this.ui.openDialogue(npc.name, lines, () => {
       npc.talking = false;
       if (this.engine) this._surface(this.engine.talk(npc.id));
-      else this._apply(this.graph.dispatch(`talked:${npc.id}`));
+      else this._event(`talked:${npc.id}`);
       this._onChange?.(this._snapshot());
     }, { onPresent: this.engine && !this._dayLines ? () => this._present(npc) : null });
   }
@@ -315,7 +352,7 @@ export class QuestManager {
 
   /** The J key. The graph decides whether the journal opens here. */
   handleJournal() {
-    this._apply(this.graph.dispatch('ask:journal'));
+    this._event('ask:journal');
   }
 
   /**
@@ -332,7 +369,12 @@ export class QuestManager {
     this._surface(effects);
     this._syncStates();
     const shrugged = effects.some((e) => e.type === 'shrug');
-    const lines = renderLines(this._dayLines?.[npc.id] ?? (shrugged ? (npc.def?.dialogue?.default ?? npc.getDialogueLines()) : npc.getDialogueLines()), this.graph.tokens);
+    // A shrug falls back to the side quest's lines when one holds this person,
+    // and to `default` when none does. Falling straight to `default` put Marged
+    // back on "a knife gone since yesterday" one conversation after she had
+    // been told where it went, for no reason but a wrong clue presented.
+    const floor = this._sideState(npc.id) ?? 'default';
+    const lines = renderLines(this._dayLines?.[npc.id] ?? (shrugged ? (npc.def?.dialogue?.[floor] ?? npc.getDialogueLines()) : npc.getDialogueLines()), this.graph.tokens);
     npc.talking = true;
     this.ui.openDialogue(npc.name, lines, () => { npc.talking = false; }, { onPresent: () => this._present(npc) });
     this._onChange?.(this._snapshot());
@@ -427,7 +469,7 @@ export class QuestManager {
   }
 
   /** The epilogue's button, when there is a morning after. */
-  _nextMorning() { this._apply(this.graph.dispatch('day:2')); }
+  _nextMorning() { this._event('day:2'); }
 
   /**
    * The morning after, applied to the whole game: the save says day 2, the sky
@@ -484,7 +526,7 @@ export class QuestManager {
         case 'early': this.ui.setAccusationNote?.(e.text); break;
         case 'refused': this.ui.setAccusationNote?.(e.text); break;
         case 'verdict': this._verdict = e; break;
-        case 'event': this._apply(this.graph.dispatch(e.name)); break;
+        case 'event': this._event(e.name); break;
         default: break; // talked, state, shrug, watch, stations, entered, unlocked, demand: read by the caller
       }
     }
@@ -494,19 +536,98 @@ export class QuestManager {
     return effects;
   }
 
-  _snapshot() { return { stage: this.graph.stage, riddleWrong: this._wrongCount, day: this.engine?.day ?? 1 }; }
+  _snapshot() {
+    return {
+      stage: this.graph.stage, riddleWrong: this._wrongCount, day: this.engine?.day ?? 1,
+      quests: Object.fromEntries(this.sideQuests.map((q) => [q.def.id, q.graph.stage])),
+    };
+  }
+
+  /** Every side quest and where it stands, for the journal tab a later increment adds. */
+  openQuests() {
+    return this.sideQuests.map((q) => ({ id: q.def.id, title: q.def.title, objective: q.graph.objective, done: q.graph.done }));
+  }
 
   /**
-   * Whose lines each NPC gives. The engine is the authority once a press has
-   * moved somebody; the stage's `dialogueState` is the floor everybody starts
-   * on. Without this the graph's own `dialogueState` effect would put a pressed
+   * One event to the frame and then to every side quest. THE ORDER IS THE
+   * POINT: the frame moves first, so a side quest can never be the reason a
+   * stage change was missed, and a side quest that throws would throw after
+   * the frame had already applied its effects rather than instead of them.
+   */
+  _event(name) {
+    this._apply(this.graph.dispatch(name));
+    this._dispatchSide(name);
+  }
+
+  /**
+   * The side quests' half. THE KNIFE THREAD IS DAY ONE'S: on the morning after
+   * `_dayLines` replaces every line set in npcs.json (`_linesFor`), so a side
+   * quest that moved at Lauds would change a state nobody could hear and write
+   * a stage into the save that the player never saw reached. They are frozen
+   * from the moment the second day begins.
+   */
+  _dispatchSide(name) {
+    if (this.engine?.day === 2) return;
+    let moved = false;
+    for (const q of this.sideQuests) {
+      const before = q.graph.stage;
+      const effects = q.graph.dispatch(name);
+      if (!effects.length) continue;
+      // `dialogueState` is the only effect a side quest can produce, because
+      // `QuestManager.sideActions` is empty and `validateQuest` refuses every
+      // action name against it. The frame's own `_actions` table is deliberately
+      // NOT reachable from here: a side action added later that happened to be
+      // spelled `showEpilogue` would otherwise end the game from a quest file.
+      // The first real side action gets its own table beside this line.
+      if (effects.some((e) => e.type === 'dialogueState')) this._syncStates();
+      if (q.graph.stage === before) continue;
+      moved = true;
+      // The tracker is the frame's one line and stays the frame's (#393). What
+      // a side quest gets is the toast a clue already gets, on the move and not
+      // on a resume, which is why this is here and not in the constructor.
+      this.ui.toast(`${q.def.title}: ${q.graph.objective}`);
+    }
+    // And the move reaches the save. Every caller of `_event` except
+    // `handleLock` and `handleJournal` marks the autosave afterwards on its own;
+    // those two do not, and a side quest that turns on a word-lock or the J key
+    // would move and be forgotten by the next reload.
+    if (moved) this._onChange?.(this._snapshot());
+  }
+
+  /**
+   * The state a side quest wants this person in, or null. `default` is not an
+   * answer: it is the floor the frame already sets, and a quest sitting in its
+   * start stage has to leave the frame in charge rather than pin them.
+   */
+  _sideState(npcId) {
+    for (const q of this.sideQuests) {
+      if (q.def.npc !== npcId) continue;
+      const state = q.graph.dialogueState;
+      if (state && state !== 'default') return state;
+    }
+    return null;
+  }
+
+  /**
+   * Whose lines each NPC gives, in three layers. The engine is the authority
+   * once a press has moved somebody; a side quest is next, for the one person
+   * it names; the stage's `dialogueState` is the floor everybody starts on.
+   * Without this the graph's own `dialogueState` effect would put a pressed
    * Steward back into `default` at the next stage change and lose his
    * admission.
+   *
+   * THE MYSTERY WINS OVER A SIDE QUEST AND NOT THE OTHER WAY ROUND (#550,
+   * question 6). A press is the payoff for work the player did in the mystery;
+   * a side quest that could cover it would be gating a clue by the back door,
+   * which is the thing rank 9 is not allowed to do. `validateQuestSet` stops a
+   * quest naming a pressed state at all, and this line is the second half of
+   * the same rule: even if one did, the press would still be what is heard.
    */
   _syncStates() {
     for (const npc of this.npcs) {
       const pressed = this.engine?.npcState(npc.id);
-      npc.dialogueState = pressed && pressed !== 'default' ? pressed : this.graph.dialogueState;
+      if (pressed && pressed !== 'default') { npc.dialogueState = pressed; continue; }
+      npc.dialogueState = this._sideState(npc.id) ?? this.graph.dialogueState;
     }
   }
 
@@ -514,7 +635,7 @@ export class QuestManager {
     const verdict = judgeAnswer(this.riddle, raw, this._wrongCount);
     if (verdict.ok) {
       this.ui.closeRiddle();
-      this._apply(this.graph.dispatch('riddle:solved'));
+      this._event('riddle:solved');
     } else {
       this._wrongCount = verdict.wrongCount;
       this.ui.setRiddleFeedback(verdict.feedback);

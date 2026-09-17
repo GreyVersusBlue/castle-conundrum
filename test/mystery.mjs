@@ -46,6 +46,10 @@ const { cast } = read('data/npcs.json');
 // both call it the frame, and because it says what this file drives.
 const quest = read('data/quest.json');
 const frame = quest;
+// The side quests (rank 9). validateMystery's dialogue-reachability rail is the
+// one thing in this file they touch: a knife state on the cook is reached by a
+// file in data/quests/ rather than by a press or a stage.
+const sideQuests = (read('data/quests/index.json').quests ?? []).map((f) => read(`data/quests/${f}`));
 
 /* The castle itself, for the station rails (Phase 6). One read per glTF file;
  * `makePlan` asks for the same wall model seven times over a run, and a broken
@@ -68,7 +72,7 @@ const clone = (o) => JSON.parse(JSON.stringify(o));
 /* ------------------------------------------------- 1: the data validates --- */
 console.log('mystery.json validates');
 {
-  const problems = validateMystery(mystery, cast, frame, nav);
+  const problems = validateMystery(mystery, cast, frame, nav, sideQuests);
   check(problems.length === 0, 'validateMystery finds nothing wrong, the castle included', problems.join('; '));
   const herrings = mystery.clues.filter((c) => c.herring).length;
   // 39 when Phase 1 shipped; the gaol roll's three are increment 3's (#571).
@@ -102,7 +106,7 @@ console.log('the validator rejects');
     const m = clone(mystery); const n = clone(cast); const f = clone(frame); const c = clone(config);
     mutate(m, n, f, c);
     const p = JSON.stringify(c) === JSON.stringify(config) ? plan : makePlan(c, boundsOf);
-    return validateMystery(m, n, f, castleNav(p, m));
+    return validateMystery(m, n, f, castleNav(p, m), sideQuests);
   };
   const expect = (label, mutate, re) => {
     const p = broken(mutate);
@@ -127,7 +131,22 @@ console.log('the validator rejects');
   expect('a clue with no source', (m) => { delete m.clues.find((c) => c.id === 'cook-lantern').source; }, /^cook-lantern: no source$/);
   expect('a source naming an npc not in the cast', (m) => { m.clues.find((c) => c.id === 'cook-lantern').source.npc = 'scullion'; }, /^cook-lantern: source npc scullion is not in the cast/);
   expect('a source naming a state the npc lacks', (m) => { m.clues.find((c) => c.id === 'cook-lantern').source.state = 'confesses'; }, /^cook-lantern: source state cook\/confesses/);
-  expect('an npc state no press and no stage reaches', (m, n) => { n.find((x) => x.id === 'cook').dialogue.furious = ['Out!']; }, /^cook: state furious is reached by no press and no stage$/);
+  expect('an npc state no press, no stage and no side quest reaches', (m, n) => { n.find((x) => x.id === 'cook').dialogue.furious = ['Out!']; }, /^cook: state furious is reached by no press, no stage and no side quest$/);
+  // And the side quests are only an excuse for the person they name. `broken`
+  // below hands validateMystery the real side quests; this asserts that dropping
+  // them puts the cook's three knife states straight back on the list, which is
+  // the break that proves the new clause is load-bearing rather than always-true
+  // (#34). Its twin, a knife state moved onto somebody else, is the second case.
+  {
+    const p = validateMystery(mystery, cast, frame, nav, []);
+    check(p.filter((x) => /^cook: state knife-.* is reached by no press, no stage and no side quest$/.test(x)).length === 3,
+      'and without data/quests/ the cook’s three knife states are unreached again', p.join('; ') || 'said nothing');
+    const moved = clone(cast);
+    moved.find((x) => x.id === 'steward').dialogue['knife-hunting'] = ['Not mine.'];
+    const q = validateMystery(mystery, moved, frame, nav, sideQuests);
+    check(q.some((x) => /^steward: state knife-hunting is reached by no press, no stage and no side quest$/.test(x)),
+      'and a side quest excuses a state only on the person it names', q.join('; ') || 'said nothing');
+  }
   expect('evidence in no room', (m) => { m.evidence.find((e) => e.id === 'cloak').room = 'attic'; }, /^cloak: in no room/);
   expect('evidence in no watch', (m) => { m.evidence.find((e) => e.id === 'cloak').watches = []; }, /^cloak: in no watch$/);
   expect('a statement only available when the npc is not in the castle', (m) => { m.clues.find((c) => c.id === 'merchant-stone').source.watches = ['sext']; }, /^merchant-stone: available at sext, when the merchant cannot be spoken to about it/);

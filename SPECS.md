@@ -660,68 +660,89 @@ Everything else in the castle is silent.
 
 ## Side quests
 
-**Rank 9. Size 2+.** `WISHLIST.md` theme 4. `src/quest-graph.js` (#393) is a
-validated state machine already; nothing has used it for anything but the
-main mystery's own quest.
+**Rank 9. Size 2+. The first increment shipped on 2026-09-17** (#576 to
+#581). `WISHLIST.md` theme 4. The format, the set validator and the cook's
+missing knife are in: `data/quests/` is the directory, `data/quests/index.json`
+names its files because a browser cannot read a directory,
+`validateQuestSet` in `src/quest-graph.js` is the rail, and
+`src/quest-manager.js` runs every file in the set off the same event stream
+the frame hears without a second class. The save is version 4 for `quests`.
+What is below is what is left.
 
-### Scope, first increment
+### What shipped, in one paragraph
 
-- **`data/quests/`, new directory, one file per quest**, each with the frame
-  `data/quest.json` already has: stages, transitions on events the game
-  already emits (`talked:`, `found:`, `presented:`, `bell:`, `entered:`), and
-  effects the manager already applies.
-- **A set validator**, run over every file in the directory: each quest
-  reachable and terminal (`validateQuest` already does this per-file, per
-  `src/quest-graph.js:20`); a second pass across the set holding two rules
-  `WISHLIST.md` states as one: no quest effect names a key `mystery.json`'s
-  clue graph owns, and no two quests want the same NPC in two states at one
-  bell.
-- **The first quest: the cook's missing knife.** No new prop (the knife is
-  already the cloak's tallow-hem clue's own prop); its resolution has Marged
-  say where it went and points the player at what `mystery.json` already
-  knows, with no `effect` that writes to a mystery key. This is the case that
-  proves the "independent of, connected to" rule (#550, question 6) rather
-  than just asserting it.
-- **`src/quest-manager.js`** loads `data/quests/*.json` alongside
-  `data/quest.json`, same manager, same effect application, no new class.
+A quest file is the frame's own graph plus `id` (which has to be the file's
+name) and `npc` (whose lines it may change). It has no actions:
+`QuestManager.sideActions` is empty and a file naming any action is refused
+by name. Three set rules hold it apart from the mystery: no stage may put its
+person in a state `mystery.json`'s clue graph owns (#577, and `_syncStates`
+puts a press above a side quest as the second half of the same rule), only
+one quest per person may hold a non-default `dialogueState` (#578, the
+conservative form of "two states at one bell"), and every `on` has to be an
+event the game actually emits. The cook's knife turns on
+`clue:knife-missing`, `clue:knife-found` and `talked:cook`, grants nothing,
+and `test/quest.mjs` proves it by playing the same four presses of E with and
+without the quest and diffing the journals.
 
-### Acceptance, first increment
+### Scope, next increment
 
-- The set validator is a Node script, exits non-zero on either rule's
-  violation, named by quest id and key or NPC and bell (#13, #34).
-- Break, for #34: write a second quest file whose effect sets a
-  `mystery.json` clue key. The set validator's clue-isolation check should
-  name the file and the key.
-- The cook's knife quest completes end to end under `test/quest.mjs`'s
-  existing harness, and `test/mystery.mjs`'s clue-graph assertions are
-  unchanged by its presence — the proof that it touched nothing.
+- **The journal's open-quests tab.** `QuestManager.openQuests()` already
+  returns `{id, title, objective, done}` per quest and nothing reads it; the
+  toast on a move (#579) is all a player gets. `src/ui.js`'s journal has two
+  tabs (clues, and documents read since #551) and this is the third. It is
+  the first thing the second quest needs, because two toasts a player missed
+  are two threads they cannot find again.
+- **The next quests, four per ward per pass** (#550, question 7's own
+  recommendation, unchanged). `WISHLIST.md` names the dozen. Several of them
+  — the apprentice's tool from the smith who is in gaol, the porter's boy,
+  the clerk — want rank 6's populace or an NPC state this repo does not
+  compute yet; the ones that want neither come first, the way the cook's
+  knife did.
+- **Reputation by ward** is two save-carried counters and a chatter line or
+  two, and stays deferred until there are enough quests for a moved counter
+  to be visible. It is a version bump on `save.js` when it comes, the same
+  shape `quests` was.
+- **A second quest on one person**, if one is ever wanted, is what replaces
+  #578's conservative rule with a real co-activity check. Nothing needs it
+  yet and nothing should invent it before something does.
+
+### Acceptance, next increment
+
+- The open-quests tab shows every quest that has left its start stage, with
+  its current objective, and drops one that has reached a terminal stage into
+  a done list rather than off the page. `test/quest.mjs` drives it through
+  the stub UI the way it drives the documents tab.
+- Every new quest file passes `validateQuestSet` as it ships and each new
+  rule, if any, is broken on purpose once (#34).
+- The journal assertion is a DOM one and the save assertion is not: what a
+  reload has to survive is the stage, which version 4 already carries (#39).
 
 ### Open calls
 
-- **Reputation by ward** is two save-carried counters and a chatter line or
-  two; recommend deferring it past the first quest, since one quest cannot
-  move a counter anyone could tell was moved. It is data on `save.js`, version
-  bumped, once there are enough quests to make it visible.
-- **How many quests before "many at once" (#550, question 7) is real.**
-  Recommend the first dozen `WISHLIST.md` names, four per ward per pass,
-  rather than all twelve in the first increment.
+- **Does a side quest ever speak on the morning after?** It does not, and
+  `_dispatchSide` returns early on day two (#576's code, `mystery.js`'s
+  `_dayLines` would cover any state it set anyway). Recommend leaving it
+  there: a second day with its own threads is rank 4's row and not this one's.
+- **Where a quest's objective lives when the tab exists.** Recommend the tab
+  and the toast both, not the tracker: the tracker is one line and it is the
+  frame's (#393, #579).
 
 ### Dependencies
 
-- **The journal's open-quests tab**, which `WISHLIST.md` calls for so a
-  player can find what they left, is UI this row adds once more than one
-  quest can be open — not needed for a single quest's proof.
-- Several of the twelve named in `WISHLIST.md` (the apprentice's tool from
-  the smith who is in gaol, the porter's boy and the clerk) want rank 6's
-  populace or an NPC state this repo does not compute yet; the cook's knife
-  was picked as first because it needs neither.
+- Rank 6's populace and rank 8's lore each unlock quests in
+  `WISHLIST.md`'s dozen that this increment could not reach; neither blocks
+  the tab or the quests that need nobody new.
 
 ### Constraints
 
+- #550 question 6 (a side quest never gates or removes a mystery clue), held
+  by `validateQuestSet` and by `_syncStates`' order.
 - #500 (a quest prop that is not already a plan piece needs one, tagged and
-  diffed like anything else).
-- #550 question 6 (a side quest never gates or removes a mystery clue).
-- #13, #34 (the set validator, and the break that proves it is not vacuous).
+  diffed like anything else). Nothing in the first increment added a prop.
+- #36, #37 (the key does not move; a new field is a version bump through
+  `migrate` and a rail in `repair`).
+- #13, #34 (the set validator exits non-zero and every rule gets broken on
+  purpose once).
 
 ---
 

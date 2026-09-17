@@ -345,7 +345,7 @@ export function shortestPath(mystery, npcs, { full = true } = {}) {
  *   to the next. Without it none of those five run and the rest are unchanged,
  *   which is what lets `earliest` and `shortestPath` stay geometry-free.
  */
-export function validateMystery(mystery, npcs, quest, nav = null) {
+export function validateMystery(mystery, npcs, quest, nav = null, sideQuests = []) {
   const problems = [];
   const say = (m) => problems.push(m);
   if (!mystery || typeof mystery !== 'object') return ['mystery is not an object'];
@@ -729,11 +729,20 @@ export function validateMystery(mystery, npcs, quest, nav = null) {
     else if (!Array.isArray(cast.get(p.npc).dialogue?.[p.to]) || !cast.get(p.npc).dialogue[p.to].length) say(`${where}: ${p.npc} has no dialogue.${p.to} lines`);
     for (const f of asList(p.from)) if (!statesOf(p.npc).has(f)) say(`${where}: leaves from ${f}, a state no press and no stage reaches`);
   }
-  // Every non-default dialogue state on every NPC is reached by a press or named by a stage.
+  // Every non-default dialogue state on every NPC is reached by a press, named
+  // by a stage, or named by a side quest that holds that person (rank 9). The
+  // side quests are kept per-npc rather than poured into one set, so a knife
+  // state on the cook does not quietly excuse the same key on the Steward.
   const stageStates = new Set(Object.values(quest?.stages ?? {}).map((s) => s.dialogueState));
+  const sideStates = new Map();
+  for (const q of sideQuests ?? []) {
+    if (!q?.npc) continue;
+    if (!sideStates.has(q.npc)) sideStates.set(q.npc, new Set());
+    for (const st of Object.values(q.stages ?? {})) sideStates.get(q.npc).add(st.dialogueState);
+  }
   for (const [id, npc] of cast) {
     for (const state of Object.keys(npc.dialogue ?? {})) {
-      if (state !== 'default' && !statesOf(id).has(state) && !stageStates.has(state)) say(`${id}: state ${state} is reached by no press and no stage`);
+      if (state !== 'default' && !statesOf(id).has(state) && !stageStates.has(state) && !sideStates.get(id)?.has(state)) say(`${id}: state ${state} is reached by no press, no stage and no side quest`);
     }
     for (const state of stageStates) {
       if (!Array.isArray(npc.dialogue?.[state]) || !npc.dialogue[state].length) say(`${id}: no dialogue.${state} lines for a stage in that dialogueState`);

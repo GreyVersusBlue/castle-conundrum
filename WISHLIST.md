@@ -177,7 +177,11 @@ The quest graph (`src/quest-graph.js`, #393), the quest-is-data format, the
 first dozen by ward, the independent-of-the-mystery rule (#550, question 6),
 many at once (#550, question 7), and reputation by ward are all that row's
 now; the first increment is the format, the set validator, and the cook's
-missing knife as the first quest.
+missing knife as the first quest. **That increment shipped on 2026-09-17**
+(#576 to #581): `data/quests/`, `validateQuestSet`, and Marged's knife found
+in the bakehouse without a clue granted either way. What is left of the theme
+is the next eleven quests, the journal's open-quests tab and reputation by
+ward, and it is all in that row.
 
 ### 5. Size: a castle to get lost in
 
