@@ -359,5 +359,24 @@ console.log('\nnothing on disk that nothing asks for');
   else pass('the Kenney kit ships only the format loadModel reads');
 }
 
+/* ------------------------------------- 5: everything went through the encoder ---
+ * #506 says every asset is compressed by tools/encode-assets.mjs before it is
+ * committed, and until #604 nothing held a mesh to it: the fourth body sat in
+ * assets/NPCs at 1.55 MB of raw floats with every suite green, because the
+ * encoder finds bodies through `cast` and the body was on disk before `cast`
+ * named it. The Kenney kit is exempt on purpose (#508).
+ */
+console.log('\nevery Poly Haven prop and every NPC body is meshopt-encoded');
+{
+  const files = [...new Set([
+    ...config.interiorProps.map(p => config.polyhavenBase + p.model),
+    ...npcData.cast.filter(n => n.heldProp).map(n => config.polyhavenBase + n.heldProp),
+    ...npcData.cast.map(n => n.modelPath),
+  ])].filter(rel => fs.existsSync(path.join(ROOT, rel)));
+  const raw = files.filter(rel => !(readGLTF(path.join(ROOT, rel)).json.extensionsUsed || []).includes('EXT_meshopt_compression'));
+  for (const rel of raw) fail(`${rel} has no EXT_meshopt_compression — run \`npm run assets:encode\` before committing it (#506)`);
+  if (!raw.length) pass(`${files.length} files, every one carrying EXT_meshopt_compression`);
+}
+
 console.log(failures ? `\n${failures} failure(s)` : '\nall good');
 process.exit(failures ? 1 : 0);
