@@ -275,8 +275,12 @@ const EVENT_SHAPES = [
  * @param npcs    data/npcs.json's `cast`
  * @param mystery data/mystery.json
  * @param actions the action names quest-manager.js implements for side quests
+ * @param reputation data/npcs.json's `reputation` (BACKLOG.md rank 8), or null.
+ *                 It is checked here and nowhere else because this is the only
+ *                 function that knows how many errands each ward actually has,
+ *                 which is the one thing a threshold can be wrong about.
  */
-export function validateQuestSet(quests, { npcs = [], mystery = {}, actions = [] } = {}) {
+export function validateQuestSet(quests, { npcs = [], mystery = {}, actions = [], reputation = null } = {}) {
   const problems = [];
   const cast = new Map(npcs.map((n) => [n.id, n]));
   const clueIds = new Set((mystery.clues ?? []).map((c) => c.id));
@@ -370,6 +374,35 @@ export function validateQuestSet(quests, { npcs = [], mystery = {}, actions = []
   for (const [npc, holders] of voices) {
     if (holders.length < 2) continue;
     problems.push(`${holders.map((h) => h.file).join(' and ')}: both change what ${npc} says (${holders.map((h) => `${h.file} wants ${h.states.join('/')}`).join('; ')}) — only one quest per person may hold a non-default dialogueState`);
+  }
+
+  /* RULE 5: REPUTATION'S THRESHOLDS ARE REACHABLE (BACKLOG.md rank 8). The
+   * counters move one per errand finished in a ward, so the most a ward's
+   * counter can ever read is the number of quest files in that ward and the
+   * most `closing` can read is the whole set. A line keyed above that is a
+   * line nobody will ever hear, which is the failure mode this block exists
+   * for: it is silent, it looks exactly like a line that has not been earned
+   * yet, and nothing else in the project would ever say so. The rest is shape,
+   * because a `line` that is not a string reaches the dialogue box as one. */
+  if (reputation != null) {
+    const per = { closing: quests.length };
+    for (const w of WARDS) per[w] = quests.filter(({ def }) => def?.ward === w).length;
+    if (typeof reputation !== 'object' || Array.isArray(reputation)) {
+      problems.push('`reputation` is not an object of ward lists');
+    } else for (const [key, list] of Object.entries(reputation)) {
+      const at = (msg) => problems.push(`reputation.${key}: ${msg}`);
+      if (!(key in per)) { at(`is not one of ${[...WARDS, 'closing'].join(', ')}`); continue; }
+      if (!Array.isArray(list)) { at('is not a list of {at, line}'); continue; }
+      let last = 0;
+      for (const e of list) {
+        const where = `at ${JSON.stringify(e?.at)}`;
+        if (!Number.isInteger(e?.at) || e.at < 1) at(`${where} is not a whole number of errands, one or more`);
+        else if (e.at <= last) at(`${where} does not come after ${last} — the list is read in order and the highest threshold reached wins`);
+        else if (e.at > per[key]) at(`${where} is past the ${per[key]} errand(s) there are to finish, so nobody will ever hear it`);
+        else last = e.at;
+        if (typeof e?.line !== 'string' || !e.line.trim()) at(`${where} has no \`line\``);
+      }
+    }
   }
   return problems;
 }

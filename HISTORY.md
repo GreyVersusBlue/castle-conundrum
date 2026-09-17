@@ -4076,3 +4076,172 @@ and now says with a reason. Add R2 and R1 on Devon's machine and five things
 move at once with no collision. The column values are a judgement over the
 specs as they stand on 2026-09-17; a row whose scope changes changes its lane,
 and the session that changes it owns the label.
+
+## Side quests: reputation by ward (2026-09-17)
+
+**Rank 8's next increment, wave A, lane A.** The two counters `#599` named a
+ward for, the save version that carries them, and the two places in the game
+that read them out. Decisions #603 to #606. Ten of twelve suites green; the
+two that are not are `tools` and `plan-vs-scene`, neither of them this
+batch's and both described at the bottom. `npm run build` green. `npm run
+play` was not run and could not be (#53).
+
+- **Reputation is two counters the save carries, and version 6 is how they
+  arrive** (#603). `outer` and `inner`, one moved per side quest finished in
+  that ward, where the ward is the quest file's own (#599) and finished is a
+  terminal stage. `SAVE_VERSION` goes 5 to 6 and the key does not move (#36).
+
+  **It is `day`'s case and not `read`'s, which is the whole reason there is a
+  `migrate` line at all** (#37). A version-5 save already says where every
+  side quest stands, so a player who finished three errands yesterday has a
+  true answer sitting in the file and zeroes would be the save claiming they
+  had done none of them. `migrate` counts the terminal quests the incoming
+  save is already carrying, per ward, through `reputationIn` — and that is
+  the one thing about this field only `migrate` can say, which is #147's test
+  applied before the fact: `repair`'s own answer to a missing `reputation` is
+  zeroes whether migrate ran or not, so an assertion that only checked a
+  missing field would have had the word "migrate" in a lie. Break 2 below is
+  that assertion earning its name.
+
+  **`repair`'s rail is a ceiling and not a recount.** Each counter clamps to
+  the number of quest files in that ward, which `buildCatalog` counts off the
+  directory the same way it counts everything else: one per errand, and an
+  errand finishes once. It deliberately does not re-derive the counters from
+  `quests`, because a favour done is a thing that happened and repair's job on
+  this field is to refuse the impossible rather than to recompute the
+  possible. What that ceiling is actually stopping is in break 1: nothing
+  downstream ever lowers a counter, since the manager reads the save's number
+  straight into its own and only adds, so a hand-edited 99 that gets past
+  repair is a 99 the castle reads a line out for and goes on reading for the
+  rest of the day.
+
+- **Where the counter moves is `_settleSide` and nowhere else, and once is
+  the graph rather than a guard** (#604). An errand arriving at a terminal
+  stage adds one to its ward, at the end of the batch of events that moved
+  it, on the same line the toast is written from. It cannot double-count,
+  because `validateQuest` has refused a terminal stage with a transition that
+  leaves it since #393: a quest that has arrived at an ending cannot move
+  again, and `_settleSide` only ever runs on a quest that moved. That is also
+  what makes a reload safe — the save carries the counter and a resume is a
+  stage assignment that moves nothing — and what makes the `_catchUp` case
+  right, since a quest walked into its ending by the catch-up is an errand
+  finished now and counts now.
+
+  **Break 4 is the version of this that looks identical and is not.** The
+  same line moved up into `_dispatchSide`, on the move rather than on the
+  settle, reads one finished errand as two: `test/quest.mjs` exited 1 with
+  `which moves the inner counter and not the outer one — {"outer":0,"inner":2}`.
+
+- **Two things read the counters, and the list of what they are not is
+  longer** (#605). `data/npcs.json` gains a `reputation` block: `outer` and
+  `inner`, each a list of `{at, line}` in ascending order, and `closing`,
+  keyed to both counters added together. The ward lines go on the **end** of
+  whatever the person you walked up to was going to say, which is #598's
+  fourth-`default`-line reasoning pointed at a second target — the line is
+  last, so a player re-reading what came before it is not made to. `closing`
+  is one line in the epilogue pane, under the verdict, quieter than it and
+  ruled off from it.
+
+  **Who says it is the ward and not the person**, off the cast's own `ward`
+  field, in whatever state they are standing in. That is what makes it the
+  castle talking rather than one more person with an errand, and it is the
+  constraint the lines were written against: each one has to be sayable by a
+  cook, a sentry and a man in a cell, or by a Constable, a chaplain and a
+  lady. `test/quest.mjs` holds that with Master Robert and Madoc hearing the
+  same thing.
+
+  **It is not a dialogue state**, so `validateQuestSet`'s one-voice rule
+  (#578) has nothing to arbitrate about it and it cannot collide with a press
+  or with an errand. **It is not on a press**: `handlePress` answers the clue
+  the player pushed at somebody, which is the mystery's beat, and the
+  castle's gossip after a confession is the wrong voice in the wrong second.
+  **It is not on the morning after**: `_dayLines` replaces every line set in
+  `npcs.json` and a castle burying a man is the wrong room for what the
+  kitchen thinks of you, which is the line `_dispatchSide` already draws
+  (#576). Break 5 is that one, and it produced exactly the sentence the rule
+  exists to prevent — Marged on the morning after Madoc did not hang, saying
+  `And there is talk of you in the yard`.
+
+  **A player who ran no errand sees none of this**, including in the pane:
+  `closing` returns null below its first threshold and `src/ui.js` hides the
+  paragraph rather than writing an empty one. A pane that says you did
+  nothing is worse than a pane that says nothing.
+
+- **A threshold nobody can reach fails a suite instead of sitting silent**
+  (#606). `validateQuestSet` takes the block as a fifth option and holds
+  every `at` to the number of quests `data/quests/` actually has in that ward
+  — three outer, two inner, five in all today — plus ascending order, a whole
+  number of one or more, and a `line` that is a string. This is the rule
+  worth having: an `at: 4` on a ward with three errands is silent in the
+  game, indistinguishable from a line that has not been earned yet, and
+  nothing else in the project would ever have said so. It lives in
+  `validateQuestSet` because that is the only function that knows how many
+  errands each ward has, which is the one thing a threshold can be wrong
+  about.
+
+  **The thresholds as they ship**: outer at 2 and 3, inner at 1 and 2,
+  closing at 1, 3 and 5. The inner ward's first line fires on one errand
+  because two is all the inner ward has to give; the ceilings move on their
+  own the day a sixth errand lands, and the validator is what will say so.
+
+**Broken on purpose, from a green baseline** (#34). Six breaks, each from a
+green suite, each reverted, green again after.
+
+1. `repair`'s clamp replaced with the bare `nonNegInt`. `save` exited 1 on
+   three, including `a counter past the errands that exist comes down to them
+   — {"outer":99,"inner":99}` and `repaired, it is the errands the outer ward
+   has — 99`.
+2. `migrate`'s version-6 line changed to default `{}` instead of counting.
+   `save` exited 1 on two: `a version-5 save with every errand done comes back
+   with the reputation it earned, not with zeroes — {"outer":0,"inner":0}` and
+   `and one errand done (cooks-knife, outer) is worth exactly one`.
+3. `_settleSide`'s counter line commented out. `quest` exited 1 on sixteen,
+   the first being `which moves the inner counter and not the outer one —
+   {"outer":0,"inner":0}` and the rest being every line nobody then said.
+4. The same line moved into `_dispatchSide`, on the move. `quest` exited 1 on
+   fifteen: `the candle account closes and the inner counter is at two —
+   {"outer":0,"inner":4}`, which is every errand counted twice.
+5. `_linesFor`'s day-two branch folded back into the one-line version, so the
+   aside went on the morning after too. `quest` exited 1 on one: `Marged says
+   what the morning made of her and not one word about a knife — And there is
+   talk of you in the yard bet`.
+6. The validator's `if (reputation != null)` turned into `if (false)`.
+   `quest` exited 1 on ten, every `validateQuestSet rejects ...` line saying
+   `said nothing`.
+
+**What was measured.** `src/save.js` 184 lines to 238, `src/quest-graph.js`
+375 to 408, `src/quest-manager.js` 887 to 970, `data/npcs.json` 752 to 789.
+`test/quest.mjs` 1473 to 1628 and its `check` count 298 to 331;
+`test/save.mjs` 383 to 447 and 92 to 107. The save's schema is fifteen fields
+where it was fourteen.
+
+**`rig` hands the real block to every manager `test/quest.mjs` builds**, which
+is the opposite of what `performances` does there, and it is on purpose: the
+aside appends a line to the end of what somebody says, so every one of that
+file's `same(lines, ...)` assertions is an assertion that it is not said
+early. That is the half the new section cannot check on its own — it can
+prove the line arrives, and it takes the whole rest of the file to prove it
+does not arrive before it is earned.
+
+**Two suites failed and neither is this batch's.** `tools` fails on this
+machine and not in CI: `core.autocrlf` is true, so `data/scene-config.json` is
+checked out CRLF, `insertRow` writes its new row with a bare `\n`, and cutting
+the row back out loses one `\r` — 96758 bytes in, 96757 out. It is lane B and
+this row is lane A, so it was diagnosed and left. `plan-vs-scene` fails on its
+chapel-candle beat, which is the same local failure #599's batch recorded
+against an unmodified checkout and which CI was green on; it passed on one run
+of this tree and failed on the next, which is the flakiness that note
+describes.
+
+**What nobody has seen.** The pane was checked in a real DOM — the paragraph
+draws when there is a line and is `hidden` when there is not — and a
+screenshot of it is in the PR. What no suite can answer is whether a
+one-sentence aside on the end of a fourth conversation reads as the castle
+noticing or as the castle nagging, and whether the inner ward's first line
+firing on a single errand is too eager (#53). Both are a screen and a person.
+
+**What is left in rank 8.** The seven errands of `WISHLIST.md`'s dozen still
+unwritten: five need nobody new (the letter for the town that needs a gate
+pass, and four the wishlist never named, one voice each on the seven people no
+errand has yet), and two want rank 6's populace. Reputation is done and the
+row is not.

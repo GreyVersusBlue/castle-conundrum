@@ -630,15 +630,17 @@ Everything else in the castle is silent.
 
 ## Side quests
 
-**Rank 8. Size 2+. Three increments shipped on 2026-09-17** (#576 to #581,
-the journal's tab at #595, and four more errands at #597 to #599).
+**Rank 8. Size 2+. Four increments shipped on 2026-09-17** (#576 to #581,
+the journal's tab at #595, four more errands at #597 to #599, and reputation
+by ward at #603 to #606).
 `WISHLIST.md` theme 4. The format, the set validator and the cook's missing
 knife are in: `data/quests/` is the directory, `data/quests/index.json` names
 its files because a browser cannot read a directory, `validateQuestSet` in
 `src/quest-graph.js` is the rail, and `src/quest-manager.js` runs every file
 in the set off the same event stream the frame hears without a second class.
-The save is version 4 for `quests`. The journal's fourth tab is in too, and
-five errands. What is below is what is left.
+The save is version 6: 4 for `quests`, 6 for the two ward counters. The
+journal's fourth tab is in too, five errands, and reputation. **What is left
+is the seven errands**, and what is below says which.
 
 ### What shipped, in one paragraph
 
@@ -693,16 +695,38 @@ asked for anything. A terminal quest goes under a Done heading with its title
 struck through rather than off the page. The Present picker inside a
 conversation is still clues alone.
 
+### What reputation shipped as (#603 to #606)
+
+Two counters the save carries, `outer` and `inner`, one moved per errand
+finished in that ward (the file's `ward` is which, #599). `SAVE_VERSION` is
+6 and the key did not move (#36). It is `day`'s case rather than `read`'s:
+`migrate` counts the terminal quests a version-5 save is already carrying,
+per ward, because zeroes would say a player who finished three errands
+yesterday had done none of them, and that is the one thing about the field
+only `migrate` can say (#37, #147). `repair`'s rail is a ceiling — each
+counter clamps to the number of quest files in that ward — and not a
+recount: a favour done is a thing that happened.
+
+`_settleSide` is where a counter moves and the only place it moves, on the
+same line the toast is written from. It cannot double-count because
+`validateQuest` has refused a terminal stage with a way out of it since
+#393, so a quest at an ending cannot move again.
+
+Two things read the counters. `data/npcs.json`'s `reputation` block holds
+`outer` and `inner` — each a list of `{at, line}`, the highest threshold
+reached winning — and `closing`, keyed to both counters added together. A
+ward's line goes on the **end** of whatever the person you walked up to was
+going to say, and who says it is the ward, off the cast's own `ward`, in
+whatever state they are standing in: it is the castle talking and not one
+more person with an errand. `closing` is one line under the verdict in the
+epilogue pane, and null for a player who ran no errand, who is shown nothing
+rather than a line saying they did nothing. It is not a dialogue state, it is
+not said on a press, and it is not said on the morning after. Thresholds ship
+at outer 2 and 3, inner 1 and 2, closing 1, 3 and 5, and `validateQuestSet`
+holds every one of them to an errand that exists to be finished.
+
 ### Scope, next increment
 
-- **Reputation by ward.** Two counters the save carries, `outer` and
-  `inner`, one moved per errand finished in that ward (the file's `ward` is
-  which, #599). A version bump on `save.js` to 6 through `migrate`, with a
-  rail in `repair` that clamps each to the number of terminal quests in that
-  ward (#36, #37). What reads them: a chatter line or two per ward keyed to a
-  threshold, and one line in one closing pane. Not a system, a tint
-  (`WISHLIST.md`). Five errands is enough for a moved counter to be seen,
-  which is what the deferral waited on.
 - **The seven left of the dozen.** `WISHLIST.md` named eight and five are
   written. Of the three it named, one wants nobody new: a letter for the town
   that needs a gate pass, and the Steward signs gate passes (Thomas Wykes is
@@ -717,6 +741,11 @@ conversation is still clues alone.
 - **A second quest on one person**, if one is ever wanted, is what replaces
   #578's conservative rule with a real co-activity check. Nothing needs it
   yet and nothing should invent it before something does.
+- **A threshold per new errand, or not.** Every errand added raises its
+  ward's ceiling, so `data/npcs.json`'s `reputation` block may gain a band;
+  it does not have to, and a session that adds errands and leaves the
+  thresholds alone is still green. What is not optional is that the block
+  stays inside the ceilings, which `validateQuestSet` says.
 
 ### Acceptance, next increment
 
@@ -728,11 +757,16 @@ conversation is still clues alone.
 - The walk through every errand with and without the set leaves the identical
   journal (`test/quest.mjs`, the last block of "the next four").
 - The journal assertion is a DOM one and the save assertion is not: what a
-  reload has to survive is the stage, which version 4 already carries (#39),
-  and the counters, when they come.
+  reload has to survive is the stage, which version 4 carries, and the two
+  counters, which version 6 does (#39).
 
 ### Open calls
 
+- **Where reputation is read out.** Recommended a line per ward threshold
+  and one in a closing pane, and that is what shipped (#605), with the ward
+  lines appended to what a person was going to say rather than replacing it.
+  The `chatter` pool was the obvious-looking home and is not one: nothing
+  plays it yet, and a pair is two bodies talking, which needs rank 6.
 - **Does a side quest ever speak on the morning after?** It does not, and
   `_dispatchSide` returns early on day two (#576's code, `mystery.js`'s
   `_dayLines` would cover any state it set anyway). Recommend leaving it
@@ -763,7 +797,7 @@ conversation is still clues alone.
   diffed like anything else). No increment yet has added a prop; the merlin
   is a line and not a bird.
 - #36, #37 (the key does not move; a new field is a version bump through
-  `migrate` and a rail in `repair`).
+  `migrate` and a rail in `repair`). Met at version 6 (#603).
 - #13, #34 (the set validator exits non-zero and every rule gets broken on
   purpose once).
 

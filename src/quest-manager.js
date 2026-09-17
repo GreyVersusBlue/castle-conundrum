@@ -39,7 +39,7 @@
 // accusation on day two, so nothing below grew a branch for those: the engine
 // already refuses all three once a verdict is recorded.
 
-import { QuestGraph, judgeAnswer, renderLines } from './quest-graph.js';
+import { QuestGraph, judgeAnswer, renderLines, WARDS } from './quest-graph.js';
 
 /** "prime" -> "Prime". The four bells are shown as they are named in the data. */
 const label = (id) => (typeof id === 'string' && id ? id[0].toUpperCase() + id.slice(1) : '');
@@ -53,6 +53,21 @@ const label = (id) => (typeof id === 'string' && id ? id[0].toUpperCase() + id.s
  * so being wrong here is a pace and never a stall.
  */
 const captionMs = (line) => Math.min(7200, Math.max(2600, 1200 + 45 * String(line ?? '').length));
+
+/** A counter off a save, held to a whole number of favours. */
+const nonNegInt = (v) => (Number.isInteger(v) && v >= 0 ? v : 0);
+
+/**
+ * The line a list of `{at, line}` is at, for a count, or null below the first
+ * threshold. The list is in ascending order of `at` and the highest one
+ * reached wins; `validateQuestSet` is what holds both of those, and holds
+ * every `at` to a number of errands that actually exists to be finished.
+ */
+const bandAt = (list, count) => {
+  let line = null;
+  for (const e of list ?? []) { if (count >= e?.at) line = e.line; }
+  return line ?? null;
+};
 
 /**
  * The dialogue tokens this manager answers, and the action each one names.
@@ -113,8 +128,13 @@ export class QuestManager {
    *                   the songs, `{sermons: [...], songs: [...]}`. Omitted is a
    *                   castle where nobody performs, which is what every suite
    *                   that does not care about them gets.
+   * @param reputation data/npcs.json's `reputation` (BACKLOG.md rank 8): the
+   *                   lines the two ward counters are read out by, and the one
+   *                   the epilogue pane carries. Omitted is a castle that keeps
+   *                   the counters and never says them out loud, which is what
+   *                   every suite above this row gets.
    */
-  constructor({ quest, sideQuests = [], mystery = null, riddle, documents = [], npcs, ui, castle, controlsRef, schedule, restart, saved = null, onChange = null, engine = null, onWatch = null, audio = null, rooms = [], performances = null }) {
+  constructor({ quest, sideQuests = [], mystery = null, riddle, documents = [], npcs, ui, castle, controlsRef, schedule, restart, saved = null, onChange = null, engine = null, onWatch = null, audio = null, rooms = [], performances = null, reputation = null }) {
     this.graph = new QuestGraph(quest, QuestManager.actions);
     this.mystery = mystery;
     this.riddle = riddle;
@@ -186,6 +206,18 @@ export class QuestManager {
       showEpilogue: () => this._showEpilogue(),
       applyDay: () => this._applyDay(),
     };
+
+    /* REPUTATION BY WARD (BACKLOG.md rank 8). Two counters, `outer` and
+     * `inner`, one moved per errand finished in that ward, and the lines they
+     * are read out by. The counters come off the save rather than off the
+     * stages the graphs are about to be set to, which is the difference
+     * between a record of favours done and a view of where five graphs are
+     * standing: src/save.js's `repair` clamps each to the number of quests
+     * that ward has and does not re-derive it, and neither does this. They
+     * are set BEFORE the catch-up below, because a catch-up that walks a
+     * quest into its ending is a favour finished now and has to count. */
+    this._reputationLines = reputation;
+    this._reputation = Object.fromEntries(WARDS.map((w) => [w, nonNegInt(saved?.reputation?.[w])]));
 
     // The side quests, before the frame begins, because the frame's own
     // `begin()` ends in a `dialogueState` effect and `_syncStates` reads these.
@@ -387,7 +419,42 @@ export class QuestManager {
    * seven of them per person and which one is spoken is a fact about the
    * mystery and not about the body (#534).
    */
-  _linesFor(npc) { return this._dayLines?.[npc.id] ?? npc.getDialogueLines(); }
+  _linesFor(npc) {
+    if (this._dayLines) return this._dayLines[npc.id] ?? npc.getDialogueLines();
+    const lines = npc.getDialogueLines();
+    const aside = this._reputationAside(npc);
+    return aside ? [...lines, aside] : lines;
+  }
+
+  /**
+   * What the ward has to say about the player, on the end of whatever the
+   * person you walked up to was going to say. Null until a threshold is
+   * reached, which is most of most days.
+   *
+   * THREE THINGS IT IS DELIBERATELY NOT. It is not a state, so it cannot
+   * collide with a press or with an errand and `validateQuestSet`'s one-voice
+   * rule has nothing to arbitrate. It is not on the morning after: `_dayLines`
+   * replaces every line set in npcs.json, and a castle burying a man is not
+   * the place for what the kitchen thinks of you (the same line `_dispatchSide`
+   * draws, #576). And it is not on a press: `handlePress` answers the clue the
+   * player pushed at somebody, which is the mystery's beat, and the castle's
+   * gossip after a confession would be the wrong voice in the wrong second.
+   */
+  _reputationAside(npc) {
+    const ward = npc?.def?.ward;
+    if (!ward || !this._reputationLines?.[ward]) return null;
+    return bandAt(this._reputationLines[ward], this._reputation[ward] ?? 0);
+  }
+
+  /**
+   * The one line the closing pane carries under the verdict, keyed to both
+   * counters added together, or null for a player who ran no errand — who is
+   * shown nothing rather than a line saying they did nothing.
+   */
+  _reputationClosing() {
+    const total = WARDS.reduce((n, w) => n + (this._reputation[w] ?? 0), 0);
+    return bandAt(this._reputationLines?.closing, total);
+  }
 
   /**
    * The player has walked into a room. `walk-crosses` is the only clue in
@@ -587,17 +654,22 @@ export class QuestManager {
    * button, which is how one ending is made final without touching this file.
    */
   _showEpilogue() {
+    // The errands, under the verdict, in both panes: one line, computed once,
+    // and null for a player who ran none (BACKLOG.md rank 8). It is the same
+    // line on the morning after because it is about the day before, which is
+    // the day the errands were run on and the only day they could have been.
+    const reputation = this._reputationClosing();
     if (this.engine?.day === 2) {
       const e = this.engine.dayTwoEnding?.();
       if (!e) return;
-      this.ui.showEpilogue({ ...(this._savedVerdict() ?? {}), convicted: e.signed, epilogue: e.after },
+      this.ui.showEpilogue({ ...(this._savedVerdict() ?? {}), convicted: e.signed, epilogue: e.after, reputation },
         () => this._restart(), { label: 'Play Again' });
       return;
     }
     const v = this._verdict ?? this._savedVerdict();
     if (!v) return;
     const morning = this._hasMorning();
-    this.ui.showEpilogue(v, morning ? () => this._nextMorning() : () => this._restart(),
+    this.ui.showEpilogue({ ...v, reputation }, morning ? () => this._nextMorning() : () => this._restart(),
       { label: morning ? 'The next morning' : 'Play Again' });
   }
 
@@ -685,8 +757,12 @@ export class QuestManager {
     return {
       stage: this.graph.stage, riddleWrong: this._wrongCount, day: this.engine?.day ?? 1,
       quests: Object.fromEntries(this.sideQuests.map((q) => [q.def.id, q.graph.stage])),
+      reputation: { ...this._reputation },
     };
   }
+
+  /** The two ward counters as they stand. A copy: nothing outside moves them. */
+  reputation() { return { ...this._reputation }; }
 
   /**
    * Every side quest and where it stands. `started` is the one thing the
@@ -785,6 +861,13 @@ export class QuestManager {
       q.moved = false;
       moved = true;
       this._catchUp(q);
+      // An errand finished moves its ward's counter, once, here and nowhere
+      // else. Once is not a guard, it is the graph: `validateQuest` refuses a
+      // terminal stage with a transition that leaves it (#393), so a quest
+      // that has arrived at an ending cannot move again and cannot be counted
+      // again — including across a reload, where the save carries the counter
+      // and the resume is a stage assignment that moves nothing.
+      if (q.graph.done && q.def.ward in this._reputation) this._reputation[q.def.ward] += 1;
       this.ui.toast(`${q.def.title}: ${q.graph.objective}`);
     }
     if (moved) this._onChange?.(this._snapshot());

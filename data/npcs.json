@@ -748,5 +748,42 @@
         "cites": ["march-song", "hall-high-table", "kings-debt-wages"]
       }
     ]
+  },
+  "reputationComment": "REPUTATION BY WARD (BACKLOG.md rank 8, #599 named the wards and this block is what reads them). The save carries two counters, `outer` and `inner`, one moved per side quest finished in that ward, and this is one of the two things in the game that can tell they moved; the other is the closing pane, which is `closing` below. THIS IS A TINT AND NOT A SYSTEM (WISHLIST.md, theme 4): nothing here gates, grants, hides or unlocks anything, and a player who runs no errand at all sees none of it and loses nothing. `outer` and `inner` are each a list of `{at, line}` in ascending order of `at`. `at` is how many errands in that ward have to be finished for the line to be the one said; the highest threshold reached wins, and below the first one nobody says anything. The line goes on the END of whatever the person you are talking to says, the way each errand's opener went on the end of a `default` set (#598, and the same reason: the line is last, so a player re-reading what came before it is not made to). WHO SAYS IT IS THE WARD AND NOT THE PERSON. Any of the cast whose own `ward` matches, in whatever state they are standing in, which is why every line below has to be sayable by a cook, a sentry and a man in a cell, or by a Constable, a chaplain and a lady. That is what makes it the castle talking rather than one more person with an errand. Day one only, and never on a press: the morning after replaces every line set in this file (data/mystery.json's `day2.lines`) and a press is the mystery answering a clue the player pushed at somebody, which is no place for the castle's gossip. `closing` is keyed to the two counters added together and is the one line the epilogue pane carries under the verdict. `validateQuestSet` (src/quest-graph.js) holds every `at` to the number of quests data/quests/ actually has in that ward, so a threshold nobody could ever reach fails test/quest.mjs rather than sitting here silent; three outer and two inner today, so the ceilings are 3, 2 and 5.",
+  "reputation": {
+    "outer": [
+      {
+        "at": 2,
+        "line": "And there is talk of you in the yard between the kitchen and the lodge. A King's man who carries a thing for a man who asked him, and does not write it down after. We had not looked for that today of all days."
+      },
+      {
+        "at": 3,
+        "line": "The outer ward knows your face now, clerk, and not for the sheet you are writing. Whatever name goes on it at Vespers, there will be somebody down here who says you were fair with us."
+      }
+    ],
+    "inner": [
+      {
+        "at": 1,
+        "line": "And it is noticed, what you did this morning, small as it was. Little enough is noticed in this ward that was not asked for twice."
+      },
+      {
+        "at": 2,
+        "line": "You have made yourself useful in this ward twice over and asked nothing back either time. That is remarked on above stairs. Whether it is remarked on kindly you will know at Vespers, with the rest of us."
+      }
+    ],
+    "closing": [
+      {
+        "at": 1,
+        "line": "Between the bells you did something for somebody who could not do it themselves, and there is no line on the sheet for it."
+      },
+      {
+        "at": 3,
+        "line": "The sheet carries the mason and nothing else. It does not carry the errands you ran between the bells, and the kitchen and the gate and the lodge will carry those longer than Caernarfon carries the sheet."
+      },
+      {
+        "at": 5,
+        "line": "Every favour anybody in this castle thought to ask of a passing clerk, you did, and not one of them is on the sheet. Nobody who asked has forgotten. That is the other record, and it stays in the ward."
+      }
+    ]
   }
 }
