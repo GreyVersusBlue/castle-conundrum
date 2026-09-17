@@ -122,15 +122,16 @@ bodies the npm registry did carry were the wrong shape (KayKit, chibi) and the
 wrong licence (deskrpg, non-commercial derivative). The row stays at rank 1
 with what to fetch written into it.
 
-**13 ranked items. Nothing is claimed.** Every one of ranks 1 to 5 now needs a
-machine this one is not: ranks 2, 3 and 5 a GPU (#518), rank 1 a network that
-reaches quaternius.com (#568), which #541's did and this one's did not. Rank
-4's next increment is the one thing among them a container can start, and
-`SPECS.md` names the thread of it that does not wait on a design call: the
-gaol roll. Of ranks 6 to 13, the ones whose first increment is data and
-validators rather than a render — 6, 8, 9, 10 and 13 — are the ones a
-container can start; 7, 11 and 12 all want either a recorded sound, a body on
-disk, or a GPU before their first increment closes.
+**13 ranked items. Rank 4 is claimed; the rest are open.** Every one of ranks
+1, 2, 3 and 5 needs a machine this one is not: ranks 2, 3 and 5 a GPU (#518),
+rank 1 a network that reaches quaternius.com (#568), which #541's did and this
+one's did not. Rank 4's next increment is the one thing among them a container
+can start, and `SPECS.md` names the thread of it that does not wait on a design
+call: the gaol roll, which is what this claim is for. Of ranks 6 to 13, the
+ones whose first increment is data and validators rather than a render — 6, 8,
+9, 10 and 13 — are the ones a container can start; 7, 11 and 12 all want either
+a recorded sound, a body on disk, or a GPU before their first increment
+closes.
 
 One thing is true of the whole list and worth saying once. **Nothing here has
 been seen on a GPU since Phase 5.** `npm run play` walks the whole intended day
@@ -181,7 +182,7 @@ your decisions and this file's header, ranks and `Claimed` column are updated
 | 1 | A fourth body, and a woman's in particular: fetch it from a machine that reaches quaternius.com | ½ | Fable 5.1 |  | [A fourth body](SPECS.md#a-fourth-body) |
 | 2 | A real GPU run of `npm run play`, and somebody looks at the twelve | ¼ | Opus 5 |  | [The GPU run](SPECS.md#the-gpu-run) |
 | 3 | A new preview and og card, from that run | ¼ | Opus 5 |  | [The GPU run](SPECS.md#the-gpu-run) |
-| 4 | A second day: increment 3, a second mystery for the morning | 2+ | Opus 5 |  | [A second day](SPECS.md#a-second-day) |
+| 4 | A second day: increment 3, a second mystery for the morning | 2+ | Opus 5 | claude/awesome-bell-s2wweo | [A second day](SPECS.md#a-second-day) |
 | 5 | The hall's covering, and the two windows under it | ¼ | Sonnet 5 |  | [The hall covering](SPECS.md#the-hall-covering) |
 | 6 | Life: a populace, and the first ten bodies of it | 2+ | Opus 5 |  | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: ambient beds, event sounds, a bell that is a soundscape | 1 | Fable 5.1 |  | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
