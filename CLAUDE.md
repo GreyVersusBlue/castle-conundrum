@@ -3,15 +3,18 @@
 A first-person medieval murder mystery in three.js. Twelve suspects, four
 bells, one accusation, and a morning after it. `index.html` at the repo root,
 source in `src/`, the mystery and the castle as data in `data/`, 39 MB of glTF
-and textures in `assets/`, twelve suites in `test/`.
+and textures in `assets/`, thirteen suites in `test/`.
 
 **`PLAN.md` is the most valuable file here.** It is 64 K of phase plans — what
 the castle is, why the order is what it is, and the seven phases that built it,
 all seven of which shipped. **`BACKLOG.md` is the entry point for open work,
 and `SPECS.md` is the spec behind each of its rows** (scope by file, acceptance,
 open calls with a recommendation, dependencies, the rules that bite). Read a
-row's spec before its brief. **`HISTORY.md` is the record**, and it carries
-every locked decision this project has, by number.
+row's spec before its brief. **`ROADMAP.md` is the order those rows can happen
+in**: which machine each needs, the four hard gates on the whole list, and the
+five lanes that say which two rows may be claimed at once (#600 to #602).
+**`HISTORY.md` is the record**, and it carries every locked decision this
+project has, by number.
 
 **`WISHLIST.md` is the arc after the backlog**: seven themes and ten questions
 Devon answered on 2026-09-16 (#547 to #550), ranking nothing and claiming nothing.
@@ -73,6 +76,12 @@ The project lived in `GreyVersusBlue/tools-and-games` under
   provable in Node, and `test/mystery.mjs` owns the stations** (#529).
   This was Phase 2's whole point and was never written down as a rule — it was
   visible only in the shape of the files, which is exactly how a rule gets lost.
+  **`test/budget.mjs` is the one carve-out, and it is by cost rather than by
+  method** (#611): layout.mjs holds whether the castle works and budget.mjs
+  holds what it costs — draw calls, point lights and skinned bodies per ward,
+  against ceilings that are guesses held as named constants in one block. The
+  two share no assertion, and a content row that has to renegotiate a ceiling
+  argues for it in `HISTORY.md`.
 - **Never change a storage key** (#36, from the old repo, and it crosses).
   Changing a key silently abandons anyone mid-use. The key is
   `castleConundrumSave_v1` (#413) and the version inside it is **5** (#590;
@@ -140,7 +149,7 @@ file keeps a pointer saying which band left.
 | `npm run build` | `dist/`: the hashed bundle in `dist/bundle/`, `assets/` and `data/` copied in whole, the Basis transcoder into `dist/decoders/basis/`. |
 | `npm run preview` | Serves `dist/`. |
 | `npm run assets:encode` | Re-encodes `assets/` in place, KTX2 and meshopt. Hand-run, needs `ktx` (#506). |
-| `npm test` | All twelve suites, cheapest first, non-zero on any failure. `npm test layout built` runs a subset. |
+| `npm test` | All thirteen suites, cheapest first, non-zero on any failure. `npm test layout built` runs a subset. |
 | `npm run play` | **Opens a real visible window** and plays the whole day with pointer lock, WASD and real key presses. Hand-run, on a GPU (#53). Screenshots land in `shots/play/`. |
 
 `npm test` is what CI runs. `npm run play` is not in CI and is not going to be.
