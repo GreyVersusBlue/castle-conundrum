@@ -25,6 +25,9 @@
 //      three refusals ending as a fall; and what a reload has to survive
 //   5. the frame in quest.json validates with the manager's actions, and the
 //      engine's events drive it to the right terminal
+//   6. the household in data/populace.json, on the same grid and by the same
+//      rails as the twelve's own stations (#529: this file owns the stations,
+//      and a routine's tile is a station question)
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -34,7 +37,8 @@ import { QuestGraph, validateQuest, validateAgainstNpcs } from '../src/quest-gra
 import { QuestManager, MANAGER_PAIRS } from '../src/quest-manager.js';
 import { makePlan } from '../src/castle-plan.js';
 import { castleNav } from '../src/stations.js';
-import { partsOf } from './gltf.mjs';
+import { validatePopulace, ACTIVITY_CLIPS, populaceDefs } from '../src/populace.js';
+import { partsOf, readGLTF } from './gltf.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, '..');
@@ -50,6 +54,7 @@ const frame = quest;
 // one thing in this file they touch: a knife state on the cook is reached by a
 // file in data/quests/ rather than by a press or a stage.
 const sideQuests = (read('data/quests/index.json').quests ?? []).map((f) => read(`data/quests/${f}`));
+const populace = read('data/populace.json');
 
 /* The castle itself, for the station rails (Phase 6). One read per glTF file;
  * `makePlan` asks for the same wall model seven times over a run, and a broken
@@ -768,6 +773,144 @@ console.log('\nthe gaol roll');
   // row from becoming the only answer for some morning.
   const bare = dayTwoOutcomes(mystery).every((o) => !!dayTwoLines(mystery, 'inspector', o));
   check(bare, 'and with no journal at all the inspector still has lines for all seven endings');
+}
+
+/* ------------------------------------------- 8: the household (#604) ---
+ * data/populace.json is ten people with no clue, no lie and no line, and the
+ * only thing that can say whether they fit the castle is the same walk grid
+ * the twelve's schedule is checked against. Hence here rather than in
+ * layout.mjs (#529): a routine's tile is a station, and a station's room is
+ * not derivable from the plan alone.
+ *
+ * WHAT IS NEW AGAINST THE TWELVE, and why it needed its own validator rather
+ * than a widened `validateMystery`: a routine is a RING per watch instead of
+ * one station, so every leg of it and the wrap back to the first stop are
+ * walks that have to exist; and the body carries an `activity`, which is a
+ * clip name one indirection away from a .glb on disk.
+ */
+console.log('\nthe household in data/populace.json');
+{
+  const problems = validatePopulace(populace, { nav, mystery, cast });
+  check(problems.length === 0, 'validatePopulace finds nothing wrong, the castle included', problems.join('; '));
+
+  const people = populace.people;
+  check(people.length === 10, `${people.length} of them, which is the first increment's ten (SPECS.md, "Life: a populace")`);
+  /* NO NEW ASSET IN THIS INCREMENT is the row's own promise, and it is one
+   * line to hold rather than a sentence to trust: every body below is a body
+   * one of the twelve already wears. */
+  const castBodies = new Set(cast.map((n) => n.modelPath));
+  const theirs = new Set(people.map((p) => p.modelPath));
+  check([...theirs].every((m) => castBodies.has(m)),
+    `${theirs.size} bodies, every one of them already in npcs.json's cast`,
+    [...theirs].filter((m) => !castBodies.has(m)).join(', '));
+  check(new Set(people.map((p) => p.tint)).size === people.length, 'no two of the ten share a tint');
+
+  /* A CLIP NAME IS A STRING UNTIL SOMETHING READS THE FILE. ACTIVITY_CLIPS
+   * maps nine jobs onto three Quaternius clips, and `pickClip` in npc.js
+   * matches by name against whatever the loaded .glb happens to ship: a typo
+   * there returns null, `playActivity` gives up, and the body stands in
+   * whatever idle it was already in. That failure looks exactly like success
+   * on screen, so the names are checked against the animation list inside
+   * every body the file actually uses. */
+  {
+    const wanted = [...new Set(Object.values(ACTIVITY_CLIPS))];
+    let missing = 0;
+    for (const body of theirs) {
+      const names = new Set((readGLTF(path.join(ROOT, body)).json.animations ?? []).map((a) => a.name));
+      for (const clip of wanted) {
+        if (!names.has(clip)) { fail(`${body} ships no clip called ${clip}, which ACTIVITY_CLIPS maps an activity onto`); missing++; }
+      }
+    }
+    if (!missing) pass(`${wanted.length} clips behind ${Object.keys(ACTIVITY_CLIPS).length} activities, present in all ${theirs.size} bodies: ${wanted.join(', ')}`);
+  }
+
+  /* The defs the page builds NPCs from: a label rather than an offer, and no
+   * dialogue at all. `populace: true` is what main.js and interaction.js both
+   * key off, and neither of them knows one of the ten by id. */
+  const defs = populaceDefs(populace);
+  check(defs.length === people.length && defs.every((d) => d.populace === true && d.prompt && !/Press E/.test(d.prompt) && !Object.keys(d.dialogue).length),
+    'every def carries a label prompt and no dialogue, so E at one of them does nothing');
+
+  /* Where they are, as a sentence, because the row is about whether the
+   * castle reads as lived in and a count of rooms is the closest this file
+   * gets to saying so. */
+  {
+    const rooms = new Set();
+    for (const p of people) for (const w of mystery.watches) for (const s of p.routine?.[w] ?? []) rooms.add(s.room);
+    const busiest = mystery.watches.map((w) => `${w}: ${people.filter((p) => (p.routine?.[w] ?? []).length).length}`).join(', ');
+    pass(`the ten stand in ${rooms.size} rooms across the day (${busiest})`);
+  }
+}
+
+/* --------------------------------------- 8b: validatePopulace rejects --- */
+console.log('\nthe household validator rejects');
+{
+  const broken = (mutate) => {
+    const f = clone(populace);
+    mutate(f, f.people);
+    return validatePopulace(f, { nav, mystery, cast });
+  };
+  const expect = (label, mutate, re) => {
+    const p = broken(mutate);
+    const hit = p.find((x) => re.test(x));
+    check(!!hit, `rejects ${label}`, p.length ? `said: ${p.join('; ')}` : 'said nothing');
+    if (hit) console.log(`          said: ${hit}`);
+  };
+  const of = (people, id) => people.find((p) => p.id === id);
+
+  /* THE BREAK SPECS.md NAMES: a routine tile one column outside its room's
+   * box. The scullion stands at x = -6.188 tiles in a kitchen that runs
+   * -6.5 to -3.5, so -6.563 is one 0.5 m grid column past the west wall and
+   * inside the Clerk of Works' office. Nothing about the tile looks wrong —
+   * it is floor, it is reachable, it is 0.5 m from a tile that is fine — and
+   * only the room resolver can say so. */
+  expect('a stop one column outside its room box (the break SPECS.md names)',
+    (f, people) => { of(people, 'well-wife').routine.prime[0].tile = [-8.313, 3.688]; },
+    /^well-wife at prime, stop 1: tile \(-8\.313, 3\.688\) is in outer-ward on level 0, not in laundry on level 0$/);
+
+  expect('an activity no clip in npc.js answers to',
+    (f, people) => { of(people, 'baker').routine.terce[0].activity = 'hammer'; },
+    /^baker at terce, stop 1: activity "hammer" is one src\/npc\.js has no clip for/);
+  expect('a stop with no floor under it',
+    (f, people) => { of(people, 'baker').routine.terce[0].tile = [0.313, 6.5]; },
+    /^baker at terce, stop 1: .*no floor to stand on$/);
+  expect('two of the ten standing inside each other at one bell',
+    (f, people) => { of(people, 'well-wife').routine.sext[0].tile = [-3.813, 0.438]; },
+    /at sext are \d+\.\d\d m apart, inside the 1\.5 m two bodies need$/);
+  /* AND ONE OF THE TEN STANDING ON ONE OF THE TWELVE, which is the case the
+   * castle cannot survive: a populace body 1.2 m from where the cook is due
+   * is a body between the player and the only person who can tell him about
+   * the lantern. */
+  expect('one of the ten standing on one of the twelve',
+    (f, people) => { of(people, 'scullion').routine.prime[0].tile = [-5.188, -2.563]; },
+    /^scullion's stop 1 at prime is \d+\.\d\d m from the cook's station, inside the 1\.5 m two bodies need$/);
+  expect('a ring whose wrap back to the first stop is not a walk',
+    (f, people) => { of(people, 'archer').routine.prime[1] = { room: 'cell', tile: [-4.688, 4.313], activity: 'guard' }; },
+    /^archer at prime: no walk from stop [12] /);
+  expect('a bell that leaves a body somewhere it cannot walk out of',
+    (f, people) => { of(people, 'maid').routine.sext[0] = { room: 'cell', tile: [-5.063, 3.563], activity: 'wait' }; },
+    /^maid: no walk from where /);
+  expect('an id already worn by one of the twelve',
+    (f, people) => { of(people, 'baker').id = 'cook'; },
+    /^cook: shares an id with one of the twelve in npcs\.json/);
+  expect('a tint already worn by one of the twelve',
+    (f, people) => { of(people, 'baker').tint = cast.find((n) => n.id === 'cook').tint; },
+    /wears the same tint as the cook, one of the twelve$/);
+  expect('a watch written as an empty list rather than left out',
+    (f, people) => { of(people, 'carter').routine.prime = []; },
+    /^carter: routine\.prime is an empty list/);
+  expect('a routine naming a bell that is not one of the four',
+    (f, people) => { of(people, 'carter').routine.matins = [{ room: 'outer-ward', tile: [-8.438, -1.188], activity: 'wait' }]; },
+    /^carter: routine names "matins", which is not one of the four bells$/);
+  expect('a room that is not a room',
+    (f, people) => { of(people, 'carter').routine.terce[0].room = 'brewhouse'; },
+    /^carter at terce, stop 1: room "brewhouse" is not a room in mystery\.json$/);
+
+  /* AND THE CONTROL. Every break above is one field changed on a file that
+   * validates; if the unbroken copy did not, each `expect` would be finding
+   * its message in a list that was never empty (#34). */
+  check(validatePopulace(clone(populace), { nav, mystery, cast }).length === 0,
+    'and a clone of the real file with nothing changed still validates, so each break above is the only thing wrong with its copy');
 }
 
 /* ---------------- the HUD's room line agrees with the schedule (#515) ---

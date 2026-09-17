@@ -4076,3 +4076,136 @@ and now says with a reason. Add R2 and R1 on Devon's machine and five things
 move at once with no collision. The column values are a judgement over the
 specs as they stand on 2026-09-17; a row whose scope changes changes its lane,
 and the session that changes it owns the label.
+
+## Life: a populace, and the first ten of it (2026-09-17)
+
+**Rank 6's first increment, on `claude/populace-first-ten`.** Ten people who
+have no clue, no lie and no line, on the same walk grid the twelve stand on,
+with a validator that runs in Node and again in the browser before the page
+spawns anybody. `data/populace.json`, `src/populace.js`, nine activities onto
+three clips the kit already ships, and no new asset. Decisions #604 to #606.
+Eleven of twelve suites green, `npm run build` green, `npm run play` not run
+(#53). The twelfth is `tools`, and it was failing before this branch existed —
+see #606's second half.
+
+- **A routine is a ring inside a watch, not a timetable** (#604).
+  `data/populace.json` gives every person a `routine` of one LIST per bell,
+  and the list is a loop: `{room, tile, activity, facing?}` per stop, walked
+  round and round until the next bell. A list of one is a body that stands
+  still for the watch; a watch left out is a body that is not in the castle,
+  which is the merchant's own answer one file over. That shape comes straight
+  out of Devon's answer to question 3 (#547): *the bells stay*, and life
+  happens as loops inside a watch rather than against a minute hand. The
+  engine is `Populace` in `src/populace.js`, which counts a dwell down, asks
+  `castleNav` for the route and hands it to `walkTo` — nine seconds a stop,
+  staggered by the body's own index so the ten do not step off together, and
+  by the index rather than by `Math.random()` so the castle is the same
+  castle twice.
+
+  **`validatePopulace` asks the twelve's own five questions and two more.**
+  Floor under the stop, inside the room it names, 1.5 m clear of everybody
+  else at that bell, somewhere the player can walk to, and a walk from one
+  bell's last stop to the next bell's first. What is new is the ring — every
+  leg of it and the wrap back to stop one — and the `activity`, which is a
+  clip name one indirection from a `.glb`. What is dropped is the bars:
+  nobody in this file is behind them.
+
+  **The room check is `roomAt` and not `inNamedRoom`, which is where it is
+  stronger than the schedule's.** `inNamedRoom` answers null for the four
+  open rooms, because the two wards, the barbican and the garden have no
+  bounds to be inside of — and six of the ten stand in open ground for at
+  least one bell. `roomAt` settles it the way the HUD's room line does
+  (#515), so a stop that says `inner-ward` and lands west of the porter gate
+  is caught, and under the schedule's own rail it would not have been.
+
+  **The clearance check is every stop against every stop, deliberately.** Two
+  rings inside one watch have no phase anybody can compute: the dwell is the
+  same for all of them and the walks between stops are not, so two rings that
+  share a tile will share it at the same moment sooner or later. "Do these
+  two rings ever come within 1.5 m of each other" is the only version of the
+  question with an answer.
+
+  **Nine activities, three clips, no new asset.** All three bodies under
+  `assets/NPCs` ship the same 24 Quaternius clips and not one of them is a
+  sweep, a stir, a hammer or a spar, so the vocabulary is restricted to jobs a
+  body does standing still — `bake`, `draw`, `haul`, `serve`, `tend`,
+  `gossip`, `wait`, `guard`, `muster` — and every one resolves to `Idle`,
+  `Idle_Neutral` or `Idle_Sword` through `ACTIVITY_CLIPS`. `sweep`, `stir`,
+  `hammer` and `spar` are deferred to the increment that has a clip for them,
+  which is what `SPECS.md` recommended. **The table is checked against the
+  files**: `test/mystery.mjs` reads the animation list out of every `.glb`
+  the file uses and fails on a clip name none of them carries, because
+  `pickClip` returns null for a name nobody ships, `playActivity` gives up,
+  and a frozen body looks exactly like an idling one.
+
+  **`_restKey` in `src/npc.js`, and it was nearly a rail that asserted
+  nothing.** npc.js's arrival branch played the literal `idle` at the end of
+  every route, so a body that walked to the oven dropped out of `bake` on the
+  frame it arrived. The first version of the guard read the clip after both
+  `npc.update` and `Populace.update` had run — and `Populace._arrive` sets the
+  activity a moment later whatever npc.js did, so the assertion passed with
+  the bug put back on purpose (#34). It reads the arrival frame now, before
+  the driver sees it, and fails with `npc.js chose Idle at the end of the
+  route`.
+
+  **Where the ten are.** The bakehouse and the well, which is the pair
+  `WISHLIST.md` calls cheapest, with a lad hauling between them; the garrison
+  mustering in the outer ward at Terce; a scullion between the kitchen and
+  the larder, a hen-wife in the ward, an archer on the two wall walks, a maid
+  on the Lady, a carter who is only there for two bells, and two of them
+  serving in the Great Hall at Vespers. Twelve rooms across the day. Every
+  tile is the centre of a real cell in the 0.5 m grid, picked off the grid
+  rather than guessed at.
+
+  **Nobody has a Lauds stop**, so the morning after has the cast and nothing
+  else. That is the increment's boundary and not a claim about the fiction.
+
+- **A label never out-ranks something to press E at** (#605).
+  `InteractionSystem` picked the nearest target in range and nothing else,
+  which was right while every target was pressable. It stopped being right
+  the moment ten bodies with nothing to say started walking the same castle:
+  `STATION_CLEARANCE` holds them 1.5 m off the twelve and E reaches 3.2 m, so
+  a baker's lad crossing between the player and the cook is legitimately the
+  nearer of the two — and the HUD read *"Iorwerth — the baker's lad"* while
+  she stood a metre behind him with the whole mystery in her mouth.
+
+  Two lists now, and the label list is only read when the other is empty. A
+  populace target carries `label: true` and a `prompt` that is a name and a
+  role rather than an offer, `main.js` returns from `onInteract` on one, and
+  nothing in either file knows one of the ten by id. **Measured in the
+  browser rather than argued**: `test/plan-vs-scene.mjs` stands a populace
+  body 0.83 m from the camera and a suspect 2.50 m behind him, in line of
+  sight, and asserts the prompt names the suspect — with the control that
+  hiding the suspect on the same spot falls back to the label, so a prompt
+  that named nobody could not pass the first line. Reverting the two lists
+  fails it with `the HUD offers "Gwladus — the baker" past Gwladus standing
+  in front of him`.
+
+- **`garden` is a room id nothing in this castle resolves to, and `npm test`
+  was already red on Windows** (#606). Two things found on the way and
+  neither is this row's to fix.
+
+  The populace was drafted with a gardener in it. `mystery.json` lists
+  `garden`, "East barbican garden", as one of the four open rooms, and the
+  grid says there are 93 walkable cells east of the east gate — but every one
+  of them is inside the Chapel Tower's or the King's Tower's own disc, so
+  `roomAt` names a tower and never the garden. There is no ground out there
+  to stand on that is not already a room. The gardener became a hen-wife in
+  the outer ward, and the row that will build that ground is rank 9's town or
+  rank 4c's yard.
+
+  And `test/tools.mjs` fails on this machine and passes in CI. Its
+  byte-exactness rail cuts an inserted row back out with
+  `.replace(/,\n$/, '\n')`, which does not match `,\r\n`; the file comes back
+  one byte short and all three rows fail. That is a Windows-only failure on a
+  repo whose own rule is that **Windows is the dev machine**, so `npm test`
+  has been red locally and green on Linux for as long as the rail has
+  existed. It is lane B and this row is lanes C and D, so it is left alone
+  and written down here instead.
+
+  A third thing, smaller: `plan-vs-scene.mjs`'s chapel-candles beat failed
+  twice and then passed five times in a row, on `main` with this branch's
+  work stashed. It loops twelve cells looking for an `examine` prompt and
+  gives up if the chapel bell answers first; under load one of those reads
+  comes back stale. Intermittent, pre-existing, and not touched here.
+

@@ -47,6 +47,7 @@ import { attachSceneProbe, waitForProbe } from './drive.mjs';
 import { partsOf } from './gltf.mjs';
 import { makePlan, walkability, surfacesAt, EYE_HEIGHT } from '../src/castle-plan.js';
 import { castleNav } from '../src/stations.js';
+import { stopWorld } from '../src/populace.js';
 import { dayTwoCastle, dayTwoOutcomes } from '../src/mystery.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -354,6 +355,128 @@ try {
     grounded.map((n) => n.id).join(', ') + ' on the ground');
   const absent = bodies.filter((b) => !b.visible).map((b) => b.id).sort();
   check(absent.join() === 'inspector,merchant', 'the two who are not in the castle at Prime are hidden rather than standing at the origin', `hidden: ${absent.join(', ') || 'nobody'}`);
+  /* --- AND THE OTHER TEN (#604). The household spawns off data/populace.json
+   * beside the thirteen and is a separate list on purpose: `window.__cast`
+   * above is counted by id and by name, and folding the ten into it would
+   * have left every assertion in this beat reading the same and meaning
+   * something else (#147).
+   *
+   * WHAT ONLY THE PAGE CAN SAY. Node has already run `validatePopulace` over
+   * every stop of every routine in test/mystery.mjs, so where they are DUE is
+   * settled. What is not is whether ten more NPC instances were built at all
+   * and put where the first stop of the ring says — the body count comes out
+   * of a Promise.all over ten `build()` calls and the placement out of
+   * `Populace.setWatch`, and neither of those exists in Node. */
+  {
+    const populace = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/populace.json'), 'utf8'));
+    const dueNow = populace.people
+      .map((p) => ({ id: p.id, stop: (p.routine?.[mystery.watches[0]] ?? [])[0] }))
+      .filter((p) => p.stop)
+      .map((p) => ({ ...p, at: stopWorld(nav, p.stop) }));
+    const folk = await page.evaluate(async () => (window.__folk || []).map((n) => ({
+      id: n.id, name: n.name, label: n.label, prompt: n.prompt || null, visible: n.group.visible,
+      x: n.group.position.x, y: n.group.position.y, z: n.group.position.z,
+    })));
+    check(folk.length === populace.people.length,
+      `the page spawns ${folk.length} more bodies for the household, beside the thirteen`,
+      `data/populace.json has ${populace.people.length}`);
+    check(folk.every((f) => f.label === true && f.prompt && !/Press E/.test(f.prompt)),
+      'every one of them carries a label rather than an offer to press E',
+      folk.filter((f) => !f.label || !f.prompt).map((f) => f.id).join(', '));
+    const byId = new Map(folk.map((f) => [f.id, f]));
+    let off = 0;
+    for (const { id, at, stop } of dueNow) {
+      const body = byId.get(id);
+      if (!body) { fail(`${id} is due at Prime in ${stop.room} and the page spawned no such body`); off++; continue; }
+      if (!body.visible) { fail(`${id} is due at Prime in ${stop.room} and the page left the body hidden`); off++; continue; }
+      const d = Math.max(Math.abs(body.x - at.x), Math.abs(body.z - at.z), Math.abs(body.y - at.h));
+      if (d > TOL) { fail(`${id} stands at (${body.x.toFixed(2)}, ${body.y.toFixed(2)}, ${body.z.toFixed(2)}) and the first stop of the Prime ring is (${at.x.toFixed(2)}, ${at.h.toFixed(2)}, ${at.z.toFixed(2)}), ${d.toFixed(3)} m off`); off++; }
+    }
+    if (!off) pass(`all ${dueNow.length} of them stand on the first stop of their Prime ring within ${TOL} m, on ${new Set(dueNow.map((d) => d.at.level)).size} level(s)`);
+    /* AND THE ONE WHO IS NOT IN THE CASTLE YET IS HIDDEN. A routine with no
+     * Prime in it is a body that has not arrived, which is the merchant's own
+     * answer one list over; standing them at the origin instead would put a
+     * carter inside the west barbican's ground at every load. */
+    const notYet = populace.people.filter((p) => !(p.routine?.[mystery.watches[0]] ?? []).length).map((p) => p.id);
+    check(notYet.length > 0 && notYet.every((id) => byId.get(id) && !byId.get(id).visible),
+      `and ${notYet.join(', ')} — who has no Prime stop — is hidden rather than standing at the origin`,
+      notYet.length ? notYet.filter((id) => byId.get(id)?.visible).join(', ') : 'nobody in the file skips Prime, so this asserts nothing');
+  }
+  /* AND THE RING ACTUALLY TURNS (#604). Everything above is where a body was
+   * PUT; this is the only assertion that a routine of more than one stop is a
+   * loop rather than a list nobody reads past the first entry. `Populace`
+   * counts a dwell down, asks the nav for a route, hands it to `walkTo` and
+   * waits for `walking` to go false, and none of those four exists in Node.
+   *
+   * THIS IS NOT THE REAL-TIME ASSERTION #53 FORBIDS. The dt is supplied —
+   * 0.05 s a step, the same clamp main.js's loop applies — rather than
+   * measured off a clock, and the loop below is driven by hand instead of by
+   * `setAnimationLoop`. What comes out is arithmetic over a fixed step, and a
+   * software rasteriser with no compositor changes none of it. What this
+   * could not say is how it LOOKS, and that is `npm run play`'s.
+   */
+  {
+    const turned = await page.evaluate(async ({ dt, cap }) => {
+      const pop = window.__populace;
+      const body = pop.bodies.find((b) => b.stops.length > 1 && b.npc.group.visible);
+      if (!body) return null;
+      const from = body.index;
+      const to = body.stops[(from + 1) % body.stops.length];
+      const home = body.npc.group.position.clone();
+      const clipNow = () => (body.npc._current ? body.npc._current.getClip().name : null);
+      let steps = 0, walked = false, onArrival = null;
+      while (steps < cap) {
+        const wasWalking = body.npc.walking;
+        body.npc.update(dt, window.__player.camera.position);
+        /* THE FRAME THE ROUTE ENDS ON, READ BEFORE THE DRIVER GETS TO SEE IT.
+         * `Populace._arrive` sets the activity a moment later whatever npc.js
+         * did, so reading the clip after both have run says nothing about
+         * which of them chose it — that version of this assertion passed with
+         * the bug reintroduced on purpose (#34). What is read here is npc.js's
+         * own answer to "the walk is over, what now", and that is `_restKey`. */
+        if (wasWalking && !body.npc.walking && onArrival === null) onArrival = clipNow();
+        pop.update(dt);
+        steps += 1;
+        if (body.npc.walking) walked = true;
+        if (body.index !== from && !body.npc.walking) break;
+      }
+      const out = {
+        id: body.person.id, name: body.npc.name, stops: body.stops.length,
+        from, index: body.index, walked, seconds: +(steps * dt).toFixed(2), capped: steps >= cap,
+        off: Math.max(Math.abs(body.npc.group.position.x - to.x), Math.abs(body.npc.group.position.z - to.z), Math.abs(body.npc.group.position.y - to.h)),
+        activity: body.stops[body.index].activity,
+        rest: body.npc._restKey, onArrival,
+      };
+      body.npc.group.position.copy(home);
+      return out;
+    }, { dt: 0.05, cap: 4000 });
+    if (!turned) fail('no populace body at Prime has a ring of more than one stop, so nothing here turns');
+    else {
+      check(!turned.capped && turned.index !== turned.from,
+        `${turned.name}'s ${turned.stops}-stop Prime ring steps from stop ${turned.from + 1} to stop ${turned.index + 1} after ${turned.seconds} s of supplied time`,
+        turned.capped ? 'the loop hit its step cap and the ring never turned' : '');
+      check(turned.walked, 'and gets there by walking a route rather than by appearing at the next stop');
+      check(turned.off <= TOL, `and stands on it within ${TOL} m`, `${turned.off.toFixed(3)} m off`);
+      /* AND IT DOES NOT BLINK BACK TO STANDING ON THE WAY. npc.js's arrival
+       * branch played the literal `idle` until this row, so a body that
+       * walked to the oven dropped out of `bake` for the frame it arrived on
+       * and was put back into it by the driver on the next one. `_restKey` is
+       * what makes the arrival branch play the job instead, and reverting that
+       * one word is what this line fails on.
+       *
+       * IT IS THE PREVIOUS STOP'S JOB ON THAT FRAME, not the next one's, which
+       * is why the assertion is "not Idle" rather than a named clip: npc.js
+       * knows what the body was doing and the driver is what knows where it is
+       * now going. Both stops of the ring under test are `bake`, so the one
+       * thing that separates the two versions is the bare Idle. */
+      check(turned.onArrival && turned.onArrival !== 'Idle',
+        `and the frame the walk ends on it is already in "${turned.onArrival}" rather than blinking back to Idle`,
+        `npc.js chose ${turned.onArrival} at the end of the route`);
+      check(turned.rest === `do:${turned.activity}`,
+        `and settles in its stop's own activity, "${turned.activity}"`,
+        `rest key is ${turned.rest}`);
+    }
+  }
   /* AND A HIDDEN BODY IS NOT SOMETHING TO PRESS E AT (#538). Two of the
    * thirteen are invisible at Prime and on the morning after the man who
    * hanged is invisible at the station the accusation was made at, which is
@@ -406,6 +529,68 @@ try {
         seen.shown === null ? 'no prompt at all, so the camera is not looking at him and the line below proves nothing' : seen.shown);
       check(seen.hidden === null, `and hidden, 2 m in front of the camera, ${who} offers nothing to press E at`,
         seen.hidden ? `the HUD said "${seen.hidden}" over a body nobody can see` : '');
+    }
+  }
+  /* AND A LABEL NEVER TAKES THE PROMPT OFF SOMEBODY WHO HAS SOMETHING TO SAY
+   * (#605). `InteractionSystem` picked the nearest target in range and nothing
+   * else until the household arrived. The twelve are held 1.5 m apart from the
+   * ten by `STATION_CLEARANCE` and E reaches 3.2 m, so a populace body between
+   * the player and a suspect is legitimately the NEARER of the two — and under
+   * the old rule the HUD read "Iorwerth — the baker's lad" while the Constable
+   * stood a metre behind him with the whole mystery in his mouth.
+   *
+   * THE CONTROL IS THE SAME CAMERA AND THE SAME TWO BODIES. A prompt naming
+   * the suspect proves nothing on its own — the label body might be out of
+   * range, or behind the camera — so the suspect is hidden without moving
+   * anything and the label has to take the prompt. Two reads, and the second
+   * is what gives the first its meaning.
+   */
+  {
+    const hall = grid.rooms().find((r) => r.id === 'great-hall');
+    const stand = hall?.at?.[Math.floor((hall.at?.length ?? 0) / 2)] ?? null;
+    const look = stand ? hall.at.find((c) => c.level === stand.level && Math.abs(Math.hypot(c.x - stand.x, c.z - stand.z) - 2.4) < 0.35) : null;
+    if (!stand || !look) fail('no two cells 2.4 m apart in the Great Hall to try the prompt from');
+    else {
+      const seen = await page.evaluate(async ({ at, from, eye }) => {
+        const frame = () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+        const promptNow = () => { const el = document.getElementById('interact-prompt'); return el && !el.classList.contains('hidden') ? el.textContent.trim() : null; };
+        const suspect = window.__cast.find((n) => n.group.visible);
+        const folk = window.__folk[0];
+        const homes = [suspect.group.position.clone(), folk.group.position.clone()];
+        const wasVisible = folk.group.visible;
+        // The suspect at the far point, the label body a third of the way
+        // there: strictly nearer to the camera, strictly in range, strictly
+        // in the line of sight.
+        suspect.group.position.set(at.x, at.h, at.z);
+        folk.group.visible = true;
+        folk.group.position.set(from.x + (at.x - from.x) / 3, at.h, from.z + (at.z - from.z) / 3);
+        window.__player.camera.position.set(from.x, from.h + eye, from.z);
+        window.__player.camera.rotation.set(0, Math.atan2(-(at.x - from.x), -(at.z - from.z)), 0, 'YXZ');
+        await frame();
+        const both = promptNow();
+        const gap = {
+          label: Math.hypot(folk.group.position.x - from.x, folk.group.position.z - from.z),
+          suspect: Math.hypot(at.x - from.x, at.z - from.z),
+        };
+        // The control: take the suspect away and the label is all there is.
+        suspect.group.visible = false;
+        await frame();
+        const alone = promptNow();
+        suspect.group.visible = true;
+        suspect.group.position.copy(homes[0]);
+        folk.group.position.copy(homes[1]);
+        folk.group.visible = wasVisible;
+        return { both, alone, gap, suspect: suspect.name, folk: folk.name };
+      }, { at: stand, from: look, eye: EYE_HEIGHT });
+      check(seen.gap.label < seen.gap.suspect,
+        `the label body stands ${seen.gap.label.toFixed(2)} m from the camera and the suspect ${seen.gap.suspect.toFixed(2)} m, so nearest-wins would pick the label`,
+        JSON.stringify(seen.gap));
+      check(!!seen.both && seen.both.includes(seen.suspect),
+        `and the HUD offers "${seen.both}" past ${seen.folk} standing in front of him`,
+        seen.both === null ? 'no prompt at all, so the camera is not looking at either of them and both lines here prove nothing' : seen.both);
+      check(!!seen.alone && seen.alone.includes(seen.folk),
+        `and with the suspect hidden on the same spot it falls back to "${seen.alone}"`,
+        seen.alone === null ? 'no prompt at all, so the label body was never in range and the line above proves nothing' : seen.alone);
     }
   }
   /* AND WHAT THE VERDICT DOES TO THE STONE (#539). `castle-builder.js`'s

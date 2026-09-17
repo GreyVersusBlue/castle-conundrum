@@ -20,6 +20,7 @@
 
 import * as THREE from 'three';
 import { loadGLTF, loadModel } from './assets.js';
+import { ACTIVITY_CLIPS } from './populace.js';
 
 const PATROL_SPEED = 1.1; // m/s
 const WAYPOINT_EPS = 0.05;
@@ -66,8 +67,25 @@ export class NPC {
 
     this._mixer = null;
     this._actions = {};
+    this._clips = [];
     this._current = null;
     this._wasTalking = false;
+    /* WHAT A BODY GOES BACK TO WHEN IT IS NOT WALKING AND NOT TALKING. It was
+     * the literal 'idle' in three places until the populace arrived (#604),
+     * and a populace body that reached its stop, played its activity and then
+     * finished a step would drop straight back to Idle and stay there — the
+     * baker baked for one frame per bell. This is the one thing the activity
+     * has to survive, so it is a field rather than three call sites. */
+    this._restKey = 'idle';
+
+    /* A POPULACE BODY IS A BODY AND NOTHING ELSE (BACKLOG.md rank 6). Both of
+     * these come off the def, so nothing here knows one list from the other:
+     * `prompt` replaces InteractionSystem's "Press E to talk to the ..." with
+     * a label, because pressing E at somebody with no dialogue does nothing,
+     * and `label` is what stops that label out-ranking a suspect standing
+     * behind them. src/populace.js's `populaceDefs` is what sets them. */
+    this.prompt = def.prompt ?? undefined;
+    this.label = !!def.populace;
   }
 
   /**
@@ -128,6 +146,7 @@ export class NPC {
     if (this.def.tint) tintBody(model, this.def.tint);
 
     if (animations.length) {
+      this._clips = animations;
       this._mixer = new THREE.AnimationMixer(model);
       for (const [key, names] of Object.entries(CLIPS)) {
         const clip = pickClip(animations, names);
@@ -136,7 +155,7 @@ export class NPC {
       // The greeting is a one-shot; drop back to idle rather than holding its last pose
       // for the rest of the conversation.
       this._mixer.addEventListener('finished', (e) => {
-        if (e.action === this._actions.greet) this._play('idle');
+        if (e.action === this._actions.greet) this._play(this._restKey);
       });
       this._play('idle');
     }
@@ -230,6 +249,34 @@ export class NPC {
     return found;
   }
 
+  /** Is this body part-way along a route? False for a patrol, which never ends. */
+  get walking() { return this._waypoints.length > 0 && !this._loop; }
+
+  /**
+   * STAND STILL AND DO A JOB (#604). `activity` is one of the strings
+   * src/populace.js's ACTIVITY_CLIPS names, and the clip it resolves to is
+   * whatever the loaded body ships under that name. A body whose file has no
+   * such clip keeps whatever it was playing rather than freezing: `_play`
+   * no-ops on a missing action, and `_restKey` is only moved once an action
+   * actually exists, so the fallback is the idle it was already in.
+   *
+   * The action is built on first use rather than up front, because the twelve
+   * never call this and building nine more AnimationActions apiece for them
+   * would be nine mixers' worth of nothing.
+   */
+  playActivity(activity) {
+    const wanted = ACTIVITY_CLIPS[activity];
+    if (!wanted || !this._mixer) return;
+    const key = `do:${activity}`;
+    if (!this._actions[key]) {
+      const clip = pickClip(this._clips, [wanted]);
+      if (!clip) return;
+      this._actions[key] = this._mixer.clipAction(clip);
+    }
+    this._restKey = key;
+    this._play(key);
+  }
+
   /** Cross-fade to one of the CLIPS keys. No-op if the model didn't ship that clip. */
   _play(key, { once = false } = {}) {
     const next = this._actions[key];
@@ -259,7 +306,7 @@ export class NPC {
 
     if (this.talking !== this._wasTalking) {
       this._wasTalking = this.talking;
-      this._play(this.talking ? 'greet' : 'idle', { once: this.talking });
+      this._play(this.talking ? 'greet' : this._restKey, { once: this.talking });
     }
 
     // Turning always runs, including the facePlayer() turn that starts a conversation.
@@ -278,7 +325,7 @@ export class NPC {
       // last waypoint put it, at that waypoint's own height, and idles.
       if (this._waypointIndex + 1 < this._waypoints.length) this._waypointIndex += 1;
       else if (this._loop) this._waypointIndex = 0;
-      else { this.group.position.copy(target); this._waypoints = []; this._play('idle'); }
+      else { this.group.position.copy(target); this._waypoints = []; this._play(this._restKey); }
       return;
     }
 

@@ -485,81 +485,86 @@ GPU.
 
 ## Life: a populace
 
-**Rank 6. Size 2+.** `WISHLIST.md` theme 1. The twelve have one station a
-watch and walk between them on `stations.js`'s grid; nothing else in the
-castle moves. This row gives it fifty more bodies who have nothing to do with
-the mystery and everything to do with whether the castle reads as lived in.
+**Rank 6. Size 2+.** `WISHLIST.md` theme 1. **The first increment shipped on
+2026-09-17** (#604 to #606) and this section is what is left of the row.
 
-### Scope, first increment
+### What shipped
 
-- **`data/populace.json`, new, with a validator in a new `src/populace.js`.**
-  Shape per `WISHLIST.md`: an entry is a body (`modelPath`, a tint), a name,
-  and a `routine`: one list per watch of `{room, tile, activity, facing?}`.
-  This is `mystery.json`'s `schedule` shape with the clue graph removed and
-  `activity` put in its place, so the validator can lean on the same
-  tile-and-room checks `mystery.js` already runs rather than write them twice.
-- **Ten bodies, off the models already in `data/npcs.json`'s `cast`** (the
-  three Kenney bodies plus whatever **A fourth body**, rank 1, has landed by
-  the time this starts) — no new asset in this increment, no new clip.
-  `npc.js` gets the two or three activity clips the kit already carries under
-  another name (`idle` variants) mapped to new activity strings, deferring
-  `sweep`/`stir`/`hammer`/`spar` and the rest to the increment that needs
-  real garrison and kitchen bodies.
-- **`stations.js`'s `STATION_CLEARANCE`** (1.5 m) is the same spacing check
-  the validator runs against every two populace entries at one bell, and
-  against the twelve's own stations, so a populace body cannot be written on
-  top of a suspect.
-- **`src/main.js`** spawns the ten alongside the twelve; they carry no
-  dialogue and are not clickable for a clue, only for the HUD name label the
-  mystery's own NPCs already show.
+- **`data/populace.json`, ten people, and `src/populace.js`.** A routine is a
+  ring per bell — one LIST of `{room, tile, activity, facing?}` per watch,
+  walked round until the next bell — rather than one station per bell, because
+  the clock does not move between bells (#547, answer 3). `validatePopulace`
+  asks the twelve's own five nav questions plus every leg of the ring and the
+  wrap back to its first stop, and it checks the room with `roomAt` rather
+  than `inNamedRoom`, which is the one place it is stronger than the
+  schedule's: six of the ten stand in open ground, where `inNamedRoom` answers
+  null. `test/mystery.mjs` owns it (#529) and rejects thirteen breaks.
+- **Nine activities onto three clips**, all of them idle variants every body
+  already ships, so no asset and no clip was added. `ACTIVITY_CLIPS` in
+  `src/populace.js` is the table and `npc.js`'s `playActivity` reads it.
+- **`label` on an interaction target** (#605): a populace body shows a name
+  and a role on the HUD, E at one does nothing, and a label never takes the
+  prompt off a suspect standing behind it.
 
-### Acceptance, first increment
+### Scope, the next increment
 
-- `data/populace.json` and `src/populace.js` exist; a Node script (folded
-  into `test/mystery.mjs` or its own suite, matching #529's line that
-  `mystery.mjs` owns the stations) validates every routine: every tile
-  walkable per `layout.mjs`'s own walkability, every room real, every two
-  bodies at one bell at least `STATION_CLEARANCE` apart from each other and
-  from the twelve, every `activity` string one `npc.js` can play.
-- Break: write a routine tile one column outside a room's `Box3`. The
-  validator's room-membership check should fail it, named by tile and room
-  (#34).
-- Ten populace bodies spawn in `npm run build` and are visible in
-  `plan-vs-scene.mjs`'s object count without appearing in `test/mystery.mjs`'s
-  twelve-suspect assertions, which stay untouched.
+- **The other forty.** `data/populace.json` takes them with no schema change;
+  what it needs is places for them to stand, and `roomAt` plus the walk grid
+  will refuse any tile that is not one. The two wards, the three upper floors
+  and the two wall walks carry more than ten, and rank 9's town is where the
+  rest go.
+- **Ambient talk.** `data/npcs.json`'s 27-pair chatter pool, spent once two
+  populace bodies are within 3 m at one bell. The `gossip` activity already
+  marks the stops that are for it: the baker's lad and the well-wife stand
+  2 m apart in the outer ward at Sext and say nothing.
+- **Clips.** `sweep`, `stir`, `hammer` and `spar` are the four `SPECS.md`
+  deferred and they are still deferred: the Quaternius kit has none of them.
+  This is the half of the row that trades with **Bodies** (rank 10) in both
+  directions, and neither strictly gates the other.
+- **Cost.** Instanced meshes and animation LOD. Ten skinned bodies needed
+  none of it; fifty will, and **The tooling**'s budget suite (rank 12a) is
+  what will say when.
+
+### Acceptance, the next increment
+
+- Whatever the populace grows to, `validatePopulace` still finds nothing and
+  `test/mystery.mjs` still rejects every break in its list. A new activity is
+  a new row in `ACTIVITY_CLIPS` and the clip check against the `.glb` files
+  is what says the clip is real.
+- Ambient talk: a pair of populace bodies within 3 m at one bell says a line,
+  and a headless assertion in `test/plan-vs-scene.mjs` reads it off the DOM
+  the way the performance captions are read (#592).
 
 ### Open calls
 
-- **Clips or retarget?** Whether the ten activities want their own clips
-  baked per body or a shared rig retargeted onto whichever model wears them is
-  the question `WISHLIST.md` itself opens first, and it decides which body
-  source (rank 10) is usable for the fiftieth. Recommend **reuse the walk and
-  idle clips every body already has for this increment**, and defer any new
-  clip to the increment that adds `sweep`, `stir`, `hammer`.
-- **Where the ten stand.** Recommend the Prime bakehouse-and-well pair and the
-  Terce garrison drill named first in `WISHLIST.md`, because they are the two
-  the theme calls cheapest (a loop of tiles, no new prop) and because rank 9's
-  "fill the volume" has nowhere yet for the rest to stand.
+- **Where the forty stand, before rank 9.** The castle as built has room for
+  perhaps twenty more without crowding. Recommend **stopping at twenty until
+  the town exists**, rather than packing bodies into the wards to hit a
+  number; the row is about whether the castle reads as lived in, and a
+  courtyard of people standing 1.5 m apart reads as a queue.
+- **Whether `garden` should be made real** (#606). `mystery.json` lists it and
+  nothing in the castle resolves to it: the 93 walkable cells east of the east
+  gate are all inside the Chapel Tower's or the King's Tower's disc. It is
+  either ground somebody builds — rank 4c's yard is the nearer precedent — or
+  a room id that should come out of the file. Not this row's call, but this
+  row is where it was found.
 
 ### Dependencies
 
-- **Draws on whatever `cast` bodies exist**, so it can start before or after
-  rank 1 lands; it does not need the fourth body, only whatever the cast is
-  the day it starts.
-- **Ambient chatter** (`WISHLIST.md`, and `data/npcs.json`'s existing
-  27-pair pool) is this row's to spend, once two populace bodies are within 3
-  m at one bell; not in the first increment.
-- The instanced-mesh and animation-LOD cost `WISHLIST.md` names is a later
-  increment's problem: ten bodies do not need it, fifty will.
+- **Two of rank 8's seven errands wanted somebody from this file** and have
+  one now.
+- **Rank 10** is what unblocks the four deferred activities.
+- **Lanes C and D still**: `data/npcs.json`'s `cast` is read to check ids and
+  tints against, and `src/main.js` spawns the ten beside the twelve.
 
 ### Constraints
 
-- #500 (a populace tile is not on the plan and has no `planId`; it is data
-  the builder spawns, not a plan piece — say so in `populace.js`'s own
-  comment so a later session does not go looking for it in `castle-plan.js`).
-- #13, #34 (the validator exits non-zero and gets broken on purpose once).
-- #529 (the check belongs with `mystery.mjs`, not `layout.mjs`, because a
-  routine's tile membership is not derivable from the plan alone).
+- #500 (a populace stop is not a plan piece and has no `planId`; `populace.js`
+  says so in its own header).
+- #13, #34 (the validator exits non-zero, and every rail it adds has been
+  broken on purpose — including one that had to be rewritten because the
+  first version passed with the bug back in, #604).
+- #529 (the check belongs with `mystery.mjs`).
 
 ---
 

@@ -28,7 +28,7 @@ NOW, in parallel, no gates:
   Devon's machine                    A container
   ---------------                    -----------
   R2  GPU run        --+             R8   quests: reputation + errands   lane A
-  R1  fourth body      |             R6   populace: the first ten        lanes C D
+  R1  fourth body      |             R6   populace: the next forty       lanes C D
                        |             R12a budget suite                   no lane
                        |             R7   ambient beds                   lane E
                        |             R4a  the bells call   (lane A: not beside R8)
@@ -143,7 +143,12 @@ should still say so in its PR.
 **R8 (lane A), R6 (lanes C and D), R12a (no lane).** Different files, different
 suites, no gate on any of them, and the backlog's existing advice already
 points here: *"a session running beside one of those is better off on 8 or
-12."*
+12."* **This was tested on 2026-09-17 and it held**: R6's first increment and
+R12a's budget suite ran at the same time and collided on nothing in `src/` or
+`test/`. What they did collide on is `HISTORY.md`, `BACKLOG.md` and the
+decision number itself — two sessions both reaching for the next free one —
+and neither is a lane. A session should take the next number after every
+number it can see and say in its PR which band it took.
 
 Add **R2** and **R1** on Devon's machine and that is five things moving at once
 without a single collision.
@@ -180,7 +185,7 @@ One row per lane. All of these are startable today.
 | --- | --- | --- | --- | --- |
 | **R2** The GPU run | Opus 5 | **Local: GPU** | none | Gate 1, above. |
 | **R8** Side quests | Opus 5 | Container | A | Reputation by ward: two save counters, version 6 through `migrate`, a clamp in `repair`, a chatter line per threshold and one line in one closing pane. Then the seven errands left of the dozen; five of the seven need nobody new. |
-| **R6** Life: a populace | Opus 5 | Container | C, D | `data/populace.json`, `src/populace.js`, and ten bodies off the `cast` that already exists. No new asset, no new clip, so the row that makes every other wishlist row visible does not itself wait on one. |
+| **R6** Life: a populace | Opus 5 | Container | C, D | **First increment shipped 2026-09-17** (#604 to #606): the file, the validator and the ten. Next is the other forty, the ambient talk off the 27-pair pool, and the four activities that want a clip nobody has baked — which is the half that trades with R10. |
 | **R12a** The budget suite | Opus 5 | Container | none | Skinned bodies, point lights and draw calls per ward, off the plan, in Node, failing against ceilings held as named constants with a comment saying they are guesses. |
 | **R1** A fourth body | Fable 5.1 | **Local: net** | C | Fetch, check against the three name lists, encode, add to `cast`. Not beside R6. |
 | **R7** Sound | Fable 5.1 | Container | E | The ambient beds and the cross-fade. Alone in its lane, which makes it the right row for a session when A, C and D are all held. |

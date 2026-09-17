@@ -186,6 +186,16 @@ barrel-before-Marged hole the knife shipped with. `validateQuestSet` holds
 every file to a `ward`. **Rank 8 is still open**: seven of the dozen, and
 reputation by ward, which five errands is now enough to make visible.
 
+**The first ten of the populace shipped on 2026-09-17** (#604 to #606):
+`data/populace.json`, `src/populace.js` and ten people with no clue, no lie
+and no line, walking rings inside a watch on the same grid the twelve's
+schedule is checked against. Nine activities onto three clips the kit already
+ships, so no asset was needed and none was added. Two things came out of it
+for other rows: `garden` is a room id nothing in this castle resolves to, and
+`test/tools.mjs` fails on Windows and passes in CI (#606). **Rank 6 is still
+open**: the other forty, the ambient talk, the children and dogs, and every
+activity that wants a clip nobody has baked yet.
+
 **12 ranked items. Nothing is claimed.** Every one of ranks 1, 2, 3 and 5
 needs a machine this one is not: ranks 2, 3 and 5 a GPU (#518), rank 1 a
 network that reaches quaternius.com (#568), which #541's did and this one's
@@ -336,7 +346,7 @@ same reason: **12a** the budget suite, **12b** move-and-delete in the editor,
 | 3 | A new preview and og card, from that run | ¼ | Opus 5 | Local: GPU | **after 2** | — | | [The GPU run](SPECS.md#the-gpu-run) |
 | 4 | A second day: increment 3, the town half and the bells question | 2+ | Opus 5 | 4a/4b container, 4c local | — | A (4a/4b), B (4c) | | [A second day](SPECS.md#a-second-day) |
 | 5 | The hall's covering, and the two windows under it | ¼ | Sonnet 5 | Local: GPU | **after 2** | B | | [The hall covering](SPECS.md#the-hall-covering) |
-| 6 | Life: a populace, and the first ten bodies of it | 2+ | Opus 5 | Container | — | C, D | `claude/populace-first-ten` | [Life: a populace](SPECS.md#life-a-populace) |
+| 6 | Life: a populace: the fifty, the activity clips and the ambient talk | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: ambient beds, event sounds, a bell that is a soundscape | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
 | 8 | Side quests: reputation by ward, and the seven left | 2+ | Opus 5 | Container | — | A | | [Side quests](SPECS.md#side-quests) |
 | 9 | A castle to get lost in: the town, the rock and river | 2+ | Opus 5 | Container | **after 4c** | B | | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
@@ -433,15 +443,26 @@ at it.
 
 *Where: container. Gate: none. Lanes: C and D.*
 
-**Rank 6.** The twelve are the mystery's; the castle needs the other fifty who
-were there before the mason died and will be there after. `data/populace.json`
-is a fourth data file with a validator, keyed to a body, a tint and a routine
-of `{room, tile, activity, facing?}` per watch, on `stations.js`'s own walk
-grid and `STATION_CLEARANCE`. The first increment, per Devon's own answer to
-question 10 in `WISHLIST.md`, is the file, the validator, and the first ten
-bodies off the models this repo already has — no new asset, no new clip — so
-the row that makes every other wishlist row visible does not itself wait on
-one.
+**Rank 6, and a 2+. The first increment shipped on 2026-09-17** (#604 to
+#606): `data/populace.json` is ten people with no clue, no lie and no line,
+`src/populace.js` is their validator and the engine that turns their rings,
+and nine activities resolve to three clips the kit already ships, so nothing
+here waited on an asset. A routine is a LOOP per bell rather than one station
+per bell (#547, answer 3), and the validator asks the twelve's own five
+questions — floor, room, 1.5 m clearance, reachable, a walk from the last
+bell — plus every leg of the ring and the wrap back to its first stop.
+`test/mystery.mjs` owns it (#529) and rejects thirteen breaks; the page runs
+the same validator and throws rather than warns.
+
+**What is left is the other forty and everything that needs a clip.** The
+ambient talk (`data/npcs.json`'s 27-pair pool, once two bodies are within 3 m
+at one bell), children and dogs, the knights actually training rather than
+standing with a sword, and the instanced-mesh and animation-LOD cost fifty
+bodies will have that ten do not. `WISHLIST.md` theme 1 is the source for all
+of it. **Two of rank 8's seven errands want somebody from this file**, and
+they have one now. **Rank 10's bodies is the row that unblocks the clips**:
+`sweep`, `stir`, `hammer` and `spar` are deferred until something ships a
+clip for them.
 
 ## Sound: a soundscape
 
