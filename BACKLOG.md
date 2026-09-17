@@ -127,7 +127,7 @@ bodies the npm registry did carry were the wrong shape (KayKit, chibi) and the
 wrong licence (deskrpg, non-commercial derivative). The row stays at rank 1
 with what to fetch written into it.
 
-**13 ranked items. Nothing is claimed.** Every one of ranks 1, 2, 3 and 5
+**13 ranked items. Rank 9 is claimed by `claude/friendly-darwin-xdh53e`.** Every one of ranks 1, 2, 3 and 5
 needs a machine this one is not: ranks 2, 3 and 5 a GPU (#518), rank 1 a
 network that reaches quaternius.com (#568), which #541's did and this one's
 did not. **Rank 4 no longer has a thread a container can start on its own**:
@@ -194,7 +194,7 @@ your decisions and this file's header, ranks and `Claimed` column are updated
 | 6 | Life: a populace, and the first ten bodies of it | 2+ | Opus 5 |  | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: ambient beds, event sounds, a bell that is a soundscape | 1 | Fable 5.1 |  | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
 | 8 | Lore: the sermon, the song, and facts that change | ¼ | Sonnet 5 |  | [Lore: what is still open](SPECS.md#lore-what-is-still-open) |
-| 9 | Side quests: the first dozen, and reputation by ward | 2+ | Opus 5 |  | [Side quests](SPECS.md#side-quests) |
+| 9 | Side quests: the first dozen, and reputation by ward | 2+ | Opus 5 | `claude/friendly-darwin-xdh53e` | [Side quests](SPECS.md#side-quests) |
 | 10 | A castle to get lost in: the volume, the town, the rock and river | 2+ | Opus 5 |  | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
 | 11 | Bodies: a shared low-poly rig for the fifty | 1 | Fable 5.1 |  | [Bodies](SPECS.md#bodies) |
 | 12 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 |  | [Feel](SPECS.md#feel) |
