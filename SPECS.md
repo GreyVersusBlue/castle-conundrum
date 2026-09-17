@@ -1,8 +1,10 @@
 # SPECS
 
-A spec per ranked row in `BACKLOG.md`. **`BACKLOG.md` ranks; this file says what
-each row is, in the detail `PLAN.md` gave the seven phases and the backlog rows
-never got.** `HISTORY.md` is still the only record: nothing in here is a locked
+A spec per ranked row in `BACKLOG.md`. **`BACKLOG.md` ranks; `ROADMAP.md`
+orders; this file says what each row is, in the detail `PLAN.md` gave the seven
+phases and the backlog rows never got.** Each section's Dependencies below is
+where `ROADMAP.md`'s gates and lanes came from (#600 to #602); where this file
+and that one differ, this one was written against the code and wins. `HISTORY.md` is still the only record: nothing in here is a locked
 decision. Every "recommendation" below is exactly that, and the session that
 ships the row is the one that records the call with a number.
 
