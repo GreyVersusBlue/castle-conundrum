@@ -116,6 +116,6 @@ history intact. `PLAN.md` was moved unedited and still spells the old paths.
 ## Credits
 
 Models from [Kenney](https://kenney.nl/)'s Retro Fantasy Kit (CC0) and
-[Poly Haven](https://polyhaven.com/) (CC0), the three NPC bodies from
+[Poly Haven](https://polyhaven.com/) (CC0), the four NPC bodies from
 [Quaternius](https://quaternius.com/) (CC0), re-encoded in place; git history is
 the originals.
