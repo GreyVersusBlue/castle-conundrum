@@ -1,25 +1,27 @@
 // lore.js — the canon (data/lore.json) as data, validated without a page. No
 // DOM, no three, no timers, in the style of src/mystery.js: `validateLore`
-// reads the canon against data/documents.json, data/npcs.json's `cast` and
-// `chatter`, data/mystery.json and data/scene-config.json's `builtProps`, and
-// returns every problem it finds, each naming the id it is about.
+// reads the canon against data/documents.json, data/npcs.json's `cast`,
+// `chatter` and `performances`, data/mystery.json and data/scene-config.json's
+// `builtProps`, and returns every problem it finds, each naming the id it is
+// about.
 // `untoldFacts` is a separate, non-failing report: a fact with no source is
 // allowed (WISHLIST.md, theme 3), and a check that only prints is not a check
 // (#13), so "untold" is never folded into the list `validateLore` returns.
 //
 // WHY A FACT NEEDS A SOURCE TO BE "TOLD". Forty years of history is easy to
 // invent and easy to leave unreachable: a fact nobody ever says, in no
-// document, no line, no chatter pair and no epilogue, is exposition sitting
-// in a JSON file and nothing else. `sources` is where a fact claims to be
-// told, and this file is the net that says whether the claim is true — a
-// document that does not actually cite the fact it is claimed to tell is the
-// same failure as a clue whose evidence does not list it (src/mystery.js's
+// document, no line, no chatter pair, no sermon, no song and no epilogue, is
+// exposition sitting in a JSON file and nothing else. `sources` is where a
+// fact claims to be told, and this file is the net that says whether the claim
+// is true — a document that does not actually cite the fact it is claimed to
+// tell is the same failure as a clue whose evidence does not list it (src/mystery.js's
 // `evidence ${id} does not list it as its clue`).
 
 const KINDS = new Set(['history', 'person', 'place', 'belief', 'rumour']);
 const CONTRADICTABLE = new Set(['belief', 'rumour']);
-const SOURCE_KINDS = new Set(['document', 'npc', 'chatter', 'epilogue']);
+const SOURCE_KINDS = new Set(['document', 'npc', 'chatter', 'epilogue', 'performance']);
 const WARDS = new Set(['outer', 'inner']);
+const POOLS = new Set(['sermons', 'songs']);
 
 const asList = (v) => (v == null ? [] : Array.isArray(v) ? v : [v]);
 const nonEmpty = (s) => typeof s === 'string' && s.trim().length > 0;
@@ -72,6 +74,72 @@ function indexChatter(chatter, { npcs, mystery, problems }) {
 }
 
 /**
+ * Flatten data/npcs.json's `performances` (pool -> entries) into one map by id,
+ * plus every problem in its own shape.
+ *
+ * WHAT A PERFORMANCE HAS THAT A CHATTER PAIR DOES NOT: a room and a bell. A
+ * chatter pair is two bodies talking wherever the pair's ward puts them, so
+ * #554 settled for checking each speaker's own static `ward` field. A
+ * performance is one body saying one thing in one named room at one named
+ * bell, and data/mystery.json's `schedule` already says where everybody is at
+ * every bell, so this checks the station itself: the sermon is said where the
+ * chaplain actually stands, not where a data file wishes he stood. A piece at
+ * `day2.watch` is checked against `day2.schedule` instead, and against the
+ * day-two absences, because a sermon said by a man the player may have hanged
+ * is a sermon that does not happen in six endings out of seven.
+ */
+function indexPerformances(performances, { npcs, mystery, problems }) {
+  const say = (m) => problems.push(m);
+  const cast = new Map((npcs ?? []).map((n) => [n.id, n]));
+  const watches = new Set(Array.isArray(mystery?.watches) ? mystery.watches : []);
+  const d2 = mystery?.day2 ?? {};
+  const rooms = new Set((mystery?.rooms ?? []).map((r) => r.id));
+  // Who is not in the castle on the morning after, in some ending: whoever can
+  // be convicted (the endings are keyed by the accused) and whoever a `full`
+  // ending takes with them.
+  const mayBeAbsent = new Set([
+    ...Object.keys(d2.endings ?? {}).filter((k) => k !== 'full' && k !== 'nobody'),
+    ...Object.values(d2.absent?.also ?? {}).flat(),
+  ]);
+  const byId = new Map();
+  const byPlace = new Map(); // "room/watch" -> the piece that has it
+  for (const [pool, entries] of Object.entries(performances ?? {})) {
+    if (!POOLS.has(pool)) say(`performances: pool ${JSON.stringify(pool)} is not sermons or songs`);
+    for (const e of asList(entries)) {
+      const where = `performance ${e?.id ?? '(no id)'}`;
+      if (!nonEmpty(e?.id)) { say(`${where}: no id`); continue; }
+      if (byId.has(e.id)) { say(`${where}: id used twice`); continue; }
+      byId.set(e.id, { ...e, pool });
+      const lines = asList(e.lines);
+      if (lines.length < 2 || !lines.every(nonEmpty)) say(`${where}: fewer than two non-empty lines`);
+      if (!rooms.has(e.room)) say(`${where}: in no room (${JSON.stringify(e.room)})`);
+      const onDayTwo = e.watch === d2.watch;
+      if (!watches.has(e.watch) && !onDayTwo) say(`${where}: watch ${JSON.stringify(e.watch)} is not one of the four bells nor ${JSON.stringify(d2.watch)}`);
+      // Two pieces wanting one room at one bell is a choice nothing should have
+      // to make: the manager plays the piece for where the player is standing.
+      const place = `${e.room}/${e.watch}`;
+      if (byPlace.has(place)) say(`${where}: ${byPlace.get(place)} already has ${e.room} at ${e.watch}, and one room at one bell holds one piece`);
+      else byPlace.set(place, e.id);
+      const n = cast.get(e.npc);
+      if (!n) { say(`${where}: ${JSON.stringify(e.npc)} is not in the cast`); continue; }
+      if (onDayTwo) {
+        const st = d2.schedule?.[e.npc];
+        if (!st) say(`${where}: ${e.npc} has no station at ${d2.watch} and cannot perform on the morning after`);
+        else if (st.room !== e.room) say(`${where}: ${e.npc} stands in ${st.room} at ${d2.watch}, not in ${e.room}`);
+        if (mayBeAbsent.has(e.npc)) say(`${where}: ${e.npc} is gone from the castle at ${d2.watch} in at least one ending, so this would be said in some plays and not others`);
+      } else if (watches.has(e.watch)) {
+        if ((n.arrives ?? 1) > 1) say(`${where}: ${e.npc} arrives on day ${n.arrives} and is not one of the existing twelve`);
+        const st = mystery?.schedule?.[e.npc]?.[e.watch];
+        if (!st) say(`${where}: ${e.npc} is not in the castle at ${e.watch}`);
+        else if (st.room !== e.room) say(`${where}: ${e.npc} stands in ${st.room} at ${e.watch}, not in ${e.room}`);
+        else if (st.asleep) say(`${where}: ${e.npc} is asleep at ${e.watch}`);
+      }
+    }
+  }
+  return byId;
+}
+
+/**
  * Every problem in data/lore.json, each naming the id it is about. Empty
  * means the canon is coherent: every source it claims actually tells it,
  * every id a fact or a document points at exists, no two facts disagree
@@ -82,6 +150,8 @@ function indexChatter(chatter, { npcs, mystery, problems }) {
  * @param documents  parsed data/documents.json's `documents`
  * @param npcs       data/npcs.json's `cast`
  * @param chatter    data/npcs.json's `chatter`
+ * @param performances data/npcs.json's `performances` (#592): the sermons and
+ *                   the songs, each one person in one room at one bell
  * @param mystery    parsed data/mystery.json, for rooms, watches and epilogue keys
  * @param builtProps data/scene-config.json's `builtProps`, or undefined to skip
  *                   the slab check (#557): a document and the `builtProps`
@@ -90,7 +160,7 @@ function indexChatter(chatter, { npcs, mystery, problems }) {
  *                   pane opens on the entry and the room check above runs on
  *                   the document, and two copies of one placement drift.
  */
-export function validateLore(lore, { documents, npcs, chatter, mystery, builtProps } = {}) {
+export function validateLore(lore, { documents, npcs, chatter, performances, mystery, builtProps } = {}) {
   const problems = [];
   const say = (m) => problems.push(m);
   if (!lore || typeof lore !== 'object') return ['lore is not an object'];
@@ -155,6 +225,7 @@ export function validateLore(lore, { documents, npcs, chatter, mystery, builtPro
 
   const npcLines = npcLineIndex(npcs);
   const chatterById = indexChatter(chatter, { npcs, mystery, problems });
+  const performanceById = indexPerformances(performances, { npcs, mystery, problems });
   const epilogues = epilogueKeys(mystery);
 
   const sourceOk = (fact, src) => {
@@ -174,6 +245,10 @@ export function validateLore(lore, { documents, npcs, chatter, mystery, builtPro
       const p = chatterById.get(src.id);
       if (!p) say(`${fact.id}: unknown source, no chatter pair ${JSON.stringify(src.id)}`);
       else if (!asList(p.cites).includes(fact.id)) say(`${fact.id}: names chatter pair ${src.id} as a source, but that pair's own \`cites\` does not name ${fact.id} back`);
+    } else if (src.kind === 'performance') {
+      const e = performanceById.get(src.id);
+      if (!e) say(`${fact.id}: unknown source, no performance ${JSON.stringify(src.id)}`);
+      else if (!asList(e.cites).includes(fact.id)) say(`${fact.id}: names performance ${src.id} as a source, but that piece's own \`cites\` does not name ${fact.id} back`);
     } else if (src.kind === 'epilogue') {
       if (!epilogues.has(src.id)) say(`${fact.id}: unknown source, ${JSON.stringify(src.id)} is not an epilogue or day-two ending`);
     }
@@ -208,6 +283,15 @@ export function validateLore(lore, { documents, npcs, chatter, mystery, builtPro
   for (const [, p] of chatterById) {
     for (const id of asList(p.cites)) {
       if (!factsById.has(id)) say(`chatter pair ${p.id}: cites ${id}, which is not a fact (dangling id)`);
+    }
+  }
+  for (const [, e] of performanceById) {
+    for (const id of asList(e.cites)) {
+      const f = factsById.get(id);
+      if (!f) { say(`performance ${e.id}: cites ${id}, which is not a fact (dangling id)`); continue; }
+      if (!asList(f.sources).some((s2) => s2?.kind === 'performance' && s2.id === e.id)) {
+        say(`performance ${e.id}: cites ${id}, but that fact's own sources do not name ${e.id} back`);
+      }
     }
   }
 

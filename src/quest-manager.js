@@ -45,6 +45,16 @@ import { QuestGraph, judgeAnswer, renderLines } from './quest-graph.js';
 const label = (id) => (typeof id === 'string' && id ? id[0].toUpperCase() + id.slice(1) : '');
 
 /**
+ * How long one caption of a sermon or a song stays up (#592). Long lines earn
+ * longer, because the band is read and not clicked past: a line is on screen
+ * for a beat to notice it plus about twenty-two characters a second, floored so
+ * a three-word line does not flash and capped so the longest one does not
+ * outstay the player's patience. Nothing waits for it and nothing blocks on it,
+ * so being wrong here is a pace and never a stall.
+ */
+const captionMs = (line) => Math.min(7200, Math.max(2600, 1200 + 45 * String(line ?? '').length));
+
+/**
  * The dialogue tokens this manager answers, and the action each one names.
  * `validateAgainstNpcs` holds the two halves to each other in both directions:
  * a line ending in `{ACCUSE}` needs a stage that runs `openAccusation` after
@@ -99,8 +109,12 @@ export class QuestManager {
    * @param rooms      src/stations.js's `nav.rooms()`: every room the plan
    *                   builds, for the journal's map (BACKLOG.md rank 10). An
    *                   empty list is a journal with no map tab.
+   * @param performances data/npcs.json's `performances` (#592): the sermons and
+   *                   the songs, `{sermons: [...], songs: [...]}`. Omitted is a
+   *                   castle where nobody performs, which is what every suite
+   *                   that does not care about them gets.
    */
-  constructor({ quest, sideQuests = [], mystery = null, riddle, documents = [], npcs, ui, castle, controlsRef, schedule, restart, saved = null, onChange = null, engine = null, onWatch = null, audio = null, rooms = [] }) {
+  constructor({ quest, sideQuests = [], mystery = null, riddle, documents = [], npcs, ui, castle, controlsRef, schedule, restart, saved = null, onChange = null, engine = null, onWatch = null, audio = null, rooms = [], performances = null }) {
     this.graph = new QuestGraph(quest, QuestManager.actions);
     this.mystery = mystery;
     this.riddle = riddle;
@@ -117,6 +131,25 @@ export class QuestManager {
     this._onWatch = onWatch;
     this.audio = audio;
     this.rooms = rooms;
+    /* THE SET PIECES (#592, BACKLOG.md rank 8). data/npcs.json's `performances`,
+     * flattened to one map keyed by the room and the bell, which is the only
+     * question this file ever asks of it: the player is standing in `room` at
+     * `watch`, is anybody performing? `validateLore` (src/lore.js, run by
+     * test/lore.mjs and not by the page) refuses a pool with two pieces in one
+     * room at one bell, so there is never a choice to make here and no order to
+     * depend on. `_heard` is what makes it once (#594):
+     * per page rather than per save, because a sermon is a thing that happens
+     * in a room and not a thing the player holds (#39: nothing about it has
+     * to survive a reload, and a reload standing in the chapel at Vespers
+     * hearing Vespers again is right rather than wrong). */
+    this._performances = new Map();
+    for (const [pool, entries] of Object.entries(performances ?? {})) {
+      for (const e of entries ?? []) this._performances.set(`${e.room}/${e.watch}`, { ...e, pool });
+    }
+    this._heard = new Set();
+    this._playing = null; // the piece the band is in the middle of, or null
+    this._room = null;    // where the player is standing, per `handleEnter`
+
     // The lock the player last pressed E at. `openLock` unlocks that one, so no
     // door id is written down in this file.
     this._lockAsked = null;
@@ -218,6 +251,11 @@ export class QuestManager {
     this.ui.setWatch?.(label(watch));
     this._showEvidence(watch);
     this._onWatch?.(watch, opts);
+    // The bell is the end of whatever was being said and the start of whatever
+    // is said at the next one. Stopping first matters: without it, a sermon
+    // begun at Sext would go on being captioned over a Vespers castle.
+    this._stopPerformance();
+    this._maybePerform();
   }
 
   /**
@@ -350,11 +388,79 @@ export class QuestManager {
    * engine says so with a `visited` effect, once per room (#588).
    */
   handleEnter(room, level = null) {
-    if (!this.engine || !room) return [];
+    if (!room) return [];
+    // WHERE THE PLAYER IS STANDING IS THIS FILE'S ONLY COPY OF IT, and it is
+    // set before the engine is asked anything, because a castle with no engine
+    // still has rooms and a suite that drives one still walks between them.
+    this._room = room;
+    // You cannot hear the chapel from the hall: a piece in the room the player
+    // just left is cut off where it stands. One already running in THIS room is
+    // not, because main.js calls this on a change of room and a suite calling it
+    // twice for one room should not silence what it started.
+    if (this._playing && this._playing.piece.room !== room) this._stopPerformance();
+    this._maybePerform();
+    if (!this.engine) return [];
     const effects = this.engine.enter(room, level);
     this._surface(effects);
     if (effects.some((e) => e.type === 'clue' || e.type === 'visited')) this._onChange?.(this._snapshot());
     return effects;
+  }
+
+  /* ----------------------------------------------- the sermon and the song ---
+   * WISHLIST.md theme 3's two set pieces (#592). A piece is one person saying
+   * or singing one thing, in one room, at one bell, a caption at a time, to
+   * whoever is standing there. It grants nothing, holds nothing up and takes
+   * no input: the player keeps every key through the whole of it and walking
+   * out is how you leave. What it tells is lore, the ids in its `cites`,
+   * which data/lore.json's own `sources` name back, and that is the whole of
+   * what it is for.
+   */
+
+  /** The piece due where the player is standing at the bell the engine is on, or null. */
+  performanceHere() {
+    if (!this._room) return null;
+    const piece = this._performances.get(`${this._room}/${this.watch}`);
+    return piece && !this._heard.has(piece.id) ? piece : null;
+  }
+
+  /** What the band is saying now, or null: the piece, not the line. */
+  get performing() { return this._playing?.piece ?? null; }
+
+  /**
+   * Start the piece due here, if there is one and it has not been heard. The
+   * lines step on `this._schedule`, the same injectable clock the dialogue's
+   * delayed effects use, so a suite can run a whole sermon in no time at all.
+   */
+  _maybePerform() {
+    const piece = this.performanceHere();
+    if (!piece) return null;
+    this._heard.add(piece.id);
+    const who = this.npcs?.find((n) => n.id === piece.npc);
+    const name = who?.name ?? piece.npc;
+    // The run is its own object and the step closes over it, so `_stopPerformance`
+    // only has to drop the reference: a step that wakes up to find itself no
+    // longer the run does nothing. No timer is ever cancelled, which is what
+    // lets `_schedule` stay a two-argument function a suite can replace with a
+    // queue (there is no `clearTimeout` to stand in for).
+    const run = { piece };
+    this._playing = run;
+    let i = 0;
+    const step = () => {
+      if (this._playing !== run) return;
+      if (i >= piece.lines.length) { this._playing = null; this.ui.clearCaption?.(); return; }
+      const line = piece.lines[i++];
+      this.ui.caption?.(name, line);
+      this._schedule(step, captionMs(line));
+    };
+    step();
+    return piece;
+  }
+
+  /** The band goes dark: the player left the room, or the bell moved. */
+  _stopPerformance() {
+    if (!this._playing) return;
+    this._playing = null;
+    this.ui.clearCaption?.();
   }
 
   /** The J key. The graph decides whether the journal opens here. */
@@ -428,6 +534,7 @@ export class QuestManager {
       empty: this.line('empty'), present: null,
       read: this.readJournal(), readEmpty: 'Nothing read yet.',
       map: this.rooms.length ? this.mapJournal() : null,
+      quests: this.questJournal(),
     });
   }
 
@@ -563,9 +670,32 @@ export class QuestManager {
     };
   }
 
-  /** Every side quest and where it stands, for the journal tab a later increment adds. */
+  /**
+   * Every side quest and where it stands. `started` is the one thing the
+   * journal's tab needs that the stage alone does not say: a quest sitting in
+   * its start stage is a thread nobody has pulled (the cook has not mentioned
+   * her knife yet), and putting it on the page would be the journal telling
+   * the player about an errand before the errand exists.
+   */
   openQuests() {
-    return this.sideQuests.map((q) => ({ id: q.def.id, title: q.def.title, objective: q.graph.objective, done: q.graph.done }));
+    return this.sideQuests.map((q) => ({
+      id: q.def.id, title: q.def.title, objective: q.graph.objective,
+      done: q.graph.done, started: q.graph.stage !== q.def.start,
+    }));
+  }
+
+  /**
+   * The journal's fourth tab (BACKLOG.md rank 9): the quests the player has
+   * actually met, with what each one is asking now, or null when there are
+   * none yet and the tab is not offered at all. NULL AND NOT AN EMPTY LIST,
+   * the same shape `map` already uses: a tab that opens on "nothing here"
+   * tells the player there are errands they have not found, which is exactly
+   * what the toast on a move (#579) was too quiet to say and not what the
+   * journal is for.
+   */
+  questJournal() {
+    const met = this.openQuests().filter((q) => q.started);
+    return met.length ? met.map(({ id, title, objective, done }) => ({ id, title, objective, done })) : null;
   }
 
   /**

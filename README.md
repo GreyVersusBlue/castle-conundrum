@@ -22,8 +22,14 @@ the floor above, and a wall walk that runs the whole circuit two storeys up —
 which is the fact the mystery turns on.
 
 **WASD** move · **mouse** look · **Shift** sprint · **E** talk, examine, ring ·
-**J** journal: what you know, things read, and a map of the castle that fills
-in room by room as you stand in them.
+**J** journal: what you know, things read, a map of the castle that fills in
+room by room as you stand in them, and what has been asked of you.
+
+Stand in the right room at the right bell and somebody performs: the chaplain
+says Vespers to whoever came, the garrison sings in the hall over supper, the
+cook sings over her pots at noon, and on the morning after there is an office
+said over a filled grave. Nothing waits for you and nothing stops you walking
+out in the middle of it.
 
 On a touchscreen: **left thumb** move · **right thumb** look · **push the stick
 over** sprint · one **E** button that says what it will do · **Journal**. The

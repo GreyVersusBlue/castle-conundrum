@@ -3720,3 +3720,152 @@ whether a filled disc against a dim outline reads as "been there", and
 whether the ring is visible at all are questions for a screen and a person
 (#53). The stroke widths are `non-scaling-stroke` pixels, 1 and 2, chosen
 by arithmetic.
+
+## Lore performed: two sermons, two songs, and the errands you have met (2026-09-17)
+
+**Ranked rows 8 and 9 as the table stood that morning, on
+`claude/charming-gates-77fz8r`.** Rank 8 whole, which is `WISHLIST.md` theme
+3's two set pieces, the last of that theme that did not need the second day,
+and rank 9's next increment, the journal's open-quests tab. Rank 8 closes with
+this and every row under it moves up one, so the side quests are rank 8 from
+here. Decisions #592 to #596. Twelve suites green, `npm run build` green, and
+`npm run play` was not run and could not be (#53).
+
+- **A performance is one person, in one room, at one bell, and the validator
+  checks the station** (#592). `data/npcs.json` gains `performances`, two
+  pools of two: `sermons` and `songs`. An entry is an `id`, the `npc` who
+  says it, the `room` and the `watch` it is said at, the `lines` in order,
+  and `cites`, the lore ids it tells, which `data/lore.json`'s own `sources`
+  name back by the piece's id: the two-way citation a document and a chatter
+  pair already carry (#551). `performance` is the fifth source kind and the
+  third content-bearing one.
+
+  The pool is flat where `chatter` is nested by ward and watch, because a
+  chatter pair names neither a room nor a speaker's station and a performance
+  names both. That is what let the check have teeth: `src/lore.js` reads
+  `mystery.json`'s own `schedule` and refuses a piece whose speaker is not in
+  that room at that bell, asleep at it, or (for a `lauds` piece) missing from
+  `day2.schedule`. It refuses one given to anybody a verdict can take out
+  of the castle too, because a sermon said by a man the player may have hanged is
+  a sermon that does not happen in six endings out of seven. Two pieces
+  wanting one room at one bell is refused too, which is what lets the manager
+  never choose. `chatter` settled for each speaker's static `ward` field
+  (#554); this did not have to.
+
+- **The hall's song is a Vespers piece, and a second song went into the
+  kitchen** (#593). `WISHLIST.md` asked for "a song in the hall at Sext" and
+  the schedule puts nobody in the Great Hall at Sext: it would have been sung
+  to an empty room, and the validator above says so rather than letting it
+  ship. The hall's song moved to Vespers, which is the one bell both wards
+  eat there and the canon's own `hall-high-table` says so, with six of the
+  twelve in the room; Dafydd ap Rhys sings it, the sentry whose grandfather
+  fought the other side of the March War (`sentry-grandfather`), and the last
+  two verses are the ones `march-song` says the inner ward has heard the tune
+  of for forty years and has never been told the words of. That left both set
+  pieces at the last bell, so a fourth piece went in at Sext: Marged over the
+  pots in the kitchen, counting the forty mouths she feeds off one oven. The
+  four are the chapel at Vespers, the hall at Vespers, the kitchen at Sext,
+  and the chapel at Lauds: the morning after, a filled grave, the works'
+  own saint said over a man the chaplain's Latin went over the top of.
+  A player hears two of the four on one play through day one, which is the
+  point of a pool rather than a script.
+
+- **The caption band is its own element, and a piece is heard once per page**
+  (#594). `SPECS.md` said "the floating-caption overlay `chatter` already
+  uses" and there is no such overlay: the chatter pool has never been played
+  by anything, and its own comment in `data/npcs.json` has been promising
+  that band since #554. So it exists now: `#caption`, top centre, a name and
+  a line, no border and no panel, clear of the tracker, the toast, the
+  interact prompt and the dialogue box because a sermon runs the better part
+  of a minute and all four of those can happen over it. It is not the toast,
+  which replaces itself on the next clue and would cut a verse in half, and
+  it is not the dialogue box, which waits for E: nothing here waits for
+  anything, the player keeps every key, and walking out of the room is how
+  you leave. `QuestManager` steps the lines on its own injectable
+  `_schedule`, about a beat plus twenty-two characters a second per line,
+  and a run that is no longer the current one does nothing when it wakes up,
+  so no timer is ever cancelled and the suite can play a whole sermon in no
+  time at all.
+
+  **Once per page and not once per save** (#39, and no version bump). A
+  sermon is a thing that happens in a room, not a thing the player holds: a
+  reload standing in the chapel at Vespers hearing Vespers again is right
+  rather than wrong, and `read`, `quests` and `visited` are all fields a
+  reload has to survive because the player earned them. `_heard` is a Set on
+  the manager. The save key did not move and the version is still 5 (#36).
+
+- **The journal's fourth tab is the errands you have met** (#595, rank 9).
+  `QuestManager.openQuests()` has had the data since #576 and nothing read
+  it; all a side quest got for moving was one toast (#579), and two toasts
+  missed are two threads a player cannot find again. "Asked of you", beside
+  "What you know", "Things read" and "The castle". **A quest sitting in its
+  start stage is not on it**: the cook has not mentioned her knife yet, and
+  a journal that lists an errand before the errand exists is the game telling
+  the player where to go. **A finished one does not drop off it**, either: it
+  goes under a Done heading with its title struck through, because "you did
+  this" is half of what a list of errands is for. The tab is offered only
+  when there is something in it. `questJournal()` returns null and not an
+  empty list, the same shape the map already used, so a castle where nobody
+  has asked for anything has the one list it always had. The Present picker
+  inside a conversation still offers clues alone (#551).
+
+- **Rank 8 closes, and the fact that changes goes to rank 4** (#596). The row
+  had two pieces left in it and this PR built one; the other, a `since` field
+  so a fact can say something different once the player has done something, is
+  the one piece of that theme that cannot start before the second day has
+  state to be about. The row's own Open call recommended filing it as a
+  dependency of rank 4 rather than carrying a row for it, and that is what
+  happened: `SPECS.md`'s "Lore: what is still open" section is gone, "A second
+  day" carries the `since` half with a shape to beat, and every row under 8
+  moved up one: side quests to 8, the castle to 9, bodies to 10, feel to 11,
+  the tooling to 12. `BACKLOG.md` is twelve rows. What is left of
+  `WISHLIST.md`'s theme 3 (more gravestones, the mason's marks elsewhere than
+  the dormitory) stays in that file, unranked, the way a theme does until
+  somebody takes it up.
+
+**Broken on purpose, from a green baseline** (#34). Seven breaks, each
+reverted, green again after.
+
+1. `applyWatch`'s `_stopPerformance()` deleted. `quest` exited 1 on two: `the
+   Vespers bell over a Sext song ends the song, vespers / "Forty to feed and
+   the one oven lit, and eight of them sworn and no use of it;"` and `and the
+   rest of the verses are not sung over the new bell, 6 vs 2`.
+2. `_heard.add(piece.id)` deleted. `quest` exited 1 on `a piece is said once:
+   back into the kitchen at the same bell and Marged has finished, 12 vs 6`.
+3. The room test in `handleEnter` deleted, so nothing cut a piece off when the
+   player walked out. `quest` exited 1 on `through the door to the bakehouse
+   and the band is dark: you cannot hear the kitchen from here` and `and the
+   steps still on the clock say nothing when they wake up, 6 vs 3`.
+4. `src/lore.js`'s station check deleted. `lore` exited 1 on `a song moved to
+   a room its singer is not in` and `and put in the mouth of somebody who is
+   somewhere else at that bell, it fails`.
+5. The one-room-one-bell rule turned into a plain `byPlace.set`. `lore` exited
+   1 on `two pieces wanting the same room at the same bell`.
+6. `questJournal()`'s `started` filter removed. `quest` exited 1 on `so the
+   journal is handed no quest list at all, and the tab is not offered:
+   [{"id":"cooks-knife",...,"objective":"Nobody has said anything about a
+   knife."}]`, which is the unmet quest on the page in its own words.
+7. `questJournal()` made to drop finished quests instead of marking them.
+   `quest` exited 1 on three, including `and a finished errand stays on the
+   page, marked done, rather than disappearing off it`.
+
+Every check in `test/lore.mjs`'s new section is itself one of these breaks
+held permanently: the section mutates the real pool and asserts the message,
+which is why the validator's first run against the real four pieces coming
+back clean is worth as little as it sounds.
+
+**What was measured.** `data/npcs.json` 601 lines to 673 (the four pieces and
+their comment), `data/lore.json` 545 to 556 (eleven facts now name a
+performance as a source). `src/lore.js` 220 to 304, `src/quest-manager.js`
+678 to 807, `src/ui.js` 523 to 603, `src/ui.css` 315 to 351, `index.html` 145
+to 158, `src/main.js` 324 to 329. `test/lore.mjs` 210 to 299 and its
+assertion count 37 to 56, `test/quest.mjs` 1040 to 1243 and 245 to 279.
+Twelve suites green.
+
+**What nobody has seen.** The band has been read as a string by a stub UI and
+by nothing else: whether a caption at 13 % of the screen is readable over a
+lit chapel, whether nine lines of a sermon is generous or tedious at the pace
+this file picked, and whether "Asked of you" reads as a tab or as a scold are
+all questions for a screen and a person (#53). The pacing is one arithmetic
+expression in `src/quest-manager.js` and the band is one rule in `src/ui.css`,
+which is where somebody with a GPU should start.

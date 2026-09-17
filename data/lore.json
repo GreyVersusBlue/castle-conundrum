@@ -139,7 +139,8 @@
       "sources": [
         { "kind": "document", "id": "gravestone" },
         { "kind": "document", "id": "obituary-roll" },
-        { "kind": "document", "id": "foundation-stone" }
+        { "kind": "document", "id": "foundation-stone" },
+        { "kind": "performance", "id": "sermon-vespers-osyth" }
       ]
     },
     {
@@ -230,7 +231,8 @@
       "sources": [
         { "kind": "document", "id": "works-ledger" },
         { "kind": "document", "id": "steward-letters" },
-        { "kind": "chatter", "id": "inner-prime-1" }
+        { "kind": "chatter", "id": "inner-prime-1" },
+        { "kind": "performance", "id": "song-vespers-hall" }
       ]
     },
     {
@@ -258,7 +260,8 @@
       "text": "Two tongues are spoken inside this one wall. The outer ward speaks the March's own, the inner ward speaks the King's, the gate between them is kept by a man who has both, and the chaplain's Latin goes over the top of the pair of them at every burial like the walk goes over the cross-wall. A March man who wants to rise learns the King's tongue; no King's man has yet needed the other.",
       "sources": [
         { "kind": "document", "id": "obituary-roll" },
-        { "kind": "chatter", "id": "outer-vespers-3" }
+        { "kind": "chatter", "id": "outer-vespers-3" },
+        { "kind": "performance", "id": "sermon-lauds-cadeyrn" }
       ]
     },
     {
@@ -267,7 +270,8 @@
       "text": "Hywel ap Gruffudd carried stone up this castle's scaffolds as a boy of nine, the year his father died on them, and set his first course as a journeyman before he was twenty. Seven and twenty years a mason and eleven of them a master, he kept his own tally of every sheet of lead the roofs had, on the sticks he wore at his belt, because he had learned young that a boy who could not account for his own work went unpaid at the week's end.",
       "sources": [
         { "kind": "document", "id": "builder-graffito" },
-        { "kind": "chatter", "id": "outer-sext-1" }
+        { "kind": "chatter", "id": "outer-sext-1" },
+        { "kind": "performance", "id": "sermon-lauds-cadeyrn" }
       ]
     },
     {
@@ -309,7 +313,8 @@
       "kind": "person",
       "text": "Marged came up from Mereford to the kitchen eleven years ago when the old cook died at his own table, and has fed forty mouths a day out of it since with one girl, one boy and whatever the Steward lets her have. She keeps her reckoning in chalk on a slate against the west wall because she cannot write and will not be cheated, and the Steward has learned to read it.",
       "sources": [
-        { "kind": "document", "id": "cooks-accounts" }
+        { "kind": "document", "id": "cooks-accounts" },
+        { "kind": "performance", "id": "song-sext-kitchen" }
       ]
     },
     {
@@ -318,7 +323,8 @@
       "text": "Forty mouths eat in this castle on an ordinary day: eight of the garrison, a dozen of the works, the household of the inner ward with its servants, the chaplain, the porter, the smith, and the town's day-labour who eat here at noon because it is in their hire. In the building years it was above eighty and the bakehouse ran two ovens; it runs one now and the second is a store.",
       "sources": [
         { "kind": "document", "id": "cooks-accounts" },
-        { "kind": "document", "id": "bakehouse-tally" }
+        { "kind": "document", "id": "bakehouse-tally" },
+        { "kind": "performance", "id": "song-sext-kitchen" }
       ]
     },
     {
@@ -326,7 +332,8 @@
       "kind": "place",
       "text": "The bakehouse oven in the Bakehouse Tower was first fired the year the curtain closed and has been fired every morning since, siege years and none, on the ground that an oven let go cold cracks and an oven kept warm does not. The bakers cut a notch in the floor stone beside it for every hundred loaves, and gave up counting the notches before the towers were done.",
       "sources": [
-        { "kind": "document", "id": "bakehouse-tally" }
+        { "kind": "document", "id": "bakehouse-tally" },
+        { "kind": "performance", "id": "song-sext-kitchen" }
       ]
     },
     {
@@ -334,7 +341,8 @@
       "kind": "history",
       "text": "The Great Hall in the outer ward is where both wards eat at Vespers and the only room where they do, and the order at it has not changed in forty years: the Constable and his lady at the high table, the Steward and the Clerk of Works at either hand, the chaplain below the salt by his own choice, and the works and the garrison on the benches by whatever order they came in. Who sits where is the one thing in the castle nobody has ever needed a book for.",
       "sources": [
-        { "kind": "document", "id": "cooks-accounts" }
+        { "kind": "document", "id": "cooks-accounts" },
+        { "kind": "performance", "id": "song-vespers-hall" }
       ]
     },
     {
@@ -344,7 +352,8 @@
       "sources": [
         { "kind": "document", "id": "gravestone" },
         { "kind": "document", "id": "obituary-roll" },
-        { "kind": "document", "id": "foundation-stone" }
+        { "kind": "document", "id": "foundation-stone" },
+        { "kind": "performance", "id": "sermon-vespers-osyth" }
       ]
     },
     {
@@ -353,7 +362,8 @@
       "text": "Saint Cadeyrn was known on this ground before the King's masons ever were, patron of builders and of men who work in high places, and the works have kept him without troubling the chaplain about it: a mason sets a small cut cross to him at the springing of an arch the way his father did and his father's father, in a country where the arches themselves are new.",
       "sources": [
         { "kind": "document", "id": "builder-graffito" },
-        { "kind": "chatter", "id": "outer-prime-2" }
+        { "kind": "chatter", "id": "outer-prime-2" },
+        { "kind": "performance", "id": "sermon-lauds-cadeyrn" }
       ]
     },
     {
@@ -466,7 +476,8 @@
       "kind": "history",
       "text": "The outer ward has a song about how the March War ended, in the March's tongue, with a verse about a King's writ and a verse about a river, and the inner ward has heard the tune across the cross-wall on a Michaelmas night for forty years and has never once been told the words. The garrison sings it. The garrison is the King's.",
       "sources": [
-        { "kind": "chatter", "id": "outer-sext-3" }
+        { "kind": "chatter", "id": "outer-sext-3" },
+        { "kind": "performance", "id": "song-vespers-hall" }
       ]
     },
     {

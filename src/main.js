@@ -190,6 +190,11 @@ async function init() {
     // The forty rooms, for the journal's map. The nav's list rather than the
     // plan's, so the name on the map is the name the HUD's room line shows.
     rooms: nav.rooms(),
+    // The two set pieces (#592): the chaplain's sermon and a song, played as a
+    // caption band to whoever is standing in the room at the bell. The manager
+    // hears about the room from `handleEnter` below, which the loop already
+    // calls off the same answer the HUD's room line is written from (#588).
+    performances: npcData.performances,
     onChange: ({ stage, riddleWrong, day, quests }) => { state.stage = stage; state.riddleWrong = riddleWrong; state.day = day; state.quests = quests; auto.mark(); },
     // What the epilogue's button does when it reads "Play Again" — at the end
     // of the second day, or at the end of a verdict with no morning after it
