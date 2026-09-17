@@ -270,8 +270,9 @@ console.log('\npoint lights');
  * watch is not standing anywhere at that watch — the merchant is only at the
  * castle at Terce — and is not counted then.
  *
- * Every one of these is a skinned mesh off one of the three Quaternius bodies
- * (#419) with an AnimationMixer of its own, which is the cost that does not
+ * Every one of these is a skinned mesh off one of the four Quaternius bodies
+ * (#419, and the woman's at #603) with an AnimationMixer of its own, which is
+ * the cost that does not
  * come off the plan and does not frustum-cull away: three.js updates a skeleton
  * whether or not the mesh is on screen.
  */

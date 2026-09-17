@@ -4312,11 +4312,14 @@ thirteen now — with two failures on `main` at 94491ff that this branch neither
 caused nor fixed, both written up at the bottom.
 
 **The numbers start at #607 and not at #603, which is what they were written
-as.** `claude/rank8-reputation-by-ward` committed #603 to #606 first, on a
-branch that had not merged yet, and this branch renumbered rather than make
-rank 8 do it — #492 says a number resolves in its own repo's `HISTORY.md`, and
-it cannot resolve to two things. A gap is cheap if that branch is abandoned; a
-collision is not cheap either way.
+as.** Three branches reached for #603 the same afternoon. Rank 1's merged and
+holds it; `claude/rank8-reputation-by-ward` committed it and has not merged;
+this branch renumbered rather than argue, because #492 says a number resolves
+in its own repo's `HISTORY.md` and it cannot resolve to two things. **That is
+the cost of five sessions in parallel that `ROADMAP.md`'s lanes do not cover**
+(#602 draws lanes by file and `HISTORY.md` is a file every row writes to), and
+the cheap fix is the one used here: read `HISTORY.md` on `origin/main` at the
+moment you write the entry, not at the moment you branched.
 
 **The numbers, which are the actual deliverable.** Draw calls: **965 in the
 outer ward, 643 in the inner**, 1539 meshes in the castle. Point lights: three,
