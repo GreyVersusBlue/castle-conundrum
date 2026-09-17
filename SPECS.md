@@ -24,7 +24,7 @@ the sermon and the song, with #592 to #596, and the fourth body with #603 to
 #606.** **The ranks below start at 2 and that is not a gap**: rank 1 shipped
 on 2026-09-17 and its number was retired rather than shifted up, because
 renumbering eleven rows across three files while four wave A sessions were
-running is a conflict in every table line (#610). What asset
+running is a conflict in every table line (#619). What asset
 compression left behind for the rows that touch assets is named in their
 Dependencies; what sound left behind is `data/sounds.json`, a `material` and a
 `kind` on every `plan.surfaces` entry, and `layout.mjs` check 12. Where a brief and the code disagree, the code is
@@ -387,7 +387,7 @@ GPU.
 ## Life: a populace
 
 **Rank 6. Size 2+.** `WISHLIST.md` theme 1. **The first increment shipped on
-2026-09-17** (#607 to #609) and this section is what is left of the row.
+2026-09-17** (#616 to #618) and this section is what is left of the row.
 
 ### What shipped
 
@@ -403,7 +403,7 @@ GPU.
 - **Nine activities onto three clips**, all of them idle variants every body
   already ships, so no asset and no clip was added. `ACTIVITY_CLIPS` in
   `src/populace.js` is the table and `npc.js`'s `playActivity` reads it.
-- **`label` on an interaction target** (#608): a populace body shows a name
+- **`label` on an interaction target** (#617): a populace body shows a name
   and a role on the HUD, E at one does nothing, and a label never takes the
   prompt off a suspect standing behind it.
 
@@ -443,7 +443,7 @@ GPU.
   the town exists**, rather than packing bodies into the wards to hit a
   number; the row is about whether the castle reads as lived in, and a
   courtyard of people standing 1.5 m apart reads as a queue.
-- **Whether `garden` should be made real** (#609). `mystery.json` lists it and
+- **Whether `garden` should be made real** (#618). `mystery.json` lists it and
   nothing in the castle resolves to it: the 93 walkable cells east of the east
   gate are all inside the Chapel Tower's or the King's Tower's disc. It is
   either ground somebody builds — rank 4c's yard is the nearer precedent — or
@@ -464,7 +464,7 @@ GPU.
   says so in its own header).
 - #13, #34 (the validator exits non-zero, and every rail it adds has been
   broken on purpose — including one that had to be rewritten because the
-  first version passed with the bug back in, #607).
+  first version passed with the bug back in, #616).
 - #529 (the check belongs with `mystery.mjs`).
 
 ---
@@ -549,15 +549,17 @@ Dependencies below already describes.
 
 ## Side quests
 
-**Rank 8. Size 2+. Three increments shipped on 2026-09-17** (#576 to #581,
-the journal's tab at #595, and four more errands at #597 to #599).
+**Rank 8. Size 2+. Four increments shipped on 2026-09-17** (#576 to #581,
+the journal's tab at #595, four more errands at #597 to #599, and reputation
+by ward at #612 to #615).
 `WISHLIST.md` theme 4. The format, the set validator and the cook's missing
 knife are in: `data/quests/` is the directory, `data/quests/index.json` names
 its files because a browser cannot read a directory, `validateQuestSet` in
 `src/quest-graph.js` is the rail, and `src/quest-manager.js` runs every file
 in the set off the same event stream the frame hears without a second class.
-The save is version 4 for `quests`. The journal's fourth tab is in too, and
-five errands. What is below is what is left.
+The save is version 6: 4 for `quests`, 6 for the two ward counters. The
+journal's fourth tab is in too, five errands, and reputation. **What is left
+is the seven errands**, and what is below says which.
 
 ### What shipped, in one paragraph
 
@@ -612,16 +614,38 @@ asked for anything. A terminal quest goes under a Done heading with its title
 struck through rather than off the page. The Present picker inside a
 conversation is still clues alone.
 
+### What reputation shipped as (#612 to #615)
+
+Two counters the save carries, `outer` and `inner`, one moved per errand
+finished in that ward (the file's `ward` is which, #599). `SAVE_VERSION` is
+6 and the key did not move (#36). It is `day`'s case rather than `read`'s:
+`migrate` counts the terminal quests a version-5 save is already carrying,
+per ward, because zeroes would say a player who finished three errands
+yesterday had done none of them, and that is the one thing about the field
+only `migrate` can say (#37, #147). `repair`'s rail is a ceiling — each
+counter clamps to the number of quest files in that ward — and not a
+recount: a favour done is a thing that happened.
+
+`_settleSide` is where a counter moves and the only place it moves, on the
+same line the toast is written from. It cannot double-count because
+`validateQuest` has refused a terminal stage with a way out of it since
+#393, so a quest at an ending cannot move again.
+
+Two things read the counters. `data/npcs.json`'s `reputation` block holds
+`outer` and `inner` — each a list of `{at, line}`, the highest threshold
+reached winning — and `closing`, keyed to both counters added together. A
+ward's line goes on the **end** of whatever the person you walked up to was
+going to say, and who says it is the ward, off the cast's own `ward`, in
+whatever state they are standing in: it is the castle talking and not one
+more person with an errand. `closing` is one line under the verdict in the
+epilogue pane, and null for a player who ran no errand, who is shown nothing
+rather than a line saying they did nothing. It is not a dialogue state, it is
+not said on a press, and it is not said on the morning after. Thresholds ship
+at outer 2 and 3, inner 1 and 2, closing 1, 3 and 5, and `validateQuestSet`
+holds every one of them to an errand that exists to be finished.
+
 ### Scope, next increment
 
-- **Reputation by ward.** Two counters the save carries, `outer` and
-  `inner`, one moved per errand finished in that ward (the file's `ward` is
-  which, #599). A version bump on `save.js` to 6 through `migrate`, with a
-  rail in `repair` that clamps each to the number of terminal quests in that
-  ward (#36, #37). What reads them: a chatter line or two per ward keyed to a
-  threshold, and one line in one closing pane. Not a system, a tint
-  (`WISHLIST.md`). Five errands is enough for a moved counter to be seen,
-  which is what the deferral waited on.
 - **The seven left of the dozen.** `WISHLIST.md` named eight and five are
   written. Of the three it named, one wants nobody new: a letter for the town
   that needs a gate pass, and the Steward signs gate passes (Thomas Wykes is
@@ -636,6 +660,11 @@ conversation is still clues alone.
 - **A second quest on one person**, if one is ever wanted, is what replaces
   #578's conservative rule with a real co-activity check. Nothing needs it
   yet and nothing should invent it before something does.
+- **A threshold per new errand, or not.** Every errand added raises its
+  ward's ceiling, so `data/npcs.json`'s `reputation` block may gain a band;
+  it does not have to, and a session that adds errands and leaves the
+  thresholds alone is still green. What is not optional is that the block
+  stays inside the ceilings, which `validateQuestSet` says.
 
 ### Acceptance, next increment
 
@@ -647,11 +676,16 @@ conversation is still clues alone.
 - The walk through every errand with and without the set leaves the identical
   journal (`test/quest.mjs`, the last block of "the next four").
 - The journal assertion is a DOM one and the save assertion is not: what a
-  reload has to survive is the stage, which version 4 already carries (#39),
-  and the counters, when they come.
+  reload has to survive is the stage, which version 4 carries, and the two
+  counters, which version 6 does (#39).
 
 ### Open calls
 
+- **Where reputation is read out.** Recommended a line per ward threshold
+  and one in a closing pane, and that is what shipped (#614), with the ward
+  lines appended to what a person was going to say rather than replacing it.
+  The `chatter` pool was the obvious-looking home and is not one: nothing
+  plays it yet, and a pair is two bodies talking, which needs rank 6.
 - **Does a side quest ever speak on the morning after?** It does not, and
   `_dispatchSide` returns early on day two (#576's code, `mystery.js`'s
   `_dayLines` would cover any state it set anyway). Recommend leaving it
@@ -682,7 +716,7 @@ conversation is still clues alone.
   diffed like anything else). No increment yet has added a prop; the merlin
   is a line and not a bird.
 - #36, #37 (the key does not move; a new field is a version bump through
-  `migrate` and a rail in `repair`).
+  `migrate` and a rail in `repair`). Met at version 6 (#612).
 - #13, #34 (the set validator exits non-zero and every rule gets broken on
   purpose once).
 
@@ -906,11 +940,12 @@ already is.
 
 ## The tooling
 
-**Rank 12. Size 2+. The first increment shipped on 2026-09-17** (#583 to
-#587). `WISHLIST.md`'s own closing section: none of the seven themes above is
-a code problem, they are content problems at a scale the current tooling
-cannot carry, and this row is the three tools it names. The placement editor
-is in; the dialogue format and the budget suite are not.
+**Rank 12. Size 2+. Two of three increments shipped on 2026-09-17** — the
+placement editor (#583 to #587) and the budget suite (#607 to #611).
+`WISHLIST.md`'s own closing section: none of the seven themes above is a code
+problem, they are content problems at a scale the current tooling cannot carry,
+and this row is the three tools it names. **The dialogue format is what is
+left.**
 
 ### What shipped, in one paragraph
 
@@ -926,20 +961,34 @@ byte. Dev-only is two independent halves — `import.meta.env.DEV` around the
 import, `apply: 'serve'` on the plugin — and `test/built.mjs` greps `dist/`
 for the module's sentinel rather than trusting either (#586).
 
+### What the budget suite shipped, in one paragraph
+
+`test/budget.mjs`, the thirteenth suite, 0.4 s, Node only, three counts per
+ward against three ceilings held as named constants in one block with what each
+is anchored on written beside it — the open call's own recommendation, taken
+(#609). **965 draw calls in the outer ward, 643 in the inner, against 1200.
+Three point lights, all outer, against 6 per ward and 8 in the scene. A peak of
+7 skinned bodies in the outer ward at Terce and 5 in the inner at Prime,
+against 20 per ward and 32 in the cast.** The draw-call count is not derived:
+`castle-builder.js`'s `built` ladder came out into an exported `buildPiece`,
+the suite calls it and counts the meshes it really returns, because a suite
+that re-derives a drum as "24 sectors, so 48 shells" is a suite agreeing with
+itself (#34, #500). **The finding: 970 of the castle's 1539 meshes, 63 % of
+everything it draws, is the eight tower drums.** Rank 10's fifty bodies fit
+neither skinned ceiling and are not meant to, which is the answer this row was
+taken to produce.
+
 ### Scope, next increment
 
-- **The budget suite, second**, as this row's own open call already
-  recommended and for the reason it gave: ranks 6 and 10 are the two rows
-  about to need a real answer to "how many skinned bodies can a ward carry".
-  It counts skinned bodies, point lights and draw calls per ward off the plan
-  and fails against a number a phone cannot carry. It is a `layout.mjs`-shaped
-  check — everything it counts is derivable from the plan in Node (#529) — so
-  it needs no browser.
 - **The editor's own next want is a way to move and delete**, not only to
   add. Placing is one press; correcting a placement is still hand-editing the
   file. A row selected in the panel, dragged to the player's tile and written
   back over its own text is the same splice machinery reading rather than
   appending, and it is what turns the tool from a stopwatch into an editor.
+  **Whoever takes it walks into a live failure first**: `test/tools.mjs` is red
+  on a Windows checkout and green on a Linux one (written up under #607 to
+  #611), so the byte-exactness
+  rail that increment has to keep is not currently holding on the dev machine.
 - **The dialogue format is this row's third and is deliberately unspecified**
   (speaker, state, conditions, effects, one line each, compiled to
   `npcs.json`/`quests/*.json` at build time). `WISHLIST.md`'s paragraph is the
@@ -947,25 +996,27 @@ for the module's sentinel rather than trusting either (#586).
 
 ### Acceptance, next increment
 
-- The budget suite exits non-zero over a plan that exceeds its own ceiling,
-  names the ward and the count, and is broken on purpose once (#13, #34).
 - Anything the editor learns to write keeps `test/tools.mjs`'s byte-exactness
   rail: a move that rewrites a row in place still has to leave every other
-  byte alone.
+  byte alone. On both line endings.
 
 ### Open calls
 
-- **What the budget's ceilings are.** Nobody has profiled this castle on a
-  phone. Recommend writing the suite with the numbers as named constants in
-  one place and a comment saying they are guesses, the way `touch-controls.js`
-  already holds its six (#530), rather than waiting for a device to set them.
+- **The budget's ceilings are still guesses**, and deliberately so: nobody has
+  profiled this castle on a phone. A session that measures on real hardware
+  replaces the four numbers in `test/budget.mjs`'s ceiling block and records
+  the measurement; a session that merely wants more room argues for it in
+  `HISTORY.md`. Rank 2's GPU run is the first chance to take `renderer.info`
+  off a real frame and find out how far off 965 the truth is.
 
 ### Dependencies
 
 - **Every content row above** (6, 8, 9, 10) got cheaper the day the editor
   landed, and none of them was blocked on it.
-- The budget suite is more useful after rank 6's populace exists to count, but
-  a ceiling on a castle with twelve bodies in it is still a ceiling.
+- **Ranks 6 and 10 now have a number to answer to.** The budget suite's
+  per-ward ceiling of 20 skinned bodies is what rank 6's first ten spend
+  against a peak of 7, and rank 10's fifty do not fit it. Neither row is
+  blocked; both now fail a suite if they overspend, which is the whole point.
 
 ### Constraints
 

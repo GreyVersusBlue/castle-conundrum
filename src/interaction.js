@@ -10,7 +10,7 @@
 // — a gate leaf hangs off a hinge at its edge — and optionally an `active`
 // getter, which is how an answered lock stops offering itself — and optionally
 // `label`, which marks a target that is a name on the HUD and not something to
-// press E at. The ten of the populace are the only ones (#608).
+// press E at. The ten of the populace are the only ones (#617).
 
 import * as THREE from 'three';
 
@@ -112,7 +112,7 @@ export class InteractionSystem {
     camDir.y = 0;
     camDir.normalize();
 
-    /* A LABEL NEVER OUT-RANKS SOMETHING TO PRESS E AT (#608). Nearest-wins was
+    /* A LABEL NEVER OUT-RANKS SOMETHING TO PRESS E AT (#617). Nearest-wins was
      * the whole rule until the populace arrived: ten bodies with nothing to
      * say now walk the same castle as the twelve, and `STATION_CLEARANCE` only
      * keeps them 1.5 m apart while INTERACT_RANGE reaches 3.2 m. A baker's lad

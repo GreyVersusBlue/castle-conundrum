@@ -71,7 +71,7 @@ export class NPC {
     this._current = null;
     this._wasTalking = false;
     /* WHAT A BODY GOES BACK TO WHEN IT IS NOT WALKING AND NOT TALKING. It was
-     * the literal 'idle' in three places until the populace arrived (#607),
+     * the literal 'idle' in three places until the populace arrived (#616),
      * and a populace body that reached its stop, played its activity and then
      * finished a step would drop straight back to Idle and stay there — the
      * baker baked for one frame per bell. This is the one thing the activity
@@ -253,7 +253,7 @@ export class NPC {
   get walking() { return this._waypoints.length > 0 && !this._loop; }
 
   /**
-   * STAND STILL AND DO A JOB (#607). `activity` is one of the strings
+   * STAND STILL AND DO A JOB (#616). `activity` is one of the strings
    * src/populace.js's ACTIVITY_CLIPS names, and the clip it resolves to is
    * whatever the loaded body ships under that name. A body whose file has no
    * such clip keeps whatever it was playing rather than freezing: `_play`

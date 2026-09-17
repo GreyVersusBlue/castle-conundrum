@@ -784,7 +784,7 @@ console.log('\nthe gaol roll');
   check(bare, 'and with no journal at all the inspector still has lines for all seven endings');
 }
 
-/* ------------------------------------------- 8: the household (#607) ---
+/* ------------------------------------------- 8: the household (#616) ---
  * data/populace.json is ten people with no clue, no lie and no line, and the
  * only thing that can say whether they fit the castle is the same walk grid
  * the twelve's schedule is checked against. Hence here rather than in

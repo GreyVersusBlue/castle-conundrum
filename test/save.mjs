@@ -15,7 +15,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createCastleSlot, buildCatalog, repairState, SAVE_KEY, SAVE_GAME, SAVE_VERSION } from '../src/save.js';
+import { createCastleSlot, buildCatalog, repairState, reputationIn, SAVE_KEY, SAVE_GAME, SAVE_VERSION } from '../src/save.js';
 import { createMystery } from '../src/mystery.js';
 import { QuestGraph } from '../src/quest-graph.js';
 import { QuestManager } from '../src/quest-manager.js';
@@ -49,10 +49,10 @@ console.log('the slot');
 {
   const { slot, storage } = slotWith();
   check(slot.key === 'castleConundrumSave_v1' && SAVE_KEY === slot.key, 'the key is castleConundrumSave_v1 (#36, #413)');
-  check(slot.game === 'castle-conundrum' && SAVE_GAME === slot.game && slot.version === 5 && SAVE_VERSION === 5, 'game castle-conundrum, version 5 (rank 10, the map)');
+  check(slot.game === 'castle-conundrum' && SAVE_GAME === slot.game && slot.version === 6 && SAVE_VERSION === 6, 'game castle-conundrum, version 6 (rank 8, reputation by ward)');
   const fresh = slot.fresh();
-  const shape = ['stage', 'quests', 'day', 'watch', 'clues', 'pressed', 'taken', 'read', 'visited', 'locks', 'accusations', 'refusals', 'riddleWrong', 'player'];
-  check(same(Object.keys(fresh), shape), 'a fresh state has the fourteen fields of the schema, in order', Object.keys(fresh).join(', '));
+  const shape = ['stage', 'quests', 'reputation', 'day', 'watch', 'clues', 'pressed', 'taken', 'read', 'visited', 'locks', 'accusations', 'refusals', 'riddleWrong', 'player'];
+  check(same(Object.keys(fresh), shape), 'a fresh state has the fifteen fields of the schema, in order', Object.keys(fresh).join(', '));
   check(fresh.stage === quest.start && fresh.day === 1 && fresh.watch === 0 && fresh.player === null && fresh.refusals === 0, 'fresh: the start stage, day one, Prime, no player, no refusals');
   check(slot.load() === null, 'nothing stored loads as null');
   fresh.clues.push('body-stair');
@@ -339,6 +339,70 @@ console.log('the second day, through the save');
   check(same(slot.load()?.visited, ['great-hall']), 'a version-3 save carrying a `visited` from before the field existed keeps what is real in it, the way a stray `read` did');
   storage.setItem(SAVE_KEY, JSON.stringify({ __v: 5, stage: 'investigate', day: 1, visited: ['great-hall', 'nw-tower-roof'] }));
   check(same(slot.load()?.visited, ['great-hall', 'nw-tower-roof']), 'a version-5 save keeps the rooms it stood in', JSON.stringify(slot.load()?.visited));
+}
+
+{
+  /* WHAT `reputation` IS (rank 8, version 6). Two counters, `outer` and
+   * `inner`, one moved per side quest finished in that ward. Unlike `read`,
+   * `quests` and `visited`, this one has something for `migrate` to do: a
+   * version-5 save already says where every quest stands, so the errands it
+   * finished are reputation it earned, and zeroes would be the save saying the
+   * player had done none of them. `repair`'s rail is the ceiling — a ward's
+   * counter cannot read higher than the number of quest files in that ward,
+   * because the game moves it one per errand and an errand finishes once. */
+  const { slot, storage } = slotWith();
+  const wardOf = Object.fromEntries(sideQuests.map((q) => [q.id, q.ward]));
+  const terminalsOf = Object.fromEntries(sideQuests.map((q) => [q.id, Object.entries(q.stages).filter(([, st]) => st.terminal).map(([id]) => id)]));
+  const perWard = { outer: sideQuests.filter((q) => q.ward === 'outer').length, inner: sideQuests.filter((q) => q.ward === 'inner').length };
+  check(catalog.wards && same(catalog.wards, perWard), `the catalog counts the errands per ward off the files (${JSON.stringify(perWard)})`, JSON.stringify(catalog.wards));
+  check([...catalog.quests.values()].every((q) => q.terminals.size >= 1), 'and knows which stages of each are an ending, which is what finishing one means');
+  check(same(slot.fresh().reputation, { outer: 0, inner: 0 }), 'a fresh state has done nobody a favour', JSON.stringify(slot.fresh().reputation));
+
+  // The ceiling, and what carries a number over it. A ward's counter clamps to
+  // the errands that ward has; a catalog with no quest files at all clamps both
+  // to nothing, the same way `visited` clamps to the rooms the config builds.
+  check(same(repaired({ reputation: { outer: 99, inner: 99 } }).reputation, perWard), 'a counter past the errands that exist comes down to them', JSON.stringify(repaired({ reputation: { outer: 99, inner: 99 } }).reputation));
+  check(same(repairState({ reputation: { outer: 3, inner: 2 } }, buildCatalog(mystery, quest, documents)).reputation, { outer: 0, inner: 0 }),
+    'and a catalog built without the directory carries no reputation rather than trusting the save');
+  for (const bad of [{ outer: -4 }, { outer: 2.5 }, { outer: '3' }, { outer: null }, null, 'outer', 7, []]) {
+    check(repaired({ reputation: bad }).reputation.outer === 0, `a \`reputation\` of ${JSON.stringify(bad)} repairs that counter to 0`);
+  }
+  check(!('town' in repaired({ reputation: { town: 4, outer: 1 } }).reputation) && repaired({ reputation: { town: 4, outer: 1 } }).reputation.outer === 1,
+    'a ward the castle does not have is dropped by never being copied, and the real one beside it survives', JSON.stringify(repaired({ reputation: { town: 4, outer: 1 } }).reputation));
+
+  /* WITHOUT THE CLAMP. Nothing downstream lowers a counter: the manager reads
+   * the save's number straight into its own and only ever adds to it, so a 99
+   * that gets past repair is a 99 the game will read out a line for and go on
+   * reading out for the rest of the day. Here is that, both ways. */
+  const seen = (state) => {
+    const npcs = read('data/npcs.json').cast.map((def) => ({ id: def.id, name: def.name, def, dialogueState: 'default', getDialogueLines() { return this.def.dialogue[this.dialogueState]; } }));
+    const engine = createMystery({ mystery, npcs: cast, state });
+    const qm = new QuestManager({ quest, sideQuests, mystery, riddle, npcs, ui: stubUI(), castle: stubCastle(), controlsRef: { lock() {} }, engine, saved: state });
+    return qm.reputation();
+  };
+  check(seen({ ...repaired({}), reputation: { outer: 99, inner: 0 } }).outer === 99, 'without it: a manager handed an unrepaired 99 carries the 99');
+  check(seen(repaired({ reputation: { outer: 99, inner: 0 } })).outer === perWard.outer, 'repaired, it is the errands the outer ward has', String(seen(repaired({ reputation: { outer: 99, inner: 0 } })).outer));
+
+  /* THE VERSION DRIFT, AND THE ONE LINE ONLY MIGRATE CAN SAY (#37, #147). A
+   * version-5 save with errands already finished in it comes back with the
+   * reputation those errands are worth. Repair cannot produce this: its own
+   * answer to a missing `reputation` is zeroes, and it never re-derives the
+   * field from `quests`, so deleting the migrate line turns this assertion red
+   * and nothing else in either suite. */
+  const finished = Object.fromEntries(sideQuests.map((q) => [q.id, terminalsOf[q.id][0]]));
+  const worth = reputationIn(finished, catalog);
+  check(same(worth, perWard), 'every errand finished is worth every errand there is, by ward', JSON.stringify(worth));
+  storage.setItem(SAVE_KEY, JSON.stringify({ __v: 5, stage: 'investigate', day: 1, quests: finished }));
+  check(same(slot.load()?.reputation, perWard), 'a version-5 save with every errand done comes back with the reputation it earned, not with zeroes', JSON.stringify(slot.load()?.reputation));
+  const one = Object.keys(finished)[0];
+  storage.setItem(SAVE_KEY, JSON.stringify({ __v: 5, stage: 'investigate', day: 1, quests: { [one]: finished[one] } }));
+  check(slot.load()?.reputation?.[wardOf[one]] === 1, `and one errand done (${one}, ${wardOf[one]}) is worth exactly one`, JSON.stringify(slot.load()?.reputation));
+  storage.setItem(SAVE_KEY, JSON.stringify({ __v: 5, stage: 'investigate', day: 1, quests: { [one]: sideQuests.find((q) => q.id === one).start } }));
+  check(same(slot.load()?.reputation, { outer: 0, inner: 0 }), 'an errand opened and not finished is worth nothing');
+  storage.setItem(SAVE_KEY, JSON.stringify({ __v: 3, stage: 'investigate', day: 1, read: [] }));
+  check(same(slot.load()?.reputation, { outer: 0, inner: 0 }), 'and a version-3 save, written before there was an errand to run, owes nobody anything');
+  storage.setItem(SAVE_KEY, JSON.stringify({ __v: 6, stage: 'investigate', day: 1, reputation: { outer: 1, inner: 2 } }));
+  check(same(slot.load()?.reputation, { outer: 1, inner: 2 }), 'a version-6 save keeps the favours it carries, whatever its quests say', JSON.stringify(slot.load()?.reputation));
 }
 {
   // THE INCOHERENT SAVE, BOTH WAYS. A `day: 2` with no verdict behind it is a
