@@ -12,6 +12,7 @@ import { validateQuestSet } from './quest-graph.js';
 import { createCastleSlot } from './save.js';
 import { createMystery } from './mystery.js';
 import { castleNav } from './stations.js';
+import { Populace, populaceDefs, validatePopulace } from './populace.js';
 import { EYE_HEIGHT } from './castle-plan.js';
 import { UI } from './ui.js';
 import { createAudio } from './audio.js';
@@ -23,7 +24,7 @@ loadingManager.onProgress = (_url, loaded, total) => ui.setLoadingProgress(loade
 
 async function init() {
   // --- Data ---
-  const [config, npcData, riddleData, questData, mysteryData, soundData, documentsData, questIndex] = await Promise.all([
+  const [config, npcData, riddleData, questData, mysteryData, soundData, documentsData, questIndex, populaceData] = await Promise.all([
     loadJSON('data/scene-config.json'),
     loadJSON('data/npcs.json'),
     loadJSON('data/riddle.json'),
@@ -32,6 +33,7 @@ async function init() {
     loadJSON('data/sounds.json'),
     loadJSON('data/documents.json'),
     loadJSON('data/quests/index.json'),
+    loadJSON('data/populace.json'),
   ]);
 
   // --- The side quests (BACKLOG.md rank 9). One file per quest under
@@ -118,6 +120,26 @@ async function init() {
   };
   for (const npc of npcs) stand(npc, engine.watch);
 
+  /* --- the household (BACKLOG.md rank 6) ---
+   * Ten more bodies off the same three models, with no dialogue, no clue and
+   * no press. `validatePopulace` throws rather than warns, for the reason the
+   * side-quest set above throws (#393): a routine with a stop nobody can
+   * stand on is a body standing inside a wall or a body that teleports, and
+   * a loading screen that says which stop beats a castle that is subtly
+   * wrong. It runs against the same `nav` the twelve's schedule is checked
+   * with in Node, so the page and test/mystery.mjs ask the same question.
+   *
+   * THE POPULACE IS NOT THE CAST AND `window.__cast` STAYS THE THIRTEEN.
+   * test/plan-vs-scene.mjs counts that list and names the two who are hidden
+   * at Prime by id; folding ten more into it would have made that assertion
+   * about a different thing without changing a line of it (#147). */
+  const populaceProblems = validatePopulace(populaceData, { nav, mystery: mysteryData, cast: npcData.cast });
+  if (populaceProblems.length) throw new Error(`data/populace.json does not fit the castle:\n  - ${populaceProblems.join('\n  - ')}`);
+  const folk = populaceDefs(populaceData).map((def) => new NPC(def, scene, config.polyhavenBase));
+  await Promise.all(folk.map((n) => n.build()));
+  const populace = new Populace({ people: populaceData.people, npcs: folk, nav });
+  populace.setWatch(engine.watch, { walk: false });
+
   // --- Player ---
   // castle.colliders is seeded from castle.plan.colliders and grows only by
   // scene-setup.js's brazier stands. Nothing here measures a box. The plan is
@@ -160,7 +182,7 @@ async function init() {
   // The six readable documents (#551): a `read` verb beside `examine`, on
   // props that never hide and are never taken.
   const readables = castle.readables(Object.fromEntries(documentsData.documents.map((d) => [d.id, d.title])));
-  const interaction = new InteractionSystem(camera, [...npcs, ...locks, ...bells, ...evidence, ...readables], ui, scene);
+  const interaction = new InteractionSystem(camera, [...npcs, ...folk, ...locks, ...bells, ...evidence, ...readables], ui, scene);
   const auto = slot.autosave(() => {
     state.player = { x: camera.position.x, y: camera.position.y, z: camera.position.z, yaw: camera.rotation.y };
     return state;
@@ -188,6 +210,7 @@ async function init() {
         if (route) npc.walkTo(route);
         else npc.placeAt({ x: to.x, y: to.h ?? 0, z: to.z });
       }
+      populace.setWatch(watch, { walk });
       state.watch = engine.state.watch;
       state.day = engine.day;
       auto.mark();
@@ -219,6 +242,11 @@ async function init() {
   // play-castle.mjs looks up where somebody is due rather than carrying a
   // coordinate of its own, and test/plan-vs-scene.mjs reads the twelve bodies.
   window.__cast = npcs;
+  // The ten, separately, so the thirteen stay thirteen wherever they are counted.
+  window.__folk = folk;
+  // And the thing that turns their rings, for the one beat that steps a walk
+  // with a dt it supplies rather than one it measures (#616).
+  window.__populace = populace;
   window.__mystery = engine;
   // The ten examinables, with the world point each prompt is aimed at.
   // play-castle.mjs walks to them rather than carrying ten coordinates of its
@@ -230,6 +258,10 @@ async function init() {
     if (target.isBell) { quest.handleBell(); return; }
     if (target.isEvidence) { quest.handleExamine(target.id); return; }
     if (target.isReadable) { quest.handleRead(target.id); return; }
+    // The household has nothing to say and no clue to give: their prompt is a
+    // label, and E at a label does nothing at all rather than opening an empty
+    // dialogue box (BACKLOG.md rank 6).
+    if (target.label) return;
     target.facePlayer(camera.position);
     quest.handleInteract(target);
   };
@@ -324,6 +356,8 @@ async function init() {
     }
     if (player.isLocked && player.moving) auto.mark(); // walking: the position is dirty
     for (const npc of npcs) npc.update(dt, camera.position);
+    for (const one of folk) one.update(dt, camera.position);
+    populace.update(dt);
     interaction.update();
     editor?.update();
     for (const fn of brazierUpdates) fn(t);

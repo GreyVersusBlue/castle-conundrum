@@ -1,0 +1,245 @@
+{
+  "comment": "The household. Ten people who have nothing to do with the mason's death and everything to do with whether the castle reads as lived in (BACKLOG.md rank 6, WISHLIST.md theme 1). None of them holds a clue, tells a lie or has a line: data/npcs.json's twelve are the mystery's, and these ten are the castle's. src/populace.js validates every field below against the plan's own walk grid before the page spawns any of them, and test/mystery.mjs runs the same validator in Node.",
+  "routineComment": "A routine is a LOOP INSIDE A WATCH, not a timetable (#547, answer 3). The clock is the four bells the player rings and it does not move between them, so `prime` is a LIST of stops walked round and round until Terce. A list of one is somebody who stands still for the whole watch. A watch left out entirely is somebody who is not in the castle at that bell, and src/main.js hides the body, the same answer the merchant gets before Terce.",
+  "tileComment": "Every tile below is the centre of a real cell in the 0.5 m walk grid, which is why they read as multiples of 0.125 offset by 0.0625 rather than as round numbers. They were picked off the grid rather than guessed at, and the validator holds them there: floor under the stop, inside the room it names, 1.5 m clear of every other body at that bell, and a walk to the next stop.",
+  "bodyComment": "Four bodies, all four already worn by the twelve: `Woman.glb` for the five women (#603 put it in the cast the day this was written, and a populace woman in Farmer.glb would have been the thing that row exists to stop), `King.glb` with its crown hidden for the serjeant, and Farmer and Adventurer for the rest. `modelHeight` 1.65 goes with the women's pack, which is authored shorter than the men's.",
+  "activityComment": "`activity` is the job, and src/populace.js's ACTIVITY_CLIPS maps it to a clip the three bodies under assets/NPCs already ship. All nine resolve to one of three idle variants, because this increment adds no asset and no clip and the kit has no sweep, stir, hammer or spar in it. That is why every job below is one a body does standing still.",
+  "day2Comment": "Nobody here has a Lauds stop, so the morning after has the cast and nothing else. That is the increment's boundary and not a claim about the fiction; a later one gives the household a second day.",
+  "gardenComment": "There is no gardener, and there was one until the grid was asked. `garden` is a room id in mystery.json that no point in this castle resolves to: there are 93 walkable cells east of the east gate and every one of them is inside the Chapel Tower's or the King's Tower's own disc, so `roomAt` names a tower and never the garden. A stop written there would be a stop in a room that does not exist on the ground. The hen-wife keeps the outer ward instead.",
+  "people": [
+    {
+      "id": "baker",
+      "name": "Gwladus",
+      "role": "the baker",
+      "modelPath": "assets/NPCs/Woman.glb",
+      "modelHeight": 1.65,
+      "hideNodes": ["Sword"],
+      "hideMaterials": ["Metal", "Gold"],
+      "tint": "#e0cfa8",
+      "routine": {
+        "prime": [
+          { "room": "bakehouse", "tile": [0.313, 3.688], "activity": "bake", "facing": 180 },
+          { "room": "bakehouse", "tile": [0.313, 4.313], "activity": "bake", "facing": 0 }
+        ],
+        "terce": [
+          { "room": "bakehouse", "tile": [0.313, 3.688], "activity": "bake", "facing": 180 }
+        ],
+        "sext": [
+          { "room": "bakehouse", "tile": [0.563, 3.938], "activity": "wait", "facing": 90 },
+          { "room": "bakehouse", "tile": [0.313, 4.313], "activity": "bake", "facing": 0 }
+        ],
+        "vespers": [
+          { "room": "bakehouse", "tile": [0.313, 3.688], "activity": "bake", "facing": 180 }
+        ]
+      }
+    },
+    {
+      "id": "baker-lad",
+      "name": "Iorwerth",
+      "role": "the baker's lad",
+      "modelPath": "assets/NPCs/Adventurer.glb",
+      "tint": "#8a6f3c",
+      "routine": {
+        "prime": [
+          { "room": "bakehouse", "tile": [-0.063, 4.563], "activity": "haul" },
+          { "room": "outer-ward", "tile": [-0.938, 3.188], "activity": "haul" },
+          { "room": "outer-ward", "tile": [-3.438, 0.438], "activity": "haul" },
+          { "room": "laundry", "tile": [-9.063, 3.563], "activity": "draw" }
+        ],
+        "terce": [
+          { "room": "outer-ward", "tile": [-3.438, 0.438], "activity": "haul" },
+          { "room": "outer-ward", "tile": [-0.938, 3.188], "activity": "haul" },
+          { "room": "bakehouse", "tile": [-0.063, 4.563], "activity": "haul" }
+        ],
+        "sext": [
+          { "room": "outer-ward", "tile": [-3.938, 0.438], "activity": "gossip", "facing": 90 }
+        ],
+        "vespers": [
+          { "room": "bakehouse", "tile": [-0.063, 4.563], "activity": "haul" }
+        ]
+      }
+    },
+    {
+      "id": "well-wife",
+      "name": "Cecily",
+      "role": "the well-wife",
+      "modelPath": "assets/NPCs/Woman.glb",
+      "modelHeight": 1.65,
+      "hideNodes": ["Sword"],
+      "hideMaterials": ["Metal", "Gold"],
+      "tint": "#9fb0a0",
+      "routine": {
+        "prime": [
+          { "room": "laundry", "tile": [-8.438, 3.688], "activity": "draw", "facing": 270 }
+        ],
+        "terce": [
+          { "room": "laundry", "tile": [-8.438, 3.688], "activity": "draw", "facing": 270 }
+        ],
+        "sext": [
+          { "room": "outer-ward", "tile": [-3.438, 0.438], "activity": "gossip", "facing": 270 }
+        ],
+        "vespers": [
+          { "room": "great-hall", "tile": [-8.063, 2.063], "activity": "serve", "facing": 135 }
+        ]
+      }
+    },
+    {
+      "id": "carter",
+      "name": "Rhys Gethin",
+      "role": "a carter of the town",
+      "modelPath": "assets/NPCs/Farmer.glb",
+      "tint": "#7a5230",
+      "routine": {
+        "terce": [
+          { "room": "outer-ward", "tile": [-8.438, -1.188], "activity": "haul" },
+          { "room": "outer-ward", "tile": [-8.438, 0.438], "activity": "wait" }
+        ],
+        "sext": [
+          { "room": "outer-ward", "tile": [-8.438, -1.188], "activity": "haul" }
+        ]
+      }
+    },
+    {
+      "id": "scullion",
+      "name": "Angharad",
+      "role": "a scullion of the kitchen",
+      "modelPath": "assets/NPCs/Woman.glb",
+      "modelHeight": 1.65,
+      "hideNodes": ["Sword"],
+      "hideMaterials": ["Metal", "Gold"],
+      "tint": "#b58f6a",
+      "routine": {
+        "prime": [
+          { "room": "kitchen", "tile": [-6.188, -2.063], "activity": "wait", "facing": 90 },
+          { "room": "kitchen", "tile": [-6.188, -3.313], "activity": "wait", "facing": 90 }
+        ],
+        "terce": [
+          { "room": "kitchen", "tile": [-6.188, -2.063], "activity": "wait", "facing": 90 },
+          { "room": "larder", "tile": [-5.063, -4.438], "activity": "tend" }
+        ],
+        "sext": [
+          { "room": "larder", "tile": [-5.063, -4.438], "activity": "tend" }
+        ],
+        "vespers": [
+          { "room": "great-hall", "tile": [-1.813, 1.813], "activity": "serve", "facing": 270 }
+        ]
+      }
+    },
+    {
+      "id": "serjeant",
+      "name": "Owain Ddu",
+      "role": "serjeant of the garrison",
+      "modelPath": "assets/NPCs/King.glb",
+      "hideMaterials": ["Gold"],
+      "tint": "#3b4a63",
+      "routine": {
+        "prime": [
+          { "room": "dormitory", "level": 1, "tile": [-6.313, -2.438], "activity": "wait", "facing": 90 }
+        ],
+        "terce": [
+          { "room": "outer-ward", "tile": [-3.063, -0.313], "activity": "muster", "facing": 270 }
+        ],
+        "sext": [
+          { "room": "guardroom", "tile": [-8.438, -3.688], "activity": "guard", "facing": 270 }
+        ],
+        "vespers": [
+          { "room": "north-walk", "level": 2, "tile": [-2.688, -3.688], "activity": "guard", "facing": 0 }
+        ]
+      }
+    },
+    {
+      "id": "man-at-arms",
+      "name": "Cadell",
+      "role": "a man-at-arms",
+      "modelPath": "assets/NPCs/Adventurer.glb",
+      "tint": "#5a6478",
+      "routine": {
+        "prime": [
+          { "room": "dormitory", "level": 1, "tile": [-4.688, -2.438], "activity": "wait", "facing": 270 }
+        ],
+        "terce": [
+          { "room": "outer-ward", "tile": [-3.063, 0.188], "activity": "muster", "facing": 90 }
+        ],
+        "sext": [
+          { "room": "outer-ward", "tile": [-3.063, 0.188], "activity": "guard", "facing": 90 },
+          { "room": "outer-ward", "tile": [-3.063, 1.188], "activity": "guard", "facing": 90 }
+        ],
+        "vespers": [
+          { "room": "guardroom", "tile": [-8.438, -3.688], "activity": "guard", "facing": 270 }
+        ]
+      }
+    },
+    {
+      "id": "archer",
+      "name": "Bleddyn Fychan",
+      "role": "an archer of the watch",
+      "modelPath": "assets/NPCs/Farmer.glb",
+      "tint": "#4d6b4a",
+      "routine": {
+        "prime": [
+          { "room": "north-walk", "level": 2, "tile": [-8.313, -3.688], "activity": "guard", "facing": 0 },
+          { "room": "north-walk", "level": 2, "tile": [-2.688, -3.688], "activity": "guard", "facing": 0 }
+        ],
+        "terce": [
+          { "room": "south-walk", "level": 2, "tile": [1.313, 3.688], "activity": "guard", "facing": 180 },
+          { "room": "south-walk", "level": 2, "tile": [5.313, 3.688], "activity": "guard", "facing": 180 }
+        ],
+        "sext": [
+          { "room": "south-walk", "level": 2, "tile": [5.313, 3.688], "activity": "guard", "facing": 180 }
+        ],
+        "vespers": [
+          { "room": "north-walk", "level": 2, "tile": [-8.313, -3.688], "activity": "guard", "facing": 0 }
+        ]
+      }
+    },
+    {
+      "id": "hen-wife",
+      "name": "Tegwyn Hen",
+      "role": "who keeps the fowl",
+      "modelPath": "assets/NPCs/Woman.glb",
+      "modelHeight": 1.65,
+      "hideNodes": ["Sword"],
+      "hideMaterials": ["Metal", "Gold"],
+      "tint": "#6b7a4a",
+      "routine": {
+        "prime": [
+          { "room": "outer-ward", "tile": [-5.938, 0.438], "activity": "tend", "facing": 180 }
+        ],
+        "terce": [
+          { "room": "outer-ward", "tile": [-5.938, 0.438], "activity": "tend", "facing": 180 },
+          { "room": "outer-ward", "tile": [-4.938, 0.438], "activity": "tend", "facing": 180 }
+        ],
+        "sext": [
+          { "room": "outer-ward", "tile": [-4.938, 0.438], "activity": "tend", "facing": 180 }
+        ],
+        "vespers": [
+          { "room": "outer-ward", "tile": [-5.938, 0.438], "activity": "wait", "facing": 0 }
+        ]
+      }
+    },
+    {
+      "id": "maid",
+      "name": "Sioned",
+      "role": "the Lady's maid",
+      "modelPath": "assets/NPCs/Woman.glb",
+      "modelHeight": 1.65,
+      "hideNodes": ["Sword"],
+      "hideMaterials": ["Metal", "Gold"],
+      "tint": "#c9a0b0",
+      "routine": {
+        "prime": [
+          { "room": "royal-apartments", "level": 1, "tile": [4.438, -2.563], "activity": "wait", "facing": 225 }
+        ],
+        "terce": [
+          { "room": "royal-apartments", "level": 1, "tile": [4.438, -2.563], "activity": "wait", "facing": 225 }
+        ],
+        "sext": [
+          { "room": "inner-ward", "tile": [4.438, 0.563], "activity": "wait", "facing": 250 }
+        ],
+        "vespers": [
+          { "room": "royal-apartments", "level": 1, "tile": [4.438, -2.563], "activity": "wait", "facing": 225 }
+        ]
+      }
+    }
+  ]
+}

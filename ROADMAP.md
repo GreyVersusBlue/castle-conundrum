@@ -28,13 +28,13 @@ NOW, in parallel, no gates:
   Devon's machine                    A container
   ---------------                    -----------
   R2  GPU run        --+             R8   quests: the seven errands      lane A
-                       |             R6   populace: the first ten        lanes C D
+                       |             R6   populace: the next forty       lanes C D
                        |             R4a  the bells call   (lane A: not beside R8)
                        |             R4b  the since field  (lane A: not beside R8)
 
-  Wave A shipped three of its six on 2026-09-17, in parallel, as written:
-    R1  fourth body    #603-606      R7  ambient beds  #620-623
-    R12a budget suite  #607-611
+  Wave A shipped four of its six on 2026-09-17, in parallel, as written:
+    R1  fourth body    #603-606      R7  ambient beds   #620-623
+    R12a budget suite  #607-611      R6  the first ten  #616-619
                        |
 R2 lands --------------+--> unlocks R3, R5, R11
 
@@ -151,8 +151,8 @@ points here: *"a session running beside one of those is better off on 8 or
 12."*
 
 **The claim was tested the same afternoon and it held.** Five sessions ran at
-once — R1, R6, R7, R8 and R12a — and three of them shipped (#603 to #606, #607
-to #611, #620 to #623) without one collision in a source file. R12a ran beside
+once — R1, R6, R7, R8 and R12a — and four of them shipped (#603 to #606, #607
+to #611, #616 to #619, #620 to #623) without one collision in a source file. R12a ran beside
 R8 in the same working tree and touched `src/castle-builder.js`, `test/run.mjs`
 and a new `test/budget.mjs`, none of which is in any lane.
 
@@ -160,8 +160,9 @@ and a new `test/budget.mjs`, none of which is in any lane.
 the same afternoon; rank 1's merged and holds it, and the other two
 renumbered — and then collided *again* on #607, because both picked the next
 free band from the same stale view. R12a merged first and kept #607 to #611;
-R8 moved a second time, to #612 to #615. Two renumbers for one row is the
-cost of picking a number before merging.
+R8 moved a second time, to #612 to #615, and R6 twice as well, to #616 to
+#619. Two renumbers for one row is the cost of picking a number before
+merging.
 A lane is a file (#602) and `HISTORY.md` is a file every row writes to, so by
 the letter of the rule only one row could ever be in flight — which is not the
 rule anybody wants. **The working answer, which costs nothing: read
@@ -176,7 +177,13 @@ of them, plus **R2** on Devon's machine.
 ### What not to pair
 
 - R6 beside R1 or R10. All three are lane C, and R6 reads the `cast` that R1
-  and R10 both exist to change.
+  and R10 both exist to change. **This is the one pairing that cost
+  something.** R1 and R6 ran together anyway and merged clean in every file;
+  what the merge could not see is that five of R6's ten are women who were
+  wearing `Farmer.glb`, which is exactly what R1 exists to stop. They were
+  put on `Woman.glb` by hand afterwards. A clean merge of two lane-C rows is
+  not the same as a correct one, and nothing in `npm test` would have said
+  so.
 - R8 beside R4a or R4b. Lane A, and both want the version number — though
   see the note under the lane table: version 6 landed on 2026-09-17 and R8's
   remaining work does not touch `save.js` at all.
@@ -203,18 +210,19 @@ Nothing is gated on R2 *starting*, so everything in wave A runs alongside it.
 
 One row per lane. All of these are startable today.
 
-**Three of the six below shipped on 2026-09-17, the same afternoon this file
+**Four of the six below shipped on 2026-09-17, the same afternoon this file
 was written, running at once and not colliding**: R1's `Woman.glb` and the
 three women who wear it (#603 to #606), R7's seven ambient beds (#620 to
-#623), and R12a's budget suite (#607 to #611). Their rows are struck through
-rather than deleted, because what this table was claiming is that they could
-run together, and they did.
+#623), R12a's budget suite (#607 to #611), and R6's first ten (#616 to #619).
+Their rows are struck through rather than deleted, because what this table was
+claiming is that they could run together, and they did. R6 is a 2+ and keeps
+its row open with its text rewritten to say what is done.
 
 | Row | Model | Where | Lane | Next increment |
 | --- | --- | --- | --- | --- |
 | **R2** The GPU run | Opus 5 | **Local: GPU** | none | Gate 1, above. And now four more things nobody has looked at: a fourth body, seven ambient beds nobody has heard, and what the eight tower drums actually cost. |
 | **R8** Side quests | Opus 5 | Container | A | ~~Reputation by ward~~ shipped 2026-09-17 (#612 to #615): two counters at save version 6, a line per ward threshold, one line under the verdict. What is left is the seven errands of the dozen; five of the seven need nobody new. |
-| **R6** Life: a populace | Opus 5 | Container | C, D | `data/populace.json`, `src/populace.js`, and ten bodies off the `cast` that already exists. No new asset, no new clip, so the row that makes every other wishlist row visible does not itself wait on one. **It now has a number to answer to**: 20 skinned bodies per ward against a peak of 7 (#609). |
+| **R6** Life: a populace | Opus 5 | Container | C, D | ~~The file, the validator and the first ten~~ shipped 2026-09-17 (#616 to #618): a routine is a ring per bell, nine activities on three clips the kit already had, no asset added. What is left is the other forty, the ambient talk once two bodies are within 3 m, and the four activities that want a clip — which is the half that trades with R10. **It has a number to answer to**: 20 skinned bodies per ward against a peak of 7 before the ten, 17 after (#609). |
 | ~~**R1** A fourth body~~ | Fable 5.1 | Local: net | C | **Shipped** (#603 to #606). Quaternius's Ultimate Modular Women Pack, meshopt to 1.02 MB, worn by the cook, the laundress and the lady. |
 | ~~**R7** Sound~~ | Fable 5.1 | Container | E | **First increment shipped** (#620 to #623). Seven synthesised room tones and the cross-fade. What is left needs speakers (#53). |
 | ~~**R12a** The budget suite~~ | Opus 5 | Container | none | **Shipped** (#607 to #611). 965 draw calls in the outer ward against 1200, 3 point lights, a peak of 7 bodies. 63 % of the castle's meshes is eight tower drums. |

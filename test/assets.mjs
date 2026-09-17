@@ -46,6 +46,8 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, '..');
 const config = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/scene-config.json'), 'utf8'));
 const npcData = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/npcs.json'), 'utf8'));
+// The household (BACKLOG.md rank 6). A fourth file that names a body.
+const populace = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/populace.json'), 'utf8'));
 
 let failures = 0;
 const fail = (msg) => { console.log(`  FAIL  ${msg}`); failures++; };
@@ -84,6 +86,12 @@ const refs = [
   ...config.interiorProps.map(p => [config.polyhavenBase + p.model, p.model]),
   ...npcData.cast.map(n => [n.modelPath, `${n.id || n.name}'s body`]),
   ...npcData.cast.filter(n => n.heldProp).map(n => [config.polyhavenBase + n.heldProp, `${n.id || n.name}'s heldProp`]),
+  /* AND THE TEN OF THE HOUSEHOLD. They wear bodies the cast already names, so
+   * this line adds nothing to the set today and catches the day one of them
+   * stops doing so — a typo in a populace modelPath is a body that never
+   * loads, and `build()` rejects on it inside a Promise.all in main.js, which
+   * is a loading screen that stops with no castle behind it. */
+  ...(populace.people ?? []).map(p => [p.modelPath, `${p.id || p.name}'s body`]),
 ];
 const seen = new Set();
 for (const [rel, label] of refs) {
@@ -329,6 +337,7 @@ console.log('\nnothing on disk that nothing asks for');
   for (const [name, spec] of Object.entries(config.materials))
     for (const [slot, rel] of Object.entries(spec)) need(rel, `material ${name}'s ${slot}`);
   for (const n of npcData.cast) need(n.modelPath, `${n.id || n.name}'s body`);
+  for (const p of populace.people ?? []) need(p.modelPath, `${p.id || p.name}'s body`);
 
   const walk = (rel) => {
     const abs = path.join(ROOT, rel);

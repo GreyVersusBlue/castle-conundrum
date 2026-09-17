@@ -8,7 +8,9 @@
 // it), a `name`, optionally a `prompt` to show instead of "talk to", optionally
 // a `focus` world point to aim at when the group's own origin is somewhere else
 // — a gate leaf hangs off a hinge at its edge — and optionally an `active`
-// getter, which is how an answered lock stops offering itself.
+// getter, which is how an answered lock stops offering itself — and optionally
+// `label`, which marks a target that is a name on the HUD and not something to
+// press E at. The ten of the populace are the only ones (#617).
 
 import * as THREE from 'three';
 
@@ -110,23 +112,35 @@ export class InteractionSystem {
     camDir.y = 0;
     camDir.normalize();
 
+    /* A LABEL NEVER OUT-RANKS SOMETHING TO PRESS E AT (#617). Nearest-wins was
+     * the whole rule until the populace arrived: ten bodies with nothing to
+     * say now walk the same castle as the twelve, and `STATION_CLEARANCE` only
+     * keeps them 1.5 m apart while INTERACT_RANGE reaches 3.2 m. A baker's lad
+     * crossing between the player and the cook is therefore nearer than the
+     * cook, and under one list he took the prompt and the player could not
+     * ask her anything until he had walked on. Two lists, and the label list
+     * is only read when the other is empty. */
     let best = null;
     let bestDist = INTERACT_RANGE;
+    let label = null;
+    let labelDist = INTERACT_RANGE;
     for (const target of this.targets) {
       if (target.active === false) continue;
+      const limit = target.label ? labelDist : bestDist;
       const to = new THREE.Vector3().subVectors(aimAt(target), camPos);
       to.y = 0;
       const dist = to.length();
-      if (dist > bestDist) continue;
+      if (dist > limit) continue;
       to.normalize();
       if (to.dot(camDir) < FACING_DOT) continue;
       if (!this.hasLineOfSight(camPos, target)) continue;
-      best = target;
-      bestDist = dist;
+      if (target.label) { label = target; labelDist = dist; }
+      else { best = target; bestDist = dist; }
     }
 
-    this.currentTarget = best;
-    this.ui.setInteractPrompt(!!best, best ? (best.prompt || `Press E to talk to the ${best.name}`) : '');
+    const shown = best || label;
+    this.currentTarget = shown;
+    this.ui.setInteractPrompt(!!shown, shown ? (shown.prompt || `Press E to talk to the ${shown.name}`) : '');
   }
 
   /** Scene contents minus the targets, cached until the child count changes. */

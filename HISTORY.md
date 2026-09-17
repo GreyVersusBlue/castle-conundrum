@@ -3993,6 +3993,90 @@ too many to click through on a first conversation, are questions for a
 screen and a person (#53). The fourth line is the last in each set, so a
 player who has the first three by heart is not made to re-read them.
 
+## Where, Gate and Lane: the backlog says which machine, and `ROADMAP.md` says in what order (2026-09-17)
+
+**Not a ranked row. Devon asked directly**, mid-session, for three things the
+project had never written down: what has to happen on a machine this container
+is not, what two sessions may hold at once without colliding, and what strictly
+has to ship before what. Decisions #600 to #602. No code changed, twelve suites
+untouched, `npm run build` untouched.
+
+- **Three labels on every backlog row: `Where`, `Gate`, `Lane`** (#600). All
+  three facts were already derivable and none was written where a session
+  claiming a row would see it. The header said "ranks 2, 3 and 5 need a GPU" in
+  a paragraph a reader had to parse, and it was already wrong in a way that
+  mattered: **rank 1 does not need a GPU, it needs a network**, and #518 and
+  #541 are the proof that those are different blocks — the same container that
+  could not reach Poly Haven in September could reach it a week later, and
+  #568's could not reach quaternius.com at all. Calling both "blocked" is what
+  kept rank 1 sitting behind the wrong excuse.
+
+  `Where` is one of four: `Container`, `Local: GPU` (#53), `Local: net`, and
+  `Local: audio`, which is rank 7 and only for the judgement half. `Gate` is
+  what must have shipped first. `Lane` is the file two sessions would collide
+  on.
+
+  Rank 4 and rank 12 each carry three values instead of one, because their
+  remaining threads genuinely differ and `SPECS.md` already names them
+  separately: **4a** the bells call, **4b** the `since` field, **4c** the yard;
+  **12a** the budget suite, **12b** move-and-delete, **12c** the dialogue
+  format. 4a and 4b are a container's and 4c is not; 12a has no lane, 12b is
+  lane B and 12c is lane C. A single label on either row would have been a lie
+  about two thirds of it.
+
+- **`ROADMAP.md` is the order; `BACKLOG.md` is still the rank** (#601). A fifth
+  document was not obviously warranted and the alternative was a section in
+  `BACKLOG.md`. It got its own file because the two answer different questions
+  and change on different schedules: the rank is Devon's judgement about worth
+  and moves when he says so, and the order is arithmetic over the gates and
+  moves whenever one clears. Folding them would mean a shipping session
+  rewriting a priority list to record a dependency, which is how a priority
+  list stops meaning anything.
+
+  **The file names rows by title as well as by rank**, for the reason #522
+  already found in `SPECS.md`: a closed row shifts every number under it, and a
+  roadmap that says "after rank 2" ages into a lie the first time a row closes.
+
+  **Four hard gates on twelve rows, and that is the whole finding.** R2 before
+  R3 (the images have no other source), R2 before R5 (both criteria are a
+  render), R2 before R11 ships past its Node line, and R4c's yard before R9's
+  town. Everything else that reads like a dependency in `SPECS.md` — rank 6's
+  populace under two of rank 8's errands, rank 10 and rank 6 trading activity
+  clips, rank 12's budget suite being more useful with fifty bodies to count —
+  is preference, and none of the three blocks a start. Devon expected the list
+  to be loose and it is looser than he expected: **R2 is the only row that
+  gates more than one other thing, and it is a ¼.**
+
+- **One row per lane at a time, and a lane is a file** (#602). The claim rule
+  (#283) stopped two sessions building the same row and says nothing about two
+  sessions building different rows into the same file. Five lanes:
+  **A** `src/save.js` (R4a, R4b, R8), **B** `data/scene-config.json` (R4c, R5,
+  R9, R12b), **C** `data/npcs.json`'s `cast` and `npc.js`'s body machinery
+  (R1, R6, R10, R12c), **D** `src/main.js`'s player rig and spawn (R6, R11),
+  **E** `src/audio.js` and `data/sounds.json` (R7). R2, R3 and R12a have no
+  lane.
+
+  Lane A was already written in prose — rank 4's dependencies say *"do not run
+  alongside anything else that touches `save.js`"* — and rank 8's next
+  increment is a version bump to 6, so the warning had a live target nobody had
+  connected it to. Lane B is the one that would fail quietly: `test/tools.mjs`
+  holds `data/scene-config.json` to byte-exactness by cutting an added row back
+  out and comparing the whole file, because a re-serialise of that file is not
+  that file (#584, 94212 bytes out as 98330), and two splices neither session
+  tested against each other is exactly the thing that rail cannot see.
+
+  **Lane C is the `cast` block, not the file.** R8 and R12c write per-person
+  `states` and `default` line arrays — a different region that merges — and
+  drawing the lane at the whole file would have forbidden the one pairing the
+  backlog header already recommends.
+
+**What this leaves.** The three safe-together rows today are R8 (lane A), R6
+(lanes C and D) and R12a (no lane), which is what the header already implied
+and now says with a reason. Add R2 and R1 on Devon's machine and five things
+move at once with no collision. The column values are a judgement over the
+specs as they stand on 2026-09-17; a row whose scope changes changes its lane,
+and the session that changes it owns the label.
+
 ## A fourth body: found, and worn by all three women (2026-09-17)
 
 **Ranked row 1, on `claude/r1-fourth-body`, under Claude Fable 5.1, on Devon's
@@ -4647,3 +4731,166 @@ unwritten: five need nobody new (the letter for the town that needs a gate
 pass, and four the wishlist never named, one voice each on the seven people no
 errand has yet), and two want rank 6's populace. Reputation is done and the
 row is not.
+## Life: a populace, and the first ten of it (2026-09-17)
+
+**Rank 6's first increment, on `claude/populace-first-ten`.** Ten people who
+have no clue, no lie and no line, on the same walk grid the twelve stand on,
+with a validator that runs in Node and again in the browser before the page
+spawns anybody. `data/populace.json`, `src/populace.js`, nine activities onto
+three clips the kit already ships, and no new asset. Decisions #616 to #619,
+**written as #604 to #606, then #607 to #610, and landed at #616 to #619**:
+rank 1 took #603 to #606 while this was being built, and R12a and R8 took
+#607 to #615 while it was being merged. Three picks for one row, which is
+`ROADMAP.md`'s point exactly — a decision number is not a lane, and the fix
+that costs nothing is to read `HISTORY.md` on `origin/main` when the entry is
+written rather than when the branch was cut. #619 came with the merge as
+well: rank 1's paperwork was left for whoever landed `BACKLOG.md` and
+`SPECS.md`, and that is this branch.
+Eleven of twelve suites green, `npm run build` green, `npm run play` not run
+(#53). The twelfth is `tools`, and it was failing before this branch existed —
+see #618's second half.
+
+- **A routine is a ring inside a watch, not a timetable** (#616).
+  `data/populace.json` gives every person a `routine` of one LIST per bell,
+  and the list is a loop: `{room, tile, activity, facing?}` per stop, walked
+  round and round until the next bell. A list of one is a body that stands
+  still for the watch; a watch left out is a body that is not in the castle,
+  which is the merchant's own answer one file over. That shape comes straight
+  out of Devon's answer to question 3 (#547): *the bells stay*, and life
+  happens as loops inside a watch rather than against a minute hand. The
+  engine is `Populace` in `src/populace.js`, which counts a dwell down, asks
+  `castleNav` for the route and hands it to `walkTo` — nine seconds a stop,
+  staggered by the body's own index so the ten do not step off together, and
+  by the index rather than by `Math.random()` so the castle is the same
+  castle twice.
+
+  **`validatePopulace` asks the twelve's own five questions and two more.**
+  Floor under the stop, inside the room it names, 1.5 m clear of everybody
+  else at that bell, somewhere the player can walk to, and a walk from one
+  bell's last stop to the next bell's first. What is new is the ring — every
+  leg of it and the wrap back to stop one — and the `activity`, which is a
+  clip name one indirection from a `.glb`. What is dropped is the bars:
+  nobody in this file is behind them.
+
+  **The room check is `roomAt` and not `inNamedRoom`, which is where it is
+  stronger than the schedule's.** `inNamedRoom` answers null for the four
+  open rooms, because the two wards, the barbican and the garden have no
+  bounds to be inside of — and six of the ten stand in open ground for at
+  least one bell. `roomAt` settles it the way the HUD's room line does
+  (#515), so a stop that says `inner-ward` and lands west of the porter gate
+  is caught, and under the schedule's own rail it would not have been.
+
+  **The clearance check is every stop against every stop, deliberately.** Two
+  rings inside one watch have no phase anybody can compute: the dwell is the
+  same for all of them and the walks between stops are not, so two rings that
+  share a tile will share it at the same moment sooner or later. "Do these
+  two rings ever come within 1.5 m of each other" is the only version of the
+  question with an answer.
+
+  **Nine activities, three clips, no new asset.** All three bodies under
+  `assets/NPCs` ship the same 24 Quaternius clips and not one of them is a
+  sweep, a stir, a hammer or a spar, so the vocabulary is restricted to jobs a
+  body does standing still — `bake`, `draw`, `haul`, `serve`, `tend`,
+  `gossip`, `wait`, `guard`, `muster` — and every one resolves to `Idle`,
+  `Idle_Neutral` or `Idle_Sword` through `ACTIVITY_CLIPS`. `sweep`, `stir`,
+  `hammer` and `spar` are deferred to the increment that has a clip for them,
+  which is what `SPECS.md` recommended. **The table is checked against the
+  files**: `test/mystery.mjs` reads the animation list out of every `.glb`
+  the file uses and fails on a clip name none of them carries, because
+  `pickClip` returns null for a name nobody ships, `playActivity` gives up,
+  and a frozen body looks exactly like an idling one.
+
+  **`_restKey` in `src/npc.js`, and it was nearly a rail that asserted
+  nothing.** npc.js's arrival branch played the literal `idle` at the end of
+  every route, so a body that walked to the oven dropped out of `bake` on the
+  frame it arrived. The first version of the guard read the clip after both
+  `npc.update` and `Populace.update` had run — and `Populace._arrive` sets the
+  activity a moment later whatever npc.js did, so the assertion passed with
+  the bug put back on purpose (#34). It reads the arrival frame now, before
+  the driver sees it, and fails with `npc.js chose Idle at the end of the
+  route`.
+
+  **Where the ten are.** The bakehouse and the well, which is the pair
+  `WISHLIST.md` calls cheapest, with a lad hauling between them; the garrison
+  mustering in the outer ward at Terce; a scullion between the kitchen and
+  the larder, a hen-wife in the ward, an archer on the two wall walks, a maid
+  on the Lady, a carter who is only there for two bells, and two of them
+  serving in the Great Hall at Vespers. Twelve rooms across the day. Every
+  tile is the centre of a real cell in the 0.5 m grid, picked off the grid
+  rather than guessed at.
+
+  **Nobody has a Lauds stop**, so the morning after has the cast and nothing
+  else. That is the increment's boundary and not a claim about the fiction.
+
+- **A label never out-ranks something to press E at** (#617).
+  `InteractionSystem` picked the nearest target in range and nothing else,
+  which was right while every target was pressable. It stopped being right
+  the moment ten bodies with nothing to say started walking the same castle:
+  `STATION_CLEARANCE` holds them 1.5 m off the twelve and E reaches 3.2 m, so
+  a baker's lad crossing between the player and the cook is legitimately the
+  nearer of the two — and the HUD read *"Iorwerth — the baker's lad"* while
+  she stood a metre behind him with the whole mystery in her mouth.
+
+  Two lists now, and the label list is only read when the other is empty. A
+  populace target carries `label: true` and a `prompt` that is a name and a
+  role rather than an offer, `main.js` returns from `onInteract` on one, and
+  nothing in either file knows one of the ten by id. **Measured in the
+  browser rather than argued**: `test/plan-vs-scene.mjs` stands a populace
+  body 0.83 m from the camera and a suspect 2.50 m behind him, in line of
+  sight, and asserts the prompt names the suspect — with the control that
+  hiding the suspect on the same spot falls back to the label, so a prompt
+  that named nobody could not pass the first line. Reverting the two lists
+  fails it with `the HUD offers "Gwladus — the baker" past Gwladus standing
+  in front of him`.
+
+- **`garden` is a room id nothing in this castle resolves to, and `npm test`
+  was already red on Windows** (#618). Two things found on the way and
+  neither is this row's to fix.
+
+  The populace was drafted with a gardener in it. `mystery.json` lists
+  `garden`, "East barbican garden", as one of the four open rooms, and the
+  grid says there are 93 walkable cells east of the east gate — but every one
+  of them is inside the Chapel Tower's or the King's Tower's own disc, so
+  `roomAt` names a tower and never the garden. There is no ground out there
+  to stand on that is not already a room. The gardener became a hen-wife in
+  the outer ward, and the row that will build that ground is rank 9's town or
+  rank 4c's yard.
+
+  And `test/tools.mjs` fails on this machine and passes in CI. Its
+  byte-exactness rail cuts an inserted row back out with
+  `.replace(/,\n$/, '\n')`, which does not match `,\r\n`; the file comes back
+  one byte short and all three rows fail. That is a Windows-only failure on a
+  repo whose own rule is that **Windows is the dev machine**, so `npm test`
+  has been red locally and green on Linux for as long as the rail has
+  existed. It is lane B and this row is lanes C and D, so it is left alone
+  and written down here instead.
+
+  A third thing, smaller: `plan-vs-scene.mjs`'s chapel-candles beat failed
+  twice and then passed five times in a row, on `main` with this branch's
+  work stashed. It loops twelve cells looking for an `examine` prompt and
+  gives up if the chapel bell answers first; under load one of those reads
+  comes back stale. Intermittent, pre-existing, and not touched here.
+
+
+- **A closed rank is retired, not reused, and rank 1 came out here** (#619).
+  Rank 1's own session left `BACKLOG.md` and `SPECS.md` carrying the row and
+  said why: Devon's checkout held uncommitted rewrites of both, and *"deleting
+  rank 1 and renumbering eleven rows underneath that is a conflict in every
+  line of the table"*. This branch is the pass that lands those files, so the
+  row comes out here — **and the eleven rows under it keep their numbers**.
+
+  Renumbering is what the files say should happen: `SPECS.md`'s own "How to
+  read a section" says a shipped row shifts every number below it. It is the
+  wrong call the day four wave A sessions are live. `BACKLOG.md`, `SPECS.md`
+  and `ROADMAP.md` carry about a hundred rank references between them, every
+  one of them would move, and every other branch in flight would conflict on
+  every line of every table — for a change that alters no priority and no
+  dependency. **The reason the numbers can be kept is the reason the decision
+  numbers were kept when the project moved** (#491, #522): every row is named
+  by title as well as by rank in both `SPECS.md` and `ROADMAP.md`, so a
+  retired number is a number nobody has to chase. The ranked table starts at 2
+  now and says so above itself.
+
+  What this does not settle is what happens when Devon next re-ranks. A rank
+  is his judgement about worth, not an id, and if he renumbers the eleven that
+  is a renumbering and this note is spent.
