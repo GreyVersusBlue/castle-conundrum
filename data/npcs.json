@@ -310,5 +310,179 @@
         ]
       }
     }
-  ]
+  ],
+  "chatterComment": "WISHLIST.md theme 3: ambient talk, for the existing twelve only, no new bodies. Two populace members within earshot at one bell get a line pair from the pool for their ward and that watch, played as a floating caption; this repo has no populace yet, so today the pool is unused by the game and exists for src/lore.js to validate and for a later populace row to spend. Keyed by ward (both npcs' own `ward` field, above) then watch. Each pair carries the two speakers by id (order is speaking order), the two lines, and an optional `cites`: the lore ids the exchange tells, which data/lore.json's `sources` point back at by this pair's own id.",
+  "chatter": {
+    "outer": {
+      "prime": [
+        {
+          "id": "outer-prime-1",
+          "npcs": ["cook", "laundress"],
+          "lines": [
+            "Marged: That cousin of yours reads a frost off a cat's back better than any almanac I ever paid for.",
+            "Nest: She is no cousin of mine past what the roll says, and I never said the charm was worth the penny. I never said it wasn't, either."
+          ],
+          "cites": ["hedge-witch"]
+        },
+        {
+          "id": "outer-prime-2",
+          "npcs": ["apprentice", "clerk"],
+          "lines": [
+            "Ieuan: Hywel cuts a little cross at the springing of every arch. Cadeyrn's mark, he calls it, same as his father did.",
+            "Master Robert: Saint Osyth keeps this chapel, Ieuan. Saint Cadeyrn keeps nothing but a mason's conscience, and a light one at that."
+          ],
+          "cites": ["saint-cadeyrn"]
+        }
+      ],
+      "terce": [
+        {
+          "id": "outer-terce-1",
+          "npcs": ["clerk", "merchant"],
+          "lines": [
+            "Master Robert: Eleven miles is a long way to haul stone for a market day, Wykes.",
+            "Thomas Wykes: Eleven miles is nothing beside the quay toll Mereford pays to send it back out again."
+          ]
+        },
+        {
+          "id": "outer-terce-2",
+          "npcs": ["apprentice", "merchant"],
+          "lines": [
+            "Ieuan: A hod-carrier went off the Bakehouse Tower's scaffold in the ninth year and stood up laughing, they say, for calling on Cadeyrn on the way down.",
+            "Thomas Wykes: They also say it was a load of straw broke his fall and not the saint. I have hauled that straw. It was a great deal of straw."
+          ],
+          "cites": ["saint-cadeyrn-miracle"]
+        }
+      ],
+      "sext": [
+        {
+          "id": "outer-sext-1",
+          "npcs": ["apprentice", "laundress"],
+          "lines": [
+            "Ieuan: Hywel was carrying stone up this castle at nine years old. Nine, Nest, the year his own father died on the scaffold.",
+            "Nest: And keeps a tally stick at his belt to this day for it, so nobody ever tells him at the week's end that he wasn't paid for what he carried."
+          ],
+          "cites": ["hywel-rise"]
+        },
+        {
+          "id": "outer-sext-2",
+          "npcs": ["sentry", "cook"],
+          "lines": [
+            "Dafydd: My grandfather swore the chapel bell was a shrine bell off the March once, melted down so no native hand would ring it.",
+            "Marged: Your grandfather swore a great many things, Dafydd ap Rhys, and I never saw him show me the shrine."
+          ],
+          "cites": ["bell-recast-rumour"]
+        },
+        {
+          "id": "outer-cell-1",
+          "npcs": ["prisoner", "laundress"],
+          "lines": [
+            "Madoc: Something moves under this floor at night. Slow. A drag, then a stop, same as it has since before they put me in to hear it.",
+            "Nest: You have said that every day this week, Madoc, and I have believed you every day this week, and neither of those has got you out."
+          ],
+          "cites": ["prison-tower-scratching"]
+        }
+      ],
+      "vespers": [
+        {
+          "id": "outer-vespers-1",
+          "npcs": ["sentry", "cook"],
+          "lines": [
+            "Dafydd: Not one man of the watch will draw from the south-west well after dark. Not one, and every one of them a different reason why.",
+            "Marged: The water tastes the same to me at any hour, and I am the one who has actually tried it after dark."
+          ],
+          "cites": ["well-curse"]
+        },
+        {
+          "id": "outer-vespers-2",
+          "npcs": ["laundress", "clerk"],
+          "lines": [
+            "Nest: The inner ward eats first, warms first and is paid first, Master Robert, whatever the works go without.",
+            "Master Robert: The inner ward would say the same of you and mean the opposite. That is the whole of what a wall is for."
+          ],
+          "cites": ["outer-ward-view"]
+        }
+      ]
+    },
+    "inner": {
+      "prime": [
+        {
+          "id": "inner-prime-1",
+          "npcs": ["porter", "steward"],
+          "lines": [
+            "Gwilym: Three months owed again, Master Piers, same as the last time and the time before that.",
+            "Piers Marrable: The King's coin goes where the King is fighting, Gwilym. It is paid in the end. It is always paid in the end."
+          ],
+          "cites": ["kings-debt-wages"]
+        },
+        {
+          "id": "inner-prime-2",
+          "npcs": ["chaplain", "lady"],
+          "lines": [
+            "Father Anselm: A cold night for the walk, my lady.",
+            "Lady Alys: Every night is a cold night on that walk, Father. I have stopped remarking on it."
+          ]
+        }
+      ],
+      "terce": [
+        {
+          "id": "inner-terce-1",
+          "npcs": ["steward", "constable"],
+          "lines": [
+            "Piers Marrable: The Sunder War is two years settled, Sir Roger. When does the coin catch up with the peace?",
+            "Sir Roger: When Caernarfon says it does. I have stopped asking twice a year and started asking once."
+          ],
+          "cites": ["sunder-war"]
+        },
+        {
+          "id": "inner-terce-2",
+          "npcs": ["porter", "chaplain"],
+          "lines": [
+            "Gwilym: They say Sir Walter's own coffer covered what the works had lost, before he died, and that's the whole reason his books balanced.",
+            "Father Anselm: I have read his accounts, Gwilym. I have also heard what you just said from three other mouths, each swearing he had it from a fourth."
+          ],
+          "cites": ["sir-walter-debt-rumour"]
+        },
+        {
+          "id": "inner-terce-3",
+          "npcs": ["steward", "porter"],
+          "lines": [
+            "Piers Marrable: There is an alderman's family in Mereford that has not paid its wall-tax in a decade, if the roll were ever made to say so.",
+            "Gwilym: And whose hand keeps the roll from saying so, Master Piers? I only ask because I keep a roll myself."
+          ],
+          "cites": ["town-debt-rumour"]
+        }
+      ],
+      "sext": [
+        {
+          "id": "inner-sext-1",
+          "npcs": ["constable", "steward"],
+          "lines": [
+            "Sir Roger: Give the outer ward its head and it would drink the cellar dry and leave the walk door standing open besides.",
+            "Piers Marrable: A firm hand is the whole of what keeps this castle a castle and not a March village with better stone around it, Sir Roger. I have always said so."
+          ],
+          "cites": ["inner-ward-view"]
+        },
+        {
+          "id": "inner-sext-2",
+          "npcs": ["lady", "chaplain"],
+          "lines": [
+            "Lady Alys: You look tired, Father.",
+            "Father Anselm: I have a deal of praying still to do today, my lady, and the day is not half over."
+          ]
+        }
+      ],
+      "vespers": [
+        {
+          "id": "inner-vespers-1",
+          "npcs": ["chaplain", "lady"],
+          "lines": [
+            "Father Anselm: I keep a knuckle of bone under glass on the north sill, my lady, and call it Saint Osyth's own.",
+            "Lady Alys: And do you believe that, Father, or only say it?",
+            "Father Anselm: On my better days, both."
+          ],
+          "cites": ["chapel-relic"]
+        }
+      ]
+    }
+  }
 }

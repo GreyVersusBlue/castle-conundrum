@@ -762,6 +762,7 @@ export function freshState(quest) {
     clues: [],
     pressed: {},
     taken: [],
+    read: [],
     locks: [],
     accusations: [],
     refusals: 0,
@@ -782,7 +783,7 @@ export function createMystery({ mystery, npcs, state }) {
   const ix = index(mystery, npcs);
   const { watches, clues, evidence, presses, accusation } = ix;
   const st = state ?? freshState();
-  st.clues ??= []; st.pressed ??= {}; st.taken ??= []; st.locks ??= []; st.accusations ??= [];
+  st.clues ??= []; st.pressed ??= {}; st.taken ??= []; st.read ??= []; st.locks ??= []; st.accusations ??= [];
   st.refusals ??= 0; st.watch ??= 0; st.day ??= 1;
 
   const day2 = mystery?.day2 ?? null;

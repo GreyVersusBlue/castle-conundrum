@@ -60,6 +60,7 @@ export class QuestManager {
    *                   that is not a clue, and `accusation`, for how many clues
    *                   may be presented and what the verdicts say.
    * @param riddle     parsed data/riddle.json
+   * @param documents  data/documents.json's `documents` (#551), or undefined
    * @param npcs       NPC instances (need .id, .name, .talking, .dialogueState, .getDialogueLines())
    * @param ui         the UI (src/ui.js)
    * @param castle     needs .openLock(id, {instant}) and .setEvidenceVisible(id, visible)
@@ -73,10 +74,11 @@ export class QuestManager {
    * @param audio      src/audio.js, or anything with `bell()`. Injected the way
    *                   `ui` is, so test/quest.mjs hands in a recorder.
    */
-  constructor({ quest, mystery = null, riddle, npcs, ui, castle, controlsRef, schedule, restart, saved = null, onChange = null, engine = null, onWatch = null, audio = null }) {
+  constructor({ quest, mystery = null, riddle, documents = [], npcs, ui, castle, controlsRef, schedule, restart, saved = null, onChange = null, engine = null, onWatch = null, audio = null }) {
     this.graph = new QuestGraph(quest, QuestManager.actions);
     this.mystery = mystery;
     this.riddle = riddle;
+    this.documents = documents;
     this.npcs = npcs;
     this.ui = ui;
     this.castle = castle;
@@ -249,6 +251,24 @@ export class QuestManager {
   }
 
   /**
+   * E at one of the six readable documents (#551). Opens the same overlay a
+   * conversation uses — a title and one long line the player steps past to
+   * close — and marks it read on the engine's own `state.read` the instant it
+   * opens, the same instant `examine()` marks a taken piece of evidence gone.
+   * `state` is the save (src/save.js), so `read` reaches disk the next
+   * autosave the way `taken` and `clues` already do, with no engine change:
+   * this file is the only thing that ever writes to it.
+   */
+  handleRead(id) {
+    const doc = this.documents.find((d) => d.id === id);
+    if (!doc || !this.engine) return;
+    const list = (this.engine.state.read ??= []);
+    if (!list.includes(id)) list.push(id);
+    this.ui.openDialogue(doc.title, [doc.text], null);
+    this._onChange?.(this._snapshot());
+  }
+
+  /**
    * E at somebody. The lines are shown first and the engine is told after the
    * conversation ends, which is what makes a statement land when the player has
    * actually read it. Somebody asleep says the castle's `asleep` line instead;
@@ -336,11 +356,20 @@ export class QuestManager {
   /** Held clues, newest last, as the journal and the accusation panel show them. */
   journal() { return this.engine ? this.engine.journal() : []; }
 
-  _openJournal() {
-    this.ui.openJournal(this.journal(), { empty: this.line('empty'), present: null });
+  /** Documents read, in the order they were opened, as the journal's second tab shows them (#551). */
+  readJournal() {
+    const ids = this.engine?.state?.read ?? [];
+    return ids.map((id) => this.documents.find((d) => d.id === id)).filter(Boolean).map((d) => ({ id: d.id, title: d.title, text: d.text }));
   }
 
-  /** The Present button inside a conversation: the same list, with a click that presses. */
+  _openJournal() {
+    this.ui.openJournal(this.journal(), {
+      empty: this.line('empty'), present: null,
+      read: this.readJournal(), readEmpty: 'Nothing read yet.',
+    });
+  }
+
+  /** The Present button inside a conversation: clues alone, with a click that presses. Nothing read is offered here (#551): presenting is what a clue does. */
   _present(npc) {
     this.ui.openJournal(this.journal(), {
       empty: this.line('empty'),

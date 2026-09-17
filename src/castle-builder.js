@@ -821,6 +821,36 @@ export class CastleBuilder {
   }
 
   /**
+   * The six readable documents (#551), as something InteractionSystem can put
+   * a prompt on: the same pattern as `evidence()`, reading a `read` flag off
+   * the piece rather than `evidence`. A built slab never hides, so there is no
+   * `active` question to ask here the way a taken piece of evidence has —
+   * these are read, not taken, and stay in the world.
+   */
+  readables(titles = {}) {
+    const seen = new Set();
+    const out = [];
+    for (const piece of this.plan.pieces) {
+      if (!piece.read || seen.has(piece.read)) continue;
+      const obj = this.objects.get(piece.id);
+      if (!obj) continue;
+      seen.add(piece.read);
+      const centre = new THREE.Vector3(
+        (piece.box.min.x + piece.box.max.x) / 2,
+        (piece.box.min.y + piece.box.max.y) / 2,
+        (piece.box.min.z + piece.box.max.z) / 2,
+      );
+      const name = titles[piece.read] || piece.read;
+      out.push({
+        id: piece.read, isReadable: true, name,
+        prompt: `Press E to read the ${name}`,
+        group: obj, focus: centre,
+      });
+    }
+    return out;
+  }
+
+  /**
    * Swing one named leaf, by the id `locks()` hands out. `instant` puts it at
    * full open with no animation, which is what a save resumed with the word
    * already answered needs: the riddle quest kept its `openGate` on the terminal

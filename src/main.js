@@ -22,20 +22,22 @@ loadingManager.onProgress = (_url, loaded, total) => ui.setLoadingProgress(loade
 
 async function init() {
   // --- Data ---
-  const [config, npcData, riddleData, questData, mysteryData, soundData] = await Promise.all([
+  const [config, npcData, riddleData, questData, mysteryData, soundData, documentsData] = await Promise.all([
     loadJSON('data/scene-config.json'),
     loadJSON('data/npcs.json'),
     loadJSON('data/riddle.json'),
     loadJSON('data/quest.json'),
     loadJSON('data/mystery.json'),
     loadJSON('data/sounds.json'),
+    loadJSON('data/documents.json'),
   ]);
 
   // --- The save (src/save.js, key castleConundrumSave_v1). One slot; a reload
-  // resumes the quest at its saved stage, with the riddle's wrong-answer count
-  // and the player's position. `repair` has already dropped anything the data
-  // does not know, so what comes back here is safe to hand to the graph.
-  const slot = createCastleSlot({ mystery: mysteryData, quest: questData });
+  // resumes the quest at its saved stage, with the riddle's wrong-answer count,
+  // the documents already read (#551, version 3) and the player's position.
+  // `repair` has already dropped anything the data does not know, so what
+  // comes back here is safe to hand to the graph.
+  const slot = createCastleSlot({ mystery: mysteryData, quest: questData, documents: documentsData.documents });
   const saved = slot.load();
   const state = saved ?? slot.fresh();
 
@@ -129,13 +131,16 @@ async function init() {
   // target and carries the same evidence id, so one press of E reads the word
   // and asks it (Phase 7).
   const evidence = castle.evidence(Object.fromEntries(mysteryData.evidence.map((e) => [e.id, e.name])));
-  const interaction = new InteractionSystem(camera, [...npcs, ...locks, ...bells, ...evidence], ui, scene);
+  // The six readable documents (#551): a `read` verb beside `examine`, on
+  // props that never hide and are never taken.
+  const readables = castle.readables(Object.fromEntries(documentsData.documents.map((d) => [d.id, d.title])));
+  const interaction = new InteractionSystem(camera, [...npcs, ...locks, ...bells, ...evidence, ...readables], ui, scene);
   const auto = slot.autosave(() => {
     state.player = { x: camera.position.x, y: camera.position.y, z: camera.position.z, yaw: camera.rotation.y };
     return state;
   });
   const quest = new QuestManager({
-    quest: questData, mystery: mysteryData, riddle: riddleData, npcs, ui, castle,
+    quest: questData, mystery: mysteryData, riddle: riddleData, documents: documentsData.documents, npcs, ui, castle,
     controlsRef: { lock: () => player.lock() },
     engine,
     audio,
@@ -183,10 +188,12 @@ async function init() {
   // play-castle.mjs walks to them rather than carrying ten coordinates of its
   // own, the same way it stopped carrying SCHOLAR and GUARD in Phase 6.
   window.__evidence = evidence;
+  window.__readables = readables;
   interaction.onInteract = (target) => {
     if (target.isLock) { quest.handleLock(target.id, target.evidence); return; }
     if (target.isBell) { quest.handleBell(); return; }
     if (target.isEvidence) { quest.handleExamine(target.id); return; }
+    if (target.isReadable) { quest.handleRead(target.id); return; }
     target.facePlayer(camera.position);
     quest.handleInteract(target);
   };

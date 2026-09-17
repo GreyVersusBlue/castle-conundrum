@@ -1,0 +1,268 @@
+{
+  "comment": "The canon (WISHLIST.md, theme 3; #549 to #551). Every fact has an id, a `kind` (history, person, place, belief or rumour), one paragraph of `text` in the period's own voice, and `sources`: the places the game actually tells it, each `{kind: \"document\"|\"npc\"|\"chatter\"|\"epilogue\", ...}`. src/lore.js validates this file against data/documents.json, data/npcs.json (the cast and the new `chatter` block) and data/mystery.json (for `epilogue` sources, which name one of `accusation.verdicts`' or `day2.endings`' own keys). `contradicts` names another fact's id and is only legal when at least one side of the pair is `belief` or `rumour` — two `history` facts are not allowed to disagree, because history is the one kind this file is not hedging. A fact with no source is allowed; the validator reports it as untold rather than failing on it, because a canon is allowed to know more than the game says.\n\nTHE WORLD IS INVENTED (#549). Conwy's plan and the 1280s' feel stay; the kingdom of Vantry, its Kings, the March War, the Sunder War and the two saints are this project's own, laid over the Welsh-flavoured cast and place-names PLAN.md already fixed (Hywel, Dafydd ap Rhys, Ieuan, Nest, Madoc, Gwilym, and the word `afon` already accepted by riddle.json). Nobody casts anything on screen anywhere in this file: `belief` and `rumour` facts are what people hold, not what the game confirms, and the crime PLAN.md wrote — who killed Hywel, and why — is not retold or hinted at here by design; the lore sits around the mystery and never inside it.",
+  "facts": [
+    {
+      "id": "kingdom-vantry",
+      "kind": "history",
+      "text": "This castle stands for Vantry, and Vantry's arms fly from every tower that has a pole for them. There is a King in Vantry as there has always been a King in Vantry, and what he wants of the March he gets, in the end, at whatever the March costs him.",
+      "sources": [
+        { "kind": "document", "id": "kings-writ" }
+      ]
+    },
+    {
+      "id": "king-aldous",
+      "kind": "person",
+      "text": "Old King Aldous took the March by the sword and held it by stone. It was Aldous who set his masons on this ground the year the March War ended, and Aldous who did not live to see the roof on his own Great Hall, dying in the fifteenth year of the works with the curtain barely closed. He is remembered here as a King who paid for what he broke, which is not nothing, and not remembered at all in the March villages his war emptied.",
+      "sources": [
+        { "kind": "document", "id": "kings-writ" }
+      ]
+    },
+    {
+      "id": "king-osric",
+      "kind": "person",
+      "text": "King Osric, Aldous's son, has worn the crown five and twenty years and has spent most of them somewhere other than the March. His father's war he inherited finished; his own, the Sunder War, he is still paying for, and this castle's wages are three months of that paying.",
+      "sources": [
+        { "kind": "document", "id": "kings-writ" },
+        { "kind": "npc", "npc": "constable", "state": "default" }
+      ]
+    },
+    {
+      "id": "march-war",
+      "kind": "history",
+      "text": "The March War lasted the better part of nine years and ended, as everyone here tells it, not with a battle but with a King's writ: the March was Vantry's, its lords were dead or sworn, and stone would be set on its rivers so that it stayed that way. Ask a March man how it ended and he tells it differently, and neither of them is lying.",
+      "sources": [
+        { "kind": "document", "id": "kings-writ" }
+      ]
+    },
+    {
+      "id": "castle-founding",
+      "kind": "history",
+      "text": "The first stone of this castle was laid the same summer the March War's last garrison surrendered, forty years gone this Michaelmas. It was reckoned a two-year work by the King's engineer and is not finished yet: the curtain went up in six years, the towers in ten more, and the roofs, the floors and the small rooms have gone up ever since, a bay or a stair at a time, as the King's coin allowed it.",
+      "sources": [
+        { "kind": "document", "id": "works-ledger" },
+        { "kind": "document", "id": "kings-writ" },
+        { "kind": "document", "id": "builder-graffito" },
+        { "kind": "document", "id": "obituary-roll" }
+      ]
+    },
+    {
+      "id": "town-of-mereford",
+      "kind": "place",
+      "text": "Mereford was chartered the same year as the castle, on the King's promise of a market and a quay to whoever would come and live under his wall instead of over the hill from it. It owes the King's exchequer for its own wall to this day, in full, at the rate the charter set forty years ago, and pays it in tolls off every cart that comes up from the quay.",
+      "sources": [
+        { "kind": "document", "id": "gate-book" }
+      ]
+    },
+    {
+      "id": "sir-walter-esturmy",
+      "kind": "person",
+      "text": "Sir Walter Esturmy held this Constable's post from the first year of the works to his own death, two and thirty years, and is buried where he asked to be, under the chapel floor he paid the last of the works' stone to lay. His accounts, opened after him by the Steward of that day, balanced to the penny, which the chaplain has said from the pulpit more than once and no one before this year had reason to doubt.",
+      "sources": [
+        { "kind": "document", "id": "gravestone" },
+        { "kind": "document", "id": "obituary-roll" }
+      ]
+    },
+    {
+      "id": "war-tax",
+      "kind": "history",
+      "text": "The March War and the castles after it were paid for by a tax laid on the whole of Vantry, a shilling in the pound over and above the usual, called at the time temporary and called it still. Half of what came up from Mereford's quay in the building years went to it before it ever touched the works.",
+      "sources": [
+        { "kind": "document", "id": "works-ledger" },
+        { "kind": "document", "id": "gate-book" }
+      ]
+    },
+    {
+      "id": "kings-debt-wages",
+      "kind": "history",
+      "text": "The garrison and the works are owed three months' wages between them, and have been owed as much or worse four times in forty years, always for the same reason: the King's coin goes where the King is fighting, and the King is not fighting here. It is paid in the end, mostly, and mostly late enough that half of what it buys has been bought first on credit at twice the price.",
+      "sources": [
+        { "kind": "document", "id": "works-ledger" },
+        { "kind": "chatter", "id": "inner-prime-1" }
+      ]
+    },
+    {
+      "id": "sunder-war",
+      "kind": "history",
+      "text": "The Sunder War is six years fought and two years settled, over water and a King's cousin's claim to it, on the far side of the kingdom from the March entirely. It is why the coin is slow this year and every year since it began, and it is a war not one soul in this castle has seen with his own eyes.",
+      "sources": [
+        { "kind": "document", "id": "kings-writ" },
+        { "kind": "chatter", "id": "inner-terce-1" }
+      ]
+    },
+    {
+      "id": "march-natives",
+      "kind": "history",
+      "text": "The March supplied the hauling and the quarrying from the first month of the works, at a wage set lower than the crown masons' by half, and supplied its own master masons within the generation: Hywel ap Gruffudd is the fourth man born within a day's walk of this castle to hold that rank in it, and not the last, whatever is written on the sheet by Vespers.",
+      "sources": [
+        { "kind": "document", "id": "obituary-roll" },
+        { "kind": "document", "id": "builder-graffito" }
+      ]
+    },
+    {
+      "id": "hywel-rise",
+      "kind": "person",
+      "text": "Hywel ap Gruffudd carried stone up this castle's scaffolds as a boy of nine, the year his father died on them, and set his first course as a journeyman before he was twenty. Twenty years a mason and eleven a master, he kept his own tally of every sheet of lead the roofs had, on the sticks he wore at his belt, because he had learned young that a boy who could not account for his own work went unpaid at the week's end.",
+      "sources": [
+        { "kind": "document", "id": "builder-graffito" },
+        { "kind": "chatter", "id": "outer-sext-1" }
+      ]
+    },
+    {
+      "id": "gruffudd-mason",
+      "kind": "person",
+      "text": "Gruffudd, Hywel's father, cut stone on the north curtain in the second and third years of the works and fell from the Kitchen Tower's scaffold in the third, a fall the old hands still call bad luck and nothing worse; the tower stood twelve years unfinished after and was the last of the eight to close its roof.",
+      "sources": [
+        { "kind": "document", "id": "builder-graffito" }
+      ]
+    },
+    {
+      "id": "saint-osyth",
+      "kind": "history",
+      "text": "The chapel is Saint Osyth's, as every chapel the crown has raised in the March these forty years is Saint Osyth's, she being the King's own house's saint since before Aldous's grandfather's time. Every soul buried under this castle's floor is commended to her, in the chaplain's own Latin, whatever else was said over them in another tongue first.",
+      "sources": [
+        { "kind": "document", "id": "gravestone" },
+        { "kind": "document", "id": "obituary-roll" },
+        { "kind": "npc", "npc": "chaplain", "state": "default" }
+      ]
+    },
+    {
+      "id": "saint-cadeyrn",
+      "kind": "history",
+      "text": "Saint Cadeyrn was known on this ground before the King's masons ever were, patron of builders and of men who work in high places, and the works have kept him without troubling the chaplain about it: a mason sets a small cut cross to him at the springing of an arch the way his father did and his father's father, in a country where the arches themselves are new.",
+      "sources": [
+        { "kind": "document", "id": "builder-graffito" },
+        { "kind": "chatter", "id": "outer-prime-2" }
+      ]
+    },
+    {
+      "id": "saint-cadeyrn-miracle",
+      "kind": "belief",
+      "text": "They say a hod-carrier went off the Bakehouse Tower's scaffold in the ninth year of the works and stood up laughing, without a mark on him, having called on Cadeyrn on the way down; they also say it was a load of straw that broke his fall and not the saint, and both of those are said by men who were there.",
+      "sources": [
+        { "kind": "chatter", "id": "outer-terce-2" }
+      ]
+    },
+    {
+      "id": "the-well",
+      "kind": "place",
+      "text": "The well in the South-west Tower was sunk the second year of the works, before the tower had a roof to keep the rain off it, and has never once gone dry, summer or siege.",
+      "sources": []
+    },
+    {
+      "id": "well-curse",
+      "kind": "belief",
+      "text": "No man of the garrison will draw from the south-west well after dark, and every one of them has a reason that is not quite the same as the last man's: a soldier of the old war went down it and never came up, or something in it remembers the war and does not care for the King's men drinking from it. The water tastes the same at every hour to everyone who has actually tried it after dark, which is not many.",
+      "sources": [
+        { "kind": "chatter", "id": "outer-vespers-1" }
+      ]
+    },
+    {
+      "id": "hedge-witch",
+      "kind": "belief",
+      "text": "There is a woman in the outer ward the roll calls a laundress's cousin and the ward calls something else under its breath, who reads a coming frost off a cat's back and sells a charm against the wet cough for a penny that half the garrison carries and none of them mention to the chaplain. Whether it is worth the penny is not a question anyone who has bought one wants answered.",
+      "sources": [
+        { "kind": "chatter", "id": "outer-prime-1" }
+      ]
+    },
+    {
+      "id": "chapel-relic",
+      "kind": "belief",
+      "text": "Under the glass on the chapel's north sill sits a knuckle of bone the chaplain calls Saint Osyth's own and keeps under lock with the wine, and half believes himself, on the days he does not think too hard about how a King's chapel in the newest of his castles came to own a piece of a saint eight hundred years dead.",
+      "sources": [
+        { "kind": "chatter", "id": "inner-vespers-1" }
+      ]
+    },
+    {
+      "id": "prison-tower-origin",
+      "kind": "place",
+      "text": "The Prison Tower was the plainest of the eight when it was raised, a store for grain and rope with no name worth remembering, and became the gaol only in its ninth year, when the first Constable found he needed one and had eight round rooms with doors that already locked.",
+      "sources": []
+    },
+    {
+      "id": "prison-tower-scratching",
+      "kind": "rumour",
+      "text": "Madoc will tell anyone who stands at the bars long enough that something moves under the Prison Tower's floor at night, a slow dragging sound with a stop and a start to it, and that it has been there since before he was ever put in to hear it.",
+      "sources": [
+        { "kind": "chatter", "id": "outer-cell-1" }
+      ],
+      "contradicts": ["prison-tower-origin"]
+    },
+    {
+      "id": "bell-cast-history",
+      "kind": "history",
+      "text": "The chapel bell was cast in the third year of the works by a founder brought up from the crown's own foundries at the King's cost, out of new metal bought with the war-tax, and hung the same autumn. The founder's bill for it is still in the works ledger, in a hand nobody living recognises.",
+      "sources": [
+        { "kind": "document", "id": "works-ledger" }
+      ]
+    },
+    {
+      "id": "bell-recast-rumour",
+      "kind": "rumour",
+      "text": "Some of the outer ward will tell you the chapel bell was never new metal at all, but a shrine bell taken off the March in the war's last year and melted down into something the King's own men could ring without a native hand on the rope. Nobody has ever shown a shrine it might have come from.",
+      "sources": [
+        { "kind": "chatter", "id": "outer-sext-2" }
+      ],
+      "contradicts": ["bell-cast-history"]
+    },
+    {
+      "id": "sir-walter-debt-rumour",
+      "kind": "rumour",
+      "text": "There are those in the inner ward old enough to remember Sir Walter Esturmy who will say, quietly, that his accounts balanced because his own coffer covered what the works had lost, and that whoever opened them after his death had every reason to say so and stop looking.",
+      "sources": [
+        { "kind": "chatter", "id": "inner-terce-2" }
+      ],
+      "contradicts": ["sir-walter-esturmy"]
+    },
+    {
+      "id": "garrison-size",
+      "kind": "history",
+      "text": "Above eighty men quarried, hauled and stood watch here in the busiest of the building years; the garrison proper is eight now that the March is quiet, and has been eight or near it for a decade, which is why one sentry covers the whole of the north walk at night and the Constable has said so to Caernarfon-ward correspondents more than once without anything coming of it.",
+      "sources": [
+        { "kind": "document", "id": "works-ledger" }
+      ]
+    },
+    {
+      "id": "outer-ward-view",
+      "kind": "belief",
+      "text": "The outer ward holds, near enough to a man, that the inner ward eats first, warms first and is paid first, and that the works could go unpaid a year running before the Constable's own table noticed a short cellar.",
+      "sources": [
+        { "kind": "chatter", "id": "outer-vespers-2" }
+      ]
+    },
+    {
+      "id": "inner-ward-view",
+      "kind": "belief",
+      "text": "The inner ward, for its part, holds that the outer ward would drink the cellar dry and let the walk door stand open besides, and that a firm Constable's hand is the only thing standing between a working castle and a March village with better stone around it.",
+      "sources": [
+        { "kind": "chatter", "id": "inner-sext-1" }
+      ]
+    },
+    {
+      "id": "town-debt-rumour",
+      "kind": "rumour",
+      "text": "It is said in the King's Hall, never past it, that one Mereford alderman's family has not paid its share of the wall-tax in a decade and that a name in the right hand keeps the roll from ever showing it, the same roll that shows every carter and every cartload down to the last sack of lime.",
+      "sources": [
+        { "kind": "chatter", "id": "inner-terce-3" }
+      ],
+      "contradicts": ["town-of-mereford"]
+    },
+    {
+      "id": "royal-inspections",
+      "kind": "history",
+      "text": "Since the Sunder War's coin ran short, the King's exchequer has sent a man to walk every royal castle's books once a year rather than once a decade, unannounced by more than a day's ride, on the King's own written word that a shilling not accounted for is a shilling stolen twice, once from the war and once from him.",
+      "sources": [
+        { "kind": "document", "id": "kings-writ" },
+        { "kind": "npc", "npc": "constable", "state": "default" }
+      ]
+    },
+    {
+      "id": "tally-stick-custom",
+      "kind": "history",
+      "text": "A notched tally stick has stood for a counted thing in the King's own exchequer longer than any man now living, split down its length so the payer keeps one half and the payee the other, and neither half can be altered without the cut showing on both. Every mason on these works keeps his own, Hywel's habit and not his invention.",
+      "sources": [
+        { "kind": "document", "id": "works-ledger" },
+        { "kind": "npc", "npc": "apprentice", "state": "default" }
+      ]
+    }
+  ]
+}

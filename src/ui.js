@@ -32,6 +32,9 @@ export class UI {
       riddleFeedback: document.getElementById('riddle-feedback'),
       journal: document.getElementById('journal-overlay'),
       journalTitle: document.getElementById('journal-title'),
+      journalTabs: document.getElementById('journal-tabs'),
+      journalTabClues: document.getElementById('journal-tab-clues'),
+      journalTabRead: document.getElementById('journal-tab-read'),
       journalList: document.getElementById('journal-list'),
       journalClose: document.getElementById('journal-close'),
       accusation: document.getElementById('accusation-overlay'),
@@ -72,6 +75,11 @@ export class UI {
     this._onJournalPick = null;
     this._acc = null;
     this._toastTimer = null;
+    // The journal's two tabs (#551): only meaningful cold, on J; `openJournal`
+    // resets it to `clues` every time the journal opens fresh.
+    this._journalTab = 'clues';
+    this._journalClues = { entries: [], empty: '' };
+    this._journalRead = { entries: [], empty: '' };
 
     this.el.riddleSubmit.addEventListener('click', () => this._submitRiddle());
     this.el.riddleInput.addEventListener('keydown', (e) => {
@@ -87,6 +95,8 @@ export class UI {
       if (this._onPresent) this._onPresent();
     });
     this.el.journalClose.addEventListener('click', () => this.closeJournal());
+    this.el.journalTabClues?.addEventListener('click', () => this._setJournalTab('clues'));
+    this.el.journalTabRead?.addEventListener('click', () => this._setJournalTab('read'));
     this.el.accusationCancel.addEventListener('click', () => this.closeAccusation());
   }
 
@@ -269,13 +279,40 @@ export class UI {
   isJournalOpen() { return !this.el.journal.classList.contains('hidden'); }
 
   /**
-   * Held clues, in the order they were found. `present` turns every row into a
-   * button: that is the same list the J key shows, offered from inside a
-   * conversation, and picking one presses the person in front of you with it.
+   * Held clues, in the order they were found, and — cold, on J, never from a
+   * conversation's Present picker — the documents read, same order (#551).
+   * `present` turns every clue row into a button: that is the same list the J
+   * key shows, offered from inside a conversation, and picking one presses the
+   * person in front of you with it. The two tabs only appear when `present` is
+   * null: presenting is about clues alone, and offering "Things read" as
+   * something to present would open a document on a press of the button that
+   * is supposed to hand over evidence.
    */
-  openJournal(entries, { empty = '', present = null } = {}) {
+  openJournal(entries, { empty = '', present = null, read = null, readEmpty = '' } = {}) {
     this._onJournalPick = present;
-    this.el.journalTitle.textContent = present ? 'Present what?' : 'What you know';
+    this._journalClues = { entries, empty };
+    this._journalRead = { entries: read ?? [], empty: readEmpty };
+    this._journalTab = 'clues';
+    this.el.journalTabs?.classList.toggle('hidden', !!present || read === null);
+    this.el.journal.classList.remove('hidden');
+    document.exitPointerLock?.();
+    this._renderJournalTab();
+  }
+
+  /** Switch tabs without re-opening the overlay; a no-op mid-Present. */
+  _setJournalTab(tab) {
+    if (this._onJournalPick) return;
+    this._journalTab = tab;
+    this._renderJournalTab();
+  }
+
+  _renderJournalTab() {
+    const present = this._onJournalPick;
+    const showingRead = !present && this._journalTab === 'read';
+    this.el.journalTitle.textContent = present ? 'Present what?' : showingRead ? 'Things read' : 'What you know';
+    this.el.journalTabClues?.classList.toggle('active', !showingRead);
+    this.el.journalTabRead?.classList.toggle('active', showingRead);
+    const { entries, empty } = showingRead ? this._journalRead : this._journalClues;
     this.el.journalList.replaceChildren();
     if (!entries.length) {
       const p = document.createElement('p');
@@ -295,8 +332,6 @@ export class UI {
       if (present) row.addEventListener('click', () => this._onJournalPick?.(c.id));
       this.el.journalList.append(row);
     }
-    this.el.journal.classList.remove('hidden');
-    document.exitPointerLock?.();
   }
 
   closeJournal() {

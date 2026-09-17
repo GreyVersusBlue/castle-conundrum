@@ -1415,7 +1415,7 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
     const id = p.id || `${p.model.replace(/\.glb$/, '')}-${seq++}`;
     addPiece({
       id, kind, model: kBase + p.model, level: levelUnder(p.base || 0), curtain: !!p.curtain,
-      label: p.comment || p.model, evidence: p.evidence || null, bell: !!p.bell,
+      label: p.comment || p.model, evidence: p.evidence || null, read: p.read || null, bell: !!p.bell,
       // `roofs: "<room id>"` says this piece is over that room's floor rather
       // than standing on it, which is what test/layout.mjs check 14 holds to
       // the room's own rectangle and out of every reachable head band (#527).
@@ -1436,7 +1436,7 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
       parts, tileSize, tile: p.tile, rotationY: p.rotationY || 0, scaleRule: 'native', lift,
     });
     const id = p.id || p.model.split('/')[0].replace(/_1k\.gltf$/, '');
-    addPiece({ id, kind: 'prop', model: pBase + p.model, level: 0, curtain: false, label: id, evidence: p.evidence || null, transform, box });
+    addPiece({ id, kind: 'prop', model: pBase + p.model, level: 0, curtain: false, label: id, evidence: p.evidence || null, read: p.read || null, transform, box });
     if (!p.noCollide) {
       collide(id, box);
       stack.push(box);
@@ -1459,7 +1459,7 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
     };
     addPiece({
       id: b.id, kind: 'prop', built: 'slab', level: levelUnder(b.base || 0), curtain: false,
-      material: b.material, label: b.id, evidence: b.evidence || null,
+      material: b.material, label: b.id, evidence: b.evidence || null, read: b.read || null,
       transform: { position: [0, 0, 0], rotationY: 0, scale: 1 }, box,
     });
     collide(b.id, box);

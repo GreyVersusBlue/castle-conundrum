@@ -86,13 +86,19 @@ trees. `dist/` grew by about 17 MB against 200. Increment 3's town half is
 unblocked; what it still needs is Thomas Wykes's yard built on the ground this
 row laid, and the bells-on-day-two question #533 raises.
 
-**6 ranked items. Rank 6 is claimed; the rest are open.** Rank 1 is the only
-row of the first five a container without a GPU can finish outright. Rank 4's
-next increment is the other thing a container can start, and `SPECS.md` names
-the one thread of it that does not wait on a design call: the gaol roll.
-Ranks 2, 3 and 5 all need a machine this one is not (#518). Rank 6 is the
-lore row out of `WISHLIST.md`'s theme 3 (#547 to #549) and needs no GPU
-either: a data file, a validator, six built props and a save version.
+**The lore row shipped on 2026-09-16** (#551 to #555): `data/lore.json`'s
+thirty-one facts, six readable documents built as slabs in rooms the castle
+already builds, a 17-pair chatter pool for the existing twelve, and the save
+at version 3 for `read`. `WISHLIST.md`'s theme 3 is rewritten to say what
+shipped and what is still open in it (the gaol roll and the rest of the
+"documents everywhere" list, the two performed set pieces, facts that
+change).
+
+**5 ranked items. Nothing is claimed.** Rank 1 is the only row a container
+without a GPU can finish outright. Rank 4's next increment is the other thing
+a container can start, and `SPECS.md` names the one thread of it that does
+not wait on a design call: the gaol roll. Ranks 2, 3 and 5 all need a machine
+this one is not (#518).
 
 One thing is true of the whole list and worth saying once. **Nothing here has
 been seen on a GPU since Phase 5.** `npm run play` walks the whole intended day
@@ -145,7 +151,6 @@ your decisions and this file's header, ranks and `Claimed` column are updated
 | 3 | A new preview and og card, from that run | ¼ | Opus 5 |  | [The GPU run](SPECS.md#the-gpu-run) |
 | 4 | A second day: increment 3, a second mystery for the morning | 2+ | Opus 5 |  | [A second day](SPECS.md#a-second-day) |
 | 5 | The hall's covering, and the two windows under it | ¼ | Sonnet 5 |  | [The hall covering](SPECS.md#the-hall-covering) |
-| 6 | Lore: the canon, six documents, chatter | 1 | Sonnet 5 | claude/castle-conundrum-lore-btasn8 | [Lore](SPECS.md#lore) |
 
 ## A fourth body
 

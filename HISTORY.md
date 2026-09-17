@@ -2678,3 +2678,137 @@ answered all ten the same day. Decisions #547 to #550.
   session can make a drop-in when a pack has no child or dog. Laptop first;
   the phone gets a cap, not a different castle. Text only; voice acting is
   much later. Bells stay as the clock (Q3), the default taken.
+
+## Lore: the canon, six documents, a chatter pool (2026-09-16)
+
+**Rank 6, claimed on `main` before the work started (PR #22) and taken up
+whole, `WISHLIST.md`'s theme 3.** `data/lore.json` is new (31 facts),
+`data/documents.json` is new (six readable props), `src/lore.js` and
+`test/lore.mjs` are new (the tenth suite), and `data/npcs.json` gains a
+17-pair chatter pool. The save moves to version 3. Decisions #551 to #555.
+
+- **The canon is a flat list of facts, each with an id, a `kind`, one
+  paragraph and `sources`, and the validator is what makes "told" a checkable
+  claim rather than a comment** (#551). Thirty-one facts: 13 `history`, 5
+  `person`, 3 `place`, 6 `belief`, 4 `rumour`. A source names a document, an
+  npc line, a chatter pair or an epilogue key, and for the two content-bearing
+  kinds (`document`, `chatter`) the citation has to run both ways — the fact's
+  own `sources` names the document, and the document's own `cites` names the
+  fact back — the same shape `src/mystery.js` already holds evidence and its
+  clue to (`evidence ${id} does not list it as its clue`). Four contradiction
+  pairs exist on purpose (a `history` fact and the `rumour` that quietly
+  disagrees with it: the chapel bell's true origin against the melted-shrine-
+  bell rumour, the previous Constable's balanced accounts against the rumour
+  that his own coffer covered the gap, and two more), and two facts are left
+  with no source at all (`the-well`, `prison-tower-origin`) to prove
+  `untoldFacts` reports rather than fails on them.
+
+  **The validator caught a real mistake before a single synthetic break was
+  written** (#34, the honest version of it): authoring `obituary-roll` last,
+  its `sources` on `castle-founding` and `saint-osyth` were written by hand
+  and the two facts' own `sources` arrays were not updated to name it back.
+  First run: `validates clean — ["obituary-roll: cites castle-founding, but
+  that fact's own sources do not name obituary-roll back", "obituary-roll:
+  cites saint-osyth, but that fact's own sources do not name obituary-roll
+  back"]`. Fixed by adding the missing `{kind: "document", id:
+  "obituary-roll"}` entries; the suite has been green since.
+
+  **Broken again on purpose, from that green baseline, to have a clean
+  transcript for the record.** `kingdom-vantry` given `contradicts:
+  ["saint-osyth"]` (both `history`, no `belief` or `rumour` on either side):
+  `node test/lore.mjs` exited 1, and the assertion that claims two facts may
+  not both be `history` said `kingdom-vantry: contradicts saint-osyth, and
+  neither is a belief nor a rumour — two history facts may not disagree`.
+  Reverted; `diff` against the pre-break file showed no difference and the
+  suite was green again.
+
+- **The world is invented, over the cast PLAN.md already fixed, and nothing
+  about the crime moved** (#552, answering #549 in the concrete). A kingdom,
+  Vantry; two Kings across the forty years — Aldous, who fought the March War
+  and began the works, and his son Osric, reigning now, whose coin the Sunder
+  War is still spending; two saints, Osyth (the crown's, the chapel's) and
+  Cadeyrn (the March's own, kept by the masons without troubling the chaplain
+  about it); a previous Constable, Sir Walter Esturmy, two and thirty years
+  in the post and buried in the chapel floor he paid the last stone of; a
+  town, Mereford, chartered with the castle and still paying for its own
+  wall. The hedge-witch, the chapel relic, the well the garrison will not
+  draw from after dark and the thing Madoc hears under the Prison Tower's
+  floor (#549's own list) are all in, every one a `belief` or a `rumour`.
+  Nothing in `data/mystery.json` — the clues, the presses, the schedule, the
+  accusation, the endings — was read for anything but the twelve's existing
+  names, roles and wards.
+
+- **Six documents, as built slabs, the same pattern the cloak and the walk-bar
+  already used, in rooms the castle already builds** (#553). The works
+  ledger (Clerk of Works' office), the chaplain's obituary roll (his chamber,
+  level 1), the porter's gate book (his lodge), a builder's graffito cut into
+  the floor at the head of the Kitchen Tower's stair (the garrison dormitory,
+  level 1), a gravestone in the chapel floor, and the King's writ (the
+  muniment room). No new asset (#506); `data/scene-config.json` gained two
+  `plainMaterials` (`parchment`, `slate`) and six `builtProps` entries, each
+  carrying a `read` field the way an evidence prop carries `evidence`.
+  `src/castle-plan.js` passes `read` through all three prop loops;
+  `src/castle-builder.js`'s `readables()` mirrors `evidence()` exactly, one
+  target per id with `isReadable: true` and a "Press E to read the …" prompt.
+  `src/interaction.js` needed no change: a readable is a target like any
+  other, and `main.js` routes `isReadable` to `quest.handleRead`, which opens
+  the existing dialogue overlay (a title, one long line) and marks the id
+  into the save's new `read` list the instant it opens — the same instant
+  `examine()` already marks a taken piece of evidence gone.
+
+  **First placement pass failed `test/layout.mjs` on four of the six, plus a
+  fifth failure (a stair flight) on one of those four.** Two Welsh-named
+  drums at the castle's east corners — the chapel tower and the King's
+  tower — turn out to have a smaller safe interior than their nominal 2.8 m
+  radius suggests: the east barbican's garden wall and the tower's own
+  ground-floor stair each cut into it from a specific side, and a document
+  placed by tile arithmetic alone landed half in one or the other three
+  times running. Found by loading the real plan in Node (`makePlan` plus the
+  same `partsOf` reader `layout.mjs` uses) and testing candidate boxes
+  against every stone sector, collider and flight directly, the same
+  question the suite asks, rather than guessing a second time and waiting two
+  minutes for the browser suites to say no again. The gravestone's footprint
+  also came down from 0.9 x 1.8 m to 0.6 x 1.2 m: nowhere in that tower's
+  interior circle held the larger slab clear of the stair, the curtain, the
+  garden wall and the existing candles and lantern all at once.
+
+- **Chatter: 17 pairs, keyed by ward then watch, for the existing twelve
+  only, unspent** (#554). `data/npcs.json` gains a `chatter` block; each pair
+  names its two speakers and, where it tells one, a lore id. Validated
+  against each speaker's own static `ward` field rather than the schedule's
+  exact station at that watch — `SPECS.md`'s own recommended-and-taken open
+  call, because holding it to the schedule the way `mystery.js`'s nav rails
+  do is a second pass this row did not need to make to ship the pool. The
+  thirteenth, the inspector, is refused by the same `arrives` field
+  `validateMystery` already reads (`arrives on day 2 and is not one of the
+  existing twelve`). The pool is data only: this repo has no populace yet
+  (`WISHLIST.md` theme 1), and spending it on two bodies in earshot is that
+  row's to do.
+
+- **The save moves to version 3, for `read`, through `migrate` even though
+  `repair` alone would default it correctly** (#555, #36, #37). Unlike `day`
+  (#533), nothing about a pre-version-3 save's missing `read` is incoherent
+  the way a version-1 save claiming day 2 was — there is no verdict-shaped
+  fact a missing `read` could contradict — so `repairState`'s own default (an
+  empty list, `idsIn` on `undefined`) is already correct on every old save.
+  The version bumped anyway, because #37's line about a field's arrival being
+  honest is about the number, not about whether `repair` happens to cover for
+  it; `migrate`'s new line documents the transition and says so. `buildCatalog`
+  takes a fourth data file, `data/documents.json`, and builds a `documents` id
+  set; `repairState` filters `read` against it the way `taken` is filtered
+  against evidence. `src/mystery.js`'s `freshState()` gained `read: []` for
+  the same reason. The journal overlay (`src/ui.js`) grew two tabs, "What you
+  know" and "Things read", shown only when opened cold on J — the Present
+  picker offered mid-conversation stays clues-only, since presenting a
+  document to someone is not a verb this row added.
+
+**What was measured.** `data/lore.json` 268 lines, `data/documents.json` 145,
+`src/lore.js` 186, `test/lore.mjs` 181; the `data/npcs.json` diff for the
+chatter block is 175 lines. All ten suites green: `npm test` — layout,
+mystery, lore and the rest — and `npm run build` (dist 50.7 MB, the built
+page fetching the same 150 files under `assets/`, `data/` and `decoders/` as
+the source page, per `test/built.mjs`). `plan-vs-scene.mjs`: 279 pieces (273
+before this row), all within 0.0000 m of the plan. `npm run play` was not run
+and could not be (#53); nothing in this row moves the player, the walk or a
+render, so the honest gap is only that nobody has looked at the six documents
+or heard the chatter with eyes and ears rather than a Node assertion.
