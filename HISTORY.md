@@ -4307,9 +4307,16 @@ and the session that changes it owns the label.
 next increment for rank 12, taken because it is the row rank 6 and rank 10 both
 walk into: "a shared low-poly rig for the fifty" was written down as a goal by
 a spec that could not say what fifty cost, because nothing in this project had
-ever counted anything. Twelve suites green before, thirteen now — with two
-failures on `main` at 94491ff that this branch neither caused nor fixed, both
-written up at the bottom.
+ever counted anything. Decisions #607 to #611. Twelve suites green before,
+thirteen now — with two failures on `main` at 94491ff that this branch neither
+caused nor fixed, both written up at the bottom.
+
+**The numbers start at #607 and not at #603, which is what they were written
+as.** `claude/rank8-reputation-by-ward` committed #603 to #606 first, on a
+branch that had not merged yet, and this branch renumbered rather than make
+rank 8 do it — #492 says a number resolves in its own repo's `HISTORY.md`, and
+it cannot resolve to two things. A gap is cheap if that branch is abandoned; a
+collision is not cheap either way.
 
 **The numbers, which are the actual deliverable.** Draw calls: **965 in the
 outer ward, 643 in the inner**, 1539 meshes in the castle. Point lights: three,
@@ -4327,7 +4334,7 @@ same material. When the draw-call ceiling below is first hit, merging a drum's
 sectors into one geometry is the answer, not deleting a building.
 
 - **The budget suite counts the meshes the builder really makes, by calling the
-  builder** (#603). `src/castle-builder.js`'s `built` ladder came out of
+  builder** (#607). `src/castle-builder.js`'s `built` ladder came out of
   `build()` into an exported `buildPiece(piece, material, metres)`, and its
   "does this carry its own world position" test came out into an exported
   `carriesOwnWorldPosition(piece)`. `build()` calls both, and so does
@@ -4349,7 +4356,7 @@ sectors into one geometry is the answer, not deleting a building.
   function.
 
 - **A ward, for counting, is a rectangle, and a mesh counts in every ward it
-  reaches into** (#603). The two wards are the curtain's own footprint
+  reaches into** (#608). The two wards are the curtain's own footprint
   (x -46..34, z -20..20) cut at the cross-wall's centreline, which is read off
   `cross-wall-north` and `cross-wall-south` rather than typed as 0; the suite
   refuses to run if those two ids are not in the plan, rather than quietly
@@ -4373,7 +4380,7 @@ sectors into one geometry is the answer, not deleting a building.
   that ward's rectangle"*.
 
 - **The ceilings are guesses, in one block, with what each is anchored on
-  written beside it** (#603). `SPECS.md`'s open call recommended exactly this
+  written beside it** (#609). `SPECS.md`'s open call recommended exactly this
   over waiting for a device, the way `touch-controls.js` holds its six (#530),
   and the recommendation is taken. **1200 draw calls per ward**, against 965 in
   the outer: 235 of headroom, chosen so the next thing to hit it is a building
@@ -4399,7 +4406,7 @@ sectors into one geometry is the answer, not deleting a building.
   the ceiling of 8"*.
 
 - **The point-light count is the braziers, and that claim is grepped rather
-  than commented** (#603). `main.js` makes one stand per row of
+  than commented** (#610). `main.js` makes one stand per row of
   `config.braziers` and `createBrazier` makes one `PointLight` per stand, so
   the count is the list's length — for exactly as long as nothing else in
   `src/` makes a point light. Rank 11's fire and candles are the obvious next
@@ -4416,7 +4423,7 @@ sectors into one geometry is the answer, not deleting a building.
   a request to teach the budget where the new lights are.
 
 - **A thirteenth suite rather than a thirty-line block in `layout.mjs`**
-  (#603). By the letter of #529 — layout.mjs is every fact derivable from the
+  (#611). By the letter of #529 — layout.mjs is every fact derivable from the
   plan in Node — this belonged in layout.mjs. What #529 was drawn to fix was
   that a reader could not tell which of two files to add a line to, and
   splitting by cost answers that question rather than blurring it: whether the

@@ -77,7 +77,7 @@ The project lived in `GreyVersusBlue/tools-and-games` under
   This was Phase 2's whole point and was never written down as a rule — it was
   visible only in the shape of the files, which is exactly how a rule gets lost.
   **`test/budget.mjs` is the one carve-out, and it is by cost rather than by
-  method** (#603): layout.mjs holds whether the castle works and budget.mjs
+  method** (#611): layout.mjs holds whether the castle works and budget.mjs
   holds what it costs — draw calls, point lights and skinned bodies per ward,
   against ceilings that are guesses held as named constants in one block. The
   two share no assertion, and a content row that has to renegotiate a ceiling

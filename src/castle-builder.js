@@ -553,7 +553,7 @@ function partsOfObject(root) {
  * `built` ladder, in one place, so there is exactly one answer to "what does
  * the plan's `built: 'drum'` become". `build()` below calls it and so does
  * `test/budget.mjs`, which counts the meshes these functions really make
- * rather than a Node re-implementation of that count (#34, #603): a suite that
+ * rather than a Node re-implementation of that count (#34, #607): a suite that
  * re-derives a drum as "24 sectors, so 48 shells" is a suite agreeing with
  * itself, the same way `layout.mjs` agreed with itself about placement until
  * the plan took the math off it (#500).
@@ -582,7 +582,7 @@ export function buildPiece(piece, material, metres) {
  * `build()` adds these to the scene with no transform at all, and everything
  * else is placed by `piece.transform`. Exported for the same reason
  * `buildPiece` is: `test/budget.mjs` has to know which meshes it may read a
- * world box off directly and which ones it may not (#603).
+ * world box off directly and which ones it may not (#607).
  */
 export function carriesOwnWorldPosition(piece) {
   return piece.built === 'run' || piece.built === 'drum' || piece.built === 'ground'

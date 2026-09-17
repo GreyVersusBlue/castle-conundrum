@@ -1000,7 +1000,7 @@ already is.
 ## The tooling
 
 **Rank 12. Size 2+. Two of three increments shipped on 2026-09-17** — the
-placement editor (#583 to #587) and the budget suite (#603).
+placement editor (#583 to #587) and the budget suite (#607 to #611).
 `WISHLIST.md`'s own closing section: none of the seven themes above is a code
 problem, they are content problems at a scale the current tooling cannot carry,
 and this row is the three tools it names. **The dialogue format is what is
@@ -1025,7 +1025,7 @@ for the module's sentinel rather than trusting either (#586).
 `test/budget.mjs`, the thirteenth suite, 0.4 s, Node only, three counts per
 ward against three ceilings held as named constants in one block with what each
 is anchored on written beside it — the open call's own recommendation, taken
-(#603). **965 draw calls in the outer ward, 643 in the inner, against 1200.
+(#609). **965 draw calls in the outer ward, 643 in the inner, against 1200.
 Three point lights, all outer, against 6 per ward and 8 in the scene. A peak of
 7 skinned bodies in the outer ward at Terce and 5 in the inner at Prime,
 against 20 per ward and 32 in the cast.** The draw-call count is not derived:
@@ -1045,7 +1045,8 @@ taken to produce.
   back over its own text is the same splice machinery reading rather than
   appending, and it is what turns the tool from a stopwatch into an editor.
   **Whoever takes it walks into a live failure first**: `test/tools.mjs` is red
-  on a Windows checkout and green on a Linux one (#603), so the byte-exactness
+  on a Windows checkout and green on a Linux one (written up under #607 to
+  #611), so the byte-exactness
   rail that increment has to keep is not currently holding on the dev machine.
 - **The dialogue format is this row's third and is deliberately unspecified**
   (speaker, state, conditions, effects, one line each, compiled to

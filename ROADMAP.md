@@ -30,7 +30,7 @@ NOW, in parallel, no gates:
   R2  GPU run        --+             R8   quests: reputation + errands   lane A
   R1  fourth body      |             R6   populace: the first ten        lanes C D
                        |             R7   ambient beds                   lane E
-                       |             (R12a budget suite SHIPPED, #603)
+                       |             (R12a budget suite SHIPPED, #607-611)
                        |             R4a  the bells call   (lane A: not beside R8)
                        |             R4b  the since field  (lane A: not beside R8)
                        |
@@ -145,7 +145,7 @@ suites, no gate on any of them, and the backlog's existing advice already
 points here: *"a session running beside one of those is better off on 8 or
 12."*
 
-**R12a shipped on 2026-09-17** (#603), which was the test of that claim: it ran
+**R12a shipped on 2026-09-17** (#607 to #611), which was the test of that claim: it ran
 beside R8 in the same working tree and beside R6, R1 and R7 in worktrees, and
 touched `src/castle-builder.js`, `test/run.mjs` and a new `test/budget.mjs`,
 none of which is in any lane. **R7 is the replacement third**, alone in lane E.
@@ -230,7 +230,7 @@ plan's list and not a second one (#588 to #591).
 | Row | Model | Where | Lane | Note |
 | --- | --- | --- | --- | --- |
 | **R10** Bodies | Fable 5.1 | Local: net | C | Trades activity clips with R6 in both directions; neither strictly gates the other. Try a scaled-down child before fetching anything. |
-| **R12b** Move-and-delete | Opus 5 | Container | B | Turns the editor from a stopwatch into an editor. Every content row got cheaper the day the editor landed and none was blocked on it; the same is true of this. **Starts from a red suite**: `test/tools.mjs`'s byte-exactness rail passes on LF and fails on CRLF, so it is red on the dev machine and green in CI (#603). |
+| **R12b** Move-and-delete | Opus 5 | Container | B | Turns the editor from a stopwatch into an editor. Every content row got cheaper the day the editor landed and none was blocked on it; the same is true of this. **Starts from a red suite**: `test/tools.mjs`'s byte-exactness rail passes on LF and fails on CRLF, so it is red on the dev machine and green in CI, written up under #607 to #611. |
 | **R12c** The dialogue format | Opus 5 | Container | C | Deliberately unspecified. `WISHLIST.md`'s paragraph is the whole brief. |
 | **R4a** The bells call | Opus 5 | Container | A | Has to overturn #533 rather than work around it. The cheapest shape that does not fight it: `day2.watches`, its own list, with the engine reading whichever list the day names. |
 | **R4b** The `since` field | Opus 5 | Container | A | A fact in `data/lore.json` that changes with what the player did on day one. It needs second-day state to be about, and `day2.knew` (#575) is that state, shipped. |

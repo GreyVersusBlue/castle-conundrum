@@ -211,7 +211,7 @@ start; 7, 10 and 11 all want either a recorded sound, a body on disk, or a GPU
 before their first increment closes, and 9 has nothing left in it that does
 not wait on rank 4's yard. **Ranks 8 and 12 both shipped two increments on
 2026-09-17** — rank 8's five errands and the four after them (#597 to #599),
-rank 12's placement editor and then its budget suite (#603). Rank 8's next
+rank 12's placement editor and then its budget suite (#607 to #611). Rank 8's next
 increment is a container's: reputation by ward and the seven errands left.
 **Rank 12 is down to the dialogue format**, and whoever takes move-and-delete
 walks into a live failure: `test/tools.mjs`, the byte-exactness rail that
@@ -314,7 +314,7 @@ Three softer ones are worth naming and are not gates: rank 6's populace
 unlocks two of rank 8's seven errands and rank 7's event sounds, rank 10 and
 rank 6 trade activity clips both ways, and rank 12's budget suite was more
 useful once there were more bodies to count. None of the three blocked a start,
-and the budget suite went first anyway (#603) — a ceiling on a castle with
+and the budget suite went first anyway (#609) — a ceiling on a castle with
 twelve bodies in it is still the ceiling rank 6's ten are spent against.
 
 **Lane.** The file that two sessions would collide on. **One row per lane at a
@@ -342,7 +342,7 @@ already names them separately: **4a** is the bells-on-day-two design call and
 `day2.watches`, **4b** is the `since` field on a fact that changes (#596), and
 **4c** is Thomas Wykes's yard. 4a and 4b are a container's; 4c wants the
 editor walked and the yard looked at. Rank 12 splits the same way and for the
-same reason: **12a** the budget suite (shipped, #603), **12b** move-and-delete
+same reason: **12a** the budget suite (shipped, #607 to #611), **12b** move-and-delete
 in the editor, **12c** the dialogue format.
 
 ## The ranked table
@@ -360,7 +360,7 @@ in the editor, **12c** the dialogue format.
 | 9 | A castle to get lost in: the town, the rock and river | 2+ | Opus 5 | Container | **after 4c** | B | | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
 | 10 | Bodies: a shared low-poly rig for the fifty | 1 | Fable 5.1 | Local: net | — | C | | [Bodies](SPECS.md#bodies) |
 | 11 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 | Container to the Node line, local: GPU past it | **after 2** | D | | [Feel](SPECS.md#feel) |
-| 12 | The tooling: move-and-delete, a dialogue format (the budget suite shipped, #603) | 2+ | Opus 5 | Container | — | B (12b), C (12c) | `claude/r12a-budget-suite` (12a) | [The tooling](SPECS.md#the-tooling) |
+| 12 | The tooling: move-and-delete, a dialogue format (the budget suite shipped, #607 to #611) | 2+ | Opus 5 | Container | — | B (12b), C (12c) | `claude/r12a-budget-suite` (12a) | [The tooling](SPECS.md#the-tooling) |
 
 **`ROADMAP.md` is these three columns turned into an order**: which row to
 take first, what each one unblocks, and which ones two sessions may hold at
@@ -600,7 +600,7 @@ Dev-only is two independent halves — `import.meta.env.DEV` around the import,
 greps every shipped file for the module's sentinel, because the served-set
 diff cannot see a module that neither page ever asks for (#586).
 
-**The budget suite shipped the same day** (#603). `test/budget.mjs` is the
+**The budget suite shipped the same day** (#607 to #611). `test/budget.mjs` is the
 thirteenth suite: three counts per ward against three ceilings held as named
 constants with a comment saying they are guesses. **965 draw calls in the outer
 ward and 643 in the inner against 1200; three point lights, all outer, against

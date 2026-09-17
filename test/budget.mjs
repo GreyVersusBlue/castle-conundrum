@@ -12,7 +12,7 @@
 // draw calls, point lights and skinned bodies, per ward, against three ceilings
 // held as named constants below.
 //
-// WHY IT IS NOT IN layout.mjs (#529, #603). #529 says layout.mjs is every fact
+// WHY IT IS NOT IN layout.mjs (#529, #611). #529 says layout.mjs is every fact
 // derivable from the plan in Node, and by the letter of that this file's
 // arithmetic belongs in it. What #529 was actually drawn to fix was "a reader
 // cannot tell which of two files to add a line to", and this file answers that
