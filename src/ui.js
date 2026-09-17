@@ -23,6 +23,9 @@ export class UI {
       room: document.getElementById('hud-room'),
       prompt: document.getElementById('interact-prompt'),
       toast: document.getElementById('toast'),
+      caption: document.getElementById('caption'),
+      captionName: document.getElementById('caption-name'),
+      captionLine: document.getElementById('caption-line'),
       dialogue: document.getElementById('dialogue-box'),
       dialogueName: document.getElementById('dialogue-name'),
       dialogueText: document.getElementById('dialogue-text'),
@@ -39,6 +42,7 @@ export class UI {
       journalTabClues: document.getElementById('journal-tab-clues'),
       journalTabRead: document.getElementById('journal-tab-read'),
       journalTabMap: document.getElementById('journal-tab-map'),
+      journalTabQuests: document.getElementById('journal-tab-quests'),
       journalList: document.getElementById('journal-list'),
       journalClose: document.getElementById('journal-close'),
       accusation: document.getElementById('accusation-overlay'),
@@ -85,6 +89,7 @@ export class UI {
     this._journalClues = { entries: [], empty: '' };
     this._journalRead = { entries: [], empty: '' };
     this._journalMap = null;
+    this._journalQuests = null;
     // The id of the room the HUD's line names, or null on open ground: the
     // map's "you are here" is read off the same answer as the line (#515).
     this._roomHere = null;
@@ -106,6 +111,7 @@ export class UI {
     this.el.journalTabClues?.addEventListener('click', () => this._setJournalTab('clues'));
     this.el.journalTabRead?.addEventListener('click', () => this._setJournalTab('read'));
     this.el.journalTabMap?.addEventListener('click', () => this._setJournalTab('map'));
+    this.el.journalTabQuests?.addEventListener('click', () => this._setJournalTab('quests'));
     this.el.accusationCancel.addEventListener('click', () => this.closeAccusation());
   }
 
@@ -218,6 +224,35 @@ export class UI {
     this._toastTimer = setTimeout(() => this.el.toast.classList.add('hidden'), 3200);
   }
 
+  /**
+   * One line of a sermon or a song, over the top of the castle (#592, #594). The
+   * band is not modal and takes no input: the player keeps WASD, E and J
+   * through the whole of it and can walk out of the room mid-verse, which is
+   * what `clearCaption` is for. WHO IS SPEAKING IS DRAWN EVERY LINE and not
+   * only on the first, because a player who looks up in the middle of a song
+   * gets a voice with no name on it otherwise.
+   */
+  caption(name, line) {
+    if (!this.el.caption) return;
+    this.el.captionName.textContent = name || '';
+    this.el.captionLine.textContent = line || '';
+    this.el.caption.classList.remove('hidden');
+  }
+
+  /** The band goes away: the piece is over, or the player left the room. */
+  clearCaption() {
+    if (!this.el.caption) return;
+    this.el.caption.classList.add('hidden');
+    this.el.captionName.textContent = '';
+    this.el.captionLine.textContent = '';
+  }
+
+  /** What the band is saying, or null. Read by the suites. */
+  captionText() {
+    if (!this.el.caption || this.el.caption.classList.contains('hidden')) return null;
+    return this.el.captionLine.textContent;
+  }
+
   // ---- Dialogue ----
   isDialogueOpen() { return !this.el.dialogue.classList.contains('hidden'); }
 
@@ -299,16 +334,21 @@ export class UI {
    * is supposed to hand over evidence. `map` is the third tab (#589): every
    * room the plan builds, `{id, name, level, bounds, shape, visited}`, drawn
    * as the castle's plan a storey at a time and filled in as they are entered.
+   * `quests` is the fourth (BACKLOG.md rank 9): the side quests the player has
+   * met, `{id, title, objective, done}`, the open ones first and the finished
+   * ones under them. Null for any of the three is that tab not offered.
    */
-  openJournal(entries, { empty = '', present = null, read = null, readEmpty = '', map = null } = {}) {
+  openJournal(entries, { empty = '', present = null, read = null, readEmpty = '', map = null, quests = null } = {}) {
     this._onJournalPick = present;
     this._journalClues = { entries, empty };
     this._journalRead = { entries: read ?? [], empty: readEmpty };
     this._journalMap = map;
+    this._journalQuests = quests;
     this._journalTab = 'clues';
-    this.el.journalTabs?.classList.toggle('hidden', !!present || (read === null && map === null));
+    this.el.journalTabs?.classList.toggle('hidden', !!present || (read === null && map === null && quests === null));
     this.el.journalTabRead?.classList.toggle('hidden', read === null);
     this.el.journalTabMap?.classList.toggle('hidden', map === null);
+    this.el.journalTabQuests?.classList.toggle('hidden', quests === null);
     this.el.journal.classList.remove('hidden');
     document.exitPointerLock?.();
     this._renderJournalTab();
@@ -326,12 +366,16 @@ export class UI {
     const tab = present ? 'clues' : this._journalTab;
     const showingRead = tab === 'read';
     const showingMap = tab === 'map' && !!this._journalMap;
-    this.el.journalTitle.textContent = present ? 'Present what?' : showingRead ? 'Things read' : showingMap ? 'The castle' : 'What you know';
-    this.el.journalTabClues?.classList.toggle('active', !showingRead && !showingMap);
+    const showingQuests = tab === 'quests' && !!this._journalQuests;
+    this.el.journalTitle.textContent = present ? 'Present what?'
+      : showingRead ? 'Things read' : showingMap ? 'The castle' : showingQuests ? 'Asked of you' : 'What you know';
+    this.el.journalTabClues?.classList.toggle('active', !showingRead && !showingMap && !showingQuests);
     this.el.journalTabRead?.classList.toggle('active', showingRead);
     this.el.journalTabMap?.classList.toggle('active', showingMap);
+    this.el.journalTabQuests?.classList.toggle('active', showingQuests);
     this.el.journalList.replaceChildren();
     if (showingMap) { this._renderJournalMap(this._journalMap); return; }
+    if (showingQuests) { this._renderJournalQuests(this._journalQuests); return; }
     const { entries, empty } = showingRead ? this._journalRead : this._journalClues;
     if (!entries.length) {
       const p = document.createElement('p');
@@ -350,6 +394,42 @@ export class UI {
       row.append(h, t);
       if (present) row.addEventListener('click', () => this._onJournalPick?.(c.id));
       this.el.journalList.append(row);
+    }
+  }
+
+  /**
+   * THE OPEN QUESTS (BACKLOG.md rank 9). One row per quest the player has met:
+   * its title and what it is asking of them now, which is the stage's own
+   * objective and the same line the toast said once as it moved (#579). A
+   * finished quest does not leave the page: it goes under the heading at the
+   * bottom, struck through, because "you did this" is half of what a list of
+   * errands is for. Every row is a `.journal-row[data-id][data-done]`, which is
+   * what test/quest.mjs reads.
+   */
+  _renderJournalQuests(quests) {
+    const rows = (list, done) => {
+      for (const q of list) {
+        const row = document.createElement('div');
+        row.className = `journal-row${done ? ' quest-done' : ''}`;
+        row.dataset.id = q.id;
+        row.dataset.done = done ? '1' : '0';
+        const h = document.createElement('b');
+        h.textContent = q.title;
+        const t = document.createElement('span');
+        t.textContent = q.objective;
+        row.append(h, t);
+        this.el.journalList.append(row);
+      }
+    };
+    const open = quests.filter((q) => !q.done);
+    const done = quests.filter((q) => q.done);
+    rows(open, false);
+    if (done.length) {
+      const h = document.createElement('h3');
+      h.className = 'journal-done-head';
+      h.textContent = 'Done';
+      this.el.journalList.append(h);
+      rows(done, true);
     }
   }
 

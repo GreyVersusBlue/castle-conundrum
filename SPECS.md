@@ -7,17 +7,18 @@ decision. Every "recommendation" below is exactly that, and the session that
 ships the row is the one that records the call with a number.
 
 Written 2026-09-15 against `main` at `bb61958`, from the code and data as they
-are, not from the briefs. **Eight sections below — ranks 6 to 13 — were added
-on 2026-09-17, from `WISHLIST.md` as it stood that day rather than from code,
-because the systems they describe (`data/populace.json`, `data/quests/`, the
-placement editor) do not exist yet.** Each names a first increment rather than
+are, not from the briefs. **Seven sections below, ranks 6 to 12, came in on
+2026-09-17 as eight, from `WISHLIST.md` as it stood that day rather than from
+code, because the systems they describe (`data/populace.json`, `data/quests/`,
+the placement editor) did not exist yet.** Each names a first increment rather than
 the whole theme, the way the depth rule below already treats a 2+ row, and
 `WISHLIST.md` is the source for everything past that increment: this file does
 not repeat what it already says. **Rows shipped since and their sections are gone:
 asset compression (#506 to #510), sound (#519 to #522), the tower tops
 (#523 to #526), the hall's roof frame (#527, #528), the two plan suites (#529),
 touch (#530 to #532), the texture sets (#541 to #545), the town
-side (#546), and the lore row (#551 to #555).** What asset
+side (#546), the lore row (#551 to #555), and what was left of that row,
+the sermon and the song, with #592 to #596.** What asset
 compression left behind for the rows that touch assets is named in their
 Dependencies; what sound left behind is `data/sounds.json`, a `material` and a
 `kind` on every `plan.surfaces` entry, and `layout.mjs` check 12. Where a brief and the code disagree, the code is
@@ -208,7 +209,7 @@ and og card from that run.
   - **Seven trusses over the Great Hall** (#527). Whether
     `structure-cross.glb` stretched to 0.5 x 2.5 x 7.25 reads as a hammerbeam
     or as scaffolding is the open question, and the answer decides whether the
-    covering row (rank 7) is worth taking at all.
+    covering row (rank 5) is worth taking at all.
   - **A phone** (#530). The stick throw, the sprint threshold, the look rate,
     the E button's size and the two render numbers are all guesses. One session
     with a real thumb settles six constants.
@@ -372,9 +373,21 @@ Two threads, and both want something this repo has not got.
   against one day. The cheapest shape that does not is `day2.watches`, its own
   list, with the engine reading whichever list the day says.
 
-Both of them now have somewhere to put "the player found this out", which
-neither had before `day2.knew` (#575): a lead found in the yard is a clue,
-and a clue is what a `knew` row is keyed on.
+- **And it inherited a fact that changes** (#596). The lore row closed with
+  one piece unbuilt and this is where it went: a `since` field on a fact in
+  `data/lore.json`, and a rumour about what the player did on day one, so that
+  the canon can say something different on the morning after. It needs
+  second-day state to be about, which is why it was never rank 8's to start;
+  `day2.knew` (#575) and the seven endings are that state. The shape to beat:
+  a fact carries `since: {ending?, knew?}` with the same `when`/`unless`
+  grammar `day2.castle` and `day2.knew` already share, and `validateLore`
+  refuses a `since` naming an ending or a clue the mystery has not got. What
+  it costs is one more pool for the caption band (#592) or one more line set;
+  it does not need a new UI.
+
+Both of the threads above now have somewhere to put "the player found this
+out", which neither had before `day2.knew` (#575): a lead found in the yard is
+a clue, and a clue is what a `knew` row is keyed on.
 
 ### What is left after increment 3
 
@@ -417,7 +430,7 @@ and a clue is what a `knew` row is keyed on.
 
 ## The hall covering
 
-**Rank 7. Size ¼.** #527 put seven trusses across the Great Hall at 8 m and
+**Rank 5. Size ¼.** #527 put seven trusses across the Great Hall at 8 m and
 #528 left the space between them open, because neither half of a covering can
 be judged from this container. This row is both halves, for a session with a
 GPU.
@@ -518,12 +531,12 @@ the mystery and everything to do with whether the castle reads as lived in.
 - **Clips or retarget?** Whether the ten activities want their own clips
   baked per body or a shared rig retargeted onto whichever model wears them is
   the question `WISHLIST.md` itself opens first, and it decides which body
-  source (rank 11) is usable for the fiftieth. Recommend **reuse the walk and
+  source (rank 10) is usable for the fiftieth. Recommend **reuse the walk and
   idle clips every body already has for this increment**, and defer any new
   clip to the increment that adds `sweep`, `stir`, `hammer`.
 - **Where the ten stand.** Recommend the Prime bakehouse-and-well pair and the
   Terce garrison drill named first in `WISHLIST.md`, because they are the two
-  the theme calls cheapest (a loop of tiles, no new prop) and because rank 10's
+  the theme calls cheapest (a loop of tiles, no new prop) and because rank 9's
   "fill the volume" has nowhere yet for the rest to stand.
 
 ### Dependencies
@@ -580,7 +593,7 @@ Everything else in the castle is silent.
   `tools/encode-assets.mjs`'s output the same commit it is added, per #390.
 - The actual sound is a `npm run play` question (#53): this row's Node
   acceptance is that a bed is *assigned and cross-faded*, not that it sounds
-  right, the same split rank 12 draws for a shadow.
+  right, the same split rank 11 draws for a shadow.
 
 ### Open calls
 
@@ -613,61 +626,16 @@ Everything else in the castle is silent.
 
 ---
 
-## Lore: what is still open
-
-**Rank 8. Size ¼.** `WISHLIST.md` theme 3, the part that did not ship with
-#551 to #559. Everything else in that theme is done.
-
-### Scope
-
-- **A `sermons` and a `songs` pool in `data/lore.json` or `data/npcs.json`**
-  (matching the existing `chatter` pool's shape: keyed, with a lore id where
-  one applies), each played once at its bell — the chaplain's sermon at
-  Vespers, a song in the hall at Sext — as the floating-caption overlay
-  `chatter` already uses, not a new UI.
-- **`src/lore.js`** validates both pools the way it validates `chatter`: no
-  dangling lore id, no contradiction with a `history`/`person` fact.
-
-### Acceptance
-
-- `test/lore.mjs` gains two checks, one per pool, on the existing pattern:
-  every id resolves, every source resolves. Break: name a lore id the file
-  does not have; the check should say which pool and which id.
-- The line plays once per bell reached, verified the way `mystery.mjs` already
-  verifies a one-shot line: a DOM assertion for what just happened (#39).
-
-### Open calls
-
-- **A `since` field and a rumour about day one** is named in the theme but
-  needs the second day to have state to be "about," which rank 4's increment
-  3 is still building. Recommend leaving it out of this row entirely and
-  filing it as a dependency of rank 4 instead of carrying it here — a `since`
-  field with nothing yet to date is a field nobody can test.
-
-### Dependencies
-
-- Independent of every other new row; can ship on its own before or after
-  rank 4 closes, except for the `since` half, which cannot ship before it.
-
-### Constraints
-
-- #556 (the timeline every `history` and `person` fact is held to; a sermon
-  or song that dates an event has to fit it).
-- #559 (the lore names no object of the mystery; a sermon must not name the
-  lead, the passes, the cloak, the lantern or the summons).
-
----
-
 ## Side quests
 
-**Rank 9. Size 2+. The first increment shipped on 2026-09-17** (#576 to
-#581). `WISHLIST.md` theme 4. The format, the set validator and the cook's
-missing knife are in: `data/quests/` is the directory, `data/quests/index.json`
-names its files because a browser cannot read a directory,
-`validateQuestSet` in `src/quest-graph.js` is the rail, and
+**Rank 8. Size 2+. Two increments shipped on 2026-09-17** (#576 to #581, and
+the journal's tab at #595). `WISHLIST.md` theme 4. The format, the set
+validator and the cook's missing knife are in: `data/quests/` is the
+directory, `data/quests/index.json` names its files because a browser cannot
+read a directory, `validateQuestSet` in `src/quest-graph.js` is the rail, and
 `src/quest-manager.js` runs every file in the set off the same event stream
 the frame hears without a second class. The save is version 4 for `quests`.
-What is below is what is left.
+The journal's fourth tab is in too. What is below is what is left.
 
 ### What shipped, in one paragraph
 
@@ -684,14 +652,20 @@ event the game actually emits. The cook's knife turns on
 and `test/quest.mjs` proves it by playing the same four presses of E with and
 without the quest and diffing the journals.
 
+### What the tab shipped as (#595)
+
+"Asked of you", the journal's fourth tab, beside clues, documents read (#551)
+and the map (#589). `QuestManager.questJournal()` is what `_openJournal`
+hands the UI: every quest whose stage is no longer its `start`, with the
+objective of the stage it is at now, and null rather than an empty list when
+there are none, so the tab is not offered at all in a castle where nobody has
+asked for anything. `openQuests()` grew a `started` flag for it and is
+otherwise what #576 left. A terminal quest goes under a Done heading with its
+title struck through rather than off the page. The Present picker inside a
+conversation is still clues alone.
+
 ### Scope, next increment
 
-- **The journal's open-quests tab.** `QuestManager.openQuests()` already
-  returns `{id, title, objective, done}` per quest and nothing reads it; the
-  toast on a move (#579) is all a player gets. `src/ui.js`'s journal has two
-  tabs (clues, and documents read since #551) and this is the third. It is
-  the first thing the second quest needs, because two toasts a player missed
-  are two threads they cannot find again.
 - **The next quests, four per ward per pass** (#550, question 7's own
   recommendation, unchanged). `WISHLIST.md` names the dozen. Several of them
   — the apprentice's tool from the smith who is in gaol, the porter's boy,
@@ -708,12 +682,11 @@ without the quest and diffing the journals.
 
 ### Acceptance, next increment
 
-- The open-quests tab shows every quest that has left its start stage, with
-  its current objective, and drops one that has reached a terminal stage into
-  a done list rather than off the page. `test/quest.mjs` drives it through
-  the stub UI the way it drives the documents tab.
 - Every new quest file passes `validateQuestSet` as it ships and each new
   rule, if any, is broken on purpose once (#34).
+- A new quest shows up on the tab the moment it leaves its start stage, with
+  no change to `src/ui.js`: the tab reads the graph, so a quest file is still
+  the whole of a quest.
 - The journal assertion is a DOM one and the save assertion is not: what a
   reload has to survive is the stage, which version 4 already carries (#39).
 
@@ -723,15 +696,17 @@ without the quest and diffing the journals.
   `_dispatchSide` returns early on day two (#576's code, `mystery.js`'s
   `_dayLines` would cover any state it set anyway). Recommend leaving it
   there: a second day with its own threads is rank 4's row and not this one's.
-- **Where a quest's objective lives when the tab exists.** Recommend the tab
-  and the toast both, not the tracker: the tracker is one line and it is the
-  frame's (#393, #579).
+- **Where a quest's objective lives when the tab exists.** Recommended the tab
+  and the toast both, not the tracker, and that is what shipped (#595): the
+  tracker is one line and it is the frame's (#393, #579).
 
 ### Dependencies
 
-- Rank 6's populace and rank 8's lore each unlock quests in
-  `WISHLIST.md`'s dozen that this increment could not reach; neither blocks
-  the tab or the quests that need nobody new.
+- Rank 6's populace unlocks quests in `WISHLIST.md`'s dozen that this
+  increment could not reach; it does not block the quests that need nobody
+  new. The lore row that would have unlocked the rest has closed (#592 to
+  #596), and what it left for a quest to lean on is `data/lore.json`'s
+  sixty-one facts, thirteen documents and four performed pieces.
 
 ### Constraints
 
@@ -748,7 +723,7 @@ without the quest and diffing the journals.
 
 ## A castle to get lost in
 
-**Rank 10. Size 2+. The first increment as this section first specced it was
+**Rank 9. Size 2+. The first increment as this section first specced it was
 already built, and the row's premise was corrected on 2026-09-17** (#582).
 **The map shipped the same day** (#588 to #591). `WISHLIST.md` theme 5.
 
@@ -817,8 +792,9 @@ because the map is the plan's list and not a second one.
 - **Whether the map is this row's or the journal's.** Recommend this row's:
   it is the answer to "a castle to get lost in" and it is worth nothing to a
   castle with six rooms.
-- **The nineteen empty rooms are not this row's to fill** — they are rank 8's
-  documents and rank 6's routines, and rank 13's placement editor (shipped,
+- **The nineteen empty rooms are not this row's to fill** — they are rank 6's
+  routines and whatever documents a later lore row adds, and rank 12's
+  placement editor (shipped,
   #583) is what makes filling them cost a key press rather than an afternoon.
   Recommend those three run before this row's town half, whatever the ranks
   say, because area on top of nineteen empty rooms is the bet `PLAN.md`
@@ -843,7 +819,7 @@ because the map is the plan's list and not a second one.
 
 ## Bodies
 
-**Rank 11. Size 1.** `WISHLIST.md` theme 6. The plan bet the project on tints
+**Rank 10. Size 1.** `WISHLIST.md` theme 6. The plan bet the project on tints
 (#419); this row is the second body-sourcing question after rank 1's, at the
 scale of a child, a dog, a chicken and a garrison rather than one woman.
 
@@ -905,7 +881,7 @@ scale of a child, a dog, a chicken and a garrison rather than one woman.
 
 ## Feel
 
-**Rank 12. Size 2+.** `WISHLIST.md` theme 7. Every item in it is "a thing a
+**Rank 11. Size 2+.** `WISHLIST.md` theme 7. Every item in it is "a thing a
 GPU decides," gated on `npm run play` the same way **The hall covering**
 already is.
 
@@ -962,7 +938,7 @@ already is.
 
 ## The tooling
 
-**Rank 13. Size 2+. The first increment shipped on 2026-09-17** (#583 to
+**Rank 12. Size 2+. The first increment shipped on 2026-09-17** (#583 to
 #587). `WISHLIST.md`'s own closing section: none of the seven themes above is
 a code problem, they are content problems at a scale the current tooling
 cannot carry, and this row is the three tools it names. The placement editor
@@ -985,7 +961,7 @@ for the module's sentinel rather than trusting either (#586).
 ### Scope, next increment
 
 - **The budget suite, second**, as this row's own open call already
-  recommended and for the reason it gave: ranks 6 and 11 are the two rows
+  recommended and for the reason it gave: ranks 6 and 10 are the two rows
   about to need a real answer to "how many skinned bodies can a ward carry".
   It counts skinned bodies, point lights and draw calls per ward off the plan
   and fails against a number a phone cannot carry. It is a `layout.mjs`-shaped

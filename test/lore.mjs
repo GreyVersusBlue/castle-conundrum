@@ -6,16 +6,18 @@
 // browser, no build.
 //
 // WHY THIS EXISTS. data/lore.json is sixty-odd invented facts, thirteen
-// documents and a chatter pool of twenty-seven pairs, and every cross-reference
-// among them is exactly the kind of mistake that is silent on the screen: a
-// source citing a document that does not cite it back opens a reading pane
+// documents, a chatter pool of twenty-seven pairs and four performed pieces
+// (two sermons and two songs, #592), and every cross-reference among them is
+// exactly the kind of mistake that is silent on the screen: a source citing a
+// document that does not cite it back opens a reading pane
 // with no journal entry to show for it, a contradiction between two `history`
 // facts is the canon disagreeing with itself in the one kind it promised not
 // to, and a document whose slab in documents.json is not the slab
 // scene-config.json builds is a prompt on one spot and a room check on
-// another (#557). src/lore.js is the net; this suite proves it actually
-// catches what it claims to (#34), the same discipline test/save.mjs and
-// test/mystery.mjs use.
+// another (#557), and a sermon said in a room its speaker is never in at that
+// bell is a caption in an empty chapel. src/lore.js is the net; this suite
+// proves it actually catches what it claims to (#34), the same discipline
+// test/save.mjs and test/mystery.mjs use.
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -32,10 +34,11 @@ const { documents } = read('data/documents.json');
 const npcsFile = read('data/npcs.json');
 const npcs = npcsFile.cast;
 const chatter = npcsFile.chatter;
+const performances = npcsFile.performances;
 const mystery = read('data/mystery.json');
 const { builtProps } = read('data/scene-config.json');
 
-const args = { documents, npcs, chatter, mystery, builtProps };
+const args = { documents, npcs, chatter, performances, mystery, builtProps };
 
 let failures = 0;
 const fail = (msg) => { console.log(`  FAIL  ${msg}`); failures++; };
@@ -54,8 +57,10 @@ console.log('the canon, as shipped');
   check(documents.length === 13, `thirteen documents (${documents.length})`, documents.map((d) => d.id).join(', '));
   const pairs = Object.values(chatter).flatMap((w) => Object.values(w)).flat();
   check(pairs.length === 27, `twenty-seven chatter pairs (${pairs.length})`);
+  const pieces = Object.values(performances).flat();
+  check(pieces.length === 4, `four performed pieces (${pieces.length})`, pieces.map((e) => e.id).join(', '));
   const told = new Set(lore.facts.flatMap((f) => f.sources.map((s) => s.kind)));
-  check(['document', 'npc', 'chatter', 'epilogue'].every((k) => told.has(k)), 'all four source kinds are used, the epilogue included', [...told].join(', '));
+  check(['document', 'npc', 'chatter', 'epilogue', 'performance'].every((k) => told.has(k)), 'all five source kinds are used, the epilogue and the performances included', [...told].join(', '));
   const kinds = new Set(lore.facts.map((f) => f.kind));
   check(['history', 'person', 'place', 'belief', 'rumour'].every((k) => kinds.has(k)), 'all five kinds are used', [...kinds].join(', '));
 }
@@ -85,6 +90,11 @@ console.log('unknown source');
   const bad = clone(lore);
   bad.facts[0].sources = [{ kind: 'chatter', id: 'no-such-pair' }];
   check(names(validateLore(bad, args), 'no chatter pair "no-such-pair"'), 'a source naming a chatter pair that does not exist');
+}
+{
+  const bad = clone(lore);
+  bad.facts[0].sources = [{ kind: 'performance', id: 'no-such-sermon' }];
+  check(names(validateLore(bad, args), 'no performance "no-such-sermon"'), 'a source naming a performance that does not exist');
 }
 {
   const bad = clone(lore);
@@ -204,6 +214,85 @@ console.log('chatter: the existing twelve only, and their own ward');
   const badChatter = clone(chatter);
   badChatter.outer.prime.push({ ...clone(badChatter.outer.prime[0]), id: badChatter.outer.prime[0].id });
   check(names(validateLore(lore, { ...args, chatter: badChatter }), 'id used twice'), 'two chatter pairs sharing one id');
+}
+
+/* --------------------------------------------- 9: the sermons and the songs ---
+ * The two set pieces (#592). What makes a performance harder to get wrong than
+ * a chatter pair is that it names a room and a bell, and data/mystery.json
+ * already says who is standing where at every one of them, so every break below
+ * is a fact about the castle and not a spelling. */
+console.log('the sermons and the songs: said where the speaker actually stands');
+{
+  check(validateLore(lore, args).length === 0, 'as shipped, all four pieces are said by somebody who is really in that room at that bell');
+  const pools = Object.keys(performances);
+  check(same(pools.sort(), ['sermons', 'songs']), 'two pools, sermons and songs', pools.join(', '));
+  const day2 = Object.values(performances).flat().filter((e) => e.watch === mystery.day2.watch);
+  check(day2.length === 1 && day2[0].npc === 'chaplain', `one piece is said on the morning after (${day2.map((e) => e.id).join(', ')})`);
+}
+{
+  const bad = clone(performances);
+  bad.songs.find((e) => e.id === 'song-vespers-hall').room = 'kitchen';
+  check(names(validateLore(lore, { ...args, performances: bad }), 'sentry stands in great-hall at vespers, not in kitchen'), 'a song moved to a room its singer is not in');
+}
+{
+  // The check is about the station and not about the bell: the chaplain is in
+  // his chapel at all four, so the sermon may move to any of them, and the cook
+  // may not say it at any of them.
+  const moved = clone(performances);
+  moved.sermons.find((e) => e.id === 'sermon-vespers-osyth').watch = 'prime';
+  check(validateLore(lore, { ...args, performances: moved }).length === 0, 'the sermon moved to Prime still validates: the chaplain is in the chapel at every bell', JSON.stringify(validateLore(lore, { ...args, performances: moved })));
+  const wrongMouth = clone(moved);
+  wrongMouth.sermons.find((e) => e.id === 'sermon-vespers-osyth').npc = 'cook';
+  check(names(validateLore(lore, { ...args, performances: wrongMouth }), 'cook stands in kitchen at prime, not in chapel'), 'and put in the mouth of somebody who is somewhere else at that bell, it fails');
+}
+{
+  const bad = clone(performances);
+  bad.sermons.find((e) => e.id === 'sermon-lauds-cadeyrn').npc = 'prisoner';
+  bad.sermons.find((e) => e.id === 'sermon-lauds-cadeyrn').room = 'cell';
+  check(names(validateLore(lore, { ...args, performances: bad }), 'prisoner is gone from the castle at lauds in at least one ending'), 'a morning-after piece given to a man the player may have hanged');
+}
+{
+  const bad = clone(performances);
+  bad.sermons.find((e) => e.id === 'sermon-vespers-osyth').npc = 'inspector';
+  check(names(validateLore(lore, { ...args, performances: bad }), 'arrives on day 2 and is not one of the existing twelve'), 'the thirteenth cannot perform at one of the four bells either: he has not dismounted yet');
+}
+{
+  const bad = clone(performances);
+  bad.songs.push({ ...clone(bad.sermons[0]), id: 'a-second-sermon', cites: [] });
+  check(names(validateLore(lore, { ...args, performances: bad }), 'already has chapel at vespers, and one room at one bell holds one piece'), 'two pieces wanting the same room at the same bell');
+}
+{
+  const bad = clone(performances);
+  bad.songs.find((e) => e.id === 'song-sext-kitchen').room = 'nowhere-at-all';
+  check(names(validateLore(lore, { ...args, performances: bad }), 'in no room ("nowhere-at-all")'), 'a room id that does not exist');
+  const late = clone(performances);
+  late.songs.find((e) => e.id === 'song-sext-kitchen').watch = 'compline';
+  check(names(validateLore(lore, { ...args, performances: late }), 'is not one of the four bells nor "lauds"'), 'a bell this castle does not ring');
+}
+{
+  const bad = clone(performances);
+  bad.songs.find((e) => e.id === 'song-sext-kitchen').lines = ['one line only'];
+  check(names(validateLore(lore, { ...args, performances: bad }), 'fewer than two non-empty lines'), 'a piece with one line');
+  const empty = clone(performances);
+  empty.sermons.find((e) => e.id === 'sermon-vespers-osyth').lines[2] = '   ';
+  check(names(validateLore(lore, { ...args, performances: empty }), 'fewer than two non-empty lines'), 'and a piece with a blank line in the middle of it');
+}
+{
+  // Both directions, the way a document and a chatter pair are already held.
+  const bad = clone(performances);
+  bad.songs.find((e) => e.id === 'song-vespers-hall').cites = bad.songs.find((e) => e.id === 'song-vespers-hall').cites.filter((id) => id !== 'march-song');
+  check(names(validateLore(lore, { ...args, performances: bad }), "names performance song-vespers-hall as a source, but that piece's own `cites` does not name march-song back"), 'a piece that stops citing what a fact says it tells');
+  const dangling = clone(performances);
+  dangling.sermons.find((e) => e.id === 'sermon-lauds-cadeyrn').cites.push('no-such-fact');
+  check(names(validateLore(lore, { ...args, performances: dangling }), 'performance sermon-lauds-cadeyrn: cites no-such-fact, which is not a fact (dangling id)'), 'a piece citing a fact that does not exist');
+  const oneWay = clone(performances);
+  oneWay.songs.find((e) => e.id === 'song-sext-kitchen').cites.push('the-well');
+  check(names(validateLore(lore, { ...args, performances: oneWay }), "performance song-sext-kitchen: cites the-well, but that fact's own sources do not name song-sext-kitchen back"), 'and a piece citing a fact that does not name it back');
+}
+{
+  const bad = clone(performances);
+  bad.ballads = [clone(bad.songs[0])];
+  check(names(validateLore(lore, { ...args, performances: bad }), 'pool "ballads" is not sermons or songs'), 'a third pool nothing plays');
 }
 
 console.log(failures ? `\n${failures} failure(s)` : '\nall good');

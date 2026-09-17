@@ -178,6 +178,42 @@ button:hover { background: #e6bb63; }
   pointer-events: none;
 }
 
+/* The open-quests tab (#595): a finished errand stays on the page, under its
+ * own heading and struck through, rather than vanishing the moment it is done. */
+.journal-done-head {
+  color: var(--accent-dim);
+  font-size: 0.85em; font-weight: normal;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  margin: 1.2em 0 0.5em;
+}
+.journal-row.quest-done b { text-decoration: line-through; }
+.journal-row.quest-done { opacity: 0.68; }
+
+/* ---------- The caption band: a sermon, a song (#592) ----------
+ * Top centre, clear of the tracker (top right), the toast (58%), the interact
+ * prompt (bottom 22%) and the dialogue box (bottom 32px), because a sermon runs
+ * for the better part of a minute and every one of those can happen over it.
+ * No border and no panel: this is a voice in the room, not a thing on the HUD. */
+#caption {
+  position: fixed;
+  top: 13%; left: 50%;
+  transform: translateX(-50%);
+  width: min(620px, 88vw);
+  text-align: center;
+  color: var(--parchment);
+  text-shadow: 0 1px 4px #000, 0 0 12px #000;
+  z-index: 15;
+  pointer-events: none;
+}
+#caption-name {
+  color: var(--accent);
+  font-size: 0.8em;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin-bottom: 0.35em;
+}
+#caption-line { font-size: 1.05em; font-style: italic; line-height: 1.45; }
+
 /* ---------- The journal, and the same list offered as a picker ---------- */
 #dialogue-present { margin-top: 0; padding: 0.35em 1em; font-size: 0.85em; }
 #journal-list { max-height: min(52vh, 480px); overflow-y: auto; margin: 1em 0; }

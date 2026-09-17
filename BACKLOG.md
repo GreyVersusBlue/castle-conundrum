@@ -56,7 +56,7 @@ what is still open in it is in `WISHLIST.md`, theme 3.
 **The Great Hall's roof frame shipped on 2026-09-15** (#527 and #528): seven
 trusses across the hall at 8 m, and no covering over them, because nothing in
 a container that cannot render can tell which way a kit roof piece slopes or
-whether a covered hall goes dark. The covering is rank 7 below, behind the GPU
+whether a covered hall goes dark. The covering is rank 5 below, behind the GPU
 run.
 
 **The line between the two plan suites was drawn on 2026-09-15** (#529):
@@ -104,12 +104,13 @@ row laid, and the bells-on-day-two question #533 raises.
 thirty-one facts, six readable documents built as slabs in rooms the castle
 already builds, a 17-pair chatter pool for the existing twelve, and the save
 at version 3 for `read`. `WISHLIST.md`'s theme 3 is rewritten to say what
-shipped and what is still open in it (the gaol roll and the rest of the
-"documents everywhere" list, the two performed set pieces, facts that
-change).
+shipped and what is still open in it. Of that list the gaol roll shipped with
+rank 4's increment 3 and the two performed set pieces with #592 to #596; what
+is left of the theme is the rest of the "documents everywhere" list and a fact
+that changes, which is rank 4's now.
 
 **The wishlist came up whole on 2026-09-17** (#560 to #567): all seven of
-`WISHLIST.md`'s themes and its tooling section are ranks 6 to 13 below, and
+`WISHLIST.md`'s themes and its tooling section came in as ranks 6 to 13, and
 `WISHLIST.md` is rewritten to point at them rather than describe them twice.
 Devon asked for this directly rather than waiting on rank 5 to close, which is
 question 10's answer overtaken by the man who gave it; the order between the
@@ -132,16 +133,16 @@ is a directory of one graph per file, `validateQuestSet` in `src/quest-graph.js`
 is the rail that keeps them out of the mystery's clue graph, `quest-manager.js`
 runs them off the same event stream the frame hears without a second class, and
 the cook's missing knife is the first of them. The save is version 4 for
-`quests`; the key did not move (#36). **Rank 9 is still open**: one quest is
-not a dozen, the journal has no open-quests tab, and reputation by ward waits
-on enough quests to make a moved counter visible.
+`quests`; the key did not move (#36). **Rank 8 is still open**: one quest is
+not a dozen, and reputation by ward waits on enough quests to make a moved
+counter visible. The journal's open-quests tab shipped on 2026-09-17 (#595).
 
 **The placement editor shipped on 2026-09-17** (#583 to #587), and it came out
-of a finding about the row above it. **Rank 10's first increment was already
+of a finding about the row above it. **Rank 9's first increment was already
 built** (#582): all eight drums carry a room at levels 0, 1 and 2, four carry
 one at level 3, and the castle has 40 rooms. What it has instead is **nineteen
 empty ones** — seven tower first floors, seven top rooms, four roofs and the
-larder hold no evidence, no station, no document and no prop. So rank 10's
+larder hold no evidence, no station, no document and no prop. So rank 9's
 volume step is closed as done rather than built twice, and the tool that makes
 filling a room cost a key press was taken up instead: `?edit=1` on the dev
 server writes a prop's tile straight into `data/scene-config.json`.
@@ -154,24 +155,41 @@ stands in it, withholds the name of every room not yet stood in, and rings
 the one the HUD names. The set is `visited` on a version-5 save; the key did
 not move (#36). The HUD's room line is now the one thing that enters a room,
 the cross-wall walk's clue included, and `test/map.mjs` is the twelfth
-suite. **Rank 10 is still open**: the town half waits on rank 4's yard.
+suite. **Rank 9 is still open**: the town half waits on rank 4's yard.
 
-**13 ranked items. Nothing is claimed.** Every one of ranks 1, 2, 3 and 5
+**The lore's two set pieces shipped on 2026-09-17, and with them the whole
+of that row** (#592 to #596): `data/npcs.json` carries a `performances` block
+of two sermons and two songs, one person in one room at one bell, played as a
+caption band over the castle to whoever is standing there to hear it. The
+chapel at Vespers is the office said to the one boy who came; the Great Hall
+at Vespers is the sentry on the bench end with a verse the high table has
+never been told the words of; the kitchen at Sext is Marged counting the forty
+mouths she feeds off one oven; and the chapel at Lauds is a filled grave on
+the morning after. `src/lore.js` refuses a piece whose speaker is not really
+in that room at that bell. **Rank 8 is closed and gone from this file**: the
+one thing left in it, a `since` field for a fact that changes, went to rank 4's
+spec as its own open call recommended, and every row below it moved up one.
+**Rank 9's journal tab shipped in the same PR**: "Asked of you", the fourth
+tab, carrying every side quest the player has met and keeping the finished ones
+under a Done heading rather than dropping them off the page.
+
+**12 ranked items. Nothing is claimed.** Every one of ranks 1, 2, 3 and 5
 needs a machine this one is not: ranks 2, 3 and 5 a GPU (#518), rank 1 a
 network that reaches quaternius.com (#568), which #541's did and this one's
 did not. **Rank 4 no longer has a thread a container can start on its own**:
 the gaol roll was it and it shipped (#571 to #575), and what is left of
 increment 3 is a yard to build in the town and a design call to make about
-bells on day two. Of ranks 6 to 13, the ones whose first increment is data
-and validators rather than a render — 6, 8, 9, 10 and 13 — are the ones a
-container can start; 7, 11 and 12 all want either a recorded sound, a body on
-disk, or a GPU before their first increment closes. **Ranks 9 and 13 both shipped a
-first increment on 2026-09-17** and both next increments are a container's:
-rank 9's journal tab and next quests, rank 13's budget suite. **Rank 10's map
-shipped the same day** (#588 to #591), and what is left of that row is the
-town, behind rank 4's yard. Of them all, 6 is the one
-that reads `data/npcs.json`'s `cast`, which is what ranks 1 and 11 are both
-for, so a session running beside one of those is better off on 8, 9, 10 or 13.
+bells on day two. Of ranks 6 to 12, the ones whose next increment is data and
+validators rather than a render (6, 8 and 12) are the ones a container can
+start; 7, 10 and 11 all want either a recorded sound, a body on disk, or a GPU
+before their first increment closes, and 9 has nothing left in it that does
+not wait on rank 4's yard. **Ranks 8 and 12 both shipped a first increment on
+2026-09-17** and both next increments are a container's: rank 8's next quests,
+rank 12's budget suite. **Rank 9's map shipped the same day** (#588 to #591),
+and what is left of that row is the town, behind rank 4's yard. Of them all, 6
+is the one that reads `data/npcs.json`'s `cast`, which is what ranks 1 and 10
+are both for, so a session running beside one of those is better off on 8 or
+12.
 
 One thing is true of the whole list and worth saying once. **Nothing here has
 been seen on a GPU since Phase 5.** `npm run play` walks the whole intended day
@@ -228,12 +246,11 @@ your decisions and this file's header, ranks and `Claimed` column are updated
 | 5 | The hall's covering, and the two windows under it | ¼ | Sonnet 5 |  | [The hall covering](SPECS.md#the-hall-covering) |
 | 6 | Life: a populace, and the first ten bodies of it | 2+ | Opus 5 |  | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: ambient beds, event sounds, a bell that is a soundscape | 1 | Fable 5.1 |  | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
-| 8 | Lore: the sermon, the song, and facts that change | ¼ | Sonnet 5 |  | [Lore: what is still open](SPECS.md#lore-what-is-still-open) |
-| 9 | Side quests: the next eleven, the journal tab, and reputation by ward | 2+ | Opus 5 |  | [Side quests](SPECS.md#side-quests) |
-| 10 | A castle to get lost in: the map, then the town, the rock and river | 2+ | Opus 5 |  | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
-| 11 | Bodies: a shared low-poly rig for the fifty | 1 | Fable 5.1 |  | [Bodies](SPECS.md#bodies) |
-| 12 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 |  | [Feel](SPECS.md#feel) |
-| 13 | The tooling: the budget suite, move-and-delete, a dialogue format | 2+ | Opus 5 |  | [The tooling](SPECS.md#the-tooling) |
+| 8 | Side quests: the next eleven, and reputation by ward | 2+ | Opus 5 |  | [Side quests](SPECS.md#side-quests) |
+| 9 | A castle to get lost in: the town, the rock and river | 2+ | Opus 5 |  | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
+| 10 | Bodies: a shared low-poly rig for the fifty | 1 | Fable 5.1 |  | [Bodies](SPECS.md#bodies) |
+| 11 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 |  | [Feel](SPECS.md#feel) |
+| 12 | The tooling: the budget suite, move-and-delete, a dialogue format | 2+ | Opus 5 |  | [The tooling](SPECS.md#the-tooling) |
 
 ## A fourth body
 
@@ -290,8 +307,11 @@ verdict.
 are in Thomas Wykes's yard, which nobody has placed on the ground the town
 side laid (#541 to #546). A schedule with more than one watch still has to
 argue with #533 rather than work around it. Both of them have somewhere to
-put "the player found this out" now, which neither had before. `SPECS.md`
-specs what is left.
+put "the player found this out" now, which neither had before. **And a third
+thread arrived from the lore row when it closed** (#596): a `since` field on a
+fact in `data/lore.json`, so that a fact can change with what the player did
+on day one, which needs second-day state to be about and is this row's
+whenever it takes a fourth increment. `SPECS.md` specs what is left.
 
 ## The hall covering
 
@@ -329,21 +349,10 @@ audio is admitted since #548 reversed #519's synthesis-only half, named by
 cross-fade, with synthesis standing in wherever a recording has not been
 found yet.
 
-## Lore: what is still open
-
-**Rank 8.** The bulk of the lore row shipped (#551 to #559): a 61-fact canon,
-thirteen documents, a chatter pool. Two pieces named in `WISHLIST.md` theme 3
-did not: the chaplain's sermon at Vespers and a song in the hall at Sext,
-each its own pool so a second day does not repeat the first, and a `since`
-field for a fact that changes with what the player did on day one. The second
-piece wants the second-day machinery **A second day** (rank 4) is still
-building and cannot start before it; the first does not, and is the whole of
-this row's first increment.
-
 ## Side quests
 
-**Rank 9, and a 2+. The first increment shipped on 2026-09-17** (#576 to
-#581): the format, the set validator and the cook's missing knife.
+**Rank 8, and a 2+. Two increments shipped on 2026-09-17** (#576 to #581,
+#595): the format, the set validator and the cook's missing knife.
 `data/quests/` holds one `QuestGraph` per file with two fields the frame does
 not need, `id` and `npc`; `data/quests/index.json` names the files because a
 browser cannot read a directory, and `test/quest.mjs` holds that list to the
@@ -355,16 +364,20 @@ game emits. The cook's knife turns on two clues the mystery has owned since
 Phase 3 and grants neither, which `test/quest.mjs` proves by playing the same
 four presses of E with and without the quest and diffing the journals.
 
-**What is left.** The journal's open-quests tab, which
-`QuestManager.openQuests()` already has the data for and nothing reads; the
-next eleven quests of `WISHLIST.md`'s dozen, four per ward per pass, several
-of which want rank 6's populace first; and reputation by ward, still two
-save-carried counters and still deferred until a moved counter would be
-visible. `SPECS.md` specs the next increment.
+**The journal's tab shipped second** (#595): "Asked of you", the fourth tab,
+showing every quest that has left its start stage with the objective it is at
+now, and a finished one under a Done heading rather than off the page. A quest
+nobody has met is not on it, and a castle where none has been met is not
+offered the tab at all.
+
+**What is left.** The next eleven quests of `WISHLIST.md`'s dozen, four per
+ward per pass, several of which want rank 6's populace first; and reputation
+by ward, still two save-carried counters and still deferred until a moved
+counter would be visible. `SPECS.md` specs the next increment.
 
 ## A castle to get lost in
 
-**Rank 10, and a 2+. The volume step was found already built on 2026-09-17**
+**Rank 9, and a 2+. The volume step was found already built on 2026-09-17**
 (#582) and the row's premise is rewritten against the castle that exists. All
 eight drums carry a room at levels 0, 1 and 2, four carry one at level 3, and
 `test/plan-vs-scene.mjs` has been printing the count on every run since #526:
@@ -382,12 +395,12 @@ over the 40 rooms the plan computes and the HUD names (#515), with a
 Every room is drawn from the first; a room gives up its name and its fill
 the first time the player stands in it. **What is next is area.** The town
 half still waits on rank 4's Thomas Wykes yard proving the ground west of the
-barbican can carry a building. Filling the nineteen is ranks 8 and 6, made
-cheap by rank 13's editor.
+barbican can carry a building. Filling the nineteen is rank 6's routines and
+whatever documents a later lore row adds, made cheap by rank 12's editor.
 
 ## Bodies
 
-**Rank 11.** Every row above this one that needs a new body is waiting on
+**Rank 10.** Every row above this one that needs a new body is waiting on
 this one. Low-poly, one shared rig, CC0, for now (#550, question 5): a body a
 session can make or edit as a drop-in, the way **A fourth body** (rank 1)
 already had to answer once for a woman's body and this row answers at the
@@ -400,7 +413,7 @@ catch.
 
 ## Feel
 
-**Rank 12.** Everything in this row is gated on `npm run play` on a real
+**Rank 11.** Everything in this row is gated on `npm run play` on a real
 machine (#53), the same gate **The hall covering** already sits behind, and
 most of it is a day's work each once someone can see it: weather and sky, fire
 and a shadow budget, examine, doors that open, wear, sitting. The first
@@ -411,7 +424,7 @@ until **The GPU run** (ranks 2 and 3) has happened.
 
 ## The tooling
 
-**Rank 13, and a 2+. The placement editor shipped on 2026-09-17** (#583 to
+**Rank 12, and a 2+. The placement editor shipped on 2026-09-17** (#583 to
 #587). `?edit=1` on the dev server mounts a panel that reads the tile under
 the player's feet as they walk and, on **P**, writes the row into
 `data/scene-config.json` — `interiorProps`, `builtProps` or `braziers`, with

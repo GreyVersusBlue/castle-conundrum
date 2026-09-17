@@ -76,6 +76,16 @@
   </div>
   <div id="toast" class="hidden"></div>
 
+  <!-- The caption band (#592, #594): a sermon or a song, said by one person
+       in one room at one bell, a line at a time, while the player stands there
+       and keeps every key they had. Not a dialogue box (nothing here waits
+       for E) and not a toast, which a clue landing would replace mid-verse.
+       The `chatter` pool in data/npcs.json is waiting for this same band. -->
+  <div id="caption" class="hidden">
+    <div id="caption-name"></div>
+    <div id="caption-line"></div>
+  </div>
+
   <!-- Dialogue -->
   <div id="dialogue-box" class="hidden">
     <div id="dialogue-name"></div>
@@ -99,9 +109,11 @@
   </div>
 
   <!-- The journal: J to read it, or Present from inside a conversation.
-       The two tabs (#551) only show cold, on J: mid-conversation, Present
-       offers clues alone and journal-title carries the "Present what?" line
-       the way it always has. -->
+       The tabs (#551, #589, #595) only show cold, on J: mid-conversation,
+       Present offers clues alone and journal-title carries the "Present what?"
+       line the way it always has. Three of the four are offered only when the
+       manager hands the UI something to put in them, so a castle with no
+       documents read and no errand met has the one list it always had. -->
   <div id="journal-overlay" class="hidden">
     <div class="panel">
       <h2 id="journal-title">What you know</h2>
@@ -109,6 +121,7 @@
         <button id="journal-tab-clues" class="journal-tab">What you know</button>
         <button id="journal-tab-read" class="journal-tab">Things read</button>
         <button id="journal-tab-map" class="journal-tab">The castle</button>
+        <button id="journal-tab-quests" class="journal-tab">Asked of you</button>
       </div>
       <div id="journal-list"></div>
       <div class="riddle-buttons">

@@ -47,7 +47,8 @@ his answers.
 ## The themes
 
 **All seven moved out of this file and into `BACKLOG.md` ranks 6 to 13 on
-2026-09-17** (#560 to #567): Devon asked for the wishlist taken up now rather
+2026-09-17** (#560 to #567; they are ranks 6 to 12 since the lore row closed
+on the same day, #596): Devon asked for the wishlist taken up now rather
 than wait on rank 5 to close, which question 10's answer below had assumed.
 The order between them, and the content inside each, both came across
 unchanged — the ranks below are the order this section already had. What
@@ -162,30 +163,43 @@ in, every one of them a `belief` or a `rumour` the game never confirms.
   **The lore names no object of the mystery** (#559): the lead, the passes,
   the cloak, the lantern and the summons are not in `data/lore.json` and are
   not to be, because the lore sits around the mystery and never inside it.
-- **Still open, and moved to `BACKLOG.md` rank 8, `SPECS.md`'s "Lore: what
-  is still open" section (#562).** The chaplain's sermon at Vespers and a
-  song in the hall at Sext, the two set pieces where lore would be performed
-  rather than read, each its own pool so a second day does not repeat the
-  first; and facts that change — a `since` field and a rumour about what the
-  player did on day one, which waits on rank 4's second-day machinery rather
-  than starting with the rest of this row.
+- **The two set pieces shipped on 2026-09-17** (#592 to #596), and with them
+  the whole of the row this theme had become. `data/npcs.json` carries a
+  `performances` block: two `sermons` and two `songs`, each one person in one
+  room at one bell, played a caption at a time to whoever is standing in the
+  room. The chaplain's sermon at Vespers is there as asked. The song is not
+  in the hall at Sext, because the schedule puts nobody in the Great Hall at
+  Sext and the new validator says so; it is in the hall at Vespers, the one
+  bell both wards eat there, and a second song went into the kitchen at Sext
+  so day one has a piece before its last bell. The fourth is the morning
+  after, in the chapel, over a grave that is filled, which is this theme's
+  "each its own pool so a second day does not repeat the first", answered by
+  the watch rather than by a second file. **Facts that change went to
+  `BACKLOG.md` rank 4** (#596), the second-day row, because a `since` field
+  needs second-day state to be about.
+- **Still open in this theme, and not yet anybody's row.** More gravestones
+  (the chapel floor is full), the mason's marks cut into stone somewhere
+  other than the dormitory, and whatever else the "documents everywhere"
+  idea is still worth. A row moves out of this file when it is taken up.
 
 ### 4. Side quests: lore with a verb
 
-**Moved to `BACKLOG.md` rank 9, `SPECS.md`'s "Side quests" section** (#563).
+**Moved to `BACKLOG.md` rank 8, `SPECS.md`'s "Side quests" section** (#563;
+rank 9 until the lore row closed).
 The quest graph (`src/quest-graph.js`, #393), the quest-is-data format, the
 first dozen by ward, the independent-of-the-mystery rule (#550, question 6),
 many at once (#550, question 7), and reputation by ward are all that row's
 now; the first increment is the format, the set validator, and the cook's
 missing knife as the first quest. **That increment shipped on 2026-09-17**
 (#576 to #581): `data/quests/`, `validateQuestSet`, and Marged's knife found
-in the bakehouse without a clue granted either way. What is left of the theme
-is the next eleven quests, the journal's open-quests tab and reputation by
-ward, and it is all in that row.
+in the bakehouse without a clue granted either way. **The journal's
+open-quests tab shipped the same day** (#595): "Asked of you", every quest the
+player has met and the objective it is at now. What is left of the theme is
+the next eleven quests and reputation by ward, and it is all in that row.
 
 ### 5. Size: a castle to get lost in
 
-**Moved to `BACKLOG.md` rank 10, `SPECS.md`'s "A castle to get lost in"
+**Moved to `BACKLOG.md` rank 9, `SPECS.md`'s "A castle to get lost in"
 section** (#564). Filling the volume, the town, the rock and the river, a
 second castle, and the map the player has to earn are all that row's now, in
 the order given above; the first increment is the volume this castle already
@@ -202,7 +216,7 @@ in. What is left of the row is the town.
 
 ### 6. Bodies: the thing every row above waits on
 
-**Moved to `BACKLOG.md` rank 11, `SPECS.md`'s "Bodies" section** (#565).
+**Moved to `BACKLOG.md` rank 10, `SPECS.md`'s "Bodies" section** (#565).
 Low-poly, one shared rig, CC0 (#550, question 5), variation without files,
 and the budget are all that row's now; the first increment is sourcing a
 child, a dog, a chicken and a garrison body at the scale rank 1 already
@@ -210,7 +224,7 @@ answered for one.
 
 ### 7. Feel: the things a GPU decides
 
-**Moved to `BACKLOG.md` rank 12, `SPECS.md`'s "Feel" section** (#566).
+**Moved to `BACKLOG.md` rank 11, `SPECS.md`'s "Feel" section** (#566).
 Weather and sky, fire, hands and a body, examine, doors that open, wear, and
 sitting are all that row's now; the first increment is the two cheapest
 presence cues named above, a shadow on the pavers and a hand that reaches
@@ -219,7 +233,7 @@ machine (#53).
 
 ## The tooling that makes the content rows possible
 
-**Moved to `BACKLOG.md` rank 13, `SPECS.md`'s "The tooling" section**
+**Moved to `BACKLOG.md` rank 12, `SPECS.md`'s "The tooling" section**
 (#567). The placement editor, the dialogue format, and the validator-plus-
 budget-suite are all that row's now; the first increment is the placement
 editor, `?edit=1` on the dev server only, never in `dist/`. **It shipped on

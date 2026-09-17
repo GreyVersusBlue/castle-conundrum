@@ -34,8 +34,10 @@
 //   3. the graph itself: dispatch from every stage on every event lands on a
 //      stage, a terminal stage ignores everything, the riddle judge escalates
 //   4. the manager, end to end, against stand-ins: the intended path to the full
-//      ending, the prisoner accepted on nothing, three refusals to a fall, and a
-//      reload at Sext that comes back with the journal intact
+//      ending, the prisoner accepted on nothing, three refusals to a fall, a
+//      reload at Sext that comes back with the journal intact, the map, the
+//      open-quests tab (#595), and the two set pieces (#592): who performs
+//      where, and what stops them
 //   5. the page: index.html's initial objective is the start stage's, and every
 //      element id src/ui.js reads is in it
 //   6. the locks and the places: every `lock:<id>` a stage listens for is a door
@@ -56,7 +58,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, '..');
 const read = (rel) => JSON.parse(fs.readFileSync(path.join(ROOT, rel), 'utf8'));
 const quest = read('data/quest.json');
-const { cast: npcDefs } = read('data/npcs.json');
+const { cast: npcDefs, performances } = read('data/npcs.json');
 const riddle = read('data/riddle.json');
 const scene = read('data/scene-config.json');
 const mystery = read('data/mystery.json');
@@ -345,16 +347,20 @@ console.log('the manager against stand-ins');
 /** A UI stand-in. The `_` helpers are the player's hand, not part of the API. */
 function stubUI() {
   return {
-    log: [], toasts: [], objective: null, watch: null,
+    log: [], toasts: [], objective: null, watch: null, captions: [], captionName: null, captionLine: null,
     dialogue: null, journal: null, accusation: null, note: null, epilogue: null, riddleOpen: false, feedback: [],
     setObjective(t) { this.objective = t; this.log.push(`objective:${t}`); },
     setWatch(t) { this.watch = t; },
     toast(t) { this.toasts.push(t); this.log.push(`toast:${t}`); },
+    // The caption band (#592). `captions` is every line the band has shown, in
+    // order; `captionLine` is what is on it now, or null when it is dark.
+    caption(name, line) { this.captionName = name; this.captionLine = line; this.captions.push(`${name}: ${line}`); this.log.push('caption'); },
+    clearCaption() { this.captionName = null; this.captionLine = null; this.log.push('caption:clear'); },
     openDialogue(name, lines, onEnd, { onPresent = null } = {}) { this.dialogue = { name, lines, onEnd, onPresent }; this.log.push(`dialogue:${name}`); },
     openRiddle(text, onSubmit, onClose) { this.riddleOpen = true; this.riddleText = text; this._submit = onSubmit; this._close = onClose; this.log.push('riddle:open'); },
     setRiddleFeedback(t) { this.feedback.push(t); },
     closeRiddle() { this.riddleOpen = false; this.log.push('riddle:close'); this._close?.(); },
-    openJournal(entries, { empty = '', present = null, map = null } = {}) { this.journal = { entries, empty, present, map }; this.log.push(`journal:${present ? 'present' : 'read'}:${entries.length}`); },
+    openJournal(entries, { empty = '', present = null, map = null, quests = null } = {}) { this.journal = { entries, empty, present, map, quests }; this.log.push(`journal:${present ? 'present' : 'read'}:${entries.length}`); },
     closeJournal() { this.journal = null; },
     openAccusation(o) { this.accusation = o; this.note = null; this.log.push('accusation:open'); },
     setAccusationNote(t) { this.note = t; },
@@ -370,7 +376,7 @@ function stubUI() {
   };
 }
 
-function rig({ saved = null, withSideQuests = true, quests = null, cast = npcDefs, rooms = [] } = {}) {
+function rig({ saved = null, withSideQuests = true, quests = null, cast = npcDefs, rooms = [], perform = null, schedule = null } = {}) {
   const ui = stubUI();
   const npcs = cast.map((def) => ({
     id: def.id, name: def.name, def, talking: false, dialogueState: 'default',
@@ -406,6 +412,10 @@ function rig({ saved = null, withSideQuests = true, quests = null, cast = npcDef
     quest, sideQuests: quests ?? (withSideQuests ? sideQuests : []),
     mystery, riddle, npcs, ui, castle, controlsRef: controls, engine, audio,
     saved, restart: () => { restarts.n++; }, rooms,
+    // The set pieces (#592), and the clock they step on. Both default to
+    // nothing, so every beat above this line runs in a castle where nobody
+    // performs and no line of the manager's new code is reachable.
+    performances: perform, ...(schedule ? { schedule } : {}),
     onWatch: (w) => watches.push(w),
     // What main.js does with onChange, because the stage and the wrong-answer
     // count are the only two things in the save the engine does not own. Leave
@@ -1000,6 +1010,66 @@ console.log('the places that are clues');
   }
 }
 
+/* ---------------------------------- the open-quests tab, through the manager ---
+ * BACKLOG.md rank 9's next increment (#595). `openQuests()` has had the data
+ * since #576 and nothing read it: all a player got for a thread was one toast
+ * on the move, and two toasts missed are two threads they cannot find again.
+ * The tab is the journal's fourth, handed over by `_openJournal` the way the
+ * map and the documents already are, and the rule it carries is that a quest
+ * nobody has met is not on it.
+ */
+console.log('\nthe open-quests tab');
+{
+  const r = rig();
+  const { qm, ui, npc } = r;
+  const knife = sideQuests.find((q) => q.id === 'cooks-knife');
+  const tab = () => { qm.handleJournal(); const t = ui.journal?.quests; ui.closeJournal(); return t; };
+
+  check(qm.openQuests().every((q) => q.started === false), 'a fresh day has met no quest');
+  check(tab() === null, 'so the journal is handed no quest list at all, and the tab is not offered', JSON.stringify(tab()));
+
+  r.talk('cook');
+  const met = tab();
+  check(Array.isArray(met) && met.length === 1 && met[0].id === 'cooks-knife', 'one conversation with Marged puts the knife on the page', JSON.stringify(met?.map((q) => q.id)));
+  check(met[0].title === knife.title && met[0].objective === knife.stages.hunting.objective && met[0].done === false,
+    'with its title and the stage it is actually at, which is the line the toast said once', JSON.stringify(met[0]));
+
+  r.examine('knife');
+  check(tab()[0].objective === knife.stages.found.objective, 'the barrel moves what the tab says without a word from the player', tab()[0].objective);
+
+  r.talk('cook');
+  const ended = tab();
+  check(ended.length === 1 && ended[0].done === true && ended[0].objective === knife.stages.settled.objective,
+    'and a finished errand stays on the page, marked done, rather than disappearing off it', JSON.stringify(ended[0]));
+
+  // The tab is the journal's and not the Present picker's, the same rule the
+  // documents tab has carried since #551.
+  qm.handleInteract(npc('cook'));
+  ui.pressPresent();
+  check(ui.journal?.quests === null && ui.journal?.present !== null, 'and Present from inside a conversation offers clues alone: no map, no documents, no errands', JSON.stringify(Object.keys(ui.journal ?? {})));
+  ui.closeJournal();
+  ui.dialogue = null;
+}
+{
+  // A RESUMED QUEST IS A MET QUEST. The stage comes back out of the save, and
+  // the tab has to read the graph rather than a flag nothing sets on a reload.
+  const first = rig();
+  first.talk('cook');
+  const resumed = rig({ saved: { ...first.state, stage: first.qm.stage, quests: { 'cooks-knife': 'found' } } });
+  resumed.qm.handleJournal();
+  const row = resumed.ui.journal?.quests?.[0];
+  check(row?.id === 'cooks-knife' && row.objective === sideQuests.find((q) => q.id === 'cooks-knife').stages.found.objective,
+    'a reload mid-errand comes back with the errand on the page, at the stage the save had', JSON.stringify(row));
+  resumed.ui.closeJournal();
+}
+{
+  // And a castle with no side quests at all has no tab, the way a manager with
+  // no rooms has no map.
+  const r = rig({ withSideQuests: false });
+  r.qm.handleJournal();
+  check(r.ui.journal?.quests === null, 'no quests in the set, no tab', JSON.stringify(r.ui.journal?.quests));
+}
+
 /* ------------------------------------------------- the map, through the manager ---
  * The journal's third tab (#589) is `mapJournal()`: every room the nav lists,
  * marked with whether the engine's `visited` has it. Rooms come in through the
@@ -1034,6 +1104,139 @@ console.log('\nthe map, through the manager');
   const bare = rig();
   bare.qm.handleJournal();
   check(bare.ui.journal?.map === null, 'a manager given no rooms hands the UI no map, so the tab is not offered');
+}
+
+/* ------------------------------ the sermon and the song, through the manager ---
+ * The two set pieces (#592, BACKLOG.md rank 8). data/npcs.json's `performances`
+ * is four pieces; what the manager does with them is one question asked
+ * twice, the player is standing in this room at this bell and is anybody
+ * performing, once when the room changes and once when the bell does. Everything below
+ * drives the real pool, not a stand-in, so a piece moved in the data is a
+ * different answer here.
+ *
+ * THE CLOCK IS INJECTED. The band steps its lines on the manager's `_schedule`,
+ * the same hook the graph's delayed effects use, so `tick` below is a whole
+ * sermon in no time at all and the suite never waits on a timer.
+ */
+console.log('\nthe sermon and the song');
+
+/** A rig whose captions step on a queue this returns, with the real pool in it. */
+function performRig(opts = {}) {
+  const queue = [];
+  const r = rig({ ...opts, perform: performances, schedule: (fn) => queue.push(fn) });
+  // Step the band at most `n` times. Each step schedules the next, so a cap is
+  // what stops a bug here becoming a hung suite rather than a failed one.
+  r.tick = (n = 40) => { let i = 0; while (queue.length && i < n) { queue.shift()(); i++; } return i; };
+  r.pending = () => queue.length;
+  return r;
+}
+
+const pieceOf = (id) => Object.values(performances).flat().find((e) => e.id === id);
+
+{
+  // NOBODY PERFORMS UNTIL THE ROOM AND THE BELL BOTH SAY SO.
+  const r = performRig();
+  r.qm.handleEnter('chapel', 0);
+  check(r.ui.captionLine === null && r.qm.performing === null, 'the chapel at Prime is a quiet chapel: the sermon is a Vespers piece', JSON.stringify(r.ui.captionLine));
+  r.qm.handleEnter('kitchen', 0);
+  check(r.ui.captionLine === null, 'and so is the kitchen at Prime');
+  r.ring();
+  check(r.ui.captionLine === null, 'and at Terce');
+  r.ring();
+  const song = pieceOf('song-sext-kitchen');
+  check(r.engine.watch === 'sext' && r.ui.captionLine === song.lines[0], 'the Sext bell finds the player already in the kitchen, and Marged starts', JSON.stringify(r.ui.captionLine));
+  check(r.ui.captionName === 'Marged' && r.qm.performing?.id === 'song-sext-kitchen', 'the band carries her name, and the manager says which piece is running', `${r.ui.captionName} / ${r.qm.performing?.id}`);
+}
+{
+  // THE WHOLE PIECE, LINE BY LINE, AND THEN THE BAND GOES DARK.
+  const r = performRig();
+  r.ring(); r.ring();
+  r.qm.handleEnter('kitchen', 0);
+  const song = pieceOf('song-sext-kitchen');
+  check(r.qm.performing?.id === 'song-sext-kitchen', 'walking into the kitchen at Sext starts it the same way the bell did');
+  const before = r.changes.n;
+  r.tick();
+  check(same(r.ui.captions.map((c) => c.replace(/^[^:]*: /, '')), song.lines), `all ${song.lines.length} lines, in the order the file has them`, JSON.stringify(r.ui.captions.slice(-1)));
+  check(r.ui.captionLine === null && r.qm.performing === null, 'and then the band goes dark on its own');
+  check(r.ui.toasts.length === 0 && r.changes.n === before, 'a song grants nothing and writes nothing: no toast, no clue, no autosave', `${r.ui.toasts.length} toasts, ${r.changes.n - before} marks`);
+  check(r.pending() === 0, 'and it leaves no step behind it on the clock');
+}
+{
+  // ONCE. Walking out and back in at the same bell does not start it again.
+  const r = performRig();
+  r.ring(); r.ring();
+  r.qm.handleEnter('kitchen', 0);
+  r.tick();
+  const said = r.ui.captions.length;
+  r.qm.handleEnter('outer-ward', 0);
+  r.qm.handleEnter('kitchen', 0);
+  r.tick();
+  check(r.ui.captions.length === said, 'a piece is said once: back into the kitchen at the same bell and Marged has finished', `${r.ui.captions.length} vs ${said}`);
+}
+{
+  // WALKING OUT CUTS IT OFF, mid-verse, and nothing goes on being captioned.
+  const r = performRig();
+  r.ring(); r.ring();
+  r.qm.handleEnter('kitchen', 0);
+  r.tick(2);
+  check(r.ui.captions.length === 3 && r.qm.performing !== null, 'three lines in, still singing', `${r.ui.captions.length} lines`);
+  r.qm.handleEnter('bakehouse', 0);
+  check(r.ui.captionLine === null && r.qm.performing === null, 'through the door to the bakehouse and the band is dark: you cannot hear the kitchen from here');
+  const said = r.ui.captions.length;
+  r.tick();
+  check(r.ui.captions.length === said, 'and the steps still on the clock say nothing when they wake up', `${r.ui.captions.length} vs ${said}`);
+}
+{
+  // AND SO DOES THE BELL, which is the other half of the same rule.
+  const r = performRig();
+  r.ring(); r.ring();
+  r.qm.handleEnter('kitchen', 0);
+  r.tick(1);
+  r.ring();
+  check(r.engine.watch === 'vespers' && r.ui.captionLine === null && r.qm.performing === null, 'the Vespers bell over a Sext song ends the song', `${r.engine.watch} / ${JSON.stringify(r.ui.captionLine)}`);
+  const said = r.ui.captions.length;
+  r.tick();
+  check(r.ui.captions.length === said, 'and the rest of the verses are not sung over the new bell', `${r.ui.captions.length} vs ${said}`);
+}
+{
+  // THE HALL AT VESPERS AND THE CHAPEL AT VESPERS: two pieces at one bell, and
+  // which one the player gets is which room they are standing in.
+  const hall = performRig();
+  hall.ring(); hall.ring(); hall.ring();
+  hall.qm.handleEnter('great-hall', 0);
+  check(hall.ui.captionName === 'Dafydd ap Rhys' && hall.qm.performing?.id === 'song-vespers-hall', 'the hall at Vespers is the sentry on the bench end', `${hall.ui.captionName} / ${hall.qm.performing?.id}`);
+  const chapel = performRig();
+  chapel.ring(); chapel.ring(); chapel.ring();
+  chapel.qm.handleEnter('chapel', 0);
+  check(chapel.ui.captionName === 'Father Anselm' && chapel.qm.performing?.id === 'sermon-vespers-osyth', 'and the chapel at Vespers is the office, said to whoever came', `${chapel.ui.captionName} / ${chapel.qm.performing?.id}`);
+  chapel.tick();
+  check(chapel.ui.captions.join(' ').includes('Sir Walter Esturmy'), 'the sermon says from the step what the canon says he says from it', chapel.ui.captions.at(-1));
+}
+{
+  // THE MORNING AFTER IS A DIFFERENT SERMON IN THE SAME CHAPEL (#592). The
+  // shortest road to it: the Constable takes the prisoner at Terce, and the
+  // pane's button is Lauds.
+  const r = performRig();
+  r.talk('constable');
+  r.ring();
+  r.talk('constable');
+  r.ui.say('prisoner', []);
+  r.qm.handleEnter('chapel', 0);
+  check(r.qm.performing === null, 'the chapel at Terce, with the day judged, is still quiet');
+  r.ui.restart();
+  check(r.qm.day === 2 && r.engine.watch === mystery.day2.watch, 'the button opens the morning after, at Lauds', `day ${r.qm.day} / ${r.engine.watch}`);
+  check(r.qm.performing?.id === 'sermon-lauds-cadeyrn', 'and the player standing in the chapel gets the second sermon where they stand', r.qm.performing?.id);
+  r.tick();
+  check(r.ui.captions.join(' ').includes('Cadeyrn'), 'which is the works\' own saint over a grave that is filled, and not yesterday\'s', r.ui.captions.at(-1));
+  check(r.ui.captions.every((c) => c.startsWith('Father Anselm:')), 'every line of it in the chaplain\'s mouth');
+}
+{
+  // A MANAGER GIVEN NO POOL IS A CASTLE WHERE NOBODY PERFORMS, which is what
+  // every other beat in this file has been running in.
+  const r = rig();
+  r.ring(); r.ring();
+  r.qm.handleEnter('kitchen', 0);
+  check(r.qm.performing === null && r.ui.captions.length === 0, 'no pool, no band', JSON.stringify(r.ui.captions));
 }
 
 console.log(failures ? `\n${failures} failure(s)` : '\nall good');

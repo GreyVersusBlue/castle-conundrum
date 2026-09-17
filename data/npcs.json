@@ -597,5 +597,77 @@
         }
       ]
     }
+  },
+  "performancesComment": "WISHLIST.md theme 3's two set pieces, BACKLOG.md rank 8 (#592): lore performed rather than read. Two pools, `sermons` and `songs`. Each entry is one person speaking or singing alone in one room at one bell, played as the caption band src/ui.js draws (the same band the `chatter` pool above is waiting for), once, to whoever is standing in the room to hear it. A pool is flat rather than nested the way `chatter` is, because a performance names its own `room` and `watch` and a chatter pair names neither. `npc` is who performs it and has to be somebody data/mystery.json's own schedule puts in that room at that watch: the sermon is said where the chaplain is, not where a data file wishes he were. `watch` is one of the four bells, or `lauds`, the morning after (data/mystery.json's `day2.watch`), which is how a pool tells a second day something the first day did not hear. `lines` are said in order, one caption at a time; a line in brackets is what the room does rather than what the speaker says. `cites` are the lore ids the piece tells, and data/lore.json's own `sources` name the piece back by id, the way they do for a document or a chatter pair. No more than one piece may want the same room at the same bell, so nothing ever has to choose. WHERE THE SONG GOES (#593): WISHLIST.md asked for a song in the hall at Sext and the schedule puts nobody in the Great Hall at Sext, so the hall's song is sung at Vespers, which is the one bell both wards eat there (`hall-high-table`), and a second song went into the kitchen at Sext so that day one has a piece to find before its last bell.",
+  "performances": {
+    "sermons": [
+      {
+        "id": "sermon-vespers-osyth",
+        "npc": "chaplain",
+        "room": "chapel",
+        "watch": "vespers",
+        "lines": [
+          "The office of Vespers, said to whoever came, and the whole of the rest of this castle at its supper in the hall.",
+          "Sit, Ieuan. Saint Osyth heard smaller congregations than this one in her own lifetime, and hers were out of doors.",
+          "She is the King's own house's saint, and so she is this chapel's, as she is every chapel the crown has raised in the March these forty years.",
+          "Every soul under this floor is commended to her in my Latin, whatever was said over them first, and in whatever tongue it was said.",
+          "Sir Walter Esturmy lies under this floor, where he asked to be. Two and thirty years Constable, and he paid the last of the works' stone to lay the flags he is under.",
+          "His accounts balanced to the penny when the exchequer opened them after him. I have said that from this step before now and I will go on saying it.",
+          "[a pause, and the candle on the north sill gutters and holds]",
+          "Now the Magnificat, and then go and eat, boy. Your master would not thank me for keeping you off your supper.",
+          "They keep my place below the salt until I come down to it. They have kept it for one chaplain or another these forty years and they will not be giving it away tonight."
+        ],
+        "cites": ["saint-osyth", "sir-walter-esturmy"]
+      },
+      {
+        "id": "sermon-lauds-cadeyrn",
+        "npc": "chaplain",
+        "room": "chapel",
+        "watch": "lauds",
+        "lines": [
+          "The grave is filled, and the office is said, and I have yet to find that either of those is the same thing as finished.",
+          "The works were here at first light, before I was down my own stair. They said their own words over him and I let them say them.",
+          "They keep Cadeyrn, who was known on this ground before the King's masons ever were: patron of builders, and of men who work in high places.",
+          "So I say Osyth's Latin over the top of theirs, the way the walk goes over the cross-wall, and in twelve years I have not once seen the two get in each other's way.",
+          "He was a boy of nine on these scaffolds the year his father came off them. Forty years of this castle has had that one family's hands somewhere on it.",
+          "[the bell is not rung; it is too early in the day for it]",
+          "Requiem aeternam dona ei, Domine. What the sheet says of him is the sheet's business. This is mine."
+        ],
+        "cites": ["saint-cadeyrn", "march-tongue", "hywel-rise"]
+      }
+    ],
+    "songs": [
+      {
+        "id": "song-sext-kitchen",
+        "npc": "cook",
+        "room": "kitchen",
+        "watch": "sext",
+        "lines": [
+          "[Marged keeps the time on the board with the heel of her hand]",
+          "Forty to feed and the one oven lit, and eight of them sworn and no use of it;",
+          "a dozen to the works and the town at noon, and the inner ward calling for theirs too soon.",
+          "The second oven is a store, and has been a store since the building years, and I have not got the men to fire it if it were not.",
+          "Eleven years I have stood at this board. In eleven years that fire has not once gone out on me, whatever else in this castle has.",
+          "[the pot goes on, and the tune goes on under it, with no more words to it]"
+        ],
+        "cites": ["forty-mouths", "bakehouse-oven", "marged-cook"]
+      },
+      {
+        "id": "song-vespers-hall",
+        "npc": "sentry",
+        "room": "great-hall",
+        "watch": "vespers",
+        "lines": [
+          "[Dafydd is got up onto the bench end, and the benches take up the time with their cups]",
+          "Forty Michaelmas, and the roof not on, and the King that began it dead and gone;",
+          "six for the curtain and ten for the towers, and the rest of it built in the King's spare hours!",
+          "Eight men watching where eighty stood, and three months' wages made good in wood!",
+          "[the high table laughs half a beat late; the Constable's cup goes down an inch and comes back up]",
+          "There is a verse about a writ, and a verse about a river. Those two I do not sing in the King's tongue.",
+          "[he sings them anyway, and the benches have every word of them, and the high table has none]"
+        ],
+        "cites": ["march-song", "hall-high-table", "kings-debt-wages"]
+      }
+    ]
   }
 }
