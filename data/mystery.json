@@ -655,6 +655,40 @@
         "state": "wife"
       },
       "herring": true
+    },
+    {
+      "id": "gaol-dates",
+      "kind": "E",
+      "title": "The gaol roll",
+      "text": "The gaol roll, on the barrel-head in the guardroom. Madoc Gof, smith, committed eleven days since for drawing a knife in the outer ward, at the Constable's pleasure. Out to the forge at Prime and in at Vespers, eight days of the eleven, each day entered and signed. Shut in at Compline every night of it, last night among them, and no entry against last night at all.",
+      "source": {
+        "evidence": "gaol-roll"
+      }
+    },
+    {
+      "id": "prisoner-inside",
+      "kind": "D",
+      "title": "He was at the forge by day and behind the bars by night",
+      "text": "Eight days out to the forge and back is how a man in a tower watched a cart go out by daylight. The same hand wrote him in at Compline every night of the eleven. Whatever came down the Chapel Tower stair last night, Madoc was behind bars for the whole of it.",
+      "source": {
+        "premises": [
+          "gaol-dates",
+          "prisoner-story"
+        ]
+      }
+    },
+    {
+      "id": "prisoner-forge",
+      "kind": "S",
+      "title": "\"It was not stone\"",
+      "text": "Madoc: \"Eight days at the forge and I watched that cart both ways. It came in empty and it went out with the axle riding low, and I have shod that horse eleven years. It was not stone.\"",
+      "source": {
+        "npc": "prisoner",
+        "state": "forge"
+      },
+      "contradicts": [
+        "merchant-stone"
+      ]
     }
   ],
   "evidence": [
@@ -802,6 +836,21 @@
       ],
       "clue": "knife-found",
       "prop": "detail-barrel.glb"
+    },
+    {
+      "id": "gaol-roll",
+      "name": "gaol roll on the barrel-head",
+      "room": "guardroom",
+      "level": 0,
+      "watches": [
+        "prime",
+        "terce",
+        "sext",
+        "vespers"
+      ],
+      "clue": "gaol-dates",
+      "prop": "barrels.glb",
+      "comment": "The one piece of evidence in this castle that convicts nobody (#571; SPECS.md, A second day, increment 3). It is in the guardroom because the garrison keeps the gaol and the guardroom is the garrison's room: the roll lies on the barrel-head in the east half, across the room from the watch-bill, where every man of the eight reads his own duty off the wall and nobody reads the roll behind him. A built slab, like the cloak, so `prop` names what it lies on rather than what it is."
     }
   ],
   "locks": [
@@ -1238,6 +1287,15 @@
       ],
       "on": "prisoner-story",
       "to": "wife"
+    },
+    {
+      "npc": "prisoner",
+      "from": [
+        "default"
+      ],
+      "on": "prisoner-inside",
+      "to": "forge",
+      "comment": "The gaol roll read back to the man it is about (#572). Its `on` is the deduction and not the roll itself, and one of the deduction's two premises is Madoc's own default statement, so a player cannot press him out of `default` before ever having talked to him and lose `prisoner-story` (and with it the laundress's press) on the way."
     }
   ],
   "accusation": {
@@ -1711,6 +1769,49 @@
         ]
       }
     },
+    "knewComment": "WHAT THE PLAYER READ, ON THE MORNING AFTER (#573). Every line in `lines` above is keyed by what the player SAID and nothing at all by what he FOUND, and two of the sixty said the wrong thing to a player who had done the work: the inspector telling a clerk who had had the gaol roll off the barrel-head that nobody in this castle ever looked at it, and Nest saying nobody asked her whether Madoc had a wife to the one clerk who had pressed her with exactly that. A row is `{npc, clue, when?, unless?, lines, why}` and it REPLACES the line set the cascade would have resolved, for a player carrying `clue` in the journal the save brought over. It may never be the only answer: src/mystery.js resolves the `lines` cascade with no journal at all when it validates, so a `knew` row is always an extra reading of a morning that already has one. `when`/`unless` are the same vocabulary `castle` uses, and the three rows here are all on `prisoner` because that is the morning where knowing and hanging him anyway is the whole of what the player did.",
+    "knew": [
+      {
+        "npc": "inspector",
+        "clue": "gaol-dates",
+        "when": [
+          "prisoner"
+        ],
+        "why": "His shipped `prisoner` lines say that as far as he can tell nobody else in this castle has ever looked at the gaol roll. To a player holding gaol-dates that is simply false, and it is the one line on the second day that the player can prove wrong from his own journal.",
+        "lines": [
+          "Sit down. The smith was hanged before my horse was watered, which I am told was your Constable's own instruction and which I am obliged to write down.",
+          "I have the gaol roll in front of me. I had it up from the guardroom at first light and the sentry tells me you had it off the barrel-head yourself yesterday, and put it back where it lay.",
+          "Then you read what I read. Eleven days in a cell for a knife, out to the forge at Prime and in at Vespers, shut in at Compline every night of it. You knew the hour he was locked in and you brought your Constable his name anyway.",
+          "There is a woman at the laundry. Somebody ought to go down to her. It will not be me. I am gone by noon."
+        ]
+      },
+      {
+        "npc": "constable",
+        "clue": "gaol-dates",
+        "when": [
+          "prisoner"
+        ],
+        "why": "The Constable is the man who took the name and hanged on it. His shipped `prisoner` lines end on the inspector having the roll open; with the player holding the same roll, the third line stops being news and becomes a question he is about to be asked in front of the King's man.",
+        "lines": [
+          "The smith went at first light and the sheet went out before the inspector's horse was watered, which is exactly what I asked for.",
+          "Master Adam has the gaol roll open in my own hall. He has asked me who else in this castle had had it open. I told him one clerk had.",
+          "Go to him. You read it and you came to me with the smith. You may tell him why, because I have been sitting here an hour and I cannot."
+        ]
+      },
+      {
+        "npc": "laundress",
+        "clue": "nest-is-wife",
+        "when": [
+          "prisoner"
+        ],
+        "why": "Her shipped `prisoner` lines are \"Nobody asked me whether he had a wife. In a whole day of asking, nobody asked me anything at all.\" Holding nest-is-wife means the player pressed her with Madoc's own story and she told him he was her husband, so the line as shipped is the game forgetting a conversation it ran.",
+        "lines": [
+          "They hanged my husband this morning. From the Stockhouse Tower, where they hang everybody, and I walked up and stood at the foot of it and nobody sent me away.",
+          "You asked me. Yesterday, at the tubs, you asked me whose husband he was and I told you, and I have been standing here since first light working out what you did with it.",
+          "Go and tell the King's man what you told the Constable, and then tell him what I told you, and let him put the two of them side by side. That is all I want. Go on."
+        ]
+      }
+    ],
     "endingsComment": "The second day's close, in the pane the verdict was read in. `signed` is what goes to Caernarfon and `after` is what happens to this castle once the horse is out of the gate. One per outcome, the same seven keys `accusation.verdicts` uses.",
     "endings": {
       "full": {

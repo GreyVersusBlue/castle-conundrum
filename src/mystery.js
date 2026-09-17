@@ -82,18 +82,52 @@ export function dayTwoAbsent(mystery, outcome) {
   return gone;
 }
 
+/** A line set, or null: a non-empty list of non-empty strings and nothing else. */
+const linesOf = (v) => (Array.isArray(v) && v.length && v.every((l) => typeof l === 'string' && l.trim()) ? v : null);
+
 /**
- * One person's lines for one outcome: the exact ending first, then the verdict
- * class, then `default`. Two vocabularies on purpose — the laundress has one
- * thing to say when it is her own husband who hanged and another when it is
- * anybody else, and the Constable has seven — and one resolver, so nothing
- * downstream has to know which of the two a given entry was written in.
+ * One person's lines for one outcome: `day2.knew` first when the player is
+ * holding the clue a row names, then the exact ending, then the verdict class,
+ * then `default`. Two vocabularies on purpose — the laundress has one thing to
+ * say when it is her own husband who hanged and another when it is anybody
+ * else, and the Constable has seven — and one resolver, so nothing downstream
+ * has to know which of the three a given entry was written in.
+ *
+ * `held` is the player's journal (`state.clues`), or null for "do not ask".
+ * The validator calls it null on purpose: the `key`/`class`/`default` cascade
+ * has to resolve for every reachable ending on its own, so a `knew` row can
+ * only ever be an extra answer and never the only one.
  */
-export function dayTwoLines(mystery, npcId, outcome) {
+export function dayTwoLines(mystery, npcId, outcome, held = null) {
+  if (!outcome) return null;
+  const knew = dayTwoKnew(mystery, npcId, outcome, held);
+  if (knew) return knew;
   const table = mystery?.day2?.lines?.[npcId];
-  if (!table || !outcome) return null;
-  const pick = table[outcome.key] ?? table[outcome.class] ?? table.default;
-  return Array.isArray(pick) && pick.length && pick.every((l) => typeof l === 'string' && l.trim()) ? pick : null;
+  if (!table) return null;
+  return linesOf(table[outcome.key] ?? table[outcome.class] ?? table.default);
+}
+
+/**
+ * THE MORNING AFTER KNOWS WHAT THE PLAYER READ (#573). Every line on day two
+ * is keyed by what the player SAID (`outcomeOf`) and nothing at all by what he
+ * FOUND, and that made two of the shipped line sets say the wrong thing to a
+ * player who had done the work: the inspector telling a clerk who had the gaol
+ * roll off the barrel-head that nobody in the castle had ever looked at it,
+ * and Nest saying nobody asked her whether Madoc had a wife to the one clerk
+ * who had asked her exactly that. A `knew` row is `{npc, clue, when?, unless?,
+ * lines, why}` and it wins over the cascade when the clue is in the journal
+ * the save carried over. It may only ever REPLACE a line set that already
+ * resolves, never supply the only one — see `dayTwoLines`.
+ */
+export function dayTwoKnew(mystery, npcId, outcome, held) {
+  if (!held || !outcome) return null;
+  const has = held instanceof Set ? (id) => held.has(id) : (id) => asList(held).includes(id);
+  for (const row of mystery?.day2?.knew ?? []) {
+    if (!row || row.npc !== npcId || !has(row.clue) || !appliesTo(row, outcome)) continue;
+    const lines = linesOf(row.lines);
+    if (lines) return lines;
+  }
+  return null;
 }
 
 /** Which key in a line table `outcome` would read, or null when none would. */
@@ -107,11 +141,15 @@ function dayTwoLineKey(mystery, npcId, outcome) {
 /** Does one `when`/`unless` list name this ending, by its key or its class? */
 const namesOutcome = (list, outcome) => asList(list).some((k) => k === outcome.key || k === outcome.class);
 
-/** Does one day-two castle change apply to this ending? */
-function changeApplies(change, outcome) {
-  if (!change || !outcome) return false;
-  if (change.when != null && !namesOutcome(change.when, outcome)) return false;
-  if (change.unless != null && namesOutcome(change.unless, outcome)) return false;
+/**
+ * Does one `when`/`unless` row apply to this ending? The grammar is shared by
+ * `day2.castle`'s rows (#539) and `day2.knew`'s, so a row that names an ending
+ * means the same thing in both.
+ */
+function appliesTo(row, outcome) {
+  if (!row || !outcome) return false;
+  if (row.when != null && !namesOutcome(row.when, outcome)) return false;
+  if (row.unless != null && namesOutcome(row.unless, outcome)) return false;
   return true;
 }
 
@@ -122,7 +160,7 @@ function changeApplies(change, outcome) {
  * them and nothing here knows what a collider is.
  */
 export function dayTwoCastle(mystery, outcome) {
-  return (mystery?.day2?.castle ?? []).filter((c) => changeApplies(c, outcome)).map((c) => ({ piece: c.piece, set: c.set }));
+  return (mystery?.day2?.castle ?? []).filter((c) => appliesTo(c, outcome)).map((c) => ({ piece: c.piece, set: c.set }));
 }
 
 /** True for a cast member who is not in the castle until the second day. */
@@ -586,6 +624,46 @@ export function validateMystery(mystery, npcs, quest, nav = null) {
       }
     }
 
+    /* --- WHAT THE PLAYER READ, ON THE MORNING AFTER (#573). `day2.knew` rows
+     * replace a line set for a player holding a named clue. Nine ways one can
+     * be dead and none of them shows on the screen, because the cascade behind
+     * the row still answers and the morning reads exactly as it did before the
+     * row was written: a speaker not in the cast, a speaker with no station at
+     * this watch, a clue the mystery does not have, a clue nothing in the
+     * castle yields (that one is below, beside `held`), no lines, no `why`, a
+     * `when` naming no ending the accusation table can reach, a row on a
+     * morning its speaker is hanged on, and two rows on one person and one
+     * clue that both fire on one morning, where only the first is read. The
+     * tenth — a row that is the ONLY answer for some ending — cannot happen by
+     * construction, because the rail above calls `dayTwoLines` with no
+     * journal. */
+    (d2.knew ?? []).forEach((row, i) => {
+      const where = `day2.knew[${i}]`;
+      if (!row || typeof row !== 'object') { say(`${where}: not an object`); return; }
+      if (!cast.has(row.npc)) { say(`${where}: ${JSON.stringify(row.npc)} is not in the cast`); return; }
+      if (!d2.schedule?.[row.npc]) say(`${where}: ${row.npc} has no station at ${w2}, so the lines are never spoken`);
+      if (!clues.has(row.clue)) say(`${where}: ${JSON.stringify(row.clue)} is not a clue, so nothing can be holding it`);
+      if (!linesOf(row.lines)) say(`${where}: no lines, so a player who knew would be told nothing`);
+      if (typeof row.why !== 'string' || !row.why.trim()) say(`${where}: no \`why\`, so nothing says what the player knowing changes`);
+      for (const [field, list] of [['when', row.when], ['unless', row.unless]]) {
+        if (list == null) continue;
+        for (const k of asList(list)) {
+          if (!outcomes.some((o) => o.key === k || o.class === k)) say(`${where}: \`${field}\` names ${JSON.stringify(k)}, which is neither an ending nor a verdict class`);
+        }
+      }
+      const live = outcomes.filter((o) => appliesTo(row, o) && !dayTwoAbsent(mystery, o).has(row.npc));
+      if (!live.length) say(`${where}: applies to no ending ${row.npc} is alive and in the castle for, so the lines are never read`);
+    });
+    for (const o of outcomes) {
+      const seen = new Map();
+      (d2.knew ?? []).forEach((row, i) => {
+        if (!row || !cast.has(row.npc) || !appliesTo(row, o)) return;
+        const key = `${row.npc}/${row.clue}`;
+        if (seen.has(key)) say(`day2.knew: ${row.npc} has two rows on ${row.clue} that both fire after the verdict ${o.key} (rows ${seen.get(key)} and ${i}), and only the first would be read`);
+        else seen.set(key, i);
+      });
+    }
+
     /* --- The castle's own half (#539). The rows name pieces the plan builds
      * and verbs the builder implements, and the two lists are held to each
      * other here rather than discovered on the one morning the change was
@@ -607,7 +685,7 @@ export function validateMystery(mystery, npcs, quest, nav = null) {
           if (!outcomes.some((o) => o.key === k || o.class === k)) say(`${where}: \`${field}\` names ${JSON.stringify(k)}, which is neither an ending nor a verdict class`);
         }
       }
-      if (!outcomes.some((o) => changeApplies(ch, o))) say(`${where}: applies to no ending, so ${ch.piece} never changes`);
+      if (!outcomes.some((o) => appliesTo(ch, o))) say(`${where}: applies to no ending, so ${ch.piece} never changes`);
       if (nav?.plan) {
         const piece = piecesById.get(ch.piece);
         if (!piece) { say(`${where}: the castle builds no piece called ${JSON.stringify(ch.piece)}`); return; }
@@ -624,7 +702,7 @@ export function validateMystery(mystery, npcs, quest, nav = null) {
     for (const o of outcomes) {
       const seen = new Map();
       (d2.castle ?? []).forEach((ch, i) => {
-        if (!changeApplies(ch, o)) return;
+        if (!appliesTo(ch, o)) return;
         if (seen.has(ch.piece)) say(`day2.castle: ${ch.piece} is set twice after the verdict ${o.key} (rows ${seen.get(ch.piece)} and ${i}), and only the last would show`);
         else seen.set(ch.piece, i);
       });
@@ -743,6 +821,14 @@ export function validateMystery(mystery, npcs, quest, nav = null) {
   if (cast.has(who) && (accusation.convicts?.[who] ?? []).length < (needs ?? 2)) say(`accusation: truth.who ${who} has a convicts list shorter than needs (${(accusation.convicts?.[who] ?? []).length} < ${needs})`);
   if (typeof accusation.refused !== 'string' || !accusation.refused) say('accusation: no refused line');
 
+  /* A `knew` row keyed on a clue nothing can yield is a morning nobody ever
+   * sees, and it reads as written content. Here rather than in the day-two
+   * section above because `held` is the discoverability fixed point and that is
+   * computed between the two. */
+  for (const [i, row] of (mystery.day2?.knew ?? []).entries()) {
+    if (row && clues.has(row.clue) && !held(row.clue)) say(`day2.knew[${i}]: ${row.clue} is not discoverable, so nobody can ever be holding it at ${mystery.day2?.watch}`);
+  }
+
   // --- The two length rails: neither solvable at Prime nor lost by Vespers.
   if (cast.has(who) && problems.length === 0) {
     const best = shortestPath(mystery, npcs, { full: true });
@@ -852,7 +938,7 @@ export function createMystery({ mystery, npcs, state }) {
     },
 
     /** The lines somebody speaks on the morning after, or null on day one. */
-    dayTwoLinesFor(npcId) { return onDayTwo() ? dayTwoLines(mystery, npcId, outcomeOf(mystery, st)) : null; },
+    dayTwoLinesFor(npcId) { return onDayTwo() ? dayTwoLines(mystery, npcId, outcomeOf(mystery, st), st.clues) : null; },
 
     /** Null when the NPC is not in the castle or asleep; else their state, station and the statements a talk would grant. */
     available(npcId) {
@@ -1015,7 +1101,9 @@ export function createMystery({ mystery, npcs, state }) {
         const station = gone.has(npcId) ? null : (day2.schedule?.[npcId] ?? null);
         stations[npcId] = station;
         if (!station) continue;
-        const said = dayTwoLines(mystery, npcId, outcome);
+        // The journal the save carried over is the fourth argument: a `knew`
+        // row reads it and the cascade behind it does not (`dayTwoLines`).
+        const said = dayTwoLines(mystery, npcId, outcome, st.clues);
         if (said) lines[npcId] = said;
       }
       return { day: 2, watch: day2.watch, outcome, stations, lines, absent: [...gone], ends: day2.ends ?? null, castle: dayTwoCastle(mystery, outcome) };

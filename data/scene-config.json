@@ -2523,6 +2523,22 @@
         0.06
       ],
       "comment": "The watch-bill, a board on the guardroom's north side, inside the North-west Tower's 2.8 m circle and clear of its flight on the west and the barrels on the east; 1.85 m from Dafydd's Prime station (#557)."
+    },
+    {
+      "id": "gaol-roll",
+      "evidence": "gaol-roll",
+      "material": "parchment",
+      "tile": [
+        -8.6,
+        -3.8
+      ],
+      "base": 0.79,
+      "size": [
+        0.4,
+        0.12,
+        0.3
+      ],
+      "comment": "The gaol roll, lying on the barrel-head in the guardroom's east half, across the room from the watch-bill. A built slab rather than a model, the way the cloak is (#571): the kit has no roll of parchment and #506 rules out a new asset for a shape nothing on disk has. `base` 0.79 is 3 mm over the barrels' own 0.787 m top, so it rests on them rather than floating or sinking into them; the barrels are 0.947 x 0.48 m at their 1.6 scale and this 0.4 x 0.3 slab, rotated with them, sits inside that footprint with 0.03 m to spare on the short axis. Placed in Node against the plan, not by eye: clear of every stone sector, every flight and every other box in the tower, inside the 2.8 m ring, with 90 walkable cells within 1.5 m of it."
     }
   ],
   "drumsComment": "Eight drums. `interior.doors` is every opening in the ring: `base` is the opening's floor (0, 4 or 8, a level's height), `theta` its bearing in three's cylinder angle (0 is +z, south; 90 is +x, east), `arc` its width in degrees, and both have to land on the drum's own vertices. The level-0 door is the room's; the level-1 doors (three of them) lead to the chambers built over the rooms beside those towers; the level-2 doors are where the wall walk passes through the tower's top room, sixty degrees wide because a 2 m deck's cells cross the ring over about thirty degrees and the grid's sector boxes bulge past that. The Stockhouse Tower's west door at level 2 carries `bar`: it is the walk door the porter swears he bars every night, it ships open because he did not, and `bar.closed` is the one thing test/layout.mjs forces shut to prove the wards would separate if he had. `stairs` names the side of the tower the upper flight and its well go on, which is the outer side, away from where the walk crosses. `lowerFlight: false` on the two towers whose ground room is shut leaves them the upper flight only.",

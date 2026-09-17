@@ -11,6 +11,17 @@
 // and exits 1 on the first beat that doesn't happen. Screenshots land in
 // ./shots/play/ for eyeballing.
 //
+// TEN OF ELEVEN, AND WHICH ONE IS NOT WALKED (#571). The gaol roll is the
+// eleventh piece of evidence and it is not on the intended path: it lies on
+// the barrel-head in the guardroom, it convicts nobody, and the path through
+// PLAN.md's full ending never enters the North-west Tower. No beat was written
+// for it from a container that cannot render, because a beat that cannot be
+// run is a beat that cannot be trusted (#53). Whoever takes the GPU run
+// (BACKLOG.md, ranks 2 and 3) should walk into the guardroom and press E at
+// it: a 0.4 x 0.3 m parchment slab resting on the barrels, 3 mm over their
+// top, which is the first built slab in this castle whose support is another
+// prop rather than floor or stone.
+//
 // WHY THIS EXISTS: sessions 2, 3 and 4 each verified Castle Conundrum by reading
 // the code and checking the first frame, because the sandboxed browser they had
 // couldn't acquire pointer lock. Nobody had actually pressed E on the Scholar.

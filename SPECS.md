@@ -200,7 +200,7 @@ and og card from that run.
   under software rendering and passes here was never one.
 - **`BACKLOG.md`**'s header line "Nothing here has been seen on a GPU since
   Phase 5" comes out.
-- **AND FOUR THINGS THIS SESSION ADDED THAT ONLY A RENDER CAN JUDGE**, each
+- **AND FIVE THINGS LATER SESSIONS ADDED THAT ONLY A RENDER CAN JUDGE**, each
   worth a shot and a sentence in `HISTORY.md`:
   - **A tower roof from 12 m** (#523). Four of them, reached up a third flight;
     the view over the whole plan is the thing the row was for and nothing in CI
@@ -215,6 +215,15 @@ and og card from that run.
   - **A luma read off the Great Hall's floor** the way #438 read the wall, for
     the covering row's baseline: what the hall measures OPEN is the number the
     covered hall has to be compared against.
+  - **The gaol roll on the guardroom barrels** (#571). A fifth, added on
+    2026-09-17. `npm run play` does not enter the North-west Tower and no beat
+    was written for it, so this one is a detour rather than a beat: walk into
+    the guardroom, press E at the roll, and look at whether a 0.4 x 0.3 m
+    parchment slab resting 3 mm over a pair of barrels reads as a roll on a
+    barrel-head or as a box floating over one. It is the first built slab in
+    the castle whose support is another prop rather than floor or stone, and
+    `test/layout.mjs` check 1d can only say that something is under it, never
+    what it looks like.
 
 ### Acceptance, the run
 
@@ -282,13 +291,15 @@ and og card from that run.
 
 ## A second day
 
-**Rank 6. Size 2+. Increments 1 and 2 shipped on 2026-09-15 and 2026-09-16
-(#533 to #540, PRs #16 and #18).** The morning after exists and the castle
-knows about it: one watch (`lauds`), thirteen stations, sixty line sets keyed
-by what the player said, seven closing panes, a thirteenth cast entry whose
-conversation ends the game, and three rows of stone that move depending on
-which of the seven endings was reached. What follows is what shipped, then
-increment 3, which is the next one to take.
+**Rank 4. Size 2+. Increments 1 and 2 shipped on 2026-09-15 and 2026-09-16
+(#533 to #540, PRs #16 and #18), and increment 3's gaol roll on 2026-09-17
+(#571 to #575).** The morning after exists, the castle knows about it, and
+it now knows one thing about the player as well as about the verdict: one
+watch (`lauds`), thirteen stations, sixty line sets keyed by what the player
+said and three keyed by what he read, seven closing panes, a thirteenth cast
+entry whose conversation ends the game, and three rows of stone that move
+depending on which of the seven endings was reached. What follows is what
+shipped, then what is left of increment 3.
 
 ### What increment 1 shipped (PR #16, #533 to #538)
 
@@ -325,13 +336,29 @@ increment 3, which is the next one to take.
   and a leaf shut, opened and shut again; `test/play-castle.mjs` walks into the
   cell.
 
-### Increment 3: a second mystery for the morning
+### What increment 3's gaol roll shipped (#571 to #575)
 
-The next one, and it is the biggest of the three. The inspector asks questions
-the player cannot answer, and increment 3 is where some of them become
-answerable: the missing 128 sheets as evidence that can be found, the gaol
-roll's dates, the passes in the Steward's hand. Two of the three want something
-this repo has not got.
+The third of increment 3's three threads, and the only one that waited on
+nothing. **`data/mystery.json`**: a `gaol-roll` evidence row in `guardroom`
+at all four watches and three clues behind it — `gaol-dates` (E, the roll),
+`prisoner-inside` (D, on `gaol-dates` and `prisoner-story`) and
+`prisoner-forge` (S, contradicting `merchant-stone`) — plus a ninth press,
+`prisoner` `default` to `forge`, keyed on the deduction rather than on the
+roll so that a press cannot cost the player Madoc's own default statement
+(#572). Not one of the three convicts anybody and `convicts.prisoner` is
+still `[]` (#571). **`data/npcs.json`**: Madoc's `forge` lines.
+**`data/scene-config.json`**: a parchment `builtProps` slab on the guardroom
+barrels, base 0.79 over their 0.787. **`src/mystery.js`**: `day2.knew`, the
+first thing on the second day keyed by what the player found rather than by
+what he said (#573), with nine validator rails; `changeApplies` is
+`appliesTo` and the `when`/`unless` grammar is shared with `day2.castle`.
+**Suites**: `test/layout.mjs` check 1d, no built slab hangs in mid-air
+(#574); `test/mystery.mjs` section 7, the roll walked end to end and two
+players with the same verdict and different journals.
+
+### Increment 3: what is left
+
+Two threads, and both want something this repo has not got.
 
 - **It needs a town to walk to.** The lead is in Thomas Wykes's yard and the
   yard is outside the west barbican. The town side shipped (#546): there is
@@ -344,10 +371,10 @@ this repo has not got.
   `ring()`'s fourth is the Constable's demand and both length rails are written
   against one day. The cheapest shape that does not is `day2.watches`, its own
   list, with the engine reading whichever list the day says.
-- **What does not need either**: the gaol roll. It is a piece of evidence in a
-  room the castle already builds, it convicts nobody, and its whole content is
-  the dates that were in front of everybody and that nobody read. It is the one
-  thread of increment 3 a container can finish.
+
+Both of them now have somewhere to put "the player found this out", which
+neither had before `day2.knew` (#575): a lead found in the yard is a clue,
+and a clue is what a `knew` row is keyed on.
 
 ### What is left after increment 3
 
@@ -361,7 +388,9 @@ this repo has not got.
 - Increment 3's town half no longer waits on Poly Haven access (#546); it
   waits on someone placing Thomas Wykes's yard on the ground the town side
   built.
-- **Do not run alongside anything else that touches `save.js`.**
+- **Do not run alongside anything else that touches `save.js`.** The gaol
+  roll did not have to: the journal day two reads is `state.clues`, which the
+  save already carried, so the key and the version did not move (#571, #573).
 
 ### Constraints
 
@@ -376,6 +405,13 @@ this repo has not got.
   holds the property.
 - #540: the overlay lives in `mystery.json`, because what decides it is the
   verdict.
+- #571: the gaol roll convicts nobody and does not refuse an accusation. A
+  later thread that makes it block one has to overturn that rather than add
+  to it, because three refusals end the day as a fall and reading the roll
+  would then be punished.
+- #573: a `day2.knew` row may replace a line set and may never be the only
+  one. Every reachable ending still resolves through the key/class/default
+  cascade with no journal at all, and `src/mystery.js` validates it that way.
 
 ---
 

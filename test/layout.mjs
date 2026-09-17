@@ -146,6 +146,36 @@ console.log('\nthe pieces the player presses E at');
   }
 }
 
+/* ---------------------------------- 1d: no built slab hangs in mid-air ---
+ * A `builtProps` entry is a box at a typed `base`, and nothing about it is
+ * measured off the thing it is meant to be lying on: the cloak's 0.6 is the
+ * laundry crate's height typed a second time, the walk-bar's 8 is the curtain
+ * stub's top typed a second time, and the gaol roll's 0.79 is the guardroom
+ * barrels'. Sixteen slabs and sixteen chances for one of those numbers to stop
+ * being true when what it names moves — and a slab hanging 0.4 m over a barrel
+ * is invisible to every other check in this file, because it is in no wall, in
+ * no flight, in the right room and reachable.
+ *
+ * So: under every slab, within 0.05 m of its base and overlapping it in plan,
+ * there is something whose top is there. Floor counts, stone counts and another
+ * prop counts; the gaol roll is the first one whose support is a prop (#574).
+ */
+console.log('\nthe built slabs, and what each one rests on');
+{
+  const slabs = plan.pieces.filter(p => p.built === 'slab');
+  if (!slabs.length) fail('the plan builds no slabs at all, so this check tests nothing');
+  const overlapsXZ = (a, b) =>
+    Math.min(a.max.x, b.max.x) - Math.max(a.min.x, b.min.x) > 0 &&
+    Math.min(a.max.z, b.max.z) - Math.max(a.min.z, b.min.z) > 0;
+  const holdsUp = [...plan.pieces, ...plan.surfaces];
+  for (const slab of slabs) {
+    const base = slab.box.min.y;
+    const under = holdsUp.filter(o => o.id !== slab.id && o.box && overlapsXZ(slab.box, o.box) && Math.abs((o.top ?? o.box.max.y) - base) <= 0.05);
+    if (!under.length) fail(`${slab.id} has its base at y ${f2(base)} and nothing under it within 0.05 m of that, so it hangs in the air`);
+    else pass(`${slab.id} rests at y ${f2(base)} on ${[...new Set(under.map(u => u.id))].join(', ')}`);
+  }
+}
+
 /* ------------------------------ 2: the cabinet and the commode stand close ---
  * The other half of the same number. Not being in the wall is the floor; these
  * two are meant to be AGAINST their side walls, and until 2026-09-14 they stood
