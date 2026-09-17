@@ -29,7 +29,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { validateMystery, createMystery, earliest, shortestPath, freshState, dayTwoOutcomes } from '../src/mystery.js';
+import { validateMystery, createMystery, earliest, shortestPath, freshState, dayTwoOutcomes, dayTwoLines, dayTwoKnew } from '../src/mystery.js';
 import { QuestGraph, validateQuest, validateAgainstNpcs } from '../src/quest-graph.js';
 import { QuestManager, MANAGER_PAIRS } from '../src/quest-manager.js';
 import { makePlan } from '../src/castle-plan.js';
@@ -71,13 +71,14 @@ console.log('mystery.json validates');
   const problems = validateMystery(mystery, cast, frame, nav);
   check(problems.length === 0, 'validateMystery finds nothing wrong, the castle included', problems.join('; '));
   const herrings = mystery.clues.filter((c) => c.herring).length;
-  check(mystery.clues.length === 39 && herrings === 3, `${mystery.clues.length} clues, ${herrings} herrings (the plan's table lists 39 rows: 36 on a path, 3 herrings)`);
+  // 39 when Phase 1 shipped; the gaol roll's three are increment 3's (#571).
+  check(mystery.clues.length === 42 && herrings === 3, `${mystery.clues.length} clues, ${herrings} herrings (the plan's table lists 39 rows, 36 on a path and 3 herrings; the gaol roll adds three more on a path)`);
   const dayOne = cast.filter((n) => (n.arrives ?? 1) === 1);
   const dayTwo = cast.filter((n) => (n.arrives ?? 1) > 1);
   check(cast.length === 13 && dayOne.length === 12 && dayTwo.length === 1,
     `${cast.length} in the cast: the twelve of the day, and ${dayTwo.map((n) => n.name).join(', ')} who rides in the morning after`);
   check(Object.keys(mystery.schedule).length === 12 && mystery.watches.length === 4, 'twelve schedules across four watches');
-  check(mystery.presses.length === 8, `${mystery.presses.length} presses`);
+  check(mystery.presses.length === 9, `${mystery.presses.length} presses`);
   const bodies = new Set(cast.map((n) => n.modelPath));
   check(bodies.size === 3 && cast.every((n) => /^#[0-9a-f]{6}$/i.test(n.tint)), 'three bodies, thirteen tints (#419)', [...bodies].join(', '));
   check(new Set(cast.map((n) => n.tint)).size === 13, 'no two of the thirteen share a tint');
@@ -251,6 +252,39 @@ console.log('the validator rejects');
   expect('the floor of a room made to vanish',
     (m) => { m.day2.castle[0].piece = 'floor-muniment'; },
     /^day2\.castle\[0\]: floor-muniment is floor the player stands on, and hiding it leaves a hole nothing else can see$/);
+
+  /* AND WHAT THE PLAYER READ (#573). `day2.knew` rows are the only thing on
+   * the second day keyed by the journal rather than by the verdict, and every
+   * way one can be dead is silent on the screen: the cascade behind it answers
+   * in its place and the morning reads exactly as it did before the row was
+   * written. Seven rails, one per way. */
+  expect('a knew row for somebody not in the cast',
+    (m) => { m.day2.knew[0].npc = 'gaoler'; },
+    /^day2\.knew\[0\]: "gaoler" is not in the cast$/);
+  expect('a knew row for somebody with no station on the morning after',
+    (m) => { delete m.day2.schedule.inspector; },
+    /^day2\.knew\[0\]: inspector has no station at lauds, so the lines are never spoken$/);
+  expect('a knew row keyed on a clue the mystery does not have',
+    (m) => { m.day2.knew[0].clue = 'gaol-hours'; },
+    /^day2\.knew\[0\]: "gaol-hours" is not a clue, so nothing can be holding it$/);
+  expect('a knew row keyed on a clue nothing in the castle yields',
+    (m) => { m.evidence = m.evidence.filter((e) => e.id !== 'gaol-roll'); m.clues = m.clues.filter((c) => c.id !== 'gaol-dates' && c.id !== 'prisoner-inside' && c.id !== 'prisoner-forge'); m.presses = m.presses.filter((x) => x.to !== 'forge'); m.day2.knew = m.day2.knew.filter((r) => r.clue === 'gaol-dates'); m.day2.knew[0].clue = 'nest-is-wife'; m.clues.find((c) => c.id === 'nest-is-wife').source.state = 'nowhere'; },
+    /^day2\.knew\[0\]: nest-is-wife is not discoverable, so nobody can ever be holding it at lauds$/);
+  expect('a knew row with no lines in it',
+    (m) => { m.day2.knew[0].lines = []; },
+    /^day2\.knew\[0\]: no lines, so a player who knew would be told nothing$/);
+  expect('a knew row with no reason written down',
+    (m) => { delete m.day2.knew[0].why; },
+    /^day2\.knew\[0\]: no `why`, so nothing says what the player knowing changes$/);
+  expect('a knew row keyed on an ending that does not exist',
+    (m) => { m.day2.knew[0].when = ['pardoned']; },
+    /^day2\.knew\[0\]: `when` names "pardoned", which is neither an ending nor a verdict class$/);
+  expect('a knew row on a morning its speaker is hanged on',
+    (m) => { m.day2.knew[0].npc = 'porter'; m.day2.knew[0].when = ['porter']; },
+    /^day2\.knew\[0\]: applies to no ending porter is alive and in the castle for, so the lines are never read$/);
+  expect('two knew rows on one person and one clue that both fire on one morning',
+    (m) => { m.day2.knew.push({ ...clone(m.day2.knew[0]), why: 'a second row nobody would ever read' }); },
+    /^day2\.knew: inspector has two rows on gaol-dates that both fire after the verdict prisoner \(rows 0 and 3\), and only the first would be read$/);
 }
 
 /* -------------------------------------- 2b: the twelve on the castle floor ---
@@ -641,6 +675,73 @@ console.log('\nthe morning after, seven times');
     r.m.beginDay2();
     return r;
   }
+}
+
+/* --------------- 7: the gaol roll (#571), and the morning that knows it (#573) ---
+ * The one piece of evidence in this castle that convicts nobody, and the one
+ * thing on the second day keyed by what the player FOUND rather than by what
+ * he SAID. Driven end to end: examine the roll in the guardroom, hold its
+ * dates beside Madoc's own story, watch the deduction land, press him with it,
+ * and then hang him anyway and read what the King's man says about it.
+ */
+console.log('\nthe gaol roll');
+{
+  const { m, feed } = play();
+  check(m.examine('gaol-roll').some((e) => e.type === 'examined'), 'the roll is on the barrel-head in the guardroom at Prime');
+  check(m.holds('gaol-dates') && !m.holds('prisoner-inside'), 'its dates are in the journal, and the deduction has not landed on them alone');
+  const fx = feed(m.talk('prisoner'));
+  check(clueIds(fx).includes('prisoner-story') && clueIds(fx).includes('prisoner-inside'),
+    'Madoc talks, and the deduction lands the instant his story is beside the roll', clueIds(fx).join(', '));
+  check(m.npcState('prisoner') === 'default', 'he is still in `default`, because a deduction is not a press');
+  const pressed = m.press('prisoner', 'prisoner-inside');
+  check(m.npcState('prisoner') === 'forge' && clueIds(pressed).includes('prisoner-forge'),
+    'the roll read back to him moves him to `forge`, where he says what the cart weighed', clueIds(pressed).join(', '));
+  // THE ROLL CONVICTS NOBODY, WHICH IS THE POINT OF IT (SPECS.md, A second
+  // day). None of its three clues is in anybody's convicts list, and the
+  // Constable still takes Madoc's name on nothing at all, because the castle
+  // having the evidence and using the man anyway is what the second morning is
+  // about. If a session ever wires one of these into `convicts`, this fails.
+  const convicting = new Set(Object.values(mystery.accusation.convicts).flat());
+  const ours = ['gaol-dates', 'prisoner-inside', 'prisoner-forge'];
+  check(ours.every((id) => !convicting.has(id)), 'and not one of its three clues convicts anybody', ours.filter((id) => convicting.has(id)).join(', '));
+}
+
+{
+  /* AND THE MORNING AFTER KNOWS. Two players, the same verdict: one who read
+   * the roll and one who did not. The inspector's shipped `prisoner` lines say
+   * nobody in this castle ever looked at it, which is true of the second man
+   * and a lie to the first. The rail is that the two mornings differ, and that
+   * the one that differs is the one holding the clue.
+   */
+  const hangMadoc = (read) => {
+    const { m, g, feed } = play();
+    feed(m.talk('constable'));
+    feed(m.ring());
+    if (read) { m.examine('gaol-roll'); feed(m.talk('prisoner')); }
+    feed(m.accuse('prisoner', []));
+    g.dispatch('day:2');
+    return m.beginDay2();
+  };
+  const blind = hangMadoc(false), knowing = hangMadoc(true);
+  check(blind.outcome.key === 'prisoner' && knowing.outcome.key === 'prisoner', 'both players hanged the smith', `${blind.outcome.key} / ${knowing.outcome.key}`);
+  check(blind.lines.inspector.join('|') === dayTwoLines(mystery, 'inspector', blind.outcome).join('|'),
+    'the player who never opened the roll gets the lines the verdict alone resolves');
+  check(knowing.lines.inspector.join('|') !== blind.lines.inspector.join('|'),
+    'and the player who did gets a different four');
+  check(knowing.lines.inspector.some((l) => /you read what I read/i.test(l)),
+    'the King\'s man says so to his face', knowing.lines.inspector.join(' / '));
+  check(knowing.lines.constable.join('|') !== blind.lines.constable.join('|'), 'so does the Constable who hanged on the name');
+  check(knowing.lines.laundress.join('|') === blind.lines.laundress.join('|'),
+    'and Nest does not, because that row is keyed on a clue neither player holds');
+  // The third row, on the one clue this pair of players did not go and get.
+  const asked = dayTwoKnew(mystery, 'laundress', blind.outcome, ['nest-is-wife']);
+  check(!!asked && asked.join('|') !== blind.lines.laundress.join('|'),
+    'a player who had pressed her with Madoc\'s story gets a third set again', asked ? asked[1] : 'nothing');
+  // AND A ROW IS ONLY EVER AN EXTRA READING. Every ending still resolves with
+  // no journal at all, which is what the validator asks and what stops a `knew`
+  // row from becoming the only answer for some morning.
+  const bare = dayTwoOutcomes(mystery).every((o) => !!dayTwoLines(mystery, 'inspector', o));
+  check(bare, 'and with no journal at all the inspector still has lines for all seven endings');
 }
 
 /* ---------------- the HUD's room line agrees with the schedule (#515) ---

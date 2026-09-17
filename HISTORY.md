@@ -3123,3 +3123,164 @@ against `SPECS.md`'s three lists before anything else; re-export through
 `gltf-transform`, then `npm run assets:encode`, which needs `ktx` on PATH
 for nothing in a textureless body but is the script every asset goes
 through (#506). The rest of the row is unchanged and still ½.
+
+## A second day, increment 3: the gaol roll (2026-09-17)
+
+**Ranked row 4, on `claude/awesome-bell-s2wweo`, under Claude Opus 5.**
+`SPECS.md` named three threads in increment 3 and said two of them wait on
+something this container has not got: Thomas Wykes's yard wants a town built
+on the ground #546 laid, and a schedule with more than one watch has to
+overturn #533 rather than work around it. The third waits on nothing. This is
+the third. Decisions #571 to #575. Ten suites green, `npm run build` green,
+`dist/` 52 MB against the 200 MB ceiling (#499), and `npm run play` was not
+run and could not be (#53).
+
+- **The gaol roll is a piece of evidence in the guardroom, and it convicts
+  nobody** (#571). Eleven now, not ten: `data/mystery.json` has a
+  `gaol-roll` row in `guardroom` at all four watches, and three clues behind
+  it. `gaol-dates` (E) is the roll itself — Madoc Gof committed eleven days
+  since for drawing a knife, out to the forge at Prime and in at Vespers
+  eight days of the eleven, shut in at Compline every night of it and no
+  entry against last night at all. `prisoner-inside` (D) is what those dates
+  are worth beside Madoc's own story. `prisoner-forge` (S) is what he says
+  when the roll is read back to him: the cart came in empty and went out with
+  the axle riding low, and he has shod that horse eleven years, and it was
+  not stone — which contradicts `merchant-stone` and gives a player who
+  missed Terce a second way to catch Thomas Wykes in it.
+
+  **It is in the guardroom because the garrison keeps the gaol.** The cell
+  itself is barred on day one and only opens on the five mornings Madoc walks
+  out (#539), so the roll could not live where the man does. The guardroom
+  is the North-west Tower's ground room, the sentry sleeps through Prime in
+  it, and the watch-bill (#557) is already on its north wall: the roll lies
+  on the barrel-head in the east half, across the room from the bill every
+  man of the eight reads his own duty off. It is the first piece of evidence
+  that room has ever had.
+
+  **Not one of its three clues is in anybody's `convicts` list**, and the
+  Constable still takes Madoc's name on nothing at all — `convicts.prisoner`
+  is still `[]`. That was the call worth making and it went the other way
+  from the obvious one. A roll that made the Constable refuse the accusation
+  would have taken the seventh ending away from any player who read it, and
+  three refusals end the day as a fall, so reading the roll would have been
+  punished. What the roll does instead is leave the player holding the dates
+  and free to hang him anyway, which is the thing the second morning is
+  about. `test/mystery.mjs` asserts the three are unconvicting, so a later
+  session that wires one into the table fails here rather than discovering it
+  in an epilogue.
+
+- **The press is keyed on the deduction and not on the roll** (#572). A press
+  moves an NPC out of `default` for good, and `prisoner-story` — the clue the
+  laundress's own press is keyed on — is a default statement of Madoc's. Had
+  the new press been keyed on `gaol-dates`, a player could have examined the
+  roll, walked to the bars, pressed without ever having talked to him, and
+  lost `prisoner-story`, the laundress's `wife` state and `nest-is-wife` with
+  it, silently. Keying it on `prisoner-inside` makes the talk a precondition,
+  because `prisoner-story` is one of that deduction's two premises. The same
+  hazard exists on the Lady (press her to `window` before talking and
+  `lady-hand` goes, and with it the Steward's press); it is not made worse
+  here and it is not fixed here.
+
+- **`day2.knew`: the morning after knows what the player read** (#573).
+  Every one of the sixty line sets increment 1 shipped is keyed by what the
+  player SAID and nothing at all by what he FOUND, and two of them were
+  already saying the wrong thing to a player who had done the work. The
+  inspector, in the `prisoner` ending, says of the gaol roll that "as far as
+  I can tell, nobody else in this castle has ever looked at it" — to a player
+  holding `gaol-dates` that is simply false, and it is the only line in the
+  game the player can disprove out of his own journal. Nest, in the same
+  ending, says "nobody asked me whether he had a wife" to the one clerk who
+  pressed her with Madoc's story and got `nest-is-wife` for it, which is the
+  game forgetting a conversation it ran.
+
+  A row is `{npc, clue, when?, unless?, lines, why}`, the `when`/`unless`
+  grammar is the one `day2.castle` already uses (`changeApplies` is now
+  `appliesTo` and both read it), and a row REPLACES the set the
+  key/class/default cascade would have resolved. Three rows, all on
+  `prisoner`: the inspector, the Constable who hanged on the name, and Nest.
+  **A row may never be the only answer.** `dayTwoLines` takes the journal as
+  a fourth argument and the validator passes it null on purpose, so every
+  reachable ending still has to resolve through the cascade alone; a `knew`
+  row is always an extra reading of a morning that already has one. The save
+  did not move: the journal is `state.clues`, which day two already carried,
+  so the key is still `castleConundrumSave_v1` at version 2 (#36, #413,
+  #533) and `migrate` was not touched (#37).
+
+  Nine validator rails, each one a way a row can be dead while the screen
+  says nothing because the cascade answers in its place: a speaker not in the
+  cast, a speaker with no station at Lauds, a clue the mystery does not have,
+  a clue nothing in the castle yields, no lines, no `why`, a `when` naming no
+  reachable ending, a row on a morning its speaker is hanged on, and two rows
+  on one person and one clue that both fire on one morning.
+
+- **A built slab rests on something, and `test/layout.mjs` says so** (#574).
+  Check 1d, new. A `builtProps` entry is a box at a typed `base` and nothing
+  about that number is measured off what it is meant to be lying on: the
+  cloak's 0.6 is the laundry crate's height typed a second time, the
+  walk-bar's 8 is the curtain stub's top typed a second time, and the gaol
+  roll's 0.79 is the guardroom barrels' 0.787 typed a second time. Sixteen
+  slabs, sixteen numbers that stop being true when what they name moves, and
+  a slab hanging in mid-air is invisible to every other check in that file:
+  it is in no wall, in no flight, in the right room, and reachable. The rail
+  is that something whose top is within 0.05 m of the base overlaps it in
+  plan. All sixteen pass; the gaol roll is the first whose support is another
+  prop rather than floor or stone.
+
+  **Placed in Node, not by eye**, the way #557 placed the thirteen documents.
+  A scratch script loaded the real plan and tested the candidate box against
+  every stone sector, every flight, every other box in the tower, the
+  guardroom's 2.8 m disc and the walkable cells within 1.5 m: clear of all of
+  them, 2.035 m from the disc's centre at its furthest corner against a 2.8 m
+  ring, 90 cells within reach. The barrels are 0.947 x 0.48 m at their 1.6
+  scale and the 0.4 x 0.3 m slab, rotated with them, sits inside that
+  footprint with 0.03 m to spare on the short axis.
+
+- **Increment 3 is not closed by this, and rank 4 stays** (#575). The town
+  half and the bells-on-day-two question are untouched and are still what
+  `SPECS.md` says they are. What did change about the rest of the row is that
+  `day2.knew` exists now: a second mystery for the morning has somewhere to
+  put "the player found this out", which every remaining thread in the
+  increment needs and none of them had.
+
+**Broken on purpose, from a green baseline** (#34). Five breaks, each from
+ten green suites, each reverted from a copy taken before it, green again
+after.
+
+1. `gaol-roll`'s `base` 0.79 → 1.2 in `scene-config.json`. `node
+   test/layout.mjs` exited 1: `gaol-roll has its base at y 1.20 and nothing
+   under it within 0.05 m of that, so it hangs in the air`.
+2. The `dayTwoKnew` branch deleted out of `dayTwoLines`. `node
+   test/mystery.mjs` exited 1, three assertions down, the named one being
+   `the King's man says so to his face`, whose detail printed the shipped
+   `prisoner` lines with "nobody else in this castle has ever looked at it"
+   in them — the bug the row fixes, in the failure message.
+3. `beginDay2` stopped passing `st.clues` to the resolver. The same three
+   assertions, which is the point: the wiring and the resolver fail
+   separately.
+4. `gaol-roll`'s room `guardroom` → `cell` in `mystery.json`. `node
+   test/layout.mjs` exited 1: `evidence "gaol-roll" stands at (-34.40,
+   -15.20), outside cell (x -22.8..-17.2, z 13.2..18.8)`.
+5. `prisoner-inside`'s second premise `prisoner-story` → `cook-lantern`.
+   `node test/mystery.mjs` exited 1: `Madoc talks, and the deduction lands
+   the instant his story is beside the roll — prisoner-story`, and the press
+   assertion under it.
+
+The nine `day2.knew` validator rails are breaks by construction — each one
+mutates a copy and asserts the message — and all nine fire with the message
+written for them.
+
+**What was measured.** `data/mystery.json` 1775 lines to 1876,
+`src/mystery.js` 1036 to 1121, `test/mystery.mjs` 685 to 786,
+`test/layout.mjs` 1082 to 1112, `data/scene-config.json` 2530 to 2546,
+`data/npcs.json` 579 to 584. Clues 39 to 42, presses 8 to 9, evidence 10 to
+11, day-two line sets 60 plus 3 `knew` rows. `plan-vs-scene.mjs` 287 pieces,
+one more than before this pass, all within 0.01 m of the plan. `dist/` 52 MB,
+unmoved.
+
+**What nobody has seen.** The roll is a parchment-coloured slab on a barrel
+head and no eye has been on it. `npm run play` does not walk into the
+guardroom — the intended path never enters the North-west Tower — and no
+beat was written for it, because a beat that cannot be run from here cannot
+be trusted (#53); `test/play-castle.mjs`'s header now says which piece of
+evidence it does not walk to and what to look at. The three `knew` line sets
+have been read in a terminal and not in the dialogue pane.

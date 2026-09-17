@@ -71,18 +71,23 @@ and `test/touch.mjs` as the ninth suite. What it FEELS like is unknown — nobod
 has had a thumb on it, and the six numbers that decide that are named constants
 in one file each (#53).
 
-**The second day shipped in two increments, on 2026-09-15 and 2026-09-16**
-(#533 to #540, PRs #16 and #18). The epilogue's button reads "The next
-morning" now. One watch, `lauds`, thirteen stations, sixty line sets keyed by
-which of the seven endings the player reached, seven closing panes, and a
-thirteenth cast entry — the King's inspector — whose conversation is the end of
-the game. The save is version 2 with a `day` field; the key did not move (#36).
-Increment 2 gave the stone its half: the cell's bars come off on the five
-mornings Madoc walks out, which opens to the player the one ground room nobody
-has ever stood in, and the muniment door stands open in the full ending and is
-shut again in the other six. **Rank 4 is still open**: it is a 2+ and increment
-3 is a second mystery for the morning, most of which waited on a town to walk
-to.
+**The second day shipped in three increments, on 2026-09-15, 2026-09-16 and
+2026-09-17** (#533 to #540 and #571 to #575, PRs #16, #18 and #28). The
+epilogue's button reads "The next morning" now. One watch, `lauds`, thirteen
+stations, sixty line sets keyed by which of the seven endings the player
+reached, seven closing panes, and a thirteenth cast entry — the King's
+inspector — whose conversation is the end of the game. The save is version 2
+with a `day` field; the key did not move (#36). Increment 2 gave the stone its
+half: the cell's bars come off on the five mornings Madoc walks out, which
+opens to the player the one ground room nobody has ever stood in, and the
+muniment door stands open in the full ending and is shut again in the other
+six. **Increment 3 shipped its gaol roll**: an eleventh piece of evidence, on
+the barrel-head in the guardroom, that convicts nobody, and `day2.knew` — the
+first thing on the second day keyed by what the player found rather than by
+what he said, which is what stops the King's man telling a clerk who had the
+roll off the barrel-head that nobody in this castle ever looked at it.
+**Rank 4 is still open**: the town half and the bells-on-day-two question are
+untouched.
 
 **The texture sets and the town side shipped on 2026-09-16** (#541 to #546):
 `ktx` was on PATH and Poly Haven answered this time, so both rows that #518
@@ -122,26 +127,28 @@ bodies the npm registry did carry were the wrong shape (KayKit, chibi) and the
 wrong licence (deskrpg, non-commercial derivative). The row stays at rank 1
 with what to fetch written into it.
 
-**13 ranked items. Rank 4 is claimed; the rest are open.** Every one of ranks
-1, 2, 3 and 5 needs a machine this one is not: ranks 2, 3 and 5 a GPU (#518),
-rank 1 a network that reaches quaternius.com (#568), which #541's did and this
-one's did not. Rank 4's next increment is the one thing among them a container
-can start, and `SPECS.md` names the thread of it that does not wait on a design
-call: the gaol roll, which is what this claim is for. Of ranks 6 to 13, the
-ones whose first increment is data and validators rather than a render — 6, 8,
-9, 10 and 13 — are the ones a container can start; 7, 11 and 12 all want either
-a recorded sound, a body on disk, or a GPU before their first increment
-closes.
+**13 ranked items. Nothing is claimed.** Every one of ranks 1, 2, 3 and 5
+needs a machine this one is not: ranks 2, 3 and 5 a GPU (#518), rank 1 a
+network that reaches quaternius.com (#568), which #541's did and this one's
+did not. **Rank 4 no longer has a thread a container can start on its own**:
+the gaol roll was it and it shipped (#571 to #575), and what is left of
+increment 3 is a yard to build in the town and a design call to make about
+bells on day two. Of ranks 6 to 13, the ones whose first increment is data
+and validators rather than a render — 6, 8, 9, 10 and 13 — are the ones a
+container can start; 7, 11 and 12 all want either a recorded sound, a body on
+disk, or a GPU before their first increment closes.
 
 One thing is true of the whole list and worth saying once. **Nothing here has
 been seen on a GPU since Phase 5.** `npm run play` walks the whole intended day
 — twelve people, ten pieces of evidence, three bells, a reload at Sext, the
 accusation and the epilogue, 102 assertions — and no run of it since Phase 5 has
 happened on a machine with real compositing (#53). Rank 2 is that run, and it
-carries five jobs it did not have: nobody has looked at a compressed texture
+carries six jobs it did not have: nobody has looked at a compressed texture
 (#507) or at the five that shipped after it (#541 to #546), at a tower roof
-from 12 m (#523), at seven trusses over the hall (#527), or at a Lauds sky
-(#533) — and nobody has put a thumb on a phone (#530). The second standing
+from 12 m (#523), at seven trusses over the hall (#527), at a Lauds sky
+(#533), or at the gaol roll on the guardroom barrels (#571, the first built
+slab whose support is another prop) — and nobody has put a thumb on a phone
+(#530). The second standing
 line, "the game has never had a thumb on it", came out with #530: the scheme
 is there, it is in CI, and what is left of it is the feel.
 
@@ -182,7 +189,7 @@ your decisions and this file's header, ranks and `Claimed` column are updated
 | 1 | A fourth body, and a woman's in particular: fetch it from a machine that reaches quaternius.com | ½ | Fable 5.1 |  | [A fourth body](SPECS.md#a-fourth-body) |
 | 2 | A real GPU run of `npm run play`, and somebody looks at the twelve | ¼ | Opus 5 |  | [The GPU run](SPECS.md#the-gpu-run) |
 | 3 | A new preview and og card, from that run | ¼ | Opus 5 |  | [The GPU run](SPECS.md#the-gpu-run) |
-| 4 | A second day: increment 3, a second mystery for the morning | 2+ | Opus 5 | claude/awesome-bell-s2wweo | [A second day](SPECS.md#a-second-day) |
+| 4 | A second day: increment 3, the town half and the bells question | 2+ | Opus 5 |  | [A second day](SPECS.md#a-second-day) |
 | 5 | The hall's covering, and the two windows under it | ¼ | Sonnet 5 |  | [The hall covering](SPECS.md#the-hall-covering) |
 | 6 | Life: a populace, and the first ten bodies of it | 2+ | Opus 5 |  | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: ambient beds, event sounds, a bell that is a soundscape | 1 | Fable 5.1 |  | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
@@ -234,18 +241,22 @@ Rank 3 depends on rank 2 having happened. The board preview and og card in
 ## A second day
 
 **Rank 4, and a 2+. Increments 1 and 2 shipped on 2026-09-15 and 2026-09-16**
-(#533 to #540): the morning after is there in seven shapes, the cast says what
-the verdict made of them, and the castle moves with them. **What is left is a
-second mystery for the morning**, and most of it waits on things this repo has
-not got. The inspector asks questions the player cannot answer; increment 3 is
-where some of them become answerable. Of its three threads, the town has
-shipped now (#541 to #546): the missing 128 sheets are in a yard nobody has
-placed yet, on ground that now exists to place it on. A schedule with more
-than one watch still has to argue with #533 rather than work around it. The
-third thread is not blocked at all: the gaol roll is a piece of evidence in a
-room the castle already builds, it convicts nobody, and its whole content is
-the dates that were in front of everybody and that nobody read. `SPECS.md`
-specs it.
+(#533 to #540) and **increment 3's gaol roll on 2026-09-17** (#571 to #575):
+the morning after is there in seven shapes, the cast says what the verdict
+made of them, the castle moves with them, and one thread of the second
+mystery is answerable. The gaol roll is the eleventh piece of evidence and
+the only one that convicts nobody: its dates put Madoc at the forge by day
+and behind the bars by night, and a player may read them and hang him anyway,
+which is what the King's man says to his face on the morning after. That last
+half is `day2.knew`, three line sets keyed by the journal rather than the
+verdict.
+
+**Two threads are left and both wait on something.** The missing 128 sheets
+are in Thomas Wykes's yard, which nobody has placed on the ground the town
+side laid (#541 to #546). A schedule with more than one watch still has to
+argue with #533 rather than work around it. Both of them have somewhere to
+put "the player found this out" now, which neither had before. `SPECS.md`
+specs what is left.
 
 ## The hall covering
 
