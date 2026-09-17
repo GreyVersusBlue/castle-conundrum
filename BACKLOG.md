@@ -228,7 +228,7 @@ your decisions and this file's header, ranks and `Claimed` column are updated
 | 5 | The hall's covering, and the two windows under it | ¼ | Sonnet 5 |  | [The hall covering](SPECS.md#the-hall-covering) |
 | 6 | Life: a populace, and the first ten bodies of it | 2+ | Opus 5 |  | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: ambient beds, event sounds, a bell that is a soundscape | 1 | Fable 5.1 |  | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
-| 8 | Lore: the sermon, the song, and facts that change | ¼ | Sonnet 5 |  | [Lore: what is still open](SPECS.md#lore-what-is-still-open) |
+| 8 | Lore: the sermon, the song, and facts that change | ¼ | Sonnet 5 | claude/charming-gates-77fz8r | [Lore: what is still open](SPECS.md#lore-what-is-still-open) |
 | 9 | Side quests: the next eleven, the journal tab, and reputation by ward | 2+ | Opus 5 |  | [Side quests](SPECS.md#side-quests) |
 | 10 | A castle to get lost in: the map, then the town, the rock and river | 2+ | Opus 5 |  | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
 | 11 | Bodies: a shared low-poly rig for the fifty | 1 | Fable 5.1 |  | [Bodies](SPECS.md#bodies) |
