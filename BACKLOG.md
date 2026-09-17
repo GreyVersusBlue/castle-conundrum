@@ -1,7 +1,8 @@
 # BACKLOG
 
 Open work on Castle Conundrum, ranked. **`HISTORY.md` records what shipped;
-this file ranks what is open; `SPECS.md` is the spec for each row below;
+this file ranks what is open; `ROADMAP.md` puts the open rows in an order and
+says which machine each needs; `SPECS.md` is the spec for each row below;
 `PLAN.md` is the plan the seven shipped phases came out of** and its "What this
 leaves for a later arc" list is where most of the rows below came from. Nothing
 open lives in `HISTORY.md` and nothing that shipped belongs here.
@@ -241,6 +242,13 @@ branch nobody else can read is not a claim: two sessions in the old repo once
 built the same row in full. Clear the column after your merge is confirmed, in
 the same pass that updates this header.
 
+**Read the `Where`, `Gate` and `Lane` columns before you claim** (#600). A row
+marked anything but `Container` cannot be finished from a session like this
+one and should not be claimed by one; a row whose `Gate` has not shipped is
+not startable at all; and a row whose `Lane` is already held by a live claim
+will collide on one named file, so take a different lane (#602). `ROADMAP.md`
+is the same three facts as an order.
+
 **Definition of done.** The work is on a branch and the branch is a merged PR
 with CI green. `npm run build` and `npm test` both pass. Any guard-rail you
 added has been broken on purpose once, from a green baseline, and you watched
@@ -248,24 +256,101 @@ it fail and can say which assertion and what it said (#34). `HISTORY.md` has
 your decisions and this file's header, ranks and `Claimed` column are updated
 **before you finish** — never left for a later session.
 
+## What the three labels mean
+
+Three columns were added to the table below on 2026-09-17 (#600). They answer
+the three things a session needs to know before it claims a row, and none of
+them was written anywhere before: the header said "ranks 2, 3 and 5 need a
+GPU" in a paragraph a reader had to parse, and said nothing at all about which
+two rows would collide.
+
+**Where.** Four values, and three of them mean this container cannot finish
+the row.
+
+- **Container.** A session like this one closes it: data, validators, Node
+  suites, headless Chromium. Seven of the twelve.
+- **Local: GPU.** Needs `npm run play` on a machine with real compositing, or
+  needs somebody to look at a render. This is #53, and #53 cuts both ways: a
+  real-time assertion that *fails* under software rendering is inconclusive,
+  not confirmed. Ranks 2, 3, 5, and rank 11 past its Node line.
+- **Local: net.** Needs a network that reaches the asset hosts. Not a GPU
+  question and not the same block: #518's container could not reach Poly
+  Haven and #541's could; #568's could not reach quaternius.com. Ranks 1 and
+  10.
+- **Local: audio.** Needs speakers and a person. Rank 7 only, and only for the
+  judgement — the assignment and the cross-fade are a container's.
+
+**Gate.** What must have shipped before the row can start. **There are four
+hard gates on the whole list** and everything else is preference:
+
+1. **Rank 2 before rank 3.** The images come out of that run; there is no
+   other source.
+2. **Rank 2 before rank 5.** Both of the hall covering's criteria are a
+   render: which way a kit roof piece slopes, and whether a covered hall goes
+   dark.
+3. **Rank 2 before rank 11 ships past its Node acceptance.** The row's own
+   spec says nothing in it goes past a `snap` and a sentence until the run has
+   happened.
+4. **Rank 4c before rank 9's town.** Thomas Wykes's yard is what proves the
+   ground west of the barbican carries a building.
+
+Three softer ones are worth naming and are not gates: rank 6's populace
+unlocks two of rank 8's seven errands and rank 7's event sounds, rank 10 and
+rank 6 trade activity clips both ways, and rank 12's budget suite counts more
+once there are fifty bodies to count. None of the three blocks a start.
+
+**Lane.** The file that two sessions would collide on. **One row per lane at a
+time** (#602); rows in different lanes, or with no lane, may be claimed
+together.
+
+| Lane | The file that decides it | Rows |
+| --- | --- | --- |
+| A | `src/save.js` — the version number and `migrate` | 4a, 4b, 8 |
+| B | `data/scene-config.json` — and `test/tools.mjs`'s byte-exactness rail | 4c, 5, 9, 12b |
+| C | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | 1, 6, 10, 12c |
+| D | `src/main.js`'s player rig and spawn | 6, 11 |
+| E | `src/audio.js` and `data/sounds.json` | 7 |
+
+Lane A is the one the specs already warned about in words: **"do not run
+alongside anything else that touches `save.js`"** is written into rank 4's
+dependencies, and rank 8's next increment is a version bump to 6. Lane C is
+the `cast` block specifically, not the whole of `data/npcs.json`: rank 8 and
+rank 12c write per-person `states` and `default` line arrays, which is a
+different region of the same file and merges, but a session doing either
+should say so in its PR.
+
+Rank 4 splits three ways because its remaining threads do, and the spec
+already names them separately: **4a** is the bells-on-day-two design call and
+`day2.watches`, **4b** is the `since` field on a fact that changes (#596), and
+**4c** is Thomas Wykes's yard. 4a and 4b are a container's; 4c wants the
+editor walked and the yard looked at. Rank 12 splits the same way and for the
+same reason: **12a** the budget suite, **12b** move-and-delete in the editor,
+**12c** the dialogue format.
+
 ## The ranked table
 
-| Rank | Item | Size | Model | Claimed | Detail |
-| --- | --- | --- | --- | --- | --- |
-| 1 | A fourth body, and a woman's in particular: fetch it from a machine that reaches quaternius.com | ½ | Fable 5.1 |  | [A fourth body](SPECS.md#a-fourth-body) |
-| 2 | A real GPU run of `npm run play`, and somebody looks at the twelve | ¼ | Opus 5 |  | [The GPU run](SPECS.md#the-gpu-run) |
-| 3 | A new preview and og card, from that run | ¼ | Opus 5 |  | [The GPU run](SPECS.md#the-gpu-run) |
-| 4 | A second day: increment 3, the town half and the bells question | 2+ | Opus 5 |  | [A second day](SPECS.md#a-second-day) |
-| 5 | The hall's covering, and the two windows under it | ¼ | Sonnet 5 |  | [The hall covering](SPECS.md#the-hall-covering) |
-| 6 | Life: a populace, and the first ten bodies of it | 2+ | Opus 5 |  | [Life: a populace](SPECS.md#life-a-populace) |
-| 7 | Sound: ambient beds, event sounds, a bell that is a soundscape | 1 | Fable 5.1 |  | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
-| 8 | Side quests: reputation by ward, and the seven left | 2+ | Opus 5 |  | [Side quests](SPECS.md#side-quests) |
-| 9 | A castle to get lost in: the town, the rock and river | 2+ | Opus 5 |  | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
-| 10 | Bodies: a shared low-poly rig for the fifty | 1 | Fable 5.1 |  | [Bodies](SPECS.md#bodies) |
-| 11 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 |  | [Feel](SPECS.md#feel) |
-| 12 | The tooling: the budget suite, move-and-delete, a dialogue format | 2+ | Opus 5 |  | [The tooling](SPECS.md#the-tooling) |
+| Rank | Item | Size | Model | Where | Gate | Lane | Claimed | Detail |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | A fourth body, and a woman's in particular: fetch it from a machine that reaches quaternius.com | ½ | Fable 5.1 | Local: net | — | C | | [A fourth body](SPECS.md#a-fourth-body) |
+| 2 | A real GPU run of `npm run play`, and somebody looks at the twelve | ¼ | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
+| 3 | A new preview and og card, from that run | ¼ | Opus 5 | Local: GPU | **after 2** | — | | [The GPU run](SPECS.md#the-gpu-run) |
+| 4 | A second day: increment 3, the town half and the bells question | 2+ | Opus 5 | 4a/4b container, 4c local | — | A (4a/4b), B (4c) | | [A second day](SPECS.md#a-second-day) |
+| 5 | The hall's covering, and the two windows under it | ¼ | Sonnet 5 | Local: GPU | **after 2** | B | | [The hall covering](SPECS.md#the-hall-covering) |
+| 6 | Life: a populace, and the first ten bodies of it | 2+ | Opus 5 | Container | — | C, D | `claude/populace-first-ten` | [Life: a populace](SPECS.md#life-a-populace) |
+| 7 | Sound: ambient beds, event sounds, a bell that is a soundscape | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
+| 8 | Side quests: reputation by ward, and the seven left | 2+ | Opus 5 | Container | — | A | | [Side quests](SPECS.md#side-quests) |
+| 9 | A castle to get lost in: the town, the rock and river | 2+ | Opus 5 | Container | **after 4c** | B | | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
+| 10 | Bodies: a shared low-poly rig for the fifty | 1 | Fable 5.1 | Local: net | — | C | | [Bodies](SPECS.md#bodies) |
+| 11 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 | Container to the Node line, local: GPU past it | **after 2** | D | | [Feel](SPECS.md#feel) |
+| 12 | The tooling: the budget suite, move-and-delete, a dialogue format | 2+ | Opus 5 | Container | — | — (12a), B (12b), C (12c) | | [The tooling](SPECS.md#the-tooling) |
+
+**`ROADMAP.md` is these three columns turned into an order**: which row to
+take first, what each one unblocks, and which ones two sessions may hold at
+the same time. This table still ranks; that file sequences (#601).
 
 ## A fourth body
+
+*Where: local, a network that reaches quaternius.com. Gate: none. Lane: C.*
 
 **Rank 1.** Marged, Nest and Lady Alys are three of twelve and the Kenney kit
 has no woman's body. Twelve NPCs come off three bodies by tint (#417, #419) and
@@ -284,6 +369,8 @@ clothes (#570). Fetch the Ultimate Modular Women Pack first, check it against
 `SPECS.md`'s three name lists, and the rest of the row is as specced.
 
 ## The GPU run
+
+*Where: local, GPU, both of them. Gate: rank 3 is after rank 2. Lane: none.*
 
 **Ranks 2 and 3.** `npm run play` has not run on a machine with real GPU
 compositing since Phase 5 (#53). It is 102 assertions over the whole day and it
@@ -304,6 +391,8 @@ Rank 3 depends on rank 2 having happened. The board preview and og card in
 — those two files live in `tools-and-games/assets/` and he relinks.
 
 ## A second day
+
+*Where: 4a and 4b container, 4c local. Gate: none; 4c gates rank 9. Lanes: A (4a, 4b), B (4c).*
 
 **Rank 4, and a 2+. Increments 1 and 2 shipped on 2026-09-15 and 2026-09-16**
 (#533 to #540) and **increment 3's gaol roll on 2026-09-17** (#571 to #575):
@@ -328,6 +417,8 @@ whenever it takes a fourth increment. `SPECS.md` specs what is left.
 
 ## The hall covering
 
+*Where: local, GPU. Gate: after rank 2. Lane: B.*
+
 **Rank 5.** The Great Hall has seven trusses over it since #527 and nothing
 between them. The kit's `roof*.glb` pieces would cover it, and two windows at
 `base` 5 in `great-hall-north` would keep the daylight the covering takes
@@ -339,6 +430,8 @@ at Vespers and the accusation is made there, which is why #528 would not guess
 at it.
 
 ## Life: a populace
+
+*Where: container. Gate: none. Lanes: C and D.*
 
 **Rank 6.** The twelve are the mystery's; the castle needs the other fifty who
 were there before the mason died and will be there after. `data/populace.json`
@@ -352,6 +445,8 @@ one.
 
 ## Sound: a soundscape
 
+*Where: container to write it, local with speakers to judge it. Gate: none. Lane: E.*
+
 **Rank 7.** Two sounds exist and both are synthesised (#519, #548). This row
 is the other twenty: ambient beds per zone, spatialised at a point per room
 and cross-faded by the room the HUD already tracks (#515), event sounds tied
@@ -363,6 +458,8 @@ cross-fade, with synthesis standing in wherever a recording has not been
 found yet.
 
 ## Side quests
+
+*Where: container. Gate: none, but two of the seven errands want rank 6. Lane: A.*
 
 **Rank 8, and a 2+. Three increments shipped on 2026-09-17** (#576 to #581,
 #595, #597 to #599): the format, the set validator and the cook's missing
@@ -403,6 +500,8 @@ gate pass), and four it never named. `SPECS.md` specs the next increment.
 
 ## A castle to get lost in
 
+*Where: container. Gate: after rank 4c's yard. Lane: B.*
+
 **Rank 9, and a 2+. The volume step was found already built on 2026-09-17**
 (#582) and the row's premise is rewritten against the castle that exists. All
 eight drums carry a room at levels 0, 1 and 2, four carry one at level 3, and
@@ -426,6 +525,8 @@ whatever documents a later lore row adds, made cheap by rank 12's editor.
 
 ## Bodies
 
+*Where: local, a network that reaches the asset hosts. Gate: none. Lane: C.*
+
 **Rank 10.** Every row above this one that needs a new body is waiting on
 this one. Low-poly, one shared rig, CC0, for now (#550, question 5): a body a
 session can make or edit as a drop-in, the way **A fourth body** (rank 1)
@@ -439,6 +540,8 @@ catch.
 
 ## Feel
 
+*Where: container to the Node line, local GPU past it. Gate: after rank 2. Lane: D.*
+
 **Rank 11.** Everything in this row is gated on `npm run play` on a real
 machine (#53), the same gate **The hall covering** already sits behind, and
 most of it is a day's work each once someone can see it: weather and sky, fire
@@ -449,6 +552,8 @@ and nothing in this row ships past a `snap` and a sentence in `HISTORY.md`
 until **The GPU run** (ranks 2 and 3) has happened.
 
 ## The tooling
+
+*Where: container. Gate: none. Lanes: none (12a), B (12b), C (12c).*
 
 **Rank 12, and a 2+. The placement editor shipped on 2026-09-17** (#583 to
 #587). `?edit=1` on the dev server mounts a panel that reads the tile under

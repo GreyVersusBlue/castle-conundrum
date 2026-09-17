@@ -10,8 +10,11 @@ the castle is, why the order is what it is, and the seven phases that built it,
 all seven of which shipped. **`BACKLOG.md` is the entry point for open work,
 and `SPECS.md` is the spec behind each of its rows** (scope by file, acceptance,
 open calls with a recommendation, dependencies, the rules that bite). Read a
-row's spec before its brief. **`HISTORY.md` is the record**, and it carries
-every locked decision this project has, by number.
+row's spec before its brief. **`ROADMAP.md` is the order those rows can happen
+in**: which machine each needs, the four hard gates on the whole list, and the
+five lanes that say which two rows may be claimed at once (#600 to #602).
+**`HISTORY.md` is the record**, and it carries every locked decision this
+project has, by number.
 
 **`WISHLIST.md` is the arc after the backlog**: seven themes and ten questions
 Devon answered on 2026-09-16 (#547 to #550), ranking nothing and claiming nothing.

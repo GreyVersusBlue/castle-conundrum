@@ -3992,3 +3992,87 @@ errand reads as a nudge or a scold, and whether four `default` lines is one
 too many to click through on a first conversation, are questions for a
 screen and a person (#53). The fourth line is the last in each set, so a
 player who has the first three by heart is not made to re-read them.
+
+## Where, Gate and Lane: the backlog says which machine, and `ROADMAP.md` says in what order (2026-09-17)
+
+**Not a ranked row. Devon asked directly**, mid-session, for three things the
+project had never written down: what has to happen on a machine this container
+is not, what two sessions may hold at once without colliding, and what strictly
+has to ship before what. Decisions #600 to #602. No code changed, twelve suites
+untouched, `npm run build` untouched.
+
+- **Three labels on every backlog row: `Where`, `Gate`, `Lane`** (#600). All
+  three facts were already derivable and none was written where a session
+  claiming a row would see it. The header said "ranks 2, 3 and 5 need a GPU" in
+  a paragraph a reader had to parse, and it was already wrong in a way that
+  mattered: **rank 1 does not need a GPU, it needs a network**, and #518 and
+  #541 are the proof that those are different blocks — the same container that
+  could not reach Poly Haven in September could reach it a week later, and
+  #568's could not reach quaternius.com at all. Calling both "blocked" is what
+  kept rank 1 sitting behind the wrong excuse.
+
+  `Where` is one of four: `Container`, `Local: GPU` (#53), `Local: net`, and
+  `Local: audio`, which is rank 7 and only for the judgement half. `Gate` is
+  what must have shipped first. `Lane` is the file two sessions would collide
+  on.
+
+  Rank 4 and rank 12 each carry three values instead of one, because their
+  remaining threads genuinely differ and `SPECS.md` already names them
+  separately: **4a** the bells call, **4b** the `since` field, **4c** the yard;
+  **12a** the budget suite, **12b** move-and-delete, **12c** the dialogue
+  format. 4a and 4b are a container's and 4c is not; 12a has no lane, 12b is
+  lane B and 12c is lane C. A single label on either row would have been a lie
+  about two thirds of it.
+
+- **`ROADMAP.md` is the order; `BACKLOG.md` is still the rank** (#601). A fifth
+  document was not obviously warranted and the alternative was a section in
+  `BACKLOG.md`. It got its own file because the two answer different questions
+  and change on different schedules: the rank is Devon's judgement about worth
+  and moves when he says so, and the order is arithmetic over the gates and
+  moves whenever one clears. Folding them would mean a shipping session
+  rewriting a priority list to record a dependency, which is how a priority
+  list stops meaning anything.
+
+  **The file names rows by title as well as by rank**, for the reason #522
+  already found in `SPECS.md`: a closed row shifts every number under it, and a
+  roadmap that says "after rank 2" ages into a lie the first time a row closes.
+
+  **Four hard gates on twelve rows, and that is the whole finding.** R2 before
+  R3 (the images have no other source), R2 before R5 (both criteria are a
+  render), R2 before R11 ships past its Node line, and R4c's yard before R9's
+  town. Everything else that reads like a dependency in `SPECS.md` — rank 6's
+  populace under two of rank 8's errands, rank 10 and rank 6 trading activity
+  clips, rank 12's budget suite being more useful with fifty bodies to count —
+  is preference, and none of the three blocks a start. Devon expected the list
+  to be loose and it is looser than he expected: **R2 is the only row that
+  gates more than one other thing, and it is a ¼.**
+
+- **One row per lane at a time, and a lane is a file** (#602). The claim rule
+  (#283) stopped two sessions building the same row and says nothing about two
+  sessions building different rows into the same file. Five lanes:
+  **A** `src/save.js` (R4a, R4b, R8), **B** `data/scene-config.json` (R4c, R5,
+  R9, R12b), **C** `data/npcs.json`'s `cast` and `npc.js`'s body machinery
+  (R1, R6, R10, R12c), **D** `src/main.js`'s player rig and spawn (R6, R11),
+  **E** `src/audio.js` and `data/sounds.json` (R7). R2, R3 and R12a have no
+  lane.
+
+  Lane A was already written in prose — rank 4's dependencies say *"do not run
+  alongside anything else that touches `save.js`"* — and rank 8's next
+  increment is a version bump to 6, so the warning had a live target nobody had
+  connected it to. Lane B is the one that would fail quietly: `test/tools.mjs`
+  holds `data/scene-config.json` to byte-exactness by cutting an added row back
+  out and comparing the whole file, because a re-serialise of that file is not
+  that file (#584, 94212 bytes out as 98330), and two splices neither session
+  tested against each other is exactly the thing that rail cannot see.
+
+  **Lane C is the `cast` block, not the file.** R8 and R12c write per-person
+  `states` and `default` line arrays — a different region that merges — and
+  drawing the lane at the whole file would have forbidden the one pairing the
+  backlog header already recommends.
+
+**What this leaves.** The three safe-together rows today are R8 (lane A), R6
+(lanes C and D) and R12a (no lane), which is what the header already implied
+and now says with a reason. Add R2 and R1 on Devon's machine and five things
+move at once with no collision. The column values are a judgement over the
+specs as they stand on 2026-09-17; a row whose scope changes changes its lane,
+and the session that changes it owns the label.
