@@ -185,6 +185,19 @@ barrel-before-Marged hole the knife shipped with. `validateQuestSet` holds
 every file to a `ward`. **Rank 8 is still open**: seven of the dozen, and
 reputation by ward, which five errands is now enough to make visible.
 
+**The ambient beds shipped on 2026-09-17** (#620 to #623): `data/sounds.json`
+carries an `ambient` block of seven synthesised room tones, `bedOf` in
+`src/audio.js` picks one from whatever zone the HUD's room line names, and the
+render loop cross-fades to it over 1.2 s on the same change that writes the
+line (#515). `test/layout.mjs` check 13 puts every one of the castle's 8981
+walkable cells through the nav and fails a zone with no bed, a bed with no
+zone, and a `byRoom` name the castle does not build; `test/map.mjs` holds the
+one line in `main.js` that Node cannot see. No forge and no rain, because the
+castle has neither, and no garden, because check 13 found that nobody can
+stand in it (#469). **Rank 7 is still open**: nobody has heard any of it (#53),
+a bed is in the head rather than at a point in its room, and the bells and the
+event sounds are untouched.
+
 **12 ranked items. Nothing is claimed.** Every one of ranks 1, 2, 3 and 5
 needs a machine this one is not: ranks 2, 3 and 5 a GPU (#518), rank 1 a
 network that reaches quaternius.com (#568), which #541's did and this one's
@@ -258,7 +271,7 @@ your decisions and this file's header, ranks and `Claimed` column are updated
 | 4 | A second day: increment 3, the town half and the bells question | 2+ | Opus 5 |  | [A second day](SPECS.md#a-second-day) |
 | 5 | The hall's covering, and the two windows under it | ¼ | Sonnet 5 |  | [The hall covering](SPECS.md#the-hall-covering) |
 | 6 | Life: a populace, and the first ten bodies of it | 2+ | Opus 5 |  | [Life: a populace](SPECS.md#life-a-populace) |
-| 7 | Sound: ambient beds, event sounds, a bell that is a soundscape | 1 | Fable 5.1 |  | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
+| 7 | Sound: somebody listens to the seven beds, then a bed at a point, the four bells, event sounds | 1 | Fable 5.1 |  | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
 | 8 | Side quests: reputation by ward, and the seven left | 2+ | Opus 5 |  | [Side quests](SPECS.md#side-quests) |
 | 9 | A castle to get lost in: the town, the rock and river | 2+ | Opus 5 |  | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
 | 10 | Bodies: a shared low-poly rig for the fifty | 1 | Fable 5.1 |  | [Bodies](SPECS.md#bodies) |
@@ -352,15 +365,26 @@ one.
 
 ## Sound: a soundscape
 
-**Rank 7.** Two sounds exist and both are synthesised (#519, #548). This row
-is the other twenty: ambient beds per zone, spatialised at a point per room
-and cross-faded by the room the HUD already tracks (#515), event sounds tied
-to an activity clip, and the four bells given a character each. Recorded CC0
-audio is admitted since #548 reversed #519's synthesis-only half, named by
+**Rank 7. The ambient beds shipped on 2026-09-17** (#620 to #623). Seven
+room tones, all synthesised (#519, #548): ward, wall walk, kitchen, hall,
+chapel, chamber and tower, each a few layers of filtered noise that swell on
+their own slow sines, a two-note drone under the chapel tuned to the bell, and
+a random crackle in the kitchen and the bakehouse. `data/sounds.json`'s
+`ambient` block is the only place they are tuned. `bedOf` resolves a zone by
+its id first and a drum room's storey second, with no default, and
+`test/layout.mjs` check 13 sweeps every walkable cell through `roomAt` to hold
+43 zones to a bed. The cross-fade is 1.2 s on the HUD's own room change
+(#515), and a bed is built when entered and torn down when faded.
+
+**What is left, in order.** First, somebody with speakers listens (#53):
+every number in the block is a guess and the file says so. Then a bed at a
+point per room through a panner, the way the bell already is, so the kitchen
+is heard from the ward outside its door rather than switching on at the
+threshold. Then the four bells given a character each, which is a `partials`
+and `gain` change to the existing `bell` block. Event sounds still wait on
+rank 6's activity clips. Recorded CC0 audio is admitted since #548, named by
 `data/sounds.json` and run through `tools/encode-assets.mjs` like any asset
-(#506). The first increment is the ambient beds: the zones and the
-cross-fade, with synthesis standing in wherever a recording has not been
-found yet.
+(#506), and none has been looked for.
 
 ## Side quests
 

@@ -4097,3 +4097,122 @@ row. Devon's checkout held uncommitted rewrites of both when this was written
 (the `Where`, `Claimed` and `Lane` columns and `ROADMAP.md`), and deleting rank
 1 and renumbering eleven rows underneath that is a conflict in every line of
 the table. The row comes out in the pass that lands those files.
+
+## Sound: the ambient beds (2026-09-17)
+
+**Rank 7's first increment, on `claude/r7-ambient-beds`, as `ROADMAP.md`'s
+wave A row R7.** A room tone per place, synthesised, cross-faded on the room
+change the HUD already computes. Decisions #620 to #623. `npm run build`
+green. Ten of twelve suites green on the Windows machine this was written on;
+`tools` and `plan-vs-scene` fail there on `main` at `f7ea3ff` with none of
+this applied, the same assertions with the same text, and CI on Linux is what
+says twelve. `npm run play` was not run, and nothing here has been heard by
+anybody (#53).
+
+- **The numbers start at #620 and the gap is deliberate** (#620). Wave A is
+  four sessions at once by design (#602), and the lanes keep them out of each
+  other's files but not out of each other's decision numbers: #600 to #602
+  were uncommitted in the shared checkout when this started, and a `#603` was
+  already sitting in another session's unpushed `src/castle-builder.js`. Every
+  session numbering from the next free integer is every session taking the
+  same one. A band taken well clear costs a gap, and this file already has
+  gaps (#395 to #410). **The rule worth keeping: a session working beside
+  others takes a band, and says which.**
+
+- **A zone is what `roomAt` hands the HUD, and a bed is picked by id first
+  and a drum room's storey second** (#621). `bedOf(sounds, zone)` in
+  `src/audio.js` is `stepClassOf`'s two steps again, for the same reason:
+  eighteen tower floors, top rooms and roofs are three places over and over,
+  and the 22 rooms that are somebody's are named. No default. `roomAt` grew a
+  `drum` field to make the second step possible.
+
+  **Seven beds, and three the spec listed are not among them.** `SPECS.md`
+  named kitchen, forge, chapel, wall walk, outer ward and rain. The castle
+  builds no forge: Madoc's is a word in the gaol roll. It has no weather; that
+  is the Feel row's. And a garden bed was written and lasted an hour, because
+  check 13 called it dead: the garden is behind the east gate, which never
+  opens (#469), and not one of the castle's 8981 walkable cells is in it. A bed
+  nobody can stand in is a tuning nobody will hear, and the dead-bed assertion
+  is what keeps the file to the castle that exists. What shipped is ward, wall
+  walk, kitchen (the bakehouse too, which is an oven), hall, chapel, chamber
+  and tower.
+
+- **A bed is built when entered and torn down when faded, and it is in the
+  head** (#622). Eight beds running at gain 0 is twenty filters computing
+  silence on a phone; a bed is about a dozen nodes and costs nothing to make.
+  Walking back into a bed still fading out builds a second over it rather than
+  reviving the first, and for 1.2 s there are two fires. The teardown is a
+  timer and not `onended`, because a suspended context never ends anything
+  and a page nobody has started would keep every bed it was walked through.
+  The kitchen's crackle is skipped while the context is suspended rather than
+  queued, or every click made before the start button lands on the instant it
+  is pressed.
+
+  **Not spatialised, which `BACKLOG.md` asked for and `SPECS.md`'s scope did
+  not.** One bed at a time, straight to the listener's gain, so the kitchen is
+  silent from the ward outside its door and switches on across the threshold
+  over the fade. A panner per bed at its room's centre is the next increment
+  and is written into both files as that. It was left out because it changes
+  the model from one bed to the nearest few, and whether one bed at a time is
+  even wrong is a thing to hear first.
+
+- **The Node check sweeps the cells through the nav; the browser check holds
+  one line** (#623, and #529's split). `test/layout.mjs` check 13 puts every
+  walkable cell through `castleNav(...).roomAt` and resolves what comes back,
+  then the plan's own list for rooms no cell reaches: 43 zones, 41 of them as
+  the nav names them. The first draft resolved `plan.rooms` directly and
+  would have stayed green with `roomAt` dropping the `drum` field, which is
+  eighteen silent tower rooms under a passing suite (#34). It also fails a bed
+  no zone reaches, a `byRoom` name the castle does not build, and a fade of no
+  length. Open ground no cell is in is printed and not asserted.
+
+  `test/map.mjs` section 2b is the seam Node cannot see: that `main.js`
+  tells the audio at all. It reads `audio.ambience()`, which says which beds
+  exist and nothing about what they sound like, and its one wait is the fade's
+  own length on a timer, so a slow rasteriser changes nothing (#53). It stands
+  only in rooms already on that suite's tour, so the map's counts do not move.
+
+**Broken on purpose, from green (#34).**
+
+1. `"larder": "tower"` deleted from `byRoom`. `layout` exited 1 on one:
+   `"larder" is level 0 of kitchen-tower and data/sounds.json's ambient block
+   says nothing about what it sounds like`. This is the spec's own break, a
+   zone with no entry, and the check names the zone.
+2. `drum` taken back out of `roomAt`'s return. `layout` exited 1 on
+   eighteen, one per tower floor, top room and roof, each `"nw-tower-1" is a
+   room on level 1 and ... says nothing about what it sounds like`.
+3. The kitchen and the bakehouse pointed at `hall`. `layout` exited 1 on
+   `data/sounds.json defines the bed "kitchen" that no zone in the castle
+   resolves to`.
+4. `audio.enter(here)` deleted from the render loop. `map` exited 1 on four,
+   the first `out in the ward, the ward's bed and nothing else —
+   {"bed":null,"sounding":[]}`.
+5. The teardown timer set to 0, which is a cut. `map` exited 1 on `and it is
+   a cross-fade, not a cut: the ward has -19 ms left of a 1200 ms fade`.
+   **This assertion is the third version, and CI wrote the second.** The first
+   stood in the hall with `standIn`, read `sounding` afterwards and wanted two
+   names. It passed here and failed on the PR's first CI run, `— hall`: a
+   software rasteriser took longer than the fade to get from the change to the
+   read, which is a wall-clock assertion under exactly the renderer #53 names.
+   The second read from a requestAnimationFrame in the frame of the change,
+   went green, and then passed break 5 as well, because a 0 ms timer has not
+   run by then either. A fix that leaves the break green is not a fix (#34).
+   `ambience()` now carries how many ms each outgoing bed has left, and the
+   check holds more than half the fade.
+6. The same-bed early return deleted. `map` exited 1 on `the King's Tower top
+   room to its first floor is the same bed, and nothing fades —
+   {"bed":"tower","sounding":["tower","tower"]}`.
+
+**What was measured.** `data/sounds.json` 71 lines to 188. `src/audio.js`
+188 to 351. `test/layout.mjs` 1137 to 1191, `test/map.mjs` 196 to 235 and
+its `check` count 19 to 24. `src/main.js` gained two lines of code and
+`src/stations.js` one field. No asset added: `dist/` grew by the bundle's
+share of 163 lines.
+
+**What nobody has heard.** All of it. Every gain, filter and swell rate in
+the `ambient` block was typed on a machine with no speakers attached to the
+session, and the file says so in capitals. The three most likely to be wrong:
+whether 0.022 for a chamber is audible at all, whether the 880 Hz whistle in
+a tower reads as wind in an arrow loop or as a fault, and whether a looped
+four-second noise buffer can be picked out under a steady low-pass in the
+hall, which is the bed with the least going on to hide it.
