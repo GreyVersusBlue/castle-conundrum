@@ -6,9 +6,9 @@
 // tinted by placeholder.color. Nothing here keys off an npc's id — swapping a model in or
 // out, or changing which clips or held prop it uses, is a data change, not a code change.
 //
-// TWELVE PEOPLE, THREE BODIES (#419). `tint` is a hex every cloth material on the
-// body is multiplied by, which is what makes Marged and Nest two women rather than
-// two copies of Farmer.glb. Skin, eyes, brows and hair are left alone: a green face
+// TWELVE PEOPLE, FOUR BODIES (#419, and #603 for the fourth). `tint` is a hex every
+// cloth material on the body is multiplied by, which is what makes Marged and Nest two
+// women rather than two copies of Woman.glb. Skin, eyes, brows and hair are left alone: a green face
 // is a different species, not a different person. The materials are cloned first,
 // because SkeletonUtils.clone() shares them by reference and tinting one Farmer
 // otherwise tints all four.
@@ -71,7 +71,7 @@ export class NPC {
     this._current = null;
     this._wasTalking = false;
     /* WHAT A BODY GOES BACK TO WHEN IT IS NOT WALKING AND NOT TALKING. It was
-     * the literal 'idle' in three places until the populace arrived (#604),
+     * the literal 'idle' in three places until the populace arrived (#607),
      * and a populace body that reached its stop, played its activity and then
      * finished a step would drop straight back to Idle and stay there — the
      * baker baked for one frame per bell. This is the one thing the activity
@@ -253,7 +253,7 @@ export class NPC {
   get walking() { return this._waypoints.length > 0 && !this._loop; }
 
   /**
-   * STAND STILL AND DO A JOB (#604). `activity` is one of the strings
+   * STAND STILL AND DO A JOB (#607). `activity` is one of the strings
    * src/populace.js's ACTIVITY_CLIPS names, and the clip it resolves to is
    * whatever the loaded body ships under that name. A body whose file has no
    * such clip keeps whatever it was playing rather than freezing: `_play`

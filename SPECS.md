@@ -19,8 +19,12 @@ not repeat what it already says. **Rows shipped since and their sections are gon
 asset compression (#506 to #510), sound (#519 to #522), the tower tops
 (#523 to #526), the hall's roof frame (#527, #528), the two plan suites (#529),
 touch (#530 to #532), the texture sets (#541 to #545), the town
-side (#546), the lore row (#551 to #555), and what was left of that row,
-the sermon and the song, with #592 to #596.** What asset
+side (#546), the lore row (#551 to #555), what was left of that row,
+the sermon and the song, with #592 to #596, and the fourth body with #603 to
+#606.** **The ranks below start at 2 and that is not a gap**: rank 1 shipped
+on 2026-09-17 and its number was retired rather than shifted up, because
+renumbering eleven rows across three files while four wave A sessions were
+running is a conflict in every table line (#610). What asset
 compression left behind for the rows that touch assets is named in their
 Dependencies; what sound left behind is `data/sounds.json`, a `material` and a
 `kind` on every `plan.surfaces` entry, and `layout.mjs` check 12. Where a brief and the code disagree, the code is
@@ -71,111 +75,6 @@ Four facts every row below leans on, stated once:
 - **The save key is `castleConundrumSave_v1` and stays** (#36, #413). Schema
   changes go through `migrate` with a version bump; `repair` runs on every load
   (#37).
-
----
-
-## A fourth body
-
-**Rank 1. Size ½.** Marged (cook), Nest (laundress) and Lady Alys are three of
-twelve and wear `Farmer.glb`, `Farmer.glb` and `King.glb`. Twelve people off
-three bodies by tint was Devon's bet (#417, #419) and PLAN.md's own risk list
-calls it the one it would bet the project fails on. This repo's rule lets a
-session answer the question.
-
-### Scope
-
-- **`assets/NPCs/<Woman>.glb`, new**, 1.4 to 2.0 MB by the three on disk. The
-  three are the same rig: node names `Wrist.R`, `Head`, `Neck`; materials
-  `Skin`, `Eye`, `Eyebrows`, `Hair`; 24 clips including `Idle`, `Walk`, `Wave`,
-  `Interact`; zero textures. The `npc.js` comment calls it the Quaternius rig.
-  A fourth body from the same pack keeps `pickClip`, `tintBody`'s
-  `BARE_MATERIALS` and `_findHandBone` working with no code change. A body from
-  anywhere else has to be checked against all three lists.
-- **`data/npcs.json`.** `modelPath` on `cook`, `laundress` and `lady`; their
-  three tints stay distinct. `hideMaterials`/`hideNodes` as the new body needs.
-- **`test/mystery.mjs:79`** asserts `bodies.size === 3`. It becomes 4, and
-  gains the assertion that says what the fourth is for.
-- **`test/plan-vs-scene.mjs`** asserts `one skin colour across all of them`
-  from the live materials. A fourth body whose `Skin` hex differs fails that
-  line. Either the body's skin is set to the others' hex in the file, or the
-  assertion becomes "skin colours come from the files, not from the tint", which
-  is what it is actually guarding (#471).
-- **`test/assets.mjs`** check 4 fails the file until `npcs.json` names it, which
-  is the "same commit" rule (#390) doing its job.
-- **`test/play-castle.mjs`** asserts `twelve rigged NPC bodies` and
-  `every skeleton rebound`: unchanged if the rig is a rig.
-
-### Acceptance
-
-- Twelve bodies spawn, four models, twelve distinct cloth sets
-  (`plan-vs-scene.mjs` already asserts the twelve), `npm run build` and eight
-  suites green.
-- `test/mystery.mjs`: `four bodies, and the three women share the one that is
-  a woman's`, asserting `cook`, `laundress` and `lady` share a `modelPath` that
-  no man in the cast uses. Break: put Lady Alys back on `King.glb`; the line
-  names her.
-- `test/assets.mjs`: model reference resolves, is not a preview ball, is
-  referenced. Break: add the file without the `npcs.json` edit; check 4 says
-  `nothing references assets/NPCs/<Woman>.glb`.
-- The GPU criterion is **The GPU run**'s photograph, and the honest line in `HISTORY.md`
-  is that the fourth body has not been looked at either until that run.
-
-### Open calls
-
-- **Source of the body.** Recommend, in order: **the pack the three came from**
-  (same rig, same clip and material names, CC0); then any CC0 humanoid with a
-  `Walk` and an `Idle` clip and a material named `Skin`, re-exported through
-  `gltf-transform` the way the three were (generator `glTF-Transform v4.4.2`);
-  **never a re-tinted Farmer**, which is what the row exists to replace. If
-  nothing fits, the row closes as "no woman's body found, the bet stands" and
-  says where was looked, which is a result.
-  **Where was looked, 2026-09-17** (#568 to #570): quaternius.com,
-  quaternius.itch.io, poly.pizza, opengameart.org and patreon.com all refused
-  by the container's egress proxy; the npm registry searched under eleven
-  phrasings. Found and rejected: KayKit's Adventurers in `hearthling@0.2.0`
-  (CC0, Mage and Rogue are women, chibi: `head` joint at 1.24 m of 2.17
-  against the Quaternius rig's `Head` at 1.55 with `Hips` at 0.86; one
-  material over a palette PNG; clips in separate `Rig_Medium_*.glb` files)
-  and deskrpg's fifty office bodies in `deskrpg@2026.917.3` (the Quaternius
-  Animated Women rig with `Skin`, `Eyes`, `Eyebrows`, `Hair` and zero images,
-  but a non-commercial "Sustainable Use License" over the maintainers'
-  re-modelling, and office clothes). **Fetch first, from a machine that
-  reaches quaternius.com: the Ultimate Modular Women Pack**
-  (`quaternius.com/packs/ultimatemodularwomen.html`; Witch, Worker, Suit,
-  Soldier, Animated Woman, Punk, Adventurer, Hooded Adventurer), and check
-  its node, material and clip names against the three lists under Scope
-  before anything else. If that rig names the hand bone `Palm.R`, as the
-  Animated Women rig does, `HAND_BONES` in `npc.js` needs one more pattern
-  or a held prop falls back to the group offset.
-- **Who wears it.** Recommend **all three women**. Farmer keeps the chaplain
-  and the prisoner; King keeps the Constable and the Steward. Two women on the
-  new body and one on King is half an answer.
-- **A separate `modelHeight`?** `npc.js` normalises every body to 1.8 m.
-  Recommend **1.65 m for the fourth body** via `modelHeight`, so height as
-  well as tint tells the three apart at twenty metres.
-
-### Dependencies
-
-- **A network that reaches quaternius.com** (#568). This container's did not,
-  the way #518's did not reach Poly Haven, and #541's did.
-- The evidence for this row is **The GPU run**'s Vespers photograph, which no
-  session can take. Devon ranked this above that row knowing so; ship it on the
-  plan's stated risk and let the run look at thirteen bodies' worth of question
-  instead
-  of twelve.
-- **The body goes through `tools/encode-assets.mjs`** (#506), which is shipped:
-  `npm run assets:encode` meshopts it in place. It needs KTX-Software's `ktx` on
-  PATH. A body committed uncompressed passes every suite and is the one asset
-  nothing would catch.
-
-### Constraints
-
-- #390 (asset and reference in one commit; `assets.mjs` check 4).
-- #499 (2 MB against 158 MB of headroom; not a constraint any more, and worth
-  saying so in `HISTORY.md` because #419 priced this at "a new ceiling").
-- #471 (tint clones the material; skin is bare; the live-skin assertion in
-  `plan-vs-scene.mjs` is the thing a new body can trip).
-- #34 (the two breaks).
 
 ---
 
@@ -234,7 +133,7 @@ and og card from that run.
   failing beat named and filed as a new backlog row.
 - `shots/play/` contains the numbered set, `twelve-at-vespers.png` among them,
   and a human has looked at it and written one sentence per body: told apart
-  or not. That sentence is the answer to Q53's risk and is **A fourth body**'s
+  or not. That sentence is the answer to Q53's risk and is the fourth body's
   evidence after the fact.
 - No new guard-rail: the run is the check. The `snap` beat is a screenshot, not
   an assertion, and says so in its comment.
@@ -280,7 +179,9 @@ and og card from that run.
 - The run needs a machine with a GPU, which is Devon's; a session can add the
   `snap` beat and cannot run it. If a session is asked to take the run without
   one, the honest output is the beat and a note, not a claim.
-- **A fourth body** wants the run's photograph as evidence; see above.
+- The fourth body (rank 1, shipped #603) is still owed the run's photograph:
+  nobody has seen Marged, Nest or Lady Alys in the castle (#606). It is this
+  row's to take.
 
 ### Constraints
 
@@ -486,7 +387,7 @@ GPU.
 ## Life: a populace
 
 **Rank 6. Size 2+.** `WISHLIST.md` theme 1. **The first increment shipped on
-2026-09-17** (#604 to #606) and this section is what is left of the row.
+2026-09-17** (#607 to #609) and this section is what is left of the row.
 
 ### What shipped
 
@@ -502,7 +403,7 @@ GPU.
 - **Nine activities onto three clips**, all of them idle variants every body
   already ships, so no asset and no clip was added. `ACTIVITY_CLIPS` in
   `src/populace.js` is the table and `npc.js`'s `playActivity` reads it.
-- **`label` on an interaction target** (#605): a populace body shows a name
+- **`label` on an interaction target** (#608): a populace body shows a name
   and a role on the HUD, E at one does nothing, and a label never takes the
   prompt off a suspect standing behind it.
 
@@ -542,7 +443,7 @@ GPU.
   the town exists**, rather than packing bodies into the wards to hit a
   number; the row is about whether the castle reads as lived in, and a
   courtyard of people standing 1.5 m apart reads as a queue.
-- **Whether `garden` should be made real** (#606). `mystery.json` lists it and
+- **Whether `garden` should be made real** (#609). `mystery.json` lists it and
   nothing in the castle resolves to it: the 93 walkable cells east of the east
   gate are all inside the Chapel Tower's or the King's Tower's disc. It is
   either ground somebody builds — rank 4c's yard is the nearer precedent — or
@@ -563,7 +464,7 @@ GPU.
   says so in its own header).
 - #13, #34 (the validator exits non-zero, and every rail it adds has been
   broken on purpose — including one that had to be rewritten because the
-  first version passed with the bug back in, #604).
+  first version passed with the bug back in, #607).
 - #529 (the check belongs with `mystery.mjs`).
 
 ---
@@ -873,12 +774,13 @@ because the map is the plan's list and not a second one.
 ## Bodies
 
 **Rank 10. Size 1.** `WISHLIST.md` theme 6. The plan bet the project on tints
-(#419); this row is the second body-sourcing question after rank 1's, at the
+(#419); this row is the second body-sourcing question after rank 1's, which
+won its search on 2026-09-17 (#603), at the
 scale of a child, a dog, a chicken and a garrison rather than one woman.
 
 ### Scope
 
-- **Sourcing, the same search `A fourth body` (rank 1) already specs**: a
+- **Sourcing, the same search rank 1 ran and won**: a
   low-poly, one-rig, CC0 body per new kind, re-exported through
   `gltf-transform` if it is not already the right generator, so `npc.js`'s
   `pickClip`, `tintBody` and `_findHandBone` keep working with no code change.

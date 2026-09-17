@@ -237,7 +237,7 @@ async function init() {
   // The ten, separately, so the thirteen stay thirteen wherever they are counted.
   window.__folk = folk;
   // And the thing that turns their rings, for the one beat that steps a walk
-  // with a dt it supplies rather than one it measures (#604).
+  // with a dt it supplies rather than one it measures (#607).
   window.__populace = populace;
   window.__mystery = engine;
   // The ten examinables, with the world point each prompt is aimed at.

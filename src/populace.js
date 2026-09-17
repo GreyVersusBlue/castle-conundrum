@@ -86,6 +86,10 @@ export function populaceDefs(populace) {
     id: p.id,
     name: p.name,
     modelPath: p.modelPath,
+    // A body authored at a different height is normalised to it, not to
+    // npc.js's 1.8 (#603): the women's pack is 1.65 and a populace woman
+    // who left this line out would stand a head over the cook.
+    modelHeight: p.modelHeight,
     tint: p.tint,
     hideNodes: p.hideNodes ?? [],
     hideMaterials: p.hideMaterials ?? [],

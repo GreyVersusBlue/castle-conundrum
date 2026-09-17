@@ -144,7 +144,7 @@ async function encodeMaterialMaps() {
 }
 
 /* ------------------------------------------------- 2 & 3: the glTF files ---
- * The ten Poly Haven prop packs (.gltf + .bin + textures/) and the three
+ * The ten Poly Haven prop packs (.gltf + .bin + textures/) and the
  * Quaternius NPC bodies (.glb, zero images, 24 animation clips each).
  *
  * meshopt is applied to both and NOT to the Kenney kit (#508). The kit is
@@ -217,6 +217,10 @@ async function encodeGLTF(file, { textures, mesh }) {
     if (!already.includes('KHR_texture_basisu')) doc.createExtension(KHRTextureBasisu).setRequired(true);
   }
 
+  // A file with nothing left to encode is not rewritten. On a CRLF checkout the
+  // writer's LF turned ten untouched Poly Haven .gltf files into ten diffs.
+  if (!before.tex && !before.mesh) { console.log(`  ${label}: nothing to do`); return; }
+
   await io.write(file, doc);
   for (const old of retired) if (fs.existsSync(old)) fs.rmSync(old);
 
@@ -269,7 +273,7 @@ const props = new Set([
 ]);
 for (const rel of [...props].sort()) await encodeGLTF(path.join(ROOT, rel), { textures: true, mesh: true });
 
-console.log('\nthe three NPC bodies');
+console.log('\nthe NPC bodies');
 for (const rel of [...new Set(npcs.cast.map((n) => n.modelPath))].sort())
   await encodeGLTF(path.join(ROOT, rel), { textures: false, mesh: true });
 

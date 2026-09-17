@@ -355,7 +355,7 @@ try {
     grounded.map((n) => n.id).join(', ') + ' on the ground');
   const absent = bodies.filter((b) => !b.visible).map((b) => b.id).sort();
   check(absent.join() === 'inspector,merchant', 'the two who are not in the castle at Prime are hidden rather than standing at the origin', `hidden: ${absent.join(', ') || 'nobody'}`);
-  /* --- AND THE OTHER TEN (#604). The household spawns off data/populace.json
+  /* --- AND THE OTHER TEN (#607). The household spawns off data/populace.json
    * beside the thirteen and is a separate list on purpose: `window.__cast`
    * above is counted by id and by name, and folding the ten into it would
    * have left every assertion in this beat reading the same and meaning
@@ -402,7 +402,7 @@ try {
       `and ${notYet.join(', ')} — who has no Prime stop — is hidden rather than standing at the origin`,
       notYet.length ? notYet.filter((id) => byId.get(id)?.visible).join(', ') : 'nobody in the file skips Prime, so this asserts nothing');
   }
-  /* AND THE RING ACTUALLY TURNS (#604). Everything above is where a body was
+  /* AND THE RING ACTUALLY TURNS (#607). Everything above is where a body was
    * PUT; this is the only assertion that a routine of more than one stop is a
    * loop rather than a list nobody reads past the first entry. `Populace`
    * counts a dwell down, asks the nav for a route, hands it to `walkTo` and
@@ -532,7 +532,7 @@ try {
     }
   }
   /* AND A LABEL NEVER TAKES THE PROMPT OFF SOMEBODY WHO HAS SOMETHING TO SAY
-   * (#605). `InteractionSystem` picked the nearest target in range and nothing
+   * (#608). `InteractionSystem` picked the nearest target in range and nothing
    * else until the household arrived. The twelve are held 1.5 m apart from the
    * ten by `STATION_CLEARANCE` and E reaches 3.2 m, so a populace body between
    * the player and a suspect is legitimately the NEARER of the two — and under

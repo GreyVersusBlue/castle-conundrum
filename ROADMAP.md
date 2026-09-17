@@ -7,16 +7,21 @@ only record. Nothing here is a locked decision except #600 to #602, which are
 in `HISTORY.md` like everything else.
 
 Written 2026-09-17 against `main` at `f7ea3ff`, from `BACKLOG.md`'s twelve rows
-and `SPECS.md`'s twelve Dependencies sections. Rank numbers shift every time a
-row closes; **this file names rows by title as well as rank**, the way
-`SPECS.md` already does (#522), so a closed row does not silently renumber the
-order below.
+and `SPECS.md`'s twelve Dependencies sections. **R1 and R6 both closed the
+same day it was written** — R1 outright, R6's first increment — and this file
+was updated in place rather than rewritten. Rank numbers do not shift when a
+row closes any more (#610): **this file names rows by title as well as rank**,
+the way `SPECS.md` already does (#522), so a retired number is a number nobody
+has to chase through three files.
 
 Devon's framing for what he wanted out of this: *"Do #1 first, then you can do
 2, 3 and 4 in any order alongside each other, then #5 before you can
 continue."* The honest answer is that this list is looser than that. **There
-are four hard gates on twelve rows**, and everything else is preference,
-lane-avoidance, or which machine is free.
+are four hard gates on eleven rows** — R2 before R3, R2 before R5, R2 before
+R11 past its Node line, R4c before R9 — and everything else is preference,
+lane-avoidance, or which machine is free. R1's block was never one of them: it
+was a machine, not a gate, which is the distinction section 1 below draws and
+is why it closed the moment somebody ran it from a machine with a network.
 
 ---
 
@@ -28,7 +33,7 @@ NOW, in parallel, no gates:
   Devon's machine                    A container
   ---------------                    -----------
   R2  GPU run        --+             R8   quests: reputation + errands   lane A
-  R1  fourth body      |             R6   populace: the next forty       lanes C D
+                       |             R6   populace: the next forty       lanes C D
                        |             R12a budget suite                   no lane
                        |             R7   ambient beds                   lane E
                        |             R4a  the bells call   (lane A: not beside R8)
@@ -54,7 +59,8 @@ Never gated, take whenever the lane is free:
 
 Three different reasons, and they are not interchangeable. Calling all three
 "needs a GPU" is what the old header did, and it is why rank 1 sat unstarted
-behind the wrong excuse.
+behind the wrong excuse — until the day this file was written, when it was
+taken to Devon's own machine and closed (#603 to #606).
 
 ### Local: a GPU (#53)
 
@@ -83,7 +89,6 @@ could not reach quaternius.com, itch, poly.pizza, OpenGameArt or Patreon.
 
 | Row | Model | What to fetch |
 | --- | --- | --- |
-| **R1 A fourth body** | Fable 5.1 | Quaternius's Ultimate Modular Women Pack first, checked against `SPECS.md`'s three name lists. The npm registry's two rigged CC0 alternatives were measured and rejected: KayKit is the wrong shape (head joint 57 % up the body against the Quaternius rig's top fifth, #569) and deskrpg is the wrong licence (#570). |
 | **R10 Bodies** | Fable 5.1 | A low-poly one-rig CC0 body per new kind — the child first, per the row's own recommendation. A child scaled down from the existing rig is the cheapest version of "child" and should be tried before anything is fetched at all. |
 
 Both go through `tools/encode-assets.mjs` before commit (#506), which needs
@@ -116,7 +121,7 @@ the theme is not what conflicts.
 | --- | --- | --- |
 | **A** | `src/save.js` — the version number and `migrate` | R4a, R4b, R8 |
 | **B** | `data/scene-config.json`, and `test/tools.mjs`'s byte-exactness rail | R4c, R5, R9, R12b |
-| **C** | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | R1, R6, R10, R12c |
+| **C** | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | R6, R10, R12c |
 | **D** | `src/main.js`'s player rig and spawn | R6, R11 |
 | **E** | `src/audio.js` and `data/sounds.json` | R7 |
 | **none** | | R2, R3, R12a |
@@ -150,13 +155,16 @@ decision number itself — two sessions both reaching for the next free one —
 and neither is a lane. A session should take the next number after every
 number it can see and say in its PR which band it took.
 
-Add **R2** and **R1** on Devon's machine and that is five things moving at once
-without a single collision.
+Add **R2** on Devon's machine and that is four things moving at once without a
+single collision.
 
 ### What not to pair
 
-- R6 beside R1 or R10. All three are lane C, and R6 reads the `cast` that R1
-  and R10 both exist to change.
+- R6 beside R10. Both are lane C, and R6 reads the `cast` that R10 exists to
+  change. **This one was tested on 2026-09-17 and it cost something**: R1 and
+  R6 ran together anyway, R1 landed `Woman.glb` first, and R6's ten had five
+  women wearing men's bodies until it merged and put them on the new one. The
+  merge was clean and the data was wrong until somebody looked.
 - R8 beside R4a or R4b. Lane A, and both want the version number.
 - R5, R9, R4c and R12b, any two of them. All lane B.
 - R6 beside R11. Lane D, both inside `src/main.js`'s rig.
@@ -185,9 +193,8 @@ One row per lane. All of these are startable today.
 | --- | --- | --- | --- | --- |
 | **R2** The GPU run | Opus 5 | **Local: GPU** | none | Gate 1, above. |
 | **R8** Side quests | Opus 5 | Container | A | Reputation by ward: two save counters, version 6 through `migrate`, a clamp in `repair`, a chatter line per threshold and one line in one closing pane. Then the seven errands left of the dozen; five of the seven need nobody new. |
-| **R6** Life: a populace | Opus 5 | Container | C, D | **First increment shipped 2026-09-17** (#604 to #606): the file, the validator and the ten. Next is the other forty, the ambient talk off the 27-pair pool, and the four activities that want a clip nobody has baked — which is the half that trades with R10. |
+| **R6** Life: a populace | Opus 5 | Container | C, D | **First increment shipped 2026-09-17** (#607 to #609): the file, the validator and the ten. Next is the other forty, the ambient talk off the 27-pair pool, and the four activities that want a clip nobody has baked — which is the half that trades with R10. |
 | **R12a** The budget suite | Opus 5 | Container | none | Skinned bodies, point lights and draw calls per ward, off the plan, in Node, failing against ceilings held as named constants with a comment saying they are guesses. |
-| **R1** A fourth body | Fable 5.1 | **Local: net** | C | Fetch, check against the three name lists, encode, add to `cast`. Not beside R6. |
 | **R7** Sound | Fable 5.1 | Container | E | The ambient beds and the cross-fade. Alone in its lane, which makes it the right row for a session when A, C and D are all held. |
 
 R4a (the bells call) and R4b (the `since` field) are startable today too, but

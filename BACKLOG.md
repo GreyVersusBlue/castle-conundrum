@@ -23,8 +23,8 @@ a hand-vendored `libs/`, and a 200 MB asset ceiling instead of 44.4.
 **Asset compression shipped on 2026-09-15** (#506 to #510): KTX2/Basis over
 every texture, meshopt over the Poly Haven props and the NPC bodies, and 317.9
 MB of video memory down to 79.9. `tools/encode-assets.mjs` is the pipeline, and
-anything **A fourth body** adds has to come through it, the way the texture
-sets and the town side already did.
+anything a new body adds has to come through it, the way the texture sets,
+the town side and `Woman.glb` already did (#605).
 
 **Four things a GPU saw shipped on 2026-09-15** (#511 to #517, PRs #6 and
 #7): a body can climb every flight, the drums wear built crowns instead of
@@ -117,17 +117,18 @@ Devon asked for this directly rather than waiting on rank 5 to close, which is
 question 10's answer overtaken by the man who gave it; the order between the
 eight new rows and the content inside each one both come from the wishlist as
 written, not reinvented. Each names a model, defaulting to Opus 5, and Fable
-5.1 where the row is asset-sourcing in the shape rank 1 already is. None of
+5.1 where the row is asset-sourcing in the shape rank 1 was. None of
 the eight has shipped anything: `SPECS.md` specs a first increment for each,
 the way rank 4 already specs its own increments, and a shipping session picks
 up where that increment stops.
 
-**The fourth body was looked for on 2026-09-17 and not found from here** (#568
-to #570): every host that carries a Quaternius body was refused by the
-container's network policy, the way #518's was, and the two rigged CC0
-bodies the npm registry did carry were the wrong shape (KayKit, chibi) and the
-wrong licence (deskrpg, non-commercial derivative). The row stays at rank 1
-with what to fetch written into it.
+**The fourth body shipped on 2026-09-17** (#603 to #606), from Devon's own
+machine after #568's container could not reach a single host that carries a
+Quaternius body. It is the Ultimate Modular Women Pack's `Medieval.gltf`,
+committed as `assets/NPCs/Woman.glb`, and Marged, Nest and Lady Alys all wear
+it at 1.65 m. **Rank 1 is done and its section is gone from this file and
+from `SPECS.md`.** The ten of rank 6's populace put five more women in it the
+same day.
 
 **The side quests got their format on 2026-09-17** (#576 to #581): `data/quests/`
 is a directory of one graph per file, `validateQuestSet` in `src/quest-graph.js`
@@ -186,20 +187,25 @@ barrel-before-Marged hole the knife shipped with. `validateQuestSet` holds
 every file to a `ward`. **Rank 8 is still open**: seven of the dozen, and
 reputation by ward, which five errands is now enough to make visible.
 
-**The first ten of the populace shipped on 2026-09-17** (#604 to #606):
+**The first ten of the populace shipped on 2026-09-17** (#607 to #609):
 `data/populace.json`, `src/populace.js` and ten people with no clue, no lie
 and no line, walking rings inside a watch on the same grid the twelve's
 schedule is checked against. Nine activities onto three clips the kit already
 ships, so no asset was needed and none was added. Two things came out of it
 for other rows: `garden` is a room id nothing in this castle resolves to, and
-`test/tools.mjs` fails on Windows and passes in CI (#606). **Rank 6 is still
+`test/tools.mjs` fails on Windows and passes in CI (#609). **Rank 6 is still
 open**: the other forty, the ambient talk, the children and dogs, and every
 activity that wants a clip nobody has baked yet.
 
-**12 ranked items. Nothing is claimed.** Every one of ranks 1, 2, 3 and 5
-needs a machine this one is not: ranks 2, 3 and 5 a GPU (#518), rank 1 a
-network that reaches quaternius.com (#568), which #541's did and this one's
-did not. **Rank 4 no longer has a thread a container can start on its own**:
+**Eleven ranked items, numbered 2 to 12. Nothing is claimed.** Rank 1
+shipped on 2026-09-17 and **the numbers under it were not shifted up**
+(#610): `SPECS.md` and `ROADMAP.md` already name every row by title as well
+as by rank, for exactly this reason (#522), and four wave A sessions were
+running the day it closed — renumbering eleven rows across three files would
+have put a conflict in every line of every table, which is the reason rank
+1's own session gave for leaving the row in. A rank is retired, not reused,
+the way a decision number is (#491). Ranks 2, 3 and 5 still need a machine
+this one is not: all three want a GPU (#518). **Rank 4 no longer has a thread a container can start on its own**:
 the gaol roll was it and it shipped (#571 to #575), and what is left of
 increment 3 is a yard to build in the town and a design call to make about
 bells on day two. Of ranks 6 to 12, the ones whose next increment is data and
@@ -211,8 +217,8 @@ not wait on rank 4's yard. **Ranks 8 and 12 both shipped a first increment on
 increments are a container's: rank 8's reputation by ward and the seven
 errands left, rank 12's budget suite. **Rank 9's map shipped the same day** (#588 to #591),
 and what is left of that row is the town, behind rank 4's yard. Of them all, 6
-is the one that reads `data/npcs.json`'s `cast`, which is what ranks 1 and 10
-are both for, so a session running beside one of those is better off on 8 or
+is the one that reads `data/npcs.json`'s `cast`, which is what rank 10 is
+for, so a session running beside that one is better off on 8 or
 12.
 
 One thing is true of the whole list and worth saying once. **Nothing here has
@@ -339,9 +345,13 @@ same reason: **12a** the budget suite, **12b** move-and-delete in the editor,
 
 ## The ranked table
 
+**It starts at 2, and that is not a gap.** Rank 1 shipped on 2026-09-17 and
+its number was retired rather than reused (#610). Every row below is named by
+title in `SPECS.md` and `ROADMAP.md` as well as by rank, which is what makes
+that survivable (#522).
+
 | Rank | Item | Size | Model | Where | Gate | Lane | Claimed | Detail |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | A fourth body, and a woman's in particular: fetch it from a machine that reaches quaternius.com | ½ | Fable 5.1 | Local: net | — | C | | [A fourth body](SPECS.md#a-fourth-body) |
 | 2 | A real GPU run of `npm run play`, and somebody looks at the twelve | ¼ | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
 | 3 | A new preview and og card, from that run | ¼ | Opus 5 | Local: GPU | **after 2** | — | | [The GPU run](SPECS.md#the-gpu-run) |
 | 4 | A second day: increment 3, the town half and the bells question | 2+ | Opus 5 | 4a/4b container, 4c local | — | A (4a/4b), B (4c) | | [A second day](SPECS.md#a-second-day) |
@@ -357,26 +367,6 @@ same reason: **12a** the budget suite, **12b** move-and-delete in the editor,
 **`ROADMAP.md` is these three columns turned into an order**: which row to
 take first, what each one unblocks, and which ones two sessions may hold at
 the same time. This table still ranks; that file sequences (#601).
-
-## A fourth body
-
-*Where: local, a network that reaches quaternius.com. Gate: none. Lane: C.*
-
-**Rank 1.** Marged, Nest and Lady Alys are three of twelve and the Kenney kit
-has no woman's body. Twelve NPCs come off three bodies by tint (#417, #419) and
-that was accepted as a risk, not as a solution. **Question 1 for Devon in
-`PLAN.md`**, and under this repo's own rule a session may answer it: find or
-make a fourth body, add it to `data/npcs.json`'s `cast`, and record the call.
-Whatever it is goes through `tools/encode-assets.mjs` before it is committed
-(#506): an uncompressed body is the one asset nothing else on this list would
-notice. **Looked for on 2026-09-17 and not found from a container whose
-network refuses quaternius.com, itch, poly.pizza, OpenGameArt and Patreon**
-(#568). What the npm registry carries instead was measured and rejected:
-KayKit's Mage and Rogue are CC0 women with the head joint 57 % of the way up
-the body against the Quaternius rig's top fifth (#569), and deskrpg's fifty
-are the right Quaternius rig under a non-commercial licence, in office
-clothes (#570). Fetch the Ultimate Modular Women Pack first, check it against
-`SPECS.md`'s three name lists, and the rest of the row is as specced.
 
 ## The GPU run
 
@@ -443,8 +433,8 @@ at it.
 
 *Where: container. Gate: none. Lanes: C and D.*
 
-**Rank 6, and a 2+. The first increment shipped on 2026-09-17** (#604 to
-#606): `data/populace.json` is ten people with no clue, no lie and no line,
+**Rank 6, and a 2+. The first increment shipped on 2026-09-17** (#607 to
+#609): `data/populace.json` is ten people with no clue, no lie and no line,
 `src/populace.js` is their validator and the engine that turns their rings,
 and nine activities resolve to three clips the kit already ships, so nothing
 here waited on an asset. A routine is a LOOP per bell rather than one station
@@ -550,8 +540,8 @@ whatever documents a later lore row adds, made cheap by rank 12's editor.
 
 **Rank 10.** Every row above this one that needs a new body is waiting on
 this one. Low-poly, one shared rig, CC0, for now (#550, question 5): a body a
-session can make or edit as a drop-in, the way **A fourth body** (rank 1)
-already had to answer once for a woman's body and this row answers at the
+session can make or edit as a drop-in, the way the fourth body (rank 1,
+shipped, #603) answered it once for a woman's body and this row answers at the
 scale of a child, a dog, a chicken and a garrison. Variation without files —
 tint, height scale, a hidden hood or hat node, a held prop, a beard toggle —
 is `npc.js`'s existing hide-node and hide-material machinery, not new code.

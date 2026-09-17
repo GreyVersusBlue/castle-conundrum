@@ -2,6 +2,7 @@
   "comment": "The household. Ten people who have nothing to do with the mason's death and everything to do with whether the castle reads as lived in (BACKLOG.md rank 6, WISHLIST.md theme 1). None of them holds a clue, tells a lie or has a line: data/npcs.json's twelve are the mystery's, and these ten are the castle's. src/populace.js validates every field below against the plan's own walk grid before the page spawns any of them, and test/mystery.mjs runs the same validator in Node.",
   "routineComment": "A routine is a LOOP INSIDE A WATCH, not a timetable (#547, answer 3). The clock is the four bells the player rings and it does not move between them, so `prime` is a LIST of stops walked round and round until Terce. A list of one is somebody who stands still for the whole watch. A watch left out entirely is somebody who is not in the castle at that bell, and src/main.js hides the body, the same answer the merchant gets before Terce.",
   "tileComment": "Every tile below is the centre of a real cell in the 0.5 m walk grid, which is why they read as multiples of 0.125 offset by 0.0625 rather than as round numbers. They were picked off the grid rather than guessed at, and the validator holds them there: floor under the stop, inside the room it names, 1.5 m clear of every other body at that bell, and a walk to the next stop.",
+  "bodyComment": "Four bodies, all four already worn by the twelve: `Woman.glb` for the five women (#603 put it in the cast the day this was written, and a populace woman in Farmer.glb would have been the thing that row exists to stop), `King.glb` with its crown hidden for the serjeant, and Farmer and Adventurer for the rest. `modelHeight` 1.65 goes with the women's pack, which is authored shorter than the men's.",
   "activityComment": "`activity` is the job, and src/populace.js's ACTIVITY_CLIPS maps it to a clip the three bodies under assets/NPCs already ship. All nine resolve to one of three idle variants, because this increment adds no asset and no clip and the kit has no sweep, stir, hammer or spar in it. That is why every job below is one a body does standing still.",
   "day2Comment": "Nobody here has a Lauds stop, so the morning after has the cast and nothing else. That is the increment's boundary and not a claim about the fiction; a later one gives the household a second day.",
   "gardenComment": "There is no gardener, and there was one until the grid was asked. `garden` is a room id in mystery.json that no point in this castle resolves to: there are 93 walkable cells east of the east gate and every one of them is inside the Chapel Tower's or the King's Tower's own disc, so `roomAt` names a tower and never the garden. A stop written there would be a stop in a room that does not exist on the ground. The hen-wife keeps the outer ward instead.",
@@ -10,7 +11,10 @@
       "id": "baker",
       "name": "Gwladus",
       "role": "the baker",
-      "modelPath": "assets/NPCs/Farmer.glb",
+      "modelPath": "assets/NPCs/Woman.glb",
+      "modelHeight": 1.65,
+      "hideNodes": ["Sword"],
+      "hideMaterials": ["Metal", "Gold"],
       "tint": "#e0cfa8",
       "routine": {
         "prime": [
@@ -59,7 +63,10 @@
       "id": "well-wife",
       "name": "Cecily",
       "role": "the well-wife",
-      "modelPath": "assets/NPCs/Farmer.glb",
+      "modelPath": "assets/NPCs/Woman.glb",
+      "modelHeight": 1.65,
+      "hideNodes": ["Sword"],
+      "hideMaterials": ["Metal", "Gold"],
       "tint": "#9fb0a0",
       "routine": {
         "prime": [
@@ -80,7 +87,7 @@
       "id": "carter",
       "name": "Rhys Gethin",
       "role": "a carter of the town",
-      "modelPath": "assets/NPCs/Adventurer.glb",
+      "modelPath": "assets/NPCs/Farmer.glb",
       "tint": "#7a5230",
       "routine": {
         "terce": [
@@ -96,7 +103,10 @@
       "id": "scullion",
       "name": "Angharad",
       "role": "a scullion of the kitchen",
-      "modelPath": "assets/NPCs/Farmer.glb",
+      "modelPath": "assets/NPCs/Woman.glb",
+      "modelHeight": 1.65,
+      "hideNodes": ["Sword"],
+      "hideMaterials": ["Metal", "Gold"],
       "tint": "#b58f6a",
       "routine": {
         "prime": [
@@ -163,7 +173,7 @@
       "id": "archer",
       "name": "Bleddyn Fychan",
       "role": "an archer of the watch",
-      "modelPath": "assets/NPCs/Adventurer.glb",
+      "modelPath": "assets/NPCs/Farmer.glb",
       "tint": "#4d6b4a",
       "routine": {
         "prime": [
@@ -186,7 +196,10 @@
       "id": "hen-wife",
       "name": "Tegwyn Hen",
       "role": "who keeps the fowl",
-      "modelPath": "assets/NPCs/Farmer.glb",
+      "modelPath": "assets/NPCs/Woman.glb",
+      "modelHeight": 1.65,
+      "hideNodes": ["Sword"],
+      "hideMaterials": ["Metal", "Gold"],
       "tint": "#6b7a4a",
       "routine": {
         "prime": [
@@ -208,7 +221,10 @@
       "id": "maid",
       "name": "Sioned",
       "role": "the Lady's maid",
-      "modelPath": "assets/NPCs/Farmer.glb",
+      "modelPath": "assets/NPCs/Woman.glb",
+      "modelHeight": 1.65,
+      "hideNodes": ["Sword"],
+      "hideMaterials": ["Metal", "Gold"],
       "tint": "#c9a0b0",
       "routine": {
         "prime": [
