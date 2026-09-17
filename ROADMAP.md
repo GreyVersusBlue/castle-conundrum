@@ -29,8 +29,8 @@ NOW, in parallel, no gates:
   ---------------                    -----------
   R2  GPU run        --+             R8   quests: reputation + errands   lane A
   R1  fourth body      |             R6   populace: the first ten        lanes C D
-                       |             R12a budget suite                   no lane
                        |             R7   ambient beds                   lane E
+                       |             (R12a budget suite SHIPPED, #603)
                        |             R4a  the bells call   (lane A: not beside R8)
                        |             R4b  the since field  (lane A: not beside R8)
                        |
@@ -145,6 +145,11 @@ suites, no gate on any of them, and the backlog's existing advice already
 points here: *"a session running beside one of those is better off on 8 or
 12."*
 
+**R12a shipped on 2026-09-17** (#603), which was the test of that claim: it ran
+beside R8 in the same working tree and beside R6, R1 and R7 in worktrees, and
+touched `src/castle-builder.js`, `test/run.mjs` and a new `test/budget.mjs`,
+none of which is in any lane. **R7 is the replacement third**, alone in lane E.
+
 Add **R2** and **R1** on Devon's machine and that is five things moving at once
 without a single collision.
 
@@ -181,7 +186,6 @@ One row per lane. All of these are startable today.
 | **R2** The GPU run | Opus 5 | **Local: GPU** | none | Gate 1, above. |
 | **R8** Side quests | Opus 5 | Container | A | Reputation by ward: two save counters, version 6 through `migrate`, a clamp in `repair`, a chatter line per threshold and one line in one closing pane. Then the seven errands left of the dozen; five of the seven need nobody new. |
 | **R6** Life: a populace | Opus 5 | Container | C, D | `data/populace.json`, `src/populace.js`, and ten bodies off the `cast` that already exists. No new asset, no new clip, so the row that makes every other wishlist row visible does not itself wait on one. |
-| **R12a** The budget suite | Opus 5 | Container | none | Skinned bodies, point lights and draw calls per ward, off the plan, in Node, failing against ceilings held as named constants with a comment saying they are guesses. |
 | **R1** A fourth body | Fable 5.1 | **Local: net** | C | Fetch, check against the three name lists, encode, add to `cast`. Not beside R6. |
 | **R7** Sound | Fable 5.1 | Container | E | The ambient beds and the cross-fade. Alone in its lane, which makes it the right row for a session when A, C and D are all held. |
 
@@ -226,7 +230,7 @@ plan's list and not a second one (#588 to #591).
 | Row | Model | Where | Lane | Note |
 | --- | --- | --- | --- | --- |
 | **R10** Bodies | Fable 5.1 | Local: net | C | Trades activity clips with R6 in both directions; neither strictly gates the other. Try a scaled-down child before fetching anything. |
-| **R12b** Move-and-delete | Opus 5 | Container | B | Turns the editor from a stopwatch into an editor. Every content row got cheaper the day the editor landed and none was blocked on it; the same is true of this. |
+| **R12b** Move-and-delete | Opus 5 | Container | B | Turns the editor from a stopwatch into an editor. Every content row got cheaper the day the editor landed and none was blocked on it; the same is true of this. **Starts from a red suite**: `test/tools.mjs`'s byte-exactness rail passes on LF and fails on CRLF, so it is red on the dev machine and green in CI (#603). |
 | **R12c** The dialogue format | Opus 5 | Container | C | Deliberately unspecified. `WISHLIST.md`'s paragraph is the whole brief. |
 | **R4a** The bells call | Opus 5 | Container | A | Has to overturn #533 rather than work around it. The cheapest shape that does not fight it: `day2.watches`, its own list, with the engine reading whichever list the day names. |
 | **R4b** The `since` field | Opus 5 | Container | A | A fact in `data/lore.json` that changes with what the player did on day one. It needs second-day state to be about, and `day2.knew` (#575) is that state, shipped. |

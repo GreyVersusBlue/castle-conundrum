@@ -4300,3 +4300,158 @@ and now says with a reason. Add R2 and R1 on Devon's machine and five things
 move at once with no collision. The column values are a judgement over the
 specs as they stand on 2026-09-17; a row whose scope changes changes its lane,
 and the session that changes it owns the label.
+
+## Rank 12a, the budget suite: what the castle costs, per ward (2026-09-17)
+
+**`test/budget.mjs`, the thirteenth suite, 0.4 s, Node only.** `SPECS.md`'s
+next increment for rank 12, taken because it is the row rank 6 and rank 10 both
+walk into: "a shared low-poly rig for the fifty" was written down as a goal by
+a spec that could not say what fifty cost, because nothing in this project had
+ever counted anything. Twelve suites green before, thirteen now — with two
+failures on `main` at 94491ff that this branch neither caused nor fixed, both
+written up at the bottom.
+
+**The numbers, which are the actual deliverable.** Draw calls: **965 in the
+outer ward, 643 in the inner**, 1539 meshes in the castle. Point lights: three,
+all three in the outer ward. Skinned bodies: the outer ward peaks at **7** at
+Terce and Vespers, the inner at 5 at Prime, out of a cast of twelve.
+
+**And the finding nobody was looking for: 970 of the castle's 1539 meshes —
+63 % of everything it draws — is the eight tower drums**, at about 120 ring
+sections and caps each. Kitchen Tower alone is 129. That is the biggest single
+line in the castle by a factor of ten over the next thing, it has been true
+since Phase 3, and no suite, spec or wishlist entry has ever mentioned it.
+`buildDrum` makes a `ringSection` per run of sectors sharing an opening list,
+and two shells plus up to two caps per section, every one of them carrying the
+same material. When the draw-call ceiling below is first hit, merging a drum's
+sectors into one geometry is the answer, not deleting a building.
+
+- **The budget suite counts the meshes the builder really makes, by calling the
+  builder** (#603). `src/castle-builder.js`'s `built` ladder came out of
+  `build()` into an exported `buildPiece(piece, material, metres)`, and its
+  "does this carry its own world position" test came out into an exported
+  `carriesOwnWorldPosition(piece)`. `build()` calls both, and so does
+  `test/budget.mjs`.
+
+  The alternative was four lines of arithmetic in the suite — *a drum is 24
+  sectors, so call it 48 shells* — and it would have been wrong by a factor of
+  2.5 and green forever. This project has made that mistake twice already:
+  `layout.mjs` re-implemented the placement math and said in its own header
+  that it therefore could not catch a change to it (#500), and two versions of
+  the line-of-sight check passed the whole suite while doing literally nothing
+  (#34). A suite that re-derives a number is a suite agreeing with itself.
+
+  Proved by deleting `buildPiece`'s `floor` branch: the run named
+  `north-curtain-west-walk` and the four walks after it, *"says built: "floor"
+  and castle-builder.js's buildPiece has no branch for it — the budget cannot
+  count what it cannot build"*, exit 1. The suite cannot silently under-count a
+  shape the builder grew, because the shape has to come back through the same
+  function.
+
+- **A ward, for counting, is a rectangle, and a mesh counts in every ward it
+  reaches into** (#603). The two wards are the curtain's own footprint
+  (x -46..34, z -20..20) cut at the cross-wall's centreline, which is read off
+  `cross-wall-north` and `cross-wall-south` rather than typed as 0; the suite
+  refuses to run if those two ids are not in the plan, rather than quietly
+  moving the line and re-baselining every number under it.
+
+  **Reaching, not containing**, and that is the whole reason the Stockhouse and
+  Bakehouse drums come out split 63/76 and 64/76 instead of landing whole on
+  one side of a wall they stand astride. A mesh that spans the boundary is
+  drawn from either ward, so it is paid for in both. The ground planes are
+  counted in both for the same reason. The two ward columns therefore sum to
+  more than the castle's mesh count, and are meant to.
+
+  `cross-walk` is the case that decided the shape: the walk over the porter's
+  gate, which `scene-config.json` declares `inner` and whose box is x -2..0,
+  wholly west of the centreline. A centre-of-box rule called it outer and
+  disagreed with the file; a reaching rule agrees with the file and with the
+  other 39 rooms, and the suite asserts that agreement for all 40 — which is
+  also the rail that catches a room added with no ward at all, invisible to the
+  populace budget forever otherwise. Broken by relabelling the chapel `outer`:
+  *"room "chapel" says ward "outer" but its bounds x 21.2..26.8 do not reach
+  that ward's rectangle"*.
+
+- **The ceilings are guesses, in one block, with what each is anchored on
+  written beside it** (#603). `SPECS.md`'s open call recommended exactly this
+  over waiting for a device, the way `touch-controls.js` holds its six (#530),
+  and the recommendation is taken. **1200 draw calls per ward**, against 965 in
+  the outer: 235 of headroom, chosen so the next thing to hit it is a building
+  rather than a prop. **6 point lights per ward and 8 in the scene**, against
+  3. **20 skinned bodies per ward and 32 in the cast**, against a peak of 7 and
+  a cast of 12.
+
+  The skinned numbers are anchored on rank 6 rather than on hardware, because
+  rank 6 is what is about to spend them: twelve cast plus its first ten
+  populace is 22, which fits 32, and if rank 6 puts all ten in one ward that is
+  17 against 20. **Rank 10's fifty fits neither number and is not meant to.**
+  That is the answer the row was taken to produce, and it is a failing
+  assertion now rather than a shrug in a spec.
+
+  Broken three ways from green. The ceiling moved to 900: *"the outer ward
+  draws 965 meshes, over the ceiling of 900. Its three biggest: kitchen-tower
+  (129), prison-tower (123), nw-tower (121)"* — the three biggest are printed
+  because a ward over its ceiling is almost never over it by a hundred small
+  things. The skinned ceiling moved to 6: *"the outer ward holds 7 skinned
+  bodies at terce, over the ceiling of 6"*. And six real brazier rows spliced
+  into `scene-config.json`, which is the content break rather than the constant
+  break: two failures, per-ward and total, *"9 point lights in the scene, over
+  the ceiling of 8"*.
+
+- **The point-light count is the braziers, and that claim is grepped rather
+  than commented** (#603). `main.js` makes one stand per row of
+  `config.braziers` and `createBrazier` makes one `PointLight` per stand, so
+  the count is the list's length — for exactly as long as nothing else in
+  `src/` makes a point light. Rank 11's fire and candles are the obvious next
+  ones, and a light added anywhere else would leave this suite counting three
+  and reporting green over a scene carrying nine.
+
+  So `src/` is grepped for `new THREE.PointLight(` and the grep has to find the
+  one call in `scene-setup.js`. This is #501's lesson pointed at a third
+  target, after #586 pointed it at the editor: the check for a thing a file
+  cannot see is a grep of the thing itself. Broken by adding a constructor to
+  `src/audio.js`: *"src/ makes point lights in audio.js x1, scene-setup.js x1 —
+  this file counts data/scene-config.json's braziers, and one per brazier is no
+  longer the whole story."* Not phrased as a bug, because it is not one. It is
+  a request to teach the budget where the new lights are.
+
+- **A thirteenth suite rather than a thirty-line block in `layout.mjs`**
+  (#603). By the letter of #529 — layout.mjs is every fact derivable from the
+  plan in Node — this belonged in layout.mjs. What #529 was drawn to fix was
+  that a reader could not tell which of two files to add a line to, and
+  splitting by cost answers that question rather than blurring it: whether the
+  castle works is layout.mjs, what it costs is budget.mjs, and the two share no
+  assertion. layout.mjs is 1137 lines, and the ceilings are the one thing here
+  that a content row is expected to come back and renegotiate, which is a bad
+  thing to bury at line 900 of something else. `CLAUDE.md`'s statement of #529
+  now carries the carve-out.
+
+**What the suite is not, said in its own header so nobody reads the number as a
+measurement.** It counts meshes whose box reaches a ward, not what the GPU
+submits on a frame: three.js frustum-culls, so a corner of the outer ward draws
+fewer than 965, and the sun's shadow map re-draws every caster, so a frame
+submits more. It is a budget. The profile is `renderer.info` on real hardware
+and it belongs to rank 2's GPU run — which is now carrying a seventh question:
+what the eight drums actually cost.
+
+**Two failures on `main`, neither of them this branch's.** Both confirmed
+against a clean checkout of 94491ff with this branch stashed.
+
+1. **`test/tools.mjs` fails on a Windows checkout and passes on a Linux one.**
+   The byte-exactness rail reports *"96758 bytes in, 96757 back out"* for all
+   three placeable kinds. Converting `data/scene-config.json` to LF in place
+   makes the suite green and converting it back makes it red, so the splice in
+   `tools/place.mjs` drops or normalises one CRLF. CI is Linux and green;
+   **Devon's machine is the dev machine (`CLAUDE.md`) and it is red there**,
+   which is the worst possible shape for a rail whose whole job is to be
+   trusted before a hand-edit. Rank 12b owns that file and that lane.
+2. **`test/plan-vs-scene.mjs` fails on the chapel candles, INTERMITTENTLY.**
+   *"none of the 12 cells between 0.9 and 2.8 m of the chapel candles offers
+   them (the nearest offered "Press E to ring the bell")"* — three failures in
+   five runs of the same unchanged file on the same machine. The bell's prompt
+   wins the chapel some of the time, which says the two targets are being
+   ranked by something that is not stable between loads rather than that the
+   candles are unreachable. **A suite that is green three runs in five is worse
+   than one that is red**, because the next session to see it green will
+   believe it (#13's shape, one level up), and the flake is on the browser
+   suite this project trusts most.

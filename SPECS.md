@@ -999,11 +999,12 @@ already is.
 
 ## The tooling
 
-**Rank 12. Size 2+. The first increment shipped on 2026-09-17** (#583 to
-#587). `WISHLIST.md`'s own closing section: none of the seven themes above is
-a code problem, they are content problems at a scale the current tooling
-cannot carry, and this row is the three tools it names. The placement editor
-is in; the dialogue format and the budget suite are not.
+**Rank 12. Size 2+. Two of three increments shipped on 2026-09-17** — the
+placement editor (#583 to #587) and the budget suite (#603).
+`WISHLIST.md`'s own closing section: none of the seven themes above is a code
+problem, they are content problems at a scale the current tooling cannot carry,
+and this row is the three tools it names. **The dialogue format is what is
+left.**
 
 ### What shipped, in one paragraph
 
@@ -1019,20 +1020,33 @@ byte. Dev-only is two independent halves — `import.meta.env.DEV` around the
 import, `apply: 'serve'` on the plugin — and `test/built.mjs` greps `dist/`
 for the module's sentinel rather than trusting either (#586).
 
+### What the budget suite shipped, in one paragraph
+
+`test/budget.mjs`, the thirteenth suite, 0.4 s, Node only, three counts per
+ward against three ceilings held as named constants in one block with what each
+is anchored on written beside it — the open call's own recommendation, taken
+(#603). **965 draw calls in the outer ward, 643 in the inner, against 1200.
+Three point lights, all outer, against 6 per ward and 8 in the scene. A peak of
+7 skinned bodies in the outer ward at Terce and 5 in the inner at Prime,
+against 20 per ward and 32 in the cast.** The draw-call count is not derived:
+`castle-builder.js`'s `built` ladder came out into an exported `buildPiece`,
+the suite calls it and counts the meshes it really returns, because a suite
+that re-derives a drum as "24 sectors, so 48 shells" is a suite agreeing with
+itself (#34, #500). **The finding: 970 of the castle's 1539 meshes, 63 % of
+everything it draws, is the eight tower drums.** Rank 10's fifty bodies fit
+neither skinned ceiling and are not meant to, which is the answer this row was
+taken to produce.
+
 ### Scope, next increment
 
-- **The budget suite, second**, as this row's own open call already
-  recommended and for the reason it gave: ranks 6 and 10 are the two rows
-  about to need a real answer to "how many skinned bodies can a ward carry".
-  It counts skinned bodies, point lights and draw calls per ward off the plan
-  and fails against a number a phone cannot carry. It is a `layout.mjs`-shaped
-  check — everything it counts is derivable from the plan in Node (#529) — so
-  it needs no browser.
 - **The editor's own next want is a way to move and delete**, not only to
   add. Placing is one press; correcting a placement is still hand-editing the
   file. A row selected in the panel, dragged to the player's tile and written
   back over its own text is the same splice machinery reading rather than
   appending, and it is what turns the tool from a stopwatch into an editor.
+  **Whoever takes it walks into a live failure first**: `test/tools.mjs` is red
+  on a Windows checkout and green on a Linux one (#603), so the byte-exactness
+  rail that increment has to keep is not currently holding on the dev machine.
 - **The dialogue format is this row's third and is deliberately unspecified**
   (speaker, state, conditions, effects, one line each, compiled to
   `npcs.json`/`quests/*.json` at build time). `WISHLIST.md`'s paragraph is the
@@ -1040,25 +1054,27 @@ for the module's sentinel rather than trusting either (#586).
 
 ### Acceptance, next increment
 
-- The budget suite exits non-zero over a plan that exceeds its own ceiling,
-  names the ward and the count, and is broken on purpose once (#13, #34).
 - Anything the editor learns to write keeps `test/tools.mjs`'s byte-exactness
   rail: a move that rewrites a row in place still has to leave every other
-  byte alone.
+  byte alone. On both line endings.
 
 ### Open calls
 
-- **What the budget's ceilings are.** Nobody has profiled this castle on a
-  phone. Recommend writing the suite with the numbers as named constants in
-  one place and a comment saying they are guesses, the way `touch-controls.js`
-  already holds its six (#530), rather than waiting for a device to set them.
+- **The budget's ceilings are still guesses**, and deliberately so: nobody has
+  profiled this castle on a phone. A session that measures on real hardware
+  replaces the four numbers in `test/budget.mjs`'s ceiling block and records
+  the measurement; a session that merely wants more room argues for it in
+  `HISTORY.md`. Rank 2's GPU run is the first chance to take `renderer.info`
+  off a real frame and find out how far off 965 the truth is.
 
 ### Dependencies
 
 - **Every content row above** (6, 8, 9, 10) got cheaper the day the editor
   landed, and none of them was blocked on it.
-- The budget suite is more useful after rank 6's populace exists to count, but
-  a ceiling on a castle with twelve bodies in it is still a ceiling.
+- **Ranks 6 and 10 now have a number to answer to.** The budget suite's
+  per-ward ceiling of 20 skinned bodies is what rank 6's first ten spend
+  against a peak of 7, and rank 10's fifty do not fit it. Neither row is
+  blocked; both now fail a suite if they overspend, which is the whole point.
 
 ### Constraints
 
