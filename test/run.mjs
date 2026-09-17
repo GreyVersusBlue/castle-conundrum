@@ -29,6 +29,7 @@ const SUITES = [
   ['mystery', "the mystery's validator and engine"],
   ['save', "the save's repair rails"],
   ['lore', 'the canon, the documents and the chatter pool'],
+  ['tools', "the placement editor's writer, against the real scene-config.json"],
   // Headless browser against `vite dev`: source, not the bundle.
   ['plan-vs-scene', 'the plan against the castle the browser actually builds'],
   ['touch', 'the second input scheme, on a page with a touchscreen'],

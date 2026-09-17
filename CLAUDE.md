@@ -97,6 +97,14 @@ The project lived in `GreyVersusBlue/tools-and-games` under
   claimed to catch a build that dropped a file, stayed green when one was
   deleted out of `dist/` on purpose, and had to start comparing what the server
   *served* rather than what the page *asked for* (#501).
+- **A dev-only tool is dev-only by construction, and the check is a grep of
+  `dist/`** (#586). `?edit=1` mounts the placement editor (`src/edit-mode.js`)
+  and a Vite middleware writes `data/scene-config.json`. The client sits behind
+  `import.meta.env.DEV` so Vite deletes the branch, and the writer is a plugin
+  with `apply: 'serve'` so a build cannot run it. Neither is trusted:
+  `test/built.mjs` greps every shipped file for the module's sentinel. The
+  served-set diff cannot see this one — a built page never asks for the editor
+  — which is #501's lesson pointed at a second target.
 - **A real-time movement or physics assertion failing under a Linux/software-
   rendered Chromium is inconclusive, not confirmed** (#53). Re-verify from a
   machine with real GPU compositing before trusting either a pass or a fail.
@@ -131,7 +139,7 @@ file keeps a pointer saying which band left.
 | `npm run build` | `dist/`: the hashed bundle in `dist/bundle/`, `assets/` and `data/` copied in whole, the Basis transcoder into `dist/decoders/basis/`. |
 | `npm run preview` | Serves `dist/`. |
 | `npm run assets:encode` | Re-encodes `assets/` in place, KTX2 and meshopt. Hand-run, needs `ktx` (#506). |
-| `npm test` | All ten suites, cheapest first, non-zero on any failure. `npm test layout built` runs a subset. |
+| `npm test` | All eleven suites, cheapest first, non-zero on any failure. `npm test layout built` runs a subset. |
 | `npm run play` | **Opens a real visible window** and plays the whole day with pointer lock, WASD and real key presses. Hand-run, on a GPU (#53). Screenshots land in `shots/play/`. |
 
 `npm test` is what CI runs. `npm run play` is not in CI and is not going to be.

@@ -56,6 +56,52 @@ function decoders() {
   };
 }
 
+/* The placement editor's write half (BACKLOG.md rank 13). `apply: 'serve'` is
+ * the guarantee: a plugin with it never runs in a build, so nothing in the
+ * shipped site can reach this endpoint even if something asked for it. The
+ * client half is src/edit-mode.js, which main.js imports from inside an
+ * `import.meta.env.DEV` branch Vite deletes; test/built.mjs greps the built
+ * bundle for its sentinel, because what matters is what got SERVED (#501).
+ *
+ * It writes data/scene-config.json and it does not commit: the diff is for a
+ * person to read before it goes anywhere. `insertRow` splices one element in
+ * as text rather than re-serialising the file, for the reason tools/place.mjs
+ * explains at length. */
+function placementEditor() {
+  const file = path.resolve(import.meta.dirname, 'data/scene-config.json');
+  return {
+    name: 'castle-placement-editor',
+    apply: 'serve',
+    configureServer(server) {
+      server.middlewares.use('/__place', async (req, res) => {
+        const send = (code, body) => {
+          res.statusCode = code;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify(body));
+        };
+        if (req.method !== 'POST') return send(405, { ok: false, error: 'POST only' });
+        try {
+          const chunks = [];
+          for await (const c of req) chunks.push(c);
+          const { key, row } = JSON.parse(Buffer.concat(chunks).toString('utf8'));
+          const { insertRow, checkRow } = await import('./tools/place.mjs');
+          checkRow(key, row);
+          const before = fs.readFileSync(file, 'utf8');
+          const after = insertRow(before, key, row);
+          // Parse what is about to be written, never what was handed in: a
+          // splice that produced text JSON.parse refuses would otherwise leave
+          // scene-config.json broken and every suite red.
+          const parsed = JSON.parse(after);
+          fs.writeFileSync(file, after);
+          send(200, { ok: true, key, index: parsed[key].length - 1 });
+        } catch (e) {
+          send(400, { ok: false, error: String(e && e.message ? e.message : e) });
+        }
+      });
+    },
+  };
+}
+
 function copyStatic() {
   return {
     name: 'castle-copy-static',
@@ -87,7 +133,7 @@ export default {
   // build that had dropped it (#501). There is one page here and no client-side
   // routing, so there is nothing to fall back for: a miss is a 404.
   appType: 'mpa',
-  plugins: [copyStatic(), decoders()],
+  plugins: [copyStatic(), decoders(), placementEditor()],
   build: {
     outDir: 'dist',
     emptyOutDir: true,
