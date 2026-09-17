@@ -2952,3 +2952,77 @@ not be (#53); as with #555, nothing here moves the player or a render, so the
 gap is that nobody has read the thirteen with eyes rather than a Node
 assertion, and the chatter pool is still unspent by the game.
 
+
+## A fourth body: looked for, and not found from here (2026-09-17)
+
+**Ranked row 1, on `claude/backlog-rank-1-tfcr3e`.** `SPECS.md`'s source
+order is Quaternius's own packs first, then any CC0 humanoid with an `Idle`,
+a `Walk` and a material named `Skin`, never a re-tinted Farmer, and its last
+line is that a row with nothing that fits closes as "no woman's body found,
+the bet stands" and says where was looked. This is that result, written the
+way #518 wrote the texture sets a container could not fetch: the row stays,
+with what was found and what to fetch. No asset, no code and no data moved.
+Decisions #560 to #562.
+
+- **Every host that carries a Quaternius body answered 403 from this
+  container, and the npm registry is the only one that did not** (#560).
+  quaternius.com, quaternius.itch.io, poly.pizza, opengameart.org and
+  patreon.com were refused by the egress proxy by name, through `curl` and
+  through the fetch tool alike. That is #518's network policy again; the
+  session that shipped the texture sets had a different one (#541). The
+  registry was searched under eleven phrasings and three packages came
+  back: `@jgengine/assets@0.18.1`, an index of Quaternius and KayKit packs
+  whose pinned download URLs all point at the hosts above;
+  `hearthling@0.2.0`, which bundles five of KayKit's Adventurers and the
+  rig's animation files; and `deskrpg@2026.917.3`, 253 MB, fifty office
+  bodies built on Quaternius's Animated Women and Animated Man packs. A
+  GitHub mirror of any pack was not tried: this session's GitHub access is
+  scoped to this repository, and a mirror is a repository.
+
+- **KayKit's Mage and Rogue are women and CC0, and are rejected on
+  proportion** (#561). Rendered headless with poppygl (a software
+  rasteriser off npm that draws the bind pose and does not skin, so the
+  Quaternius bodies came out folded and only the KayKit pair could be
+  looked at), both are chibi. The `head` joint sits at 1.24 m on a 2.17 m
+  body, 57 % of the way up; on the Quaternius rig `Head` is at 1.55 m with
+  `Neck` at 1.47 and `Hips` at 0.86, the top fifth of a man. `npc.js`
+  scales every body to one height, so a Mage at the spec's 1.65 m would
+  have a head 0.9 m tall standing beside a Farmer whose head is a fifth of
+  him: not a woman among twelve, a different species, which is the line
+  #419 drew for tint. Two costs were priced and would have been paid had
+  the shape fit. The body is one material over a 1024 px palette PNG (15 KB,
+  a gradient atlas rather than flat swatches), so the tint would have gone
+  onto the face until the atlas was split into flat `Skin`, `Hair` and
+  cloth materials by sampling each triangle's centre, and the file would
+  have needed `ktx` (#506) or that split, because there is no `ktx` here
+  either. And the clips live in `Rig_Medium_General.glb` and
+  `Rig_Medium_MovementBasic.glb` beside the body, keyed by bone name, not
+  in it.
+
+- **deskrpg's fifty are the right rig and the wrong licence, and the wrong
+  century** (#562). They are Quaternius's Animated Women rig: `Head`,
+  `Neck`, `Palm.R`, materials named `Skin`, `Eyes`, `Eyebrows` and `Hair`,
+  zero images, `idle`, `walk` and `sit`, the closest thing to the three on
+  disk that was found. But each is the maintainers' own derivative
+  work, re-modelled with jackets, shoulder bags, notebooks, lanyards, bows
+  and glasses, and the licence over that work is the package's "Sustainable
+  Use License": free non-commercial use and redistribution only. This repo's
+  credits are CC0 three times over and a fourth body does not buy a second
+  licence; and no `hideNodes` list turns an office blouse and a midi skirt
+  into 1280. The one code change it would have needed is worth writing
+  down for whichever body does come: `HAND_BONES` in `npc.js` has no
+  pattern for `Palm.R`, so a held prop on that rig falls back to the
+  group-offset branch.
+
+**What a container that reaches quaternius.com does.** Which pack the three
+came from is written nowhere in this repo (the file headers say only
+`glTF-Transform`, and the spec's "the pack the three came from" is the
+sum of what is known). Fetch the Ultimate Modular Women Pack at
+`quaternius.com/packs/ultimatemodularwomen.html` first, which the search
+index lists as Witch, Worker, Suit, Soldier, Animated Woman, Punk,
+Adventurer and Hooded Adventurer, the same names as the men's pack the
+Adventurer here is likely from; check its node, material and clip names
+against `SPECS.md`'s three lists before anything else; re-export through
+`gltf-transform`, then `npm run assets:encode`, which needs `ktx` on PATH
+for nothing in a textureless body but is the script every asset goes
+through (#506). The rest of the row is unchanged and still ½.

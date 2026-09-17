@@ -120,6 +120,24 @@ session answer the question.
   **never a re-tinted Farmer**, which is what the row exists to replace. If
   nothing fits, the row closes as "no woman's body found, the bet stands" and
   says where was looked, which is a result.
+  **Where was looked, 2026-09-17** (#560 to #562): quaternius.com,
+  quaternius.itch.io, poly.pizza, opengameart.org and patreon.com all refused
+  by the container's egress proxy; the npm registry searched under eleven
+  phrasings. Found and rejected: KayKit's Adventurers in `hearthling@0.2.0`
+  (CC0, Mage and Rogue are women, chibi: `head` joint at 1.24 m of 2.17
+  against the Quaternius rig's `Head` at 1.55 with `Hips` at 0.86; one
+  material over a palette PNG; clips in separate `Rig_Medium_*.glb` files)
+  and deskrpg's fifty office bodies in `deskrpg@2026.917.3` (the Quaternius
+  Animated Women rig with `Skin`, `Eyes`, `Eyebrows`, `Hair` and zero images,
+  but a non-commercial "Sustainable Use License" over the maintainers'
+  re-modelling, and office clothes). **Fetch first, from a machine that
+  reaches quaternius.com: the Ultimate Modular Women Pack**
+  (`quaternius.com/packs/ultimatemodularwomen.html`; Witch, Worker, Suit,
+  Soldier, Animated Woman, Punk, Adventurer, Hooded Adventurer), and check
+  its node, material and clip names against the three lists under Scope
+  before anything else. If that rig names the hand bone `Palm.R`, as the
+  Animated Women rig does, `HAND_BONES` in `npc.js` needs one more pattern
+  or a held prop falls back to the group offset.
 - **Who wears it.** Recommend **all three women**. Farmer keeps the chaplain
   and the prisoner; King keeps the Constable and the Steward. Two women on the
   new body and one on King is half an answer.
@@ -129,6 +147,8 @@ session answer the question.
 
 ### Dependencies
 
+- **A network that reaches quaternius.com** (#560). This container's did not,
+  the way #518's did not reach Poly Haven, and #541's did.
 - The evidence for this row is **The GPU run**'s Vespers photograph, which no
   session can take. Devon ranked this above that row knowing so; ship it on the
   plan's stated risk and let the run look at thirteen bodies' worth of question
