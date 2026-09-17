@@ -1,0 +1,73 @@
+{
+  "id": "sentrys-dice",
+  "title": "Four pence at dice",
+  "npc": "sentry",
+  "ward": "outer",
+  "comment": "WISHLIST.md's 'the sentry's dice debt to the porter, which is why the walk door was not barred' (#598), with the second half kept out of the sentry's mouth until the porter has said it himself. Dafydd ap Rhys owes Gwilym four pence, thrown for at the porter's own table at Lauds when the night watch ends and the gate opens, and he wants the King's clerk to carry 'Saturday, and civil' through the gate for him. The errand is two conversations, `talked:porter` and back. The branch is the mystery's: `press:porter:door-unbarred` is the porter admitting the bar has leaned on the wall for a month, and only AFTER that event does Dafydd say he has known since Lammas and owed the man four pence and held his tongue. That is `porter-admits` landing in a second place, after it has landed in the first, and never before (#550, question 6).",
+  "voiceComment": "The sentry has no owned state at all: `sentry-sighting` is sourced from `default`, which is nobody's. The dice by day are lore's `garrison-rota` read the other way round: one man keeps the north walk from Compline to Lauds and is in the guardroom asleep at Prime, which is the hour the schedule already has him unspeakable, so the thread cannot open before Terce.",
+  "start": "square",
+  "stages": {
+    "square": {
+      "objective": "Nobody has mentioned dice.",
+      "dialogueState": "default",
+      "transitions": [
+        {
+          "on": "talked:sentry",
+          "to": "owed"
+        },
+        {
+          "on": "press:porter:door-unbarred",
+          "to": "bar"
+        }
+      ],
+      "comment": "Silent until the first conversation with him, which cannot be Prime because he is asleep then. The press out of this stage is the order the mystery allows: a player who has the porter's admission before ever speaking to the sentry finds the sentry already knows what he has just been told."
+    },
+    "owed": {
+      "objective": "Dafydd owes Gwilym the porter four pence at dice. Tell the porter: Saturday, and civil.",
+      "dialogueState": "dice-owed",
+      "transitions": [
+        {
+          "on": "talked:porter",
+          "to": "told"
+        },
+        {
+          "on": "press:porter:door-unbarred",
+          "to": "bar"
+        }
+      ],
+      "comment": "Two became four on a throw for the two, at the porter's table, in the porter's ale, and Dafydd has not been through the lodge door since. The errand is a conversation with Gwilym, whose lines this file cannot and does not change: the porter says what he always says, and the quest counts that as the message delivered."
+    },
+    "told": {
+      "objective": "The porter has been told. Go back to the north walk and tell Dafydd he heard it.",
+      "dialogueState": "dice-told",
+      "transitions": [
+        {
+          "on": "talked:sentry",
+          "to": "paid"
+        },
+        {
+          "on": "press:porter:door-unbarred",
+          "to": "bar"
+        }
+      ],
+      "comment": "He knows Gwilym said nothing, because Gwilym writes a thing down and says nothing. He will pay Saturday and not sit at that table again. And he says that a man who has been in that lodge knows what the jug looks like, which is as near the door as this file goes before the porter has admitted it."
+    },
+    "bar": {
+      "objective": "Gwilym has said it about the walk door. Dafydd has something to say about that too.",
+      "dialogueState": "dice-bar",
+      "transitions": [
+        {
+          "on": "talked:sentry",
+          "to": "paid"
+        }
+      ],
+      "comment": "Reached only on the press. He has known since Lammas that the bar leans on the wall, every man who walks the north walk has known, and he owed the porter four pence and said nothing. The player already holds `porter-admits`; what this adds is one more man who knew."
+    },
+    "paid": {
+      "objective": "Saturday, and civil. Dafydd will pay his four pence and keep to his own walk.",
+      "dialogueState": "dice-paid",
+      "terminal": true,
+      "comment": "Terminal, from either road. The last line is his watch again: the north walk from the Kitchen Tower door, where he saw what he saw."
+    }
+  }
+}

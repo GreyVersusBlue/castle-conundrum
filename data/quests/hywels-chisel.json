@@ -1,0 +1,75 @@
+{
+  "id": "hywels-chisel",
+  "title": "Hywel's good chisel",
+  "npc": "apprentice",
+  "ward": "outer",
+  "comment": "WISHLIST.md's 'the apprentice's unfinished carving and the tool he needs from the smith who is in gaol' (#598). SPECS.md thought this one wanted a populace or an NPC state the game does not compute; it wants neither, once the smith's answer is left in the smith's own mouth. Madoc's lines are the mystery's and this file cannot change them, so what Ieuan hears back from the bars is what the player heard: the lead, the cart, the Clerk's seal, and not one word about a chisel. That is one ending, `own-edge`, where the boy puts an edge on the second chisel himself. The other is the roll's: `press:prisoner:prisoner-inside` is the player proving to Madoc that he was out to the forge by day for eight days of eleven, and a smith who works at the forge by day left the chisel where he works and not where he sleeps. `fetched` is Ieuan going to the forge at Prime tomorrow. Neither ending grants, presents or gates anything; both are lore's `lodge-custom` (a dead mason's tools lie where he left them until his apprentice takes them up) with a verb on it.",
+  "voiceComment": "`forge` is where the press on `prisoner-inside` puts Madoc and `prisoner-forge` is sourced from it; no stage here names it and no stage here is Madoc's. The apprentice has no owned state: `hywel-sober` and `apprentice-tallies` are sourced from `default`, which is nobody's.",
+  "start": "untouched",
+  "stages": {
+    "untouched": {
+      "objective": "Nobody has spoken of tools.",
+      "dialogueState": "default",
+      "transitions": [
+        {
+          "on": "talked:apprentice",
+          "to": "asking"
+        }
+      ],
+      "comment": "Silent until the first conversation with him. His fourth `default` line is the one about the tools lying where Hywel left them, and the good chisel not among them."
+    },
+    "asking": {
+      "objective": "Hywel's good chisel went to Madoc the smith for a new edge before Madoc was put in the Prison Tower. Ask Madoc where it is.",
+      "dialogueState": "chisel-asking",
+      "transitions": [
+        {
+          "on": "talked:prisoner",
+          "to": "heard"
+        },
+        {
+          "on": "press:prisoner:prisoner-inside",
+          "to": "forge"
+        }
+      ],
+      "comment": "Ash haft, a hand and a half long, Hywel's mark on the tang; it went to Madoc a week since for the Michaelmas edge and then they took Madoc up the tower. Nobody lets a lodge boy by the bars. The King's clerk they let by. The press out of this stage is for a player who has the roll before they have carried the question: the roll answers it."
+    },
+    "heard": {
+      "objective": "You have been to the bars. Tell Ieuan what the smith said, which was nothing about a chisel.",
+      "dialogueState": "chisel-heard",
+      "transitions": [
+        {
+          "on": "talked:apprentice",
+          "to": "own-edge"
+        },
+        {
+          "on": "press:prisoner:prisoner-inside",
+          "to": "forge"
+        }
+      ],
+      "comment": "What Madoc says to everyone who stands at the bars is the lead, the cart and the seal, and Ieuan knows it before he is told. So he will not wait on it: there is a stone in the lodge and he has watched Madoc draw an edge two years running. The press still turns this stage, because a roll read after the bars is still the roll."
+    },
+    "forge": {
+      "objective": "Madoc is at the forge by day, under the Prison Tower wall. The chisel is where he works and not where he sleeps. Tell Ieuan.",
+      "dialogueState": "chisel-forge",
+      "transitions": [
+        {
+          "on": "talked:apprentice",
+          "to": "fetched"
+        }
+      ],
+      "comment": "Reached only on the press. Out to the forge at Prime and in at Vespers, and the roll says so: then the chisel never went up the tower, and a lodge boy at a forge is stopped by nobody. He is a little amazed the roll lay on a barrel-head for eleven days with nobody in the garrison reading it."
+    },
+    "own-edge": {
+      "objective": "Ieuan has put his own edge on the second chisel. He will finish the head Hywel was on.",
+      "dialogueState": "chisel-own-edge",
+      "terminal": true,
+      "comment": "Terminal. Not Madoc's edge; it cuts. The head is for the springing of the chapel arch, and he will set the small cross under it the way Hywel did (lore's `saint-cadeyrn`), and the chaplain need not know."
+    },
+    "fetched": {
+      "objective": "Prime tomorrow, at the forge: Ieuan will have Hywel's chisel off Madoc over the wall, as he has a hundred times.",
+      "dialogueState": "chisel-fetched",
+      "terminal": true,
+      "comment": "Terminal. The head finished with Hywel's own iron, which is how it should be done and he had given it up. Whether Madoc walks down to the forge on the morning after is the verdict's to say (#533) and a side quest does not speak on day two (#576)."
+    }
+  }
+}

@@ -251,6 +251,9 @@ export class QuestGraph {
  * and `test/quest.mjs` breaks it on purpose.
  */
 
+/** The two wards a side quest can belong to: the outer ward's errands, the inner ward's confidences. */
+export const WARDS = ['outer', 'inner'];
+
 /** The event shapes the game emits, for holding a quest's `on` to something real. */
 const EVENT_SHAPES = [
   [/^clue:(.+)$/, 'clues'],
@@ -308,6 +311,10 @@ export function validateQuestSet(quests, { npcs = [], mystery = {}, actions = []
       else seenIds.set(def.id, file);
     }
     if (typeof def.title !== 'string' || !def.title.trim()) at('`title` must be a non-empty string');
+    // `ward` is which of the two counters reputation-by-ward will move when it
+    // comes (SPECS.md, rank 8). A file that names neither is a favour nobody
+    // remembers, and a file that spells one wrong is the same thing found later.
+    if (!WARDS.includes(def.ward)) at(`\`ward\` is ${JSON.stringify(def.ward)} and has to be one of ${WARDS.join(', ')}`);
 
     const npc = cast.get(def.npc);
     if (!npc) { at(`\`npc\` (${JSON.stringify(def.npc)}) is not an id in npcs.json's cast`); continue; }

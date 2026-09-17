@@ -880,7 +880,7 @@ console.log("the cook's knife");
     const cast = JSON.parse(JSON.stringify(npcDefs));
     cast.find((n) => n.id === 'steward').dialogue['stocktaking'] = ['Not now. I am counting candles.'];
     const stock = {
-      id: 'stocktaking', title: 'The Steward’s count', npc: 'steward', start: 'counting',
+      id: 'stocktaking', title: 'The Steward’s count', npc: 'steward', ward: 'inner', start: 'counting',
       stages: {
         counting: { objective: 'The Steward is counting something.', dialogueState: 'stocktaking', transitions: [{ on: 'bell:3', to: 'done' }] },
         done: { objective: 'He has finished counting.', dialogueState: 'default', terminal: true },
@@ -911,11 +911,241 @@ console.log("the cook's knife");
   }
 
   // A save naming a stage the quest no longer has is repair's problem, not
-  // this manager's, and the manager does not trust it either way.
+  // this manager's, and the manager does not trust it either way. It starts
+  // the quest over, and then (#597) walks it forward through the clues the
+  // save already holds: this save has the knife missing and the knife found,
+  // so the thread it comes back in is `found`, one conversation from its end,
+  // and not `unheard` with an event it can never hear again.
   const bogus = JSON.parse(JSON.stringify(state));
   bogus.quests = { 'cooks-knife': 'gone-fishing', 'a-quest-that-was-deleted': 'x' };
   const r3 = rig({ saved: bogus });
-  check(r3.qm.openQuests()[0].objective === knife.stages[knife.start].objective, 'a saved stage the quest lacks starts the quest over rather than throwing', r3.qm.openQuests()[0].objective);
+  check(r3.qm.openQuests()[0].objective === knife.stages.found.objective, 'a saved stage the quest lacks starts the quest over rather than throwing, and the clues the save holds carry it forward', r3.qm.openQuests()[0].objective);
+  check(r3.ui.toasts.some((t) => t === `${knife.title}: ${knife.stages.found.objective}`), 'with one toast, for the stage it arrives at', r3.ui.toasts.join(' | '));
+}
+
+/* ---------------------------------- 4b: the next four, and the catch-up (#597) ---
+ * Four more files in data/quests/ (#598): a bird, a candle, four pence and a
+ * chisel. Two in each ward, four people none of whom the cook's knife touched,
+ * and every one of them turning on events the mystery already emits about
+ * clues the mystery already owns. What this section holds them to is the same
+ * thing the knife was held to: the walk with and without them leaves the
+ * identical journal, and nobody says a pressed state's lines before the press.
+ *
+ * AND THE RULE THE HAWK FORCED. `clue:<id>` fires once. A quest reaching a
+ * stage that waits on a clue the player already holds used to wait forever
+ * (#576 shipped that hole in the knife: barrel first, then Marged, and the
+ * thread never left `hunting`). `_catchUp` is the fix and the break below is
+ * its proof: the hawk sends the player to the one place on the walk the
+ * mystery already sends them, so "walked it first" is the common order and
+ * not the odd one.
+ */
+console.log('\nthe next four, and the catch-up');
+const byId = (id) => sideQuests.find((q) => q.id === id);
+const linesOf = (id, state) => npcDefs.find((n) => n.id === id).dialogue[state];
+{
+  check(sideQuests.length === 5, `five side quests ship (${sideQuests.map((q) => q.id).join(', ')})`);
+  const wards = Object.fromEntries(sideQuests.map((q) => [q.id, q.ward]));
+  check(sideQuests.filter((q) => q.ward === 'outer').length === 3 && sideQuests.filter((q) => q.ward === 'inner').length === 2,
+    'three in the outer ward and two in the inner', JSON.stringify(wards));
+  const people = sideQuests.map((q) => q.npc);
+  check(new Set(people).size === people.length, 'and five different people, which is the one-voice rule with nothing to refuse', people.join(', '));
+
+  // Rule 4: a file with no ward, or a ward the castle does not have.
+  const opts = { npcs: npcDefs, mystery, actions: QuestManager.sideActions };
+  const noWard = JSON.parse(JSON.stringify(byId('ladys-hawk'))); delete noWard.ward;
+  let p = validateQuestSet([...sideSet.filter((q) => q.def.id !== 'ladys-hawk'), { file: 'ladys-hawk.json', def: noWard }], opts);
+  check(p.some((x) => /ladys-hawk\.json: `ward` is undefined and has to be one of outer, inner/.test(x)), 'validateQuestSet rejects a quest with no ward', p.join('; ') || 'said nothing');
+  const townWard = { ...JSON.parse(JSON.stringify(byId('sentrys-dice'))), ward: 'town' };
+  p = validateQuestSet([...sideSet.filter((q) => q.def.id !== 'sentrys-dice'), { file: 'sentrys-dice.json', def: townWard }], opts);
+  check(p.some((x) => /`ward` is "town"/.test(x)), 'and one in a ward the castle does not have', p.join('; ') || 'said nothing');
+}
+{
+  // THE HAWK, IN THE ORDER THE LADY MEANS: her first, then the walk, then her.
+  const hawk = byId('ladys-hawk');
+  const r = rig();
+  const { qm, ui, engine, npc } = r;
+  const at = () => qm.openQuests().find((q) => q.id === 'ladys-hawk');
+  const said = (id) => { qm.handleInteract(npc(id)); const l = ui.dialogue.lines; ui.endDialogue(); return l; };
+  check(npc('lady').dialogueState === 'default' && at().started === false, 'a fresh day has Lady Alys on the floor and no bird mentioned');
+  r.talk('lady');
+  check(engine.holds('lady-hand'), 'her first conversation lands the gallows sevens, which are the mystery’s');
+  check(npc('lady').dialogueState === 'hawk-loose' && at().objective === hawk.stages.loose.objective, 'and ends with the merlin loose on the south walk', npc('lady').dialogueState);
+  check(ui.toasts.some((t) => t === `${hawk.title}: ${hawk.stages.loose.objective}`), 'toasted under its own title');
+  check(engine.npcState('lady') === 'default', 'the engine still has her in `default`');
+  r.examine('tally');
+  check(engine.holds('tally-on-walk'), 'the tally stick in the south walk gutter lands, the way it always did');
+  check(npc('lady').dialogueState === 'hawk-seen', 'and that is the bird seen: the quest turned on the mystery’s own clue', npc('lady').dialogueState);
+  const seen = said('lady');
+  check(same(seen, linesOf('lady', 'hawk-seen')), 'she says the bird came back on her own');
+  check(seen.some((l) => /south walk/.test(l)), 'and what the south walk is, which is walk-crosses said sooner by somebody else');
+  check(at().done === true && npc('lady').dialogueState === 'hawk-home', 'and that conversation ends the errand', npc('lady').dialogueState);
+
+  // The press still wins. Stand on the cross-walk, present it, and the
+  // window is what she says, not the hawk.
+  engine.discover('walk-crosses');
+  r.present('lady', 'walk-crosses');
+  check(engine.npcState('lady') === 'window' && npc('lady').dialogueState === 'window', 'presenting walk-crosses puts her in `window` over the finished errand', npc('lady').dialogueState);
+  check(same(ui.dialogue.lines, linesOf('lady', 'window')), 'and the lantern and the shadow are what she says');
+}
+{
+  // THE HAWK IN THE OTHER ORDER, which is the order a player following the
+  // mystery takes: the walk at Terce for the tally, the lady whenever. The
+  // stage that waits on the tally is walked through on the spot.
+  const hawk = byId('ladys-hawk');
+  const r = rig();
+  const { qm, ui, npc } = r;
+  const at = () => qm.openQuests().find((q) => q.id === 'ladys-hawk');
+  r.examine('tally');
+  check(at().started === false && npc('lady').dialogueState === 'default', 'the tally stick first: nothing has been asked of the player yet');
+  const before = ui.toasts.length;
+  r.talk('lady');
+  check(at().objective === hawk.stages.seen.objective && npc('lady').dialogueState === 'hawk-seen',
+    'then the lady: the errand opens already past the walk, because the walk already happened', `${at().objective} / ${npc('lady').dialogueState}`);
+  const toasts = ui.toasts.slice(before).filter((t) => t.startsWith(`${hawk.title}: `));
+  check(toasts.length === 1 && toasts[0] === `${hawk.title}: ${hawk.stages.seen.objective}`, 'with one toast, for the stage the player is actually in', toasts.join(' | '));
+  r.talk('lady');
+  check(at().done === true, 'and one more conversation ends it');
+
+  // The same order through the knife, which is the hole #576 shipped.
+  const knife = byId('cooks-knife');
+  const r2 = rig();
+  r2.examine('knife');
+  r2.talk('cook');
+  check(r2.npc('cook').dialogueState === 'knife-found' && r2.qm.openQuests().find((q) => q.id === 'cooks-knife').objective === knife.stages.found.objective,
+    'the barrel before Marged: the knife thread opens at `found`, not stuck in `hunting` waiting for a barrel that says gone', r2.npc('cook').dialogueState);
+  r2.talk('cook');
+  check(r2.qm.openQuests().find((q) => q.id === 'cooks-knife').done === true, 'and ends on the next word with her');
+
+  // A CONVERSATION IS NOT CAUGHT UP. Talking to the porter before the sentry
+  // ever mentions dice is not the message delivered.
+  const dice = byId('sentrys-dice');
+  const r3 = rig();
+  while (r3.engine.watch !== 'terce') r3.ring();
+  r3.talk('porter');
+  r3.talk('sentry');
+  check(r3.qm.openQuests().find((q) => q.id === 'sentrys-dice').objective === dice.stages.owed.objective,
+    'the porter spoken to before the sentry asked: the errand still opens at `owed`, because a conversation is a thing that happens and not a thing the player holds',
+    r3.qm.openQuests().find((q) => q.id === 'sentrys-dice').objective);
+}
+{
+  // THE CANDLE. Father Anselm's column, and the mystery's candle on his stair.
+  const candle = byId('candle-count');
+  const r = rig();
+  const { qm, ui, engine, npc } = r;
+  const at = () => qm.openQuests().find((q) => q.id === 'candle-count');
+  r.talk('chaplain');
+  check(npc('chaplain').dialogueState === 'candle-short' && at().objective === candle.stages.short.objective, 'the chaplain mentions his count and the errand opens', npc('chaplain').dialogueState);
+  check(engine.npcState('chaplain') === 'default', 'the engine still has him in `default`');
+  r.examine('candle');
+  check(engine.holds('chapel-candle') && npc('chaplain').dialogueState === 'candle-found', 'the candle in the pricket lands as the mystery’s clue and moves the errand', npc('chaplain').dialogueState);
+  qm.handleInteract(npc('chaplain'));
+  const found = ui.dialogue.lines; ui.endDialogue();
+  check(same(found, linesOf('chaplain', 'candle-found')), 'he says what a pooled candle means');
+  check(!found.some((l) => /two men|going up/i.test(l)), 'and not what he heard, which is the press’s to give', found.join(' | '));
+  check(at().done === true && npc('chaplain').dialogueState === 'candle-entered', 'and the column adds');
+  // The press over the finished errand.
+  engine.discover('steward-admits');
+  r.present('chaplain', 'steward-admits');
+  check(npc('chaplain').dialogueState === 'heard' && same(ui.dialogue.lines, linesOf('chaplain', 'heard')), 'presenting the Steward’s admission is still what makes him say what he heard', npc('chaplain').dialogueState);
+}
+{
+  // THE DICE. Asleep at Prime; the errand through the gate; and the bar only
+  // after the porter has said it himself.
+  const dice = byId('sentrys-dice');
+  const r = rig();
+  const { qm, ui, engine, npc } = r;
+  const at = () => qm.openQuests().find((q) => q.id === 'sentrys-dice');
+  qm.handleInteract(npc('sentry'));
+  check(ui.dialogue.lines[0] === mystery.ui.asleep, 'at Prime the sentry is asleep in the guardroom');
+  ui.endDialogue();
+  check(at().started === false, 'and asleep is not a conversation: nothing opens');
+  while (engine.watch !== 'terce') r.ring();
+  r.talk('sentry');
+  check(engine.holds('sentry-sighting') && npc('sentry').dialogueState === 'dice-owed', 'at Terce he gives the sighting, which is the mystery’s, and asks for four pence carried', npc('sentry').dialogueState);
+  const porterBefore = engine.npcState('porter');
+  r.talk('porter');
+  check(npc('sentry').dialogueState === 'dice-told' && at().objective === dice.stages.told.objective, 'the porter spoken to is the message delivered', npc('sentry').dialogueState);
+  check(engine.npcState('porter') === porterBefore && npc('porter').dialogueState === 'default', 'and the porter said what he always says: nothing here changes his lines');
+  qm.handleInteract(npc('sentry'));
+  const told = ui.dialogue.lines; ui.endDialogue();
+  check(same(told, linesOf('sentry', 'dice-told')), 'he knows Gwilym said nothing');
+  check(!told.some((l) => /Lammas|leaned|not been barred/i.test(l)), 'and does not say the door was open, which is the porter’s to admit', told.join(' | '));
+  check(at().done === true && npc('sentry').dialogueState === 'dice-paid', 'that conversation ends the errand');
+
+  // The other road: the porter admits it first. The sentry has something to
+  // say about that, and only then.
+  const r2 = rig();
+  while (r2.engine.watch !== 'terce') r2.ring();
+  r2.talk('sentry');
+  r2.examine('walk-door');
+  check(r2.engine.holds('door-unbarred') && r2.npc('sentry').dialogueState === 'dice-owed', 'the bar on the wall is a clue and not yet an admission: the sentry says nothing about it');
+  r2.present('porter', 'door-unbarred');
+  check(r2.engine.npcState('porter') === 'admits', 'the porter pressed on it admits it');
+  check(r2.npc('sentry').dialogueState === 'dice-bar' && r2.qm.openQuests().find((q) => q.id === 'sentrys-dice').objective === dice.stages.bar.objective,
+    'and the press is what moves the sentry to say he knew', r2.npc('sentry').dialogueState);
+  r2.qm.handleInteract(r2.npc('sentry'));
+  const bar = r2.ui.dialogue.lines; r2.ui.endDialogue();
+  check(same(bar, linesOf('sentry', 'dice-bar')) && bar.some((l) => /Lammas/.test(l)), 'since Lammas, and every man on the walk');
+  check(r2.qm.openQuests().find((q) => q.id === 'sentrys-dice').done === true, 'and that ends it from this road too');
+  // And from the start stage: a player who never spoke to him before the press.
+  const r3 = rig();
+  while (r3.engine.watch !== 'terce') r3.ring();
+  r3.examine('walk-door');
+  r3.present('porter', 'door-unbarred');
+  check(r3.npc('sentry').dialogueState === 'dice-bar', 'a player who has the admission before ever speaking to the sentry finds him already at the bar', r3.npc('sentry').dialogueState);
+}
+{
+  // THE CHISEL. Two endings: the bars say nothing, or the roll says the forge.
+  const chisel = byId('hywels-chisel');
+  const r = rig();
+  const { qm, ui, engine, npc } = r;
+  const at = () => qm.openQuests().find((q) => q.id === 'hywels-chisel');
+  r.talk('apprentice');
+  check(engine.holds('hywel-sober') && engine.holds('apprentice-tallies'), 'Ieuan’s first conversation lands both of his statements');
+  check(npc('apprentice').dialogueState === 'chisel-asking' && at().objective === chisel.stages.asking.objective, 'and asks for a question carried to the bars', npc('apprentice').dialogueState);
+  r.talk('prisoner');
+  check(engine.holds('prisoner-story') && npc('prisoner').dialogueState === 'default', 'Madoc says the lead, the cart and the seal, and nothing here touches his lines');
+  check(npc('apprentice').dialogueState === 'chisel-heard', 'which Ieuan already knows he said', npc('apprentice').dialogueState);
+  r.talk('apprentice');
+  check(at().done === true && npc('apprentice').dialogueState === 'chisel-own-edge' && at().objective === chisel.stages['own-edge'].objective, 'so he puts his own edge on the second chisel', at().objective);
+
+  const r2 = rig();
+  r2.talk('apprentice');
+  r2.talk('prisoner');
+  r2.examine('gaol-roll');
+  check(r2.engine.holds('prisoner-inside'), 'the roll and the story together are the deduction that Madoc was inside');
+  r2.present('prisoner', 'prisoner-inside');
+  check(r2.engine.npcState('prisoner') === 'forge' && same(r2.ui.dialogue.lines, linesOf('prisoner', 'forge')), 'presented to him, he says eight days at the forge: the mystery’s press, untouched');
+  check(r2.npc('apprentice').dialogueState === 'chisel-forge', 'and the same press turns the errand: the chisel is where he works', r2.npc('apprentice').dialogueState);
+  r2.talk('apprentice');
+  check(r2.qm.openQuests().find((q) => q.id === 'hywels-chisel').objective === chisel.stages.fetched.objective, 'so Ieuan will fetch it at the forge at Prime tomorrow');
+}
+{
+  // THE PROOF THAT NONE OF THEM TOUCHED ANYTHING. One walk through every
+  // errand, the same walk through a manager with no side quests, and the
+  // journals compared by id and order. Then the tab, with five on it.
+  const walk = (x) => {
+    x.talk('lady'); x.examine('tally'); x.talk('lady');
+    x.talk('chaplain'); x.examine('candle'); x.talk('chaplain');
+    x.talk('apprentice'); x.talk('prisoner'); x.examine('gaol-roll'); x.present('prisoner', 'prisoner-inside'); x.talk('apprentice');
+    x.talk('cook'); x.examine('knife'); x.talk('cook');
+    while (x.engine.watch !== 'terce') x.ring();
+    x.talk('sentry'); x.talk('porter'); x.examine('walk-door'); x.present('porter', 'door-unbarred'); x.talk('sentry');
+  };
+  const r = rig(); walk(r);
+  const control = rig({ withSideQuests: false }); walk(control);
+  const ids = (x) => x.engine.journal().map((c) => c.id);
+  check(same(ids(r), ids(control)), 'the same walk through all five errands with and without them leaves the identical journal', `${ids(r).join(',')} vs ${ids(control).join(',')}`);
+  check(r.qm.openQuests().every((q) => q.done), 'and every errand is done at the end of it', r.qm.openQuests().filter((q) => !q.done).map((q) => q.id).join(', '));
+  for (const id of ['lady', 'chaplain', 'apprentice', 'sentry', 'cook']) {
+    check(control.npc(id).dialogueState === (control.engine.npcState(id) === 'default' ? 'default' : control.engine.npcState(id)), `and without them ${id} is only ever where the engine puts them`, control.npc(id).dialogueState);
+  }
+  r.qm.handleJournal();
+  const tab = r.ui.journal?.quests;
+  r.ui.closeJournal();
+  check(Array.isArray(tab) && tab.length === 5 && tab.every((q) => q.done), 'the journal’s tab carries all five, done', JSON.stringify(tab?.map((q) => [q.id, q.done])));
+  check(r.state.quests && Object.keys(r.state.quests).length === 5 && r.state.quests['sentrys-dice'] === 'paid' && r.state.quests['hywels-chisel'] === 'fetched',
+    'and the save carries a stage for each of the five', JSON.stringify(r.state.quests));
 }
 
 /* -------------------------------------------------------------- 5: the page --- */

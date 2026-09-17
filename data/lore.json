@@ -551,6 +551,43 @@
         { "kind": "document", "id": "lodge-ordinances" },
         { "kind": "npc", "npc": "apprentice", "state": "default" }
       ]
+    },
+    {
+      "id": "lady-alys-merlin",
+      "kind": "person",
+      "text": "Lady Alys flies a merlin called Ffion off the inner ward's sill, a year to her hand, the one thing in the castle that is hers and not the Constable's, and the bird goes off the sill whenever she likes and comes back whenever she likes, which the household says is the two of them exactly. She sits on the south walk parapet over the Bakehouse Tower door when she is loose, because it is the one place nobody can get a ladder to, and nobody on the King's watch has ever been ordered off his post to fetch her.",
+      "sources": [
+        {"kind": "npc", "npc": "lady", "state": "hawk-loose"},
+        {"kind": "npc", "npc": "lady", "state": "hawk-seen"}
+      ]
+    },
+    {
+      "id": "chaplain-candle-account",
+      "kind": "history",
+      "text": "The chapel's candle account is a column in the chaplain's own hand, kept for the exchequer's man who never reads it: a tallow candle a week for the office, of the kitchen's making, and one over against a burial, out of an aumbry by the vestry door that has never had a lock on it. The pricket at the first turn of the chapel stair has stood empty since Sir Walter Esturmy's day, because the office is said below and the only man who carries a light past the turn is the chaplain going up to bed.",
+      "sources": [
+        {"kind": "npc", "npc": "chaplain", "state": "candle-short"},
+        {"kind": "npc", "npc": "chaplain", "state": "candle-found"}
+      ]
+    },
+    {
+      "id": "porters-table",
+      "kind": "rumour",
+      "text": "The porter's lodge has a table and the table has dice, and the hour for them is Lauds, when the night watch comes off the north walk and the gate is opening and there is an hour before the day's people: Gwilym's dice, Gwilym's ale, Gwilym's book to write the losses in, and no man of the garrison has come out of that lodge owed anything. A sentry's pay is four pence a week and the garrison says Gwilym holds a month of it across the eight of them, and says so out of the chaplain's hearing.",
+      "sources": [
+        {"kind": "npc", "npc": "sentry", "state": "dice-owed"},
+        {"kind": "npc", "npc": "sentry", "state": "dice-told"}
+      ]
+    },
+    {
+      "id": "hywels-chisel",
+      "kind": "person",
+      "text": "Hywel ap Gruffudd's good chisel was an ash-hafted iron a hand and a half long with his mark struck on the tang, and every carved head in the chapel is that one tool's work; it went down to Madoc's forge a week before the mason died, for the edge the smith draws twice a year for ale, and it was there or in the smith's keeping when the smith was put in the Prison Tower. The head it was cutting when it went is a king's, for the springing of the chapel arch, and it is his apprentice's to finish or leave, because that is the custom of the lodge.",
+      "sources": [
+        {"kind": "npc", "npc": "apprentice", "state": "chisel-asking"},
+        {"kind": "npc", "npc": "apprentice", "state": "chisel-forge"},
+        {"kind": "npc", "npc": "apprentice", "state": "chisel-own-edge"}
+      ]
     }
   ]
 }
