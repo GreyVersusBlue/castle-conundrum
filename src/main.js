@@ -45,7 +45,7 @@ async function init() {
   const sideQuests = await Promise.all(sideQuestFiles.map((f) => loadJSON(`data/quests/${f}`)));
   const sideProblems = validateQuestSet(
     sideQuestFiles.map((file, i) => ({ file, def: sideQuests[i] })),
-    { npcs: npcData.cast, mystery: mysteryData, actions: QuestManager.sideActions },
+    { npcs: npcData.cast, mystery: mysteryData, actions: QuestManager.sideActions, reputation: npcData.reputation },
   );
   if (sideProblems.length) throw new Error(`data/quests/ is not a valid quest set:\n  - ${sideProblems.join('\n  - ')}`);
 
@@ -57,6 +57,10 @@ async function init() {
   // so what comes back here is safe to hand to the graph. `rooms` is the
   // config's list because it is the list `makePlan` builds the rooms from: a
   // room cut from the config is cut from the castle and from the save together.
+  // `reputation` (version 6, BACKLOG.md rank 8) rides on `sideQuests` too: the
+  // ward and the terminal stages the two counters are clamped against come off
+  // the same files, so a quest added to the directory raises its ward's ceiling
+  // on the next load and nothing is written down twice.
   const slot = createCastleSlot({ mystery: mysteryData, quest: questData, documents: documentsData.documents, sideQuests, rooms: config.rooms });
   const saved = slot.load();
   const state = saved ?? slot.fresh();
@@ -197,7 +201,9 @@ async function init() {
     // hears about the room from `handleEnter` below, which the loop already
     // calls off the same answer the HUD's room line is written from (#588).
     performances: npcData.performances,
-    onChange: ({ stage, riddleWrong, day, quests }) => { state.stage = stage; state.riddleWrong = riddleWrong; state.day = day; state.quests = quests; auto.mark(); },
+    // The two ward counters' lines, and the one the epilogue pane carries.
+    reputation: npcData.reputation,
+    onChange: ({ stage, riddleWrong, day, quests, reputation }) => { state.stage = stage; state.riddleWrong = riddleWrong; state.day = day; state.quests = quests; state.reputation = reputation; auto.mark(); },
     // What the epilogue's button does when it reads "Play Again" — at the end
     // of the second day, or at the end of a verdict with no morning after it
     // (#537). Erase the save, then reload into a fresh day.

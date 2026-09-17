@@ -56,6 +56,7 @@ export class UI {
       verdict: document.getElementById('verdict-pane'),
       verdictConvicted: document.getElementById('verdict-convicted'),
       verdictEpilogue: document.getElementById('verdict-epilogue'),
+      verdictReputation: document.getElementById('verdict-reputation'),
       restartBtn: document.getElementById('restart-button'),
       hint: document.getElementById('controls-hint'),
       touchToggle: document.getElementById('touch-toggle'),
@@ -590,11 +591,14 @@ export class UI {
    * the second day or of a verdict that has none. The pane is the same pane
    * both times, because the second day ends where the first one did.
    */
-  showEpilogue({ convicted, epilogue }, onButton, { label = 'Play Again' } = {}) {
+  showEpilogue({ convicted, epilogue, reputation = null }, onButton, { label = 'Play Again' } = {}) {
     this.el.accusationPick.classList.add('hidden');
     this.el.verdict.classList.remove('hidden');
     this.el.verdictConvicted.textContent = convicted;
     this.el.verdictEpilogue.textContent = epilogue;
+    // Null is a player who ran no errand, and the line is not there at all.
+    this.el.verdictReputation.textContent = reputation ?? '';
+    this.el.verdictReputation.classList.toggle('hidden', !reputation);
     this.el.accusation.classList.remove('hidden');
     this.el.restartBtn.textContent = label;
     this.el.restartBtn.onclick = onButton;

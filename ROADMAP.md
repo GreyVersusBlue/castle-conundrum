@@ -27,7 +27,7 @@ NOW, in parallel, no gates:
 
   Devon's machine                    A container
   ---------------                    -----------
-  R2  GPU run        --+             R8   quests: reputation + errands   lane A
+  R2  GPU run        --+             R8   quests: the seven errands      lane A
                        |             R6   populace: the first ten        lanes C D
                        |             R4a  the bells call   (lane A: not beside R8)
                        |             R4b  the since field  (lane A: not beside R8)
@@ -125,9 +125,10 @@ the theme is not what conflicts.
 
 Lane A is the one the specs already warned about in words: *"do not run
 alongside anything else that touches `save.js`"* is written into R4's
-dependencies, and R8's next increment is a version bump to 6 with a clamp in
+dependencies, and R8's next increment was a version bump to 6 with a clamp in
 `repair`. Two sessions bumping the same version number produce a merge that
-compiles and a save that does not migrate.
+compiles and a save that does not migrate. **Version 6 landed on 2026-09-17**
+(#612), so the next session in this lane bumps to 7 and the same rule holds.
 
 Lane B is sharp for a different reason. `test/tools.mjs` holds
 `data/scene-config.json` to byte-exactness by cutting an added row back out and
@@ -137,7 +138,9 @@ sessions splicing into it is two splices neither one tested against.
 
 Lane C is the `cast` block **specifically**, not all of `data/npcs.json`. R8
 and R12c write per-person `states` and `default` line arrays, which is a
-different region of the same file and merges cleanly. A session doing either
+different region of the same file and merges cleanly. R8 also owns the
+file's `reputation` block outright (#614), which is a third region again and
+is nobody else's. A session doing either
 should still say so in its PR.
 
 ### Three that are genuinely safe together right now
@@ -154,22 +157,29 @@ R8 in the same working tree and touched `src/castle-builder.js`, `test/run.mjs`
 and a new `test/budget.mjs`, none of which is in any lane.
 
 **What the lanes did not cover was `HISTORY.md`.** Three branches wrote #603
-the same afternoon; rank 1's merged and holds it, and the other two renumbered.
+the same afternoon; rank 1's merged and holds it, and the other two
+renumbered — and then collided *again* on #607, because both picked the next
+free band from the same stale view. R12a merged first and kept #607 to #611;
+R8 moved a second time, to #612 to #615. Two renumbers for one row is the
+cost of picking a number before merging.
 A lane is a file (#602) and `HISTORY.md` is a file every row writes to, so by
 the letter of the rule only one row could ever be in flight — which is not the
 rule anybody wants. **The working answer, which costs nothing: read
 `HISTORY.md` on `origin/main` when you write the entry, not when you branched.**
 A decision number is picked at the end of a row, not the start.
 
-With R1 and R7 landed, the three safe together now are **R8, R6 and R4a or
-R4b** — except that R4a and R4b are lane A and R8 has it, so the honest answer
-is two, plus **R2** on Devon's machine.
+With R1, R7, R12a and R8's reputation increment landed, lane A is free:
+version 6 is in and R8's remaining work is quest files and dialogue, not
+`save.js`. So the rows safe together now are **R8, R6 and R4a or R4b**, three
+of them, plus **R2** on Devon's machine.
 
 ### What not to pair
 
 - R6 beside R1 or R10. All three are lane C, and R6 reads the `cast` that R1
   and R10 both exist to change.
-- R8 beside R4a or R4b. Lane A, and both want the version number.
+- R8 beside R4a or R4b. Lane A, and both want the version number — though
+  see the note under the lane table: version 6 landed on 2026-09-17 and R8's
+  remaining work does not touch `save.js` at all.
 - R5, R9, R4c and R12b, any two of them. All lane B.
 - R6 beside R11. Lane D, both inside `src/main.js`'s rig.
 
@@ -203,7 +213,7 @@ run together, and they did.
 | Row | Model | Where | Lane | Next increment |
 | --- | --- | --- | --- | --- |
 | **R2** The GPU run | Opus 5 | **Local: GPU** | none | Gate 1, above. And now four more things nobody has looked at: a fourth body, seven ambient beds nobody has heard, and what the eight tower drums actually cost. |
-| **R8** Side quests | Opus 5 | Container | A | Reputation by ward: two save counters, a version bump through `migrate`, a clamp in `repair`, a chatter line per threshold and one line in one closing pane. Then the seven errands left of the dozen; five of the seven need nobody new. |
+| **R8** Side quests | Opus 5 | Container | A | ~~Reputation by ward~~ shipped 2026-09-17 (#612 to #615): two counters at save version 6, a line per ward threshold, one line under the verdict. What is left is the seven errands of the dozen; five of the seven need nobody new. |
 | **R6** Life: a populace | Opus 5 | Container | C, D | `data/populace.json`, `src/populace.js`, and ten bodies off the `cast` that already exists. No new asset, no new clip, so the row that makes every other wishlist row visible does not itself wait on one. **It now has a number to answer to**: 20 skinned bodies per ward against a peak of 7 (#609). |
 | ~~**R1** A fourth body~~ | Fable 5.1 | Local: net | C | **Shipped** (#603 to #606). Quaternius's Ultimate Modular Women Pack, meshopt to 1.02 MB, worn by the cook, the laundress and the lady. |
 | ~~**R7** Sound~~ | Fable 5.1 | Container | E | **First increment shipped** (#620 to #623). Seven synthesised room tones and the cross-fade. What is left needs speakers (#53). |
@@ -212,7 +222,11 @@ run together, and they did.
 R4a (the bells call) and R4b (the `since` field) are startable today too, but
 both are lane A and R8 is the better use of that lane: R8's next increment is
 specced down to the field names, while R4a is an open design question that has
-to overturn #533 rather than work around it.
+to overturn #533 rather than work around it. **That argument weakened on
+2026-09-17**: R8's version bump to 6 is in, so the thing lane A was protecting
+has already happened, and R8's remaining work is quest files and dialogue
+rather than `save.js`. A session on R4a or R4b now collides with R8 only if R8
+touches the save again, which the seven errands do not.
 
 ### Wave B — the moment R2 lands
 

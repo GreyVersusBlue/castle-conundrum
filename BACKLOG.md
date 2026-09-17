@@ -134,9 +134,12 @@ is a directory of one graph per file, `validateQuestSet` in `src/quest-graph.js`
 is the rail that keeps them out of the mystery's clue graph, `quest-manager.js`
 runs them off the same event stream the frame hears without a second class, and
 the cook's missing knife is the first of them. The save is version 4 for
-`quests`; the key did not move (#36). **Rank 8 is still open**: one quest is
-not a dozen, and reputation by ward waits on enough quests to make a moved
-counter visible. The journal's open-quests tab shipped on 2026-09-17 (#595).
+`quests`; the key did not move (#36). The journal's open-quests tab shipped
+the same day (#595), four more errands after it (#597 to #599), and
+**reputation by ward the same day again** (#612 to #615): two counters at save
+version 6, a line per ward threshold on the end of what anybody in that ward
+says, and one line under the verdict. **Rank 8 is still open**: what is left
+in it is the seven errands of the dozen still unwritten.
 
 **The placement editor shipped on 2026-09-17** (#583 to #587), and it came out
 of a finding about the row above it. **Rank 9's first increment was already
@@ -209,10 +212,11 @@ bells on day two. Of ranks 6 to 12, the ones whose next increment is data and
 validators rather than a render (6, 8 and 12) are the ones a container can
 start; 7, 10 and 11 all want either a recorded sound, a body on disk, or a GPU
 before their first increment closes, and 9 has nothing left in it that does
-not wait on rank 4's yard. **Ranks 8 and 12 both shipped two increments on
-2026-09-17** — rank 8's five errands and the four after them (#597 to #599),
-rank 12's placement editor and then its budget suite (#607 to #611). Rank 8's next
-increment is a container's: reputation by ward and the seven errands left.
+not wait on rank 4's yard. **Rank 8 shipped four increments on 2026-09-17 and
+rank 12 two** — rank 8's first errand, the journal's tab, four more errands
+(#597 to #599) and reputation by ward (#612 to #615), rank 12's placement
+editor and then its budget suite (#607 to #611). Rank 8's next increment is a
+container's: the seven errands left.
 **Rank 12 is down to the dialogue format**, and whoever takes move-and-delete
 walks into a live failure: `test/tools.mjs`, the byte-exactness rail that
 increment has to keep, is red on a Windows checkout and green on a Linux one. **Rank 9's map shipped the same day** (#588 to #591),
@@ -356,7 +360,7 @@ in the editor, **12c** the dialogue format.
 | 5 | The hall's covering, and the two windows under it | ¼ | Sonnet 5 | Local: GPU | **after 2** | B | | [The hall covering](SPECS.md#the-hall-covering) |
 | 6 | Life: a populace, and the first ten bodies of it | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: somebody listens to the seven beds, then a bed at a point, the four bells, event sounds | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
-| 8 | Side quests: reputation by ward, and the seven left | 2+ | Opus 5 | Container | — | A | | [Side quests](SPECS.md#side-quests) |
+| 8 | Side quests: the seven errands left of the dozen | 2+ | Opus 5 | Container | — | A | | [Side quests](SPECS.md#side-quests) |
 | 9 | A castle to get lost in: the town, the rock and river | 2+ | Opus 5 | Container | **after 4c** | B | | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
 | 10 | Bodies: a shared low-poly rig for the fifty | 1 | Fable 5.1 | Local: net | — | C | | [Bodies](SPECS.md#bodies) |
 | 11 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 | Container to the Node line, local: GPU past it | **after 2** | D | | [Feel](SPECS.md#feel) |
@@ -490,9 +494,10 @@ rank 6's activity clips. Recorded CC0 audio is admitted since #548, named by
 
 *Where: container. Gate: none, but two of the seven errands want rank 6. Lane: A.*
 
-**Rank 8, and a 2+. Three increments shipped on 2026-09-17** (#576 to #581,
-#595, #597 to #599): the format, the set validator and the cook's missing
-knife; then the journal's tab; then four more errands.
+**Rank 8, and a 2+. Four increments shipped on 2026-09-17** (#576 to #581,
+#595, #597 to #599, #612 to #615): the format, the set validator and the
+cook's missing knife; then the journal's tab; then four more errands; then
+reputation by ward.
 `data/quests/` holds one `QuestGraph` per file with two fields the frame does
 not need, `id` and `npc`; `data/quests/index.json` names the files because a
 browser cannot read a directory, and `test/quest.mjs` holds that list to the
@@ -520,9 +525,19 @@ reaching a stage that waits on a clue the player already holds is walked
 forward at the end of the batch (#597), and every file names its `ward`
 (#599). Five errands, three outer and two inner.
 
-**What is left.** Reputation by ward, two save-carried counters and a chatter
-line or two, no longer deferred: five errands is a moved counter somebody
-could see. Then the seven of `WISHLIST.md`'s dozen still unwritten: three it
+**Reputation by ward shipped fourth** (#612 to #615): `outer` and `inner`,
+two counters the save carries at version 6, one moved per errand finished in
+that ward. `migrate` counts what a version-5 save had already finished rather
+than writing zeroes, and `repair` clamps each to the errands that ward has.
+Two things read them and nothing else does: a line on the **end** of whatever
+anybody in that ward says, off `data/npcs.json`'s new `reputation` block, and
+one line under the verdict in the epilogue pane, with nothing at all shown to
+a player who ran no errand. Not a state, not on a press, not on the morning
+after. `validateQuestSet` holds every threshold to an errand that exists to be
+finished, which is the rule worth having: an unreachable one is silent in the
+game and looks exactly like a line not yet earned.
+
+**What is left.** The seven of `WISHLIST.md`'s dozen still unwritten: three it
 named, of which two want rank 6's populace (a child's dog, the porter's boy
 who wants his letters) and one does not (a letter for the town that needs a
 gate pass), and four it never named. `SPECS.md` specs the next increment.

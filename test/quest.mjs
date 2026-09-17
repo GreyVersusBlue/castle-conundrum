@@ -58,7 +58,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, '..');
 const read = (rel) => JSON.parse(fs.readFileSync(path.join(ROOT, rel), 'utf8'));
 const quest = read('data/quest.json');
-const { cast: npcDefs, performances } = read('data/npcs.json');
+const { cast: npcDefs, performances, reputation } = read('data/npcs.json');
 const riddle = read('data/riddle.json');
 const scene = read('data/scene-config.json');
 const mystery = read('data/mystery.json');
@@ -376,7 +376,7 @@ function stubUI() {
   };
 }
 
-function rig({ saved = null, withSideQuests = true, quests = null, cast = npcDefs, rooms = [], perform = null, schedule = null } = {}) {
+function rig({ saved = null, withSideQuests = true, quests = null, cast = npcDefs, rooms = [], perform = null, schedule = null, reputes = reputation } = {}) {
   const ui = stubUI();
   const npcs = cast.map((def) => ({
     id: def.id, name: def.name, def, talking: false, dialogueState: 'default',
@@ -416,12 +416,19 @@ function rig({ saved = null, withSideQuests = true, quests = null, cast = npcDef
     // nothing, so every beat above this line runs in a castle where nobody
     // performs and no line of the manager's new code is reachable.
     performances: perform, ...(schedule ? { schedule } : {}),
+    /* THE REAL REPUTATION BLOCK, IN EVERY BEAT IN THIS FILE, ON PURPOSE. It is
+     * the opposite of `performances` above, which defaults to nothing so that
+     * no beat that does not care about it can reach its code: reputation adds
+     * a line to the END of what somebody says, so every `same(lines, ...)`
+     * assertion in this file is a guard that it does not say it early, and
+     * they are only guards if it is switched on while they run. */
+    reputation: reputes,
     onWatch: (w) => watches.push(w),
     // What main.js does with onChange, because the stage and the wrong-answer
     // count are the only two things in the save the engine does not own. Leave
     // it out and the reload below comes back in `arrive` with a Sext watch,
     // which is exactly the bug it is here to catch.
-    onChange: ({ stage, riddleWrong, quests }) => { changes.n++; state.stage = stage; state.riddleWrong = riddleWrong; state.quests = quests; },
+    onChange: ({ stage, riddleWrong, quests, reputation: rep }) => { changes.n++; state.stage = stage; state.riddleWrong = riddleWrong; state.quests = quests; state.reputation = rep; },
   });
   const npc = (id) => npcs.find((n) => n.id === id);
   return {
@@ -1146,6 +1153,154 @@ const linesOf = (id, state) => npcDefs.find((n) => n.id === id).dialogue[state];
   check(Array.isArray(tab) && tab.length === 5 && tab.every((q) => q.done), 'the journal’s tab carries all five, done', JSON.stringify(tab?.map((q) => [q.id, q.done])));
   check(r.state.quests && Object.keys(r.state.quests).length === 5 && r.state.quests['sentrys-dice'] === 'paid' && r.state.quests['hywels-chisel'] === 'fetched',
     'and the save carries a stage for each of the five', JSON.stringify(r.state.quests));
+}
+
+/* ------------------------------- 4c: reputation by ward (rank 8) -------------
+ * Two counters the save carries, `outer` and `inner`, one moved per errand
+ * finished in that ward (`ward` is the quest file's, #599). Two things read
+ * them: a line on the END of whatever anybody in that ward says, and one line
+ * under the verdict in the closing pane. Nothing else. It grants nothing,
+ * gates nothing and is not a dialogue state, which is why `validateQuestSet`'s
+ * one-voice rule has nothing to arbitrate about it.
+ *
+ * WHAT THE REST OF THIS FILE IS DOING FOR THIS SECTION. `rig` hands the real
+ * block to every manager it builds, so every `same(lines, ...)` assertion
+ * above is an assertion that the aside is NOT said below its threshold. That
+ * is the half this section cannot check on its own: it can prove the line
+ * arrives, and it takes the whole rest of the file to prove it does not
+ * arrive early.
+ */
+console.log('\nreputation by ward');
+const wardCount = (w) => sideQuests.filter((q) => q.ward === w).length;
+const repLine = (key, at) => reputation[key].find((e) => e.at === at).line;
+{
+  const opts = { npcs: npcDefs, mystery, actions: QuestManager.sideActions, reputation };
+  check(validateQuestSet(sideSet, opts).length === 0, 'validateQuestSet finds nothing wrong with the block as it ships', validateQuestSet(sideSet, opts).join('; '));
+  check(validateQuestSet(sideSet, { ...opts, reputation: null }).length === 0, 'and a castle with no block at all is not a problem: the counters still move, nobody says so');
+
+  // Rule 5, each half broken on purpose (#34). The one that matters is the
+  // unreachable threshold: it fails silently in the game, it looks exactly
+  // like a line that has not been earned yet, and nothing else here would say.
+  const bad = (mutate) => { const r = JSON.parse(JSON.stringify(reputation)); mutate(r); return validateQuestSet(sideSet, { ...opts, reputation: r }); };
+  const expect = (label, mutate, re) => {
+    const p = bad(mutate);
+    check(p.some((x) => re.test(x)), `validateQuestSet rejects ${label}`, p.length ? `said: ${p.join('; ')}` : 'said nothing');
+  };
+  expect(`an outer threshold past the ${wardCount('outer')} errands the outer ward has`, (r) => { r.outer.at(-1).at = wardCount('outer') + 1; }, /past the 3 errand\(s\) there are to finish/);
+  expect(`an inner one past its ${wardCount('inner')}`, (r) => { r.inner.at(-1).at = 9; }, /reputation\.inner: at 9 is past the 2 errand\(s\)/);
+  expect('a closing threshold past the whole set', (r) => { r.closing.at(-1).at = sideQuests.length + 1; }, /reputation\.closing: at 6 is past the 5 errand\(s\)/);
+  expect('a threshold of zero, which is a line said before anything is done', (r) => { r.outer[0].at = 0; }, /at 0 is not a whole number of errands, one or more/);
+  expect('a list out of order, which the highest-wins read would silently invert', (r) => { r.outer = [r.outer[1], r.outer[0]]; }, /at 2 does not come after 3/);
+  expect('two lines at one threshold', (r) => { r.inner[1].at = r.inner[0].at; }, /at 1 does not come after 1/);
+  expect('a line that is not a string', (r) => { r.closing[0].line = 42; }, /at 1 has no `line`/);
+  expect('a ward the castle does not have', (r) => { r.town = [{ at: 1, line: 'x' }]; }, /reputation\.town: is not one of outer, inner, closing/);
+  expect('a ward list that is not a list', (r) => { r.inner = { at: 1, line: 'x' }; }, /reputation\.inner: is not a list/);
+  const flat = validateQuestSet(sideSet, { ...opts, reputation: [] });
+  check(flat.some((x) => /`reputation` is not an object of ward lists/.test(x)), 'and a block that is not an object at all', flat.join('; ') || 'said nothing');
+}
+{
+  // THE INNER WARD. One errand, and the inner ward has a word for you; the
+  // outer ward, which you have done nothing for, says exactly what it said.
+  const r = rig();
+  const { qm, npc } = r;
+  const said = (id) => { qm.handleInteract(npc(id)); const l = r.ui.dialogue.lines; r.ui.endDialogue(); return l; };
+  check(same(qm.reputation(), { outer: 0, inner: 0 }), 'a fresh day owes nobody anything', JSON.stringify(qm.reputation()));
+  check(same(said('constable'), renderLines(linesOf('constable', 'default'), quest.tokens)), 'and the Constable says his three lines and the accusation token, with nothing after them');
+
+  r.talk('lady'); r.examine('tally'); r.talk('lady');
+  check(qm.openQuests().find((q) => q.id === 'ladys-hawk').done === true, 'the merlin is off the south walk');
+  check(same(qm.reputation(), { outer: 0, inner: 1 }), 'which moves the inner counter and not the outer one', JSON.stringify(qm.reputation()));
+  const heard = said('constable');
+  check(heard.at(-1) === repLine('inner', 1), 'and Sir Roger, who asked for none of it, has heard about it', heard.at(-1)?.slice(0, 40));
+  check(same(heard.slice(0, -1), renderLines(linesOf('constable', 'default'), quest.tokens)), 'on the end of what he was going to say anyway, which is untouched');
+  check(same(said('cook'), linesOf('cook', 'default')), 'and Marged, in the other ward, says what she always said');
+
+  // The second inner errand moves it to the second band, and the first line is
+  // not said again: the highest threshold reached is the one that is said.
+  r.talk('chaplain'); r.examine('candle'); r.talk('chaplain');
+  check(same(qm.reputation(), { outer: 0, inner: 2 }), 'the candle account closes and the inner counter is at two', JSON.stringify(qm.reputation()));
+  check(said('lady').at(-1) === repLine('inner', 2), 'Lady Alys is on the second line now', said('lady').at(-1)?.slice(0, 40));
+  check(!said('porter').includes(repLine('inner', 1)), 'and nobody is still saying the first');
+}
+{
+  // THE OUTER WARD, AND THE TWO PLACES THE ASIDE IS DELIBERATELY NOT.
+  const r = rig();
+  const { qm, npc } = r;
+  const said = (id) => { qm.handleInteract(npc(id)); const l = r.ui.dialogue.lines; r.ui.endDialogue(); return l; };
+  r.talk('cook'); r.examine('knife'); r.talk('cook');
+  check(same(qm.reputation(), { outer: 1, inner: 0 }), 'the knife found is one for the outer ward', JSON.stringify(qm.reputation()));
+  check(same(said('clerk'), linesOf('clerk', 'default')), 'and one is below the outer ward first threshold, so nobody says anything yet');
+  while (r.engine.watch !== 'terce') r.ring();
+  r.talk('sentry'); r.talk('porter'); r.talk('sentry');
+  check(same(qm.reputation(), { outer: 2, inner: 0 }), 'four pence carried through the gate is two', JSON.stringify(qm.reputation()));
+  check(said('clerk').at(-1) === repLine('outer', 2), 'and now Master Robert has heard it in the yard', said('clerk').at(-1)?.slice(0, 40));
+  check(said('prisoner').at(-1) === repLine('outer', 2), 'and so has a man in a cell, because it is the ward that says it and not the person');
+  check(!said('lady').includes(repLine('outer', 2)), 'the inner ward has not: it is two counters and not one');
+
+  // NOT ON A PRESS. The answer to a clue pushed at somebody is the mystery's.
+  r.engine.discover('wax-matches');
+  r.present('clerk', 'wax-matches');
+  check(r.engine.npcState('clerk') === 'cloak' && same(r.ui.dialogue.lines, linesOf('clerk', 'cloak')),
+    'the wax presented to Master Robert gets the cloak and only the cloak, with no word about errands after it', r.ui.dialogue.lines.at(-1)?.slice(0, 40));
+
+  // NOT ON THE MORNING AFTER. `_dayLines` replaces every line set in
+  // npcs.json, and a castle burying a man is the wrong room for the gossip.
+  r.talk('constable');
+  while (!r.ui.accusation) { r.ring(); r.talk('constable'); }
+  r.ui.say('nobody', []);
+  check(r.ui.epilogue?.class === 'fall' && r.ui.epilogueLabel === 'The next morning', 'the day is called a fall and there is a morning after it');
+  r.ui.restart();
+  check(r.engine.day === 2, 'which is walked into');
+  const after = said('cook');
+  check(same(after, mystery.day2.lines.cook.nobody), 'Marged says what the morning made of her and not one word about a knife', after.at(-1)?.slice(0, 40));
+}
+{
+  // THE CLOSING PANE. One line under the verdict, keyed to both counters
+  // added together, and nothing at all for a player who ran no errand.
+  const bare = rig();
+  bare.talk('constable');
+  while (!bare.ui.accusation) { bare.ring(); bare.talk('constable'); }
+  bare.ui.say('nobody', []);
+  check(bare.ui.epilogue?.reputation == null, 'a player who ran no errand is not told they ran none: the line is not there', JSON.stringify(bare.ui.epilogue?.reputation));
+
+  const r = rig();
+  r.talk('lady'); r.examine('tally'); r.talk('lady');
+  r.talk('chaplain'); r.examine('candle'); r.talk('chaplain');
+  r.talk('cook'); r.examine('knife'); r.talk('cook');
+  check(same(r.qm.reputation(), { outer: 1, inner: 2 }), 'three errands, one outer and two inner', JSON.stringify(r.qm.reputation()));
+  r.talk('constable');
+  while (!r.ui.accusation) { r.ring(); r.talk('constable'); }
+  r.ui.say('nobody', []);
+  check(r.ui.epilogue.reputation === repLine('closing', 3), 'and the pane carries the line the three of them are worth', r.ui.epilogue.reputation?.slice(0, 40));
+  // And again on the morning after, because the errands were run on the day
+  // before, which is the only day they could have been run on.
+  r.ui.restart();
+  r.talk('inspector');
+  check(r.ui.epilogue.reputation === repLine('closing', 3), 'the morning after pane carries the same one', `${r.qm.stage}: ${r.ui.epilogue.reputation?.slice(0, 40)}`);
+}
+{
+  // THE SAVE, AND THE ONE WAY A COUNTER COULD LIE. `_snapshot` writes both
+  // counters, main.js copies them onto the state, and a manager built on that
+  // state resumes with them — without counting the finished errands a second
+  // time, which is the failure this shape makes impossible rather than
+  // guarded: a terminal stage has no transition out of it (#393), so a quest
+  // that has arrived at an ending cannot move again, and `_settleSide`, the
+  // only line that adds, runs only on a quest that moved.
+  const r = rig();
+  r.talk('lady'); r.examine('tally'); r.talk('lady');
+  r.talk('cook'); r.examine('knife'); r.talk('cook');
+  check(same(r.state.reputation, { outer: 1, inner: 1 }), 'the snapshot writes both counters into the save', JSON.stringify(r.state.reputation));
+  const again = rig({ saved: JSON.parse(JSON.stringify(r.state)) });
+  check(same(again.qm.reputation(), { outer: 1, inner: 1 }), 'a reload comes back owed the same two favours and not four', JSON.stringify(again.qm.reputation()));
+  again.qm.handleInteract(again.npc('constable'));
+  check(again.ui.dialogue.lines.at(-1) === repLine('inner', 1), 'with the inner ward still saying so after the reload', again.ui.dialogue.lines.at(-1)?.slice(0, 40));
+  again.ui.endDialogue();
+  // A quest walked into its ending after the reload is an errand finished now.
+  const held = rig({ saved: { ...JSON.parse(JSON.stringify(r.state)), quests: { ...r.state.quests, 'cooks-knife': 'found' }, reputation: { outer: 0, inner: 1 } } });
+  check(held.qm.openQuests().find((q) => q.id === 'cooks-knife').done === false && held.qm.reputation().outer === 0,
+    'a save sitting one conversation short of the end owes nothing for it yet', JSON.stringify(held.qm.reputation()));
+  held.talk('cook');
+  check(held.qm.reputation().outer === 1, 'and that conversation is what pays it', JSON.stringify(held.qm.reputation()));
 }
 
 /* -------------------------------------------------------------- 5: the page --- */

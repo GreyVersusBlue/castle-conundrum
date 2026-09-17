@@ -1,10 +1,11 @@
 // save.js — the one save slot for Castle Conundrum, through `./gvb-save.js`,
 // this repo's vendored copy of the site-wide save module (#502; relative
 // import so this file runs in Node too). Key `castleConundrumSave_v1`, game
-// `castle-conundrum`, version 5. The key never changes (#36), and it does not
+// `castle-conundrum`, version 6. The key never changes (#36), and it does not
 // change here either: what moved is the version number inside it.
 //
-//   { stage, quests{id: stage}, day, watch, clues[], pressed{npc: state[]},
+//   { stage, quests{id: stage}, reputation{outer, inner}, day, watch,
+//     clues[], pressed{npc: state[]},
 //     taken[], read[], visited[], locks[], accusations[{who, clues, verdict, watch}],
 //     refusals, riddleWrong, player{x, y, z, yaw} | null }
 //
@@ -40,6 +41,18 @@
 // builds the castle's rooms from and nothing else, so a room the plan stops
 // building is a room repair drops from the set on the next load.
 //
+// VERSION 6 IS `reputation` (BACKLOG.md rank 8). Two counters, `outer` and
+// `inner`, one moved per side quest finished in that ward. It is `day`'s case
+// and not `read`'s: a version-5 save already says where every side quest
+// stands, so a player who finished three errands yesterday has a true answer
+// sitting in the file, and defaulting the new field to zero would say they had
+// done nothing. So `migrate` counts the terminal quests that save is already
+// carrying, per ward, and that is the one thing about this field only `migrate`
+// can say — `repair`'s own rail would answer a missing `reputation` with zeroes
+// whether migrate ran or not (#37, #147). `repair` then clamps each counter to
+// the number of quests data/quests/ has in that ward, which is the most a
+// counter can honestly read: one per errand, and an errand finishes once.
+//
 // `validate` refuses a non-object and a non-string stage and nothing else;
 // everything past that is `repair`'s, which runs on every load (#37) and
 // builds its catalog from data/mystery.json, data/quest.json and
@@ -51,10 +64,13 @@
 // goes wrong without it.
 
 import { createSaveSlot } from './gvb-save.js';
+// The two wards, from the file that defines them for the quest files themselves,
+// so the save cannot come to know a third one the validator has never heard of.
+import { WARDS } from './quest-graph.js';
 
 export const SAVE_KEY = 'castleConundrumSave_v1';
 export const SAVE_GAME = 'castle-conundrum';
-export const SAVE_VERSION = 5;
+export const SAVE_VERSION = 6;
 
 /**
  * Every id a save may carry, read off the data. `quest` is data/quest.json,
@@ -70,10 +86,18 @@ export function buildCatalog(mystery, quest, documents = [], sideQuests = [], ro
   // a save carrying a stage of a quest that has since been rewritten resets to
   // that quest's start and a save naming a quest file that is gone drops it
   // entirely — the same two rails `stage` has had since #413.
+  // `ward` and `terminals` are reputation's (version 6): the ward is which
+  // counter an errand moves and the terminals are which stages mean it is
+  // finished, both read off the quest files rather than written beside them,
+  // so a quest that changes ward or gains an ending changes what the counters
+  // mean on the next load and not a release later.
   const quests = new Map();
+  const wards = Object.fromEntries(WARDS.map((w) => [w, 0]));
   for (const q of sideQuests ?? []) {
     if (!q || typeof q.id !== 'string') continue;
-    quests.set(q.id, { start: q.start, stages: new Set(Object.keys(q.stages ?? {})) });
+    const terminals = new Set(Object.entries(q.stages ?? {}).filter(([, st]) => st?.terminal).map(([id]) => id));
+    quests.set(q.id, { start: q.start, ward: q.ward, stages: new Set(Object.keys(q.stages ?? {})), terminals });
+    if (q.ward in wards) wards[q.ward] += 1;
   }
   const watches = Array.isArray(mystery?.watches) ? mystery.watches : [];
   const clues = new Set((mystery?.clues ?? []).map((c) => c.id));
@@ -86,7 +110,22 @@ export function buildCatalog(mystery, quest, documents = [], sideQuests = [], ro
   for (const p of mystery?.presses ?? []) { if (npcs.has(p.npc)) npcs.get(p.npc).add(p.to); }
   const accusables = new Set([...npcs.keys(), 'nobody']);
   const verdicts = new Set(['full', 'right', 'wrong', 'fall']);
-  return { start: quest?.start ?? 'start', stages, quests, watches, clues, evidence, locks, documents: documentIds, rooms: roomIds, npcs, accusables, verdicts };
+  return { start: quest?.start ?? 'start', stages, quests, wards, watches, clues, evidence, locks, documents: documentIds, rooms: roomIds, npcs, accusables, verdicts };
+}
+
+/**
+ * How much reputation a set of quest stages is worth, by ward: one per quest
+ * sitting in one of its own terminal stages. Exported because it is what
+ * `migrate` reads a version-5 save's finished errands with, and a suite that
+ * cannot call it cannot tell migrate from repair (#147).
+ */
+export function reputationIn(quests, catalog) {
+  const out = Object.fromEntries(WARDS.map((w) => [w, 0]));
+  const at = quests && typeof quests === 'object' && !Array.isArray(quests) ? quests : {};
+  for (const [id, q] of catalog.quests ?? new Map()) {
+    if (q.ward in out && q.terminals?.has(at[id])) out[q.ward] += 1;
+  }
+  return out;
 }
 
 const nonNegInt = (v) => (Number.isInteger(v) && v >= 0 ? v : 0);
@@ -106,6 +145,16 @@ export function repairState(state, catalog) {
     const at = inQuests[id];
     out.quests[id] = typeof at === 'string' && q.stages.has(at) ? at : q.start;
   }
+  /* REPUTATION BY WARD (version 6). Two counters and the one rail that can be
+   * put on them: a ward's counter cannot read higher than the number of
+   * errands that ward has, because the game moves it one per errand and an
+   * errand finishes once. That is the ceiling a hand-edited 99 comes down to,
+   * and it is also what drops a counter that was earned on quest files the
+   * directory no longer has. It is deliberately NOT recomputed from
+   * `out.quests`: a favour done is a thing that happened, and repair's job on
+   * this field is to refuse the impossible, not to re-derive the possible. */
+  out.reputation = {};
+  for (const w of WARDS) out.reputation[w] = Math.min(nonNegInt(s.reputation?.[w]), catalog.wards?.[w] ?? 0);
   /* THE DAY, AND THE ONE THING THAT MAKES IT INCOHERENT. `day` is 1 or 2 and
    * nothing else; a hand-edited 7, a "2", a NaN all read as day one. And a
    * `day: 2` with no verdict in `accusations` is a save that says the morning
@@ -173,6 +222,11 @@ export function createCastleSlot({ mystery, quest, documents = [], sideQuests = 
       if (from < 3) out = { ...out, read: out.read ?? [] };
       if (from < 4) out = { ...out, quests: out.quests ?? {} };
       if (from < 5) out = { ...out, visited: out.visited ?? [] };
+      // And the one line in here that is not a default. A version-5 save knows
+      // where every side quest stands, so the errands it already finished are
+      // reputation it already earned; writing zeroes would be the save saying
+      // the player had done none of them.
+      if (from < 6) out = { ...out, reputation: out.reputation ?? reputationIn(out.quests, catalog) };
       return out;
     },
     repair: (s) => repairState(s, catalog),
