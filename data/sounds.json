@@ -1,5 +1,5 @@
 {
-  "comment": "The game's two sounds, as parameters rather than as bytes. NOTHING HERE IS A FILE (#519): every sound is synthesised in src/audio.js out of a noise buffer and a handful of oscillators, so the castle makes a noise without a byte of audio on disk, without a licence question, and without a host (#493 would refuse one anyway). `steps` is the foot; `bell` is the chapel bell. The numbers are the only place the sounds are tuned: src/audio.js reads them and holds no default of its own.",
+  "comment": "The game's sounds, as parameters rather than as bytes. NOTHING HERE IS A FILE (#519): every sound is synthesised in src/audio.js out of a noise buffer and a handful of oscillators, so the castle makes a noise without a byte of audio on disk, without a licence question, and without a host (#493 would refuse one anyway). `steps` is the foot; `bell` is the chapel bell; `ambient` is a room tone per place. The numbers are the only place the sounds are tuned: src/audio.js reads them and holds no default of its own.",
 
   "steps": {
     "walkMetres": 1.6,
@@ -67,5 +67,122 @@
       { "hz": 1000, "gain": 0.20, "decay": 0.55, "name": "superquint, and the last one worth having" }
     ],
     "partialsComment": "A bell is not a chime, and the difference is the tierce: a struck bell's partials are inharmonic, and the minor third at 1.2x the prime is the interval that makes a bell sound like a bell rather than like a sine at 330 Hz. The ratios here are the standard five of a tuned bell (hum 0.5, prime 1, tierce 1.2, quint 1.5, nominal 2) on a 330 Hz prime, which is a bell of about a hundredweight: a chapel bell one man pulls, not a cathedral's. Higher partials die first, which is what the per-partial `decay` is for and what makes the tail a hum rather than a ring."
+  },
+
+  "ambient": {
+    "comment": "What a place sounds like when nobody is doing anything in it (BACKLOG.md's Sound row, first increment). A BED IS A PLACE'S ROOM TONE, synthesised like everything else in this file: looped noise through a filter per layer, each layer swelling on its own slow sine so it breathes rather than hisses, a drone or two where a room has one, and random pops where there is a fire. One bed sounds at a time. src/audio.js cross-fades to the bed of whatever room the HUD's room line names (#515), over `fadeSeconds`, so walking out of the kitchen is the fire going away behind you and not a cut. NOT SPATIALISED YET: a bed is in your head, not at a point in the room, so the kitchen is silent from the ward outside its door. That is the increment after this one.",
+
+    "fadeSeconds": 1.2,
+    "loopSeconds": 4,
+    "loopComment": "The beds read their noise from a buffer of their own, `loopSeconds` long. The footstep's one-second buffer looped under a steady filter is a one-second pattern an ear picks out inside a minute; four seconds with every layer starting at a random offset is not.",
+
+    "byRoom": {
+      "outer-ward": "ward",
+      "inner-ward": "ward",
+      "west-barbican": "ward",
+
+      "kitchen": "kitchen",
+      "bakehouse": "kitchen",
+
+      "great-hall": "hall",
+      "kings-hall": "hall",
+
+      "chapel": "chapel",
+
+      "clerk-office": "chamber",
+      "lodge": "chamber",
+      "steward-chamber": "chamber",
+      "porter-lodge": "chamber",
+      "muniment": "chamber",
+      "clerk-chamber": "chamber",
+      "dormitory": "chamber",
+      "royal-apartments": "chamber",
+      "chaplain-chamber": "chamber",
+
+      "guardroom": "tower",
+      "larder": "tower",
+      "laundry": "tower",
+      "cell": "tower",
+
+      "north-walk": "wallwalk",
+      "south-walk": "wallwalk",
+      "cross-walk": "wallwalk",
+      "stockhouse-walk": "wallwalk"
+    },
+    "byDrumLevel": {
+      "1": "tower",
+      "2": "tower",
+      "3": "wallwalk"
+    },
+    "byComment": "A zone's own id first, and for a room inside a drum its storey second, which is the same two-step `steps.byMaterial` and `steps.byKind` take and for the same reason: eighteen tower floors, top rooms and roofs are the same three places over and over, and the rooms that are somebody's are named. A ZONE IS ANYTHING THE HUD'S ROOM LINE CAN NAME: the plan's rooms and the four stretches of open ground mystery.json marks `open`. There is no default. test/layout.mjs check 13 fails any zone neither map answers for, and any bed no zone reaches, which is why there is NO FORGE AND NO RAIN here though SPECS.md lists both: the castle builds no forge (Madoc's is a word in the gaol roll) and has no weather (that is the Feel row's), and a bed nobody can stand in is a tuning nobody will ever hear.",
+
+    "beds": {
+      "ward": {
+        "gain": 0.055,
+        "layers": [
+          { "type": "bandpass", "hz": 380, "q": 0.5, "gain": 1.0, "swellHz": 0.09, "swellDepth": 0.55 },
+          { "type": "lowpass", "hz": 140, "q": 0.7, "gain": 0.8, "swellHz": 0.05, "swellDepth": 0.3 }
+        ],
+        "tones": [],
+        "pops": null
+      },
+      "wallwalk": {
+        "gain": 0.085,
+        "layers": [
+          { "type": "bandpass", "hz": 620, "q": 0.9, "gain": 1.0, "swellHz": 0.13, "swellDepth": 0.7 },
+          { "type": "bandpass", "hz": 1500, "q": 3.5, "gain": 0.22, "swellHz": 0.07, "swellDepth": 0.95 },
+          { "type": "lowpass", "hz": 160, "q": 0.7, "gain": 0.9, "swellHz": 0.04, "swellDepth": 0.3 }
+        ],
+        "tones": [],
+        "pops": null
+      },
+      "kitchen": {
+        "gain": 0.07,
+        "layers": [
+          { "type": "lowpass", "hz": 220, "q": 0.8, "gain": 1.0, "swellHz": 0.31, "swellDepth": 0.35 },
+          { "type": "bandpass", "hz": 1100, "q": 0.6, "gain": 0.22, "swellHz": 0.47, "swellDepth": 0.5 }
+        ],
+        "tones": [],
+        "pops": { "perSecond": 3.5, "type": "bandpass", "hz": 2800, "q": 1.4, "decay": 0.018, "gain": 0.9 }
+      },
+      "hall": {
+        "gain": 0.04,
+        "layers": [
+          { "type": "lowpass", "hz": 110, "q": 0.9, "gain": 1.0, "swellHz": 0.04, "swellDepth": 0.25 },
+          { "type": "bandpass", "hz": 300, "q": 0.5, "gain": 0.25, "swellHz": 0.08, "swellDepth": 0.5 }
+        ],
+        "tones": [],
+        "pops": null
+      },
+      "chapel": {
+        "gain": 0.035,
+        "layers": [
+          { "type": "lowpass", "hz": 90, "q": 0.9, "gain": 0.8, "swellHz": 0.03, "swellDepth": 0.2 }
+        ],
+        "tones": [
+          { "hz": 82.5, "gain": 0.5, "swellHz": 0.06, "swellDepth": 0.4 },
+          { "hz": 123.75, "gain": 0.18, "swellHz": 0.045, "swellDepth": 0.6 }
+        ],
+        "pops": null
+      },
+      "chamber": {
+        "gain": 0.022,
+        "layers": [
+          { "type": "lowpass", "hz": 180, "q": 0.7, "gain": 1.0, "swellHz": 0.05, "swellDepth": 0.2 }
+        ],
+        "tones": [],
+        "pops": null
+      },
+      "tower": {
+        "gain": 0.05,
+        "layers": [
+          { "type": "lowpass", "hz": 130, "q": 0.8, "gain": 1.0, "swellHz": 0.05, "swellDepth": 0.3 },
+          { "type": "bandpass", "hz": 880, "q": 6.0, "gain": 0.3, "swellHz": 0.11, "swellDepth": 0.95 }
+        ],
+        "tones": [],
+        "pops": null
+      }
+    },
+    "bedsComment": "Seven places. `gain` is the whole bed against a footstep's 0.10 to 0.20: every bed sits under the feet, and the quiet ones (a timber chamber, the chapel) are a fifth of a step, because a room tone is the thing you notice going away and not the thing you hear. `layers` are filtered noise; `swellHz` and `swellDepth` move a layer's gain between (1 - depth) and 1 of itself on a sine, and no two layers in a bed share a rate, so the sum never repeats on a period anyone will sit through. The ward is wind with the top off and the ground under it. THE GARDEN HAS NO BED, and had one for an hour: it is behind the east gate, which never opens (#469), so no walkable cell in the castle is in it and check 13 called its bed dead. The day that gate opens, the same check fails on a garden with nothing to say, which is the right day to write it. The wall walk is 8 m up and is the loud one: more wind, higher, and a narrow band at 1500 Hz that is the merlons whistling when it gusts. The kitchen (and the bakehouse, which is an oven) is a fire: a low roar that flutters three times a second, and `pops`, random filtered clicks at `perSecond`, which are the crackle. The hall is a big stone box: almost nothing, and low. The chapel is the hall quieter, over a drone a fifth apart at half the bell's hum (82.5 Hz under the bell's 165), so the bell is in tune with the room it hangs over. A chamber is timber, cloth and a shut door: the quietest thing in the castle. A tower is a stone drum with arrow loops: the low of the hall and one narrow whistle at 880 Hz that is mostly not there. EVERY NUMBER HERE IS A GUESS MADE WITHOUT SPEAKERS (#53). Whether a kitchen sounds like a kitchen is a question for a machine with ears, and this file is where the answer gets typed."
   }
 }

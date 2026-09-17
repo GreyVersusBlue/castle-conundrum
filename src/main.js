@@ -72,10 +72,12 @@ async function init() {
   const { scene, renderer, camera, setWatch, audioListener } = createScene(config, { touch: touchMode });
 
   // --- Sound ---
-  // Two sounds, both synthesised out of data/sounds.json: a footstep per
-  // surface class and the chapel bell (#519). The context is suspended until
-  // the start button below resumes it, which is the gesture a browser wants.
+  // All synthesised out of data/sounds.json: a footstep per surface class, the
+  // chapel bell (#519), and a room tone per place, cross-faded in the loop
+  // below. The context is suspended until the start button resumes it, which
+  // is the gesture a browser wants.
   const audio = createAudio(audioListener, soundData);
+  window.__audio = audio; // test/map.mjs reads which bed is up
 
   // --- World geometry ---
   const castle = new CastleBuilder(scene, config);
@@ -341,6 +343,8 @@ async function init() {
       if (here.id !== roomShown) {
         roomShown = here.id;
         ui.setRoom(here.name, here.open ? null : here.id);
+        // And the third consumer: the room tone cross-fades on the same change.
+        audio.enter(here);
         if (!here.open) quest.handleEnter(here.id, here.level);
       }
     }

@@ -471,9 +471,22 @@ GPU.
 
 ## Sound: a soundscape
 
-**Rank 7. Size 1.** `WISHLIST.md` theme 2. `data/sounds.json` carries two
-synthesised sounds today, the footstep and the chapel bell (#519, #522).
-Everything else in the castle is silent.
+**Rank 7. Size 1.** `WISHLIST.md` theme 2. **The first increment below
+shipped on 2026-09-17** (#620 to #623): `data/sounds.json` carries the
+footstep, the chapel bell (#519, #522) and an `ambient` block of seven
+synthesised beds; `src/audio.js` has `bedOf` and the cross-fade;
+`test/layout.mjs` check 13 and a section of `test/map.mjs` hold them. The
+zone list below was written before anybody counted: the castle builds no forge
+and has no rain, and the garden cannot be stood in (#469), so none of the
+three has a bed (#621). Scope and Acceptance are kept as written, as the
+record of what was asked for.
+
+**The next increment is a bed at a point.** A `PannerNode` per sounding bed at
+its room's centre off the plan, the way `bellAt` already places the bell, with
+the nearest few beds sounding at once rather than one; open ground stays in
+the head. The Node criterion is that every bed-bearing room yields a point
+inside its own bounds; the rest is ears (#53). After it, the bells, which
+Dependencies below already describes.
 
 ### Scope
 
