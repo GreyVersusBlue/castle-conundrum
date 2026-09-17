@@ -7,7 +7,13 @@ decision. Every "recommendation" below is exactly that, and the session that
 ships the row is the one that records the call with a number.
 
 Written 2026-09-15 against `main` at `bb61958`, from the code and data as they
-are, not from the briefs. **Rows shipped since and their sections are gone:
+are, not from the briefs. **Eight sections below — ranks 6 to 13 — were added
+on 2026-09-17, from `WISHLIST.md` as it stood that day rather than from code,
+because the systems they describe (`data/populace.json`, `data/quests/`, the
+placement editor) do not exist yet.** Each names a first increment rather than
+the whole theme, the way the depth rule below already treats a 2+ row, and
+`WISHLIST.md` is the source for everything past that increment: this file does
+not repeat what it already says. **Rows shipped since and their sections are gone:
 asset compression (#506 to #510), sound (#519 to #522), the tower tops
 (#523 to #526), the hall's roof frame (#527, #528), the two plan suites (#529),
 touch (#530 to #532), the texture sets (#541 to #545), the town
@@ -403,3 +409,498 @@ GPU.
 - #438 (measure the pixel).
 - #411 (kit for shapes the maps lack).
 - #53, #528 (what a covered hall looks like is not a CI question).
+
+---
+
+## Life: a populace
+
+**Rank 6. Size 2+.** `WISHLIST.md` theme 1. The twelve have one station a
+watch and walk between them on `stations.js`'s grid; nothing else in the
+castle moves. This row gives it fifty more bodies who have nothing to do with
+the mystery and everything to do with whether the castle reads as lived in.
+
+### Scope, first increment
+
+- **`data/populace.json`, new, with a validator in a new `src/populace.js`.**
+  Shape per `WISHLIST.md`: an entry is a body (`modelPath`, a tint), a name,
+  and a `routine`: one list per watch of `{room, tile, activity, facing?}`.
+  This is `mystery.json`'s `schedule` shape with the clue graph removed and
+  `activity` put in its place, so the validator can lean on the same
+  tile-and-room checks `mystery.js` already runs rather than write them twice.
+- **Ten bodies, off the models already in `data/npcs.json`'s `cast`** (the
+  three Kenney bodies plus whatever **A fourth body**, rank 1, has landed by
+  the time this starts) — no new asset in this increment, no new clip.
+  `npc.js` gets the two or three activity clips the kit already carries under
+  another name (`idle` variants) mapped to new activity strings, deferring
+  `sweep`/`stir`/`hammer`/`spar` and the rest to the increment that needs
+  real garrison and kitchen bodies.
+- **`stations.js`'s `STATION_CLEARANCE`** (1.5 m) is the same spacing check
+  the validator runs against every two populace entries at one bell, and
+  against the twelve's own stations, so a populace body cannot be written on
+  top of a suspect.
+- **`src/main.js`** spawns the ten alongside the twelve; they carry no
+  dialogue and are not clickable for a clue, only for the HUD name label the
+  mystery's own NPCs already show.
+
+### Acceptance, first increment
+
+- `data/populace.json` and `src/populace.js` exist; a Node script (folded
+  into `test/mystery.mjs` or its own suite, matching #529's line that
+  `mystery.mjs` owns the stations) validates every routine: every tile
+  walkable per `layout.mjs`'s own walkability, every room real, every two
+  bodies at one bell at least `STATION_CLEARANCE` apart from each other and
+  from the twelve, every `activity` string one `npc.js` can play.
+- Break: write a routine tile one column outside a room's `Box3`. The
+  validator's room-membership check should fail it, named by tile and room
+  (#34).
+- Ten populace bodies spawn in `npm run build` and are visible in
+  `plan-vs-scene.mjs`'s object count without appearing in `test/mystery.mjs`'s
+  twelve-suspect assertions, which stay untouched.
+
+### Open calls
+
+- **Clips or retarget?** Whether the ten activities want their own clips
+  baked per body or a shared rig retargeted onto whichever model wears them is
+  the question `WISHLIST.md` itself opens first, and it decides which body
+  source (rank 11) is usable for the fiftieth. Recommend **reuse the walk and
+  idle clips every body already has for this increment**, and defer any new
+  clip to the increment that adds `sweep`, `stir`, `hammer`.
+- **Where the ten stand.** Recommend the Prime bakehouse-and-well pair and the
+  Terce garrison drill named first in `WISHLIST.md`, because they are the two
+  the theme calls cheapest (a loop of tiles, no new prop) and because rank 10's
+  "fill the volume" has nowhere yet for the rest to stand.
+
+### Dependencies
+
+- **Draws on whatever `cast` bodies exist**, so it can start before or after
+  rank 1 lands; it does not need the fourth body, only whatever the cast is
+  the day it starts.
+- **Ambient chatter** (`WISHLIST.md`, and `data/npcs.json`'s existing
+  27-pair pool) is this row's to spend, once two populace bodies are within 3
+  m at one bell; not in the first increment.
+- The instanced-mesh and animation-LOD cost `WISHLIST.md` names is a later
+  increment's problem: ten bodies do not need it, fifty will.
+
+### Constraints
+
+- #500 (a populace tile is not on the plan and has no `planId`; it is data
+  the builder spawns, not a plan piece — say so in `populace.js`'s own
+  comment so a later session does not go looking for it in `castle-plan.js`).
+- #13, #34 (the validator exits non-zero and gets broken on purpose once).
+- #529 (the check belongs with `mystery.mjs`, not `layout.mjs`, because a
+  routine's tile membership is not derivable from the plan alone).
+
+---
+
+## Sound: a soundscape
+
+**Rank 7. Size 1.** `WISHLIST.md` theme 2. `data/sounds.json` carries two
+synthesised sounds today, the footstep and the chapel bell (#519, #522).
+Everything else in the castle is silent.
+
+### Scope
+
+- **`data/sounds.json` grows an `ambient` block**: one bed per zone (kitchen,
+  forge, chapel, wall walk, outer ward, rain), each a set of oscillator/noise
+  parameters in the same shape `steps.classes` already uses, or a named CC0
+  file once #548's reversal has one to name. Either way the file is the only
+  place the sound is tuned, per the existing pattern.
+- **`src/audio.js`** gains the cross-fade: on the room change the HUD already
+  computes (#515), fade the outgoing zone's bed down and the incoming one up
+  over about a second, rather than cut.
+- **Recorded audio, if used**, is named by `data/sounds.json`, swept by
+  `test/assets.mjs` for reachability the way a glTF is (#390), and given a
+  codec (Opus in Ogg, #506's recommendation) by `tools/encode-assets.mjs`
+  before it is committed. No file lands uncompressed.
+
+### Acceptance
+
+- `test/layout.mjs` gains a check that every zone the plan knows has an
+  `ambient` entry naming it, the way check 12 already holds every surface to
+  a footstep material. Break: add a zone to the plan without an entry; the
+  check should name the zone.
+- `npm run build` and the existing ten suites stay green; a recorded file (if
+  any landed) shows up in `test/assets.mjs`'s reachability sweep and in
+  `tools/encode-assets.mjs`'s output the same commit it is added, per #390.
+- The actual sound is a `npm run play` question (#53): this row's Node
+  acceptance is that a bed is *assigned and cross-faded*, not that it sounds
+  right, the same split rank 12 draws for a shadow.
+
+### Open calls
+
+- **Synthesised or recorded, per zone, right now.** Recommend **synthesis
+  first for every zone in this increment**, matching `steps` and `bell`'s own
+  precedent, and let a recording replace one only once #548's licence
+  question is actually answered for a specific CC0 file — "a sound stays
+  synthesised until a recording beats it" is `WISHLIST.md`'s own line.
+- **Event sounds (door, bark, hammer strike)** are named in the theme but are
+  the increment after this one: they want an activity clip to sync to, which
+  is rank 6's to add first.
+
+### Dependencies
+
+- **`data/sounds.json`'s existing `byMaterial`/`byKind` map and #515's room
+  tracking** are both shipped; this row is additive to them.
+- Event sounds wait on rank 6's activities existing to sync to.
+- The bell-as-soundscape half (Prime one bell, Vespers the whole peal) is a
+  `partials`/`gain` change to the existing `bell` block, not a new system, and
+  can ship inside this same increment if time allows.
+
+### Constraints
+
+- #493 (nothing fetched off-origin; a CC0 file is committed, not linked).
+- #506 (encode before commit; no uncompressed audio).
+- #390 (asset and reference land in the same commit; `assets.mjs` check 4's
+  pattern).
+- #519, #548 (synthesis-only reversed; a sound stays synthesised until a
+  recording beats it, not the other way round).
+
+---
+
+## Lore: what is still open
+
+**Rank 8. Size ¼.** `WISHLIST.md` theme 3, the part that did not ship with
+#551 to #559. Everything else in that theme is done.
+
+### Scope
+
+- **A `sermons` and a `songs` pool in `data/lore.json` or `data/npcs.json`**
+  (matching the existing `chatter` pool's shape: keyed, with a lore id where
+  one applies), each played once at its bell — the chaplain's sermon at
+  Vespers, a song in the hall at Sext — as the floating-caption overlay
+  `chatter` already uses, not a new UI.
+- **`src/lore.js`** validates both pools the way it validates `chatter`: no
+  dangling lore id, no contradiction with a `history`/`person` fact.
+
+### Acceptance
+
+- `test/lore.mjs` gains two checks, one per pool, on the existing pattern:
+  every id resolves, every source resolves. Break: name a lore id the file
+  does not have; the check should say which pool and which id.
+- The line plays once per bell reached, verified the way `mystery.mjs` already
+  verifies a one-shot line: a DOM assertion for what just happened (#39).
+
+### Open calls
+
+- **A `since` field and a rumour about day one** is named in the theme but
+  needs the second day to have state to be "about," which rank 4's increment
+  3 is still building. Recommend leaving it out of this row entirely and
+  filing it as a dependency of rank 4 instead of carrying it here — a `since`
+  field with nothing yet to date is a field nobody can test.
+
+### Dependencies
+
+- Independent of every other new row; can ship on its own before or after
+  rank 4 closes, except for the `since` half, which cannot ship before it.
+
+### Constraints
+
+- #556 (the timeline every `history` and `person` fact is held to; a sermon
+  or song that dates an event has to fit it).
+- #559 (the lore names no object of the mystery; a sermon must not name the
+  lead, the passes, the cloak, the lantern or the summons).
+
+---
+
+## Side quests
+
+**Rank 9. Size 2+.** `WISHLIST.md` theme 4. `src/quest-graph.js` (#393) is a
+validated state machine already; nothing has used it for anything but the
+main mystery's own quest.
+
+### Scope, first increment
+
+- **`data/quests/`, new directory, one file per quest**, each with the frame
+  `data/quest.json` already has: stages, transitions on events the game
+  already emits (`talked:`, `found:`, `presented:`, `bell:`, `entered:`), and
+  effects the manager already applies.
+- **A set validator**, run over every file in the directory: each quest
+  reachable and terminal (`validateQuest` already does this per-file, per
+  `src/quest-graph.js:20`); a second pass across the set holding two rules
+  `WISHLIST.md` states as one: no quest effect names a key `mystery.json`'s
+  clue graph owns, and no two quests want the same NPC in two states at one
+  bell.
+- **The first quest: the cook's missing knife.** No new prop (the knife is
+  already the cloak's tallow-hem clue's own prop); its resolution has Marged
+  say where it went and points the player at what `mystery.json` already
+  knows, with no `effect` that writes to a mystery key. This is the case that
+  proves the "independent of, connected to" rule (#550, question 6) rather
+  than just asserting it.
+- **`src/quest-manager.js`** loads `data/quests/*.json` alongside
+  `data/quest.json`, same manager, same effect application, no new class.
+
+### Acceptance, first increment
+
+- The set validator is a Node script, exits non-zero on either rule's
+  violation, named by quest id and key or NPC and bell (#13, #34).
+- Break, for #34: write a second quest file whose effect sets a
+  `mystery.json` clue key. The set validator's clue-isolation check should
+  name the file and the key.
+- The cook's knife quest completes end to end under `test/quest.mjs`'s
+  existing harness, and `test/mystery.mjs`'s clue-graph assertions are
+  unchanged by its presence — the proof that it touched nothing.
+
+### Open calls
+
+- **Reputation by ward** is two save-carried counters and a chatter line or
+  two; recommend deferring it past the first quest, since one quest cannot
+  move a counter anyone could tell was moved. It is data on `save.js`, version
+  bumped, once there are enough quests to make it visible.
+- **How many quests before "many at once" (#550, question 7) is real.**
+  Recommend the first dozen `WISHLIST.md` names, four per ward per pass,
+  rather than all twelve in the first increment.
+
+### Dependencies
+
+- **The journal's open-quests tab**, which `WISHLIST.md` calls for so a
+  player can find what they left, is UI this row adds once more than one
+  quest can be open — not needed for a single quest's proof.
+- Several of the twelve named in `WISHLIST.md` (the apprentice's tool from
+  the smith who is in gaol, the porter's boy and the clerk) want rank 6's
+  populace or an NPC state this repo does not compute yet; the cook's knife
+  was picked as first because it needs neither.
+
+### Constraints
+
+- #500 (a quest prop that is not already a plan piece needs one, tagged and
+  diffed like anything else).
+- #550 question 6 (a side quest never gates or removes a mystery clue).
+- #13, #34 (the set validator, and the break that proves it is not vacuous).
+
+---
+
+## A castle to get lost in
+
+**Rank 10. Size 2+.** `WISHLIST.md` theme 5. The plan's own risk section says
+why a bigger plan was not the first move; this row is where the wager gets
+paid down, in the order the theme itself sets: volume, then area, then a
+second castle.
+
+### Scope, first increment
+
+- **The unused floors.** Eight drums with three floors each is 24 rooms
+  against about 6 in use. `castle-plan.js` already computes a drum's rooms
+  per level (`roomOfDrum`, `src/castle-plan.js:890`); this increment adds a
+  floor slab and a `planId` for each unused one — an undercroft under the
+  Great Hall, cellars under the kitchen, a well chamber, a latrine turret off
+  the wall walk, the guardroom over the porter's gate — with no content of
+  its own yet, only a walkable room a later row (a rank-8 document, a rank-6
+  routine) has somewhere to go.
+- **`test/plan-vs-scene.mjs`** diffs each new slab's live `Box3` against the
+  plan's, on the existing 0.01 m tolerance (#500); no new suite.
+
+### Acceptance, first increment
+
+- Each named room walkable end to end from its drum's existing stair, per
+  `layout.mjs`'s own walkability derivation; `plan-vs-scene.mjs` green on the
+  new `planId`s.
+- Break: place a floor slab 0.02 m off the drum's own floor level; the diff
+  should fail by tile and by the exact offset (#34).
+
+### Open calls
+
+- **The town, second.** Ground west of the barbican exists (#541 to #546);
+  Thomas Wykes's yard is rank 4's own thread to place on it (see **A second
+  day**), not this row's — this row's town half is the rest of a walled
+  town's street, church and quay, and starts only once rank 4's yard has
+  proven the ground can carry a building.
+- **The map** (a journal page that fills in as rooms are entered) is UI this
+  row can add once the unused floors give it something to fill in with; not
+  in the first increment.
+- **A second castle** is explicitly last, "the reward for the six rows above
+  it working" in `WISHLIST.md`'s own words; nothing in this spec starts it.
+
+### Dependencies
+
+- Every later increment of this row (the town, the rock and river, a second
+  castle) is easier once a document (rank 8) or a routine (rank 6) exists to
+  put in the new volume, but the volume itself does not wait on either.
+
+### Constraints
+
+- #500 (`castle-plan.js` computes; the builder places; `plan-vs-scene.mjs`
+  is the net — an unused floor is a plan piece like any other).
+- #499 (200 MB ceiling; a floor slab costs nothing new on disk).
+- #529 (`layout.mjs` for everything derivable from the plan; the diff suite
+  for the seams only).
+
+---
+
+## Bodies
+
+**Rank 11. Size 1.** `WISHLIST.md` theme 6. The plan bet the project on tints
+(#419); this row is the second body-sourcing question after rank 1's, at the
+scale of a child, a dog, a chicken and a garrison rather than one woman.
+
+### Scope
+
+- **Sourcing, the same search `A fourth body` (rank 1) already specs**: a
+  low-poly, one-rig, CC0 body per new kind, re-exported through
+  `gltf-transform` if it is not already the right generator, so `npc.js`'s
+  `pickClip`, `tintBody` and `_findHandBone` keep working with no code change.
+  A child scaled down from the existing rig rather than a new one is the
+  cheapest version of "child," and should be tried first.
+- **`data/npcs.json`** (or `data/populace.json` once rank 6 exists) gets the
+  new `modelPath`s and the variation fields `WISHLIST.md` names: `modelHeight`
+  (already precedented at #128, rank 1), a tint, a hidden hood/hat node, a
+  held prop, a beard-material toggle — all `npc.js` machinery that exists for
+  hiding nodes and materials today.
+- **The dog**: one body, one behaviour (follow a station or the player,
+  bark within a radius), the cheapest "companion" the theme names.
+
+### Acceptance
+
+- `test/assets.mjs` check 4: every new body referenced the same commit it
+  lands, per #390.
+- A visual acceptance — does the child read as a child at running speed, does
+  the dog read as a dog — is `npm run play`'s (#53), same split as rank 1's.
+- Node acceptance: the six variation axes (tint, height, hood, prop, beard,
+  body) combine to more distinct silhouettes than there are new bodies, which
+  a script can just count off `data/npcs.json`/`populace.json`.
+
+### Open calls
+
+- **Which kind first.** Recommend **the child**, per `WISHLIST.md`'s own
+  ordering ("Devon named them first," and running is the one thing the walk
+  grid already does well), then the dog, then chickens, then the garrison's
+  spear-bodies, in that order.
+- **New rig or scaled existing rig for the child.** Recommend **scale the
+  existing rig** first and only source a true child rig if the proportions
+  read wrong on a GPU — this is the cheaper thing to try and to be wrong
+  about.
+
+### Dependencies
+
+- **Every activity clip rank 6 defers** (`sweep`, `hammer`, `spar`, `drill`)
+  is this row's to supply once a body needs one the shared rig does not
+  already carry; the two rows trade work back and forth rather than one
+  strictly gating the other.
+- Goes through `tools/encode-assets.mjs` (#506) before commit, same as rank 1.
+
+### Constraints
+
+- #390 (asset and reference, one commit).
+- #499 (budget: `WISHLIST.md`'s own number is 0.5-1.5 MB a body meshopted,
+  ten bodies and thirty clips under 20 MB against headroom).
+- #419, #471 (tint clones the material; a new body's own `Skin` hex is either
+  matched to the existing three or the live-skin assertion changes to say what
+  it actually guards, the same call rank 1 already has to make).
+
+---
+
+## Feel
+
+**Rank 12. Size 2+.** `WISHLIST.md` theme 7. Every item in it is "a thing a
+GPU decides," gated on `npm run play` the same way **The hall covering**
+already is.
+
+### Scope, first increment
+
+- **A shadow on the pavers and a hand that reaches for the door.** Both are
+  named in `WISHLIST.md` as the two cheapest presence cues there are.
+  `src/main.js`'s player rig gets a simple blob shadow (a decal or a baked
+  circle under the capsule, not a real-time cast shadow, to keep the budget
+  #499 and #510 already watch) and a hand node that lerps toward a door's
+  handle transform inside the existing `openLock` interaction radius.
+- **Nothing else in this theme** (weather, fire, examine, wear, sitting)
+  starts before this pair, because they are the cheapest and the ones most
+  likely to reveal whether the point-light and shadow budget has room for
+  the rest at all.
+
+### Acceptance, first increment
+
+- Node acceptance: the shadow decal and the hand node exist, are tagged with
+  a `planId` if they are plan pieces, and do not regress `plan-vs-scene.mjs`.
+- GPU acceptance (#53): a screenshot of the player approaching a door with the
+  hand visibly reaching, and a screenshot of the shadow on stone versus on
+  grass; one sentence each in `HISTORY.md`, the same bar rank 2's photograph
+  sets.
+
+### Open calls
+
+- **Real-time shadow or a baked decal.** Recommend the decal: a real
+  shadow-casting light on the player is a cost this castle has never paid,
+  and the wishlist's own language ("cheapest presence cue") argues for the
+  cheaper of the two.
+- **Everything else in the theme** (weather, fire, examine, wear, sitting) is
+  explicitly a later increment each, in no fixed order — `WISHLIST.md` ranks
+  none of them against each other, and this spec does not invent an order it
+  was not given.
+
+### Dependencies
+
+- **The GPU run** (ranks 2 and 3) is what tells this row whether the shadow
+  and hand read at all; nothing here ships past the Node acceptance before it.
+- Fire and its point-light budget depend on **The GPU run**'s texture read
+  too, since a bright torch over a compressed texture is a second question
+  the same render answers.
+
+### Constraints
+
+- #53 (the whole row; a real-time visual claim is inconclusive until a real
+  GPU looks at it).
+- #499, #510 (video memory is the number to watch, not disk; a shadow or a
+  point light is exactly the kind of thing that moves it).
+- #500 (anything built as a plan piece gets a `planId`).
+
+---
+
+## The tooling
+
+**Rank 13. Size 2+.** `WISHLIST.md`'s own closing section: none of the seven
+themes above is a code problem, they are content problems at a scale the
+current tooling cannot carry, and this row is the three tools it names.
+
+### Scope, first increment
+
+- **A placement editor, `?edit=1` on the dev server only.** A key press while
+  walking drops a marker at the player's current tile; a small in-page panel
+  lists the `builtProps`/plan-piece kinds already in `data/scene-config.json`
+  and writes the chosen one, at that tile, into the same JSON shape a session
+  hand-types today. It never ships in `dist/` (checked by `vite.config.js`'s
+  existing dev-only guard pattern, or a build-time `if (import.meta.env.DEV)`
+  around the one module that mounts it) and it writes a file a person still
+  reviews and commits — it does not commit anything itself.
+- **Nothing in `test/built.mjs`'s served-set diff should ever list the editor
+  module**, which is this row's own version of #501's lesson: the check that
+  would catch the editor leaking into `dist/` is "what got served," not "what
+  got asked for."
+
+### Acceptance, first increment
+
+- `test/built.mjs`'s existing served-set diff stays green with the editor
+  module present in `src/` and absent from `dist/`'s bundle. Break: import the
+  editor module from `main.js` unconditionally; the diff should list a new
+  file being served that a fresh `npm run build` would not have shipped
+  before this row (#501's own pattern, reapplied).
+- A hand-test, not a suite: walk to a tile in `npm run dev` with `?edit=1`,
+  place a prop, reload without it, and see the prop in the built scene. This
+  is the tool proving itself the way a script proves a feature, and belongs
+  in the PR description rather than in `npm test`.
+
+### Open calls
+
+- **The dialogue format and the budget suite are this row's next two, not
+  its first.** Recommend the budget suite second, because ranks 6 and 11
+  (populace and bodies) are the two rows about to need a real answer to "how
+  many skinned bodies can a ward carry," and a suite that counts them off the
+  plan is cheaper to write once populace exists to count.
+- **The dialogue format's own grammar** (speaker, state, conditions, effects,
+  one line each, compiled to `npcs.json`/`quests/*.json`'s existing shapes at
+  build time) is a real design job on its own and is deliberately left
+  unspecified here; `WISHLIST.md`'s paragraph is the brief for whoever takes
+  it, not this spec.
+
+### Dependencies
+
+- **Every content row above** (6, 9, 10 in particular) gets cheaper once the
+  placement editor exists, which is why `WISHLIST.md` calls tooling early —
+  but none of them is blocked on it; a session can still hand-type tile
+  coordinates the way every prop in the castle has so far.
+
+### Constraints
+
+- #501, #493 (a dev-only tool must not become something the page fetches or
+  serves; the served-set diff, not the asked-for one, is what catches it).
+- #13, #34 (the budget suite, once written, is a real check with a real
+  break).

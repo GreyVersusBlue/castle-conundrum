@@ -2952,3 +2952,101 @@ not be (#53); as with #555, nothing here moves the player or a render, so the
 gap is that nobody has read the thirteen with eyes rather than a Node
 assertion, and the chatter pool is still unspent by the game.
 
+## The wishlist comes up whole, ranks 6 to 13 (2026-09-17)
+
+**A plan, not a batch, the same shape as #411 to #418.** `WISHLIST.md`'s
+seven themes and its tooling section move into `BACKLOG.md` at ranks 6 to
+13 and get a first-increment spec each in `SPECS.md`. No code, no asset, no
+claim. Worked from Devon's own request rather than a brief, under Claude
+Sonnet 5. Decisions #560 to #567.
+
+**Devon asked for the wishlist taken up now, ahead of his own answer to
+question 10.** `WISHLIST.md` question 10, answered 2026-09-16 and locked as
+#547, said the current backlog stays as it is and the wishlist falls in line
+behind it — the first row out only once `BACKLOG.md` empties. It has not;
+ranks 1 to 5 are still open. Devon's instruction this session was direct
+rather than routed through that answer, and this repo's rule is that a
+judgement call gets made and recorded, not that an old answer gets re-argued
+with the person who gave it: #547 stood on 2026-09-16 as the answer to "what
+is the first row, absent other instructions," and this is other
+instructions. The eight rows below take the ranking `WISHLIST.md`'s own
+theme order already gave them, six to ten and twelve in theme order, the
+tooling section at thirteen, and theme 3's own unshipped remainder (#551 to
+#559 shipped the rest of it) at eight — its old theme slot, since it is a
+small remainder of a thing already mid-flight rather than a new theme. None
+of the eight `SPECS.md` sections is written from code, because none of the
+eight systems exists yet; each names one first increment, at the depth the
+size column already implies for a 2+ row, and defers the rest to
+`WISHLIST.md`'s own text the way rank 4's second day defers its own later
+increments to itself. `WISHLIST.md` empties of theme content and keeps
+everything else — the castle-today baseline and Devon's ten questions and
+answers — because those are the record a locked decision already made
+(#547 to #550), not open work, and each theme's body becomes a pointer
+rather than a second copy. The gaol roll's own place does not move with any
+of this: it stays rank 4's third thread (`SPECS.md`, "A second day",
+increment 3), the one piece of that row a container could already finish,
+and it is not duplicated into rank 8 — a lore document with its content
+would pre-empt the one clear thread rank 4 has. `BACKLOG.md`'s claimed count
+moves from 5 to 13 and every one of the eight new rows' `Claimed` column is
+blank, per this repo's own rule that a claim is its own commit before work
+starts (#283): this round is the ranking, not the work.
+
+- **Life: a populace, rank 6, Opus 5** (#560). Devon's own answer to
+  question 10 named this row first among the eight, "the row that makes
+  every other row visible," and it keeps that place: `data/populace.json`,
+  a validator, and the first ten bodies off models this repo already has.
+  Opus 5 because the row is a data model and a validator, the shape rank 2's
+  and rank 9's own Opus 5 rows already are, and a container can carry this
+  first increment to green on its own.
+- **Sound: a soundscape, rank 7, Fable 5.1** (#561). Ambient beds, event
+  sounds, the bells as a soundscape. Fable 5.1 because the row's live
+  question — synthesise, or find and licence a CC0 recording — is the same
+  search rank 1's "A fourth body" already runs, and rank 1 was Fable 5.1 for
+  that reason first; the first increment (the beds, synthesised) is
+  container-provable, the recorded half is not.
+- **Lore: what is still open, rank 8, Sonnet 5** (#562). The sermon and the
+  song, and a `since` field this row explicitly does not carry because it
+  waits on rank 4's second day. Sonnet 5 because it is a small remainder with
+  no data model of its own to design, matching rank 5's hall covering.
+- **Side quests, rank 9, Opus 5** (#563). The `data/quests/` format, a set
+  validator holding the mystery-clue and same-NPC rules apart, and the
+  cook's missing knife as the first quest, chosen because its resolution
+  needs no new prop and touches no `mystery.json` key. Opus 5 for the same
+  reason as rank 6: a data model and a validator.
+- **A castle to get lost in, rank 10, Opus 5** (#564). Volume before area
+  before a second castle, in the order `WISHLIST.md` itself gives; the first
+  increment is the unused floors across the eight drums, which is
+  `castle-plan.js` and a floor slab and needs no design call. Opus 5, same
+  reason.
+- **Bodies, rank 11, Fable 5.1** (#565). A low-poly shared rig at the scale
+  of a child, a dog, a chicken and a garrison, the same sourcing question
+  rank 1 already answered once for a woman's body. Fable 5.1 for the same
+  reason as rank 7, and for the same reason as rank 1 before it.
+- **Feel, rank 12, Sonnet 5** (#566). Presence, fire, weather, a door that
+  opens, each independent and each gated on `npm run play` (#53); the first
+  increment is the two `WISHLIST.md` itself calls the cheapest presence cues,
+  a shadow and a reaching hand, and neither closes its acceptance without a
+  GPU. Sonnet 5, matching rank 5's hall covering, the row this one most
+  resembles.
+- **The tooling, rank 13, Opus 5** (#567). The placement editor first, ahead
+  of the dialogue format and the budget suite, because ranks 6, 9 and 10 are
+  the rows about to need it and a session can still hand-type tile
+  coordinates without it in the meantime. Opus 5: an editor and a build-time
+  guard against it leaking into `dist/`, container-provable end to end.
+
+**What was measured rather than taken from the prompt.** `WISHLIST.md` ran
+2955 lines with seven theme sections and one tooling section before this
+round; `BACKLOG.md`'s ranked table held 5 rows; `HISTORY.md` ran to #559.
+`src/stations.js`'s `STATION_CLEARANCE` (1.5 m), `src/quest-graph.js`'s
+exported functions, `data/npcs.json`'s existing 27-pair `chatter` pool keyed
+by `ward`, and `data/sounds.json`'s existing `steps`/`bell` shape were read
+off the code before being cited in `SPECS.md`, rather than assumed from the
+wishlist's own paraphrase of them.
+
+**Not verified here, on purpose.** No suite ran because there is no code
+change; `npm test` and `npm run build` are green on `main` before and after
+this PR, which touches three markdown files. `npm run play` was not run and
+could not be (#53), and nothing in this round claims a GPU result — every
+row that needs one says so in its own `SPECS.md` section rather than in this
+entry.
+
