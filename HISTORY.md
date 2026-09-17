@@ -3463,3 +3463,139 @@ asserted as a string and not looked at on a HUD. `npm run play` does not walk
 into the kitchen or the bakehouse — the intended path reaches neither — so no
 beat was added for the knife, because a beat that cannot be run from here
 cannot be trusted (#53).
+
+## The tooling: the placement editor (2026-09-17)
+
+**Ranked row 13, on `claude/friendly-darwin-xdh53e`, under Claude Opus 5.**
+This row was reached by way of rank 10, which was claimed first and turned out
+to be already built; #582 is that finding and it is why the claim moved.
+Decisions #582 to #587. Eleven suites green, `npm run build` green, `dist/`
+52 MB against the 200 MB ceiling (#499), and `npm run play` was not run and
+could not be (#53).
+
+- **Rank 10's first increment is already shipped, and the row's premise is
+  wrong** (#582). `SPECS.md` says "eight drums with three floors each is 24
+  rooms against about 6 in use" and asks for a floor slab and a `planId` for
+  each unused one. Measured against `data/scene-config.json`: all eight drums
+  carry a room at levels 0, 1 and 2, four carry one at level 3, and the castle
+  has **40 rooms — 14 on level 0, 11 on level 1, 11 on level 2, 4 on level
+  3**, which is the count `test/plan-vs-scene.mjs` has been printing on every
+  run since #526. The four drums with no top room are the four with a 2.5 m
+  turret, and #523 refused those on arithmetic: a 2.5 m turret in a 2.8 m ring
+  leaves a 0.3 m ledge. There is no unused drum floor to add. The row's
+  section was written on 2026-09-17 from `WISHLIST.md` rather than from the
+  code, and `SPECS.md`'s own header says so about all eight new sections; this
+  is the first one where it mattered.
+
+  **What the castle has instead is nineteen empty rooms.** Of the 40, 21 hold
+  a piece of evidence, an NPC station, a readable document or a built prop.
+  The other 19 hold nothing at all: seven of the eight tower first floors,
+  seven of the eight tower top rooms, all four roofs, and the larder.
+  `PLAN.md`'s own risk line — "an empty room is worse than no room" — is not a
+  risk any more, it is the state of the castle, and it got there because the
+  volume shipped ahead of anything to put in it. So rank 10's volume increment
+  is closed as done rather than built twice, and the row's next increment is
+  the town and the map. Adding a latrine turret and a well chamber, which the
+  same paragraph also names, was considered and refused for one reason: it
+  would have made the count 22.
+
+- **The placement editor is `?edit=1`, and it writes the file** (#583). Rank
+  13's first increment, taken up because the thing rank 10 needed turned out
+  to be a content problem and this is the tool for content problems:
+  `SPECS.md`'s own words for it are "how every prop in the castle got there so
+  far and why there are so few". A panel top-left reads the tile under the
+  player's feet as they walk, offers the three placeable arrays
+  (`interiorProps`, `builtProps`, `braziers`) with the models and materials
+  the config already names, and **P** writes the row into
+  `data/scene-config.json`. It does not commit: the diff is for a person.
+
+- **It is a text splice and not a re-serialise, and that is measured** (#584).
+  `JSON.stringify(JSON.parse(raw), null, 2)` over `scene-config.json` is not
+  the file: the lighting block's `"intensity": 2.0` comes back as `2`, and
+  94212 bytes go out as 98330. A round-trip writer would put four kilobytes of
+  unrelated churn into every placement's diff, and the diff is the product. So
+  `tools/place.mjs` finds the array, finds its closing bracket, and inserts one
+  element before it. `test/tools.mjs` asserts the property that matters by
+  cutting the new row back out and comparing the whole file to the original,
+  byte for byte.
+
+- **The dev-only guarantee is two independent halves and neither is trusted**
+  (#585). The client is imported from inside `if (import.meta.env.DEV && ...)`
+  in `main.js`, which Vite replaces with `false` and deletes, so
+  `src/edit-mode.js` never enters the production module graph at all. The
+  writer is a Vite plugin with `apply: 'serve'`, which cannot run in a build
+  even if something called it. The `?edit=1` test is *inside* the DEV branch
+  rather than beside it, so a query string on a built page can never pull the
+  module in.
+
+- **And the check on it is a grep of what got built, not the served-set diff**
+  (#586). This is #501's lesson pointed at a second target, and the reason is
+  exact: the served-set diff compares what a built page fetched against what a
+  source page fetched, and *neither* page asks for the editor — the built one
+  cannot and the source one does not without `?edit=1`. The two file sets
+  agree perfectly while the editor's code sits inside a bundle a browser
+  downloaded. So `test/built.mjs` greps every shipped `.js`, `.css`, `.html`
+  and `.json` under `dist/` for `edit-mode.js`'s own sentinel string, and
+  asserts the sentinel is still in the source file so that renaming it cannot
+  make the check go quiet. The break below confirms the diff stays green while
+  the grep fails.
+
+- **`test/tools.mjs` is the eleventh suite, and the hand-test is not the whole
+  proof** (#587). `SPECS.md` asked for this row to be proved by walking the
+  dev server and looking, and that proof is in the PR. It is not enough on its
+  own: the part of this tool that can quietly destroy something is a pure
+  string-to-string function over a file ten other suites read. The suite drives
+  it against the real `data/scene-config.json` and never writes to disk.
+
+  **It caught a fault on its first run, which is the best kind of evidence.**
+  One of its rails holds every key a placeable row may carry to a key the
+  existing rows already use, so the allow-list cannot drift into inventing a
+  field the builder ignores. It failed on `braziers: base`, which this session
+  had put there an hour earlier. `main.js` hands `b.tile` to `createBrazier`
+  through `tileToWorld` and reads nothing else, so a `base` written beside it
+  would have been read by nobody and a brazier placed on a tower's first floor
+  would have silently landed on the ground. The field is gone from both sides
+  and the panel says so instead.
+
+**Broken on purpose, from a green baseline** (#34). Two breaks, each reverted,
+green again after.
+
+1. The `import.meta.env.DEV &&` dropped out of `main.js`'s guard, so the editor
+   is imported on any page with `?edit=1`. `npm run build` then emits
+   `dist/bundle/edit-mode-go3WXeTn.js`, and `npm test built` exited 1: `the
+   placement editor is in no file dist/ ships — bundle/edit-mode-go3WXeTn.js`.
+   **That was the only failure**: the served-set diff, the KTX2 count and the
+   offsite-request check all stayed green, which is exactly the claim #586
+   makes about why a grep was needed.
+2. `insertRow` replaced with `JSON.parse`, `push`, `JSON.stringify(_, null, 2)`.
+   `node test/tools.mjs` exited 1 with four failures, three of them the same
+   line once per array: `interiorProps: and every other byte is the byte it was
+   — 94212 bytes in, 98330 back out`, which is the measurement #584 is written
+   on, produced by the break rather than quoted at it.
+
+The shape rules are breaks by construction — eleven of them, each calling
+`checkRow` on a row with one thing wrong — and all eleven fire with the message
+written for them.
+
+**The hand-test** (`SPECS.md` asks for this one in the PR rather than in
+`npm test`). Driven headless so it could be run from here: load `/?edit=1` on
+the dev server, wait for the panel, type a comment, press P. The panel mounted
+as `castle-placement-editor-v1`, read the player as `tile -10, 0 | West
+barbican — feet 0.00 m`, said `wrote interiorProps[12] at -10, 0`, and
+`data/scene-config.json` went from 94212 to 94436 bytes with no page error. A
+second run through the endpoint alone placed a stool in the larder at tile
+[-5.1, -4.1]: nine lines added, nothing else in the file touched, and
+`makePlan` built it at 0.57 m from the larder's centre in a 2.8 m disc, sitting
+on the floor at y 0.00. Both placements were reverted; this row ships the tool
+and no props.
+
+**What was measured.** `tools/place.mjs` new, 144 lines. `src/edit-mode.js`
+new, 153. `test/tools.mjs` new, 149. `vite.config.js` 109 lines to 155,
+`src/main.js` 309 to 324, `test/built.mjs` 183 to 216, `test/run.mjs` +1,
+`README.md` +10, `CLAUDE.md` +9. `dist/` 52 MB, unmoved, and the bundle is 795.26 kB
+against 795.31 before this row — the editor is not in it.
+
+**What nobody has seen.** The panel has been driven headless and photographed
+by nothing. Whether 280 px of monospace in the top-left corner is usable beside
+the HUD, and whether the wireframe marker reads as a marker, are questions for
+a machine with a GPU and a person at it (#53).

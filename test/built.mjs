@@ -78,6 +78,39 @@ for (const name of ['basis_transcoder.js', 'basis_transcoder.wasm']) {
     'vite.config.js’s decoder plugin did not copy it out of node_modules/three');
 }
 
+/* THE PLACEMENT EDITOR IS NOT IN HERE (BACKLOG.md rank 13). `?edit=1` on the
+ * dev server mounts src/edit-mode.js, which can write data/scene-config.json
+ * through a Vite middleware. Neither half may reach a built page: the client
+ * is behind `import.meta.env.DEV` in main.js, which Vite replaces with `false`
+ * and drops, and the writer is a plugin with `apply: "serve"`.
+ *
+ * THIS IS A GREP OF WHAT GOT BUILT AND NOT A COUNT OF WHAT GOT FETCHED, which
+ * is #501's lesson pointed at a new target. The served-set diff below cannot
+ * see this one: a built page never asks for the editor, and neither does a
+ * source page without `?edit=1`, so the two file sets agree perfectly while
+ * the editor's code sits inside the bundle a browser downloaded. What catches
+ * it is the sentinel string itself being absent from every byte shipped. */
+{
+  const bundle = path.join(dist, 'bundle');
+  const files = fs.existsSync(bundle) ? fs.readdirSync(bundle) : [];
+  check(files.some((f) => f.endsWith('.js')), `dist/bundle/ has a script (${files.length} files)`);
+  const sentinel = /castle-placement-editor-v1/;
+  const src = fs.readFileSync(path.join(ROOT, 'src/edit-mode.js'), 'utf8');
+  check(sentinel.test(src), 'src/edit-mode.js carries the sentinel this check greps for',
+    'the editor renamed its sentinel and this check went quiet');
+  const leaked = [];
+  const walk = (dir) => {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+      const at = path.join(dir, e.name);
+      if (e.isDirectory()) { if (at !== path.join(dist, 'assets')) walk(at); continue; }
+      if (!/\.(js|css|html|json)$/.test(e.name)) continue;
+      if (sentinel.test(fs.readFileSync(at, 'utf8'))) leaked.push(path.relative(dist, at));
+    }
+  };
+  walk(dist);
+  check(leaked.length === 0, 'the placement editor is in no file dist/ ships', leaked.join(', '));
+}
+
 /* ---- and what it does in a browser --------------------------------------- */
 
 const browser = await launch();

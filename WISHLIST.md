@@ -191,6 +191,11 @@ second castle, and the map the player has to earn are all that row's now, in
 the order given above; the first increment is the volume this castle already
 has and is not using.
 
+**The volume half of that row was found already built on 2026-09-17** (#582):
+the eight drums carry a room at every level they can, the castle has 40 rooms,
+and nineteen of them are empty. "An empty room is worse than no room" is why
+the row's next step is the map and the town rather than more floors.
+
 ### 6. Bodies: the thing every row above waits on
 
 **Moved to `BACKLOG.md` rank 11, `SPECS.md`'s "Bodies" section** (#565).
@@ -213,7 +218,11 @@ machine (#53).
 **Moved to `BACKLOG.md` rank 13, `SPECS.md`'s "The tooling" section**
 (#567). The placement editor, the dialogue format, and the validator-plus-
 budget-suite are all that row's now; the first increment is the placement
-editor, `?edit=1` on the dev server only, never in `dist/`.
+editor, `?edit=1` on the dev server only, never in `dist/`. **It shipped on
+2026-09-17** (#583 to #587): a panel that reads the tile under the player's
+feet and writes the row into `data/scene-config.json` on a key press. The
+budget suite and the dialogue format are what is left of the theme, and they
+are in that row.
 
 ## Devon's answers, 2026-09-16
 

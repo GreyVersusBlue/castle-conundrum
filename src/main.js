@@ -261,6 +261,20 @@ async function init() {
     }
   });
 
+  /* --- the placement editor, dev only (BACKLOG.md rank 13) ---
+   * `import.meta.env.DEV` is a literal `false` in a build, so Vite drops this
+   * whole branch and src/edit-mode.js never enters the production module graph
+   * — not lazily, not at all. The `?edit=1` check is inside the branch rather
+   * than beside it so that the query string alone can never pull it in from a
+   * built page. test/built.mjs greps the bundle for the module's sentinel,
+   * because the question is what got SERVED and not what got asked for (#501).
+   */
+  let editor = null;
+  if (import.meta.env.DEV && new URLSearchParams(window.location.search).get('edit') === '1') {
+    const { mountEditor } = await import('./edit-mode.js');
+    editor = mountEditor({ scene, THREE, camera, nav, config, eyeHeight: EYE_HEIGHT });
+  }
+
   // --- Loop ---
   const clock = new THREE.Clock();
   // The rooms that are themselves a clue. One row in mystery.json is kind `L`
@@ -296,6 +310,7 @@ async function init() {
     }
     for (const npc of npcs) npc.update(dt, camera.position);
     interaction.update();
+    editor?.update();
     for (const fn of brazierUpdates) fn(t);
 
     renderer.render(scene, camera);

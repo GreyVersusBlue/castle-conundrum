@@ -44,6 +44,15 @@ npm run dev
 Then open the URL it prints. `npm run build` writes `dist/`, and
 `npm run preview` serves that.
 
+**`?edit=1` on the dev server opens the placement editor.** A panel top-left
+reads the tile under your feet as you walk; pick an array and a model and press
+**P**, and the row is written into `data/scene-config.json` where a session
+would otherwise have hand-typed two numbers. It writes the file and nothing
+else: the diff is yours to read and commit. It is dev-only by construction —
+the client is behind `import.meta.env.DEV` and the writer is a Vite plugin with
+`apply: 'serve'` — and `test/built.mjs` greps `dist/` to prove it (rank 13,
+#582 to #586).
+
 Nothing the page fetches leaves its own origin: no CDN, no font host, no asset
 host. three comes from npm at build time; the 39 MB of glTF and textures under
 `assets/` is committed to this repo and copied into `dist/` whole.
@@ -59,12 +68,12 @@ Run it on anything you add before you commit it.
 ## The suites
 
 ```
-npm test              # all nine, cheapest first, non-zero on any failure
+npm test              # all eleven, cheapest first, non-zero on any failure
 npm test layout       # or any subset by name
 ```
 
-Six of them are Node against source and take seconds: `gltf`, `assets`,
-`layout`, `quest`, `mystery`, `save`. `plan-vs-scene` drives a headless
+Eight of them are Node against source and take seconds: `gltf`, `assets`,
+`layout`, `quest`, `mystery`, `save`, `lore` and `tools`. `plan-vs-scene` drives a headless
 Chromium over `npm run dev`, waits for the castle to finish building, and diffs
 every placed object's live `Box3` against `src/castle-plan.js`'s box at 0.01 m.
 `touch` drives the same dev server on a 412 x 915 page with a touchscreen and

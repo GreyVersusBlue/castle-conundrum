@@ -136,6 +136,17 @@ the cook's missing knife is the first of them. The save is version 4 for
 not a dozen, the journal has no open-quests tab, and reputation by ward waits
 on enough quests to make a moved counter visible.
 
+**The placement editor shipped on 2026-09-17** (#583 to #587), and it came out
+of a finding about the row above it. **Rank 10's first increment was already
+built** (#582): all eight drums carry a room at levels 0, 1 and 2, four carry
+one at level 3, and the castle has 40 rooms. What it has instead is **nineteen
+empty ones** — seven tower first floors, seven top rooms, four roofs and the
+larder hold no evidence, no station, no document and no prop. So rank 10's
+volume step is closed as done rather than built twice, and the tool that makes
+filling a room cost a key press was taken up instead: `?edit=1` on the dev
+server writes a prop's tile straight into `data/scene-config.json`.
+`test/tools.mjs` is the eleventh suite.
+
 **13 ranked items. Nothing is claimed.** Every one of ranks 1, 2, 3 and 5
 needs a machine this one is not: ranks 2, 3 and 5 a GPU (#518), rank 1 a
 network that reaches quaternius.com (#568), which #541's did and this one's
@@ -145,11 +156,12 @@ increment 3 is a yard to build in the town and a design call to make about
 bells on day two. Of ranks 6 to 13, the ones whose first increment is data
 and validators rather than a render — 6, 8, 9, 10 and 13 — are the ones a
 container can start; 7, 11 and 12 all want either a recorded sound, a body on
-disk, or a GPU before their first increment closes. **Rank 9's first increment
-shipped on 2026-09-17** and its next one, the journal's open-quests tab and the
-next quests, is a container's too. Of the four, 6 is the one that reads
-`data/npcs.json`'s `cast`, which is what ranks 1 and 11 are both for, so a
-session running beside one of those is better off on 9, 10 or 13.
+disk, or a GPU before their first increment closes. **Ranks 9 and 13 both shipped a
+first increment on 2026-09-17** and both next increments are a container's:
+rank 9's journal tab and next quests, rank 13's budget suite. So is rank 10's
+map, which is the part of that row nothing gates. Of them all, 6 is the one
+that reads `data/npcs.json`'s `cast`, which is what ranks 1 and 11 are both
+for, so a session running beside one of those is better off on 8, 9, 10 or 13.
 
 One thing is true of the whole list and worth saying once. **Nothing here has
 been seen on a GPU since Phase 5.** `npm run play` walks the whole intended day
@@ -208,10 +220,10 @@ your decisions and this file's header, ranks and `Claimed` column are updated
 | 7 | Sound: ambient beds, event sounds, a bell that is a soundscape | 1 | Fable 5.1 |  | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
 | 8 | Lore: the sermon, the song, and facts that change | ¼ | Sonnet 5 |  | [Lore: what is still open](SPECS.md#lore-what-is-still-open) |
 | 9 | Side quests: the next eleven, the journal tab, and reputation by ward | 2+ | Opus 5 |  | [Side quests](SPECS.md#side-quests) |
-| 10 | A castle to get lost in: the volume, the town, the rock and river | 2+ | Opus 5 |  | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
+| 10 | A castle to get lost in: the map, then the town, the rock and river | 2+ | Opus 5 |  | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
 | 11 | Bodies: a shared low-poly rig for the fifty | 1 | Fable 5.1 |  | [Bodies](SPECS.md#bodies) |
 | 12 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 |  | [Feel](SPECS.md#feel) |
-| 13 | The tooling: a placement editor, a dialogue format, a budget suite | 2+ | Opus 5 |  | [The tooling](SPECS.md#the-tooling) |
+| 13 | The tooling: the budget suite, move-and-delete, a dialogue format | 2+ | Opus 5 |  | [The tooling](SPECS.md#the-tooling) |
 
 ## A fourth body
 
@@ -342,16 +354,24 @@ visible. `SPECS.md` specs the next increment.
 
 ## A castle to get lost in
 
-**Rank 10.** Devon wants it huge; the plan's own risk section says why size
-is not the first move (an empty room is worse than no room), so the order
-inside this row is the wishlist's own: volume before area, area before a
-second castle. The first increment is the volume this castle already has and
-is not using — the unused floors across the eight drums, an undercroft, a
-well chamber, a latrine turret, the guardroom over the porter's gate — all of
-it `castle-plan.js` and a floor slab, all of it somewhere a rank-8 document
-or a rank-6 routine can go. The town, the rock and the river, the map, and a
-second castle are later increments of this same row, in that order, and none
-of them starts before the volume does.
+**Rank 10, and a 2+. The volume step was found already built on 2026-09-17**
+(#582) and the row's premise is rewritten against the castle that exists. All
+eight drums carry a room at levels 0, 1 and 2, four carry one at level 3, and
+`test/plan-vs-scene.mjs` has been printing the count on every run since #526:
+40 rooms, 14 / 11 / 11 / 4 by level. The four drums with no top room are the
+four with a 2.5 m turret, which #523 refused on arithmetic.
+
+**Nineteen of the 40 are empty** — seven tower first floors, seven top rooms,
+four roofs and the larder — which is `PLAN.md`'s "an empty room is worse than
+no room" as a fact rather than a risk. A latrine turret and a well chamber
+were considered and refused for that reason: they would make it 22.
+
+**What is next is area, and the map.** The town half still waits on rank 4's
+Thomas Wykes yard proving the ground west of the barbican can carry a
+building. The map does not wait on anything and is the part of this row a
+container can start: a journal page over the 40 rooms the plan already
+computes and the HUD already names (#515), with a visited set on the save.
+Filling the nineteen is ranks 8 and 6, made cheap by rank 13's editor.
 
 ## Bodies
 
@@ -379,13 +399,24 @@ until **The GPU run** (ranks 2 and 3) has happened.
 
 ## The tooling
 
-**Rank 13.** None of the seven themes above is a code problem; they are
-content problems at a scale the current tooling cannot carry, and the
-wishlist names three tools for it. The first increment is the placement
-editor: `?edit=1` on the dev server only, never in `dist/`, that writes a
-prop's tile coordinates into the JSON the builder reads instead of a session
-hand-typing them, which is how every prop in the castle got there so far and
-why there are so few. A dialogue format that compiles to the JSON the
-validators read, and a budget suite that counts skinned bodies, point lights
-and draw calls per ward against the number the phone cannot carry, are this
-row's next two.
+**Rank 13, and a 2+. The placement editor shipped on 2026-09-17** (#583 to
+#587). `?edit=1` on the dev server mounts a panel that reads the tile under
+the player's feet as they walk and, on **P**, writes the row into
+`data/scene-config.json` — `interiorProps`, `builtProps` or `braziers`, with
+the models and materials the config already names. It does not commit; the
+diff is for a person. The write is a text splice and not a re-serialise,
+because `JSON.stringify(JSON.parse(raw), null, 2)` over that file is not that
+file: 94212 bytes go out as 98330 and `"intensity": 2.0` comes back as `2`
+(#584). `test/tools.mjs` holds it to byte-exactness by cutting the new row
+back out and comparing the whole file.
+
+Dev-only is two independent halves — `import.meta.env.DEV` around the import,
+`apply: 'serve'` on the plugin — and neither is trusted: `test/built.mjs`
+greps every shipped file for the module's sentinel, because the served-set
+diff cannot see a module that neither page ever asks for (#586).
+
+**What is left** is the budget suite (skinned bodies, point lights and draw
+calls per ward against a number a phone cannot carry), a move-and-delete in
+the editor so correcting a placement is not still hand-editing, and the
+dialogue format. `SPECS.md` specs the next increment.
+

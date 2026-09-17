@@ -748,58 +748,84 @@ without the quest and diffing the journals.
 
 ## A castle to get lost in
 
-**Rank 10. Size 2+.** `WISHLIST.md` theme 5. The plan's own risk section says
-why a bigger plan was not the first move; this row is where the wager gets
-paid down, in the order the theme itself sets: volume, then area, then a
-second castle.
+**Rank 10. Size 2+. The first increment as this section first specced it was
+already built, and the row's premise was corrected on 2026-09-17** (#582).
+`WISHLIST.md` theme 5.
 
-### Scope, first increment
+### What was measured, and what it changed
 
-- **The unused floors.** Eight drums with three floors each is 24 rooms
-  against about 6 in use. `castle-plan.js` already computes a drum's rooms
-  per level (`roomOfDrum`, `src/castle-plan.js:890`); this increment adds a
-  floor slab and a `planId` for each unused one — an undercroft under the
-  Great Hall, cellars under the kitchen, a well chamber, a latrine turret off
-  the wall walk, the guardroom over the porter's gate — with no content of
-  its own yet, only a walkable room a later row (a rank-8 document, a rank-6
-  routine) has somewhere to go.
-- **`test/plan-vs-scene.mjs`** diffs each new slab's live `Box3` against the
-  plan's, on the existing 0.01 m tolerance (#500); no new suite.
+This section used to say "eight drums with three floors each is 24 rooms
+against about 6 in use" and ask for a floor slab and a `planId` for each
+unused one. That was written from `WISHLIST.md` rather than from the code, as
+this file's own header says of all eight sections added that day. Against
+`data/scene-config.json`: **every one of the eight drums carries a room at
+levels 0, 1 and 2**, four carry one at level 3, and the castle has **40
+rooms — 14, 11, 11 and 4 by level**, which is the count
+`test/plan-vs-scene.mjs` prints on every run. The four drums with no top room
+are the four with a 2.5 m turret, refused on arithmetic by #523: a 2.5 m
+turret in a 2.8 m ring leaves a 0.3 m ledge. There is no unused drum floor
+left to add.
 
-### Acceptance, first increment
+**What the castle has instead is nineteen empty rooms**: seven of the eight
+tower first floors, seven of the eight tower top rooms, all four roofs, and
+the larder hold no evidence, no station, no document and no prop. `PLAN.md`'s
+"an empty room is worse than no room" is the state of the castle rather than a
+risk to it, and more volume makes it worse — which is why the latrine turret
+and the well chamber this section also named were considered and refused
+(#582): they would have made the count 22, not filled any of the 19.
 
-- Each named room walkable end to end from its drum's existing stair, per
-  `layout.mjs`'s own walkability derivation; `plan-vs-scene.mjs` green on the
-  new `planId`s.
-- Break: place a floor slab 0.02 m off the drum's own floor level; the diff
-  should fail by tile and by the exact offset (#34).
+### Scope, next increment
+
+The order inside this row is unchanged — volume, then area, then a second
+castle — and the volume step is done, so what is next is area.
+
+- **The town.** Ground west of the barbican exists (#541 to #546) and Thomas
+  Wykes's yard is rank 4's own thread to place on it; this row's town half is
+  the rest of a walled town's street, church and quay, and it still starts
+  only once that yard has proven the ground can carry a building. That
+  dependency is unchanged and is the one thing genuinely gating this row.
+- **The map**, which this section used to gate on the unused floors giving it
+  something to fill in with. They already do, and have since #526. A journal
+  page that fills in as rooms are entered, over the 40 rooms
+  `castle-plan.js` already computes and the HUD already names every frame
+  (#515), is the cheapest thing in this row and the only part of it a
+  container can start today. `src/mystery.js` already has `enter(room,
+  level)`; the save carries a visited set, which is a version bump through
+  `migrate` (#37); the journal already has three tabs to be a fourth beside.
+
+### Acceptance, next increment
+
+- The map lists every room the plan builds, marks the ones entered, and
+  survives a reload (#39: the DOM for what just happened, the save for what a
+  reload has to survive).
+- A room the plan stops building is dropped from a save's visited set by
+  `repair`, the same rail `read` and `quests` already go through.
 
 ### Open calls
 
-- **The town, second.** Ground west of the barbican exists (#541 to #546);
-  Thomas Wykes's yard is rank 4's own thread to place on it (see **A second
-  day**), not this row's — this row's town half is the rest of a walled
-  town's street, church and quay, and starts only once rank 4's yard has
-  proven the ground can carry a building.
-- **The map** (a journal page that fills in as rooms are entered) is UI this
-  row can add once the unused floors give it something to fill in with; not
-  in the first increment.
-- **A second castle** is explicitly last, "the reward for the six rows above
-  it working" in `WISHLIST.md`'s own words; nothing in this spec starts it.
+- **Whether the map is this row's or the journal's.** Recommend this row's:
+  it is the answer to "a castle to get lost in" and it is worth nothing to a
+  castle with six rooms.
+- **The nineteen empty rooms are not this row's to fill** — they are rank 8's
+  documents and rank 6's routines, and rank 13's placement editor (shipped,
+  #583) is what makes filling them cost a key press rather than an afternoon.
+  Recommend those three run before this row's town half, whatever the ranks
+  say, because area on top of nineteen empty rooms is the bet `PLAN.md`
+  already warned against.
 
 ### Dependencies
 
-- Every later increment of this row (the town, the rock and river, a second
-  castle) is easier once a document (rank 8) or a routine (rank 6) exists to
-  put in the new volume, but the volume itself does not wait on either.
+- **The town half waits on rank 4's yard.** The map waits on nothing.
 
 ### Constraints
 
 - #500 (`castle-plan.js` computes; the builder places; `plan-vs-scene.mjs`
-  is the net — an unused floor is a plan piece like any other).
-- #499 (200 MB ceiling; a floor slab costs nothing new on disk).
+  is the net).
+- #499 (200 MB ceiling).
 - #529 (`layout.mjs` for everything derivable from the plan; the diff suite
   for the seams only).
+- #36, #37 (the map's visited set is a new save field: a version bump through
+  `migrate` and a rail in `repair`).
 
 ---
 
@@ -924,60 +950,70 @@ already is.
 
 ## The tooling
 
-**Rank 13. Size 2+.** `WISHLIST.md`'s own closing section: none of the seven
-themes above is a code problem, they are content problems at a scale the
-current tooling cannot carry, and this row is the three tools it names.
+**Rank 13. Size 2+. The first increment shipped on 2026-09-17** (#583 to
+#587). `WISHLIST.md`'s own closing section: none of the seven themes above is
+a code problem, they are content problems at a scale the current tooling
+cannot carry, and this row is the three tools it names. The placement editor
+is in; the dialogue format and the budget suite are not.
 
-### Scope, first increment
+### What shipped, in one paragraph
 
-- **A placement editor, `?edit=1` on the dev server only.** A key press while
-  walking drops a marker at the player's current tile; a small in-page panel
-  lists the `builtProps`/plan-piece kinds already in `data/scene-config.json`
-  and writes the chosen one, at that tile, into the same JSON shape a session
-  hand-types today. It never ships in `dist/` (checked by `vite.config.js`'s
-  existing dev-only guard pattern, or a build-time `if (import.meta.env.DEV)`
-  around the one module that mounts it) and it writes a file a person still
-  reviews and commits — it does not commit anything itself.
-- **Nothing in `test/built.mjs`'s served-set diff should ever list the editor
-  module**, which is this row's own version of #501's lesson: the check that
-  would catch the editor leaking into `dist/` is "what got served," not "what
-  got asked for."
+`?edit=1` on the dev server mounts `src/edit-mode.js`: a panel that reads the
+tile under the player's feet as they walk, offers `interiorProps`,
+`builtProps` and `braziers` with the models and materials `scene-config.json`
+already names, and on **P** posts the row to a Vite middleware that splices it
+into `data/scene-config.json`. It does not commit. The write is a text splice
+rather than a re-serialise because a round-trip through `JSON.stringify` is
+not the file (#584), and `test/tools.mjs`, the eleventh suite, holds it to
+that by cutting the new row back out and comparing the whole file byte for
+byte. Dev-only is two independent halves — `import.meta.env.DEV` around the
+import, `apply: 'serve'` on the plugin — and `test/built.mjs` greps `dist/`
+for the module's sentinel rather than trusting either (#586).
 
-### Acceptance, first increment
+### Scope, next increment
 
-- `test/built.mjs`'s existing served-set diff stays green with the editor
-  module present in `src/` and absent from `dist/`'s bundle. Break: import the
-  editor module from `main.js` unconditionally; the diff should list a new
-  file being served that a fresh `npm run build` would not have shipped
-  before this row (#501's own pattern, reapplied).
-- A hand-test, not a suite: walk to a tile in `npm run dev` with `?edit=1`,
-  place a prop, reload without it, and see the prop in the built scene. This
-  is the tool proving itself the way a script proves a feature, and belongs
-  in the PR description rather than in `npm test`.
+- **The budget suite, second**, as this row's own open call already
+  recommended and for the reason it gave: ranks 6 and 11 are the two rows
+  about to need a real answer to "how many skinned bodies can a ward carry".
+  It counts skinned bodies, point lights and draw calls per ward off the plan
+  and fails against a number a phone cannot carry. It is a `layout.mjs`-shaped
+  check — everything it counts is derivable from the plan in Node (#529) — so
+  it needs no browser.
+- **The editor's own next want is a way to move and delete**, not only to
+  add. Placing is one press; correcting a placement is still hand-editing the
+  file. A row selected in the panel, dragged to the player's tile and written
+  back over its own text is the same splice machinery reading rather than
+  appending, and it is what turns the tool from a stopwatch into an editor.
+- **The dialogue format is this row's third and is deliberately unspecified**
+  (speaker, state, conditions, effects, one line each, compiled to
+  `npcs.json`/`quests/*.json` at build time). `WISHLIST.md`'s paragraph is the
+  brief for whoever takes it.
+
+### Acceptance, next increment
+
+- The budget suite exits non-zero over a plan that exceeds its own ceiling,
+  names the ward and the count, and is broken on purpose once (#13, #34).
+- Anything the editor learns to write keeps `test/tools.mjs`'s byte-exactness
+  rail: a move that rewrites a row in place still has to leave every other
+  byte alone.
 
 ### Open calls
 
-- **The dialogue format and the budget suite are this row's next two, not
-  its first.** Recommend the budget suite second, because ranks 6 and 11
-  (populace and bodies) are the two rows about to need a real answer to "how
-  many skinned bodies can a ward carry," and a suite that counts them off the
-  plan is cheaper to write once populace exists to count.
-- **The dialogue format's own grammar** (speaker, state, conditions, effects,
-  one line each, compiled to `npcs.json`/`quests/*.json`'s existing shapes at
-  build time) is a real design job on its own and is deliberately left
-  unspecified here; `WISHLIST.md`'s paragraph is the brief for whoever takes
-  it, not this spec.
+- **What the budget's ceilings are.** Nobody has profiled this castle on a
+  phone. Recommend writing the suite with the numbers as named constants in
+  one place and a comment saying they are guesses, the way `touch-controls.js`
+  already holds its six (#530), rather than waiting for a device to set them.
 
 ### Dependencies
 
-- **Every content row above** (6, 9, 10 in particular) gets cheaper once the
-  placement editor exists, which is why `WISHLIST.md` calls tooling early —
-  but none of them is blocked on it; a session can still hand-type tile
-  coordinates the way every prop in the castle has so far.
+- **Every content row above** (6, 8, 9, 10) got cheaper the day the editor
+  landed, and none of them was blocked on it.
+- The budget suite is more useful after rank 6's populace exists to count, but
+  a ceiling on a castle with twelve bodies in it is still a ceiling.
 
 ### Constraints
 
-- #501, #493 (a dev-only tool must not become something the page fetches or
-  serves; the served-set diff, not the asked-for one, is what catches it).
-- #13, #34 (the budget suite, once written, is a real check with a real
-  break).
+- #501, #493, and now #586: a dev-only tool must not become something the page
+  fetches or serves, and the check is a grep of what got built, because the
+  served-set diff cannot see a module neither page ever asks for.
+- #13, #34 (a check exits non-zero and gets broken on purpose once).
