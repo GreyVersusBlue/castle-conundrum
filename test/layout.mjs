@@ -51,7 +51,7 @@ import { fileURLToPath } from 'node:url';
 import { partsOf } from './gltf.mjs';
 import { makePlan, walkability, collidersWith, moveBody, GRID, HEAD_LOW, HEAD_HIGH, BODY_RADIUS, DAY_SETS } from '../src/castle-plan.js';
 import { dayTwoOutcomes, dayTwoCastle } from '../src/mystery.js';
-import { stepClassOf } from '../src/audio.js';
+import { stepClassOf, bedOf } from '../src/audio.js';
 import { castleNav } from '../src/stations.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -1107,6 +1107,60 @@ console.log('\nevery surface has a step sound');
   const dead = Object.keys(classes).filter(c => !used.has(c));
   if (dead.length) fail(`data/sounds.json defines step ${dead.length === 1 ? 'class' : 'classes'} ${dead.map(c => `"${c}"`).join(', ')} that no surface in the castle resolves to`);
   else pass(`all ${Object.keys(classes).length} step classes are reachable from some surface`);
+}
+
+/* ------------------------------ 13: every place a body can stand has a bed ---
+ * The Sound row's first increment: a room tone per place, cross-faded on the
+ * room change the HUD already computes (#515). What picks the bed is `bedOf`
+ * from src/audio.js, handed whatever `roomAt` handed the HUD, so that is what
+ * this check calls, with what `roomAt` really returns: every walkable cell in
+ * the castle is put through the nav and the zones that come back are the
+ * zones. THE SWEEP IS THE POINT. A first draft read `plan.rooms` and resolved
+ * each row, and it would have stayed green with `roomAt` dropping the `drum`
+ * field `bedOf` needs, which is eighteen silent tower rooms and a passing
+ * suite (#34). The plan's own list is resolved as well, for the rooms no cell
+ * reaches.
+ */
+console.log('\nevery zone has an ambient bed');
+{
+  const sounds = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/sounds.json'), 'utf8'));
+  const amb = sounds.ambient || {};
+  const beds = amb.beds || {};
+  const nav = castleNav(plan, mystery);
+  const zones = new Map(); // "id/level" -> what bedOf is handed
+  for (const c of walk.cells) {
+    const z = nav.roomAt(c.i * GRID + GRID / 2, c.j * GRID + GRID / 2, c.h);
+    zones.set(`${z.id}/${z.level}`, z);
+  }
+  const swept = zones.size;
+  for (const r of plan.rooms) if (!zones.has(`${r.id}/${r.level}`)) zones.set(`${r.id}/${r.level}`, { id: r.id, level: r.level, drum: r.drum, open: false });
+  const open = mystery.rooms.filter(r => r.open).map(r => r.id);
+  // Open ground no cell is in is not a zone: the garden is behind a gate that
+  // never opens (#469) and nobody will ever hear it. Said, not asserted.
+  const unstood = open.filter(id => !zones.has(`${id}/0`));
+  for (const z of zones.values()) if (z.open && !open.includes(z.id)) fail(`the HUD can name "${z.id}" as open ground and mystery.json has no such place`);
+
+  const used = new Map();
+  let silent = 0;
+  for (const z of zones.values()) {
+    const bed = bedOf(sounds, z);
+    const what = z.open ? 'open ground' : z.drum ? `level ${z.level} of ${z.drum}` : `a room on level ${z.level}`;
+    if (!bed) { fail(`"${z.id}" is ${what} and data/sounds.json's ambient block says nothing about what it sounds like`); silent++; continue; }
+    if (!beds[bed]) { fail(`"${z.id}" resolves to the bed "${bed}", which data/sounds.json's beds do not define`); silent++; continue; }
+    used.set(bed, (used.get(bed) || 0) + 1);
+  }
+  if (!silent) {
+    const spread = [...used].sort((a, b) => b[1] - a[1]).map(([b, n]) => `${n} ${b}`).join(', ');
+    pass(`all ${zones.size} zones have a bed (${swept} of them as the nav names them from ${walk.cells.length} cells): ${spread}${unstood.length ? `; no cell is in ${unstood.join(', ')}, which has none` : ''}`);
+  }
+  const dead = Object.keys(beds).filter(b => !used.has(b));
+  if (dead.length) fail(`data/sounds.json defines ${dead.length === 1 ? 'the bed' : 'beds'} ${dead.map(b => `"${b}"`).join(', ')} that no zone in the castle resolves to`);
+  else pass(`all ${Object.keys(beds).length} beds are reachable from some zone`);
+  const ids = new Set([...zones.values()].map(z => z.id));
+  const stale = Object.keys(amb.byRoom || {}).filter(id => !ids.has(id));
+  if (stale.length) fail(`data/sounds.json's byRoom names ${stale.map(b => `"${b}"`).join(', ')}, which the castle does not build`);
+  else pass(`every one of byRoom's ${Object.keys(amb.byRoom || {}).length} names is a place in the castle`);
+  if (!(amb.fadeSeconds > 0)) fail(`ambient.fadeSeconds is ${amb.fadeSeconds}: a cross-fade of no length is a cut`);
 }
 
 /* --------------------------------------------------- WHERE CHECK 5 WENT ---

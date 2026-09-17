@@ -178,7 +178,8 @@ export function castleNav(plan, mystery) {
       const id = best ? best.id : x < gateX.west ? 'west-barbican' : x > gateX.east ? 'garden' : x > gateX.porter ? 'inner-ward' : 'outer-ward';
       const level = best ? best.level : 0;
       const name = rooms.get(id)?.name ?? best?.name ?? id;
-      return { id, level, name, open: !best };
+      // `drum` is for src/audio.js's `bedOf`: a tower room's bed goes by its storey.
+      return { id, level, name, drum: best?.drum ?? null, open: !best };
     },
     /**
      * EVERY ROOM THE PLAN BUILDS, for the journal's map (BACKLOG.md rank 10):

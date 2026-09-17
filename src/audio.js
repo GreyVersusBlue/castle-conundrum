@@ -1,4 +1,5 @@
-// audio.js — the two sounds the castle makes, synthesised, out of data/sounds.json.
+// audio.js — the sounds the castle makes, synthesised, out of data/sounds.json:
+// the footstep, the chapel bell, and a room tone per place.
 //
 // NO THREE AND NO BYTES. Every sound here is built out of one noise buffer and
 // a handful of oscillators at the moment it plays, so there is no audio file in
@@ -48,9 +49,32 @@ export function stepClasses(plan, sounds) {
   return new Map(plan.surfaces.map((s) => [s.id, stepClassOf(sounds, s)]));
 }
 
+/**
+ * What a place sounds like with nobody in it: one of `sounds.ambient.beds`'
+ * keys, or null when neither map answers for the zone.
+ *
+ * A ZONE IS WHAT `roomAt` IN src/stations.js HANDS BACK: a plan room, which has
+ * an `id`, a `level` and for a tower room a `drum`, or one of the four
+ * stretches of open ground, which has an `id` and nothing else. The zone's own
+ * id first, and a drum room's storey second, which is `stepClassOf`'s two steps
+ * again. No default here either: a zone nothing answers for fails in Node
+ * (test/layout.mjs check 13), and at runtime it is silence, which is what the
+ * castle sounded like everywhere before this.
+ */
+export function bedOf(sounds, zone) {
+  if (!zone) return null;
+  const ambient = sounds?.ambient;
+  if (!ambient) return null;
+  const byRoom = ambient.byRoom || {}, byDrumLevel = ambient.byDrumLevel || {};
+  if (byRoom[zone.id]) return byRoom[zone.id];
+  if (zone.drum && byDrumLevel[zone.level]) return byDrumLevel[zone.level];
+  return null;
+}
+
 /** A silent stand-in with the same shape, for a caller that has no listener. */
 export const SILENCE = {
-  resume() {}, footstep() {}, bell() {}, bellAt() {},
+  resume() {}, footstep() {}, bell() {}, bellAt() {}, enter() {},
+  ambience() { return { bed: null, sounding: [] }; },
   stride() { return Infinity; },
   classesFor() { return new Map(); },
 };
@@ -141,6 +165,134 @@ export function createAudio(listener, sounds) {
     osc.stop(t0 + decay + 0.1);
   };
 
+  /* --- the beds ---
+   * A room tone per place, one at a time, cross-faded on the room change the
+   * HUD's room line already computes (#515). A BED IS BUILT WHEN IT IS ENTERED
+   * AND TORN DOWN WHEN IT HAS FADED: eight beds left running at gain 0 is
+   * twenty filters and as many oscillators computing silence on a phone, and a
+   * bed is a dozen nodes, which is nothing to make. Walking back into a bed
+   * that is still fading out builds a second one over it rather than reviving
+   * the first; for `fadeSeconds` there are two fires, and nobody can tell.
+   *
+   * Not through the panner. A bed is in the head and not at a point in the
+   * room, and data/sounds.json says so and says what comes after.
+   */
+  const amb = sounds.ambient;
+  let bedNoise = null;
+  const bedBuffer = () => {
+    if (bedNoise) return bedNoise;
+    bedNoise = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * amb.loopSeconds), ctx.sampleRate);
+    const d = bedNoise.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    return bedNoise;
+  };
+
+  /**
+   * `gain` moving between (1 - depth) and 1 of `peak` on a sine at `hz`: the
+   * node rests at the middle of that range and an oscillator scaled to half of
+   * it is summed onto the same AudioParam. Returns the oscillator to stop.
+   */
+  const swell = (gain, peak, hz, depth, t0) => {
+    gain.value = peak * (1 - depth / 2);
+    if (!(hz > 0) || !(depth > 0)) return null;
+    const lfo = ctx.createOscillator();
+    lfo.type = 'sine';
+    lfo.frequency.value = hz;
+    const span = ctx.createGain();
+    span.gain.value = peak * depth / 2;
+    lfo.connect(span); span.connect(gain);
+    lfo.start(t0);
+    return lfo;
+  };
+
+  const buildBed = (name) => {
+    const def = amb.beds[name];
+    const master = ctx.createGain();
+    master.gain.value = 0;
+    master.connect(out);
+    const running = [];
+    const t0 = ctx.currentTime;
+    for (const l of def.layers || []) {
+      const src = ctx.createBufferSource();
+      src.buffer = bedBuffer();
+      src.loop = true;
+      const filter = ctx.createBiquadFilter();
+      filter.type = l.type;
+      filter.frequency.value = l.hz;
+      filter.Q.value = l.q;
+      const g = ctx.createGain();
+      src.connect(filter); filter.connect(g); g.connect(master);
+      const lfo = swell(g.gain, l.gain, l.swellHz, l.swellDepth, t0);
+      src.start(t0, Math.random() * amb.loopSeconds);
+      running.push(src);
+      if (lfo) running.push(lfo);
+    }
+    for (const tn of def.tones || []) {
+      const osc = ctx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.value = tn.hz;
+      const g = ctx.createGain();
+      osc.connect(g); g.connect(master);
+      const lfo = swell(g.gain, tn.gain, tn.swellHz, tn.swellDepth, t0);
+      osc.start(t0);
+      running.push(osc);
+      if (lfo) running.push(lfo);
+    }
+    const bed = { name, master, running, live: true };
+    // The crackle: clicks at random intervals averaging `perSecond`, which is
+    // an exponential wait. A suspended context's clock does not move, so every
+    // click made before the start button would land on the same instant the
+    // moment it is pressed; those are skipped, not queued.
+    if (def.pops) {
+      const pop = () => {
+        if (!bed.live) return;
+        if (ctx.state === 'running') {
+          const p = def.pops;
+          noiseBurst(master, { hz: vary(p.hz, 0.35), q: p.q, type: p.type, decay: p.decay, gain: vary(p.gain, 0.5) }, ctx.currentTime + 0.001);
+        }
+        bed.timer = setTimeout(pop, -Math.log(1 - Math.random()) / def.pops.perSecond * 1000);
+      };
+      pop();
+    }
+    return bed;
+  };
+
+  const ramp = (param, to, seconds) => {
+    const t = ctx.currentTime;
+    const from = param.value;
+    param.cancelScheduledValues(t);
+    param.setValueAtTime(from, t);
+    param.linearRampToValueAtTime(to, t + seconds);
+  };
+
+  let bedNow = null;          // the bed faded up, or fading up
+  const sounding = new Set(); // that one, and any still fading out
+
+  const release = (bed) => {
+    bed.live = false;
+    clearTimeout(bed.timer);
+    ramp(bed.master.gain, 0, amb.fadeSeconds);
+    // A timer and not `onended`: a suspended context never ends anything, and
+    // a page that was never started would keep every bed it was ever walked
+    // through.
+    setTimeout(() => {
+      for (const n of bed.running) { try { n.stop(); } catch { /* never started */ } }
+      bed.master.disconnect();
+      sounding.delete(bed);
+    }, amb.fadeSeconds * 1000 + 50);
+  };
+
+  const enter = (zone) => {
+    const name = bedOf(sounds, zone);
+    if (name === (bedNow?.name ?? null)) return;
+    if (bedNow) release(bedNow);
+    bedNow = null;
+    if (!name || !amb.beds[name]) return;
+    bedNow = buildBed(name);
+    sounding.add(bedNow);
+    ramp(bedNow.master.gain, amb.beds[name].gain, amb.fadeSeconds);
+  };
+
   return {
     /** The start button's gesture, which is what a browser wants before audio. */
     resume() { if (ctx.state === 'suspended') ctx.resume().catch(() => {}); },
@@ -152,6 +304,17 @@ export function createAudio(listener, sounds) {
     classesFor(plan) { return stepClasses(plan, sounds); },
 
     bellAt,
+
+    /**
+     * The player is somewhere else now: `zone` is what `roomAt` handed the HUD.
+     * The same bed is a no-op, so eight tower rooms climbed in a row are one
+     * bed and not eight fades; a different one is the old fading down and the
+     * new fading up over `ambient.fadeSeconds`.
+     */
+    enter,
+
+    /** Which bed is up, and every bed making a noise, for test/map.mjs. */
+    ambience() { return { bed: bedNow?.name ?? null, sounding: [...sounding].map((b) => b.name) }; },
 
     /**
      * One footfall of the given class. An unknown class is silent rather than
