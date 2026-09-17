@@ -1,5 +1,5 @@
 {
-  "comment": "The six readable documents (WISHLIST.md theme 3; #551). Each is a built prop the way data/scene-config.json's `builtProps` already builds the cloak and the walk-bar (#506 rules out a new asset for a shape nothing on disk has): `room` is one of data/mystery.json's own room ids, `tile`/`base`/`size`/`material` describe the same slab data/scene-config.json's own `builtProps` entry for it builds (a built slab is axis-aligned; there is no rotation to carry), and `title`/`text` are what src/ui.js shows in the reading pane. `cites` is the lore this document tells; data/lore.json's own `sources` point back at a document by this id, and src/lore.js fails if the two disagree \u2014 a document citing an id lore.json does not have, or a source naming a document that does not cite it back. Placed in rooms the castle already builds; no new room, no new asset.",
+  "comment": "The readable documents (WISHLIST.md theme 3; #551, expanded to thirteen #557). Each is a built prop the way data/scene-config.json's `builtProps` already builds the cloak and the walk-bar (#506 rules out a new asset for a shape nothing on disk has): `room` is one of data/mystery.json's own room ids, `tile`/`base`/`size`/`material` describe the same slab data/scene-config.json's own `builtProps` entry for it builds (a built slab is axis-aligned; there is no rotation to carry), and `title`/`text` are what src/ui.js shows in the reading pane. src/lore.js holds the two files to one slab (#557): a document whose placement differs from the `builtProps` entry carrying `read: <its id>`, a document with no such entry, or an entry with no document, all fail the suite. `cites` is the lore this document tells; data/lore.json's own `sources` point back at a document by this id, and src/lore.js fails if the two disagree: a document citing an id lore.json does not have, or a source naming a document that does not cite it back. Placed in rooms the castle already builds; no new room, no new asset. The gaol roll is not here on purpose: it is increment 3's evidence (SPECS.md, A second day), not lore.",
   "documents": [
     {
       "id": "works-ledger",
@@ -15,11 +15,13 @@
         0.35
       ],
       "material": "oak",
-      "title": "The works ledger",
-      "text": "Here is set down the account of the works of this castle, begun the summer the March fell quiet, and kept by every Clerk of Works since.\n\nYear one: the King's engineer reckons the whole a two-year work. Year six: the curtain closed, and the reckoning proven wrong, as reckonings are.\nYear three: bell for the chapel, cast new at the King's cost, the founder's bill entered below in a hand none now living can name.\nYear forty, this Michaelmas: the garrison mustered at eight, where the muster roll of the busy years shows above eighty at hauling and watch together.\nItem, this year and the three before it in memory: wages three months in arrears, the coin being wanted elsewhere by the King's own word. Paid in the end. Always paid in the end.\nEvery sheet of lead, every load of stone and every day's wage a mason is owed is notched to a tally before it is written here, split stick and counterfoil, so that no clerk's hand need be taken on faith alone.",
+      "title": "The old works ledgers",
+      "text": "The closed books of the works, years one to thirty-nine, stacked on the Clerk of Works' floor in the order they were ruled off at Michaelmas. The book of this fortieth year is not among them: the Clerk keeps the open ledger under his own lock, and it is not here.\n\nYear one, in Ranulf's hand, like a row of spears: the King's engineer reckons the whole a two-year work. Year six: the curtain closed, and the reckoning proven wrong, as reckonings are.\nYear three: bell for the chapel, cast new at the King's cost, the founder's bill entered below in the founder's own hand.\nYear twenty-eight: Ranulf dead, the book to Hugh Bassett. Year thirty-four, in a schooled hand: the book to Master Robert Ferrour, the third Clerk of these works.\nYear thirty-nine, this Michaelmas last: the garrison mustered at eight, where the muster roll of the busy years shows above eighty at hauling and watch together. Half of every cartload up from the quay to the war-tax before a penny reached the works, the whole of the building years through.\nItem, that year and the three before it in memory: wages three months in arrears at the quarter, the coin being wanted elsewhere by the King's own word. Paid in the end. Always paid in the end.\nEvery sheet of lead, every load of stone and every day's wage a mason is owed is notched to a tally before it is written here, split stick and counterfoil, so that no clerk's hand need be taken on faith alone.",
       "cites": [
         "castle-founding",
+        "clerks-of-works",
         "war-tax",
+        "michaelmas-quarter",
         "kings-debt-wages",
         "garrison-size",
         "bell-cast-history",
@@ -41,12 +43,14 @@
       ],
       "material": "parchment",
       "title": "The chaplain's obituary roll",
-      "text": "A roll of the dead of these works, kept by the chaplains of this chapel from its first stone, each soul commended to Saint Osyth whatever tongue was spoken over him first.\n\nOf the March-born who fell to the quarrying and the hauling in the building years, this roll runs to eleven pages and is not yet done being added to.\nSir Walter Esturmy, Constable two and thirty years, entered here as a man whose accounts were opened after him and found to balance, which this hand has set down because it was asked, more than once, whether it was true.\nOf the four master masons the March itself has given these works, one is entered here already and three are not, Hywel ap Gruffudd, God keep him, being the fourth and, God willing, the longest yet to live.",
+      "text": "A roll of the dead of these works, kept by the chaplains of this chapel from its first stone, each soul commended to Saint Osyth whatever tongue was spoken over him first: the March's own in the outer ward, the King's in the inner, and this Latin over the pair of them.\n\nOf the March-born who fell to the quarrying and the hauling in the building years, this roll runs to eleven pages and is not yet done being added to.\nSir Walter Esturmy, Constable two and thirty years, entered here as a man whose accounts were opened after him and found to balance, which this hand has set down because it was asked, more than once, whether it was true.\nOf the four master masons the March itself has given these works, one is entered here already and three are not, Hywel ap Gruffudd, God keep him, being the fourth and, God willing, the longest yet to live.\nThis hand has kept the roll twelve years, since it came up from the justiciar's chapel at Caernarfon with good Latin and no living, and has said the office over more of the March than any priest of the crown's it knows of.",
       "cites": [
         "castle-founding",
         "march-natives",
+        "march-tongue",
         "sir-walter-esturmy",
-        "saint-osyth"
+        "saint-osyth",
+        "father-anselm"
       ]
     },
     {
@@ -64,10 +68,14 @@
       ],
       "material": "oak",
       "title": "The porter's gate book",
-      "text": "Every soul and every cart through this gate, by the day and the hour, as the porters of this tower have kept it since the wall first stood.\n\nCarts down to Mereford quay and back, most days, tolled at the King's own rate for the wall-tax the town has owed since its charter, in full, forty years running.\nCarts up from the quay with what the war-tax has not already taken off the top, which by the porters' own reckoning over the years is the better part of every load.\nA note, in an old porter's hand, long since dead: \"the King's toll-man come again, third time this twelvemonth, counting sacks of lime as if lime walked off on its own legs.\"",
+      "text": "Every soul and every cart through this gate, by the day and the hour, as the porters of this tower have kept it since the wall first stood: sixteen years in the father's hand, from the year the wall went up, and twenty in the son's, and the son's the better, the chaplain of that day having been paid to make it so.\n\nCarts down to Mereford quay and back, most days, tolled at the King's own rate for the wall-tax the town has owed since its charter, in full, forty years running and counted at Michaelmas.\nCarts up from the quay with what the war-tax has not already taken off the top, which by the porters' own reckoning over the years is the better part of every load. The quay is the King's and so is the toll-house at the head of it, the one slate roof in the town.\nA note, in the old porter's hand, long since dead: \"the King's toll-man come again, third time this twelvemonth, counting sacks of lime as if lime walked off on its own legs.\"\nMichaelmas day, every year of the forty: the gate open Prime to Vespers by the town's charter, the fair in the outer ward, and nothing written down at all, because there is no counting a town.",
       "cites": [
         "town-of-mereford",
-        "war-tax"
+        "the-quay",
+        "war-tax",
+        "michaelmas-quarter",
+        "mereford-fair",
+        "gwilym-porter"
       ]
     },
     {
@@ -85,7 +93,7 @@
       ],
       "material": "slate",
       "title": "A mason's mark, cut in the floor stone",
-      "text": "Cut into a floor slab at the head of the Kitchen Tower stair, worn smooth by forty years of boots and still legible if a man kneels to it:\n\n\"GRUFFUDD SET THIS COURSE, YEAR THE THIRD OF THE WORKS. HE WENT OFF THIS SCAFFOLD THE SAME YEAR AND CADEYRN DID NOT CATCH HIM. HIS SON CARRIES STONE HERE NOW. MIND YOUR OWN FOOTING.\"\n\nBeside it, cut later and by a different, steadier hand, a small cross at the springing of an arch that is not otherwise there \u2014 Cadeyrn's mark, the mason's own, older than the chapel's Latin and kept without troubling anyone about it.",
+      "text": "Cut into a floor slab at the head of the Kitchen Tower stair, worn smooth by forty years of boots and still legible if a man kneels to it:\n\n\"GRUFFUDD SET THIS COURSE, YEAR THE THIRD OF THE WORKS. HE WENT OFF THIS SCAFFOLD THE SAME YEAR AND CADEYRN DID NOT CATCH HIM. HIS SON CARRIES STONE HERE NOW. MIND YOUR OWN FOOTING.\"\n\nBeside it, cut later and by a different, steadier hand, a small cross at the springing of an arch that is not otherwise there: Cadeyrn's mark, the mason's own, older than the chapel's Latin and kept without troubling anyone about it.",
       "cites": [
         "castle-founding",
         "gruffudd-mason",
@@ -139,6 +147,168 @@
         "king-osric",
         "sunder-war",
         "royal-inspections"
+      ]
+    },
+    {
+      "id": "foundation-stone",
+      "room": "outer-ward",
+      "tile": [
+        -0.66,
+        1.0
+      ],
+      "base": 0,
+      "size": [
+        0.08,
+        1.2,
+        0.6
+      ],
+      "material": "slate",
+      "title": "The foundation stone",
+      "text": "A slab of dressed stone set on end against the west face of the cross-wall, south of the gate, the cutting sharp still because it stands in the wall's own shadow and the rain does not reach it:\n\n\"ALDOUS KING. THIS STONE SET AT THE FEAST OF MICHAEL IN THE FIRST YEAR OF THE PEACE. JOCELIN OF VANTRY ENGINEER. WALTER ESTURMY CONSTABLE. OSYTH KEEP IT.\"\n\nUnder that, in smaller letters cut four years later when the wall it leans on went up, and by a rougher hand: \"AND THIS WALL AFTER.\"",
+      "cites": [
+        "king-aldous",
+        "castle-founding",
+        "kings-engineer",
+        "sir-walter-esturmy",
+        "saint-osyth"
+      ]
+    },
+    {
+      "id": "engineer-drawing",
+      "room": "clerk-chamber",
+      "tile": [
+        -7.75,
+        -2.0
+      ],
+      "base": 4,
+      "size": [
+        0.6,
+        0.05,
+        0.45
+      ],
+      "material": "parchment",
+      "title": "The engineer's drawing",
+      "text": "A sheet of parchment the size of a table, laid flat on the floor of the Clerk's chamber under a stone at each corner, the ink brown and the creases black: the castle as Master Jocelin of Vantry drew it before a stone was cut, and the same sheet he drew the other three March castles on, this one the third.\n\nThe river runs along the bottom edge, written \"the river\" in the King's tongue and, in a later hand and the March's, \"afon\". The quay is drawn, and the toll-house at the head of it, before the town that was to grow round them.\nEight towers, one curtain, one hall, and no cross-wall: the wall that splits the wards is inked in over the top in a different, blacker ink, with a note in the margin in the engineer's own hand, \"the fourth year, after the muster,\" and nothing else to say why.\nAt the foot, the reckoning that the Clerks of Works have kept this sheet for: \"the whole, two years.\"",
+      "cites": [
+        "the-march",
+        "castle-founding",
+        "kings-engineer",
+        "the-cross-wall",
+        "the-quay"
+      ]
+    },
+    {
+      "id": "cooks-accounts",
+      "room": "kitchen",
+      "tile": [
+        -6.35,
+        -3.1
+      ],
+      "base": 0,
+      "size": [
+        0.06,
+        0.6,
+        0.5
+      ],
+      "material": "slate",
+      "title": "The cook's slate",
+      "text": "A slate propped against the kitchen's west wall, chalked in a hand that cannot write and will not be cheated, in strokes and crosses the Steward has learned to read:\n\nForty mouths, this day as every day: eight of the garrison, twelve of the works, the inner ward and its people, the priest, the porter, the smith, and the town's day-men at noon, who eat here because it is in their hire.\nBread, forty loaves, from the bakehouse at Prime. Ale, one cask, and the cellar to be asked for the next.\nSupper in the hall at Vespers: the high table, the Steward's and the Clerk's places at either hand, the priest below the salt where he sits himself, and the benches for the rest by whoever comes first.\nA count of Michaelmases, eleven strokes, one for each since the old cook died at this table and Marged came up from the town to it.\nOwed to the kitchen from the Steward's cellar since the quarter: a tally of strokes too long to be read across the room.",
+      "cites": [
+        "forty-mouths",
+        "hall-high-table",
+        "michaelmas-quarter",
+        "marged-cook"
+      ]
+    },
+    {
+      "id": "steward-letters",
+      "room": "steward-chamber",
+      "tile": [
+        0.75,
+        1.75
+      ],
+      "base": 0,
+      "size": [
+        0.45,
+        0.08,
+        0.35
+      ],
+      "material": "parchment",
+      "title": "Letters on the Steward's floor",
+      "text": "A bundle of letters from the exchequer, tied with a tape and left on the floor of the Steward's chamber where the light from the door falls on them. The seals are the King's.\n\n\"To the Constable of the King's castle on the March, greeting. The wages of the garrison and the works for the quarter cannot be sent before the next, the King's need upon the Sunder waters being what it is. Let it be entered as owed.\" This one is four years old and there are three more like it, one a year, the words scarcely changed.\n\"The King's inspector will attend upon the castle's books in the course of the year, the day not to be given beforehand. A shilling not accounted for is a shilling stolen twice.\" In the margin, in the Steward's hand: \"the third year of this.\"\n\"By order of the exchequer's man who opened Sir Walter Esturmy's accounts: the household and its keys to a Steward, the works and theirs to a Clerk of Works, and neither to hold the other's, which order the Constable is to keep.\" The oldest of the bundle, and the most read.\n\"The Constable's sheet, when signed, to go to the justiciar's roll at Caernarfon by the King's road, two days, and no copy kept in the castle.\"",
+      "cites": [
+        "king-osric",
+        "sunder-war",
+        "kings-debt-wages",
+        "royal-inspections",
+        "household-and-works",
+        "caernarfon-seat"
+      ]
+    },
+    {
+      "id": "lodge-ordinances",
+      "room": "lodge",
+      "tile": [
+        -2.1,
+        -1.8
+      ],
+      "base": 0,
+      "size": [
+        0.7,
+        1.0,
+        0.08
+      ],
+      "material": "oak",
+      "title": "The lodge's ordinances",
+      "text": "A board at the south-west post of the mason's lodge, the letters burned into the oak and gone over with a knife where they had faded, and under them the marks of every mason who ever swore to them, forty years of marks in three columns:\n\n\"THE LODGE IS THE WORKS' AND NOT THE CASTLE'S. NO MAN OF THE HOUSEHOLD COMES IN UNASKED, THE CLERK OF WORKS NEITHER.\nTHE FIRE IS NOT LET OUT BETWEEN MICHAELMAS AND LADY DAY. THE YOUNGEST MINDS IT.\nEVERY MAN KEEPS HIS OWN TALLY, SPLIT AND COUNTERFOILED, AND IS PAID BY IT AND BY NOTHING ELSE.\nTHE SMITH DRAWS OUT THE CHISELS AT LADY DAY AND AT MICHAELMAS, FOR ALE, AND IS GIVEN THE ALE.\nA DEAD MAN'S TOOLS LIE WHERE HE LEFT THEM UNTIL HIS OWN APPRENTICE TAKES THEM UP.\"\n\nOn a strip of parchment nailed below, the apprentice roll: the last line reads \"Ieuan, quayman's son of Mereford, bound to Hywel ap Gruffudd, master, the thirty-sixth year, for that he can count. To lay his first course at Michaelmas.\"",
+      "cites": [
+        "lodge-custom",
+        "tally-stick-custom",
+        "madoc-smith",
+        "ieuan-apprentice"
+      ]
+    },
+    {
+      "id": "bakehouse-tally",
+      "room": "bakehouse",
+      "tile": [
+        0.45,
+        4.25
+      ],
+      "base": 0,
+      "size": [
+        0.4,
+        0.05,
+        0.4
+      ],
+      "material": "slate",
+      "title": "The bakers' notches",
+      "text": "A floor stone beside the oven's mouth, the surface gone to a lattice of small cuts, each one square and each one a hundred loaves, the way the bakers of this tower have counted since the oven was first fired the year the curtain closed. The cuts run in rows; the rows run out of room; the later bakers have cut across the earlier ones. Nobody has counted them since the towers were done.\n\nAlong the stone's edge, a different mark: a second oven's outline scratched in, and a line through it. In the building years this tower baked for above eighty; it bakes for forty now, and the second oven is a store with a door on it.",
+      "cites": [
+        "bakehouse-oven",
+        "forty-mouths"
+      ]
+    },
+    {
+      "id": "watch-bill",
+      "room": "guardroom",
+      "tile": [
+        -8.8,
+        -4.45
+      ],
+      "base": 0,
+      "size": [
+        0.4,
+        0.6,
+        0.06
+      ],
+      "material": "oak",
+      "title": "The watch-bill",
+      "text": "A board on the guardroom's north side with the month's watch chalked on it, the names in the Constable's own hand and the days in a serjeant's:\n\n\"The garrison of this castle, eight men. The night: one man, the north walk, Compline to Lauds, the Kitchen Tower door to the North-west Tower and back, the whole month. The south walk: the Stockhouse door, barred by the porter at Compline. The gate: the porter. The day: the rest.\nR. Lestrange, Constable, in the eighth year of his keeping this castle and the fortieth of the works.\"\n\nThe same name stands against every night of the month. Under it, in chalk that is not the serjeant's, \"and the well by daylight\", rubbed half out.",
+      "cites": [
+        "garrison-size",
+        "garrison-rota",
+        "sir-roger-lestrange"
       ]
     }
   ]

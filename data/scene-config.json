@@ -2282,7 +2282,7 @@
       "roughness": 0.8
     }
   },
-  "plainMaterialsComment": "Built surfaces with no texture set on disk and no set on the stone list: the cell's bars, the cloak over the laundry crate, the bar leaning beside the Stockhouse walk door, and the six readable documents (#551) — a vellum colour for a roll or a writ, a stone-grey for a floor mark or a grave. A colour, a roughness and a metalness, no maps. They are not in `materials` because every entry there has to be a complete diffuse + normal + arm/rough set, and these would have had to weaken that rail to live beside it. test/assets.mjs checks the opposite shape here: a colour and no path.",
+  "plainMaterialsComment": "Built surfaces with no texture set on disk and no set on the stone list: the cell's bars, the cloak over the laundry crate, the bar leaning beside the Stockhouse walk door, and the thirteen readable documents (#551, #557) — a vellum colour for a roll or a writ, a stone-grey for a floor mark or a grave. A colour, a roughness and a metalness, no maps. They are not in `materials` because every entry there has to be a complete diffuse + normal + arm/rough set, and these would have had to weaken that rail to live beside it. test/assets.mjs checks the opposite shape here: a colour and no path.",
   "builtProps": [
     {
       "id": "cloak",
@@ -2411,6 +2411,118 @@
         0.35
       ],
       "comment": "The King's writ, posted in the muniment room on the west side of the tower's interior, clear of table-muniment, the word-lock's door arc and the garden wall on the east side (#551)."
+    },
+    {
+      "id": "foundation-stone",
+      "read": "foundation-stone",
+      "material": "slate",
+      "tile": [
+        -0.66,
+        1.0
+      ],
+      "base": 0,
+      "size": [
+        0.08,
+        1.2,
+        0.6
+      ],
+      "comment": "The foundation stone, standing on end against the west face of the cross-wall south of the porter's gate, in the outer ward: open ground, so what holds it is that a body can stand within reach of it, twenty cells' worth (#557). Clear of the two braziers and the crates against the lodge."
+    },
+    {
+      "id": "engineer-drawing",
+      "read": "engineer-drawing",
+      "material": "parchment",
+      "tile": [
+        -7.75,
+        -2.0
+      ],
+      "base": 4,
+      "size": [
+        0.6,
+        0.05,
+        0.45
+      ],
+      "comment": "The engineer's drawing, laid flat on the Clerk's chamber floor (level 1), between the ladder against the north wall and the crate by the south (#557)."
+    },
+    {
+      "id": "cooks-accounts",
+      "read": "cooks-accounts",
+      "material": "slate",
+      "tile": [
+        -6.35,
+        -3.1
+      ],
+      "base": 0,
+      "size": [
+        0.06,
+        0.6,
+        0.5
+      ],
+      "comment": "The cook's slate, propped against the kitchen's west wall: a 6 cm slab standing 0.6 m tall, 0.6 m in from the wall's face because the first placement at 0.3 m put it inside the CL/KI party wall (#557). 3.9 m from Marged's own station."
+    },
+    {
+      "id": "steward-letters",
+      "read": "steward-letters",
+      "material": "parchment",
+      "tile": [
+        0.75,
+        1.75
+      ],
+      "base": 0,
+      "size": [
+        0.45,
+        0.08,
+        0.35
+      ],
+      "comment": "A bundle of letters on the Steward's chamber floor, south-west corner, well clear of the crates in the north-east and of Piers Marrable's Terce station at the room's centre (#557)."
+    },
+    {
+      "id": "lodge-ordinances",
+      "read": "lodge-ordinances",
+      "material": "oak",
+      "tile": [
+        -2.1,
+        -1.8
+      ],
+      "base": 0,
+      "size": [
+        0.7,
+        1.0,
+        0.08
+      ],
+      "comment": "The lodge's ordinances, a board a metre tall standing at the mason's lodge's south-west post, inside the post and clear of Ieuan's station at the lodge's centre (#557)."
+    },
+    {
+      "id": "bakehouse-tally",
+      "read": "bakehouse-tally",
+      "material": "slate",
+      "tile": [
+        0.45,
+        4.25
+      ],
+      "base": 0,
+      "size": [
+        0.4,
+        0.05,
+        0.4
+      ],
+      "comment": "The bakers' notches, a floor stone by the oven's mouth on the east side of the Bakehouse Tower's interior, clear of the flight on the west and of the knife's barrel at the centre (#557)."
+    },
+    {
+      "id": "watch-bill",
+      "read": "watch-bill",
+      "material": "oak",
+      "tile": [
+        -8.8,
+        -4.45
+      ],
+      "base": 0,
+      "size": [
+        0.4,
+        0.6,
+        0.06
+      ],
+      "comment": "The watch-bill, a board on the guardroom's north side, inside the North-west Tower's 2.8 m circle and clear of its flight on the west and the barrels on the east; 1.85 m from Dafydd's Prime station (#557)."
     }
   ],
   "drumsComment": "Eight drums. `interior.doors` is every opening in the ring: `base` is the opening's floor (0, 4 or 8, a level's height), `theta` its bearing in three's cylinder angle (0 is +z, south; 90 is +x, east), `arc` its width in degrees, and both have to land on the drum's own vertices. The level-0 door is the room's; the level-1 doors (three of them) lead to the chambers built over the rooms beside those towers; the level-2 doors are where the wall walk passes through the tower's top room, sixty degrees wide because a 2 m deck's cells cross the ring over about thirty degrees and the grid's sector boxes bulge past that. The Stockhouse Tower's west door at level 2 carries `bar`: it is the walk door the porter swears he bars every night, it ships open because he did not, and `bar.closed` is the one thing test/layout.mjs forces shut to prove the wards would separate if he had. `stairs` names the side of the tower the upper flight and its well go on, which is the outer side, away from where the walk crosses. `lowerFlight: false` on the two towers whose ground room is shut leaves them the upper flight only.",

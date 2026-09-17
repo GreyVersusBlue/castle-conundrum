@@ -311,7 +311,7 @@
       }
     }
   ],
-  "chatterComment": "WISHLIST.md theme 3: ambient talk, for the existing twelve only, no new bodies. Two populace members within earshot at one bell get a line pair from the pool for their ward and that watch, played as a floating caption; this repo has no populace yet, so today the pool is unused by the game and exists for src/lore.js to validate and for a later populace row to spend. Keyed by ward (both npcs' own `ward` field, above) then watch. Each pair carries the two speakers by id (order is speaking order), the two lines, and an optional `cites`: the lore ids the exchange tells, which data/lore.json's `sources` point back at by this pair's own id.",
+  "chatterComment": "WISHLIST.md theme 3 (#554, expanded #558): ambient talk, for the existing twelve only, no new bodies. Twenty-seven pairs. Two populace members within earshot at one bell get a line pair from the pool for their ward and that watch, played as a floating caption; this repo has no populace yet, so today the pool is unused by the game and exists for src/lore.js to validate and for a later populace row to spend. Keyed by ward (both npcs' own `ward` field, above) then watch. Each pair carries the two speakers by id (order is speaking order), the two lines, and an optional `cites`: the lore ids the exchange tells, which data/lore.json's `sources` point back at by this pair's own id.",
   "chatter": {
     "outer": {
       "prime": [
@@ -332,6 +332,15 @@
             "Master Robert: Saint Osyth keeps this chapel, Ieuan. Saint Cadeyrn keeps nothing but a mason's conscience, and a light one at that."
           ],
           "cites": ["saint-cadeyrn"]
+        },
+        {
+          "id": "outer-prime-3",
+          "npcs": ["sentry", "apprentice"],
+          "lines": [
+            "Dafydd: There is a cross cut in the stone for every man who died building this place. Count them and you have the priest's roll without the Latin.",
+            "Ieuan: A cross goes at the springing of an arch, Dafydd, and it means the arch. The watch has counted them twice and got two numbers, and neither of them was the roll."
+          ],
+          "cites": ["cadeyrn-cross-count"]
         }
       ],
       "terce": [
@@ -341,7 +350,8 @@
           "lines": [
             "Master Robert: Eleven miles is a long way to haul stone for a market day, Wykes.",
             "Thomas Wykes: Eleven miles is nothing beside the quay toll Mereford pays to send it back out again."
-          ]
+          ],
+          "cites": ["west-road", "thomas-wykes"]
         },
         {
           "id": "outer-terce-2",
@@ -351,6 +361,24 @@
             "Thomas Wykes: They also say it was a load of straw broke his fall and not the saint. I have hauled that straw. It was a great deal of straw."
           ],
           "cites": ["saint-cadeyrn-miracle"]
+        },
+        {
+          "id": "outer-terce-3",
+          "npcs": ["laundress", "apprentice"],
+          "lines": [
+            "Nest: Madoc drew out every chisel in that lodge at Lady Day and took a jug of ale for it, and the Steward wrote the jug down as a loss.",
+            "Ieuan: Twice a year, Lady Day and Michaelmas, his father before him at the same forge under the Prison Tower wall. Hywel called it the one custom in this castle the King had not paid for."
+          ],
+          "cites": ["madoc-smith"]
+        },
+        {
+          "id": "outer-terce-4",
+          "npcs": ["cook", "sentry"],
+          "lines": [
+            "Marged: Nest says the well tastes of rock and she draws from it every day of her life. That is the whole of what I know about the well.",
+            "Dafydd: They say it goes down to the river and the tide comes up in it, and a man with a boat and a sack could poison the castle from the quay. Nobody who says it has lowered a light."
+          ],
+          "cites": ["well-depth"]
         }
       ],
       "sext": [
@@ -380,6 +408,15 @@
             "Nest: You have said that every day this week, Madoc, and I have believed you every day this week, and neither of those has got you out."
           ],
           "cites": ["prison-tower-scratching"]
+        },
+        {
+          "id": "outer-sext-3",
+          "npcs": ["sentry", "merchant"],
+          "lines": [
+            "Dafydd: My grandfather stood on the other bank of this river against the old King for nine years, Wykes, and was sworn at the end of it, and kept his word and his opinions both. I stand the King's watch and I have the opinions.",
+            "Thomas Wykes: And the song, I suppose. I have heard the garrison sing it over the wall at Michaelmas for twenty years and never been told a word of what it says."
+          ],
+          "cites": ["sentry-grandfather", "march-song"]
         }
       ],
       "vespers": [
@@ -400,6 +437,15 @@
             "Master Robert: The inner ward would say the same of you and mean the opposite. That is the whole of what a wall is for."
           ],
           "cites": ["outer-ward-view"]
+        },
+        {
+          "id": "outer-vespers-3",
+          "npcs": ["cook", "laundress"],
+          "lines": [
+            "Marged: Michaelmas day the town has this whole ward by charter, Prime to Vespers, stalls from the lodge to the hall, and the garrison stands on the walk and watches its own yard fill up with the people it keeps out the rest of the year.",
+            "Nest: And for one day the only tongue in the outer ward is our own, and the inner ward stands at its gate and does not understand a word, and that is the best of it."
+          ],
+          "cites": ["mereford-fair", "march-tongue"]
         }
       ]
     },
@@ -421,6 +467,15 @@
             "Father Anselm: A cold night for the walk, my lady.",
             "Lady Alys: Every night is a cold night on that walk, Father. I have stopped remarking on it."
           ]
+        },
+        {
+          "id": "inner-prime-3",
+          "npcs": ["porter", "chaplain"],
+          "lines": [
+            "Gwilym: They say the old King's heart is under your altar stone, Father, in a lead box sent up from Vantry the year he died, so that some part of him should see the place finished.",
+            "Father Anselm: I have had a bar under that stone once, Gwilym, and I will not tell you what I found, because whichever way it went it is a scandal, and I have enough of those."
+          ],
+          "cites": ["aldous-heart"]
         }
       ],
       "terce": [
@@ -431,7 +486,7 @@
             "Piers Marrable: The Sunder War is two years settled, Sir Roger. When does the coin catch up with the peace?",
             "Sir Roger: When Caernarfon says it does. I have stopped asking twice a year and started asking once."
           ],
-          "cites": ["sunder-war"]
+          "cites": ["sunder-war", "caernarfon-seat"]
         },
         {
           "id": "inner-terce-2",
@@ -450,6 +505,15 @@
             "Gwilym: And whose hand keeps the roll from saying so, Master Piers? I only ask because I keep a roll myself."
           ],
           "cites": ["town-debt-rumour"]
+        },
+        {
+          "id": "inner-terce-4",
+          "npcs": ["constable", "chaplain"],
+          "lines": [
+            "Sir Roger: You came up from Caernarfon, Father. Twelve years, is it. You could go back.",
+            "Father Anselm: A younger son with good Latin and no living, Sir Roger. The justiciar's chapel has a dozen of those. This one has a roll nobody else can read and a stair nobody else sleeps over."
+          ],
+          "cites": ["father-anselm"]
         }
       ],
       "sext": [
@@ -469,6 +533,24 @@
             "Lady Alys: You look tired, Father.",
             "Father Anselm: I have a deal of praying still to do today, my lady, and the day is not half over."
           ]
+        },
+        {
+          "id": "inner-sext-3",
+          "npcs": ["lady", "chaplain"],
+          "lines": [
+            "Lady Alys: Eleven years married, Father, and eight of them here. Sir Roger had twelve men at Bryn Adda and thought himself a Constable. He has eight now and a wall, and thinks himself less of one.",
+            "Father Anselm: And a wife whose brother sits among the justiciar's clerks, my lady, which he has never once mentioned and never once forgotten."
+          ],
+          "cites": ["sir-roger-lestrange", "lady-alys-brother"]
+        },
+        {
+          "id": "inner-sext-4",
+          "npcs": ["constable", "porter"],
+          "lines": [
+            "Sir Roger: That wall of yours was not in the engineer's drawing, Gwilym. He put it in the fourth year, after a muster showed him five March men in the yard to every one of the King's.",
+            "Gwilym: And my father kept the gate in it from the day it stood, Sir Roger, and I have kept it since. A castle inside a castle, the engineer called it. A wall with a door in it, my father called it."
+          ],
+          "cites": ["the-cross-wall"]
         }
       ],
       "vespers": [
@@ -481,6 +563,15 @@
             "Father Anselm: On my better days, both."
           ],
           "cites": ["chapel-relic"]
+        },
+        {
+          "id": "inner-vespers-2",
+          "npcs": ["steward", "porter"],
+          "lines": [
+            "Piers Marrable: Two offices, two men, two rings of keys, since the day they opened Sir Walter's books. The exchequer's man ordered it standing in that chamber and Sir Roger has kept to it as if he thought of it.",
+            "Gwilym: One man held both for two and thirty years and nobody could check him. My father said Sir Walter never once locked the household's door, because there was no one to lock it against but himself."
+          ],
+          "cites": ["household-and-works", "gwilym-porter"]
         }
       ]
     }

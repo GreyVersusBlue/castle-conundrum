@@ -44,6 +44,15 @@ Kitchen, South-west and Prison Towers have a third flight and a floor at 12 m,
 not get one and the reason is arithmetic: a 2.5 m turret in a 2.8 m ring leaves
 a 0.3 m ledge. The turrets are solid now, which they had never been.
 
+**The lore row shipped on 2026-09-16** (#551 to #555) and **was reviewed and
+expanded on 2026-09-17** (#556 to #559): `data/lore.json` is a canon of 61
+facts written against one timeline, `data/documents.json` is thirteen readable
+props in rooms the castle already builds, `data/npcs.json` carries a 27-pair
+chatter pool, and `src/lore.js` holds every cross-reference among them,
+including a document's slab against the `builtProps` entry that builds it.
+The row is done and its section is gone from this file and from `SPECS.md`;
+what is still open in it is in `WISHLIST.md`, theme 3.
+
 **The Great Hall's roof frame shipped on 2026-09-15** (#527 and #528): seven
 trusses across the hall at 8 m, and no covering over them, because nothing in
 a container that cannot render can tell which way a kit roof piece slopes or
@@ -198,20 +207,6 @@ third thread is not blocked at all: the gaol roll is a piece of evidence in a
 room the castle already builds, it convicts nobody, and its whole content is
 the dates that were in front of everybody and that nobody read. `SPECS.md`
 specs it.
-
-## Lore
-
-**Rank 6.** `WISHLIST.md`'s theme 3, taken up whole. Devon's #549: the world
-is invented and leans into the fantasy, Conwy's plan and the 1280s' feel stay,
-and the kingdom, the King, the war and the saints are the game's own. Forty
-years of the castle's building, the conquest before it, who was Constable
-before this one, what the town outside owes and to whom, what the outer ward
-thinks of the inner, and a handful of things nobody can prove, in a validated
-canon (`data/lore.json`), six documents the player can read in rooms the
-castle already builds, and a chatter pool for the existing twelve. The twelve
-keep their names, roles, lies and the lead theft exactly as `PLAN.md` has
-them; nothing in `mystery.json`'s clues, presses, schedule or endings moves.
-`SPECS.md` specs it.
 
 ## The hall covering
 
