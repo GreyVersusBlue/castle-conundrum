@@ -165,6 +165,17 @@ async function init() {
   // settles there.
   player.settle();
   window.__player = player; // read by test/plan-vs-scene.mjs's standing beat
+  // WHO TAKES THE POINTER BACK (#660). ui.js lets pointer lock go for every
+  // screen that covers the castle and asks for it back through this when the
+  // last one goes away. It is a no-op on a phone, because `player.lock()` is
+  // (#530), which is the whole reason it goes through the player rather than
+  // calling `requestPointerLock` from the UI.
+  // A REFUSED RELOCK IS NOT A DEAD END (#661). The browser rations pointer
+  // lock and hands out four requests before it starts refusing, so the answer
+  // has to be looked at: the panel the Esc path already uses is the way back,
+  // and it is one click.
+  ui.usePointer(async () => { if (!(await player.lock())) ui.showStartAgain(); });
+  window.__ui = ui; // read by test/overlays.mjs, for the two panes no key opens
 
   /* --- the player's own body (BACKLOG.md rank 11) ---
    * A shadow on the ground under the feet and a hand that reaches for a door's
@@ -202,7 +213,6 @@ async function init() {
   });
   const quest = new QuestManager({
     quest: questData, sideQuests, mystery: mysteryData, riddle: riddleData, documents: documentsData.documents, npcs, ui, castle,
-    controlsRef: { lock: () => player.lock() },
     engine,
     audio,
     // The world half of a bell: the sky and twelve people walking to where they
@@ -304,11 +314,14 @@ async function init() {
 
   // --- UI flow ---
   ui.hideLoading();
-  ui.showStart(() => {
+  ui.showStart(async () => {
     // The click is the gesture the AudioContext has been waiting for.
     audio.resume();
     player.enabled = true;
-    player.lock();
+    // And the panel comes straight back if the pointer did not (#661). The
+    // button hides the panel before this runs, so a refused lock without this
+    // line is a castle with nothing on screen and no way into it.
+    if (!(await player.lock())) ui.showStartAgain();
   });
   // if the player Escs out of pointer lock (outside overlays), offer re-entry.
   // There is no pointer lock to lose on a phone, so there is nothing to offer:

@@ -113,7 +113,6 @@ export class QuestManager {
    * @param npcs       NPC instances (need .id, .name, .talking, .dialogueState, .getDialogueLines())
    * @param ui         the UI (src/ui.js)
    * @param castle     needs .openLock(id, {instant}) and .setEvidenceVisible(id, visible)
-   * @param controlsRef { lock: fn } to re-lock the pointer after overlays
    * @param schedule   (fn, ms) => void; defaults to setTimeout. Injectable so a suite can see the delay.
    * @param restart    what the epilogue's button does; defaults to a reload.
    * @param saved      the loaded save, or null: begin the graph at its `stage` rather than at `start`.
@@ -135,7 +134,7 @@ export class QuestManager {
    *                   the counters and never says them out loud, which is what
    *                   every suite above this row gets.
    */
-  constructor({ quest, sideQuests = [], mystery = null, riddle, documents = [], npcs, ui, castle, controlsRef, schedule, restart, saved = null, onChange = null, engine = null, onWatch = null, audio = null, rooms = [], performances = null, reputation = null }) {
+  constructor({ quest, sideQuests = [], mystery = null, riddle, documents = [], npcs, ui, castle, schedule, restart, saved = null, onChange = null, engine = null, onWatch = null, audio = null, rooms = [], performances = null, reputation = null }) {
     this.graph = new QuestGraph(quest, QuestManager.actions);
     this.mystery = mystery;
     this.riddle = riddle;
@@ -143,7 +142,6 @@ export class QuestManager {
     this.npcs = npcs;
     this.ui = ui;
     this.castle = castle;
-    this.controlsRef = controlsRef;
     this._schedule = schedule || ((fn, ms) => setTimeout(fn, ms));
     this._restart = restart || (() => window.location.reload());
     this._wrongCount = Number.isInteger(saved?.riddleWrong) && saved.riddleWrong >= 0 ? saved.riddleWrong : 0;
@@ -196,11 +194,10 @@ export class QuestManager {
     this._dayOutcome = null;
 
     this._actions = {
-      openRiddle: () => this.ui.openRiddle(
-        this.riddle.riddle,
-        (answer) => this._checkAnswer(answer),
-        () => this.controlsRef.lock()
-      ),
+      // THE POINTER IS NOT THIS FILE'S ANY MORE (#660). This used to pass a
+      // third argument, `() => this.controlsRef.lock()`, and it was the only
+      // one of the four overlays that had one. src/ui.js owns both halves now.
+      openRiddle: () => this.ui.openRiddle(this.riddle.riddle, (answer) => this._checkAnswer(answer)),
       // The word held. The room is open in the engine (so the ledger inside it
       // can be examined) and the leaf swings in the castle.
       openLock: () => {
@@ -673,7 +670,6 @@ export class QuestManager {
       present: acc.present ?? 3,
       empty: this.line('empty'),
       onAccuse: (who, clueIds) => this.handleAccuse(who, clueIds),
-      onClose: () => this.controlsRef?.lock?.(),
     });
   }
 

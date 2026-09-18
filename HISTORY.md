@@ -6056,3 +6056,139 @@ hall itself, directly. Decisions #656 to #658.
   check 14 green (7 pieces, each 8.00 m or more over its floor, none in a
   reachable head band), check 6b unaffected, `npm test` thirteen suites
   green. `npm run play` not run — no `src/` changed (#53).
+
+## Rank 1, the castle you cannot walk: one place lets the pointer go and one place takes it back (2026-09-18)
+
+**Ranked row 1, a quarter, and the one open row that stopped a player rather
+than disappointing one.** Found by the GPU run the day before (#626, #627),
+fixed here with a fourteenth suite in front of it.
+
+**The two bugs, and they hid each other.** `src/ui.js` called
+`document.exitPointerLock()` in four places — the riddle, the journal, the
+accusation panel and the verdict pane — and exactly one path anywhere gave
+pointer lock back: `src/quest-manager.js` passed `() => this.controlsRef.lock()`
+as the riddle's `onClose`, and the accusation panel had the same for its Cancel.
+The journal had nothing. `main.js`'s `unlock` listener would have offered the
+resume panel, but it tests `!ui.isOverlayOpen()`, which is false at the instant
+`unlock` fires, and it never fires again afterwards. So J and J again left the
+player standing in a castle with no pointer lock, no panel, no prompt and no way
+out but a reload: measured on a GPU, W carried the player 3.7 m before the
+journal and 0.00 m after. The other half ran the other way: a dialogue never
+released pointer lock, so the canvas took every pointer event and
+`#dialogue-present` could not be clicked by a real mouse at all. Open the
+journal once and Present worked for the rest of the game, at the price of never
+walking again; play without opening it and you could walk and could not press
+four of the twelve.
+
+### #659. Pointer lock is not a GPU question, and two comments that said it was
+
+**`test/harness.mjs` said "the Pointer Lock API and real GPU rendering both need
+a browser that is actually compositing frames to a screen", and
+`test/play-castle.mjs`'s header said the same.** Measured on 2026-09-18 against
+`test/blank.html` in the same headless Chromium `npm test` uses: the start
+button's trusted click takes pointer lock, `document.pointerLockElement`
+reports it, `exitPointerLock()` drops it, and the next request takes it back.
+Both comments are corrected in place rather than deleted, because the sentence
+that was wrong is the reason this row was believed to be un-CI-able.
+
+What is a GPU question is what #53 always said it was: how far a held key
+carries a body in 700 ms. So the row splits at the cause/effect line.
+**`test/overlays.mjs` is the fourteenth suite and it asserts WHO HOLDS THE
+POINTER**, which a software rasteriser answers the same way a GPU does;
+`test/play-castle.mjs` keeps the walk under it, and that assertion grew a second
+half here — J, J again, hold W, and the body has to have moved more than 1 m
+from the same standing start.
+
+### #660. One place lets it go, one place takes it back, and a dialogue is on the list
+
+`src/ui.js` owns both halves now. `_freePointer()` is called by every open and
+`_takePointer()` by every close, `usePointer(relock)` is what `main.js` injects,
+and `wantsPointer()` is the guard that stops the pointer flickering back between
+two screens: shutting the Present picker drops into the dialogue that opened it,
+and `quest-manager.js`'s `handlePress` closes the journal and opens the next
+lines in one call. `closeDialogue` runs its callback BEFORE taking the pointer,
+because the last line of the Constable's first conversation is what opens the
+accusation panel.
+
+**A dialogue joins the four, which it never was.** It is not modal — E steps it
+and the player keeps the HUD — but it carries a button, and a button is a thing
+you point at. `main.js`'s `unlock` listener already tested `!ui.isDialogueOpen()`,
+so the resume panel does not appear over a conversation.
+
+**What came out.** `controlsRef` is gone from `QuestManager` entirely, and with
+it `openRiddle`'s third argument and `openAccusation`'s `onClose` — both existed
+only to re-lock. `test/quest.mjs`'s lock counter went with them: who holds the
+pointer is not a question a stand-in UI can answer, and `test/overlays.mjs`
+answers it in a browser instead. Every `regrip()` call in `test/play-castle.mjs`
+is gone, and the synthetic `.click()` on the Present button is a real
+`page.click` now, which is the whole difference: one is a coordinate and the
+other is a node.
+
+### #661. The browser rations pointer lock, so the restore has to be able to fail
+
+**Measured in Chrome on 2026-09-18, from `test/blank.html`: four
+`requestPointerLock()` calls are granted and the fifth is refused with
+`NotAllowedError: Too many pointer lock requests in a short window of time`. The
+budget comes back 2049 ms after it runs out.** Nothing in this game asked that
+often until #660 started taking the pointer back on every close. Five overlays
+opened and shut inside two seconds is a player mashing J, and the first green run
+of `test/overlays.mjs` hit it on its own beats.
+
+A refused request is not free. It fires `pointerlockerror`, which three's
+`PointerLockControls` answers with a console.error, and that class's `lock()`
+drops the returned promise on the floor, so the rejection surfaces as an
+unhandled one and `page.__errs` is no longer empty. Three things changed:
+
+- **`PlayerController.lock()` answers whether it worked.** It calls
+  `requestPointerLock()` itself rather than through `controls.lock()`, returns a
+  promise of true or false, and resolves true without asking when the pointer is
+  already held — which most closes are.
+- **It counts its own asks and stops one short of the browser's budget**: three
+  in 2.2 s. Asking and being refused costs a console error that nothing can
+  catch, so the ration is ours and it is conservative. Firefox has no such limit
+  and loses the fourth ask in a two-second burst, which the next line catches.
+- **A refused relock puts the resume panel up**, which is the panel the Esc path
+  has always used, one click back into the castle. The start button's own handler
+  does the same with its own answer: it hides the panel before `lock()` runs, so
+  a refused lock without that line is a castle with nothing on screen and no way
+  into it.
+
+### The fourteenth suite, and the break that proves it (#34)
+
+`test/overlays.mjs`, port 8129, in CI. One property over every screen that covers
+the castle: it releases the pointer while it is up and gives it back when it goes
+away. A fifth overlay that inherits one half fails here. **It was written first
+and run first, from a green thirteen, on the unfixed game:**
+
+| Beat | What it said, red |
+| --- | --- |
+| J, J again | `AND GIVES THE CASTLE BACK — pointer lock is gone, no resume panel is offered, and W does nothing` |
+| a dialogue | `a dialogue lets the pointer go, because its Present button is a thing you click` |
+| Present, by `page.click` | `the Present button is reachable by a real mouse, not only by a synthetic .click()` |
+| and the picker | `and clicking it opens the picker` |
+| the verdict pane | `and the verdict pane gives the castle back` |
+
+Eight failures, and the riddle's four beats green throughout, which is the
+control: the one overlay that already had both halves is the one that passed.
+
+**The ration beat was broken on purpose separately.** With `ui.usePointer(() =>
+player.lock())` in place of the version that offers the panel, mashing J twelve
+times reported `locked false, resume panel false, journal false` — the same dead
+castle, reached from the other side.
+
+### What a GPU still has to answer
+
+- `npm run play`'s own journal beat, on a real window: pointer lock back AND the
+  body moving more than 1 m on 700 ms of W. The assertion is written and the walk
+  under it is new; nothing in a container can run it (#53).
+- Whether a refused relock's resume panel reads as a resume panel mid-game
+  rather than as the game having restarted. It is the same `#start-overlay` the
+  Esc path shows and has never been looked at in either situation.
+
+**`npm test`: fourteen suites, twelve green in one run.** `plan-vs-scene` failed
+on #633's chapel-candles beat, and the control was run the way #655's finding
+says to — `git stash`, the suite again, red on the clean tree with the same
+assertion and the same sentence, then `git stash pop`. `map` failed in 0.4 s,
+which is #655's port collision with another worktree's copy of this suite; it is
+green alone. `npm run play` not run: no GPU here.
+

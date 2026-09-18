@@ -21,10 +21,13 @@ asset compression (#506 to #510), sound (#519 to #522), the tower tops
 touch (#530 to #532), the texture sets (#541 to #545), the town
 side (#546), the lore row (#551 to #555), what was left of that row,
 the sermon and the song, with #592 to #596, and the fourth body with #603 to
-#606.** **The ranks below start at 2 and that is not a gap**: rank 1 shipped
-on 2026-09-17 and its number was retired rather than shifted up, because
+#606.** **The ranks below start at 2, and 1, 3 and 5 are retired numbers rather than
+gaps**: each shipped and its number was retired rather than shifted up, because
 renumbering eleven rows across three files while four wave A sessions were
-running is a conflict in every table line (#619). What asset
+running is a conflict in every table line (#619). The number 1 was used twice,
+by the fourth body on 2026-09-17 and by the castle you cannot walk on
+2026-09-18 (#659 to #661), which is that rule working as intended: a rank is a
+priority and not an id. What asset
 compression left behind for the rows that touch assets is named in their
 Dependencies; what sound left behind is `data/sounds.json`, a `material` and a
 `kind` on every `plan.surfaces` entry, and `layout.mjs` check 12. Where a brief and the code disagree, the code is
@@ -78,72 +81,13 @@ Four facts every row below leans on, stated once:
 
 ---
 
-## The castle you cannot walk
-
-**Rank 1. Size ¼.** Found by the GPU run (#626, #627), and it is the one row on
-this list that stops a player rather than disappointing one.
-
-### The two bugs
-
-- **Four overlays take pointer lock and one gives it back.** `src/ui.js` calls
-  `document.exitPointerLock()` in `openRiddle`, `openJournal`,
-  `openAccusation` and the verdict pane. `src/quest-manager.js` passes
-  `() => this.controlsRef.lock()` as `openRiddle`'s `onClose` and nothing
-  passes anything for the other three. `main.js`'s `unlock` listener would
-  offer the resume panel, but it checks `!ui.isOverlayOpen()`, which is false
-  at the moment `unlock` fires, so it never fires again afterwards either.
-- **A dialogue does not release pointer lock**, so `#dialogue-present` cannot
-  be clicked with a real mouse: the cursor is captured and the canvas takes
-  every pointer event.
-
-### Scope
-
-- **`src/`, and it is lane D.** The shape the evidence points at: release in
-  one place and take back in one place, so a fifth overlay cannot be added
-  without inheriting both halves. The riddle already has the second half and is
-  the model.
-- **A guard-rail, and #34 makes it the first thing written.** Press J, press J
-  again, hold W, assert the player moved. It fails today; it must be seen to
-  fail before the fix lands.
-- **Nothing in `data/`.**
-
-### Acceptance
-
-- J and J again, then W moves the player. Measured today: 3.7 m before the
-  journal, 0.00 m after.
-- A dialogue's Present button is reachable by `page.click`, not only by a
-  synthetic `.click()`.
-- The two assertions already in `test/play-castle.mjs` go green and the
-  `regrip()` calls around them become dead and come out.
-
-### Open calls
-
-- **Release-and-restore, or never release at all?** Recommend **release and
-  restore**: the journal, the picker and the accusation panel are all things
-  you point at, and the cursor has to exist for them. Never-release would mean
-  making all four keyboard-only, which is a bigger change and worse for a phone.
-- **What about Esc?** Out of scope here. `main.js` already handles the Esc path
-  and it works; this row is about the overlays that take the lock themselves.
-
-### Dependencies
-
-- **It gates rank 2.** The day cannot be played to the end around it — the
-  suite only gets through by taking pointer lock back in a way no player can.
-- Lane D, so not beside rank 11 or anything else in `main.js`'s player rig.
-
-### Constraints
-
-- #53 (nothing but a real window and a real keyboard was ever going to see it).
-- #34 (break it first; it is already broken, so watch the guard-rail fail).
-
----
-
 ## The GPU run
 
-**Rank 2. Size ¼.** `npm run play` is 102 assertions and a numbered screenshot
-per beat into `shots/play/`, and no run of it since Phase 5 has happened on a
-machine with real compositing (#53). Phases 5, 6 and 7 each list a GPU exit
-criterion as outstanding.
+**Rank 2. Size ¼. Ungated since 2026-09-18**: the row that held it was the
+castle you cannot walk, and that shipped (#659 to #661). `npm run play` is 102
+assertions and a numbered screenshot per beat into `shots/play/`, and no run of
+it since Phase 5 has happened on a machine with real compositing (#53). Phases
+5, 6 and 7 each list a GPU exit criterion as outstanding.
 
 **Rank 3, the preview and og card that used to sit under this same section,
 shipped on 2026-09-17** (#634, #635) from a fallback frame rather than the run
@@ -212,9 +156,13 @@ rank 2's alone.
 - The run needs a machine with a GPU, which is Devon's; a session can add the
   `snap` beat and cannot run it. If a session is asked to take the run without
   one, the honest output is the beat and a note, not a claim.
-- The fourth body (rank 1, shipped #603) is still owed the run's photograph:
-  nobody has seen Marged, Nest or Lady Alys in the castle (#606). It is this
-  row's to take.
+- The fourth body (the first rank 1, shipped #603) is still owed the run's
+  photograph: nobody has seen Marged, Nest or Lady Alys in the castle (#606).
+  It is this row's to take.
+- **Nothing gates it any more.** The castle you cannot walk (the second rank 1)
+  shipped on 2026-09-18, so the day can be played past the first overlay; the
+  journal beat there now asserts the walk as well as the pointer, and that
+  assertion has never been run on a GPU (#659).
 
 ### Constraints
 
