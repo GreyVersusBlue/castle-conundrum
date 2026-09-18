@@ -5587,3 +5587,168 @@ after, **all three passed**, and with them `plan-vs-scene`'s chapel-candles
 beat that #606 and #633 both record as red on this machine on an untouched
 `main`. Thirteen of thirteen, then, in two runs. The port constants are a
 small thing to leave for whoever next runs two suites on one machine.
+
+## A fact that changes with what the player did, and the castle that says it (2026-09-17)
+
+Rank 4's fourth thread, the one the lore row left behind when it closed (#596):
+a `since` field on a fact in `data/lore.json`, so the canon says something
+different on the morning after. Decisions #649 to #649, on `claude/r4b-since`,
+lane A. **It never touches `src/save.js`.** The journal the second day reads is
+`state.clues`, which the save has carried since before the gaol roll (#571,
+#573), and the ending is `outcomeOf`'s, off `state.accusations`. The key did not
+move and the version is still 6. All thirteen suites green on this branch and `npm run build` green inside
+`built`; `npm run play` not run (#53). No run of the thirteen got all of them in
+one pass: the browser suites take fixed ports and another session on this
+machine was holding them, so `map` and `built` each had to be re-run on their
+own and each went green immediately. Every failure in every run was `Port 812x
+is already in use`. Nothing failed on an assertion, and the reason is at the
+bottom of this entry.
+
+`data/lore.json` goes from 65 facts to 66 and `data/npcs.json`'s `performances`
+from two pools to three. `test/lore.mjs` gains a tenth section of 27
+assertions, `test/quest.mjs` a section of 15.
+
+- **`since` is a list of rows and it may only ever replace** (#646). A fact
+  carries `since: [{when?, unless?, knew?, tells, text, why}]`, the first row
+  that applies wins, and a play that matches no row reads the fact exactly as
+  written. That is #573's rule for `day2.knew` pointed at the canon and it is
+  the reason `factText` takes the base text as its floor rather than as another
+  branch: every ending has the fact, and only some endings have the change.
+  Read it and the answer is one of five today: day one, the smith hanged with
+  the gaol roll in the journal, the smith hanged without it, nobody hanged, and
+  every other verdict.
+
+  The one fact is `the-clerk-who-asked`, a `rumour`, and what it is about is the
+  player: a man came up from Caernarfon and spent a day asking, and by the
+  morning after the castle has decided what that was. It is the first thing in
+  this game whose **content** rather than whose line set turns on what the
+  player found.
+
+- **The grammar is exported, not copied** (#647). `src/mystery.js` grows
+  `dayTwoApplies(row, outcome, held)`: `appliesTo`'s `when`/`unless` plus
+  `knew`, a list of clues all of which have to be in the journal. `day2.castle`
+  and `day2.knew` keep the private `appliesTo`; `data/lore.json`'s `since` rows
+  and `data/npcs.json`'s `rumours` pieces both read through the export.
+  `src/lore.js` now imports from `src/mystery.js`, which it did not before, and
+  that is the point: a second copy of a grammar is a second copy that drifts,
+  and the thing being claimed here is that a row means the same in all four
+  places.
+
+  `knew` fails closed. No journal is "holding nothing", so a conditioned row
+  with no clues in hand does not apply, rather than applying to everything.
+
+- **A room at a bell holds a list, and the rail becomes reachability** (#648).
+  The third pool is `rumours`: three pieces, all the guardroom at Lauds, all
+  Dafydd ap Rhys, who is off watch and awake there in every one of the seven
+  endings. Which one he says is the verdict and the journal.
+
+  #592 wrote two rails and conditions made both of them wrong in the same way.
+  *One room at one bell holds one piece* would have refused the pool outright;
+  *a piece by a man a verdict can take out of the castle* would have refused a
+  piece written for the one ending that man survives. Both are now asked once
+  per ending rather than once:
+
+  - **Every piece in a place has to be reachable.** The manager takes the first
+    that applies, so what is refused is a piece an earlier one answers for in
+    every ending and every journal. An unconditioned pool collapses back to the
+    old rail by construction, because a second piece with no `when` and no
+    `knew` is shadowed everywhere by the first, and the shipped break for it
+    still fails: `sermon-vespers-osyth answers for chapel at vespers in every
+    ending and journal this piece claims`.
+  - **Absent in an ending this piece applies to**, not absent in any ending at
+    all. The suite asserts both halves: the roll piece put in the prisoner's
+    mouth is refused, and the same piece under `when: ["nobody"]` is allowed,
+    which is a sentence the old rail could not say.
+
+  The enumeration behind both is exact rather than clever: seven endings times
+  the subsets of the clue ids the pieces in that place name between them. That
+  universe is two subsets today and is sound because a clue no piece there names
+  cannot change any of their answers.
+
+  **A condition at one of the four bells is refused** as well. A verdict is a
+  thing only the morning after has, so `when` on a Sext song can only ever read
+  as "never", and a piece that is silently never played is the failure #13 is
+  about.
+
+- **`tells` is the tie, and it is checked in both directions** (#649). The canon
+  is read by `src/lore.js` and by nothing on the page. A `since` row with
+  nothing saying it out loud is therefore a paragraph in a drawer, and a piece
+  heard where its row does not apply is the castle and the canon saying
+  different things in one play, with nothing on screen to show it. So a row
+  names the piece that carries it, the piece names the fact back in its own
+  `cites` the way a document and a chatter pair already do (#551, #592), and the
+  validator walks every ending and every journal to refuse a piece heard
+  anywhere its row is not true.
+
+  The break that proves it is the one worth having: narrow the row to `when:
+  ["full"]` and leave `rumour-lauds-roll` alone, and the suite says `rumour-
+  lauds-roll is heard after the verdict prisoner holding gaol-dates, which this
+  row does not apply to`. Nothing in the game would have said so.
+
+**Broken on purpose, from a green baseline** (#34). Nine breaks, each reverted,
+green again after. Both baselines were confirmed to exit 0 first.
+
+| Break | Result |
+| --- | --- |
+| `performanceHere` takes `here[0]` instead of the first that applies | `quest` exit 1 on four, including `the guardroom falls past the roll piece to the one about a hanging — rumour-lauds-roll` and `a fall gets the piece about a morning with no rope in it — rumour-lauds-roll` |
+| `_applyDay` never records the ending | `quest` exit 1 on five: the guardroom is silent at Lauds in all three endings |
+| `_pieceApplies` stops reading `state.clues` | `quest` exit 1 on two. `the guardroom at Lauds is the piece keyed on the roll — rumour-lauds-hanged` |
+| the `since` ending vocabulary rail deleted | `lore` exit 1 on `a since row keyed on an ending that does not exist` |
+| the `since` clue vocabulary rail deleted | `lore` exit 1 on two, including the evidence id written where the clue id was meant |
+| the two-file rail deleted | `lore` exit 1 on `a row narrowed without the piece that says it` |
+| the reachability rail deleted | `lore` exit 1 on three, including #592's own shipped break |
+| the absence rail stops reading the piece's conditions | `lore` exit 1 on two, one of them #592's shipped break |
+| `tells` no longer has to be cited back | `lore` exit 1 on `a row naming a real piece that does not cite it` |
+
+**This row ran in a `git worktree`, and it had to.** It was started in the
+shared tree beside rank 3, and rank 3's session held staged changes to
+`BACKLOG.md`, `HISTORY.md`, `ROADMAP.md`, `SPECS.md`, `index.html` and
+`test/built.mjs` while this one was editing `data/` and `src/`. Nothing
+collided in a source file, exactly as the lanes predict (rank 3 has no lane and
+this is lane A), but three things happened anyway that a lane cannot cover:
+
+1. **`npm test` was red for three suites and none of them was this row's.**
+   `lore` and `plan-vs-scene` failed on a `data/scene-config.json` the other
+   session had the `engineer-drawing` slab deleted out of mid-edit; both pass
+   against `HEAD:data/scene-config.json` and were confirmed to. `built` failed
+   on `Port 8127 is already in use`, which is the other session's harness.
+2. **`HEAD` moved under this row five times and the numbers moved twice.**
+   `8732d80`, `7074c07`, `4724f25`, then rank 3 as PR #42, rank 12b as PR #45
+   and rank 10 as PR #43. This entry was **written as #636 to #639, renumbered
+   to #643 to #646, and landed at #646 to #649**. The numbers were read off
+   `origin/main` at write time per #619 and `origin/main` topped out at #633
+   when they were read; rank 12b merged first and took #636 to #642, and then
+   rank 10 merged and took #643 to #645 while this row was rebasing onto them.
+
+   **That is four rows in a row to renumber, and #619's rule stopped none of
+   them.** "Read `HISTORY.md` on `origin/main` when you write the entry" is a
+   rule about a moment, and the moment it names is not the moment that decides:
+   the writing is minutes before the merge and the merge is what allocates.
+   Reading later does not help either, because this row read three times and
+   still moved twice. **The number is decided by merge order and nothing a
+   branch can do changes that**, so the honest shapes are either to take it
+   from the merge itself or to accept the renumber as routine and make it cheap.
+   It is nearly cheap already: 40 references across eleven files, bumped by
+   script in a minute, twice.
+
+   What made both bumps safe is an accident worth not relying on. Rank 12b's
+   range was #636 to **#642** and this row's was #636 to **#639**; rank 10's
+   was #643 to **#645** and this row's by then #643 to **#646**. Both times
+   the two ranges were told apart by their ends. Two rows that had written the
+   same range would have had no automatic way to say which "#636" belonged to
+   whom, and every bare number in prose would have had to be read by hand. That
+   is the same shape as the problem #491 solved once across repos, and it is
+   not solved within one.
+3. A `git checkout` in that tree would have taken this row's uncommitted work
+   with it, which is exactly what #624 to #630 recorded happening to the GPU
+   run.
+4. Rank 12b hit the port collision too and wrote it up from the other side.
+   Two rows finding one defect independently on one afternoon is the clearest
+   evidence yet that the fixed harness port is the next thing to fix.
+
+#602 says a lane is a file. **What this says is that a lane is not enough when
+the two sessions share a working tree**: the tree itself is the resource, and
+`npm test`, `dist/`, the dev server's ports and `HEAD` are all one copy of a
+thing that two rows want. The GPU run's entry called a worktree a GPU-run rule.
+It is not. It is a two-sessions-one-machine rule, and it costs one `git worktree
+add` plus a junction for `node_modules`.

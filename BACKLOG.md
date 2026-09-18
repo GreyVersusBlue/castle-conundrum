@@ -417,7 +417,7 @@ well as by rank, which is what makes that survivable (#522).
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | The castle you cannot walk: pointer lock after an overlay, and a Present nobody can click | ¼ | Opus 5 | Container | — | D | | [The castle you cannot walk](SPECS.md#the-castle-you-cannot-walk) |
 | 2 | The GPU run: the day end to end, and somebody looks at the twelve (the run happened, #624 to #630) | 1 | Opus 5 | Local: GPU | **after 1** | — | | [The GPU run](SPECS.md#the-gpu-run) |
-| 4 | A second day: increment 3, the town half and the bells question | 2+ | Opus 5 | 4a/4b container, 4c local | — | A (4a/4b), B (4c) | | [A second day](SPECS.md#a-second-day) |
+| 4 | A second day: increment 3, the town half and the bells question (4b, the fact that changes, shipped #646 to #649) | 2+ | Opus 5 | 4a container, 4c local | — | A (4a), B (4c) | | [A second day](SPECS.md#a-second-day) |
 | 5 | The hall's covering, and the two windows under it | ¼ | Sonnet 5 | Local: GPU | **after 2** | B | | [The hall covering](SPECS.md#the-hall-covering) |
 | 6 | Life: a populace: the fifty, the activity clips and the ambient talk | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: somebody listens to the seven beds, then a bed at a point, the four bells, event sounds | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
@@ -483,7 +483,7 @@ they were built is specific to this frame.
 
 ## A second day
 
-*Where: 4a and 4b container, 4c local. Gate: none; 4c gates rank 9. Lanes: A (4a, 4b), B (4c).*
+*Where: 4a container, 4c local. Gate: none; 4c gates rank 9. Lanes: A (4a), B (4c). 4b shipped.*
 
 **Rank 4, and a 2+. Increments 1 and 2 shipped on 2026-09-15 and 2026-09-16**
 (#533 to #540) and **increment 3's gaol roll on 2026-09-17** (#571 to #575):
@@ -496,15 +496,20 @@ which is what the King's man says to his face on the morning after. That last
 half is `day2.knew`, three line sets keyed by the journal rather than the
 verdict.
 
+**The fact that changes shipped on 2026-09-17** (#646 to #649), which is the
+third of the three threads the lore row left here when it closed (#596): a
+`since` field on a fact in `data/lore.json`, a third `performances` pool that
+says the changed fact out loud in the guardroom at Lauds, and a validator that
+refuses the two halves to drift. It is the first thing in this game whose
+content, and not only whose line set, turns on what the player found. It
+touched no lane-A file.
+
 **Two threads are left and both wait on something.** The missing 128 sheets
 are in Thomas Wykes's yard, which nobody has placed on the ground the town
 side laid (#541 to #546). A schedule with more than one watch still has to
 argue with #533 rather than work around it. Both of them have somewhere to
-put "the player found this out" now, which neither had before. **And a third
-thread arrived from the lore row when it closed** (#596): a `since` field on a
-fact in `data/lore.json`, so that a fact can change with what the player did
-on day one, which needs second-day state to be about and is this row's
-whenever it takes a fourth increment. `SPECS.md` specs what is left.
+put "the player found this out" now, which neither had before. `SPECS.md`
+specs what is left.
 
 ## The hall covering
 
