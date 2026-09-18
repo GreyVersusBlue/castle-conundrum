@@ -850,6 +850,30 @@ because the map is the plan's list and not a second one.
 (#419); this row is the second body-sourcing question after rank 1's, which
 won its search on 2026-09-17 (#603), at the
 scale of a child, a dog, a chicken and a garrison rather than one woman.
+**The child and the hound shipped on 2026-09-17** (#643 to #645), and the
+section below is kept as written with what shipped noted against each part.
+
+### What shipped
+
+- **The child is the existing rig** (#643), which is the open call below
+  answered the cheap way and seen to hold: `Woman.glb` at 1.15 m with
+  `boneScale: {Head: 1.35}`, `clips: {walk: "Run"}` and `speed: 2.2`, three
+  fields `npc.js` reads off any def and `populaceDefs` passes through. A
+  shrunk `Adventurer.glb` was tried first and is a small bearded man.
+- **The dog is a fifth file** (#644): Quaternius's Ultimate Animated Animal
+  Pack, CC0, `Husky.gltf` re-exported as `assets/NPCs/Hound.glb` with its
+  five materials named (`Coat`, `Coat_Light`, `Nose`, `Eye`, `Eye_White`)
+  and the coat lifted so the tint is the colour, meshopted to 0.63 MB. It
+  has `follow: {radius: 6, keep: 1.8}` and `sniff` and `eat` in
+  `ACTIVITY_CLIPS`; the bark is not in, because a sound is lane E's.
+- **The rails** (#645): `tools/encode-assets.mjs` and `test/assets.mjs`
+  check 5 find bodies through `populace.json` as well as `cast`; the clip
+  check in `test/mystery.mjs` is per person against the body that person
+  wears; the silhouette count below is asserted at 10 shapes off 5 files;
+  and the follow is driven in Node against the real grid with a fake body.
+- **Not shipped**: the chicken, because the Farm Animals pack has no glTF
+  export and the animal pack has no bird; the garrison's spear, because no
+  pack on disk has one; and the GPU look at either (#53).
 
 ### Scope
 

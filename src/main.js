@@ -357,7 +357,7 @@ async function init() {
     if (player.isLocked && player.moving) auto.mark(); // walking: the position is dirty
     for (const npc of npcs) npc.update(dt, camera.position);
     for (const one of folk) one.update(dt, camera.position);
-    populace.update(dt);
+    populace.update(dt, camera.position);
     interaction.update();
     editor?.update();
     for (const fn of brazierUpdates) fn(t);

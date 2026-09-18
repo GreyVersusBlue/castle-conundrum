@@ -35,9 +35,9 @@ import { fileURLToPath } from 'node:url';
 import { validateMystery, createMystery, earliest, shortestPath, freshState, dayTwoOutcomes, dayTwoLines, dayTwoKnew } from '../src/mystery.js';
 import { QuestGraph, validateQuest, validateAgainstNpcs } from '../src/quest-graph.js';
 import { QuestManager, MANAGER_PAIRS } from '../src/quest-manager.js';
-import { makePlan } from '../src/castle-plan.js';
+import { makePlan, EYE_HEIGHT } from '../src/castle-plan.js';
 import { castleNav } from '../src/stations.js';
-import { validatePopulace, ACTIVITY_CLIPS, populaceDefs } from '../src/populace.js';
+import { validatePopulace, ACTIVITY_CLIPS, populaceDefs, Populace } from '../src/populace.js';
 import { partsOf, readGLTF } from './gltf.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -803,34 +803,72 @@ console.log('\nthe household in data/populace.json');
   check(problems.length === 0, 'validatePopulace finds nothing wrong, the castle included', problems.join('; '));
 
   const people = populace.people;
-  check(people.length === 10, `${people.length} of them, which is the first increment's ten (SPECS.md, "Life: a populace")`);
-  /* NO NEW ASSET IN THIS INCREMENT is the row's own promise, and it is one
-   * line to hold rather than a sentence to trust: every body below is a body
-   * one of the twelve already wears. */
+  check(people.length === 12, `${people.length} of them: the first increment's ten (SPECS.md, "Life: a populace"), the child and the hound (#643, #644)`);
+  /* THE FIRST INCREMENT'S PROMISE WAS NO NEW ASSET, and rank 10 is the row
+   * that ends it (#644): the hound is a body nobody in the cast wears. What
+   * holds now is narrower and is stated by kind — every body a populace
+   * person wears is either the cast's or is under assets/NPCs, where
+   * test/assets.mjs's checks 4 and 5 hold it to being referenced and being
+   * meshopt-encoded. */
   const castBodies = new Set(cast.map((n) => n.modelPath));
   const theirs = new Set(people.map((p) => p.modelPath));
-  check([...theirs].every((m) => castBodies.has(m)),
-    `${theirs.size} bodies, every one of them already in npcs.json's cast`,
-    [...theirs].filter((m) => !castBodies.has(m)).join(', '));
-  check(new Set(people.map((p) => p.tint)).size === people.length, 'no two of the ten share a tint');
+  const foreign = [...theirs].filter((m) => !castBodies.has(m));
+  check(foreign.every((m) => m.startsWith('assets/NPCs/')),
+    `${theirs.size} bodies, ${theirs.size - foreign.length} of them the cast's and ${foreign.length} the household's own (${foreign.join(', ') || 'none'})`,
+    foreign.filter((m) => !m.startsWith('assets/NPCs/')).join(', '));
+  check(new Set(people.map((p) => p.tint)).size === people.length, `no two of the ${people.length} share a tint`);
 
   /* A CLIP NAME IS A STRING UNTIL SOMETHING READS THE FILE. ACTIVITY_CLIPS
-   * maps nine jobs onto three Quaternius clips, and `pickClip` in npc.js
-   * matches by name against whatever the loaded .glb happens to ship: a typo
-   * there returns null, `playActivity` gives up, and the body stands in
-   * whatever idle it was already in. That failure looks exactly like success
-   * on screen, so the names are checked against the animation list inside
-   * every body the file actually uses. */
+   * maps each job onto a Quaternius clip, and `pickClip` in npc.js matches
+   * by name against whatever the loaded .glb happens to ship: a typo there
+   * returns null, `playActivity` gives up, and the body stands in whatever
+   * idle it was already in. That failure looks exactly like success on
+   * screen, so the names are checked against the animation list inside the
+   * body each person actually wears.
+   *
+   * PER PERSON, NOT EVERY CLIP AGAINST EVERY BODY (#645). Until the hound
+   * this asked all four human bodies for all nine clips and they all had
+   * them, because they are one rig. The hound's rig has `Eating` and no
+   * `Idle_Sword`, and the guard has the reverse, and neither is a problem
+   * unless somebody writes the serjeant's `muster` onto the dog. So the
+   * question is the one the page will ask: does THIS body have the clip
+   * for every stop THIS person has been given. */
   {
-    const wanted = [...new Set(Object.values(ACTIVITY_CLIPS))];
-    let missing = 0;
-    for (const body of theirs) {
-      const names = new Set((readGLTF(path.join(ROOT, body)).json.animations ?? []).map((a) => a.name));
-      for (const clip of wanted) {
-        if (!names.has(clip)) { fail(`${body} ships no clip called ${clip}, which ACTIVITY_CLIPS maps an activity onto`); missing++; }
+    let missing = 0, pairs = 0;
+    const clipsOf = new Map();
+    for (const p of people) {
+      if (!clipsOf.has(p.modelPath)) clipsOf.set(p.modelPath, new Set((readGLTF(path.join(ROOT, p.modelPath)).json.animations ?? []).map((a) => a.name)));
+      const names = clipsOf.get(p.modelPath);
+      const jobs = new Set();
+      for (const w of mystery.watches) for (const s of p.routine?.[w] ?? []) jobs.add(s.activity);
+      for (const job of jobs) {
+        pairs++;
+        const clip = ACTIVITY_CLIPS[job];
+        if (!names.has(clip)) { fail(`${p.id} does ${JSON.stringify(job)} in ${p.modelPath}, which ships no clip called ${clip}`); missing++; }
       }
     }
-    if (!missing) pass(`${wanted.length} clips behind ${Object.keys(ACTIVITY_CLIPS).length} activities, present in all ${theirs.size} bodies: ${wanted.join(', ')}`);
+    if (!missing) pass(`${pairs} person-and-job pairs, every one a clip the person's own body ships`);
+    /* And the table itself: every clip it names is in SOME body on disk, so a
+     * job nobody has been given yet cannot hide a typo until somebody is. */
+    const anywhere = new Set([...clipsOf.values()].flatMap((s) => [...s]));
+    const orphans = Object.entries(ACTIVITY_CLIPS).filter(([, clip]) => !anywhere.has(clip));
+    check(orphans.length === 0, `${Object.keys(ACTIVITY_CLIPS).length} activities, every clip in at least one body the household wears`, orphans.map(([j, c]) => `${j} -> ${c}`).join(', '));
+  }
+
+  /* THE ROW'S NODE ACCEPTANCE (SPECS.md, "Bodies"): the variation axes that
+   * cost no file — height, a scaled bone, hidden nodes and materials, a held
+   * prop — make more distinct SHAPES than there are body files. Tint is left
+   * out on purpose, because every tint is unique by the check above and
+   * counting it would make this true of one body and thirteen colours. A
+   * silhouette is what tells two people apart across a ward, before colour
+   * does; five files making fewer than six shapes would be five files making
+   * clones. */
+  {
+    const everyone = [...cast, ...people];
+    const shape = (n) => JSON.stringify([n.modelPath, n.modelHeight ?? null, [...(n.hideNodes ?? [])].sort(), [...(n.hideMaterials ?? [])].sort(), n.heldProp ?? null, n.boneScale ?? null]);
+    const shapes = new Set(everyone.map(shape));
+    const files = new Set(everyone.map((n) => n.modelPath));
+    check(shapes.size > files.size, `${shapes.size} silhouettes off ${files.size} body files, across the cast and the household`);
   }
 
   /* The defs the page builds NPCs from: a label rather than an offer, and no
@@ -911,6 +949,23 @@ console.log('\nthe household validator rejects');
   expect('a routine naming a bell that is not one of the four',
     (f, people) => { of(people, 'carter').routine.matins = [{ room: 'outer-ward', tile: [-8.438, -1.188], activity: 'wait' }]; },
     /^carter: routine names "matins", which is not one of the four bells$/);
+  /* RANK 10's THREE FIELDS AND THE FOLLOW (#643, #644), each in the shape
+   * that fails silently on screen rather than the shape that throws. */
+  expect('a bone scaled to nothing',
+    (f, people) => { of(people, 'well-girl').boneScale = { Head: 0 }; },
+    /^well-girl: boneScale\.Head is 0, not a positive number$/);
+  expect('a speed of zero, which is a body that never arrives',
+    (f, people) => { of(people, 'well-girl').speed = 0; },
+    /^well-girl: speed 0 is not a positive number of m\/s$/);
+  expect('a clip override that is not a name',
+    (f, people) => { of(people, 'hound').clips = { walk: 3 }; },
+    /^hound: clips is not an object of npc\.js clip key to clip name$/);
+  expect('a follow with no radius',
+    (f, people) => { of(people, 'hound').follow = { keep: 2 }; },
+    /^hound: follow needs a positive radius and keep, in metres$/);
+  expect('a follow that keeps further off than it notices from',
+    (f, people) => { of(people, 'hound').follow = { radius: 2, keep: 3 }; },
+    /^hound: follow\.keep 3 is not inside follow\.radius 2, so it would never set off$/);
   expect('a room that is not a room',
     (f, people) => { of(people, 'carter').routine.terce[0].room = 'brewhouse'; },
     /^carter at terce, stop 1: room "brewhouse" is not a room in mystery\.json$/);
@@ -920,6 +975,71 @@ console.log('\nthe household validator rejects');
    * its message in a list that was never empty (#34). */
   check(validatePopulace(clone(populace), { nav, mystery, cast }).length === 0,
     'and a clone of the real file with nothing changed still validates, so each break above is the only thing wrong with its copy');
+}
+
+/* ------------------------------------------ 8c: the hound follows (#644) ---
+ * `Populace` has no three.js in it on purpose (#616), and this is the first
+ * thing that cashes that in: the driver is run here against the real grid
+ * with a body that is a plain object, and what is asserted is where the
+ * driver told it to walk. The GPU question — does a dog trotting to heel read
+ * as a dog — is `npm run play`'s (#53). This is the grid question: does it
+ * take the grid to get there, stop short, and go home.
+ */
+console.log('\nthe hound follows the player, on the grid, and goes back');
+{
+  const fake = (id) => {
+    const npc = {
+      id, walking: false, walks: [], placed: [], faced: 0, played: [],
+      group: { visible: true, position: { x: 0, y: 0, z: 0 } },
+      walkTo(points) { this.walks.push(points); this.walking = points.length > 1; if (points.length) { const last = points[points.length - 1]; this.group.position.x = last.x; this.group.position.z = last.z; this.group.position.y = last.h ?? 0; } },
+      placeAt({ x, y = 0, z }) { this.group.position.x = x; this.group.position.y = y; this.group.position.z = z; this.placed.push([x, z]); this.walking = false; },
+      playActivity(a) { this.played.push(a); },
+      facePlayer() { this.faced++; },
+    };
+    return npc;
+  };
+  const dog = populace.people.find((p) => p.follow);
+  check(!!dog, 'somebody in the household has a `follow`', 'nobody does');
+  if (dog) {
+    const npc = fake(dog.id);
+    const folk = new Populace({ people: [dog], npcs: [npc], nav });
+    folk.setWatch('prime', { walk: false });
+    const home = { x: npc.group.position.x, z: npc.group.position.z };
+    const stop = folk.bodies[0].stops[0];
+    check(Math.abs(home.x - stop.x) < 1e-9 && Math.abs(home.z - stop.z) < 1e-9, 'placed at its first Prime stop with no walk (a load)');
+
+    // The player four metres away on the same floor, along the ward: inside
+    // radius, outside keep.
+    const player = { x: stop.x + 4, y: stop.h + EYE_HEIGHT, z: stop.z };
+    const reach = nav.walkable({ x: player.x, z: player.z, level: 0 });
+    check(reach, 'the spot four metres east of that stop is floor the grid can route to', `${player.x}, ${player.z}`);
+    folk.update(0.016, player);
+    const walk = npc.walks[0];
+    check(!!walk && walk.length > 1, 'one frame later it has been sent along a route', `walks: ${npc.walks.length}`);
+    if (walk) {
+      const last = walk[walk.length - 1];
+      const short = Math.hypot(player.x - last.x, player.z - last.z);
+      check(short > dog.follow.keep - 1e-9 && short < dog.follow.keep + 0.75,
+        `the route stops ${short.toFixed(2)} m short of the player, just outside keep ${dog.follow.keep}`);
+      // Every cell of the route is a cell of the grid: a dog that took the
+      // doorway, not the wall.
+      check(walk.every((c) => !!nav.walk.cellAt(c.x, c.z, c.level ?? 0)), 'and every point on it is a walk-grid cell');
+    }
+    // Having arrived (the fake walks the whole route in one call), the next
+    // frame turns it to face them and holds it there.
+    npc.walking = false;
+    folk.update(0.016, player);
+    check(npc.faced > 0 && npc.played.at(-1) === 'wait', 'arrived, it faces the player and waits');
+
+    // The player walks off across the castle: back to the stop it left.
+    folk.update(0.016, { x: stop.x + 40, y: player.y, z: stop.z });
+    const back = npc.walks.at(-1);
+    const end = back?.at(-1);
+    // A route ends on a cell centre and a stop is a tile point, and the two
+    // are 0.002 m apart here; `_arrive` snaps the last step.
+    check(!!end && Math.abs(end.x - home.x) < 0.05 && Math.abs(end.z - home.z) < 0.05 && npc.walks.length >= 2,
+      'and when they are gone it is routed back to the stop it left', end ? `${end.x}, ${end.z}` : 'no walk');
+  }
 }
 
 /* ---------------- the HUD's room line agrees with the schedule (#515) ---
