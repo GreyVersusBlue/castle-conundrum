@@ -174,14 +174,18 @@ rank 2's alone.
     can see it. Stand on the North-west Tower's roof and look east.
   - **Seven trusses over the Great Hall** (#527). Whether
     `structure-cross.glb` stretched to 0.5 x 2.5 x 7.25 reads as a hammerbeam
-    or as scaffolding is the open question, and the answer decides whether the
-    covering row (rank 5) is worth taking at all.
+    or as scaffolding is the open question. Answered from inside the hall once
+    the covering (rank 5) went on top of them rather than from this run,
+    which never reached Vespers (#656 to #658): a continuous slate ceiling,
+    no gap to the sky.
   - **A phone** (#530). The stick throw, the sprint threshold, the look rate,
     the E button's size and the two render numbers are all guesses. One session
     with a real thumb settles six constants.
-  - **A luma read off the Great Hall's floor** the way #438 read the wall, for
-    the covering row's baseline: what the hall measures OPEN is the number the
-    covered hall has to be compared against.
+  - ~~A luma read off the Great Hall's floor~~, for the covering row's OPEN
+    baseline. Overtaken: rank 5 shipped without this run reaching Vespers,
+    reading the COVERED floor directly instead (69.8 to 89.8 of 255, #656 to
+    #658) rather than comparing it against an open-sky number this run never
+    produced.
   - **The gaol roll on the guardroom barrels** (#571). A fifth, added on
     2026-09-17. `npm run play` does not enter the North-west Tower and no beat
     was written for it, so this one is a detour rather than a beat: walk into
@@ -391,59 +395,6 @@ did not move and the version is still 6.
 - #649: a `since` row has to be told, and told only where it is true. A row
   with no `tells`, or a piece heard in an ending its row does not cover, is a
   failure and not a warning.
-
----
-
-## The hall covering
-
-**Rank 5. Size ¼.** #527 put seven trusses across the Great Hall at 8 m and
-#528 left the space between them open, because neither half of a covering can
-be judged from this container. This row is both halves, for a session with a
-GPU.
-
-### Scope
-
-- **`data/scene-config.json`.** Kit `roof*.glb` pieces over the trusses, as
-  `courtyard.placements` with `roofs: "great-hall"`, `noCollide: true` and a
-  per-axis `scale` — all three already exist (#527). The hall is 28 x 8 m, so
-  a 4 m module is 7 x 2 pieces; which piece and which way it slopes is the
-  question, and it is answered by rendering one and looking.
-- **Two `doorway` entries on `great-hall-north` at `base` 5**, the way Lady
-  Alys's window is written (#453). `runBoxes` cuts them already and each cut
-  adds a sill surface, which `data/sounds.json` already answers for.
-- **Nothing in `src/`.** `layout.mjs` check 14 holds a covering exactly as it
-  holds a truss.
-
-### Acceptance
-
-- Check 14 green with the covering in place, and broken once more on it.
-- A screenshot from inside the hall at Vespers, and a **luma read off the
-  floor** the way #438 read the wall. Under about 25 of 255, a second brazier
-  at the hall's east end is one config line, and the windows are the other
-  lever.
-- The south walk still walkable end to end (`layout.mjs` 6b).
-
-### Open calls
-
-- **Which roof piece.** `roof.glb`, `roof-side.glb`, `roof-high-side.glb` and
-  `roof-edge.glb` all measure 1 x 1 x 1 (or 1 x 0.5 x 1) with every part
-  filling the same box, so the kit's own screenshots or one render answer this
-  and nothing in Node can.
-- **Windows first, or the covering first?** Recommend **the covering first,
-  then measure, then the windows if the number says so.** Two windows added
-  against a hall that turns out to be bright enough are two holes in a wall
-  for nothing.
-
-### Dependencies
-
-- **The GPU run** is what unblocks this; both criteria are a render.
-
-### Constraints
-
-- #427 (`noCollide` is all or nothing).
-- #438 (measure the pixel).
-- #411 (kit for shapes the maps lack).
-- #53, #528 (what a covered hall looks like is not a CI question).
 
 ---
 
@@ -972,8 +923,9 @@ section below is kept as written with what shipped noted against each part.
 
 **Rank 11. Size 2+. The first increment's Node half shipped on 2026-09-17**
 (#650 to #654). `WISHLIST.md` theme 7. Every item in it is "a thing a
-GPU decides," gated on `npm run play` the same way **The hall covering**
-already is.
+GPU decides," gated on `npm run play` the same way rank 5's hall covering was
+— until it shipped by rendering the hall directly rather than waiting on
+`npm run play` to reach it (#656 to #658).
 
 ### What shipped, in one paragraph
 

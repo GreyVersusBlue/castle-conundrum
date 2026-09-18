@@ -57,8 +57,10 @@ what is still open in it is in `WISHLIST.md`, theme 3.
 **The Great Hall's roof frame shipped on 2026-09-15** (#527 and #528): seven
 trusses across the hall at 8 m, and no covering over them, because nothing in
 a container that cannot render can tell which way a kit roof piece slopes or
-whether a covered hall goes dark. The covering is rank 5 below, behind the GPU
-run.
+whether a covered hall goes dark. **The covering shipped on 2026-09-17**
+(#656 to #658): seven `roof.glb` pieces, rendered and read rather than
+guessed at, and a floor bright enough at Vespers to leave the two windows
+uncut.
 
 **The line between the two plan suites was drawn on 2026-09-15** (#529):
 `layout.mjs` is every fact derivable from the plan in Node, `plan-vs-scene.mjs`
@@ -269,11 +271,13 @@ The gaol roll on the barrel-head (#571). A body at interact range, and what a
 tower roof actually looks like from on top of it, which is mostly parapet.
 
 **Not settled, and rank 2 stays open for it.** The day does not yet run end to
-end, so there is no `twelve-at-vespers`, no shot of the seven trusses from
-under them (#527) and no luma read off the hall floor (#438) — which is what
-rank 5 is waiting on, so **that gate is still shut**. The Lauds sky (#533) is
-past where the run reaches. Nobody has put a thumb on a phone (#530); that
-half is untouched and is still the feel.
+end, so there is no `twelve-at-vespers` shot of a real run's own lighting.
+Rank 5 turned out not to need it — the hall's covering and its floor's luma
+read came from rendering the hall directly rather than from playing to
+Vespers (#656 to #658) — so that particular gate is answered a different way
+than the one this row named. The Lauds sky (#533) is past where the run
+reaches. Nobody has put a thumb on a phone (#530); that half is untouched and
+is still the feel.
 
 **And the run found the thing it exists to find.** Rank 1 below is a castle you
 cannot walk in after you open the journal, and it is a bug in `src/`, not in
@@ -349,14 +353,19 @@ the row.
 - **Local: audio.** Needs speakers and a person. Rank 7 only, and only for the
   judgement — the assignment and the cross-fade are a container's.
 
-**Gate.** What must have shipped before the row can start. **There are four
-hard gates on the whole list** and everything else is preference:
+**Gate.** What must have shipped before the row can start. **There were four
+hard gates on the whole list; two of them turned out to be softer than
+written down.** Ranks 3 and 5 both named "rank 2" as their gate when what they
+actually needed was *a render*, not specifically the one `npm run play`'s day
+would have produced, and both shipped on 2026-09-17 without rank 2 reaching
+the end of its day (#634, #635, #656 to #658). The lesson, for the two gates
+still standing: name the render a row needs, not the row that happens to
+produce one.
 
-1. **Rank 2 before rank 3.** The images come out of that run; there is no
-   other source.
-2. **Rank 2 before rank 5.** Both of the hall covering's criteria are a
-   render: which way a kit roof piece slopes, and whether a covered hall goes
-   dark.
+1. ~~Rank 2 before rank 3.~~ Shipped from a fallback frame instead (#634,
+   #635).
+2. ~~Rank 2 before rank 5.~~ Shipped by rendering the hall directly instead
+   (#656 to #658).
 3. **Rank 2 before rank 11 ships past its Node acceptance.** The row's own
    spec says nothing in it goes past a `snap` and a sentence until the run has
    happened.
@@ -402,23 +411,24 @@ format, which is all that is left of the row.
 
 ## The ranked table
 
-**It started at 2 and has a 1 again, and now has a gap at 3 too.** The first
-rank 1 shipped on 2026-09-17 and its number was retired rather than reused
-(#619); the rank 1 below is a different row, opened the same day by what the
-GPU run found (#624 to #630). That is the retirement rule working as intended
-rather than against it: a rank is a priority and not an id, so the number
-came back to the top of the list when something belonged there. Rank 3
+**It started at 2 and has a 1 again, and now has gaps at 3 and 5 too.** The
+first rank 1 shipped on 2026-09-17 and its number was retired rather than
+reused (#619); the rank 1 below is a different row, opened the same day by
+what the GPU run found (#624 to #630). That is the retirement rule working as
+intended rather than against it: a rank is a priority and not an id, so the
+number came back to the top of the list when something belonged there. Rank 3
 shipped the same day, from a fallback source rather than the shot the spec
-asked for (#634, #635), and its number is gone the same way rank 1's first
-use is. Every row below is named by title in `SPECS.md` and `ROADMAP.md` as
-well as by rank, which is what makes that survivable (#522).
+asked for (#634, #635), and rank 5 shipped the same day too, by rendering the
+hall directly rather than waiting on a second GPU run to reach Vespers (#656
+to #658) — both numbers are gone the same way rank 1's first use is. Every row
+below is named by title in `SPECS.md` and `ROADMAP.md` as well as by rank,
+which is what makes that survivable (#522).
 
 | Rank | Item | Size | Model | Where | Gate | Lane | Claimed | Detail |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | The castle you cannot walk: pointer lock after an overlay, and a Present nobody can click | ¼ | Opus 5 | Container | — | D | | [The castle you cannot walk](SPECS.md#the-castle-you-cannot-walk) |
 | 2 | The GPU run: the day end to end, and somebody looks at the twelve (the run happened, #624 to #630) | 1 | Opus 5 | Local: GPU | **after 1** | — | | [The GPU run](SPECS.md#the-gpu-run) |
 | 4 | A second day: increment 3, the town half and the bells question (4b, the fact that changes, shipped #646 to #649) | 2+ | Opus 5 | 4a container, 4c local | — | A (4a), B (4c) | | [A second day](SPECS.md#a-second-day) |
-| 5 | The hall's covering, and the two windows under it | ¼ | Sonnet 5 | Local: GPU | **after 2** | B | | [The hall covering](SPECS.md#the-hall-covering) |
 | 6 | Life: a populace: the fifty, the activity clips and the ambient talk | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: somebody listens to the seven beds, then a bed at a point, the four bells, event sounds | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
 | 8 | Side quests: the seven errands left of the dozen | 2+ | Opus 5 | Container | — | A | | [Side quests](SPECS.md#side-quests) |
@@ -458,15 +468,26 @@ red, and works around both so the rest of the day can be played.
 **Rank 2. The run happened on 2026-09-17** (#624 to #630) and the row stays
 open because the day does not reach the end yet. What it costs to get there is
 now a known list rather than a guess: rank 1 above, and a walker that still
-wanders onto a stair (#630). **What is still unanswered is the visual half** —
-`twelve-at-vespers` with six in the Great Hall, the seven trusses from under
-them (#527), and the luma read off the hall floor (#438). Rank 5 waits on
-exactly those, and the beats that take them are written and in the file;
-nothing reaches them.
+wanders onto a stair (#630). **What is still unanswered is `twelve-at-vespers`
+itself** — six of the twelve in the Great Hall, lit by a real day's run rather
+than a scripted one — and the beat that takes it is written and in the file;
+nothing reaches it yet.
 
 Settled by the run and not open any more: the compressed textures (#507) look
 right on a real GPU, the three flights to a tower roof at 12 m are walkable
 (#523), and the gaol roll reads on the barrel-head (#571).
+
+**Rank 5 shipped the same day, without waiting for a second run** (#656 to
+#658). The gate below named this row's blocker as "the visual half" of rank
+2, but the two things rank 5 actually needed — which way a kit roof piece
+slopes, and whether the covered hall reads as dark — turned out to be
+answerable by rendering the hall directly (`window.__quest.applyWatch`
+puts the world at Vespers without ringing three bells) rather than by
+waiting on `npm run play` to walk there. `roof.glb` turned out to be a whole
+ridge-and-both-slopes cross-section rather than the single-pitch piece
+`SPECS.md` guessed at, so the covering is seven pieces, not fourteen. The
+floor read 69.8 to 89.8 of 255 across the hall's length, well clear of the
+~25 line; no second brazier or window cut.
 
 **Rank 3 shipped the same day, and not from the shot this spec meant** (#634,
 #635). The old board preview and og card in `tools-and-games` were from before
@@ -510,20 +531,6 @@ side laid (#541 to #546). A schedule with more than one watch still has to
 argue with #533 rather than work around it. Both of them have somewhere to
 put "the player found this out" now, which neither had before. `SPECS.md`
 specs what is left.
-
-## The hall covering
-
-*Where: local, GPU. Gate: after rank 2. Lane: B.*
-
-**Rank 5.** The Great Hall has seven trusses over it since #527 and nothing
-between them. The kit's `roof*.glb` pieces would cover it, and two windows at
-`base` 5 in `great-hall-north` would keep the daylight the covering takes
-away. Both halves need somebody to look: nothing in a container that cannot
-render can tell which way a kit roof piece slopes (`partsOf` gives all four of
-`roof.glb`'s parts the same 1 x 1 x 1 box), and whether a covered hall is dark
-is a luma read off a real render (#438). Six of the twelve stand in this room
-at Vespers and the accusation is made there, which is why #528 would not guess
-at it.
 
 ## Life: a populace
 

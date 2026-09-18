@@ -5970,3 +5970,89 @@ version is a port taken from the environment or picked free at listen time,
 which is a change every suite's constant would have to come out for. Written
 down rather than scrolled past, which is the mistake #618 is an example of and
 #633 is the correction to.
+
+## Rank 5, the hall covering: seven pieces, not fourteen, and a floor bright enough to leave alone (2026-09-17)
+
+**Ranked row 5, on `claude/r5-hall-covering`, lane B, in a `git worktree`**
+(#624's own rule, since rank 5 needed to look and look again while other
+sessions kept the main tree moving). `SPECS.md` guessed a 4 m module as two
+single-pitch pieces, 7 x 2; a render says otherwise, and the row's own
+`Dependencies` line — "the GPU run is what unblocks this" — turned out to
+name the wrong half of rank 2. The run that shipped (#624 to #630) never
+reached Vespers, so this row could not wait for it and instead rendered the
+hall itself, directly. Decisions #656 to #658.
+
+- **`roof.glb` is the whole cross-section, ridge and both slopes, in one
+  piece — not a single-pitch wedge that needs a mate** (#656). `partsOf`
+  reports all four `roof*.glb` files as the same 1 x 1 x 1 box (BACKLOG.md
+  said so and was right that Node cannot break the tie), but `test/gltf.mjs`'s
+  `triangles()` reads every vertex, not just the box, and the shape does not
+  need a screen to read once the numbers are in front of you: `roof.glb`'s
+  unique points sit at `y=0..0.1` for `x=-0.5` AND `x=+0.5`, and at `y=1` for
+  `x=0` — low at both edges, a peak in the middle, symmetric. `roof-side.glb`
+  and `roof-high-side.glb` are the single-pitch pieces the spec guessed at
+  (low at `x=-0.5`, a *vertical* face at `x=+0.5` running the piece's full
+  rise) — meant to butt against something taller, not to pair with a mirror
+  of themselves across a ridge. One `roof.glb` per 4 m truss bay, rotated 90
+  degrees so the slope runs across the hall's 8 m width instead of along its
+  28 m length, `scale: [7.25, 2.5, 4]`, covers the full truss-to-truss span in
+  a single piece: seven pieces, not fourteen. Confirmed twice — once
+  numerically (a piece's world-transformed vertices read back at exactly
+  `y=8` at `z=6` and `z=13.25` and `y=10.5` at `z=9.625`, the trusses' own
+  ridge line) and once visually, aimed down the hall's length pitched up
+  0.72 rad from `[-30.5, 10]` the way `test/play-castle.mjs`'s
+  `the-hall-trusses` beat does: a continuous slate ceiling, no gap to the sky,
+  no seam that reads as two games stitched together.
+
+- **Bay 1's west edge is narrower than the other six — 3.7 m, not 4 — because
+  the full width, grown by `BODY_RADIUS`, reached a walk deck the trusses
+  never do** (#657). `test/layout.mjs` check 14 failed once, cleanly:
+  `hall-roof-1 blocks 16 reachable cell(s), the first at (-34.25, 5.75)
+  standing at 8.00 on west-curtain-south-walk`. The trusses are 0.5 m wide at
+  each bay's centre and never reach the hall's actual west wall at x -34; a
+  4 m-wide covering piece does, and `west-curtain-south-walk`'s own cells run
+  from x -35.75 to -34.25 at the same y=8 the covering's eave sits at, 0.25 m
+  outside the room's own boundary — close enough that the check's 0.45 m
+  `BODY_RADIUS` margin reaches it. A 0.2 m narrowing (`box.min.x` at -33.8)
+  still landed exactly on the grown boundary and still failed; -33.7 clears
+  it with a hair of margin. The other six bays are untouched — none of them
+  reaches within a body's width of any wall the trusses did not already
+  clear.
+
+- **The floor, measured at Vespers with all six of the hall's cast in place,
+  reads well clear of the line SPECS.md drew** (#658). The run that would
+  have supplied this shot stalled two watches short of Vespers (#630), so
+  this reading did not wait for a second one: `window.__quest.applyWatch(
+  'vespers', { walk: false })` puts the sky, the evidence and all twelve
+  where Vespers has them without ringing a bell three times over, the same
+  world-state call `main.js` itself makes when a save resumes mid-day.
+  Framed the shot the way `test/play-castle.mjs`'s `the-hall-floor-open` beat
+  does — `[-30.5, 10]`, pitched -1.0 — and read mean luma off the live
+  render the same way #438 did, `0.2126 R + 0.7152 G + 0.0722 B` over a
+  region of raw pixels. **The dev server's own render loop is `rAF`-gated and
+  the Browser pane was not always foregrounded while this ran**, so a bare
+  `getImageData` on the canvas came back all zeros more than once —
+  `gl.readPixels` right after a forced, synchronous `renderer.render(scene,
+  camera)` on the SAME canvas and WebGL context (imported straight from
+  Vite's own `/node_modules/three/build/three.module.js` URL, tone mapping
+  and shadow settings copied by hand from `scene-setup.js` so the reading
+  matches what a player actually sees) sidesteps needing the animation loop
+  to be running at all. Three points along the hall's length — the west end,
+  a middle bay, the east end — read 69.8, 89.8 and 88.6 of 255, all several
+  times SPECS.md's ~25 line.
+
+  **Hiding the seven covering pieces and re-measuring the same three points
+  changed nothing, to two decimal places.** Not a bug: the sun's shadow
+  camera is real (`scene-setup.js`'s `sun.castShadow = true`, frustum -40 to
+  40) and toggling `castShadow` on the covering along with its visibility
+  confirmed the same null result, but an 8 m-tall wall either side of an 8 m
+  -wide hall already shadows the floor from a sun at this castle's elevation
+  whether or not anything sits above it — the covering was never the thing
+  standing between this floor and direct sun. What is lighting it is the
+  hemisphere fill and the hall's own braziers, neither of which the covering
+  touches. **No second brazier and no window cut, on this reading**: the
+  open call in `SPECS.md` recommended measuring before cutting a hole in a
+  wall for nothing, and the number says the hole is not needed. `layout.mjs`
+  check 14 green (7 pieces, each 8.00 m or more over its floor, none in a
+  reachable head band), check 6b unaffected, `npm test` thirteen suites
+  green. `npm run play` not run — no `src/` changed (#53).
