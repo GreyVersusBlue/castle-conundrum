@@ -1615,6 +1615,95 @@ const pieceOf = (id) => Object.values(performances).flat().find((e) => e.id === 
   check(r.ui.captions.join(' ').includes('Cadeyrn'), 'which is the works\' own saint over a grave that is filled, and not yesterday\'s', r.ui.captions.at(-1));
   check(r.ui.captions.every((c) => c.startsWith('Father Anselm:')), 'every line of it in the chaplain\'s mouth');
 }
+/* ------------------------------------ what the castle says about the player ---
+ * The `rumours` pool (#648). Three pieces, one room, one bell: the guardroom
+ * at Lauds. Which of the three Dafydd says is the verdict the player reached
+ * and the journal he carried into the morning, which makes it the first thing
+ * in this game whose CONTENT, and not only whose line set, is keyed on what
+ * the player found rather than on what he said.
+ *
+ * The order in data/npcs.json is load-bearing and src/lore.js is what holds it
+ * (a piece an earlier one answers for everywhere is refused there). What is
+ * asserted here is the other half: that the manager reads that order, and that
+ * the same castle, walked two ways, says two different things in one room.
+ */
+console.log('\nthe guardroom at Lauds: what is being said about you');
+
+/** The shortest road to a verdict and the morning after it, per the beat above. */
+function morningAfter(r, who, clues = []) {
+  r.talk('constable');
+  r.ring();
+  r.talk('constable');
+  r.ui.say(who, clues);
+  r.ui.restart();
+  return r;
+}
+
+{
+  // DAY ONE IS QUIET IN THERE, at every one of the four bells. A rumour is
+  // about a verdict and there is no verdict yet.
+  const r = performRig();
+  for (let i = 0; i < 4; i++) {
+    r.qm.handleEnter('guardroom', 0);
+    check(r.qm.performing === null, `the guardroom at ${r.engine.watch} is a guardroom and not a chorus`, r.qm.performing?.id);
+    if (i < 3) r.ring();
+  }
+}
+{
+  // THE SMITH HANGED AND THE ROLL WAS READ. The sharpest of the three, and the
+  // only one a player can miss by not doing the work.
+  const r = performRig();
+  r.examine('gaol-roll');
+  check(r.engine.state.clues.includes('gaol-dates'), 'the roll is off the barrel-head and the dates are in the journal', r.engine.state.clues.join(', '));
+  morningAfter(r, 'prisoner', []);
+  r.qm.handleEnter('guardroom', 0);
+  check(r.qm.performing?.id === 'rumour-lauds-roll', 'the guardroom at Lauds is the piece keyed on the roll', r.qm.performing?.id);
+  r.tick();
+  check(r.ui.captions.every((c) => c.startsWith('Dafydd ap Rhys:')), 'every line of it in the sentry\'s mouth');
+  check(r.ui.captions.join(' ').includes('And then you went up to the Constable and you said the smith'), 'and it says back to the player what the player did', r.ui.captions.at(-1));
+}
+{
+  // THE SAME VERDICT, THE ROLL NEVER TOUCHED. Same room, same bell, same
+  // sentry, different piece: the narrow one does not apply and the general one
+  // underneath it does.
+  const r = performRig();
+  check(!r.engine.state.clues.includes('gaol-dates'), 'nothing read, nothing in the journal');
+  morningAfter(r, 'prisoner', []);
+  r.qm.handleEnter('guardroom', 0);
+  check(r.qm.performing?.id === 'rumour-lauds-hanged', 'the guardroom falls past the roll piece to the one about a hanging', r.qm.performing?.id);
+  r.tick();
+  check(!r.ui.captions.join(' ').includes('I watched you read them'), 'and says nothing about a roll this player never lifted');
+}
+{
+  // NOBODY HANGED. The third piece, and the one ending the other two exclude.
+  const r = performRig();
+  morningAfter(r, 'nobody', []);
+  r.qm.handleEnter('guardroom', 0);
+  check(r.qm.performing?.id === 'rumour-lauds-nobody', 'a fall gets the piece about a morning with no rope in it', r.qm.performing?.id);
+  r.tick();
+  check(r.ui.captions.join(' ').includes('No rope, no hole in the ground, no name read out'), 'which says so in the first breath', r.ui.captions.at(-1));
+}
+{
+  // ONCE, LIKE EVERY OTHER PIECE (#594), and the place goes quiet after it
+  // rather than falling through to the next piece written under it.
+  const r = performRig();
+  morningAfter(r, 'prisoner', []);
+  r.qm.handleEnter('guardroom', 0);
+  r.tick();
+  const said = r.ui.captions.length;
+  r.qm.handleEnter('outer-ward', 0);
+  r.qm.handleEnter('guardroom', 0);
+  check(r.qm.performing === null && r.ui.captions.length === said, 'back into the guardroom and Dafydd has finished, and the other two rumours do not take their turn', `${r.qm.performing?.id} / ${r.ui.captions.length} vs ${said}`);
+}
+{
+  // THE CHAPEL STILL GETS ITS SERMON on the same morning, which is the check
+  // that a place holding three pieces did not change what a place holding one
+  // does.
+  const r = performRig();
+  morningAfter(r, 'prisoner', []);
+  r.qm.handleEnter('chapel', 0);
+  check(r.qm.performing?.id === 'sermon-lauds-cadeyrn', 'the chapel at Lauds is the sermon it always was', r.qm.performing?.id);
+}
 {
   // A MANAGER GIVEN NO POOL IS A CASTLE WHERE NOBODY PERFORMS, which is what
   // every other beat in this file has been running in.

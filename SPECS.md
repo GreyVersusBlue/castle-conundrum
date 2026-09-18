@@ -222,8 +222,9 @@ rank 2's alone.
 ## A second day
 
 **Rank 4. Size 2+. Increments 1 and 2 shipped on 2026-09-15 and 2026-09-16
-(#533 to #540, PRs #16 and #18), and increment 3's gaol roll on 2026-09-17
-(#571 to #575).** The morning after exists, the castle knows about it, and
+(#533 to #540, PRs #16 and #18), increment 3's gaol roll on 2026-09-17
+(#571 to #575) and increment 3's fact that changes the same day (#646 to
+#649).** The morning after exists, the castle knows about it, and
 it now knows one thing about the player as well as about the verdict: one
 watch (`lauds`), thirteen stations, sixty line sets keyed by what the player
 said and three keyed by what he read, seven closing panes, a thirteenth cast
@@ -288,7 +289,7 @@ players with the same verdict and different journals.
 
 ### Increment 3: what is left
 
-Two threads, and both want something this repo has not got.
+One thread, and it wants something this repo has not got.
 
 - **It needs a town to walk to.** The lead is in Thomas Wykes's yard and the
   yard is outside the west barbican. The town side shipped (#546): there is
@@ -302,21 +303,45 @@ Two threads, and both want something this repo has not got.
   against one day. The cheapest shape that does not is `day2.watches`, its own
   list, with the engine reading whichever list the day says.
 
-- **And it inherited a fact that changes** (#596). The lore row closed with
-  one piece unbuilt and this is where it went: a `since` field on a fact in
-  `data/lore.json`, and a rumour about what the player did on day one, so that
-  the canon can say something different on the morning after. It needs
-  second-day state to be about, which is why it was never rank 8's to start;
-  `day2.knew` (#575) and the seven endings are that state. The shape to beat:
-  a fact carries `since: {ending?, knew?}` with the same `when`/`unless`
-  grammar `day2.castle` and `day2.knew` already share, and `validateLore`
-  refuses a `since` naming an ending or a clue the mystery has not got. What
-  it costs is one more pool for the caption band (#592) or one more line set;
-  it does not need a new UI.
-
 Both of the threads above now have somewhere to put "the player found this
 out", which neither had before `day2.knew` (#575): a lead found in the yard is
 a clue, and a clue is what a `knew` row is keyed on.
+
+### What increment 3's fact that changes shipped (#649 to #649)
+
+The third thread the lore row left behind when it closed (#596), and the one
+that needed second-day state to be about. It touched no lane-A file: the key
+did not move and the version is still 6.
+
+- **`data/lore.json`**: a fact may carry `since`, a list of
+  `{when?, unless?, knew?, tells, text, why}` rows on the shared grammar, the
+  first that applies replacing the fact's `text`, and never the only text a
+  fact has (#646, and #573's rule pointed at the canon). One fact uses it,
+  `the-clerk-who-asked`, a `rumour` about the player: what the castle decided
+  a man from Caernarfon who spent a day asking had been doing.
+- **`src/mystery.js`**: `dayTwoApplies(row, outcome, held)` exported, the
+  private `appliesTo` plus `knew` (#647). `day2.castle` and `day2.knew` keep
+  the private one; the canon and the pool below read the export, so there is
+  one grammar rather than three copies of one.
+- **`data/npcs.json`**: a third `performances` pool, `rumours`, three pieces
+  in the guardroom at Lauds, all Dafydd ap Rhys, keyed by the verdict and by
+  the journal (#648). **A place now holds a list and the first applicable piece
+  wins**, so #592's "one room at one bell holds one piece" became "every piece
+  in a place is reachable", and its "a piece by anybody a verdict may take"
+  became "absent in an ending this piece applies to". Both are enumerated
+  exactly: seven endings times the subsets of the clue ids the pieces name.
+- **`src/quest-manager.js`**: `performanceHere` picks the first applicable,
+  `_dayOutcome` is recorded in `_applyDay` before `applyWatch` performs, and
+  the journal is read live off the engine.
+- **`src/lore.js`**: `factText`, and the `since` rails. A row may not name an
+  ending or a clue the mystery has not got, may not apply to nothing, may not
+  restate the fact, and **has to be told and told only where it is true**:
+  `tells` names the piece, the piece cites the fact back, and the validator
+  walks every ending and journal to refuse a piece heard where its row does not
+  apply (#649).
+- **Suites**: `test/lore.mjs` section 10, 27 assertions; `test/quest.mjs`'s
+  guardroom-at-Lauds section, 15. Nine breaks from a green baseline, in
+  `HISTORY.md`.
 
 ### What is left after increment 3
 
@@ -330,9 +355,11 @@ a clue, and a clue is what a `knew` row is keyed on.
 - Increment 3's town half no longer waits on Poly Haven access (#546); it
   waits on someone placing Thomas Wykes's yard on the ground the town side
   built.
-- **Do not run alongside anything else that touches `save.js`.** The gaol
-  roll did not have to: the journal day two reads is `state.clues`, which the
-  save already carried, so the key and the version did not move (#571, #573).
+- **Do not run alongside anything else that touches `save.js`.** Neither of
+  the two increments that have landed since had to: the journal day two reads
+  is `state.clues`, which the save already carried, so the key and the version
+  did not move (#571, #573, and #649 to #649 the same way). What is left of
+  this row is the yard, which is lane B and not lane A at all.
 
 ### Constraints
 
@@ -354,6 +381,16 @@ a clue, and a clue is what a `knew` row is keyed on.
 - #573: a `day2.knew` row may replace a line set and may never be the only
   one. Every reachable ending still resolves through the key/class/default
   cascade with no journal at all, and `src/mystery.js` validates it that way.
+- #646: the same rule for the canon. A `since` row replaces a fact's text and
+  may never be the only text it has.
+- #647: there is one `when`/`unless`/`knew` grammar and it is exported from
+  `src/mystery.js`. A fifth reader writes no fourth copy of it.
+- #648: a conditioned performance is a `day2.watch` performance. A verdict is
+  a thing only the morning after has, so `when` at one of the four bells is
+  refused rather than silently never played.
+- #649: a `since` row has to be told, and told only where it is true. A row
+  with no `tells`, or a piece heard in an ending its row does not cover, is a
+  failure and not a warning.
 
 ---
 

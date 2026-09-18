@@ -697,7 +697,7 @@
       ]
     }
   },
-  "performancesComment": "WISHLIST.md theme 3's two set pieces, BACKLOG.md rank 8 (#592): lore performed rather than read. Two pools, `sermons` and `songs`. Each entry is one person speaking or singing alone in one room at one bell, played as the caption band src/ui.js draws (the same band the `chatter` pool above is waiting for), once, to whoever is standing in the room to hear it. A pool is flat rather than nested the way `chatter` is, because a performance names its own `room` and `watch` and a chatter pair names neither. `npc` is who performs it and has to be somebody data/mystery.json's own schedule puts in that room at that watch: the sermon is said where the chaplain is, not where a data file wishes he were. `watch` is one of the four bells, or `lauds`, the morning after (data/mystery.json's `day2.watch`), which is how a pool tells a second day something the first day did not hear. `lines` are said in order, one caption at a time; a line in brackets is what the room does rather than what the speaker says. `cites` are the lore ids the piece tells, and data/lore.json's own `sources` name the piece back by id, the way they do for a document or a chatter pair. No more than one piece may want the same room at the same bell, so nothing ever has to choose. WHERE THE SONG GOES (#593): WISHLIST.md asked for a song in the hall at Sext and the schedule puts nobody in the Great Hall at Sext, so the hall's song is sung at Vespers, which is the one bell both wards eat there (`hall-high-table`), and a second song went into the kitchen at Sext so that day one has a piece to find before its last bell.",
+  "performancesComment": "WISHLIST.md theme 3's two set pieces, BACKLOG.md rank 8 (#592): lore performed rather than read. Two pools, `sermons` and `songs`. Each entry is one person speaking or singing alone in one room at one bell, played as the caption band src/ui.js draws (the same band the `chatter` pool above is waiting for), once, to whoever is standing in the room to hear it. A pool is flat rather than nested the way `chatter` is, because a performance names its own `room` and `watch` and a chatter pair names neither. `npc` is who performs it and has to be somebody data/mystery.json's own schedule puts in that room at that watch: the sermon is said where the chaplain is, not where a data file wishes he were. `watch` is one of the four bells, or `lauds`, the morning after (data/mystery.json's `day2.watch`), which is how a pool tells a second day something the first day did not hear. `lines` are said in order, one caption at a time; a line in brackets is what the room does rather than what the speaker says. `cites` are the lore ids the piece tells, and data/lore.json's own `sources` name the piece back by id, the way they do for a document or a chatter pair. THE THIRD POOL (#648): `rumours`, what the castle is saying about the player on the morning after. A rumour piece may carry `when`, `unless` and `knew` on the same grammar data/mystery.json's `day2.castle` and `day2.knew` use (src/mystery.js's `dayTwoApplies`), so which one is said is the verdict the player reached and the journal he carried into it; `knew` names clues he has to be holding, all of them. Only a `lauds` piece may carry them, because a verdict is a thing only the morning after has, and src/lore.js refuses one at any of the four bells. That turns the old rule here into an order: a room at a bell holds a LIST, in file order, and the first piece whose conditions the play answers is the one said. Narrowest first, always, because src/lore.js refuses any piece the ones above it answer for in every ending and journal, which is the same rail as before with seven mornings in it instead of one. The three below are the guardroom at Lauds, Dafydd off watch and awake, and the narrow one is keyed on the gaol roll being in the journal: it is the one thing the castle can only say to a player who did the work. WHERE THE SONG GOES (#593): WISHLIST.md asked for a song in the hall at Sext and the schedule puts nobody in the Great Hall at Sext, so the hall's song is sung at Vespers, which is the one bell both wards eat there (`hall-high-table`), and a second song went into the kitchen at Sext so that day one has a piece to find before its last bell.",
   "performances": {
     "sermons": [
       {
@@ -766,6 +766,63 @@
           "[he sings them anyway, and the benches have every word of them, and the high table has none]"
         ],
         "cites": ["march-song", "hall-high-table", "kings-debt-wages"]
+      }
+    ],
+    "rumours": [
+      {
+        "id": "rumour-lauds-roll",
+        "npc": "sentry",
+        "room": "guardroom",
+        "watch": "lauds",
+        "when": ["prisoner"],
+        "knew": ["gaol-dates"],
+        "why": "The sharpest thing the castle can say about the player, and the only one it cannot say unless the player did the work: the roll was read, off the barrel-head in this room, and the smith was named anyway.",
+        "lines": [
+          "[Dafydd has the barrel-head to himself and is not cleaning anything on it]",
+          "You will want the roll. It is not here. The King's man had it up at first light and he has not sent it back down.",
+          "I told him where it had been lying. I told him who had had it off the barrel-head yesterday, because he asked me and I will not lie to a man with a sheet in front of him.",
+          "You read those dates. I watched you read them. Eleven days, out at Prime and in at Vespers and shut at Compline, in my own hand and my own hours.",
+          "And then you went up to the Constable and you said the smith.",
+          "They have it in the outer ward that you came up from Caernarfon to find a man to hang and found one. I am not saying it. I am telling you it is being said.",
+          "[he puts his hand flat on the barrel-head where the roll was lying, and leaves it there]"
+        ],
+        "cites": ["the-clerk-who-asked"]
+      },
+      {
+        "id": "rumour-lauds-nobody",
+        "npc": "sentry",
+        "room": "guardroom",
+        "watch": "lauds",
+        "when": ["nobody"],
+        "why": "Nobody hanged, so the castle has nothing to hang the clerk's day on either. A day of questions with no name at the end of it is the one shape this castle finds hardest to make a story out of, and it makes two.",
+        "lines": [
+          "[Dafydd is at the barrel-head with the roll open and nothing written in it since the night before]",
+          "Nothing this morning. No rope, no hole in the ground, no name read out. I have stood a first light like it twice in twenty years and neither of them sat right either.",
+          "The works have it that you asked every soul in this castle a question and took none of the answers. The inner ward has it that you were told what to find and had the sense not to find it.",
+          "I have my own. You asked me the same thing three times and the third time you asked it differently, which is not a man who has been told anything.",
+          "Master Fraunceys signs at noon that Hywel ap Gruffudd was a drunk who came off his own scaffold. Father Anselm will go on saying he heard two men on that stair.",
+          "Come Michaelmas there will be nobody left who stands still for the chaplain, and there will still be nobody in the ground for it.",
+          "[he shuts the roll]"
+        ],
+        "cites": ["the-clerk-who-asked"]
+      },
+      {
+        "id": "rumour-lauds-hanged",
+        "npc": "sentry",
+        "room": "guardroom",
+        "watch": "lauds",
+        "unless": ["nobody"],
+        "why": "The general case: somebody hanged this morning on what the clerk carried up the stair, and the castle has settled on two versions of the clerk that will both outlast him. It is written last because the two above it are the plays it must not answer for.",
+        "lines": [
+          "[Dafydd is at the barrel-head, and the guardroom is a room short of one man this morning]",
+          "It was done before the bell. They do it before the bell so the works are not on the wall for it, and the works were on the wall for it anyway.",
+          "You will hear what is being said about you. You may as well hear it from somebody who will say it to your face.",
+          "The outer ward has you for the King's own hand: came up from Caernarfon, walked about for a day asking after a dead mason, and a man hanged for it at first light.",
+          "The inner ward has you for a clerk who did what a clerk is sent to do and will be gone by noon. That is the kinder of the two and I would not take much comfort in it.",
+          "Gwilym wrote you in at the gate on a pass like anybody else. That is the whole of what this castle actually knows about you, and it has not stopped one of them.",
+          "[he goes back to the roll, and does not look up again]"
+        ],
+        "cites": ["the-clerk-who-asked"]
       }
     ]
   },
