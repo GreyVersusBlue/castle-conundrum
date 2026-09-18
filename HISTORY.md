@@ -5203,10 +5203,10 @@ than the one it said it was.
   ring the bell")`. #618 recorded the same assertion as intermittent, two fails
   then five passes. Here it does not pass at all.
 
-  It is not this branch's. `git diff main...HEAD --name-only` is three files,
-  `BACKLOG.md`, `test/tools.mjs` and `tools/place.mjs`, and that suite reads none
-  of them: `src/` and `data/` are byte-identical to `main`, so running it here is
-  running it at `main`. The beat teleports the camera to a cell, waits two
+  It is not this branch's. `git diff main...HEAD --name-only` is five markdown
+  files, `test/tools.mjs` and `tools/place.mjs`, and that suite reads none of
+  them: **`src/` and `data/` are byte-identical to `main`**, so running it here
+  is running it at `main`. The beat teleports the camera to a cell, waits two
   `requestAnimationFrame`s and reads the prompt the running `InteractionSystem`
   offers, which is a real-time assertion under a software-rendered Chromium and
   inconclusive from `npm test` by #53's own terms. It wants the same treatment
