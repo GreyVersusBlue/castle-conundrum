@@ -5224,9 +5224,20 @@ than the one it said it was.
 **Rank 11's first increment, claimed on `claude/r11-feel`, lane D.** Its own
 worktree, because the tree `CLAUDE.md` calls the repo root was another
 session's and had that session's uncommitted edits sitting in it. Decisions
-#634 to #639. One new file, `src/player-rig.js`; 16 lines of `main.js`, 175 of
+#636 to #641. One new file, `src/player-rig.js`; 16 lines of `main.js`, 175 of
 `test/plan-vs-scene.mjs` and two of `test/play-castle.mjs`. Thirteen suites
 green, `npm run play` not run.
+
+**Written as #634 to #639 and landed at #636 to #641**, which is the fourth
+renumber from the same cause in three days. The rule #633 wrote down was
+followed to the letter — a fresh `git fetch origin` immediately before the entry
+was written, `origin/main` at `df28b6c`, highest number #633 — and R3 merged as
+PR #42 forty minutes later carrying #634 and #635. **A fresh fetch at write time
+is still not enough when the entry takes an hour to write and another row is in
+flight.** The thing that actually costs nothing is the one this row did: keep
+the numbers to one mechanical substitution across a known list of files, so the
+renumber is a script and not a re-read. Nine citations in `HISTORY.md`, nineteen
+across the other four markdown files, and two in `test/play-castle.mjs`.
 
 **The Node half only, and the row stays open.** `SPECS.md` splits this row on
 purpose: whether the two objects EXIST, follow the player and stay out of every
@@ -5235,7 +5246,7 @@ The second half is nine sentences of screenshot the next run on Devon's machine
 has to take, and it is written down at the bottom of this entry rather than
 claimed.
 
-- **A decal, not a shadow-casting light** (#634). The open call in `SPECS.md`
+- **A decal, not a shadow-casting light** (#636). The open call in `SPECS.md`
   recommended the decal on the grounds that `WISHLIST.md`'s own words for it
   were "cheapest presence cue", and this takes it. The castle has exactly one
   shadow-casting light, the sun, at a 2048 map (#530); a second one tied to the
@@ -5254,14 +5265,14 @@ claimed.
   honest.
 
 - **The shadow is on the plan's floor, not on a ray cast down from the camera**
-  (#634, same commit). `PlayerController.feet` is the height
+  (#636, same commit). `PlayerController.feet` is the height
   `castle-plan.js`'s `standAt` put the player at, which is the same answer the
   walkability grid stands on (#511). Taking it from there rather than measuring
   it means the shadow and the feet cannot disagree about a slab edge or a step
   of a flight even in principle — there is one number and both read it.
 
 - **Every mesh in the rig refuses rays, and the control is inside the
-  assertion** (#635). This is the thing that would have broken the castle
+  assertion** (#637). This is the thing that would have broken the castle
   quietly rather than loudly. The rig is a top-level child of the scene, and
   `interaction.js`'s line-of-sight test calls every top-level child that is not
   a target an occluder; `play-castle.mjs` sweeps the same list to check the
@@ -5297,7 +5308,7 @@ claimed.
   there.
 
 - **The hand reaches for the target the prompt is offering, and does not go
-  looking** (#636). `main.js` hands `interaction.currentTarget` to the rig one
+  looking** (#638). `main.js` hands `interaction.currentTarget` to the rig one
   line after `interaction.update()` computes it. The rig reaches only for a
   target that is `isLock` and still `active`, which is the getter `locks()`
   already gives the interaction system, so an answered door stops being reached
@@ -5312,7 +5323,7 @@ claimed.
   distance from the eye, 0.78 m, so what the arm's length means is one number
   and the offset cannot quietly lengthen it.
 
-- **`settle()` brings the world matrix with it** (#637). The rig smooths its
+- **`settle()` brings the world matrix with it** (#639). The rig smooths its
   reach with `1 - exp(-dt * rate)` so the rate does not depend on the frame
   rate, and `settle()` collapses the smoothing outright, for the reason
   `PlayerController.settle()` exists: **the suite then asserts a position and
@@ -5329,7 +5340,7 @@ claimed.
   moves the rig for anything reading `.position` and leaves it where it was for
   anything casting a ray at it.
 
-- **The hand's colour is read off a body, not written in the file** (#638). A
+- **The hand's colour is read off a body, not written in the file** (#640). A
   hex constant in `player-rig.js` would be a second copy of a number that lives
   in a glTF, and the two would drift the first time rank 10 adds a body. The tint
   leaves `Skin` alone (#419, and `BARE_MATERIALS` in `npc.js`), so every body in
@@ -5388,7 +5399,7 @@ Nine sentences and two screenshots, to the bar rank 2's photograph set:
 ### And a finding on the way past: thirteen suites on fixed ports, five sessions at once
 
 **`npm test` is not safe to run twice at the same time on one machine, and
-five rows running in parallel is exactly that** (#639). Each browser suite
+five rows running in parallel is exactly that** (#641). Each browser suite
 hardcodes a port — 8125 `plan-vs-scene`, 8126 `built`, 8128 `map` — chosen so
 the suites do not collide with *each other*, which they do not. They collide
 with the same suite in another worktree: `Error: Port 8128 is already in use`,

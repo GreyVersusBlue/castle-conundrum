@@ -411,7 +411,7 @@ and `ROADMAP.md` as well as by rank, which is what makes that survivable
 | 8 | Side quests: the seven errands left of the dozen | 2+ | Opus 5 | Container | — | A | | [Side quests](SPECS.md#side-quests) |
 | 9 | A castle to get lost in: the town, the rock and river | 2+ | Opus 5 | Container | **after 4c** | B | | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
 | 10 | Bodies: a shared low-poly rig for the fifty | 1 | Fable 5.1 | Local: net | — | C | | [Bodies](SPECS.md#bodies) |
-| 11 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 | Container to the Node line, local: GPU past it | **after 2** | D | shadow + hand shipped 2026-09-17 (#634 to #638) | [Feel](SPECS.md#feel) |
+| 11 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 | Container to the Node line, local: GPU past it | **after 2** | D | shadow + hand shipped 2026-09-17 (#636 to #640) | [Feel](SPECS.md#feel) |
 | 12 | The tooling: move-and-delete, a dialogue format (the budget suite shipped, #607 to #611) | 2+ | Opus 5 | Container | — | B (12b), C (12c) | `claude/r12a-budget-suite` (12a) | [The tooling](SPECS.md#the-tooling) |
 | — | **Unranked, and it holds lane B**: ~~`test/tools.mjs`'s byte-exactness rail, red on Windows and green in CI since it was written~~ shipped 2026-09-17 (#631 to #633). The row comes out of this table in the pass that confirms the merge | ¼ | Opus 5 | Container | — | B | `claude/mystifying-lumiere-49ce52` | [The tooling](SPECS.md#the-tooling) |
 
@@ -647,7 +647,7 @@ catch.
 *Where: container to the Node line, local GPU past it. Gate: after rank 2. Lane: D.*
 
 **Rank 11, and a 2+. The first increment's Node half shipped on 2026-09-17**
-(#634 to #638): `src/player-rig.js` puts a blob shadow on whatever the feet are
+(#636 to #640): `src/player-rig.js` puts a blob shadow on whatever the feet are
 standing on and a hand that comes up out of the bottom of the frame and reaches
 for the muniment room's word-lock. **Two draw calls, 16 KB of texture painted
 into a canvas at load, and no file added** — a decal rather than a second

@@ -944,7 +944,7 @@ scale of a child, a dog, a chicken and a garrison rather than one woman.
 ## Feel
 
 **Rank 11. Size 2+. The first increment's Node half shipped on 2026-09-17**
-(#634 to #638). `WISHLIST.md` theme 7. Every item in it is "a thing a
+(#636 to #640). `WISHLIST.md` theme 7. Every item in it is "a thing a
 GPU decides," gated on `npm run play` the same way **The hall covering**
 already is.
 
@@ -956,13 +956,13 @@ gradient painted into a 64 x 64 canvas at load, sitting 0.02 m over
 feet cannot disagree about a slab edge — and a hand of six primitives merged
 into one geometry, which rests below the frame and lerps out to the leaf's own
 `focus`, clamped to 0.78 m from the eye. Two draw calls, 16 KB of texture, no
-file, no second shadow-casting light (#634). It reaches for
+file, no second shadow-casting light (#636). It reaches for
 `interaction.currentTarget` rather than searching, so the hand and the prompt
-cannot disagree about which door the player is at (#636), and **every mesh in it
+cannot disagree about which door the player is at (#638), and **every mesh in it
 has `raycast` set to a no-op**, because the rig is a top-level scene child and
-`interaction.js` calls every one of those an occluder (#635). `settle()`
+`interaction.js` calls every one of those an occluder (#637). `settle()`
 collapses the smoothing and the world matrix with it, which is what lets the
-suite assert a position and never a duration (#637). Nine assertions in
+suite assert a position and never a duration (#639). Nine assertions in
 `test/plan-vs-scene.mjs`, each broken on purpose; the ray ones cast twice, once
 with `THREE.Mesh`'s own `raycast` put back, so "it did not hit" cannot pass on a
 ray that was never going to hit anything.
@@ -984,7 +984,7 @@ ray that was never going to hit anything.
 
 - ~~Node acceptance: the shadow decal and the hand node exist, are tagged with
   a `planId` if they are plan pieces, and do not regress `plan-vs-scene.mjs`.~~
-  **Met** (#634 to #638). Neither is a plan piece, so neither carries a
+  **Met** (#636 to #640). Neither is a plan piece, so neither carries a
   `planId`, and that is asserted rather than assumed: the rig moves with the
   player and a tagged moving object is a box the plan's diff cannot predict.
 - GPU acceptance (#53): a screenshot of the player approaching a door with the
@@ -996,7 +996,7 @@ ray that was never going to hit anything.
 
 ### Open calls
 
-- ~~**Real-time shadow or a baked decal.**~~ **Taken: the decal** (#634). A
+- ~~**Real-time shadow or a baked decal.**~~ **Taken: the decal** (#636). A
   shadow-casting light on the player is a cost this castle has never paid, and
   the wishlist's own language ("cheapest presence cue") argued for the cheaper
   of the two. What shipped is cheaper again than a baked file — the gradient is
