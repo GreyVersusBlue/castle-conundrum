@@ -228,11 +228,11 @@ export class QuestGraph {
 }
 
 /* ------------------------------------------------------------ side quests ---
- * BACKLOG.md rank 9. A side quest is the same graph this file already
+ * BACKLOG.md rank 8. A side quest is the same graph this file already
  * validates, in its own file under data/quests/, driving one person's lines
  * and nothing else. What makes it a side quest rather than a second mystery is
  * what it may not do, and that is what `validateQuestSet` is: the per-file
- * checks `validateQuest` already runs, plus three rules across the set.
+ * checks `validateQuest` already runs, plus six rules across the set.
  *
  * WHY THE RULES ARE ABOUT `dialogueState` AND NOT ABOUT AN EFFECT. The obvious
  * reading of "a quest never gates or removes a mystery clue" (#550, question 6)
@@ -275,12 +275,15 @@ const EVENT_SHAPES = [
  * @param npcs    data/npcs.json's `cast`
  * @param mystery data/mystery.json
  * @param actions the action names quest-manager.js implements for side quests
+ * @param tokens  the keys of data/quest.json's `tokens`, or none. Rule 6 is the
+ *                only thing that reads them: a person whose `default` lines pose
+ *                one of these is a person a quest may not park out of `default`.
  * @param reputation data/npcs.json's `reputation` (BACKLOG.md rank 8), or null.
  *                 It is checked here and nowhere else because this is the only
  *                 function that knows how many errands each ward actually has,
  *                 which is the one thing a threshold can be wrong about.
  */
-export function validateQuestSet(quests, { npcs = [], mystery = {}, actions = [], reputation = null } = {}) {
+export function validateQuestSet(quests, { npcs = [], mystery = {}, actions = [], tokens = [], reputation = null } = {}) {
   const problems = [];
   const cast = new Map(npcs.map((n) => [n.id, n]));
   const clueIds = new Set((mystery.clues ?? []).map((c) => c.id));
@@ -361,6 +364,28 @@ export function validateQuestSet(quests, { npcs = [], mystery = {}, actions = []
           : kind === 'accusables' ? (!accusables.has(m[1]) && `${m[1]} cannot be accused`)
           : false;
         if (bad) at(`${id}: \`on\` is ${JSON.stringify(t.on)} and ${bad}`);
+      }
+    }
+
+    /* RULE 6: A QUEST GIVES BACK A PERSON WHO POSES ONE OF THE FRAME'S TOKENS
+     * (BACKLOG.md rank 8, #661). `{ACCUSE}` is a line in Sir Roger's `default`
+     * set and it is how the player is asked for a name; `validateAgainstNpcs`
+     * already holds that token and `openAccusation` to each other, but it looks
+     * only at the frame and cannot see this directory at all. A side quest that
+     * ended on a state of its own would take the day's own question off the
+     * screen from whenever the errand finished until Vespers, in the one
+     * conversation everything else is pointed at, and every suite would stay
+     * green because the overlay still opens: the transition is on
+     * `talked:constable` and not on the line. So the rule is about the terminal
+     * stages, which are the permanent ones, and the middle stages are the
+     * file's own business — rogers-verse.json answers those by ending every one
+     * of Sir Roger's errand states with the question in his own words. */
+    const posed = (npc.dialogue?.default ?? []).find((l) => tokens.includes(l));
+    if (posed) {
+      for (const [id, s] of Object.entries(def.stages ?? {})) {
+        if (s.terminal && s.dialogueState !== 'default') {
+          at(`${id} is terminal and leaves ${def.npc} in \`${s.dialogueState}\` for the rest of the day, but ${posed} is a line in their \`default\` set — an ending has to give them back`);
+        }
       }
     }
   }

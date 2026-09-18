@@ -184,8 +184,10 @@ in, every one of them a `belief` or a `rumour` the game never confirms.
 
 ### 4. Side quests: lore with a verb
 
-**Moved to `BACKLOG.md` rank 8, `SPECS.md`'s "Side quests" section** (#563;
-rank 9 until the lore row closed).
+**Moved to `BACKLOG.md` rank 8 on 2026-09-17 and closed out of it on
+2026-09-18** (#563, rank 9 until the lore row closed; #659 to #663 closed it).
+Both files carry the record rather than the row now: `HISTORY.md` has the five
+decisions and neither `BACKLOG.md` nor `SPECS.md` has a section for it.
 The quest graph (`src/quest-graph.js`, #393), the quest-is-data format, the
 first dozen by ward, the independent-of-the-mystery rule (#550, question 6),
 many at once (#550, question 7), and reputation by ward are all that row's
@@ -196,8 +198,15 @@ in the bakehouse without a clue granted either way. **The journal's
 open-quests tab shipped the same day** (#595): "Asked of you", every quest the
 player has met and the objective it is at now. **Four more errands shipped
 the same day** (#597 to #599): the merlin, the candle account, the dice and
-the chisel. What is left of the theme is reputation by ward and the seven
-quests still unwritten, and it is all in that row.
+the chisel, and **reputation by ward the same day again** (#612 to #615).
+**The theme closed on 2026-09-18** (#659 to #663): the last seven errands
+went in, one voice each on the seven people who had none, so `data/quests/`
+is twelve files and every person the day one schedule puts in the castle has
+something to ask a passing clerk. Two of the dozen this file named wanted a
+body rank 6 has not built; the porter's boy survived as an errand on the
+porter with the boy off screen, and the child's dog was let go rather than
+waited for (#660). Nothing of this theme is open, and its row is gone from
+`BACKLOG.md`.
 
 ### 5. Size: a castle to get lost in
 

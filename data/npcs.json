@@ -17,10 +17,27 @@
           "A clerk. A day early. Well, you have seen him, so you know what there is to know: the mason was drunk, the stair is steep, and he fell.",
           "The King's inspector rides in tomorrow. I want a clean sheet by Vespers, and I want the mason buried before the inspector's horse is watered.",
           "Ask what you must. Then come and tell me it was a fall.",
+          "And one thing more, since you go where I do not. The garrison has a song they stop singing when I come along the walk, and have for eight years. The inspector dines here tomorrow. I would rather know what is sung over his head before he does.",
           "{ACCUSE}"
+        ],
+        "verse-asking": [
+          "Dafydd ap Rhys has the March tongue and the King's watch both. Gwilym has both tongues and a gate to keep, which makes him the more careful man and the less useful one. Try whichever you like.",
+          "I do not want the man who sings it. I want the words.",
+          "Now. The mason. Have you a name for me yet, or not?"
+        ],
+        "verse-englished": [
+          "A King's writ and a river. Forty years of stopping when I come along the walk, and that is the whole of the offence.",
+          "You will have had the short version off Gwilym. A man who keeps the gate between two tongues does not hand either of them over whole, and I have never once caught him at it.",
+          "Let them sing it. Now. The mason. A name, or do I write the stair?"
+        ],
+        "verse-refused": [
+          "He gave you the tune and not one word of it. Of course he did.",
+          "His grandfather stood against my King's father for nine years on the far bank of that river, was sworn at the end of it, and kept his word and his opinions both. I have read the file. He stands on my north walk because he is the best I have.",
+          "So. The mason. A name, or do I write the stair?"
         ]
       },
-      "dialogueComment": "The last line is a token, the way the Scholar's used to end in {RIDDLE} (Phase 7). quest.json substitutes it, and `talked:constable` in `investigate` and `accusing` opens the accusation overlay after the conversation. validateAgainstNpcs holds the token and the action to each other in both directions."
+      "dialogueComment": "The accusation's token is the last line of `default` and stays the last line of `default` (Phase 7). quest.json substitutes it, and `talked:constable` in `investigate` and `accusing` opens the accusation overlay after the conversation. validateAgainstNpcs holds the token and the action to each other in both directions.",
+      "errandComment": "The three `verse-` states are rogers-verse.json's (BACKLOG.md rank 8) and every one of them ends by asking for the name, because `{ACCUSE}` is `default`'s line and a man standing in an errand's state is not saying it. That errand's two endings put him back on `default` for the same reason, which is what validateQuestSet's rule 6 refuses to let a file forget (#661)."
     },
     {
       "id": "steward",
@@ -40,12 +57,27 @@
         "default": [
           "The mason? A sad business. He drank, you know. They all do.",
           "I sent no summons. Why would I? The chapel roof is sound, I have the ledger to say so.",
-          "If you want the works, the Clerk keeps the works. I keep the household."
+          "If you want the works, the Clerk keeps the works. I keep the household.",
+          "And while you are in the outer ward with a pen on you. The kitchen keeps its whole account in chalk on a slate, because Marged cannot write and will not be cheated. I can read it. A man from Caernarfon will not even look at it. Get it into a hand he will."
         ],
         "admits": [
           "Where did you get that? No. Do not tell me.",
           "I sent him to be talked to. By Robert. There was a matter of figures, and Robert wished to settle it like gentlemen.",
           "To be talked to. Not to the stair. I never meant the stair."
+        ],
+        "slate-asking": [
+          "The slate is against the west wall of the kitchen and she will tell you what every mark on it is. She knows it to the last egg.",
+          "I am not asking you to audit her. I am asking you to write it out. A column of figures in a clerk's hand is a thing a man reads. A slate is a thing he decides not to.",
+          "And do not tell her what it is for. She will start being careful, and careful is slower, and we eat at Vespers."
+        ],
+        "slate-copied": [
+          "You have it, then. Eleven years she has fed forty mouths out of that kitchen with one girl and one boy, and not once been over. Not once.",
+          "And there is not a line anywhere in my books that says so, because there has never been a hand in that kitchen to put one there.",
+          "Put it in the household roll under her name. Not under mine. Under mine it is my economy, and it is not my economy."
+        ],
+        "slate-ruled": [
+          "It is in the roll, under her name, in a hand Caernarfon will read. Whatever else this day writes down, that is in it.",
+          "Do not tell her that either."
         ]
       }
     },
@@ -67,7 +99,22 @@
         "default": [
           "Hywel. Yes. The best setter of stone in the March, and he could not set his own feet on a stair. A great loss to the works.",
           "I was abed in my lodging from Compline. My boy will tell you. I heard of it at first light with everyone else.",
-          "The works are in order, if that is your errand. The lead is sheet-perfect. Count it yourself."
+          "The works are in order, if that is your errand. The lead is sheet-perfect. Count it yourself.",
+          "And since you are the exchequer's own and I am only the works'. Is Hugh Bassett's counterpart still kept at Caernarfon? Six years of this ledger are in a dead drunk's hand and I inherited every one of them. I would rather rule them off against something than swear to them."
+        ],
+        "bassett-asking": [
+          "Bassett kept the works six years and drank five of them. Ranulf before him wrote like a row of spears and I can read every stroke of it. Bassett I cannot always read at all.",
+          "The exchequer takes a counterpart of every year a royal castle returns. If Caernarfon still holds his, I lay mine beside them and rule the six off in a week. If it does not, I swear to a dead man's arithmetic in my own name.",
+          "Somebody above stairs in this castle has Caernarfon in the family, and will know whether they keep six years or sixteen."
+        ],
+        "bassett-answered": [
+          "Sixteen. Sixteen years. Then they have all six of Bassett's and two of Ranulf's besides.",
+          "You will think that a small thing to be glad of. Six years of another man's figures with my name under them is not a small thing.",
+          "I will send for them at the quarter day. Thank you. That is not a word I have used today."
+        ],
+        "bassett-ruled": [
+          "It is written, and it goes east with the first cart after Michaelmas.",
+          "Whatever else you put in that sheet, clerk, put in it that the works asked for its own books to be opened."
         ],
         "cloak": [
           "My cloak? That cloak has been in the laundry since Sunday. Ask the girl.",
@@ -97,11 +144,26 @@
         "default": [
           "Every soul through this gate goes in the book, clerk. Compline: the mason, on the Steward's word, about the chapel roof. Nobody else, in or out.",
           "Gate barred behind him. And the walk door at my tower, barred as always.",
-          "You want to know how a man in the outer ward got to a stair in the inner? He did not. That is what the book is for."
+          "You want to know how a man in the outer ward got to a stair in the inner? He did not. That is what the book is for.",
+          "And one thing, clerk, since you have the Steward's ear and I have only his gate. My boy is eleven and this gate is his after me, the way it was mine after my father. He wants his letters for it. There is a man in Mereford who will teach them, and a boy does not go out of that gate without a pass, and the Steward signs passes."
         ],
         "admits": [
           "That door. God help me. I was in my cups, clerk, and it has not been barred this month, nor last.",
           "You know what that is? A hanging matter, to say so. So I say it is barred, and I have said it so long I half believe it."
+        ],
+        "pass-asking": [
+          "My father had me taught by the chaplain of that day, for the gate and for nothing else, and the book is in the two hands because of it.",
+          "Father Anselm is a justiciar's son with a chapel and a grave to fill. I have asked him twice. Twice is asking. Three times is something else.",
+          "Piers Marrable signs passes. He will sign one for a King's clerk who asks him in a corridor and he will not sign one for a porter who asks him at a gate. Twenty years I have known that."
+        ],
+        "pass-signed": [
+          "He signed it. He did not ask whose boy.",
+          "Michaelmas to Lady Day, three mornings a week, out at Prime and in before the gate shuts. That is more than my father got and he never asked for it."
+        ],
+        "pass-gone": [
+          "It is in the book. In my hand, under the day, the way everything through this gate goes in the book.",
+          "Twenty years of mine and twenty of his before it, and that is the first thing either of us has ever taken out through it.",
+          "You will be gone tomorrow and you will not think of it again. I will."
         ]
       }
     },
@@ -303,7 +365,25 @@
       "dialogue": {
         "default": [
           "That cloak? The Clerk's. His boy brought it down at first light and said wash it and say nothing.",
-          "It goes in the copper at Sext with the rest. If you want to look at it, look now."
+          "It goes in the copper at Sext with the rest. If you want to look at it, look now.",
+          "And if you are a man who does not mind the dark. The south-west well is the only sweet water in this castle and not one of the garrison will turn that windlass after Compline. I fill the copper for the morning wash on my own. I can turn it or I can carry it. I cannot do both."
+        ],
+        "well-asking": [
+          "Ask them why and you will get eight answers. A soldier of the old war went down it. Something in it remembers the war and does not care for King's men drinking out of it.",
+          "It tastes of rock. It has tasted of rock every day for six years and I have drunk it at every hour there is.",
+          "Dafydd would come if somebody asked him who was not me. Or the chaplain could stand up in the hall at Vespers, in front of the whole eight of them, and say that a well is a well. Either would do."
+        ],
+        "well-sworn": [
+          "Dafydd ap Rhys, at the windlass, in the dark, with his back to the tower and talking the whole time.",
+          "He will deny it tomorrow, so do not put it anywhere it can be read. He asked for nothing and I said nothing, and that is how it is done here."
+        ],
+        "well-blessed": [
+          "Anselm will say it at Vespers. In Latin first, which none of them have, and then in the King's tongue, which most of them do.",
+          "It will change nothing and they will all drink out of the copper in the morning without a word. That is also how it is done here."
+        ],
+        "well-drawn": [
+          "It is full. The wash goes in at Prime.",
+          "You are the first King's man through that gate who has been asked for something small and done it the same day. I will not make anything of it. I am only saying it."
         ],
         "wife": [
           "Madoc is my husband. Yes. Since you ask what nobody else has.",
@@ -327,7 +407,25 @@
         "default": [
           "Another one come to look at the thief. Look, then.",
           "The lead went out the gate on a cart, by daylight, with the Clerk's seal on the pass. I saw it go. I said so. That is why I am here.",
-          "Nobody believes a smith in a tower. You will not either. Go on."
+          "Nobody believes a smith in a tower. You will not either. Go on.",
+          "One thing, since you are the first man through that door today who asked me something instead of telling me. My forge is under this wall and I have been up here eleven days. Nobody has banked that fire. A hearth that goes cold and wet cracks from the back, and it is the castle's hearth and not mine."
+        ],
+        "fire-asking": [
+          "A turf on it at dark and the ash drawn over. That is the whole of it. Any boy in the lodge has watched me do it a hundred times.",
+          "Ieuan could do it with his eyes shut. So could the kitchen, come to that. I have mended Marged's iron for a loaf since before that boy was ever bound.",
+          "It is not for me. I am not going back to it, whatever tomorrow says."
+        ],
+        "fire-lodge": [
+          "Ieuan. Good. He will have drawn the ash over before you were out of the lodge.",
+          "Hywel taught him to bank a fire the same week he taught him to hold a chisel, and that lodge fire has not been out between Michaelmas and Lady Day in forty years."
+        ],
+        "fire-kitchen": [
+          "Marged's boy. Well. He will do it badly and it will be done.",
+          "And she will have put a loaf in his hand that is not for the fire. Eleven years and she has never once let me say thank you for anything of hers."
+        ],
+        "fire-banked": [
+          "It is in, then.",
+          "When they let me out, or when they do not, that hearth will draw. That is the whole of what I wanted out of today, and it is a good deal more than I looked for."
         ],
         "forge": [
           "You have had the roll off the barrel-head. Somebody in this castle can read, then.",
@@ -354,7 +452,18 @@
         "default": [
           "Wykes, of the town. I have the cart contract for the works.",
           "Dressed stone. I buy stone off the works and sell it on. That is the whole of my trade, clerk.",
-          "The cart? Sacking and stone. Mind your boots."
+          "The cart? Sacking and stone. Mind your boots.",
+          "And since you read for a living. There is a block in my yard under the town wall with a mason's mark struck in the bed face, cut short off these works and sold me fair. I have a Hensford buyer for it Michaelmas week. I will not sell a stone with a dead man's mark on it to a man who does not know the mark is there. Find out whose it is."
+        ],
+        "mark-asking": [
+          "Two strokes and a hook, cut deep, on the bed face, where it would never be seen again once the block was laid. That is where a man cuts his own.",
+          "The lodge keeps the marks on a board at the post. Ask the boy, Ieuan. He counts things, which is why Hywel took him.",
+          "And ask him now. I am away west at Sext and I am not back inside this gate until the quarter day."
+        ],
+        "mark-read": [
+          "Gruffudd. Off the north curtain in the third year of the works. And his son at the foot of a stair this morning.",
+          "Then it does not go to Hensford. It goes back up the hill on my own cart, for nothing, and the lodge may do what it likes with it.",
+          "You may tell the Hensford man whatever you please. I have told him worse and had his money after."
         ],
         "admits": [
           "You have been under the sacking. Well.",
@@ -826,7 +935,7 @@
       }
     ]
   },
-  "reputationComment": "REPUTATION BY WARD (BACKLOG.md rank 8, #599 named the wards and this block is what reads them). The save carries two counters, `outer` and `inner`, one moved per side quest finished in that ward, and this is one of the two things in the game that can tell they moved; the other is the closing pane, which is `closing` below. THIS IS A TINT AND NOT A SYSTEM (WISHLIST.md, theme 4): nothing here gates, grants, hides or unlocks anything, and a player who runs no errand at all sees none of it and loses nothing. `outer` and `inner` are each a list of `{at, line}` in ascending order of `at`. `at` is how many errands in that ward have to be finished for the line to be the one said; the highest threshold reached wins, and below the first one nobody says anything. The line goes on the END of whatever the person you are talking to says, the way each errand's opener went on the end of a `default` set (#598, and the same reason: the line is last, so a player re-reading what came before it is not made to). WHO SAYS IT IS THE WARD AND NOT THE PERSON. Any of the cast whose own `ward` matches, in whatever state they are standing in, which is why every line below has to be sayable by a cook, a sentry and a man in a cell, or by a Constable, a chaplain and a lady. That is what makes it the castle talking rather than one more person with an errand. Day one only, and never on a press: the morning after replaces every line set in this file (data/mystery.json's `day2.lines`) and a press is the mystery answering a clue the player pushed at somebody, which is no place for the castle's gossip. `closing` is keyed to the two counters added together and is the one line the epilogue pane carries under the verdict. `validateQuestSet` (src/quest-graph.js) holds every `at` to the number of quests data/quests/ actually has in that ward, so a threshold nobody could ever reach fails test/quest.mjs rather than sitting here silent; three outer and two inner today, so the ceilings are 3, 2 and 5.",
+  "reputationComment": "REPUTATION BY WARD (BACKLOG.md rank 8, #599 named the wards and this block is what reads them). The save carries two counters, `outer` and `inner`, one moved per side quest finished in that ward, and this is one of the two things in the game that can tell they moved; the other is the closing pane, which is `closing` below. THIS IS A TINT AND NOT A SYSTEM (WISHLIST.md, theme 4): nothing here gates, grants, hides or unlocks anything, and a player who runs no errand at all sees none of it and loses nothing. `outer` and `inner` are each a list of `{at, line}` in ascending order of `at`. `at` is how many errands in that ward have to be finished for the line to be the one said; the highest threshold reached wins, and below the first one nobody says anything. The line goes on the END of whatever the person you are talking to says, the way each errand's opener went on the end of a `default` set (#598, and the same reason: the line is last, so a player re-reading what came before it is not made to). WHO SAYS IT IS THE WARD AND NOT THE PERSON. Any of the cast whose own `ward` matches, in whatever state they are standing in, which is why every line below has to be sayable by a cook, a sentry and a man in a cell, or by a Constable, a chaplain and a lady. That is what makes it the castle talking rather than one more person with an errand. Day one only, and never on a press: the morning after replaces every line set in this file (data/mystery.json's `day2.lines`) and a press is the mystery answering a clue the player pushed at somebody, which is no place for the castle's gossip. `closing` is keyed to the two counters added together and is the one line the epilogue pane carries under the verdict. `validateQuestSet` (src/quest-graph.js) holds every `at` to the number of quests data/quests/ actually has in that ward, so a threshold nobody could ever reach fails test/quest.mjs rather than sitting here silent; seven outer and five inner since the dozen closed (#659 to #663), so the ceilings are 7, 5 and 12. THE BANDS ARE NOT ONE PER ERRAND AND DO NOT HAVE TO BE. Seven rungs on a seven-errand ladder would say something at every single favour, which is a system saying well done; what is here is four in the outer ward, three in the inner and five closing, and the gaps between them are where a player runs an errand and the castle does not mention it, which is most of them.",
   "reputation": {
     "outer": [
       {
@@ -836,6 +945,14 @@
       {
         "at": 3,
         "line": "The outer ward knows your face now, clerk, and not for the sheet you are writing. Whatever name goes on it at Vespers, there will be somebody down here who says you were fair with us."
+      },
+      {
+        "at": 5,
+        "line": "There is a word gone round this ward that whatever you are down here to do, you have not once walked past a man who wanted something. Five of us, by the count in the lodge, and the lodge counts everything."
+      },
+      {
+        "at": 7,
+        "line": "Nobody in this yard has anything left to ask you, clerk, and that has not happened in the forty years there has been a yard. Whatever they write about today at Caernarfon, this ward will tell it the other way."
       }
     ],
     "inner": [
@@ -846,6 +963,10 @@
       {
         "at": 2,
         "line": "You have made yourself useful in this ward twice over and asked nothing back either time. That is remarked on above stairs. Whether it is remarked on kindly you will know at Vespers, with the rest of us."
+      },
+      {
+        "at": 4,
+        "line": "Four times now, and none of them anything you were sent to do. This ward has been asking the King's men for forty years and being answered in writing. You will understand that it does not quite know what to do with you."
       }
     ],
     "closing": [
@@ -859,7 +980,15 @@
       },
       {
         "at": 5,
-        "line": "Every favour anybody in this castle thought to ask of a passing clerk, you did, and not one of them is on the sheet. Nobody who asked has forgotten. That is the other record, and it stays in the ward."
+        "line": "Five people asked a passing clerk for something today and five of them got it, and not one of the five is on the sheet. Nobody who asked has forgotten. That is the other record, and it stays in the castle."
+      },
+      {
+        "at": 8,
+        "line": "Eight errands between four bells, on a day you were sent here to write one sheet. The sheet goes east tonight and is read once. The rest of it stays in the kitchen and the lodge and the gate, and is told for years, and gets better in the telling."
+      },
+      {
+        "at": 12,
+        "line": "Every favour anybody in this castle thought to ask of a passing clerk, you did. Twelve of them, from the Constable's own table to a man in a cell, and not one is written down anywhere but here. They will not agree tomorrow about what kind of man you were. They will all agree that you were asked."
       }
     ]
   }

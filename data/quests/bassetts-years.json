@@ -1,0 +1,51 @@
+{
+  "id": "bassetts-years",
+  "title": "Hugh Bassett's six years",
+  "npc": "clerk",
+  "ward": "outer",
+  "comment": "One of the seven that finish the dozen (BACKLOG.md rank 8). Lore's `clerks-of-works`: three men have kept this ledger in forty years, Ranulf for eight and twenty in a hand like a row of spears, Hugh Bassett for six and he drank, and Master Robert Ferrour for the six since. Lore's `lady-alys-brother` is the answer: she was a clerk's daughter of Caernarfon before she was a Constable's wife and her brother sits there now among the justiciar's own clerks, so what the exchequer keeps and for how long is a thing she knows without having to be asked twice.",
+  "mysteryComment": "THIS IS THE ONE ERRAND THE PLAYER MAY NOT WANT TO HAVE RUN. Master Robert is the man the ledger convicts, and what he asks for here is that somebody look at six years of the books he inherited. It grants nothing, hides nothing and presents nothing: `ledger`, `lead-sold` and `clerk-cornered` are the mystery's and are exactly where they were. The only thing it changes is that the player did a man a kindness a watch before hanging him, which is a thing the day is allowed to do to them.",
+  "voiceComment": "`cloak` and `cornered` are the two presses on him and neither is named here. A player who presses him mid-errand hears the press, because `_syncStates` puts the engine over the quest (#578).",
+  "start": "unasked",
+  "stages": {
+    "unasked": {
+      "objective": "Nobody has asked you anything about an old ledger.",
+      "dialogueState": "default",
+      "transitions": [
+        {
+          "on": "talked:clerk",
+          "to": "asking"
+        }
+      ],
+      "comment": "Silent until the first conversation with him, which is the one that lands `clerk-abed`. The fourth `default` line is the question, and it is asked of the exchequer's own rather than of a stranger, which is what he takes the player for."
+    },
+    "asking": {
+      "objective": "Six years of the works' ledger are in a dead drunk's hand and Master Robert has to swear to them. Find out whether Caernarfon still keeps its counterpart of them.",
+      "dialogueState": "bassett-asking",
+      "transitions": [
+        {
+          "on": "talked:lady",
+          "to": "answered"
+        }
+      ],
+      "comment": "The exchequer takes a counterpart of every year a royal castle returns; how many years back Caernarfon actually holds is the sort of thing a clerk's daughter of Caernarfon knows and a Clerk of Works in the March does not."
+    },
+    "answered": {
+      "objective": "Caernarfon keeps sixteen years, which is all six of Bassett's and two of Ranulf's besides. Tell Master Robert.",
+      "dialogueState": "bassett-answered",
+      "transitions": [
+        {
+          "on": "talked:clerk",
+          "to": "ruled"
+        }
+      ],
+      "comment": "He can lay his beside theirs and rule the six off in a week instead of swearing to a dead man's arithmetic in his own name. He says thank you, and says that it is not a word he has used today."
+    },
+    "ruled": {
+      "objective": "The request goes east with the first cart after the quarter day: the works has asked for its own books to be looked at.",
+      "dialogueState": "bassett-ruled",
+      "terminal": true,
+      "comment": "Terminal, and the last line of it is the one that will sit worst afterwards. He asks the King's clerk to put in the sheet that the works asked for its own books to be opened, and he means it, and it is true, and he is still the man who sold the lead."
+    }
+  }
+}

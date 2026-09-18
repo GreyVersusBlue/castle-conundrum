@@ -1,0 +1,65 @@
+{
+  "id": "madocs-fire",
+  "title": "The forge under the wall",
+  "npc": "prisoner",
+  "ward": "outer",
+  "comment": "One of the seven that finish the dozen (BACKLOG.md rank 8). Lore's `madoc-smith`: the forge has stood under the Prison Tower's wall since the twelfth year of the works, he draws out the masons' chisels twice a year for ale and nothing else, and he has mended more of the kitchen's iron for a loaf than the kitchen has ever paid for. He has been up the tower eleven days and nobody has banked that fire. A hearth that goes cold and wet cracks from the back, and it is the castle's hearth and not his, which is the whole of why he asks.",
+  "mysteryComment": "The forge is where `hywels-chisel` ends up and where `prisoner-inside` says he was by day, and this errand touches neither. It does not name `forge`, which is the press's; it grants nothing; and it is asked in `default`, which is the state Madoc gives the lead, the cart and the seal from, exactly as he always did. Two errands lean on the same forge from opposite ends, which is what a castle with a dozen small cases running together is supposed to look like (#550, question 7).",
+  "start": "unasked",
+  "stages": {
+    "unasked": {
+      "objective": "Nobody at the bars has asked you for anything.",
+      "dialogueState": "default",
+      "transitions": [
+        {
+          "on": "talked:prisoner",
+          "to": "asking"
+        }
+      ],
+      "comment": "Silent until the first conversation at the bars, which is the one that lands `prisoner-story`. His fourth `default` line opens on the thing he actually notices about the day, which is that the King's clerk asked him something instead of telling him something."
+    },
+    "asking": {
+      "objective": "Madoc's forge has been cold eleven days and a wet hearth cracks from the back. A turf on it at night and the ash drawn over is all it wants. Ask the lodge, or ask the kitchen.",
+      "dialogueState": "fire-asking",
+      "transitions": [
+        {
+          "on": "talked:apprentice",
+          "to": "lodge"
+        },
+        {
+          "on": "talked:cook",
+          "to": "kitchen"
+        }
+      ],
+      "comment": "Two roads because two people in this castle owe him and neither of them has been asked. Ieuan has watched him bank it a hundred times; Marged has had her iron mended for a loaf since before that boy was bound."
+    },
+    "lodge": {
+      "objective": "Ieuan will draw the ash over tonight and every night. Tell Madoc.",
+      "dialogueState": "fire-lodge",
+      "transitions": [
+        {
+          "on": "talked:prisoner",
+          "to": "banked"
+        }
+      ],
+      "comment": "Hywel taught the boy to bank a fire the same week he taught him to hold a chisel, and the lodge fire has not been let out between Michaelmas and Lady Day in forty years (lore's `lodge-custom`). Madoc says he will have drawn it over before the player was out of the lodge."
+    },
+    "kitchen": {
+      "objective": "Marged is sending her boy down to the forge with a turf, and with something else besides. Tell Madoc.",
+      "dialogueState": "fire-kitchen",
+      "transitions": [
+        {
+          "on": "talked:prisoner",
+          "to": "banked"
+        }
+      ],
+      "comment": "The boy will do it badly and it will be done, and there will be a loaf in his hand that is not for the fire, and Madoc has never once been let to say thank you for anything of hers."
+    },
+    "banked": {
+      "objective": "The forge under the Prison Tower is banked, and will draw in the morning whatever the morning says.",
+      "dialogueState": "fire-banked",
+      "terminal": true,
+      "comment": "Terminal, one ending for both roads. He says it is more than he expected out of today, and whether he is let out of the tower on the morning after is the verdict's to say (#533) and not a side quest's (#576)."
+    }
+  }
+}

@@ -6056,3 +6056,94 @@ hall itself, directly. Decisions #656 to #658.
   check 14 green (7 pieces, each 8.00 m or more over its floor, none in a
   reachable head band), check 6b unaffected, `npm test` thirteen suites
   green. `npm run play` not run — no `src/` changed (#53).
+
+## Side quests: the dozen closes, one voice each on the seven who had none (2026-09-18)
+
+**Ranked row 8, on `claude/r8-seven-errands`, lane A, in a `git worktree`**
+(#624's rule; four other rows were moving in the main tree). `SPECS.md`'s
+"Side quests" row had five errands shipped (#576 to #581, #595, #597 to #599,
+#612 to #615) and **the seven left of the dozen** as what remained. All seven
+are in. `data/quests/` has twelve files, `data/npcs.json` has twenty-three new
+dialogue states and seven new `default` lines, `src/quest-graph.js` has a sixth
+set rule, and `src/save.js` and `src/quest-manager.js` are untouched: the row
+turned out to be content, because everything the counters and the journal need
+is already read off the files. Decisions #659 to #663.
+
+- **The seven are one errand each on the seven people who had none, and the
+  three `WISHLIST.md` named are inside that count rather than beside it**
+  (#659). The row's scope named a letter for the town that needs a gate pass,
+  a child's dog in the east garden, the porter's boy who wants his letters,
+  and "four the next session's to name". Two of those wanted rank 6's populace
+  and rank 6 has not shipped. The count came out right anyway because the unit
+  the row actually named is a *person*: the Constable, the Steward, the Clerk,
+  the porter, Nest, Madoc and the merchant, one file each. `stewards-slate`
+  (the kitchen's chalk account into a hand Caernarfon will read),
+  `rogers-verse` (the words of the garrison's song), `bassetts-years` (six
+  years of a dead drunk's ledger), `gwilyms-pass` (a pass out of the gate for
+  the porter's son), `nests-windlass` (the south-west well after dark),
+  `madocs-fire` (a forge cold eleven days) and `wykes-mark` (a mason's mark on
+  a block in a town yard). Four outer, three inner, so the wards are 7 and 5
+  and the set is 12. `test/quest.mjs` asserts the stronger fact that fell out
+  of it: the twelve `npc` fields are exactly the thirteen of the cast minus the
+  inspector, who has not dismounted. A thirteenth file has nobody to be about.
+
+- **The two errands that wanted a body they cannot have kept their idea and
+  dropped the body** (#660). The porter's boy is `gwilyms-pass` and the boy is
+  never in the castle: he is eleven, the gate is his after his father, and the
+  whole errand is one pass signed in a corridor. The gate pass `WISHLIST.md`
+  named separately merged into it, because a letter for the town and a boy for
+  the town are the same errand from the gate's side. The child's dog in the
+  east garden did not survive and is not replaced: a dog is the one of the
+  three that is not a conversation, and rank 6's hound (#643 to #645) is where
+  it belongs. What this cost is nothing and what it bought is that rank 8 no
+  longer depends on rank 6 for anything.
+
+- **Rule 6: a terminal stage may not park a person whose `default` lines pose
+  one of the frame's tokens** (#661). `{ACCUSE}` is a line in Sir Roger's
+  `default` set and it is how the player is asked for a name. An errand on the
+  Constable that ended in a state of its own would take the day's own question
+  off the screen from the moment the errand finished until Vespers, and
+  **every suite in this repo would have stayed green**, because the accusation
+  overlay opens on `talked:constable` and not on the line: the player would
+  have got the panel with no line asking for it, for the rest of the day, and
+  nothing would have said so. `validateAgainstNpcs` already holds `{ACCUSE}`
+  and `openAccusation` to each other in both directions and cannot see
+  `data/quests/` at all, which is #501's lesson pointed at a third target.
+  `validateQuestSet` takes `tokens` now (the frame's token keys, passed from
+  `src/main.js`) and refuses the ending. Broken on purpose from green:
+  `written.dialogueState` set to `verse-englished` fails four assertions, one
+  of them the validator's and one of them a walk that checks `{ACCUSE}` is
+  back on the screen after the errand ends. The rule is about terminal stages
+  and not about every stage, because a terminal state is the permanent one;
+  the middle stages are the file's own business, and `rogers-verse` answers
+  them by ending each of Sir Roger's three errand states with the question in
+  his own words.
+
+- **The reputation bands are not one per errand, and the `closing` line at 5
+  was wrong the moment the dozen closed** (#662). The ceilings went from 3, 2
+  and 5 to 7, 5 and 12, which `validateQuestSet`'s rule 5 reads off the files,
+  so every band that shipped is still reachable and nothing was forced. What
+  went in is four outer (2, 3, 5, 7), three inner (1, 2, 4) and five closing
+  (1, 3, 5, 8, 12): fewer rungs than errands on purpose, so that most favours
+  are run and not mentioned. One shipped line had to be rewritten rather than
+  added to — `closing` at 5 said "Every favour anybody in this castle thought
+  to ask of a passing clerk, you did", which was true of a five-errand castle
+  and is a lie in a twelve-errand one. That sentence moved to the band at 12,
+  where it is true again.
+
+- **The walk in `test/quest.mjs` is this row's acceptance criterion and it
+  grew from five errands to twelve** (#663). One walk through every errand,
+  the same calls through a manager built with no side quests, and the two
+  journals compared by clue id and order: a side quest that granted, hid or
+  gated one clue is a difference of one id. It is identical at twelve the way
+  it was at five, every errand finishes inside it, and both ward counters end
+  at their ceilings. Two lines of its order are not free and are commented as
+  such: Thomas Wykes is at the cart at Terce and nowhere at any other bell, so
+  his two calls are last, and the sentry is asleep at Prime, so the dice are
+  still after the ring. Three rails were broken on purpose from a green
+  baseline (#34) — rule 6 above, an errand naming `cornered` (rule 1, four
+  assertions including `test/mystery.mjs`'s unreachable-state check), and a
+  file left out of `index.json` (the directory rail, which named the missing
+  file on both sides). `npm test` thirteen suites green; `plan-vs-scene` and
+  `built` failed twice on the way there on `Error: Port 8125 is already in
+  use`, which is #655 exactly and not this row's.
