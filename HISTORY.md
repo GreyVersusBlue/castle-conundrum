@@ -5209,7 +5209,11 @@ than the one it said it was.
   is running it at `main`. The beat teleports the camera to a cell, waits two
   `requestAnimationFrame`s and reads the prompt the running `InteractionSystem`
   offers, which is a real-time assertion under a software-rendered Chromium and
-  inconclusive from `npm test` by #53's own terms. It wants the same treatment
+  inconclusive from `npm test` by #53's own terms. **CI agrees it is timing and
+  not content**: this branch's run passed that suite in 187.3 s against 9.4 s
+  here, so the beat gets its two frames on a runner that is twenty times slower
+  per suite and does not get them on a fast machine, which is the opposite of
+  the way a flake usually reads. It wants the same treatment
   this row just gave `tools`: a rail that does not depend on how fast the machine
   under it happens to be. Left alone because it is a different file and a
   different lane, and written down here rather than scrolled past, which is the
