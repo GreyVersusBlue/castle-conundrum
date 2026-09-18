@@ -5460,6 +5460,22 @@ Nine sentences and two screenshots, to the bar rank 2's photograph set:
 - Whether the hand reads as a hand at 0.78 m in a 72-degree view, and whether
   coming up from below the frame over ~0.3 s reads as reaching or as popping.
 
+### #633's chapel-candles flake, with the control run
+
+**It tracks how busy the machine is, and this row watched it turn.** The first
+ten runs of this row's work were green on that beat, with five sessions testing
+beside it and `mystery` taking 11.4 s; the last eight were red, alone, with
+`mystery` taking 6.4 s. #633 read it as a fast machine not giving the beat its
+two `requestAnimationFrame`s and a slow CI runner giving them, off one data
+point — 187.3 s in CI against 9.4 s here. **Load is the same axis seen from the
+other end, on one machine, in one afternoon.**
+
+And the control #633 could infer but did not run, run here: `git checkout
+origin/main -- src test`, which takes the rig out of the page and this row's
+beat out of the suite, then the suite twice. **Red both times, the same
+assertion, the same sentence.** It is not this row's, and now that is measured
+rather than argued from a diff.
+
 ### And a finding on the way past: thirteen suites on fixed ports, five sessions at once
 
 **`npm test` is not safe to run twice at the same time on one machine, and
