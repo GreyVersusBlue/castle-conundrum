@@ -210,6 +210,17 @@ ships, so no asset was needed and none was added. **Rank 6 is still open**:
 the other forty, the ambient talk, the children and dogs, and every activity
 that wants a clip nobody has baked yet.
 
+**The byte-exactness rail is green on both line endings, on both machines**
+(#624 to #626, 2026-09-17). `test/tools.mjs` failed all three of its
+byte-exactness rows on a Windows checkout and passed them in CI for as long as
+the rail had existed: `data/scene-config.json` comes out of git CRLF here and
+both the splice and the cut that undoes it were written in LF, so the file came
+back one byte short. `tools/place.mjs` takes every newline it writes from
+`eolOf(source)` now, and the suite builds an LF copy and a CRLF copy of the real
+file and asserts over both rather than over whatever git handed the machine. Part
+1 went from 17 assertions to 47. **Nothing in the row is open**, and the two
+things found on the way that are not in it are in `HISTORY.md` under #626.
+
 **Eleven ranked items, numbered 2 to 12, and one unranked row under them that
 holds lane B**: `test/tools.mjs`'s byte-exactness rail is claimed by
 `claude/mystifying-lumiere-49ce52`, so ranks 4c, 5, 9 and 12b are not
@@ -233,9 +244,11 @@ rank 12 two** — rank 8's first errand, the journal's tab, four more errands
 (#597 to #599) and reputation by ward (#612 to #615), rank 12's placement
 editor and then its budget suite (#607 to #611). Rank 8's next increment is a
 container's: the seven errands left.
-**Rank 12 is down to the dialogue format**, and whoever takes move-and-delete
-walks into a live failure: `test/tools.mjs`, the byte-exactness rail that
-increment has to keep, is red on a Windows checkout and green on a Linux one. **Rank 9's map shipped the same day** (#588 to #591),
+**Rank 12 is down to the dialogue format and move-and-delete**, and the live
+failure that was waiting for whoever took the second of those is gone:
+`test/tools.mjs`'s byte-exactness rail was red on a Windows checkout and green
+on a Linux one, and it now runs over both endings on either machine (#624 to
+#626). **Rank 9's map shipped the same day** (#588 to #591),
 and what is left of that row is the town, behind rank 4's yard. Of them all, 6
 is the one that reads `data/npcs.json`'s `cast`, which is what rank 10 is
 for, so a session running beside that one is better off on 8 or
@@ -386,7 +399,7 @@ that survivable (#522).
 | 10 | Bodies: a shared low-poly rig for the fifty | 1 | Fable 5.1 | Local: net | — | C | | [Bodies](SPECS.md#bodies) |
 | 11 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 | Container to the Node line, local: GPU past it | **after 2** | D | | [Feel](SPECS.md#feel) |
 | 12 | The tooling: move-and-delete, a dialogue format (the budget suite shipped, #607 to #611) | 2+ | Opus 5 | Container | — | B (12b), C (12c) | `claude/r12a-budget-suite` (12a) | [The tooling](SPECS.md#the-tooling) |
-| — | **Unranked, and it holds lane B**: `test/tools.mjs`'s byte-exactness rail, red on Windows and green in CI since it was written | ¼ | Opus 5 | Container | — | B | `claude/mystifying-lumiere-49ce52` | [The tooling](SPECS.md#the-tooling) |
+| — | **Unranked, and it holds lane B**: ~~`test/tools.mjs`'s byte-exactness rail, red on Windows and green in CI since it was written~~ shipped 2026-09-17 (#624 to #626). The row comes out of this table in the pass that confirms the merge | ¼ | Opus 5 | Container | — | B | `claude/mystifying-lumiere-49ce52` | [The tooling](SPECS.md#the-tooling) |
 
 **`ROADMAP.md` is these three columns turned into an order**: which row to
 take first, what each one unblocks, and which ones two sessions may hold at
@@ -620,7 +633,11 @@ diff is for a person. The write is a text splice and not a re-serialise,
 because `JSON.stringify(JSON.parse(raw), null, 2)` over that file is not that
 file: 94212 bytes go out as 98330 and `"intensity": 2.0` comes back as `2`
 (#584). `test/tools.mjs` holds it to byte-exactness by cutting the new row
-back out and comparing the whole file.
+back out and comparing the whole file, over an LF copy and a CRLF copy of the
+real file on either machine: the splice takes its newline from the file it is
+splicing into, because a hardcoded `\n` rewrote the one existing line ending
+the splice has to put back and made `npm test` red on Windows and green in CI
+for as long as the rail existed (#624 to #626).
 
 Dev-only is two independent halves — `import.meta.env.DEV` around the import,
 `apply: 'serve'` on the plugin — and neither is trusted: `test/built.mjs`

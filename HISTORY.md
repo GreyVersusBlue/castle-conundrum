@@ -4894,3 +4894,116 @@ see #618's second half.
   What this does not settle is what happens when Devon next re-ranks. A rank
   is his judgement about worth, not an id, and if he renumbers the eleven that
   is a renumbering and this note is spent.
+
+## The byte-exactness rail, red on Windows since the day it was written (2026-09-17)
+
+**`npm test` has been failing on the dev machine and passing in CI for as long
+as `test/tools.mjs` has existed**, and both halves of the rail were wrong in the
+same way. `data/scene-config.json` is checked out CRLF here (`core.autocrlf` is
+`true`, 2546 line endings), and the splice and the cut that undoes it were both
+written in LF. All three rows said the same thing: **96758 bytes in, 96757 back
+out.** Decisions #624 to #626, on `claude/mystifying-lumiere-49ce52`, lane B.
+Part 1 of the suite goes from 17 assertions to 47 and the file from 38 to 70.
+Twelve of thirteen suites green, `npm run build` green, `npm run play` not run
+(#53); the thirteenth is `plan-vs-scene` and it is written up at the bottom.
+
+**This is #13 and #147 in one bug.** #13 says a check that only prints is a
+check that gets ignored, and a check that is red on the machine the work happens
+on gets ignored the same way: it was found by #618 on the way past, written
+down, and left, because a red line you have learned to scroll past is worth
+nothing. #147 is the other half, and it bites twice below. The rail's own
+comment claimed "every byte that was not the new row is the byte it was", and on
+the machine CLAUDE.md calls the dev machine it was measuring a different file
+than the one it said it was.
+
+- **The splice writes the file's own line ending, not this repo's** (#624).
+  `tools/place.mjs` now takes every newline it emits from `eolOf(source)`:
+  `insertRow`'s two, and the ones `formatRow` puts between a row's lines and
+  inside a `tile` it breaks over three. A splice into a CRLF file leaves a CRLF
+  file and a splice into an LF file leaves an LF one.
+
+  **The load-bearing byte is not the row's, it is the one the splice has to put
+  back.** A non-empty array's last element has no comma, so `insertRow` strips
+  the whitespace before the closing bracket with `/\s*$/` and hangs a `,` off
+  the element instead. That strip eats the line ending *and* the bracket's
+  indent, and `${eol}${text}${eol}${pad}` is what restores them. Writing `\n`
+  where the file had `\r\n` is therefore a one-byte change in a region the splice
+  was never asked to touch, and that is the whole of the 96758 to 96757.
+  `formatRow` keeps `\n` as its default because a row on its own has no file to
+  read an ending off; `insertRow` is the only caller that has one and it always
+  passes it.
+
+  **Nothing else needed changing, and that was checked rather than assumed.**
+  `vite.config.js`'s `/__place` handler reads with `utf8` and writes back the
+  string `insertRow` returned, so it normalises nothing at either end.
+  `tools/encode-assets.mjs` is the other writer of this file and it rewrites
+  quoted paths with `split().join()`, which cannot see a line ending at all.
+
+  **What a person actually gets.** Driving the handler's own code path against
+  the real file on disk: 7 added lines, 112 bytes, CRLF count 2546 to 2553, zero
+  bare LF. The same write with the old writer produced a git diff that looked
+  identical and left **8 bare LFs in the working tree**, with git warning `LF
+  will be replaced by CRLF the next time Git touches it`. The diff is the product
+  (`place.mjs`'s own opening argument), so a writer that leaves the file mixed
+  for the next `git add` to rewrite was failing at the thing it exists for while
+  looking like it worked.
+
+- **A rail that reads the working tree reads one machine's working tree, so it
+  builds both endings itself** (#625). `test/tools.mjs` no longer splices into
+  whatever git handed it. It normalises the file to LF, makes a CRLF copy, and
+  runs the whole of part 1 over both: three rows times six assertions, twice,
+  plus `eolOf` read back per copy and the empty-array case in each ending.
+  Neither machine can now be the only one that runs the half that breaks, which
+  was the actual defect. The bug was not that the rail was LF-only. It was that
+  **Windows and CI were running different assertions out of the same file** and
+  the green one was the one anybody looked at.
+
+  The `eolOf` read-back at the top of each pass is there because the rest of the
+  pass takes its expected ending from the same function the writer does. That is
+  a test re-implementing the thing it checks unless something independent pins
+  it, so the loop asserts the LF copy reads as `\n` and the CRLF copy as `\r\n`
+  before trusting `eolOf` for anything else.
+
+- **The byte diff cannot see a newline inside the new row, so the endings are
+  counted as well** (#626). This one came out of breaking the code on purpose and
+  is #147 pointed at a third target. Forcing `formatRow`'s `eol` back to `\n`
+  while leaving `insertRow` correct **leaves the byte-exactness assertion
+  green**: the suite finds the row with `out.indexOf(formatRow(row, 4, eol))` and
+  cuts exactly what it finds, so a row written with the wrong ending is found
+  with the wrong ending and the diff cancels. The rail's headline assertion is
+  blind to the interior of the thing it inserted.
+
+  So every splice now also asserts `strayEndings(out, eol) === 0`, a count of
+  line endings in the written file that are not the file's, and `formatRow` is
+  checked in CRLF directly in part 3. Under that break the count is **8, 14 and
+  7** stray LFs for the three rows.
+
+  **The four breaks, from green, and what each one said** (#34):
+
+  | Break | Result |
+  | --- | --- |
+  | `insertRow` splices `\n` | 10 failures, all CRLF. `and every other byte is the byte it was — 96758 bytes in, 96756 back out`, plus `the previous element got the comma it needed — " },\n"` |
+  | the cut looks for `,\n` and skips `+ 1` | 3 failures, all CRLF. `96758 bytes in, 96760 back out` |
+  | `formatRow` forced to `\n` | 6 failures. **Byte-exactness stayed green**; caught only by `and the file is still CRLF throughout — 8 line ending(s) of the other kind` and by part 3's `and in CRLF when the file it is going into is CRLF` |
+  | `eolOf` always returns `\n` | 7 failures. `eolOf reads this copy as CRLF — "\n"`, then `2545 line ending(s) of the other kind`, and the original symptom exactly: `96758 bytes in, 96757 back out` |
+
+  Every one of them left the LF half of part 1 green, which is the point. That is
+  the half CI runs, and it is why none of this was ever visible there.
+
+- **And the thing this row did not fix: `plan-vs-scene`'s chapel-candles beat is
+  red on this machine, four runs out of four.** `none of the 12 cells between 0.9
+  and 2.8 m of the chapel candles offers them (the nearest offered "Press E to
+  ring the bell")`. #618 recorded the same assertion as intermittent, two fails
+  then five passes. Here it does not pass at all.
+
+  It is not this branch's. `git diff main...HEAD --name-only` is three files,
+  `BACKLOG.md`, `test/tools.mjs` and `tools/place.mjs`, and that suite reads none
+  of them: `src/` and `data/` are byte-identical to `main`, so running it here is
+  running it at `main`. The beat teleports the camera to a cell, waits two
+  `requestAnimationFrame`s and reads the prompt the running `InteractionSystem`
+  offers, which is a real-time assertion under a software-rendered Chromium and
+  inconclusive from `npm test` by #53's own terms. It wants the same treatment
+  this row just gave `tools`: a rail that does not depend on how fast the machine
+  under it happens to be. Left alone because it is a different file and a
+  different lane, and written down here rather than scrolled past, which is the
+  mistake #618 is an example of and this entry is the correction to.

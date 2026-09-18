@@ -136,6 +136,15 @@ comparing the whole file, because `JSON.stringify(JSON.parse(raw), null, 2)`
 over that file is not that file: 94212 bytes go out as 98330 (#584). Two
 sessions splicing into it is two splices neither one tested against.
 
+**That rail was itself red on the dev machine until 2026-09-17** (#624 to
+#626): the file is checked out CRLF on Windows and LF on Linux, and the splice
+and the cut were both written in LF, so `npm test` was green in CI and one byte
+short here. It runs over both endings on either machine now, so a session in
+this lane starts from thirteen green suites rather than twelve. What a row in
+this lane still has to keep is the rail itself: 47 assertions in part 1, both
+endings, and a stray-ending count per splice, because the byte diff alone
+cannot see a newline **inside** the row it inserted.
+
 Lane C is the `cast` block **specifically**, not all of `data/npcs.json`. R8
 and R12c write per-person `states` and `default` line arrays, which is a
 different region of the same file and merges cleanly. R8 also owns the
@@ -272,7 +281,7 @@ plan's list and not a second one (#588 to #591).
 | Row | Model | Where | Lane | Note |
 | --- | --- | --- | --- | --- |
 | **R10** Bodies | Fable 5.1 | Local: net | C | Trades activity clips with R6 in both directions; neither strictly gates the other. Try a scaled-down child before fetching anything. |
-| **R12b** Move-and-delete | Opus 5 | Container | B | Turns the editor from a stopwatch into an editor. Every content row got cheaper the day the editor landed and none was blocked on it; the same is true of this. **Starts from a red suite**: `test/tools.mjs`'s byte-exactness rail passes on LF and fails on CRLF, so it is red on the dev machine and green in CI, written up under #607 to #611. |
+| **R12b** Move-and-delete | Opus 5 | Container | B | Turns the editor from a stopwatch into an editor. Every content row got cheaper the day the editor landed and none was blocked on it; the same is true of this. **No longer starts from a red suite**: `test/tools.mjs`'s byte-exactness rail passed on LF and failed on CRLF, which made it red on the dev machine and green in CI; it runs over both endings now (#624 to #626), and a move that rewrites a row in place has to keep it that way. |
 | **R12c** The dialogue format | Opus 5 | Container | C | Deliberately unspecified. `WISHLIST.md`'s paragraph is the whole brief. |
 | **R4a** The bells call | Opus 5 | Container | A | Has to overturn #533 rather than work around it. The cheapest shape that does not fight it: `day2.watches`, its own list, with the engine reading whichever list the day names. |
 | **R4b** The `since` field | Opus 5 | Container | A | A fact in `data/lore.json` that changes with what the player did on day one. It needs second-day state to be about, and `day2.knew` (#575) is that state, shipped. |

@@ -94,6 +94,15 @@ The project lived in `GreyVersusBlue/tools-and-games` under
   `pathToFileURL` — a bare `C:\...` is read by Node as URL scheme `c:` and
   refused outright. Do not lean on shell brace expansion either. `npm run play`
   is written to be run there, on a real GPU.
+- **Every committed text file is CRLF here and LF in CI, so a suite never reads
+  a line ending off the working tree** (#625). `core.autocrlf` is `true` on the
+  dev machine: `data/scene-config.json` carries 2546 CRLFs here and 2546 LFs in
+  CI. Anything that writes into a repo file takes its newline from the file
+  (`eolOf` in `tools/place.mjs`), and anything that asserts over one builds both
+  endings and asserts over both. A rail that skips this is two different rails
+  on the two machines, and `test/tools.mjs` was exactly that for its whole life:
+  green in CI, one byte short on Windows, for the three assertions it exists for
+  (#624).
 - **A check that only prints is a check that gets ignored** (#13). Anything you
   add that verifies something exits non-zero on failure. `test/run.mjs` has no
   skip list and CI has no known-failures file.
