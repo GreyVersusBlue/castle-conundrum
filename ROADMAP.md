@@ -136,14 +136,14 @@ comparing the whole file, because `JSON.stringify(JSON.parse(raw), null, 2)`
 over that file is not that file: 94212 bytes go out as 98330 (#584). Two
 sessions splicing into it is two splices neither one tested against.
 
-**That rail was itself red on the dev machine until 2026-09-17** (#624 to
-#626): the file is checked out CRLF on Windows and LF on Linux, and the splice
+**That rail was itself red on the dev machine until 2026-09-17** (#631 to
+#633): the file is checked out CRLF on Windows and LF on Linux, and the splice
 and the cut were both written in LF, so `npm test` was green in CI and one byte
-short here. It runs over both endings on either machine now, so a session in
-this lane starts from thirteen green suites rather than twelve. What a row in
-this lane still has to keep is the rail itself: 47 assertions in part 1, both
-endings, and a stray-ending count per splice, because the byte diff alone
-cannot see a newline **inside** the row it inserted.
+short here. It runs over both endings on either machine now, so `tools` is no
+longer the suite a session in this lane starts from red. What a row in this
+lane has to keep is the rail itself: 47 assertions in part 1, both endings, and
+a stray-ending count per splice, because the byte diff alone cannot see a
+newline **inside** the row it inserted.
 
 Lane C is the `cast` block **specifically**, not all of `data/npcs.json`. R8
 and R12c write per-person `states` and `default` line arrays, which is a
@@ -202,6 +202,23 @@ of them, plus **R2** on Devon's machine.
 ---
 
 ## 3. The order
+
+### R2 ran on 2026-09-17, and it needs a worktree, not a lane
+
+**The run happened** (#624 to #630) and did not reach the end of the day, so
+gate 1 is half open: the compressed textures, the tower roof at 12 m and the
+gaol roll are answered, and `twelve-at-vespers`, the trusses and the hall's
+luma read are not — which means **R3 and R5 are still gated**. R2 is also
+gated itself now, behind a new rank 1: a castle the player cannot walk in after
+opening the journal, which the run found and which nothing else could have.
+
+**And the lane table below is wrong about R2 in the one way that matters.** It
+gives R2 no lane because it writes no file anything else writes. It does not
+write the tree; it *reads* it for ten minutes at a stretch, with a browser
+holding the page open. Another session's `git checkout` in the same working
+tree wiped this row's uncommitted edits mid-run, and Vite full-reloaded the page
+whenever anything under `src/` changed. **A GPU run belongs in its own
+`git worktree`**, and then it genuinely has no lane.
 
 ### Gate 1 — R2, the GPU run. Do this one first.
 
@@ -281,7 +298,7 @@ plan's list and not a second one (#588 to #591).
 | Row | Model | Where | Lane | Note |
 | --- | --- | --- | --- | --- |
 | **R10** Bodies | Fable 5.1 | Local: net | C | Trades activity clips with R6 in both directions; neither strictly gates the other. Try a scaled-down child before fetching anything. |
-| **R12b** Move-and-delete | Opus 5 | Container | B | Turns the editor from a stopwatch into an editor. Every content row got cheaper the day the editor landed and none was blocked on it; the same is true of this. **No longer starts from a red suite**: `test/tools.mjs`'s byte-exactness rail passed on LF and failed on CRLF, which made it red on the dev machine and green in CI; it runs over both endings now (#624 to #626), and a move that rewrites a row in place has to keep it that way. |
+| **R12b** Move-and-delete | Opus 5 | Container | B | Turns the editor from a stopwatch into an editor. Every content row got cheaper the day the editor landed and none was blocked on it; the same is true of this. **No longer starts from a red suite**: `test/tools.mjs`'s byte-exactness rail passed on LF and failed on CRLF, which made it red on the dev machine and green in CI; it runs over both endings now (#631 to #633), and a move that rewrites a row in place has to keep it that way. |
 | **R12c** The dialogue format | Opus 5 | Container | C | Deliberately unspecified. `WISHLIST.md`'s paragraph is the whole brief. |
 | **R4a** The bells call | Opus 5 | Container | A | Has to overturn #533 rather than work around it. The cheapest shape that does not fight it: `day2.watches`, its own list, with the engine reading whichever list the day names. |
 | **R4b** The `since` field | Opus 5 | Container | A | A fact in `data/lore.json` that changes with what the player did on day one. It needs second-day state to be about, and `day2.knew` (#575) is that state, shipped. |

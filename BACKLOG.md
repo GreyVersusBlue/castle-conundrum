@@ -211,7 +211,7 @@ the other forty, the ambient talk, the children and dogs, and every activity
 that wants a clip nobody has baked yet.
 
 **The byte-exactness rail is green on both line endings, on both machines**
-(#624 to #626, 2026-09-17). `test/tools.mjs` failed all three of its
+(#631 to #633, 2026-09-17). `test/tools.mjs` failed all three of its
 byte-exactness rows on a Windows checkout and passed them in CI for as long as
 the rail had existed: `data/scene-config.json` comes out of git CRLF here and
 both the splice and the cut that undoes it were written in LF, so the file came
@@ -219,12 +219,12 @@ back one byte short. `tools/place.mjs` takes every newline it writes from
 `eolOf(source)` now, and the suite builds an LF copy and a CRLF copy of the real
 file and asserts over both rather than over whatever git handed the machine. Part
 1 went from 17 assertions to 47. **Nothing in the row is open**, and the two
-things found on the way that are not in it are in `HISTORY.md` under #626.
+things found on the way that are not in it are in `HISTORY.md` under #633.
 
-**Eleven ranked items, numbered 2 to 12, and one unranked row under them that
+**Twelve ranked items, numbered 1 to 12, and one unranked row under them that
 holds lane B**: `test/tools.mjs`'s byte-exactness rail is claimed by
 `claude/mystifying-lumiere-49ce52`, so ranks 4c, 5, 9 and 12b are not
-startable until it merges (#602). Rank 1 shipped
+startable until it merges (#602). The **first** rank 1 shipped
 on 2026-09-17 and **the numbers under it were not shifted up** (#619):
 `SPECS.md` and `ROADMAP.md` already name every row by title as well as by
 rank, for exactly this reason (#522), and four wave A sessions were running
@@ -247,26 +247,35 @@ container's: the seven errands left.
 **Rank 12 is down to the dialogue format and move-and-delete**, and the live
 failure that was waiting for whoever took the second of those is gone:
 `test/tools.mjs`'s byte-exactness rail was red on a Windows checkout and green
-on a Linux one, and it now runs over both endings on either machine (#624 to
-#626). **Rank 9's map shipped the same day** (#588 to #591),
+on a Linux one, and it now runs over both endings on either machine (#631 to
+#633). **Rank 9's map shipped the same day** (#588 to #591),
 and what is left of that row is the town, behind rank 4's yard. Of them all, 6
 is the one that reads `data/npcs.json`'s `cast`, which is what rank 10 is
 for, so a session running beside that one is better off on 8 or
 12.
 
-One thing is true of the whole list and worth saying once. **Nothing here has
-been seen on a GPU since Phase 5.** `npm run play` walks the whole intended day
-— twelve people, ten pieces of evidence, three bells, a reload at Sext, the
-accusation and the epilogue, 102 assertions — and no run of it since Phase 5 has
-happened on a machine with real compositing (#53). Rank 2 is that run, and it
-carries six jobs it did not have: nobody has looked at a compressed texture
-(#507) or at the five that shipped after it (#541 to #546), at a tower roof
-from 12 m (#523), at seven trusses over the hall (#527), at a Lauds sky
-(#533), or at the gaol roll on the guardroom barrels (#571, the first built
-slab whose support is another prop) — and nobody has put a thumb on a phone
-(#530). The second standing
-line, "the game has never had a thumb on it", came out with #530: the scheme
-is there, it is in CI, and what is left of it is the feel.
+**It has been seen on a GPU now** (#624 to #630, 2026-09-17). `npm run play`
+ran on Devon's machine with real compositing for the first time since Phase 5,
+and the standing line that nothing here had been looked at comes out with it.
+What that run settled, and what it did not:
+
+**Settled.** The walk up three flights to a tower roof at 12 m and along the
+wall walk, over the cross-wall and down into the ward — Phase 5's own exit
+criterion, met (#523). The compressed textures (#507): 1k `castle_wall_slates`
+at a grazing angle reads as stone, no banding, and the ETC1S/UASTC split holds.
+The gaol roll on the barrel-head (#571). A body at interact range, and what a
+tower roof actually looks like from on top of it, which is mostly parapet.
+
+**Not settled, and rank 2 stays open for it.** The day does not yet run end to
+end, so there is no `twelve-at-vespers`, no shot of the seven trusses from
+under them (#527) and no luma read off the hall floor (#438) — which is what
+ranks 3 and 5 are waiting on, so **both of those gates are still shut**. The
+Lauds sky (#533) is past where the run reaches. Nobody has put a thumb on a
+phone (#530); that half is untouched and is still the feel.
+
+**And the run found the thing it exists to find.** Rank 1 below is a castle you
+cannot walk in after you open the journal, and it is a bug in `src/`, not in
+the suite. Nothing but a hand on a keyboard was ever going to see it.
 
 ## How this repo is worked
 
@@ -381,14 +390,19 @@ in the editor, **12c** the dialogue format.
 
 ## The ranked table
 
-**It starts at 2, and that is not a gap.** Rank 1 shipped on 2026-09-17 and
-its number was retired rather than reused (#619). Every row below is named by
-title in `SPECS.md` and `ROADMAP.md` as well as by rank, which is what makes
-that survivable (#522).
+**It started at 2 and has a 1 again.** The first rank 1 shipped on 2026-09-17
+and its number was retired rather than reused (#619); the rank 1 below is a
+different row, opened the same day by what the GPU run found (#624 to #630).
+That is the retirement rule working as intended rather than against it: a rank
+is a priority and not an id, so the number came back to the top of the list
+when something belonged there. Every row below is named by title in `SPECS.md`
+and `ROADMAP.md` as well as by rank, which is what makes that survivable
+(#522).
 
 | Rank | Item | Size | Model | Where | Gate | Lane | Claimed | Detail |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 2 | A real GPU run of `npm run play`, and somebody looks at the twelve | ¼ | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
+| 1 | The castle you cannot walk: pointer lock after an overlay, and a Present nobody can click | ¼ | Opus 5 | Container | — | D | | [The castle you cannot walk](SPECS.md#the-castle-you-cannot-walk) |
+| 2 | The GPU run: the day end to end, and somebody looks at the twelve (the run happened, #624 to #630) | 1 | Opus 5 | Local: GPU | **after 1** | — | | [The GPU run](SPECS.md#the-gpu-run) |
 | 3 | A new preview and og card, from that run | ¼ | Opus 5 | Local: GPU | **after 2** | — | | [The GPU run](SPECS.md#the-gpu-run) |
 | 4 | A second day: increment 3, the town half and the bells question | 2+ | Opus 5 | 4a/4b container, 4c local | — | A (4a/4b), B (4c) | | [A second day](SPECS.md#a-second-day) |
 | 5 | The hall's covering, and the two windows under it | ¼ | Sonnet 5 | Local: GPU | **after 2** | B | | [The hall covering](SPECS.md#the-hall-covering) |
@@ -399,27 +413,48 @@ that survivable (#522).
 | 10 | Bodies: a shared low-poly rig for the fifty | 1 | Fable 5.1 | Local: net | — | C | | [Bodies](SPECS.md#bodies) |
 | 11 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 | Container to the Node line, local: GPU past it | **after 2** | D | | [Feel](SPECS.md#feel) |
 | 12 | The tooling: move-and-delete, a dialogue format (the budget suite shipped, #607 to #611) | 2+ | Opus 5 | Container | — | B (12b), C (12c) | `claude/r12a-budget-suite` (12a) | [The tooling](SPECS.md#the-tooling) |
-| — | **Unranked, and it holds lane B**: ~~`test/tools.mjs`'s byte-exactness rail, red on Windows and green in CI since it was written~~ shipped 2026-09-17 (#624 to #626). The row comes out of this table in the pass that confirms the merge | ¼ | Opus 5 | Container | — | B | `claude/mystifying-lumiere-49ce52` | [The tooling](SPECS.md#the-tooling) |
+| — | **Unranked, and it holds lane B**: ~~`test/tools.mjs`'s byte-exactness rail, red on Windows and green in CI since it was written~~ shipped 2026-09-17 (#631 to #633). The row comes out of this table in the pass that confirms the merge | ¼ | Opus 5 | Container | — | B | `claude/mystifying-lumiere-49ce52` | [The tooling](SPECS.md#the-tooling) |
 
 **`ROADMAP.md` is these three columns turned into an order**: which row to
 take first, what each one unblocks, and which ones two sessions may hold at
 the same time. This table still ranks; that file sequences (#601).
 
+## The castle you cannot walk
+
+*Where: container. Gate: none; it gates rank 2. Lane: D.*
+
+**Rank 1, and it is a ¼ that stops the game.** Found by the GPU run on
+2026-09-17 (#626, #627). `src/ui.js` calls `document.exitPointerLock()` for
+four overlays — the riddle, the journal, the accusation panel and the verdict
+pane — and `src/quest-manager.js` takes pointer lock back for **the riddle
+alone**. Open the journal and shut it and the player cannot move, cannot look,
+is offered no resume panel, and has no way back but reloading the page:
+measured, W moves the player 3.7 m before and 0.00 m after. Separately, a
+dialogue never releases pointer lock, so its **Present button cannot be clicked
+by a real mouse** — the cursor is captured and every pointer event goes to the
+canvas. **The two hide each other**: open the journal once and Present works
+for the rest of the game, at the price of never walking again. Presenting is
+how four of the twelve are pressed, so neither half is a corner of the game.
+The fix is `src/`, lane D, and it wants a guard-rail that presses J twice and
+asserts the player can still move. `test/play-castle.mjs` already asserts both,
+red, and works around both so the rest of the day can be played.
+
 ## The GPU run
 
-*Where: local, GPU, both of them. Gate: rank 3 is after rank 2. Lane: none.*
+*Where: local, GPU, both of them. Gate: rank 2 is after rank 1; rank 3 after 2. Lane: none.*
 
-**Ranks 2 and 3.** `npm run play` has not run on a machine with real GPU
-compositing since Phase 5 (#53). It is 102 assertions over the whole day and it
-writes a numbered screenshot per beat into `shots/play/`. Two things come out
-of one run: whether the walk, the stairs and the wall walk actually behave, and
-whether **twelve NPCs off three bodies read as twelve** — photograph all twelve
-in the Great Hall at Vespers and look (`PLAN.md`, Risks). **And now a third:
-nobody has looked at a compressed texture.** #507 put ETC1S on every diffuse and
-UASTC on every normal and ARM map on a reading of what each codec does to which
-channels, checked by nothing but bytes and a headless software rasteriser.
-Whether 8 m of `castle_wall_slates` bands is a question only a real render
-answers.
+**Ranks 2 and 3. The run happened on 2026-09-17** (#624 to #630) and the row
+stays open because the day does not reach the end yet. What it costs to get
+there is now a known list rather than a guess: rank 1 above, and a walker that
+still wanders onto a stair (#630). **What is still unanswered is the visual
+half** — `twelve-at-vespers` with six in the Great Hall, the seven trusses from
+under them (#527), and the luma read off the hall floor (#438). Ranks 3 and 5
+wait on exactly those, and the beats that take them are written and in the
+file; nothing reaches them.
+
+Settled by the run and not open any more: the compressed textures (#507) look
+right on a real GPU, the three flights to a tower roof at 12 m are walkable
+(#523), and the gaol roll reads on the barrel-head (#571).
 
 Rank 3 depends on rank 2 having happened. The board preview and og card in
 `tools-and-games` are from before Phase 3: they show the archway wide open in a
@@ -637,7 +672,7 @@ back out and comparing the whole file, over an LF copy and a CRLF copy of the
 real file on either machine: the splice takes its newline from the file it is
 splicing into, because a hardcoded `\n` rewrote the one existing line ending
 the splice has to put back and made `npm test` red on Windows and green in CI
-for as long as the rail existed (#624 to #626).
+for as long as the rail existed (#631 to #633).
 
 Dev-only is two independent halves — `import.meta.env.DEV` around the import,
 `apply: 'serve'` on the plugin — and neither is trusted: `test/built.mjs`

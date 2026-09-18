@@ -4895,6 +4895,203 @@ see #618's second half.
   is his judgement about worth, not an id, and if he renumbers the eleven that
   is a renumbering and this note is spent.
 
+## The GPU run: somebody finally played it (2026-09-17)
+
+**Rank 2, claimed on `claude/r2-gpu-run`.** `npm run play` opens a real window
+and plays the whole day with pointer lock, WASD and real key presses. No run of
+it had happened on a machine with real GPU compositing since Phase 5 (#53). One
+did, on Devon's machine, twelve times. Decisions #624 to #630. Nothing in `src/`
+changed; `test/play-castle.mjs` and `test/harness.mjs` did.
+
+**The day still does not reach the end, and the row stays open.** What follows
+is what twelve runs settled, in the order the run hits them.
+
+- **`npm run play` needs a focused window and a quiet tree, and neither was
+  written down** (#624). Two separate things stopped the suite before it played
+  a single beat, and both look like bugs in the castle.
+
+  Pointer lock never engaged from a shell that did not have window focus:
+  Chrome refuses `requestPointerLock` on a document whose window is not the
+  foreground one, and says so as `WrongDocumentError: The root document of this
+  element is not valid for pointer lock`, which names neither focus nor
+  permissions. The baseline run died at beat 18 with the whole day unplayed.
+  `page.bringToFront()` before the start click. Verified both ways: the same
+  script locked on a plain click in the foreground and threw backgrounded.
+
+  Then the page reloaded mid-run and threw away the scene probe, and the next
+  camera read failed with `Cannot read properties of undefined (reading
+  'updateWorldMatrix')` — an error about the probe that says nothing about the
+  page having restarted underneath it. Vite full-reloads on any change in its
+  module graph. `npm run play` is a ten-minute walk on a machine somebody is
+  using, in a repo other sessions are working in. Measured: five screenshots
+  written into `shots/play/` left the probe alive, one touch of `src/main.js`
+  with its own unchanged bytes killed it. `serveDev(port, { hmr: false })`.
+  **It is `hmr` and not `watch`**, and both were tried: with `server.watch:
+  null` the touch still reloaded the page.
+
+- **The suite walks the castle's own path graph now** (#625).
+  `test/play-castle.mjs` steered by aiming at a target and holding W, with one
+  sideways nudge when the distance stopped changing. That is enough in open
+  ground and hopeless against a wall with a door in it, and every beat of the
+  intended path is a walk across the castle: the first complete run reported
+  "walked to the cook in kitchen — never got in range" with the player pressed
+  against the far side of the porter's gate, and the same for the porter, the
+  apprentice, the cloak and the bell. Four people and a bell, all reading as
+  unreachable, none of them unreachable.
+
+  `walkability(plan).path(from, to)` already existed and is what
+  `src/stations.js` walks the twelve along when a bell goes. The player walks it
+  now, thinned to a waypoint every 2.5 m and to every corner, as a pre-walk
+  before the old aim-and-hold loop does the last few metres, so every arrival
+  predicate in the file is unchanged. Both ends snap to the nearest standing
+  cell within 4 m, because neither reliably is one: the bell hangs in a ring,
+  the cloak lies on a crate, and the player is routinely wedged where `cellAt`
+  answers null. Three missed waypoints in a row re-plans from where the body
+  actually is, twice at most.
+
+- **Four overlays take pointer lock and only one gives it back, and the game is
+  unplayable after the journal** (#626). `src/ui.js` calls
+  `document.exitPointerLock()` for the riddle, the journal, the accusation panel
+  and the verdict pane. `src/quest-manager.js` passes
+  `() => this.controlsRef.lock()` as the riddle's `onClose`. Nothing passes
+  anything for the other three, and `main.js`'s `unlock` listener will not offer
+  its resume panel because an overlay is open at the moment it fires.
+
+  Measured on a real GPU with a real keyboard: before the journal, W moves the
+  player 3.70 m; after J and J again, W moves 0.00 m; a plain click on the
+  canvas changes nothing, because nothing is listening on it;
+  `window.__player.lock()` restores it and W moves 3.74 m again. A player has no
+  `window.__player`. **The only way out of a castle you cannot walk is to reload
+  the page.**
+
+  **This is the answer to what `npm run play` is for.** Thirteen suites are
+  green on it. `test/quest.mjs` drives the same path through the real manager
+  against a UI that records instead of rendering; `test/plan-vs-scene.mjs`
+  places the camera rather than walking it. Neither has a pointer lock to lose.
+
+- **And a dialogue never releases pointer lock, so its Present button cannot be
+  clicked** (#627). The cursor is captured, every pointer event goes to the
+  locked element, and Playwright spends thirty seconds on a button it agrees is
+  visible, enabled and stable: `canvas intercepts pointer events`.
+
+  **The two bugs hide each other**, which is why neither had been reported. Open
+  the journal once and pointer lock is gone for good, which makes Present
+  clickable for the rest of the game, at the price of never walking again. Play
+  without opening the journal and you can walk and cannot present. Presenting is
+  how four of the twelve are pressed.
+
+  Neither is fixed here. `SPECS.md`'s scope for this row is "nothing in `src/`",
+  and `src/main.js`'s player rig is lane D, which rank 6 held while this ran
+  (#602). Both are asserted in `test/play-castle.mjs`, red, and both are worked
+  around so the rest of the day can be played. They are **rank 1** in
+  `BACKLOG.md` now.
+
+- **The Bakehouse descent was written with its flight's head and foot swapped**
+  (#628). `test/play-castle.mjs`'s ten waypoints down the Bakehouse Tower were a
+  mirror of the Kitchen Tower's with the mirror applied to the coordinates and
+  not to the stairs. The Bakehouse's ground door faces the other way, so
+  `doorEast` flips and `sideX` with it: the plan puts `bakehouse-tower-stair-2`
+  sloping from (1.65, 4.00) to (-1.65, 7.90), head west and foot east, and the
+  file called x +1.75 "the top" and x -1.8 "the foot". The lower flight's two
+  legs stood at x +0.75 against a flight the plan puts at x -0.75.
+
+  What that does to a body: from the level-2 floor at 8.00 the only way onto
+  that flight is at its head, 7.90, one 0.10 m step down; at the foot end the
+  flight is 4.12 under a floor at 8.00 and `standAt` refuses it. So the player
+  walked to the wrong end, was refused, and stood at 8.00 for the rest of the
+  day — four legs "reached" with not one metre of descent in them, then a
+  Constable who could not be reached because the player was two storeys over his
+  head. **`test/layout.mjs` cannot see this and is right not to**: its check
+  walks a body up and down every flight starting ON the flight, which is the
+  flight's own question. Getting onto one from the floor beside it is a
+  different question and nothing asked it.
+
+  The rule that came out of it, and it holds for the third flight too: **square
+  on to a flight, never diagonally across it.** Over a flight's own footprint
+  there is nothing to stand on at floor height, so a body crossing that band
+  diagonally is refused and slides along it. Reach the flight's axis first, then
+  walk down it.
+
+- **Two checks in this file were dead and one of them was green** (#629). Filed,
+  not rewritten, because this row's scope is the run.
+
+  `interior hall walls are the same height as the outer walls` matches zero
+  meshes: it looks for Kenney `wall_*` and `wall-half*` mesh names, and the
+  walls became procedural runs carrying a `planId` and no mesh name when Phase 3
+  rebuilt them. Both arrays come back empty and the assertion fails on every
+  run. `test/plan-vs-scene.mjs` holds every run's box against the plan at
+  0.01 m, which is strictly stronger, so the check should go rather than be
+  repaired.
+
+  `no brazier is sealed inside the stonework` reports `IN Scene`: the hall
+  brazier's bowl falls inside the **gothic statue's** bounding box, and the
+  check counts anything over 1.5 m tall as stonework. The furniture check eighty
+  lines below documents that exact misfire and dodges it by matching `c.name`
+  against `/^(wall|tower|column)/` — which, since the walls stopped having
+  names, matches nothing, so **that check has been passing vacuously**. This is
+  #147 twice in one file: the assertion's comment is the thing that is wrong,
+  and a check that cannot fail is not a check (#13).
+
+- **What the GPU actually showed** (#630). The row's other half is that somebody
+  looks, so:
+
+  **A tower roof at 12 m is mostly parapet.** The climb works: three flights,
+  `Kitchen Tower, the roof` on the HUD, the camera at 13.7. The view east over
+  the plan that #523 was for is largely blocked by the crown's own merlons, and
+  their inward faces are **near-black** — unlit surfaces under ACES with
+  photographic dark slate, the same failure mode #438 measured on the
+  cross-wall, at a spot the hemisphere fill at 2.0 does not reach. From on top
+  of a tower you mostly see black slabs.
+
+  **The kit and the maps do not look like one castle.** The pixel-art
+  crenellations and the kit's stone stairs sit directly against 1k photographic
+  brick and slate, and at a tower top and in the chapel they read as two games.
+  That is #411's trade made visible; it was always the known cost and nobody had
+  seen the size of it.
+
+  **A body at interact range is close to a silhouette.** The Constable in the
+  chapel is a dark shape with white hair and a red collar. Whether twelve read
+  as twelve is not answered here — the Vespers shot is the beat that answers it
+  and the run does not reach it — but the lighting on the bodies is going to be
+  as much of that question as the tint is, and the fourth body (#616 to #619)
+  does not change it.
+
+  **The compressed textures are fine** (#507). 1k `castle_wall_slates` at a
+  grazing angle a metre from the camera reads as stone: no banding, no blocking,
+  detail intact. The ETC1S-on-diffuse, UASTC-on-normal-and-ARM split chosen on a
+  reading of the codecs holds up on a real GPU, and that question is closed.
+
+  **The gaol roll reads** (#571). It lies on the barrel-head rather than
+  floating over it.
+
+  **And one thing seen and not isolated.** With the camera at (25.5, 17.6) —
+  which `makePlan` puts unambiguously inside the chapel's 2.8 m disc, and there
+  is no garden room in `plan.rooms` at all — the HUD read `East barbican
+  garden`. Whether that is a stale line (the room is recomputed only on frames
+  the player is moving) or a wrong one was not chased down. It is written here
+  so the next person does not have to find it twice.
+
+**Where the run stopped.** Run twelve reached 81 beats with 7 failures: the
+whole wall walk, Prime's conversations, the gaol roll, the first bell, Terce's
+cart and the merchant's admission. It stalled with the player at (23.4, 14.4) on
+**level 1**, partway up the Chapel Tower's stairs. The path graph treats a
+flight as walkable floor, so the shortest route out of the chapel runs across
+the stair ramp, the player is driven up it, and every re-plan then starts a
+storey too high. The fix looks small — drop ramp and wrong-level waypoints when
+both ends are on the same storey — and it is not in this branch, because a fix
+nobody has run is not a fix (#53).
+
+**What this cost, and the rule it bought.** Twelve runs at about ten minutes
+each. Two of them were lost to things that had nothing to do with the castle: a
+run killed by another session's `git checkout` in the same working tree, which
+wiped this branch's uncommitted edits to both test files, and a run killed by
+Vite reloading the page when a file changed under `src/`. **A GPU run wants a
+working tree nobody else is holding.** `ROADMAP.md` gives R2 no lane, on the
+grounds that it writes no file anything else writes. That was wrong in the one
+way that matters: it does not write the tree, it *reads* it for ten minutes at a
+time, and a checkout underneath it is fatal. The answer is a `git worktree`, and
+the second half of this row was run from one.
+
 ## The byte-exactness rail, red on Windows since the day it was written (2026-09-17)
 
 **`npm test` has been failing on the dev machine and passing in CI for as long
@@ -4902,10 +5099,20 @@ as `test/tools.mjs` has existed**, and both halves of the rail were wrong in the
 same way. `data/scene-config.json` is checked out CRLF here (`core.autocrlf` is
 `true`, 2546 line endings), and the splice and the cut that undoes it were both
 written in LF. All three rows said the same thing: **96758 bytes in, 96757 back
-out.** Decisions #624 to #626, on `claude/mystifying-lumiere-49ce52`, lane B.
+out.** Decisions #631 to #633, on `claude/mystifying-lumiere-49ce52`, lane B.
 Part 1 of the suite goes from 17 assertions to 47 and the file from 38 to 70.
 Twelve of thirteen suites green, `npm run build` green, `npm run play` not run
 (#53); the thirteenth is `plan-vs-scene` and it is written up at the bottom.
+
+**Written as #624 to #626 and landed at #631 to #633.** The GPU run merged as
+PR #39 while this was being built and took #624 to #630. The rule that would
+have avoided it is the one #619 already wrote down, read `HISTORY.md` on
+`origin/main` at the moment you write the entry, and it was followed: the
+numbers were read off `origin/main` at `e8052e8`, which was `origin/main` when
+this branch was cut and still `origin/main` an hour later. **Reading at write
+time is not enough on its own; the read has to be a fresh fetch.** That is the
+third renumber in two days from the same cause and the cheap version of the
+fix is one command, `git fetch origin` immediately before the entry is written.
 
 **This is #13 and #147 in one bug.** #13 says a check that only prints is a
 check that gets ignored, and a check that is red on the machine the work happens
@@ -4916,7 +5123,7 @@ comment claimed "every byte that was not the new row is the byte it was", and on
 the machine CLAUDE.md calls the dev machine it was measuring a different file
 than the one it said it was.
 
-- **The splice writes the file's own line ending, not this repo's** (#624).
+- **The splice writes the file's own line ending, not this repo's** (#631).
   `tools/place.mjs` now takes every newline it emits from `eolOf(source)`:
   `insertRow`'s two, and the ones `formatRow` puts between a row's lines and
   inside a `tile` it breaks over three. A splice into a CRLF file leaves a CRLF
@@ -4949,7 +5156,7 @@ than the one it said it was.
   looking like it worked.
 
 - **A rail that reads the working tree reads one machine's working tree, so it
-  builds both endings itself** (#625). `test/tools.mjs` no longer splices into
+  builds both endings itself** (#632). `test/tools.mjs` no longer splices into
   whatever git handed it. It normalises the file to LF, makes a CRLF copy, and
   runs the whole of part 1 over both: three rows times six assertions, twice,
   plus `eolOf` read back per copy and the empty-array case in each ending.
@@ -4965,7 +5172,7 @@ than the one it said it was.
   before trusting `eolOf` for anything else.
 
 - **The byte diff cannot see a newline inside the new row, so the endings are
-  counted as well** (#626). This one came out of breaking the code on purpose and
+  counted as well** (#633). This one came out of breaking the code on purpose and
   is #147 pointed at a third target. Forcing `formatRow`'s `eol` back to `\n`
   while leaving `insertRow` correct **leaves the byte-exactness assertion
   green**: the suite finds the row with `out.indexOf(formatRow(row, 4, eol))` and
