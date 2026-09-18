@@ -194,6 +194,23 @@ of them, plus **R2** on Devon's machine.
 
 ## 3. The order
 
+### R2 ran on 2026-09-17, and it needs a worktree, not a lane
+
+**The run happened** (#624 to #630) and did not reach the end of the day, so
+gate 1 is half open: the compressed textures, the tower roof at 12 m and the
+gaol roll are answered, and `twelve-at-vespers`, the trusses and the hall's
+luma read are not — which means **R3 and R5 are still gated**. R2 is also
+gated itself now, behind a new rank 1: a castle the player cannot walk in after
+opening the journal, which the run found and which nothing else could have.
+
+**And the lane table below is wrong about R2 in the one way that matters.** It
+gives R2 no lane because it writes no file anything else writes. It does not
+write the tree; it *reads* it for ten minutes at a stretch, with a browser
+holding the page open. Another session's `git checkout` in the same working
+tree wiped this row's uncommitted edits mid-run, and Vite full-reloaded the page
+whenever anything under `src/` changed. **A GPU run belongs in its own
+`git worktree`**, and then it genuinely has no lane.
+
 ### Gate 1 — R2, the GPU run. Do this one first.
 
 **Local, GPU, Opus 5, size ¼.** Not because it is the hardest but because it is

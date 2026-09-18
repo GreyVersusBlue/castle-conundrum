@@ -41,8 +41,11 @@
 // npm run play
 
 import { serveDev, launch, prepPage, threeUrl, ROOT } from './harness.mjs';
-import { attachSceneProbe, waitForProbe, walkTo as driveTo, wait, textContent } from './drive.mjs';
+import { makePlan, walkability } from '../src/castle-plan.js';
+import { partsOf } from './gltf.mjs';
+import { attachSceneProbe, waitForProbe, walkTo as driveTo, wait, textContent, aimAt } from './drive.mjs';
 import fs from 'node:fs';
+import sharp from 'sharp';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -79,23 +82,95 @@ const HALL_BRAZIER = [-20.0, 10.0];
 // src/castle-plan.js.
 const HALL_TABLE = { min: [-20.9, 0, 10.171], max: [-19.1, 0.549, 10.829] };
 
+/* ---------------------------------------------------------------- the map ---
+ *
+ * NOTHING IN THIS FILE COULD FIND ITS WAY ACROSS THE CASTLE, and every beat of
+ * the intended path is a walk across the castle. `driveTo` aims at the target,
+ * holds W, and nudges sideways once when the distance stops changing. That is
+ * enough in open ground and it is hopeless against a wall with a door in it:
+ * the run that got this far for the first time reported "walked to the cook in
+ * kitchen — never got in range" with the player pressed against the inner
+ * ward's side of the porter's gate, and the same for the porter, the apprentice
+ * and the bell. Every one of those reads as a person who cannot be reached and
+ * every one of them is a straight line through masonry.
+ *
+ * THE CASTLE ALREADY KNOWS THE WAY. `walkability(plan).path(from, to)` is the
+ * breadth-first shortest walk between two standing cells, cell centre by cell
+ * centre, and it is not new or unproven: it is what `src/stations.js` walks the
+ * twelve along when a bell goes, and `test/layout.mjs` floods the same graph
+ * eight ways. This asks it for the player's route and then drives the answer.
+ *
+ * TWO FILLS, because one door in this castle opens during the day. The
+ * muniment room's word-lock is shut at Prime and answered at Sext, and the
+ * ledger is behind it; the shut fill has no path to it at all. Ask the shut one
+ * first, since that is the castle for three of the four watches, and fall back
+ * to the opened one rather than tracking quest state in here.
+ *
+ * IT IS A PRE-WALK, NOT A REPLACEMENT. The path ends at a cell centre, and what
+ * every beat below actually wants is "close enough that the prompt names the
+ * thing". So the hike gets the player into the room and the old aim-and-hold
+ * loop still does the last few metres, which keeps every arrival predicate in
+ * this file exactly as it was.
+ */
+const measured = new Map();
+const boundsOf = (rel) => {
+  if (!measured.has(rel)) measured.set(rel, partsOf(path.join(ROOT, rel)));
+  return measured.get(rel);
+};
+const sceneConfig = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'scene-config.json'), 'utf8'));
+const NAV = [
+  walkability(makePlan(sceneConfig, boundsOf)),
+  walkability(makePlan(sceneConfig, boundsOf, { opened: ['muniment'] })),
+];
+
 fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(OUT, { recursive: true });
 
 let failures = 0;
 let shotN = 0;
+/** Who has had their portrait taken. See `converse` below. */
+const photographed = new Set();
+/** So the Present-button bug below is reported once and not once per press. */
+let presentLockSaid = false;
 
 const ok = (label, detail = '') => console.log(`  ok    ${label}${detail ? '  ' + detail : ''}`);
 const bad = (label, detail = '') => { failures++; console.log(`  FAIL  ${label}${detail ? '  ' + detail : ''}`); };
 const assert = (cond, label, detail = '') => (cond ? ok(label, detail) : bad(label, detail));
 
-const server = await serveDev(PORT);
+// `hmr: false`: a file changing under src/ or data/ mid-run full-reloads the
+// page and throws away the scene probe. See harness.mjs's serveDev.
+const server = await serveDev(PORT, { hmr: false });
 const THREE_URL = await threeUrl(BASE);
 const browser = await launch({ headed: true });
 const page = await prepPage(browser, { width: 1200, height: 800, dsf: 1 });
 
 const snap = async (label) => {
   await page.screenshot({ path: path.join(OUT, `${String(++shotN).padStart(2, '0')}-${label}.png`) });
+};
+
+/**
+ * Mean luma of a rectangle of the live canvas, 0 to 255.
+ *
+ * #438 is the rule this exists for: MEASURE THE PIXEL, DO NOT JUDGE THE
+ * THUMBNAIL. Two screenshots of the shadowed cross-wall at hemisphere 0.55 and
+ * 1.1 looked identical and the fill was nearly written off as the wrong lever;
+ * the reads were 6 of 255 and 14, a clean doubling that no eye could see at
+ * that base. The Great Hall's covering (BACKLOG.md rank 5) is the one change
+ * left that can make a room dark, and what the hall measures OPEN is the number
+ * a covered hall has to be compared against. This prints rather than asserts,
+ * deliberately: there is no covering yet, so there is no threshold to hold it
+ * to, only a baseline to write down.
+ */
+const luma = async (label, clip) => {
+  const buf = await page.screenshot({ clip });
+  const { data, info } = await sharp(buf).raw().toBuffer({ resolveWithObject: true });
+  let sum = 0;
+  for (let i = 0; i < data.length; i += info.channels) {
+    sum += 0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2];
+  }
+  const mean = sum / (info.width * info.height);
+  console.log(`  read  ${label}  mean luma ${mean.toFixed(1)} of 255 over ${info.width}x${info.height} px`);
+  return +mean.toFixed(1);
 };
 
 /** Everything the assertions need, read straight off the live DOM + camera. */
@@ -118,8 +193,179 @@ const state = () => page.evaluate(() => {
 });
 
 /** Walk until the interact prompt names `who`. drive.mjs owns the aim/strafe loop. */
-const walkTo = (target, who) =>
-  driveTo(page, target, async () => (await state()).prompt?.includes(who));
+/**
+ * Pointer lock back after an overlay, and a note when it had to be taken.
+ *
+ * SHUTTING THE JOURNAL LEAVES THE PLAYER UNABLE TO MOVE, and that is a bug in
+ * the game rather than in this file. Opening it releases pointer lock, which is
+ * right — the journal is a thing you point at. Shutting it gives nothing back:
+ * nothing calls `player.lock()`, and main.js's `unlock` listener only offers
+ * the "click to resume" panel when no overlay is open, which was false at the
+ * moment it fired. So the overlay goes away, the castle comes back, and W, A,
+ * S, D and the mouse all do nothing, with no panel and no prompt to say why.
+ *
+ * Measured on 2026-09-17, on a real GPU with a real keyboard: before the
+ * journal, W moves the player 3.7 m; after J and J again, W moves 0.00 m; a
+ * plain click on the canvas changes nothing, because there is no handler on it
+ * to change anything; `window.__player.lock()` restores it and W moves 3.7 m
+ * again. A player has no `window.__player`. THEY ARE STUCK, and the only way
+ * out of a castle they cannot walk is to reload the page.
+ *
+ * This is asserted once, at the journal, where it is first provable — see that
+ * beat. Everywhere else it is taken back quietly so the rest of the day can be
+ * played, because a suite that stops at the first bug stops finding the second.
+ * WHEN THE GAME FIXES THIS, THE ASSERTION GOES GREEN AND EVERY `regrip()` CALL
+ * BELOW BECOMES DEAD AND SHOULD COME OUT.
+ */
+const regrip = async (where) => {
+  if (await page.evaluate(() => !!document.pointerLockElement)) return true;
+  await page.evaluate(() => window.__player?.lock());
+  await wait(300);
+  const back = await page.evaluate(() => !!document.pointerLockElement);
+  console.log(`  note  pointer lock had to be taken back after ${where}${back ? '' : ' AND COULD NOT BE'}`);
+  return back;
+};
+
+/**
+ * Point the camera at a world point, pitch included.
+ *
+ * `aimAt` in drive.mjs takes an x and a z and a pitch you have to know; what a
+ * piece of evidence needs is "look AT this", and the pitch is the answer rather
+ * than the question. The body and the pouch lie a metre apart on the chapel
+ * floor and the game picks what the camera is facing, so walking to the pouch
+ * while still facing the body presses E on the body a second time: the run that
+ * found this reported "walked to the mason's pouch, 0.75m after 0 bursts" and
+ * then no clue at all, because the body had already given up its one.
+ */
+const lookAtPoint = (x, y, z) => page.evaluate((p) => {
+  const c = window.__cam;
+  c.rotation.order = 'YXZ';
+  const dx = p.x - c.position.x, dy = p.y - c.position.y, dz = p.z - c.position.z;
+  c.rotation.set(Math.atan2(dy, Math.hypot(dx, dz)), Math.atan2(dx, dz) + Math.PI, 0);
+}, { x, y, z });
+
+/** Where the player is standing, and which storey that is. */
+const playerAt = async () => {
+  const p = await page.evaluate(() => ({ x: window.__cam.position.x, z: window.__cam.position.z, y: window.__cam.position.y }));
+  return { x: p.x, z: p.z, level: Math.max(0, Math.round((p.y - 1.7) / 4)) };
+};
+
+/**
+ * Walk the castle's own shortest route to a point, then hand back.
+ *
+ * The path comes back one 0.5 m cell centre at a time, which is far finer than
+ * anything worth steering to, so it is thinned to a waypoint every ~2.5 m and
+ * to every corner. Driving every cell would turn a 45 m walk into ninety
+ * bursts of 0.5 m and a lot of stopping; driving only the corners walks into
+ * door jambs, because the route through a doorway is a corner a body's radius
+ * wide. Both were tried.
+ *
+ * Returns false when neither fill has a route — a target on a storey the player
+ * is not on, or a genuinely sealed room — and every caller treats that as
+ * "carry on the old way" rather than as a failure, because the old way is what
+ * worked before this existed and a pre-walk that cannot help should not stop a
+ * beat that does not need it.
+ */
+const hike = async (target, level = 0) => {
+  /* A WALK NEEDS THE CASTLE BACK FIRST. `regrip` is a no-op when pointer lock
+   * is held, and this is the one place worth paying for it, because without
+   * pointer lock W does nothing and every waypoint below "misses" in a way that
+   * reads exactly like a wall. The journal is not the only overlay that does
+   * this: `ui.js` releases pointer lock for the riddle, the journal, the
+   * accusation panel and the verdict pane, and `quest-manager.js` takes it back
+   * for the riddle ALONE. Presenting a clue opens the journal as a picker, so
+   * the first Present of the day costs the player the castle — the run that
+   * found this got the merchant to admit the cart and then stood at
+   * (-29.6, -0.3) for the rest of Terce, three waypoints missed out of every
+   * hike, "locked false" in every note.
+   */
+  await regrip('an overlay, before a walk');
+  /* BOTH ENDS HAVE TO BE SOMETHING TO STAND ON, and neither reliably is.
+   *
+   * The far end: the chapel bell hangs in the tower's ring, the cloak lies on a
+   * crate, a station can sit in a doorway. `cellAt` answers null for all three.
+   *
+   * The near end is the one that actually bit. `path` returns null when the
+   * FROM cell is null, and the player is routinely standing somewhere that is
+   * not a cell centre — wedged against a tower ring, on a flight's footprint,
+   * pushed half into a doorway by the last walk. The run that found this failed
+   * to reach the cloak with no route at all, from (-18.9, -14.3), where the
+   * previous walk had left the player stuck inside the Kitchen Tower; the same
+   * cloak from a clean start is 71 cells away. So snap both ends to the nearest
+   * cell within 4 m, nearest first.
+   */
+  const snap = (w, x, z, lv) => {
+    if (w.cellAt(x, z, lv)) return { x, z, level: lv };
+    for (let r = 0.5; r <= 4; r += 0.5) {
+      for (let a = 0; a < 16; a++) {
+        const px = x + r * Math.cos(a * Math.PI / 8), pz = z + r * Math.sin(a * Math.PI / 8);
+        if (w.cellAt(px, pz, lv)) return { x: px, z: pz, level: lv };
+      }
+    }
+    return null;
+  };
+  /* AND IT RE-PLANS, because a route walked by a body that cannot steer is a
+   * route the body falls off. Three waypoints missed in a row means the player
+   * is no longer on the line the plan assumed and every waypoint after it is
+   * measured from somewhere they are not — which is how one missed corner
+   * turned into 19 of 33 missed and a player 19.4 m from the porter. Stop,
+   * ask the castle again from where the body actually is, walk that. Twice at
+   * most: a third identical answer is a body that is stuck, not lost. */
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const here = await playerAt();
+    const route = NAV.map((w) => {
+      const a = snap(w, here.x, here.z, here.level), b = snap(w, target[0], target[1], level);
+      return a && b && w.path(a, b);
+    }).find((p) => p && p.length > 1);
+    if (!route) return attempt > 0;
+    const marks = [];
+    let last = route[0];
+    for (let k = 1; k < route.length - 1; k++) {
+      const c = route[k], n = route[k + 1];
+      const turn = Math.sign(c.x - last.x) !== Math.sign(n.x - c.x) || Math.sign(c.z - last.z) !== Math.sign(n.z - c.z);
+      if (turn || Math.hypot(c.x - last.x, c.z - last.z) >= 2.5) { marks.push(c); last = c; }
+    }
+    let missed = 0, run = 0, lost = false;
+    for (const w of marks) {
+      const got = await driveTo(page, [w.x, w.z], async (d) => d < 1.0, { maxBursts: 20, nearAt: 2.5, longMs: 200, shortMs: 90 });
+      if (got) run = 0;
+      else { missed++; if (++run >= 3) { lost = true; break; } }
+    }
+    const at = await playerAt();
+    const left = Math.hypot(at.x - target[0], at.z - target[1]);
+    console.log(`  note  hike ${attempt + 1}: ${marks.length} waypoints toward (${target[0].toFixed(1)}, ${target[1].toFixed(1)}), ` +
+      `${missed} missed, stopped ${left.toFixed(1)}m short at (${at.x.toFixed(1)}, ${at.z.toFixed(1)}) L${at.level}${lost ? ' — lost the line, re-planning' : ''}`);
+    if (!lost || left < 4) return true;
+  }
+  return true;
+};
+
+/* `maxBursts` 90, not driveTo's default 40, and a hike in front of it. The
+ * longest walk in the day is the Kitchen to the chapel, 45 m across two wards
+ * and a gate; 40 bursts is that distance with nothing in the way, and there is
+ * a great deal in the way. The hike does the castle and this does the doorstep. */
+/* `within` EXISTS BECAUSE "examine" IS NOT A NAME. An NPC's prompt carries
+ * their own name and matches nobody else; a piece of evidence's prompt is the
+ * word "examine" and every one of the eleven says it. The body and the pouch
+ * lie a metre apart on the same chapel floor, so a predicate that only reads
+ * the word returns "arrived" for whichever the camera happens to be aimed at —
+ * the run that found this took the pouch's two clues off the body and the
+ * body's off the pouch, and then reported the cloak "reached" from 59.36 m away
+ * and the gaol roll from 67.38 m, standing in the chapel the whole time.
+ * A distance with it is what makes the word mean this one. */
+const walkTo = async (target, who, level = 0, within = Infinity) => {
+  const near = async (d = Infinity) => d <= within && !!(await state()).prompt?.includes(who);
+  if (!(await near(0))) await hike(target, level);
+  else await regrip('an overlay, before a step');
+  const got = await driveTo(page, target, near, { maxBursts: 90 });
+  if (!got) {
+    const at = await playerAt();
+    const s2 = await state();
+    console.log(`  note  gave up ${Math.hypot(at.x - target[0], at.z - target[1]).toFixed(1)}m from (${target[0].toFixed(1)}, ` +
+      `${target[1].toFixed(1)}) at (${at.x.toFixed(1)}, ${at.z.toFixed(1)}) L${at.level}, looking for "${who}", prompt ${JSON.stringify(s2.prompt)}, locked ${s2.locked}`);
+  }
+  return got;
+};
 
 /**
  * Where somebody is due, in world metres, at the watch the game is on: the
@@ -497,7 +743,20 @@ try {
     'the hall table, statue, cabinet and commode all clear the wall behind them',
     JSON.stringify(wallCheck));
 
-  // --- Start. A real trusted click is what pointer lock requires.
+  // --- Start. A real trusted click is what pointer lock requires, AND A
+  // FOCUSED WINDOW. Chrome refuses `requestPointerLock` on a document whose
+  // window is not the foreground one, with `WrongDocumentError: The root
+  // document of this element is not valid for pointer lock` — which is not a
+  // permissions error and does not name focus, so it reads like a bug in the
+  // page. It is not: run this file from a shell that did not take window focus
+  // (a background job, a second monitor, anything that leaves the launched
+  // Chrome behind another app) and the click lands, the overlay closes and the
+  // lock silently never happens. Verified both ways on 2026-09-17: the same
+  // script run in the foreground locked on a plain click, run backgrounded it
+  // threw WrongDocumentError, and `bringToFront()` fixed the backgrounded run.
+  // One line, and it is the difference between this suite being runnable
+  // unattended and not.
+  await page.bringToFront();
   await page.click('#start-button');
   await wait(600);
   let s = await state();
@@ -537,9 +796,26 @@ try {
   // through the crescent of floor beside it, which is 0.5 to 0.8 m wide, so the
   // strides here are short.
   const heightAt = async () => +(await page.evaluate(() => window.__cam.position.y)).toFixed(2);
-  const goTo = async (target, label, tol = 0.7, maxBursts = 30) => {
+  /* THE BURST BUDGET IS NOT AN ASSERTION AND WAS BEING READ AS ONE. It was 30,
+   * and a burst is 250 ms of held W inside a tower and 250 ms in open ground
+   * too — call it 0.7 m each once the aim and the strafe nudge are paid for.
+   * The first leg below is 21 m from where the brazier stops the player to the
+   * Kitchen Tower's door, so it needed 28 of the 30 in the best case. It made
+   * it in 18 on one run and ran out on the next two, which reported "never got
+   * within 0.7 m" — a sentence about the castle for a fact about the budget.
+   * 70 is four times the best observed leg and still bounded; a walk that is
+   * genuinely blocked fails as loudly, just later.
+   *
+   * AND THE FAILURE SAYS WHERE IT STOPPED NOW. "never got within 0.7 m, y 1.7"
+   * was true of a player wedged in a kitchen corner 20 m from the door and of a
+   * player standing on the doorstep, and the two want completely different
+   * answers. */
+  const goTo = async (target, label, tol = 0.7, maxBursts = 70) => {
     const r = await driveTo(page, target, async (dist) => dist < tol, { maxBursts, nearAt: 2.5, longMs: 250, shortMs: 90 });
-    assert(!!r, `reached ${label}`, r ? `${r.dist}m after ${r.bursts} bursts, y ${await heightAt()}` : `never got within ${tol} m, y ${await heightAt()}`);
+    const at = await page.evaluate(() => [+window.__cam.position.x.toFixed(2), +window.__cam.position.z.toFixed(2)]);
+    assert(!!r, `reached ${label}`,
+      r ? `${r.dist}m after ${r.bursts} bursts, y ${await heightAt()}`
+        : `never got within ${tol} m — stopped at (${at[0]}, ${at[1]}), y ${await heightAt()}, wanted (${target[0]}, ${target[1]})`);
     return !!r;
   };
   const near = (a, b) => Math.abs(a - b) < 0.35;
@@ -574,6 +850,94 @@ try {
       assert(onWalk, 'the camera is two storeys up, at the wall walk', `y ${y}`);
     }
     await snap('kitchen-tower-top');
+
+    /* --- THE THIRD FLIGHT, AND A TOWER ROOF FROM 12 M (#523) -------------
+     * Four towers grew a roof room at their own height and nothing has ever
+     * stood on one. The view over the whole plan from 12 m is the thing that
+     * row was for and no check in CI can see it, so this is a climb and a
+     * photograph rather than a measurement.
+     *
+     * WHY THE KITCHEN TOWER AND NOT THE NORTH-WEST ONE. `SPECS.md` says the
+     * North-west Tower's roof. This takes the Kitchen Tower's instead, and the
+     * reason is that the walk is already standing on it. The North-west Tower's
+     * ground door is at theta 60 where the Kitchen Tower's is at 0, so
+     * `doorEast` is true there and false here, `sideX` flips, and every one of
+     * the ten waypoints above is mirrored about the drum's centre — a set of
+     * guesses nobody has walked, bolted to the front of the one climb in this
+     * file that is known to work. The question #523 asks is what 12 m over this
+     * castle looks like, and it is the same 12 m from either drum, four
+     * hundredths of the castle's width apart.
+     *
+     * THE CLIMB IS NOT A SWITCHBACK (#523, again). The third flight stands
+     * directly on the second — same tile, same bearing, one storey up — so it
+     * takes no walkable metre of the level-2 floor, which is the wall walk's
+     * junction and has none to spare. The cost is that a body leaves the second
+     * flight at its HEAD and has to walk back round its well to start the third
+     * at its FOOT, four metres over where it started. That walk round is the
+     * first leg below and it is the leg most likely to fail.
+     *
+     * AND IT PUTS THE PLAYER BACK. `legs3` starts from the top room at 8 m; a
+     * player left standing on the roof would walk the north walk beat off a
+     * 12 m parapet. The descent is asserted into `ok` for exactly that reason,
+     * so a climb that cannot be undone stops the walk instead of corrupting it. */
+    if (ok && onWalk) {
+      /* SQUARE ON TO THE FLIGHT, AND THAT IS THE WHOLE TRICK. The first cut of
+       * these legs walked at the flight diagonally, from the top room's middle
+       * to a point near its foot, and the body never got on it: `standAt` finds
+       * NOTHING over the flight's own footprint at floor height (measured — at
+       * z -16.75 and feet 8.00, x -21.65 and -21.40 answer with the third
+       * flight and x -21.00 through -18.60 answer with nothing at all, because
+       * the flight has risen out of a step's reach and the level-2 floor has a
+       * well cut through it there). A body crossing that band is refused, slides
+       * along, and comes to rest at the east end on the SECOND flight's head at
+       * 7.90 — one step down from the floor it started on, pointing down. The
+       * run that found this reported "never got within 0.8 m, y 6.67" and it
+       * read like a hole in the tower.
+       *
+       * So: get to the flight's own z first, west of its foot, then walk due
+       * east along its axis. Walked in Node with the controller's own
+       * `moveBody` before it was walked here: 0.05 m steps from x -22.40 climb
+       * 8.00 to 12.00 without one refusal. */
+      const roofLegs = [
+        [[-21.0, -15.0], 'the top room, west of the well'],
+        [[-22.3, -15.6], "the top room's west wall"],
+        [[-22.3, -16.75], 'the foot of the third flight, square on to it'],
+        [[-18.6, -16.75], 'up the third flight, due east'],
+        [[-18.0, -16.6], 'off the third flight onto the roof'],
+        // ROUND THE WELL, NOT ACROSS IT. The third flight's well in the roof
+        // floor is its own footprint, x -21.65..-18.35 by z -17.50..-16.00, and
+        // a straight line from the flight's head to the middle of the roof
+        // clips its north-east corner. The run that found this reported
+        // "stopped at (-20.38, -16), y 11.2" — the player had walked into the
+        // hole and slid back down the flight they had just climbed.
+        [[-18.0, -15.0], "the roof, east of the third flight's well"],
+        [[-19.8, -14.8], "the middle of the Kitchen Tower's roof"],
+      ];
+      let roofOk = true;
+      for (const [t, label] of roofLegs) { if (!(roofOk = await goTo(t, label, 0.8))) break; }
+      if (roofOk) {
+        const y = await heightAt();
+        assert(near(y, 13.7), "the camera is three storeys up, on the Kitchen Tower's roof at 12 m", `y ${y}`);
+        // East, down the length of the castle: the north curtain, the
+        // Stockhouse and King's Towers, the garden wall 44 m away. Pitched a
+        // little down so the ward is in the frame and not just sky.
+        await aimAt(page, [24, -16], -0.22);
+        await wait(350);
+        await snap('a-tower-roof-from-12m');
+      }
+      // Back down, whatever happened above: from the roof, from the flight, or
+      // from wherever the climb stalled.
+      const down = [
+        [[-18.0, -15.0], "back east of the third flight's well"],
+        [[-18.0, -16.75], 'the head of the third flight, going down'],
+        [[-22.3, -16.75], 'down the third flight, due west'],
+        [[-21.0, -15.0], 'back on the level-2 floor'],
+        [[-17.7, -15.0], 'back in the top room, at the walk'],
+      ];
+      for (const [t, label] of down) { if (!(ok = await goTo(t, label, 0.9))) break; }
+      if (ok) assert(near(await heightAt(), 9.7), 'back at the wall walk, 9.7', `y ${await heightAt()}`);
+    }
+
     const legs3 = [
       [[-15, -15], 'the north walk east of the Kitchen Tower'],
       [[-6, -15], 'the north walk at the Stockhouse Tower'],
@@ -585,24 +949,75 @@ try {
     if (ok) for (const [t, label] of legs3) { if (!(ok = await goTo(t, label, 0.9))) break; }
     if (ok) assert(near(await heightAt(), 9.7), 'still at 9.7 over the porter\'s head', `y ${await heightAt()}`);
     await snap('cross-wall-walk');
-    // Down the Bakehouse Tower: its upper flight's top is at the east end of its
-    // well in the south half, its lower flight's top at the north end of the
-    // tower's east half, and the door out is on the inner-ward side.
+    /* --- DOWN THE BAKEHOUSE TOWER, AND THIS WAS WRONG END TO END ------------
+     * These ten waypoints were written as a mirror of the Kitchen Tower's and
+     * the mirror was never applied to the STAIRS, only to the coordinates. The
+     * Bakehouse's ground door faces the other way, so `doorEast` flips,
+     * `sideX` flips with it, and its upper flight rises the opposite way along
+     * x: read off the plan, `bakehouse-tower-stair-2` slopes from (1.65, 4.00)
+     * to (-1.65, 7.90), so its HEAD is at x -1.65 in the WEST and its FOOT is
+     * at x +1.65 in the EAST. The old legs called x +1.75 "the top" and x -1.8
+     * "the foot", which is both labels the wrong way round, and the lower
+     * flight's two legs stood at x +0.75 against a flight the plan puts at
+     * x -0.75.
+     *
+     * WHAT THAT DOES TO A BODY, rather than to a reader: from the level-2 floor
+     * at 8.00 the only way onto this flight is at its head, 7.90, one 0.10 m
+     * step down. At the foot end the flight is at 4.12 under a floor at 8.00,
+     * a 3.88 m drop, and `standAt` refuses it — so the player walks to the east
+     * end, is refused, and stands there at 8.00 for the rest of the day. That
+     * is what the run reported: four legs "reached" at y 9.7 with not one metre
+     * of descent in them, then a failure in the bakehouse, then a Constable who
+     * could not be reached because the player was two storeys over his head.
+     * Walked in Node with the controller's own `moveBody` before it was walked
+     * here: the old route holds 8.00 from its first leg to its last, and this
+     * one goes 8.00, 4.42, 4.00, 3.78, 0.06, 0.00.
+     *
+     * SQUARE ON TO EACH FLIGHT, for the reason the third flight needed it
+     * above: over a flight's own footprint there is nothing to stand on at
+     * floor height, so a body crossing that band diagonally is refused and
+     * slides along it. Reach the flight's own axis first, then walk down it. */
     const legs4 = [
-      [[-0.5, 14.6], 'the Bakehouse Tower\'s top room'],
-      [[1.75, 16.75], 'the top of the Bakehouse upper flight'],
-      [[-1.8, 16.75], 'the foot of the upper flight'],
-      [[-2.25, 16.75], 'the first floor, west crescent'],
-      [[-1, 15], 'the first floor, north-west'],
-      [[0.75, 14.3], 'the top of the lower flight'],
-      [[0.75, 17.6], 'the foot of the lower flight'],
-      [[0.25, 18.2], 'the bakehouse, south crescent'],
+      [[-0.5, 14.6], "the Bakehouse Tower's top room"],
+      [[-2.2, 15.0], 'west of the upper flight, on the level-2 floor'],
+      [[-2.2, 16.75], 'the head of the upper flight, square on to it'],
+      [[1.6, 16.75], 'down the upper flight, due east'],
+      [[1.9, 16.4], 'off it onto the first floor'],
+      [[1.6, 14.6], 'the first floor, north-east'],
+      [[-0.75, 14.2], 'the head of the lower flight, square on to it'],
+      [[-0.75, 17.9], 'down the lower flight, due south'],
+      [[0.4, 18.2], 'the bakehouse floor, south crescent'],
       [[2.3, 16.2], 'the bakehouse, east of the flight'],
-      [[4.2, 12.6], 'the inner ward, out of the bakehouse door'],
+      [[4.2, 12.6], "out of the bakehouse door, into the Steward's chamber"],
     ];
     if (ok) for (const [t, label] of legs4) { if (!(ok = await goTo(t, label))) break; }
-    if (ok) assert(near(await heightAt(), 1.7), 'the camera is back at ground eye height in the inner ward', `y ${await heightAt()}`);
+    if (ok) assert(near(await heightAt(), 1.7), 'the camera is back at ground eye height, two flights down', `y ${await heightAt()}`);
     await snap('inner-ward-from-the-walk');
+
+    /* AND OUT OF THE STEWARD'S CHAMBER, WHICH IS WHERE THE BAKEHOUSE DOOR PUTS
+     * YOU. The leg above was labelled "the inner ward" and is not in it: the
+     * Bakehouse Tower's ground door stands at theta 120, world (3.46, 14), and
+     * what is on the other side of it is the Steward's chamber, x 2..10 by
+     * z 6..14, a closed room with one doorway at (6, 6). The HUD said so in the
+     * frame the run aborted on — "Steward's chamber", the player face-first into
+     * its east wall.
+     *
+     * NOTHING HERE PATHFINDS. `walkTo` aims at the target and holds W, with one
+     * sideways nudge when the distance stops changing, and that is enough in
+     * open ground and hopeless out of a room whose door is behind you. The
+     * intended path begins with the Constable in the chapel, 20 m east and
+     * through two walls, so the day could not start at all. Four legs put the
+     * player in open ward first. Walked in Node with `moveBody` before it was
+     * walked here. */
+    if (ok) {
+      const toWard = [
+        [[6, 9], "the Steward's chamber, under its door"],
+        [[6, 3.5], 'through that door, into the inner ward'],
+        [[18, 3.5], 'east across the inner ward'],
+        [[19.3, 13.3], "outside the Chapel Tower's door"],
+      ];
+      for (const [t, label] of toWard) { if (!(ok = await goTo(t, label, 0.9))) break; }
+    }
     if (!ok) bad('the walk over the top did not complete', 'see the legs above; #53 applies on a software renderer');
   }
 
@@ -632,7 +1047,7 @@ try {
   /** The world point a piece of evidence's prompt is aimed at. */
   const evidenceAt = async (id) => page.evaluate((eid) => {
     const t = (window.__evidence || []).find((x) => x.id === eid);
-    return t ? [t.focus.x, t.focus.z] : null;
+    return t ? [t.focus.x, t.focus.z, t.focus.y] : null;
   }, id);
 
   /** Walk to somebody's station at this bell and step through what they say. */
@@ -640,7 +1055,7 @@ try {
     const due = await stationOf(npcId);
     if (!due) { bad(`${label}: not in the castle at this bell`); return null; }
     await arrives(npcId);
-    const walked = await walkTo(due.at, nameRe.source.replace(/\W/g, ''));
+    const walked = await walkTo(due.at, nameRe.source.replace(/\W/g, ''), due.level ?? 0);
     assert(!!walked, `walked to the ${label} in ${due.room}`, walked ? `${walked.dist}m after ${walked.bursts} bursts` : 'never got in range');
     if (!walked) return null;
     await page.keyboard.press('KeyE');
@@ -648,6 +1063,21 @@ try {
     let s2 = await state();
     if (!s2.dialogueOpen) { bad(`${label}: E opened no dialogue`, JSON.stringify(s2.prompt)); return null; }
     assert(nameRe.test(s2.dialogueName || ''), `E opened the ${label}'s dialogue`, s2.dialogueName);
+    /* ONE PHOTOGRAPH PER BODY, WHICH IS HALF OF WHAT THIS ROW IS FOR (#417,
+     * #419; PLAN.md, Risks). Twelve people come off three Kenney bodies told
+     * apart by tint, and that was accepted as a RISK, not as a solution —
+     * accepted by sessions that could not render a frame. The wide shot of the
+     * Great Hall at Vespers below answers whether six read as a crowd; this
+     * answers the harder half, which is whether the man standing at interact
+     * range with his name on the screen is distinguishable from the last one.
+     * A screenshot, not an assertion: no number here can answer it and nobody
+     * should pretend one does.
+     *
+     * ONCE PER PERSON. `present()` calls `converse()` again to open the box
+     * before it clicks the button, and the Clerk is presented to twice, so
+     * without this the run would file four portraits of him and none of them
+     * would be new evidence. */
+    if (!photographed.has(npcId)) { photographed.add(npcId); await snap(`face-${npcId}`); }
     const lines = [];
     for (let i = 0; i < 10 && (await state()).dialogueOpen; i++) {
       lines.push((await state()).dialogueText);
@@ -661,9 +1091,13 @@ try {
   const examine = async (evidenceId, label = evidenceId) => {
     const at = await evidenceAt(evidenceId);
     if (!at) { bad(`${label}: not an interaction target — nothing in the plan carries that evidence, or it is hidden at this bell`); return null; }
-    const walked = await walkTo(at, 'examine');
+    const walked = await walkTo(at, 'examine', 0, 3.5);
     assert(!!walked, `walked to the ${label}`, walked ? `${walked.dist}m after ${walked.bursts} bursts` : 'never got in range');
     if (!walked) return null;
+    // Face it before pressing. See `lookAtPoint`: E takes what the camera is
+    // aimed at, not what this function had in mind.
+    await lookAtPoint(at[0], at[2] ?? 1.0, at[1]);
+    await wait(150);
     const before = await held();
     await page.keyboard.press('KeyE');
     await wait(400);
@@ -687,7 +1121,31 @@ try {
     const hasButton = await page.evaluate(() => !document.getElementById('dialogue-present').classList.contains('hidden'));
     assert(hasButton, `the ${label}'s dialogue offers Present`);
     if (!hasButton) return null;
-    await page.click('#dialogue-present');
+    /* AND IT CANNOT BE CLICKED, which is the other half of the pointer-lock bug
+     * `regrip` describes. A dialogue does not release pointer lock — `ui.js`
+     * calls `document.exitPointerLock()` for the riddle, the journal, the
+     * accusation panel and the verdict pane, and for nothing else — so while a
+     * dialogue is open the cursor is still captured, every pointer event goes
+     * to the locked element, and a real mouse cannot reach this button at all.
+     * Playwright says it plainly: "canvas intercepts pointer events", after
+     * thirty seconds of retrying a button it agrees is visible and enabled.
+     *
+     * THE TWO BUGS HIDE EACH OTHER. Open the journal once and pointer lock is
+     * gone for good (nothing takes it back), which makes this button clickable
+     * for the rest of the game — at the price of never walking again. Play
+     * without opening the journal and you can walk, and you cannot present.
+     * Presenting a clue is how four of the twelve are pressed, so this is not a
+     * corner of the game.
+     *
+     * Said once, then worked around with a synthetic click, which is the same
+     * idiom the journal rows below already use. */
+    const lockedNow = await page.evaluate(() => !!document.pointerLockElement);
+    if (!presentLockSaid) {
+      presentLockSaid = true;
+      assert(!lockedNow, 'a dialogue releases pointer lock, so its Present button can be clicked',
+        lockedNow ? 'pointer lock is held, the canvas takes every pointer event, and no real mouse can reach Present' : '');
+    }
+    await page.evaluate(() => document.getElementById('dialogue-present').click());
     await wait(300);
     const row = await page.evaluate((id) => !!document.querySelector(`#journal-list .journal-row[data-id="${id}"]`), clueId);
     assert(row, `${clueId} is in the list the Present button opens`);
@@ -709,6 +1167,21 @@ try {
   assert(await page.evaluate(() => document.getElementById('accusation-overlay').classList.contains('hidden')), 'and opens no accusation panel yet');
   assert((await held()).includes('constable-accident'), '"he fell" is in the journal');
   await snap('constable-at-the-body');
+
+  /* THE CHAPEL AT PRIME, WITH THE TWO WHO STAND OVER THE BODY. `SPECS.md`
+   * calls this shot "constable, chaplain, apprentice nearby". THE APPRENTICE IS
+   * NOT HERE: `data/mystery.json`'s schedule has Ieuan in the mason's lodge at
+   * Prime and in this chapel at Vespers, at the vigil. So this frame carries
+   * two of the twelve, not three, and the apprentice's own portrait comes off
+   * his conversation in the lodge a few beats below. A screenshot, not an
+   * assertion. */
+  {
+    const chaplainDue = await stationOf('chaplain');
+    await driveTo(page, [25.5, 17.6], async (d) => d < 1.0, { maxBursts: 22, nearAt: 3 });
+    if (chaplainDue) await aimAt(page, [(chaplainDue.at[0] + 23.6) / 2, (chaplainDue.at[1] + 16.8) / 2], -0.1);
+    await wait(350);
+    await snap('the-chapel-at-prime');
+  }
 
   const body = await examine('body', 'body at the stair foot');
   assert(body && body.gained.includes('body-stair'), 'E on the body: he is at the foot of the stair', body?.gained.join(', '));
@@ -738,6 +1211,16 @@ try {
   await wait(250);
   assert(await page.evaluate(() => document.getElementById('journal-overlay').classList.contains('hidden')), 'J again shuts it');
 
+  /* AND IT GIVES THE CASTLE BACK, WHICH IT DOES NOT. This is the one assertion
+   * in this file that nothing but a hand on a keyboard could ever have written,
+   * and it is the answer to what `npm run play` is for. See `regrip` above for
+   * the measurements. It is red on purpose and stays red until the game calls
+   * `lock()` when an overlay closes, or offers the resume panel it already has. */
+  const afterJournal = await page.evaluate(() => !!document.pointerLockElement);
+  assert(afterJournal, 'shutting the journal gives the player back the castle',
+    afterJournal ? '' : 'pointer lock is gone, no resume panel is offered, and W does nothing — the player can only reload');
+  await regrip('the journal');
+
   // The rest of Prime.
   await converse('cook', /Marged/, 'cook');
   assert((await held()).includes('lantern-set-down'), 'the cook, and the deduction lands with her');
@@ -762,6 +1245,44 @@ try {
       await wait(300);
     }
   }
+  /* --- THE GAOL ROLL, AND THE FIRST SLAB HERE THAT RESTS ON ANOTHER PROP
+   * (#571). The eleventh piece of evidence, the only one that convicts nobody,
+   * and the one this file's own header says the intended path never reaches.
+   * THAT HEADER IS WRONG and this beat is where it shows: the sentry is asleep
+   * in the guardroom at Prime and the beat above walks to him, so the path has
+   * been standing inside the North-west Tower all along, three metres from a
+   * roll nobody pressed E on. It cost two lines to reach, not a detour.
+   *
+   * WHAT ONLY A RENDER ANSWERS: whether a 0.4 x 0.3 m parchment slab resting
+   * 3 mm over a pair of barrels reads as a roll lying on a barrel-head or as a
+   * box floating above one. `test/layout.mjs` check 1d can say something is
+   * under it and can never say what it looks like. So the photograph comes
+   * BEFORE the E press, because evidence that has been taken stops being drawn.
+   *
+   * AND IT CHANGES THE SECOND DAY ON PURPOSE. `gaol-dates` in the journal is
+   * what `day2.knew` is keyed on (#575), so taking it here means the King's man
+   * on the morning after says the lines for a player who read the dates. That
+   * is the branch nothing has ever walked. */
+  {
+    const rollAt = await evidenceAt('gaol-roll');
+    if (!rollAt) {
+      bad('the gaol roll is not an interaction target at Prime');
+    } else {
+      const walked = await walkTo(rollAt, 'examine', 0, 3.5);
+      assert(!!walked, 'walked into the guardroom to the gaol roll',
+        walked ? `${walked.dist}m after ${walked.bursts} bursts` : 'never got in range');
+      if (walked) {
+        await lookAtPoint(rollAt[0], rollAt[2] ?? 0.9, rollAt[1]);
+        await wait(300);
+        await snap('the-gaol-roll-on-the-barrel-head');
+      }
+      const roll = await examine('gaol-roll', 'gaol roll');
+      assert(roll && roll.gained.includes('gaol-dates'),
+        'E on the roll: the dates that put Madoc at the forge by day and behind the bars by night',
+        roll?.gained.join(', ') || 'nothing gained');
+    }
+  }
+
   await snap('end-of-prime');
 
   // ---- The bell -----------------------------------------------------------
@@ -924,6 +1445,60 @@ try {
   const cook = await arrives('cook');
   assert(cook && !cook.late, `the cook walked from the kitchen to the ${cook?.room}`,
     cook ? `${cook.dist}m from her station after ${(cook.took / 1000).toFixed(1)}s${cook.late ? ' — still walking' : ''}` : 'she is not in the castle at Vespers');
+
+  /* --- SIX IN ONE ROOM, AND SOMEBODY LOOKS AT THEM (PLAN.md, Risks) -------
+   * Constable, Steward, Clerk, cook, sentry and laundress all stand in the
+   * Great Hall at Vespers, and they are six of the three Kenney bodies this
+   * castle has. Whether that reads as six people or as three men wearing four
+   * colours is the question the whole row exists to ask, and it has never been
+   * asked of a frame a GPU drew.
+   *
+   * WHERE THIS STANDS, AND WHY NOT THE DOORWAY `SPECS.md` NAMES. The two north
+   * doorways are at world x -20 and -12, and the six stand from x -27.2 to
+   * -12 — so the doorway the spec picks is in the MIDDLE of them and half the
+   * cast is behind the camera. The hall is 28 m long and its west end is the
+   * only place in it where all six are in one frame. That is where this stands.
+   *
+   * WAIT FOR ALL SIX, not just the cook. `arrives` polls one body at a time;
+   * a bell sends all six walking at once, and a photograph taken while four of
+   * them are still crossing the ward is a photograph of an empty hall. */
+  const HALL_SIX = ['constable', 'steward', 'clerk', 'cook', 'sentry', 'laundress'];
+  const late = [];
+  for (const id of HALL_SIX) { const a = await arrives(id); if (!a || a.late) late.push(id); }
+  assert(late.length === 0, 'all six of the Great Hall are standing at their stations at Vespers',
+    late.length ? `still walking: ${late.join(', ')}` : HALL_SIX.join(', '));
+
+  await driveTo(page, [-30.5, 10], async (d) => d < 1.2, { maxBursts: 45, nearAt: 3 });
+  // Bodies, not stations: where the twelve ACTUALLY are this frame, counted
+  // inside the hall's own walls (x -33..-6.5, z 6.5..13.5). A station says
+  // where somebody is due; this says who is there.
+  const inHall = await page.evaluate(() => (window.__cast || [])
+    .filter((n) => n.group.visible && n.group.position.x > -33 && n.group.position.x < -6.5
+      && n.group.position.z > 6.5 && n.group.position.z < 13.5)
+    .map((n) => n.id).sort());
+  assert(inHall.length === 6, 'six bodies are standing inside the Great Hall', inHall.join(', '));
+  await aimAt(page, [-6, 10], 0);
+  await wait(400);
+  await snap('twelve-at-vespers');
+
+  /* SEVEN TRUSSES AT 8 M, AND WHETHER THEY READ AS A ROOF (#527). Each is
+   * `structure-cross.glb` stretched to 0.5 x 2.5 x 7.25, and #528 left the
+   * space between them open because no container could judge which it looks
+   * like: a hammerbeam roof or scaffolding over a ruin. THIS SHOT IS WHAT
+   * DECIDES WHETHER RANK 5 IS WORTH TAKING AT ALL. Same spot, pitched up. */
+  await aimAt(page, [-6, 10], 0.72);
+  await wait(300);
+  await snap('the-hall-trusses');
+
+  /* AND THE FLOOR, MEASURED (#438). This is the covering row's baseline: what
+   * the hall reads OPEN is the number a covered hall has to be compared
+   * against, and `SPECS.md` puts the line at about 25 of 255, under which a
+   * second brazier at the east end is one config line. Pitched hard down so
+   * the clip is floor and not wall. */
+  await aimAt(page, [-6, 10], -1.0);
+  await wait(300);
+  await luma('the Great Hall floor at Vespers, OPEN, no covering', { x: 450, y: 300, width: 300, height: 200 });
+  await snap('the-hall-floor-open');
 
   const porter = await present('porter', 'door-unbarred', /Gwilym/, 'porter');
   assert(porter && porter.gained.includes('porter-admits'), 'the porter, on the cross-wall walk, admits the door', JSON.stringify(porter));
