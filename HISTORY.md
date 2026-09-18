@@ -5282,3 +5282,139 @@ included. Decisions #634 and #635.
   suites green (thirteen plus this one line, not a fourteenth suite),
   `npm run build` green. `npm run play` not run — no `src/` changed, and the
   images being right is a look, not a script (#53).
+## The tooling, move-and-delete: the editor stops being a stopwatch (2026-09-17)
+
+**Rank 12b, claimed on `claude/r12b-move-and-delete`, lane B.** `?edit=1` could
+add a prop and nothing else, so correcting a placement meant opening the 2546-line
+file the tool exists to stop anyone opening, counting rows, and typing two
+numbers. It can move one and delete one now. Decisions #636 to #642. Four files:
+`tools/place.mjs`, `test/tools.mjs`, `src/edit-mode.js`, `vite.config.js`.
+Thirteen suites green, `npm run build` green, `npm run play` not run — nothing
+here is in `src/main.js` or in anything a built page loads.
+
+**Lane B was the reason this waited and it was clear when it was taken**: the
+byte-exactness rail this increment has to keep was red on Windows until #631 to
+#633 fixed it that morning, and this row started from a green 47-assertion
+baseline rather than from that failure.
+
+- **A row is found by walking the text, not by searching for it** (#636).
+  `rowSpans(source, key)` returns the `{ start, end }` of every element of a
+  top-level array, walking the string the way `closingBracket` already did, one
+  level in. The obvious alternative — `source.indexOf(formatRow(row))` — is
+  wrong twice over, both ways are quiet, and the numbers were measured rather
+  than assumed. **Three of the file's 31 placeable rows are not what `formatRow`
+  would write**, so `indexOf` on them returns -1 and the edit silently targets
+  nothing: 28 of 31 come back byte-identical at their own indent and the other
+  three carry a `1.0` or a `-2.0` where `JSON.stringify` writes `1` and `-2`,
+  which is #584 arriving from the reading end instead of the writing end. And of
+  the 28 that would be found, **an exact twin resolves to the first of the
+  pair** — the committed file has no duplicate today and the editor can make one
+  in two key presses, because a brazier placed twice on the same tile is the
+  same 6 lines twice. Editing the second would rewrite the first, and the file
+  would parse, read right, and have moved a prop nobody asked about. The suite
+  does exactly that, for all three arrays, and edits the first of the pair.
+- **The span is checked against `JSON.parse` and not against a second walk**
+  (#637, and #34's rule, and #500's). For all 31 placeable rows in the real
+  file, on both line endings, `JSON.parse(source.slice(start, end))` has to
+  equal `JSON.parse(file)[key][i]`. That is 62 assertions that cost nothing and
+  they pin the two things a span can get wrong independently: which row it is,
+  and where the row stops. A span one character long fails the parse; a span one
+  row off fails the compare. A span finder proved by a second span finder is a
+  check agreeing with itself, which is the shape two dead line-of-sight checks
+  had in this project already.
+- **Which side of a row the comma comes off is the whole of `deleteRow`**
+  (#638). Three cases, not one. A row with something before it takes the
+  separator on its **left**, which is `insertRow` run backwards — and that is
+  what makes the headline assertion possible: **insert a row, delete it again,
+  and the file is the file it started as, byte for byte**, on both endings, for
+  all three arrays. The first of several takes the separator on its right. The
+  last one standing leaves `[]`, which is the empty form `insertRow` already
+  knew how to fill, so an array can be emptied and refilled without a person
+  touching it. `deleteRow` writes no newline at all — it only slices — so it is
+  the one function here that cannot have #631's bug by construction.
+- **`replaceRow` promises what is outside the row, and only that** (#639).
+  Rewriting a row with its own parsed value is **not** a no-op and is not meant
+  to be: a tile the file spells `-2.0` comes back from `JSON.stringify` as `-2`.
+  That is #584's churn, confined to the one row being edited, which is the
+  bargain the whole module is. What it does promise is that every byte before
+  the span and every byte after it is unchanged, and the suite asserts that per
+  row rather than per array. **The move's real diff on the live dev server was
+  three lines on a 96 KB file** — two numbers and the comment — with the row's
+  `model`, `rotationY`, `noCollide` and `yOffset` carried through untouched,
+  because a move is a move and not a re-placement: the panel's dropdowns
+  describe the next thing to place and have nothing to say about a prop already
+  in the file.
+- **The panel never keeps its own copy of the array** (#640). Every write
+  answers with the whole array as it now stands on disk and the panel replaces
+  what it had. This is not tidiness. A delete shifts every index after it, and a
+  list that remembered the old order would name the wrong row on the very next
+  click — the file would still parse and the prop that moved would be one nobody
+  asked about, which is the same silent failure #636 is about, arriving from the
+  other end. Driven live: deleting `builtProps[9]` renumbered `gaol-roll` from
+  15 to 14 and `watch-bill` from 14 to 13 in the panel's list, in the same tick.
+- **Delete is the only verb here that arms** (#641). Two presses inside four
+  seconds. The other two add something a person can see and undo by deleting it;
+  this one takes away a row that cost somebody a walk to place, and a mis-pressed
+  key while running through a doorway should not be what does it. It is bound to
+  `Delete` and deliberately **not** to `Backspace`, which is a browser's back
+  button in enough setups that a mis-press would leave the castle rather than a
+  prop. `M` moves, `N` picks the next row without reaching for the mouse, and the
+  list offers every row within six tiles, nearest first, rebuilt as the player
+  walks — but never while the `<select>` has the keyboard, because rebuilding one
+  somebody is scrolling closes it under their hand.
+- **The dev server counts rows before it writes** (#642). `/__place` takes
+  `add`, `move` or `delete` now, and each verb says what it should do to the
+  array's length. An `add` that lost a row and a `delete` that ate two both
+  produce text `JSON.parse` accepts, so the count is checked against the verb's
+  promise and nothing is written when it does not hold. That is a second net
+  under `test/tools.mjs`'s at the one place the suite cannot stand: the side
+  that actually opens the file. A stale index is refused rather than clamped —
+  `place: "builtProps" has 15 row(s), so there is no row 99` — because a clamp
+  would move the last row instead of failing.
+
+**Seven guards, broken on purpose, from a green baseline** (#34). Five went red
+first time: the search-instead-of-walk mutant took out the index checks, a
+hardcoded `\n` in `replaceRow` took out all three CRLF rows, a span one byte
+long took out the parse compare, a clamped index took out eight, and cutting the
+old note at the first full stop took out three. **The sixth stayed green, and it
+was the mutant that was wrong, not the suite.** Flipping `deleteRow`'s two
+branches — right-hand cut for everything but the last row instead of left-hand
+cut for everything but the first — is a different implementation of the same
+function, not a bug: every row in these arrays sits at the same indent, so the
+two cuts produce identical bytes. Replaced with two that are real, a delete that
+eats one byte past the row (`94212 bytes in, 94211 back out`) and one that
+leaves the separating comma behind (`94213 back out`); both red. Recorded rather
+than quietly swapped, because "the break left the suite green" and "the break was
+not a break" look the same from the outside and only one of them is a hole (#147).
+
+**What it was proved on.** `test/tools.mjs` is 179 assertions, up from 47, over
+an LF copy and a CRLF copy of the real file. The panel itself was walked on the
+dev server: a move and a delete written to the real `data/scene-config.json`, the
+three-line diff read, the page reloaded, and the castle built from the edited
+file. Both markers were confirmed in the live scene through `test/drive.mjs`'s
+own probe rather than by eye — the green box on the last placement, hidden until
+there is one, and an amber box on the selected row at `[-33.42, 0.4, 11.26]` for
+a row at tile `-8.3557, 2.8149`, following the list as `N` walked it. `git
+checkout -- data/scene-config.json` afterwards: **this row ships no content**,
+and the branch's `data/` is byte-identical to `main`.
+
+- **The editor will happily delete a row a suite depends on, and that is
+  correct.** `builtProps[9]` is the engineer's drawing, which `test/mystery.mjs`
+  reads; deleting it left the dev server green and the castle standing. The diff
+  is for a person and `npm test` is the net, which is what #583 decided when it
+  chose not to commit.
+- **`plan-vs-scene`'s chapel-candles beat is still red here and it is still not
+  this branch's.** #633 measured it four runs out of four on this machine and
+  187.3 s in CI, and nothing has moved: `git diff origin/main --name-only` is
+  four markdown files, `test/tools.mjs`, `tools/place.mjs`, `vite.config.js`
+  and `src/edit-mode.js`, and that suite loads the page without `?edit=1`, so
+  the editor module is not in its graph at all. Running it here is running it at
+  `main`.
+- **`test/harness.mjs` binds fixed ports and eight sessions now share this
+  machine.** Two of three full `npm test` runs here failed on `Port 8126 is
+  already in use` and `Port 8127 is already in use`, in `built` and `touch`, both
+  of which pass alone and passed in the third run. Not this row's and not fixed
+  here — it is `harness.mjs`, which is nobody's lane and everybody's file — but
+  the parallel-session regime `ROADMAP.md` now assumes makes a fixed port a
+  collision waiting for a schedule, and a red suite that is really a port is
+  exactly the kind of thing a session learns to scroll past.

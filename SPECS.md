@@ -1006,17 +1006,17 @@ taken to produce.
 
 ### Scope, next increment
 
-- **The editor's own next want is a way to move and delete**, not only to
-  add. Placing is one press; correcting a placement is still hand-editing the
-  file. A row selected in the panel, dragged to the player's tile and written
-  back over its own text is the same splice machinery reading rather than
-  appending, and it is what turns the tool from a stopwatch into an editor.
-  **The live failure that used to be waiting here is gone**: `test/tools.mjs`
-  was red on a Windows checkout and green on a Linux one, and it now runs over
-  an LF copy and a CRLF copy of the real file on either machine (#631 to #633).
-  The rail this increment has to keep is 47 assertions in part 1, and one of
-  them is a count of stray line endings, because the byte diff on its own is
-  blind to a newline inside the row that was inserted.
+- ~~**The editor's own next want is a way to move and delete**~~ **shipped
+  2026-09-17** (#636 to #642). The panel lists every row within six tiles of the
+  player, nearest first, rebuilt as they walk; `M` writes the selected one to
+  the tile they are standing on and `Delete`, twice inside four seconds, cuts it
+  out. `rowSpans` walks the text for a row's span rather than searching for it,
+  because three of the file's 31 rows are not what `formatRow` would write and
+  an exact twin would resolve to the first of the pair. `test/tools.mjs` went
+  from 47 assertions to 179 and the headline is that an insert and a delete of
+  the same row give back the file byte for byte, on both endings, for all three
+  arrays. `/__place` takes `add`, `move` and `delete`, and each verb's row count
+  is checked before anything is written.
 - **The dialogue format is this row's third and is deliberately unspecified**
   (speaker, state, conditions, effects, one line each, compiled to
   `npcs.json`/`quests/*.json` at build time). `WISHLIST.md`'s paragraph is the
@@ -1024,9 +1024,14 @@ taken to produce.
 
 ### Acceptance, next increment
 
-- Anything the editor learns to write keeps `test/tools.mjs`'s byte-exactness
+- ~~Anything the editor learns to write keeps `test/tools.mjs`'s byte-exactness
   rail: a move that rewrites a row in place still has to leave every other
-  byte alone. On both line endings.
+  byte alone. On both line endings.~~ **Met** (#639): the rail asserts it per
+  row rather than per array — every byte before a rewritten row's span and every
+  byte after it, for all 31 placeable rows, on both endings. What a move does
+  change inside the span is a `-2.0` becoming `-2`, which is #584's churn
+  confined to the one row being edited and is the bargain the module is.
+- **What is left of this row is the dialogue format alone.**
 
 ### Open calls
 
