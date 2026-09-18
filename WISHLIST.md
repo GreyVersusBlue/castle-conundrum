@@ -236,13 +236,19 @@ machine (#53).
 ## The tooling that makes the content rows possible
 
 **Moved to `BACKLOG.md` rank 12, `SPECS.md`'s "The tooling" section**
-(#567). The placement editor, the dialogue format, and the validator-plus-
-budget-suite are all that row's now; the first increment is the placement
-editor, `?edit=1` on the dev server only, never in `dist/`. **It shipped on
-2026-09-17** (#583 to #587): a panel that reads the tile under the player's
-feet and writes the row into `data/scene-config.json` on a key press. The
-budget suite and the dialogue format are what is left of the theme, and they
-are in that row.
+(#567), and **that row is now retired whole**. The placement editor, the
+dialogue format, and the validator-plus-budget-suite were all that row's; the
+first increment was the placement editor, `?edit=1` on the dev server only,
+never in `dist/`. **It shipped on 2026-09-17** (#583 to #587): a panel that
+reads the tile under the player's feet and writes the row into
+`data/scene-config.json` on a key press. The budget suite followed the same
+day (#607 to #611), move-and-delete after it (#636 to #642), and the dialogue
+format on 2026-09-18 (#659 to #662) — `dialogue/castle.dlg`, every word the
+twelve say, with what reaches each state written above its lines. **Nothing of
+this theme is open.** What none of the four covers is the rest of the spoken
+text: the `chatter` and `performances` pools, the `reputation` lines and
+`day2.lines` are not keyed by speaker-and-state, which is the only shape the
+format knows.
 
 ## Devon's answers, 2026-09-16
 

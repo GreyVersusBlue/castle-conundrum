@@ -223,10 +223,11 @@ file and asserts over both rather than over whatever git handed the machine. Par
 1 went from 17 assertions to 47. **Nothing in the row is open**, and the two
 things found on the way that are not in it are in `HISTORY.md` under #633.
 
-**Twelve ranked items, numbered 1 to 12. Nothing is claimed, and lane B is
-free**: the byte-exactness rail merged as PR #40 (#631 to #633) and 12b's
-move-and-delete after it (#636 to #642), so ranks 4c, 5 and 9 are startable and
-12b is done. The **first** rank 1 shipped
+**Eight ranked items left, numbered 1 to 11 with gaps. Nothing is claimed, and
+lanes B and C are free**: the byte-exactness rail merged as PR #40 (#631 to
+#633) and 12b's move-and-delete after it (#636 to #642), so ranks 4c and 9 are
+startable, and 12c retired rank 12 whole on 2026-09-18 (#659 to #662). The
+**first** rank 1 shipped
 on 2026-09-17 and **the numbers under it were not shifted up** (#619):
 `SPECS.md` and `ROADMAP.md` already name every row by title as well as by
 rank, for exactly this reason (#522), and four wave A sessions were running
@@ -388,30 +389,33 @@ together.
 | --- | --- | --- |
 | A | `src/save.js` — the version number and `migrate` | 4a, 4b, 8 |
 | B | `data/scene-config.json` — and `test/tools.mjs`'s byte-exactness rail | 4c, 5, 9 (12b is done) |
-| C | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | 1, 6, 10, 12c |
+| C | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | 1, 6, 10 (12c is done) |
 | D | `src/main.js`'s player rig and spawn | 6, 11 |
 | E | `src/audio.js` and `data/sounds.json` | 7 |
 
 Lane A is the one the specs already warned about in words: **"do not run
 alongside anything else that touches `save.js`"** is written into rank 4's
 dependencies, and rank 8's next increment is a version bump to 6. Lane C is
-the `cast` block specifically, not the whole of `data/npcs.json`: rank 8 and
-rank 12c write per-person `states` and `default` line arrays, which is a
-different region of the same file and merges, but a session doing either
-should say so in its PR.
+the `cast` block specifically, not the whole of `data/npcs.json`: rank 8
+writes per-person `states` and `default` line arrays, which is a
+different region of the same file and merges, but a session doing it
+should say so in its PR. Rank 12c left that lane a standing obligation:
+every `dialogue` block in that file is also `dialogue/castle.dlg` now, and
+`test/dialogue.mjs` fails if the two disagree, so a row that adds a state or
+rewords a line runs `npm run dialogue:extract` before it commits (#659).
 
 Rank 4 splits three ways because its remaining threads do, and the spec
 already names them separately: **4a** is the bells-on-day-two design call and
 `day2.watches`, **4b** is the `since` field on a fact that changes (#596), and
 **4c** is Thomas Wykes's yard. 4a and 4b are a container's; 4c wants the
-editor walked and the yard looked at. Rank 12 splits the same way and for the
-same reason: **12a** the budget suite (shipped, #607 to #611), **12b**
-move-and-delete in the editor (shipped, #636 to #642), **12c** the dialogue
-format, which is all that is left of the row.
+editor walked and the yard looked at. Rank 12 split the same way and for the
+same reason: **12a** the budget suite (#607 to #611), **12b** move-and-delete
+in the editor (#636 to #642), **12c** the dialogue format (#659 to #662).
+All three shipped and **the row is retired**.
 
 ## The ranked table
 
-**It started at 2 and has a 1 again, and now has gaps at 3 and 5 too.** The
+**It started at 2, has a 1 again, and now has gaps at 3, 5 and 12.** The
 first rank 1 shipped on 2026-09-17 and its number was retired rather than
 reused (#619); the rank 1 below is a different row, opened the same day by
 what the GPU run found (#624 to #630). That is the retirement rule working as
@@ -420,7 +424,10 @@ number came back to the top of the list when something belonged there. Rank 3
 shipped the same day, from a fallback source rather than the shot the spec
 asked for (#634, #635), and rank 5 shipped the same day too, by rendering the
 hall directly rather than waiting on a second GPU run to reach Vespers (#656
-to #658) — both numbers are gone the same way rank 1's first use is. Every row
+to #658) — both numbers are gone the same way rank 1's first use is. Rank 12
+is the first row to leave by finishing rather than by being retired part-way:
+its three increments shipped across two days and the fourth, the dialogue
+format, closed it on 2026-09-18 (#659 to #662). Every row
 below is named by title in `SPECS.md` and `ROADMAP.md` as well as by rank,
 which is what makes that survivable (#522).
 
@@ -435,7 +442,6 @@ which is what makes that survivable (#522).
 | 9 | A castle to get lost in: the town, the rock and river | 2+ | Opus 5 | Container | **after 4c** | B | | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
 | 10 | Bodies: a shared low-poly rig for the fifty (the child and the hound shipped, #643 to #645) | 1 | Fable 5.1 | Local: net | — | C | | [Bodies](SPECS.md#bodies) |
 | 11 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 | Container to the Node line, local: GPU past it | **after 2** | D | shadow + hand shipped 2026-09-17 (#650 to #654) | [Feel](SPECS.md#feel) |
-| 12 | The tooling: a dialogue format (the placement editor, its budget suite and its move-and-delete all shipped, #583 to #587, #607 to #611, #636 to #642) | 2+ | Opus 5 | Container | — | C (12c) | | [The tooling](SPECS.md#the-tooling) |
 
 **`ROADMAP.md` is these three columns turned into an order**: which row to
 take first, what each one unblocks, and which ones two sessions may hold at
@@ -707,8 +713,8 @@ has room for the rest at all.
 
 ## The tooling
 
-*Where: container. Gate: none. Lane: C (12c). 12a had no lane and 12b held lane
-B; both are done.*
+*Where: container. Gate: none. Lane: none left — 12a had no lane, 12b held lane
+B and 12c held lane C. All three are done and the row is retired.*
 
 **Rank 12, and a 2+. The placement editor shipped on 2026-09-17** (#583 to
 #587). `?edit=1` on the dev server mounts a panel that reads the tile under
@@ -754,6 +760,26 @@ is that **an insert and a delete of the same row give back the file byte for
 byte**, on both endings, for all three arrays. `/__place` takes three verbs now
 and checks each one's row count before it writes.
 
-**What is left is the dialogue format.** `SPECS.md` specs it, in the sense that
-it deliberately does not: `WISHLIST.md`'s paragraph is the brief.
+**What was left was the dialogue format, and it shipped on 2026-09-18** (#659
+to #662). `dialogue/castle.dlg` is every word the twelve say — 13 speakers, 40
+states, 118 lines, 20398 bytes — with what moves a speaker into each state and
+what the state is worth written above its lines. Six sigils: `@` a speaker, `:`
+a state, `?` a press or a quest stage, `%` that stage's objective, `!` a clue
+the state grants, `|` one line. **`|` and `%` compile back into
+`data/npcs.json` and `data/quests/`; `@`, `:`, `?` and `!` are rebuilt from the
+clue graph on every compile and refused if they have drifted, never authored** —
+because a compiler that could invent a press out of a line of prose could
+rewire the mystery behind `src/mystery.js`'s validator, which reads
+`mystery.json` and not the .dlg. It is hand-run and not a build step (#660,
+overruling the spec's own words for #506's reason), it lives outside `data/` so
+`vite.config.js` cannot publish it, and the write is `tools/place.mjs`'s splice
+generalised to a nested path (#661). `test/dialogue.mjs` is the fourteenth
+suite: 111 assertions, 0.3 s, both line endings, and it is the only thing
+standing between the .dlg and the drift a second copy of 118 lines invites.
+
+**The row is retired. What it does not cover** is the rest of the spoken text —
+`npcs.json`'s `chatter` and `performances` pools, its `reputation` lines, and
+`mystery.json`'s `day2.lines`. None of those is keyed by speaker-and-state,
+which is the only shape this format knows, so they are a second increment for
+whoever opens one and they are not a row today.
 

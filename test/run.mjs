@@ -31,6 +31,7 @@ const SUITES = [
   ['save', "the save's repair rails"],
   ['lore', 'the canon, the documents and the chatter pool'],
   ['tools', "the placement editor's writer, against the real scene-config.json"],
+  ['dialogue', 'the dialogue format: the .dlg against npcs.json, mystery.json and the quests'],
   // Headless browser against `vite dev`: source, not the bundle.
   ['plan-vs-scene', 'the plan against the castle the browser actually builds'],
   ['touch', 'the second input scheme, on a page with a touchscreen'],

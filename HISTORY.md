@@ -6056,3 +6056,115 @@ hall itself, directly. Decisions #656 to #658.
   check 14 green (7 pieces, each 8.00 m or more over its floor, none in a
   reachable head band), check 6b unaffected, `npm test` thirteen suites
   green. `npm run play` not run — no `src/` changed (#53).
+
+## Rank 12c, the dialogue format: one file that says who speaks, why, and what it is worth (2026-09-18)
+
+**Ranked row 12's third and last increment, on `claude/r12c-dialogue-format`,
+lane C, in a `git worktree`.** `SPECS.md` specced it by deliberately not
+speccing it — "speaker, state, conditions, effects, one line each, compiled to
+`npcs.json`/`quests/*.json` at build time", with `WISHLIST.md`'s paragraph as
+the whole brief. Decisions #659 to #662. The twelve's 118 lines now read top to
+bottom in `dialogue/castle.dlg`, 20398 bytes, 13 speakers and 40 states, and
+`test/dialogue.mjs` is the fourteenth suite at 0.3 s and 111 assertions.
+
+- **The format is six sigils and one file, and only two of them are written
+  back** (#659). `@ id | name | role | ward` is a speaker, `: state` one of
+  their states, `? press default on wax-matches` or `? quest cooks-knife at
+  hunting` what moves them into it, `% ...` that quest stage's objective,
+  `! says clerk-cloak` the clue the state grants, `| ...` one line of dialogue,
+  `#` a comment. **`|` and `%` compile; `@`, `:`, `?` and `!` are only
+  checked.** That is the whole bargain and it was the row's one real design
+  call. The clue graph lives in `data/mystery.json`'s `presses` and `clues` and
+  in `data/quests/*.json`'s `stages`, and `src/mystery.js`'s validator — which
+  has caught every wiring mistake this project has made — reads those files and
+  not this one. A compiler that could invent a press out of a line of prose
+  could silently rewire the mystery behind the validator's back. So the
+  annotations are rebuilt from the three JSON files on every compile and the
+  compile refuses if one byte of the rebuild is not what the .dlg says: they
+  cannot drift, and they cannot be authored either. What the format buys is
+  that the four edits in three files an author used to make are now visible in
+  one place, in the order a person reads them.
+
+- **It is a hand-run compiler and not a build step, which is where the spec's
+  own words were overruled** (#660). `SPECS.md` said "compiled to
+  `npcs.json`/`quests/*.json` at build time". Nothing may be generated at build
+  time here: `dist/` has no transform in it on purpose, because a build-time
+  pipeline makes `npm run dev` serve one thing and `dist/` another, which is
+  `test/built.mjs`'s served-set diff failing by construction — the same
+  argument that kept the asset encode out of the build (#506). `npm run
+  dialogue:extract`, `npm run dialogue:compile` and `npm run dialogue:check`
+  are hand-run, `data/npcs.json` stays the file the page fetches, and the .dlg
+  is a committed second copy that a suite forbids from drifting. **And it does
+  not live under `data/`**, because `vite.config.js` copies that directory into
+  `dist/` whole and 20 KB of source would be published to nobody;
+  `dialogue/castle.dlg` is a sibling the build has never heard of, and
+  `test/dialogue.mjs` asserts the path rather than trusting the comment that
+  says so (#586's habit, pointed at a third target).
+
+- **The write is a text splice over a nested path, which is `tools/place.mjs`
+  generalised** (#661). Same measured reason: a round trip through
+  `JSON.stringify` is not `data/npcs.json`. What is new is that the thing being
+  replaced is `cast[7].dialogue["chisel-forge"]` and not an element of a
+  top-level array, so `membersOf` walks any object or array and hands back the
+  `{keyStart, valueStart, valueEnd}` of every member, `locate` follows a path
+  of keys and indices to one of them, and `setValue`, `addKey` and `deleteKey`
+  are the three edits that span makes possible. `addKey` and `deleteKey` are
+  `insertRow` and `deleteRow` with an object's three cases instead of an
+  array's — the member with something before it takes the separator on its
+  left, the first of several takes it on the right, and the last one standing
+  leaves `{}`, which is the branch the inspector's single state is the only
+  live instance of. A compile with nothing to do writes nothing: a state whose
+  lines are identical is not touched at all, so the diff of a one-word
+  rewording is one line and not 118.
+
+- **The authoring loop is a stub, and the compiler refuses a half-done one**
+  (#662). `extract` lists every state `npcs.json` has, then every state the
+  press list or a quest stage names that `npcs.json` has not got, so wiring a
+  press in `mystery.json` and re-running extract drops a `: state` with its `?`
+  line and no `|` lines into the file, waiting to be written. `compile` refuses
+  a state with no lines — "a state nobody says anything in is a state the
+  player walks away from in silence" — so the stub cannot be committed empty.
+  Walked end to end for this record: a `relents` press added to
+  `mystery.json`, extract reported `1 state(s) with no lines yet:
+  merchant/relents`, compile exited 1, one `|` line written, compile exited 0
+  and `data/npcs.json` gained exactly four lines. Reverted afterwards; the
+  merchant has two states, as before.
+
+**The suite: 111 assertions in seven parts, both line endings throughout**
+(#632). The walk is held to `JSON.parse` for all 40 dialogue spans rather than
+to a second span finder (#34, #500). Every one of the 40 states rewritten with
+its own lines has to give back `npcs.json` byte for byte, which is the only
+assertion that would catch `formatLines` spelling an array two spaces off; one
+line changed has to leave every byte outside that state's span alone; a state
+added and deleted again, and the last state deleted and added back, both give
+the file back byte for byte for all 13 speakers. Part 5 rebuilds the whole .dlg
+out of `data/` and compares it with what is committed, part 6 compiles what is
+committed back and requires `npcs.json` and all five quest files unchanged, and
+part 7 breaks each of the 15 `parse` rules and 11 `problems` rules on purpose.
+
+**Four breaks, from a green baseline** (#34). A line ending hardcoded in
+`formatLines` — the exact bug that lived in `test/tools.mjs`'s rail for its
+whole life, green in CI and one byte short on Windows (#631 to #633) — turns 8
+assertions red and **all 8 of them are CRLF**, which is the point: the LF half
+stays green, so a rail that read only what is on disk in CI would have shipped
+it. Indenting an element four spaces instead of two turns 6 red, headed by
+"all 0 states rewritten with their own lines are the file byte for byte".
+Changing one word of one line in the .dlg and not compiling it turns 5 red and
+`npm run dialogue:check` exits 1 naming both files. Rewiring a press in
+`mystery.json` and not re-extracting turns 2 red, one of them naming the
+speaker, the state, what the file says and what the graph says.
+
+`npm test` fourteen suites green — `map` failed once on `Port 8128 is already
+in use`, which is a parallel session's dev server in another worktree and not
+this row, and passed alone immediately after. `npm run play` not run: no `src/`
+changed, so there is nothing for a GPU to decide (#53).
+
+**What is left of rank 12 is nothing.** The placement editor (#583 to #587),
+the budget suite (#607 to #611), move-and-delete (#636 to #642) and the
+dialogue format are the three tools `WISHLIST.md` named plus the one the editor
+asked for, and the row retires. **What this increment does not cover is the
+rest of the spoken text**: `npcs.json`'s `chatter` and `performances` pools,
+its `reputation` lines and `mystery.json`'s `day2.lines` are all lines somebody
+says and none of them is keyed by speaker-and-state, which is the only shape
+this format knows. They are a second increment for whoever wants one, and they
+are not in this row.

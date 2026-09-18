@@ -658,6 +658,33 @@ not said on a press, and it is not said on the morning after. Thresholds ship
 at outer 2 and 3, inner 1 and 2, closing 1, 3 and 5, and `validateQuestSet`
 holds every one of them to an errand that exists to be finished.
 
+### What the dialogue format shipped, in one paragraph
+
+`dialogue/castle.dlg` (#659 to #662, 2026-09-18). 13 speakers, 40 states, 118
+lines, 20398 bytes, six sigils: `@ id | name | role | ward`, `: state`,
+`? press default on wax-matches` or `? quest cooks-knife at hunting`, `% ` that
+stage's objective, `! says clerk-cloak`, `| ` one line of dialogue. **`|` and
+`%` compile back into `data/npcs.json` and `data/quests/`, and the other four
+are rebuilt from the clue graph on every compile and refused if the file has
+drifted from them.** That asymmetry is the row's one design call: the graph
+lives in `mystery.json`'s `presses` and `clues` and the quests' `stages`, where
+`src/mystery.js`'s validator can see it, and a compiler able to invent a press
+out of a line of prose could rewire the mystery behind that validator's back.
+It is hand-run — `npm run dialogue:extract`, `:compile`, `:check` — and not a
+build step, which is where the scope line below was overruled: `dist/` has no
+transform in it on purpose, because a build-time pipeline makes `npm run dev`
+serve one thing and `dist/` another, which is #506's argument and
+`test/built.mjs`'s served-set diff failing by construction (#660). The .dlg
+sits outside `data/` so `vite.config.js` cannot publish it. The write is
+`tools/place.mjs`'s splice generalised to a nested path — `membersOf` walks any
+object or array, `locate` follows `['cast', 7, 'dialogue', 'chisel-forge']`,
+and `setValue`, `addKey` and `deleteKey` are the three edits a span makes
+possible (#661). **The authoring loop is a stub**: wire a press in
+`mystery.json`, run extract, and the state appears with its `?` line and no
+lines, and compile refuses it until somebody writes one (#662).
+`test/dialogue.mjs` is the fourteenth suite, 111 assertions, 0.3 s, both line
+endings.
+
 ### Scope, next increment
 
 - **The seven left of the dozen.** `WISHLIST.md` named eight and five are
@@ -1006,12 +1033,12 @@ ray that was never going to hit anything.
 
 ## The tooling
 
-**Rank 12. Size 2+. Two of three increments shipped on 2026-09-17** — the
-placement editor (#583 to #587) and the budget suite (#607 to #611).
+**Rank 12. Size 2+. Shipped whole: the placement editor and the budget suite
+on 2026-09-17** (#583 to #587, #607 to #611), **move-and-delete the same day**
+(#636 to #642) **and the dialogue format on 2026-09-18** (#659 to #662).
 `WISHLIST.md`'s own closing section: none of the seven themes above is a code
 problem, they are content problems at a scale the current tooling cannot carry,
-and this row is the three tools it names. **The dialogue format is what is
-left.**
+and this row is the three tools it names. **Nothing in it is open.**
 
 ### What shipped, in one paragraph
 
@@ -1057,10 +1084,11 @@ taken to produce.
   the same row give back the file byte for byte, on both endings, for all three
   arrays. `/__place` takes `add`, `move` and `delete`, and each verb's row count
   is checked before anything is written.
-- **The dialogue format is this row's third and is deliberately unspecified**
+- ~~**The dialogue format is this row's third and is deliberately unspecified**
   (speaker, state, conditions, effects, one line each, compiled to
-  `npcs.json`/`quests/*.json` at build time). `WISHLIST.md`'s paragraph is the
-  brief for whoever takes it.
+  `npcs.json`/`quests/*.json` at build time)~~ **shipped 2026-09-18** (#659 to
+  #662). Everything but "at build time", which was overruled and argued in
+  `HISTORY.md` under #660.
 
 ### Acceptance, next increment
 
@@ -1071,7 +1099,13 @@ taken to produce.
   byte after it, for all 31 placeable rows, on both endings. What a move does
   change inside the span is a `-2.0` becoming `-2`, which is #584's churn
   confined to the one row being edited and is the bargain the module is.
-- **What is left of this row is the dialogue format alone.**
+- ~~**What is left of this row is the dialogue format alone.**~~ **Met**
+  (#659 to #662). Nothing is left of this row.
+- **What the dialogue format does not cover** is the rest of the spoken text:
+  `npcs.json`'s `chatter` and `performances` pools, its `reputation` lines and
+  `mystery.json`'s `day2.lines`. None is keyed by speaker-and-state, which is
+  the only shape the format knows. A second increment for whoever opens one;
+  it is not a row today.
 
 ### Open calls
 
