@@ -13,6 +13,17 @@
 // checked here, against the real data/scene-config.json, on the one property
 // that matters — every byte that was not the new row is the byte it was.
 //
+// AND IT RUNS OVER BOTH LINE ENDINGS, on every machine, rather than over
+// whatever this checkout happens to hold. `data/scene-config.json` comes out of
+// git CRLF on Windows and LF on Linux — `core.autocrlf` is `true` on the dev
+// machine and the file carries 2546 line endings either way — so a rail that
+// reads only what is on disk is two different rails on the two machines. It was
+// one: the writer spliced `\n` into a CRLF file and the cut below looked for
+// `,\n`, so every row of part 1 failed on Windows and passed in CI for as long
+// as the rail had existed (#618, fixed in #624). Both endings are built here out
+// of what is on disk and both are asserted, so neither machine can be the only
+// one that runs the half that breaks.
+//
 // Three parts:
 //   1. the splice: it parses, it adds exactly one element, and cutting the new
 //      row back out gives back the original file byte for byte
@@ -22,17 +33,24 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { insertRow, formatRow, checkRow, PLACEABLE } from '../tools/place.mjs';
+import { insertRow, formatRow, checkRow, eolOf, PLACEABLE } from '../tools/place.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, '..');
 const raw = fs.readFileSync(path.join(ROOT, 'data/scene-config.json'), 'utf8');
+// The same file with each ending, whichever one git handed this machine. `raw`
+// is one of these two and the suite never has to know which.
+const LF = raw.replace(/\r\n/g, '\n');
+const ENDINGS = [['LF', LF], ['CRLF', LF.replace(/\n/g, '\r\n')]];
 
 let failures = 0;
 const fail = (msg) => { console.log(`  FAIL  ${msg}`); failures++; };
 const pass = (msg) => console.log(`  ok    ${msg}`);
 const check = (cond, msg, detail = '') => (cond ? pass(msg) : fail(`${msg}${detail ? ` — ${detail}` : ''}`));
 const threw = (fn) => { try { fn(); return null; } catch (e) { return e.message; } };
+/** How many line endings in `text` are not `eol`. Zero is the only acceptable answer for a spliced file. */
+const strayEndings = (text, eol) =>
+  (text.match(eol === '\r\n' ? /(?<!\r)\n/g : /\r/g) || []).length;
 
 /* ------------------------------------------------------- 1: the splice --- */
 console.log('the splice, against the real scene-config.json');
@@ -43,42 +61,68 @@ console.log('the splice, against the real scene-config.json');
     braziers: { tile: [0.25, 0.5], base: 0, comment: 'a test row' },
   };
   const before = JSON.parse(raw);
-  for (const [key, row] of Object.entries(rows)) {
-    const out = insertRow(raw, key, row);
-    let after = null;
-    try { after = JSON.parse(out); } catch (e) { fail(`${key}: the spliced file does not parse — ${e.message}`); continue; }
-    check(after[key].length === before[key].length + 1, `${key}: exactly one more element (${before[key].length} -> ${after[key].length})`);
-    check(JSON.stringify(after[key].at(-1)) === JSON.stringify(row), `${key}: and it is the row that was asked for`, JSON.stringify(after[key].at(-1)));
-    for (const other of Object.keys(before)) {
-      if (other === key) continue;
-      if (JSON.stringify(before[other]) !== JSON.stringify(after[other])) fail(`${key}: writing it changed \`${other}\``);
+  for (const [ending, source] of ENDINGS) {
+    // What the writer is told the file's ending is has to be what the file's
+    // ending is, or every assertion under this line is measuring the wrong
+    // thing while agreeing with itself.
+    check(eolOf(source) === (ending === 'CRLF' ? '\r\n' : '\n'), `${ending}: eolOf reads this copy as ${ending}`, JSON.stringify(eolOf(source)));
+    const eol = eolOf(source);
+
+    for (const [key, row] of Object.entries(rows)) {
+      const out = insertRow(source, key, row);
+      let after = null;
+      try { after = JSON.parse(out); } catch (e) { fail(`${ending} ${key}: the spliced file does not parse — ${e.message}`); continue; }
+      check(after[key].length === before[key].length + 1, `${ending} ${key}: exactly one more element (${before[key].length} -> ${after[key].length})`);
+      check(JSON.stringify(after[key].at(-1)) === JSON.stringify(row), `${ending} ${key}: and it is the row that was asked for`, JSON.stringify(after[key].at(-1)));
+      for (const other of Object.keys(before)) {
+        if (other === key) continue;
+        if (JSON.stringify(before[other]) !== JSON.stringify(after[other])) fail(`${ending} ${key}: writing it changed \`${other}\``);
+      }
+      // Not one stray ending of the other kind anywhere in the file, which is
+      // the failure a writer that splices `\n` into a CRLF file actually
+      // commits. The byte diff below catches it too, and this says what it is.
+      check(strayEndings(out, eol) === 0, `${ending} ${key}: and the file is still ${ending} throughout`,
+        `${strayEndings(out, eol)} line ending(s) of the other kind`);
+
+      /* THE ASSERTION THIS FILE EXISTS FOR. Cut the inserted text back out and
+       * what is left has to be the original file, byte for byte. A re-serialising
+       * writer fails this line by four kilobytes: scene-config.json's
+       * `"intensity": 2.0` comes back from JSON.stringify as `2`, and the file
+       * goes from 94212 bytes to 98330. That churn would land in the diff a
+       * person reads before committing a placement, which is the whole product.
+       *
+       * The cut is the splice run backwards and so it is written in the file's
+       * own ending at every step: the row's own newlines are `eol`, the comma
+       * the writer hung off the previous element is followed by `eol`, and the
+       * `eol` between the row and the closing bracket's indent is `eol.length`
+       * bytes and not one. All three were `\n` and the middle one was `1`, and
+       * on a CRLF checkout that is a file one byte short (#624). */
+      const text = formatRow(row, 4, eol);
+      const at = out.indexOf(text);
+      check(at !== -1, `${ending} ${key}: the row is in the file as formatRow wrote it`);
+      if (at !== -1) {
+        const head = out.slice(0, at);
+        check(head.endsWith(`,${eol}`), `${ending} ${key}: the previous element got the comma it needed`, JSON.stringify(head.slice(-4)));
+        const cut = `${head.slice(0, -(eol.length + 1))}${eol}${out.slice(at + text.length + eol.length)}`;
+        check(cut === source, `${ending} ${key}: and every other byte is the byte it was`,
+          cut === source ? '' : `${source.length} bytes in, ${cut.length} back out`);
+      }
     }
 
-    /* THE ASSERTION THIS FILE EXISTS FOR. Cut the inserted text back out and
-     * what is left has to be the original file, byte for byte. A re-serialising
-     * writer fails this line by four kilobytes: scene-config.json's
-     * `"intensity": 2.0` comes back from JSON.stringify as `2`, and the file
-     * goes from 94212 bytes to 98330. That churn would land in the diff a
-     * person reads before committing a placement, which is the whole product. */
-    const text = formatRow(row, 4);
-    const at = out.indexOf(text);
-    check(at !== -1, `${key}: the row is in the file as formatRow wrote it`);
-    if (at !== -1) {
-      const cut = `${out.slice(0, at).replace(/,\n$/, '\n')}${out.slice(at + text.length + 1)}`;
-      check(cut === raw, `${key}: and every other byte is the byte it was`,
-        cut === raw ? '' : `${raw.length} bytes in, ${cut.length} back out`);
-    }
+    // Twice in a row, because the second splice has to find the bracket past the
+    // first one's text rather than the one it remembered.
+    const twice = insertRow(insertRow(source, 'braziers', rows.braziers), 'braziers', rows.braziers);
+    check(JSON.parse(twice).braziers.length === before.braziers.length + 2, `${ending}: two placements in a row both land`);
+
+    // An empty array has no trailing comma to write after. `JSON.stringify`
+    // only ever writes `\n`, so this copy is put into the ending under test the
+    // same way the real file's is.
+    const emptied = JSON.stringify({ ...before, braziers: [] }, null, 2).replace(/\n/g, eol);
+    const filled = insertRow(emptied, 'braziers', rows.braziers);
+    check(JSON.parse(filled).braziers.length === 1, `${ending}: an empty array takes its first element without a stray comma`);
+    check(strayEndings(filled, eol) === 0, `${ending}: and the empty array's first element is written in the file's ending too`,
+      `${strayEndings(filled, eol)} line ending(s) of the other kind`);
   }
-
-  // Twice in a row, because the second splice has to find the bracket past the
-  // first one's text rather than the one it remembered.
-  const twice = insertRow(insertRow(raw, 'braziers', rows.braziers), 'braziers', rows.braziers);
-  check(JSON.parse(twice).braziers.length === before.braziers.length + 2, 'two placements in a row both land');
-
-  // An empty array has no trailing comma to write after.
-  const emptied = JSON.stringify({ ...before, braziers: [] }, null, 2);
-  const filled = insertRow(emptied, 'braziers', rows.braziers);
-  check(JSON.parse(filled).braziers.length === 1, 'an empty array takes its first element without a stray comma');
 
   // A key that is not there, and a key that is not an array, are errors and not
   // silent no-ops: a misspelled array would otherwise write nothing and report
@@ -130,8 +174,7 @@ console.log('the shape rules');
 /* ---------------------------------------------------- 3: the formatting --- */
 console.log('the formatting');
 {
-  const text = formatRow({ model: 'x.gltf', tile: [-5.1, -4.1], rotationY: 45 }, 4);
-  const want = [
+  const lines = [
     '    {',
     '      "model": "x.gltf",',
     '      "tile": [',
@@ -140,8 +183,17 @@ console.log('the formatting');
     '      ],',
     '      "rotationY": 45',
     '    }',
-  ].join('\n');
-  check(text === want, 'a row is written in the file’s own style: two-space nesting, one number per line', JSON.stringify(text));
+  ];
+  const row = { model: 'x.gltf', tile: [-5.1, -4.1], rotationY: 45 };
+  const text = formatRow(row, 4);
+  check(text === lines.join('\n'), 'a row is written in the file’s own style: two-space nesting, one number per line', JSON.stringify(text));
+  // Same eight lines, joined with the ending it was asked for. Every newline in
+  // a row is one `formatRow` wrote, including the ones inside a `tile`, so the
+  // `\n` default cannot be the only one that is checked (#624).
+  const crlf = formatRow(row, 4, '\r\n');
+  check(crlf === lines.join('\r\n'), 'and in CRLF when the file it is going into is CRLF', JSON.stringify(crlf));
+  check(strayEndings(crlf, '\r\n') === 0, 'with no bare LF left inside the tile it broke over three lines',
+    `${strayEndings(crlf, '\r\n')} bare LF`);
   check(!/undefined/.test(formatRow({ tile: [0, 0], base: undefined })), 'a key with no value is left out rather than written as undefined');
 }
 

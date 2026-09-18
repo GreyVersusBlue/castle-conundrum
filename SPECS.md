@@ -1045,10 +1045,12 @@ taken to produce.
   file. A row selected in the panel, dragged to the player's tile and written
   back over its own text is the same splice machinery reading rather than
   appending, and it is what turns the tool from a stopwatch into an editor.
-  **Whoever takes it walks into a live failure first**: `test/tools.mjs` is red
-  on a Windows checkout and green on a Linux one (written up under #607 to
-  #611), so the byte-exactness
-  rail that increment has to keep is not currently holding on the dev machine.
+  **The live failure that used to be waiting here is gone**: `test/tools.mjs`
+  was red on a Windows checkout and green on a Linux one, and it now runs over
+  an LF copy and a CRLF copy of the real file on either machine (#631 to #633).
+  The rail this increment has to keep is 47 assertions in part 1, and one of
+  them is a count of stray line endings, because the byte diff on its own is
+  blind to a newline inside the row that was inserted.
 - **The dialogue format is this row's third and is deliberately unspecified**
   (speaker, state, conditions, effects, one line each, compiled to
   `npcs.json`/`quests/*.json` at build time). `WISHLIST.md`'s paragraph is the
