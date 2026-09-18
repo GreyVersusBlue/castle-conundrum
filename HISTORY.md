@@ -5218,3 +5218,191 @@ than the one it said it was.
   under it happens to be. Left alone because it is a different file and a
   different lane, and written down here rather than scrolled past, which is the
   mistake #618 is an example of and this entry is the correction to.
+
+## Feel: a shadow on the ground and a hand on the door (2026-09-17)
+
+**Rank 11's first increment, claimed on `claude/r11-feel`, lane D.** Its own
+worktree, because the tree `CLAUDE.md` calls the repo root was another
+session's and had that session's uncommitted edits sitting in it. Decisions
+#634 to #639. One new file, `src/player-rig.js`; 16 lines of `main.js`, 175 of
+`test/plan-vs-scene.mjs` and two of `test/play-castle.mjs`. Thirteen suites
+green, `npm run play` not run.
+
+**The Node half only, and the row stays open.** `SPECS.md` splits this row on
+purpose: whether the two objects EXIST, follow the player and stay out of every
+ray is a browser's question, and whether either of them READS is a GPU's (#53).
+The second half is nine sentences of screenshot the next run on Devon's machine
+has to take, and it is written down at the bottom of this entry rather than
+claimed.
+
+- **A decal, not a shadow-casting light** (#634). The open call in `SPECS.md`
+  recommended the decal on the grounds that `WISHLIST.md`'s own words for it
+  were "cheapest presence cue", and this takes it. The castle has exactly one
+  shadow-casting light, the sun, at a 2048 map (#530); a second one tied to the
+  player is a per-frame cost nothing here has ever paid. **What is on the ground
+  instead is one 0.46 m disc with a radial gradient painted into a 64 x 64
+  canvas at load** — 16 KB of texture, one draw call, and **no file**, so there
+  is nothing for `tools/encode-assets.mjs` to compress (#506) and nothing new
+  fetched from anywhere (#493). The hand is the second draw call and not the
+  seventh: its palm, four fingers, thumb and forearm are six primitives merged
+  into one `BufferGeometry` at build time.
+
+  **The rig costs two draw calls and `test/budget.mjs` cannot see either of
+  them**, which is not an oversight in that suite. It counts what
+  `castle-builder.js`'s `buildPiece` returns, per ward, and the player is not a
+  plan piece. Two is written here because here is where the number is kept
+  honest.
+
+- **The shadow is on the plan's floor, not on a ray cast down from the camera**
+  (#634, same commit). `PlayerController.feet` is the height
+  `castle-plan.js`'s `standAt` put the player at, which is the same answer the
+  walkability grid stands on (#511). Taking it from there rather than measuring
+  it means the shadow and the feet cannot disagree about a slab edge or a step
+  of a flight even in principle — there is one number and both read it.
+
+- **Every mesh in the rig refuses rays, and the control is inside the
+  assertion** (#635). This is the thing that would have broken the castle
+  quietly rather than loudly. The rig is a top-level child of the scene, and
+  `interaction.js`'s line-of-sight test calls every top-level child that is not
+  a target an occluder; `play-castle.mjs` sweeps the same list to check the
+  Constable is visible from interact range. **A disc under the player's own feet
+  sits in the path of every ray the player casts downhill, and the symptom is
+  not an error — it is the prompt quietly not appearing.** `raycast = () => {}`
+  on both meshes is the whole fix, and it is one line here rather than a special
+  case in two other files.
+
+  A test that asserts "the ray did not hit" passes just as well when the ray was
+  never going to hit anything, which is #34's whole subject. So **the beat casts
+  each ray twice: once with the rig's own `raycast`, and once with
+  `THREE.Mesh.prototype.raycast` put back over it**, and the assertion is that
+  the first misses AND the second hits. Deleting the no-op from the shadow gave
+  `1 hit, 1 with the control`; deleting it from the hand gave `3 hit, 3 with the
+  control`.
+
+  **And rays were only half of it: the rig is shaped to be mistaken for
+  furniture, and `play-castle.mjs` sweeps `scene.children` twice looking for
+  exactly that.** Once for anything whose footprint sits mostly over the hall
+  table, to catch a candleholder floating 0.40 m above it, and once for anything
+  over 1.5 m tall that is not a skinned body, which it calls structure and then
+  checks the furniture against. A disc on the floor with a hand up to 1.6 m over
+  it, standing wherever the player is standing — which during that beat is in
+  that room, next to that furniture — fits both descriptions. So the group
+  carries `userData.playerRig` and those two loops skip it, the same way and in
+  the same line-shape they already skip a skinned mesh.
+
+  **That suite is the one CI cannot run (#53), so the fact it now depends on is
+  asserted in the one that can**: `plan-vs-scene.mjs`'s first line of the beat
+  reads the flag, and commenting the flag out fails it with `NOT flagged as the
+  player rig`. A fix to a suite nothing runs is a fix nobody can tell is still
+  there.
+
+- **The hand reaches for the target the prompt is offering, and does not go
+  looking** (#636). `main.js` hands `interaction.currentTarget` to the rig one
+  line after `interaction.update()` computes it. The rig reaches only for a
+  target that is `isLock` and still `active`, which is the getter `locks()`
+  already gives the interaction system, so an answered door stops being reached
+  for by the same fact that stops it being pressable. **Nothing in the rig
+  searches the scene**, which is what keeps the hand and the prompt from ever
+  disagreeing about which door the player is at, and what keeps the reach inside
+  the interaction radius without a second copy of that radius.
+
+  The aim point is the leaf's own `focus` — the centre of a 2 m leaf, which is
+  within a hand's width of where a handle is — pulled 0.12 m back out of the
+  wood and offset right and down off the middle of the view. The clamp is on the
+  distance from the eye, 0.78 m, so what the arm's length means is one number
+  and the offset cannot quietly lengthen it.
+
+- **`settle()` brings the world matrix with it** (#637). The rig smooths its
+  reach with `1 - exp(-dt * rate)` so the rate does not depend on the frame
+  rate, and `settle()` collapses the smoothing outright, for the reason
+  `PlayerController.settle()` exists: **the suite then asserts a position and
+  never a duration**, which is the assertion #53 says a software-rendered
+  Chromium cannot answer either way.
+
+  The first version of `settle()` wrote `position` and stopped, and three of the
+  nine assertions failed with `0 hit, 0 with the control` — the control that was
+  supposed to be impossible to fake, failing. Writing `position` does not move
+  an object as far as a `Raycaster` is concerned: `Mesh.raycast` reads
+  `matrixWorld`, and nothing updates that until the next render, so the ray was
+  being aimed at where the hand had been settled and cast at where it had last
+  been drawn. A settle that leaves the matrix a frame behind is a settle that
+  moves the rig for anything reading `.position` and leaves it where it was for
+  anything casting a ray at it.
+
+- **The hand's colour is read off a body, not written in the file** (#638). A
+  hex constant in `player-rig.js` would be a second copy of a number that lives
+  in a glTF, and the two would drift the first time rank 10 adds a body. The tint
+  leaves `Skin` alone (#419, and `BARE_MATERIALS` in `npc.js`), so every body in
+  the castle carries the same one and `plan-vs-scene.mjs` already asserts there
+  is exactly one of it; `skinColour(npcs)` walks the first body that has one and
+  takes it. The fallback is for a page with no bodies on it at all.
+
+### What the beat asserts, and what each break said
+
+Nine assertions, in `test/plan-vs-scene.mjs` after the HUD's room line. It is
+this file and not a new suite because every one of them is a seam: the live
+scene, the running `InteractionSystem` and the DOM, none of it derivable in
+Node (#529). From a green thirteen, each guard was broken on purpose (#34):
+
+| The break | What failed, and what it said |
+| --- | --- |
+| shadow parked at the origin | 40 failures. `standing in guardroom the shadow is 36.250 m from under the player` |
+| `SHADOW_LIFT` to 0 | 40 failures. `in clerk-office the shadow sits 0.000 m over a floor at 0.000 — it is buried in it, or hovering` |
+| no `raycast` no-op on the shadow | `a ray straight down from the eye ... — 1 hit, 1 with the control` |
+| no `raycast` no-op on the hand | `and a ray from the eye through the reaching hand ... — 3 hit, 3 with the control` |
+| `want` forced to 1, always reaching | `with the word-lock behind the player the hand is not on the screen at all — reach 1, no prompt` |
+| `want` forced to 0, never reaching | 3 failures, including `the hand it brings out is nearer the lock than the one it keeps below the frame — 1.96 m against 1.96 m` |
+| a `planId` on the shadow | 3 failures. The box diff caught it first: `"ground" (ground) is 75.540 m off the plan` |
+| no `userData.playerRig` on the group | `the rig is one flagged group in the scene ... — 0 tagged, NOT flagged as the player rig` |
+
+**The shadow's own trap is the one the standing beat already answers, and it is
+answered the same way.** Forty rooms of "the shadow is under the player" all
+pass on a shadow nailed to one spot if the player never moves, and the forty
+lines above move the player forty times without one of them saying the shadow
+went too. So the distinct shadow positions are counted against the distinct
+places stood in — **40 against 40** — with the floor height in the key as well
+as x and z, because two rooms on two levels sit over each other and a shadow
+that tracked only x and z would be right in both of them for the wrong reason.
+
+The beat also puts the page back the way it found it: the riddle overlay has
+been open since the word-lock beat, an open overlay stops
+`interaction.update()` picking a target at all, and three beats below say in
+their own comments that they found it open. It is cancelled, the work is done,
+and E is pressed at the door again to put it back — asserted, so that sentence
+cannot quietly become false (#147).
+
+### What a GPU still has to answer, and nothing here claims
+
+Nine sentences and two screenshots, to the bar rank 2's photograph set:
+
+- A blob on stone against a blob on grass. Whether 0.42 opacity over a
+  0.46 m disc reads as a body's shadow on pavers and still reads on the outer
+  ward's grass is the row's own GPU criterion and the reason the two surfaces
+  are named in it.
+- **The shadow on a flight of stairs.** It is a flat disc at the height of the
+  feet, and a flight is a ramp; the disc will cut into the step above and float
+  over the step below. Nobody has looked at how bad that is.
+- Whether the hand reads as a hand at 0.78 m in a 72-degree view, and whether
+  coming up from below the frame over ~0.3 s reads as reaching or as popping.
+
+### And a finding on the way past: thirteen suites on fixed ports, five sessions at once
+
+**`npm test` is not safe to run twice at the same time on one machine, and
+five rows running in parallel is exactly that** (#639). Each browser suite
+hardcodes a port — 8125 `plan-vs-scene`, 8126 `built`, 8128 `map` — chosen so
+the suites do not collide with *each other*, which they do not. They collide
+with the same suite in another worktree: `Error: Port 8128 is already in use`,
+thrown out of `serveDev`, a suite dead in 0.5 s with no assertion run.
+
+It was seen eight times in ten full runs while R3, R5, R10, R12b and R12c were
+running beside this row, on five different suites, and every one of them passed
+alone. **The failure looks exactly like a broken suite in the runner's summary**
+— `touch (exit 1, 0.4s)` — and the only thing that distinguishes it is the
+stack, which the summary does not print. The thirteen did all go green in one
+run, twice, in a quiet window.
+
+Not fixed here: it is `test/harness.mjs`'s and it is nobody's lane. The cheap
+version is a port taken from the environment or picked free at listen time,
+which is a change every suite's constant would have to come out for. Written
+down rather than scrolled past, which is the mistake #618 is an example of and
+#633 is the correction to.

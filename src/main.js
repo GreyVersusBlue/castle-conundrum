@@ -17,6 +17,7 @@ import { EYE_HEIGHT } from './castle-plan.js';
 import { UI } from './ui.js';
 import { createAudio } from './audio.js';
 import { createTouchControls, isTouchLikely } from './touch-controls.js';
+import { PlayerRig, skinColour } from './player-rig.js';
 
 const ui = new UI();
 
@@ -164,6 +165,18 @@ async function init() {
   // settles there.
   player.settle();
   window.__player = player; // read by test/plan-vs-scene.mjs's standing beat
+
+  /* --- the player's own body (BACKLOG.md rank 11) ---
+   * A shadow on the ground under the feet and a hand that reaches for a door's
+   * lock. Nothing else in that theme starts before this pair. The hand takes
+   * its colour off a body the page has already built rather than a hex written
+   * here, because the cast's skin is in a glTF and every body carries the same
+   * one (#419). It reaches for whatever InteractionSystem is offering, which is
+   * handed to it in the loop below.
+   */
+  const rig = new PlayerRig({ scene, camera, player, skin: skinColour(npcs) });
+  rig.settle();
+  window.__rig = rig; // read by test/plan-vs-scene.mjs's shadow-and-hand beat
 
   // --- Interaction + quest ---
   // The word-locked doors are targets too: the riddle is carved over the
@@ -359,6 +372,9 @@ async function init() {
     for (const one of folk) one.update(dt, camera.position);
     populace.update(dt);
     interaction.update();
+    // AFTER interaction.update(), never before: the hand reaches for the target
+    // the prompt is offering, and that target is decided one line up.
+    rig.update(dt, interaction.currentTarget);
     editor?.update();
     for (const fn of brazierUpdates) fn(t);
 

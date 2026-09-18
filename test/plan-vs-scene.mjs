@@ -256,6 +256,187 @@ try {
     if (named === want.length) pass(`the HUD's room line names the room the camera stands in, all ${named} rooms`);
   }
 
+  /* --------------------------------------- a shadow, and a hand (rank 11) ---
+   * BACKLOG.md rank 11's first increment, and the Node half of it.
+   * `src/player-rig.js` puts two objects in the scene that no plan piece
+   * describes: a blob shadow that sits on whatever the feet are standing on,
+   * and a hand that comes up out of the bottom of the frame and reaches for a
+   * door's lock. What a GPU has to answer is whether either of them READS — a
+   * blob on stone against a blob on grass, a hand that looks like a hand — and
+   * that is the row's other acceptance criterion, under #53.
+   *
+   * What a browser can settle without a frame rate is asserted here: that the
+   * shadow is where the feet are in every room the castle has, that the hand is
+   * out of the frame with no door in front of it and out at the lock with one,
+   * and that NEITHER OBJECT CAN BLOCK A RAY. The last of those is the one that
+   * would break the castle quietly rather than loudly: the rig is a top-level
+   * child of the scene, and interaction.js's line-of-sight test calls every
+   * top-level child that is not a target an occluder. A shadow under the
+   * player's own feet would sit in the path of every ray the player casts
+   * downhill, and the prompt would just stop appearing. So the control is built
+   * into the assertion: the ray is cast twice, once with the rig's own
+   * `raycast` and once with THREE.Mesh's put back, and the second one has to
+   * hit (#34).
+   *
+   * NOTHING BELOW IS TIMED. `__rig.settle()` collapses the reach's smoothing
+   * the same way `__player.settle()` collapses a step down to the floor, so
+   * every number read here is a position and none of them is a duration.
+   */
+  console.log('');
+  {
+    const doorPose = { x: 21, y: 1.7, z: -12, yaw: -0.026 }; // the word-lock beat's own
+    const feel = await page.evaluate(async ({ anchors, eye, pose }) => {
+      const THREE = window.__THREE;   // stashed by attachSceneProbe
+      const frame = () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      const rig = window.__rig;
+      const cam = window.__cam;
+      const p = (v) => ({ x: v.x, y: v.y, z: v.z });
+      const promptNow = () => {
+        const el = document.getElementById('interact-prompt');
+        return el && !el.classList.contains('hidden') ? el.textContent.trim() : null;
+      };
+      /* The riddle overlay has been open since the word-lock beat, and an open
+       * overlay owns the input: interaction.update() hides the prompt and never
+       * picks a target, so the hand would have nothing to reach for. Shut it the
+       * way two beats below this one do — and press E at the door again on the
+       * way out, because those beats say in their own comments that they found
+       * it open and this one is not going to make that a lie (#147). */
+      document.getElementById('riddle-cancel').click();
+      await frame();
+
+      // Is either object something the plan thinks it placed? It must not be:
+      // the rig moves with the player and the box diff above compares live
+      // boxes against fixed ones.
+      const tagged = [rig.shadow, rig.hand].filter((o) => o.userData && o.userData.planId).length;
+      const rooted = rig.group.parent === window.__scene;
+      // And the flag play-castle.mjs's two scenery sweeps skip it by. That
+      // suite is the one CI cannot run (#53), so the fact it depends on is
+      // asserted here, in the suite that does.
+      const flagged = rig.group.userData.playerRig === true;
+
+      // 1. The shadow, in every room the standing beat stands in.
+      const feet = [];
+      for (const a of anchors) {
+        if (a.h == null) continue;
+        cam.position.set(a.x, a.h + 0.3 + eye, a.z);
+        const on = window.__player.settle();
+        rig.settle();
+        feet.push({
+          id: a.id, level: a.level, surface: on ? on.surface : null, floor: on ? on.h : null,
+          cam: p(cam.position), shadow: p(rig.shadow.position),
+        });
+      }
+
+      // 2. The hand, with the door behind the player and then in front of it.
+      const look = (yaw) => {
+        cam.position.set(pose.x, pose.y, pose.z);
+        cam.rotation.set(0, yaw, 0, 'YXZ');
+        window.__player.settle(); // the feet, which is what the shadow is on
+      };
+      look(pose.yaw + Math.PI);
+      await frame();
+      rig.settle();
+      const away = { reach: rig.reach, visible: rig.hand.visible, prompt: promptNow() };
+
+      look(pose.yaw);
+      await frame();
+      rig.settle();
+      const lock = window.__castle.locks()[0] || null;
+      const handle = lock && lock.focus ? p(lock.focus) : null;
+      const ahead = new THREE.Vector3(0, 0, -1).applyQuaternion(cam.quaternion);
+      const toHand = new THREE.Vector3().subVectors(rig.hand.position, cam.position);
+      const at = {
+        reach: rig.reach, visible: rig.hand.visible, prompt: promptNow(),
+        hand: p(rig.hand.position),
+        fromEye: toHand.length(),
+        inFront: toHand.clone().normalize().dot(ahead),
+        toHandle: handle ? new THREE.Vector3(handle.x, handle.y, handle.z).distanceTo(rig.hand.position) : null,
+        restToHandle: null,
+      };
+      /* How far the hand is from the handle when it is NOT reaching, off the
+       * same camera in the same place, so "it reaches" is a comparison and not
+       * a bare number. `want` is what the next frame would smooth towards;
+       * settling it to 0 and back to 1 asks the rig for both ends of its own
+       * lerp without moving the player. */
+      const held = rig.hand.position.clone();
+      rig.want = 0; rig.settle();
+      at.restToHandle = handle ? new THREE.Vector3(handle.x, handle.y, handle.z).distanceTo(rig.hand.position) : null;
+      rig.want = 1; rig.settle();
+      at.returned = rig.hand.position.distanceTo(held);
+
+      // 3. The rays, each cast twice: the rig's own raycast, then THREE.Mesh's.
+      const both = (object, from, dir, far) => {
+        const ray = new THREE.Raycaster(from.clone(), dir.clone().normalize(), 0.02, far);
+        const withRig = ray.intersectObject(object, true).length;
+        const saved = object.raycast;
+        object.raycast = THREE.Mesh.prototype.raycast;
+        const withMesh = ray.intersectObject(object, true).length;
+        object.raycast = saved;
+        return { withRig, withMesh };
+      };
+      const rays = {
+        shadow: both(rig.shadow, cam.position, new THREE.Vector3(0, -1, 0), 4),
+        hand: both(rig.hand, cam.position, toHand, toHand.length() + 0.5),
+      };
+
+      // Put the riddle back up, the way the player would.
+      document.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyE' }));
+      await frame();
+      const riddleBack = !document.getElementById('riddle-overlay').classList.contains('hidden');
+      return { tagged, rooted, flagged, feet, away, at, rays, riddleBack };
+    }, { anchors, eye: EYE_HEIGHT, pose: doorPose });
+
+    check(feel.rooted && feel.tagged === 0 && feel.flagged,
+      'the rig is one flagged group in the scene and neither of its objects carries a planId',
+      `${feel.tagged} tagged, ${feel.flagged ? 'flagged' : 'NOT flagged as the player rig'}`);
+
+    let worstFeet = -1, worstFeetRoom = null, onFeet = 0;
+    for (const f of feel.feet) {
+      const flat = Math.max(Math.abs(f.shadow.x - f.cam.x), Math.abs(f.shadow.z - f.cam.z));
+      const lift = f.shadow.y - f.floor;
+      if (flat > worstFeet) { worstFeet = flat; worstFeetRoom = f.id; }
+      if (flat > TOL) fail(`standing in ${f.id} the shadow is ${flat.toFixed(3)} m from under the player`);
+      else if (!(lift > 0 && lift <= 0.05)) fail(`in ${f.id} the shadow sits ${lift.toFixed(3)} m over a floor at ${f.floor.toFixed(3)} — it is buried in it, or hovering`);
+      else onFeet++;
+    }
+    const surfaces = new Set(feel.feet.map((f) => f.surface).filter(Boolean));
+    check(onFeet === feel.feet.length && feel.feet.length > 0,
+      `the shadow lies on the floor under the player's feet in all ${feel.feet.length} rooms, over ${surfaces.size} kinds of surface`,
+      `worst ${Math.max(0, worstFeet).toFixed(4)} m in ${worstFeetRoom}`);
+    /* A SHADOW NAILED TO ONE SPOT WOULD PASS EVERY LINE ABOVE IF THE PLAYER
+     * NEVER MOVED, AND THE LINES ABOVE MOVE THE PLAYER FORTY TIMES WITHOUT EVER
+     * SAYING THE SHADOW WENT WITH IT. It is the trap the standing beat answers
+     * by putting the camera a step too high: assert that the thing moved, not
+     * only that it agrees. */
+    const spots = new Set(feel.feet.map((f) => `${f.shadow.x.toFixed(2)},${f.shadow.y.toFixed(2)},${f.shadow.z.toFixed(2)}`));
+    // The floor is in the key as well as x and z: two rooms on two levels can
+    // sit over each other, and a shadow that only tracked x and z would be
+    // right in both of them for the wrong reason.
+    const stoodAt = new Set(feel.feet.map((f) => `${f.cam.x.toFixed(2)},${f.floor.toFixed(2)},${f.cam.z.toFixed(2)}`));
+    check(spots.size === stoodAt.size, `and it is somewhere different in each of the ${stoodAt.size} places that is`, `${spots.size} places`);
+
+    check(feel.rays.shadow.withRig === 0 && feel.rays.shadow.withMesh > 0,
+      'a ray straight down from the eye passes through the shadow, and hits it with THREE.Mesh\'s own raycast put back',
+      `${feel.rays.shadow.withRig} hit, ${feel.rays.shadow.withMesh} with the control`);
+    check(feel.rays.hand.withRig === 0 && feel.rays.hand.withMesh > 0,
+      'and a ray from the eye through the reaching hand does the same',
+      `${feel.rays.hand.withRig} hit, ${feel.rays.hand.withMesh} with the control`);
+
+    check(feel.away.reach === 0 && feel.away.visible === false,
+      'with the word-lock behind the player the hand is not on the screen at all',
+      `reach ${feel.away.reach}, ${feel.away.prompt ? `prompting "${feel.away.prompt}"` : 'no prompt'}`);
+    check(feel.at.prompt && /word-lock/i.test(feel.at.prompt) && feel.at.reach === 1 && feel.at.visible,
+      'and turning round to it brings the hand out',
+      `reach ${feel.at.reach}, prompt ${JSON.stringify(feel.at.prompt)}`);
+    check(feel.at.toHandle != null && feel.at.toHandle < feel.at.restToHandle && feel.at.returned === 0,
+      'the hand it brings out is nearer the lock than the one it keeps below the frame',
+      `${feel.at.toHandle?.toFixed(2)} m against ${feel.at.restToHandle?.toFixed(2)} m`);
+    check(feel.at.fromEye <= 1.0 && feel.at.inFront > 0.3,
+      'and it reaches from the player rather than flying to the door',
+      `${feel.at.fromEye.toFixed(2)} m from the eye, ${feel.at.inFront.toFixed(2)} of the way in front of it`);
+    check(feel.riddleBack, 'and the beat leaves the riddle overlay open, the way it found it');
+  }
+
   /* --------------------------------- eight drums, eight tints, two sets ---
    * The drums were one stone at one size and from the walk they were eight of
    * one thing; each carries a `tint` now (#516). Rank 4 split them by ward

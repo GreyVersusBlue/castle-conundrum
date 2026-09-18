@@ -71,7 +71,7 @@ confirmed** — which means a container cannot trust a pass either.
 | **R2 The GPU run** | Opus 5 | The run itself. Six things nobody has looked at: a compressed texture (#507), the five that shipped after it (#541 to #546), a tower roof from 12 m (#523), seven trusses over the hall (#527), a Lauds sky (#533), the gaol roll on the guardroom barrels (#571). Plus the standing question: do twelve NPCs off three bodies read as twelve. |
 | **R3 The images** | Opus 5 | The preview and og card come out of R2's screenshots. There is no other source. They land in `tools-and-games/assets/`, not here, and Devon relinks. |
 | **R5 The hall covering** | Sonnet 5 | Both criteria are a render. `partsOf` gives all four of `roof.glb`'s parts the same 1 x 1 x 1 box, so nothing in Node can tell which way a kit roof piece slopes; and whether a covered hall goes dark is a luma read off the floor (#438). |
-| **R11 Feel**, past its Node line | Sonnet 5 | The Node half — a shadow decal and a hand node exist and do not regress `plan-vs-scene.mjs` — is a container's. Whether a blob shadow reads on stone versus on grass is not. |
+| **R11 Feel**, past its Node line | Sonnet 5 | ~~The Node half — a shadow decal and a hand node exist and do not regress `plan-vs-scene.mjs` — is a container's.~~ Shipped (#634 to #638). What is left is what a GPU decides: whether a blob shadow reads on stone versus on grass, what it does on a flight of stairs, and whether the hand reads as a hand. |
 | **R4c The yard**, in practice | Opus 5 | Placeable in Node, but the tool that makes it cheap (`?edit=1`, #583) reads the tile under the player's feet as they walk, and whether a yard reads as a yard is a look. |
 
 **R2 is the single highest-value hour on this list.** It is a ¼ and it unblocks
@@ -268,10 +268,25 @@ touches the save again, which the seven errands do not.
 | --- | --- | --- | --- | --- |
 | **R3** The images | Opus 5 | Local: GPU | none | Straight out of R2's screenshots. Do it in the same sitting: the run is already done and the shots are already on disk. |
 | **R5** The hall covering | Sonnet 5 | Local: GPU | B | A ¼, and the smallest thing left on the list. Six of the twelve stand in that room at Vespers and the accusation is made there, which is why #528 would not guess at it. |
-| **R11** Feel | Sonnet 5 | Local: GPU past its Node line | D | The shadow decal and the reaching hand only. Nothing else in the theme starts before that pair, because they are the ones most likely to reveal whether the budget has room for the rest at all. |
+| **R11** Feel | Sonnet 5 | Local: GPU past its Node line | D | ~~The shadow decal and the reaching hand~~ — **the Node half shipped 2026-09-17** (#634 to #638), ahead of the gate, because it never needed one: two draw calls, a canvas-painted decal, a hand that reaches for whatever the prompt is offering, and nine assertions in `plan-vs-scene.mjs`. What is left is the three shots, and nothing else in the theme starts before somebody has looked at them. |
 
 These three do not gate each other. R5 and R11 are different lanes and R3 has
 no lane.
+
+**R11 did not wait, and the gate was never what it looked like.** Every row
+marked `Local: GPU` has a Node acceptance criterion on purpose — the closing
+section of this file says so — and R11's turned out to be the whole of its
+first increment's code: two objects in the scene, followed by the player, out
+of every ray, asserted nine ways in a suite CI runs. It shipped on 2026-09-17
+(#634 to #638) with R2 still half open. **What the gate was really protecting
+was the judgement, not the work**: whether a blob reads on stone and on grass,
+and whether a hand reads as a hand, are still unanswered and still R2's
+sitting to answer.
+
+The reading that generalises: for these three rows the gate is on *finishing*,
+not on *starting*, and a session that meets the Node half and calls the row
+closed has misread the split — which is the same sentence at the bottom of this
+file, now with one row's worth of evidence under it.
 
 ### Gate 2 — R4c, Thomas Wykes's yard
 
