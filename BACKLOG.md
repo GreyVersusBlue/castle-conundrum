@@ -210,7 +210,10 @@ ships, so no asset was needed and none was added. **Rank 6 is still open**:
 the other forty, the ambient talk, the children and dogs, and every activity
 that wants a clip nobody has baked yet.
 
-**Eleven ranked items, numbered 2 to 12. Nothing is claimed.** Rank 1 shipped
+**Eleven ranked items, numbered 2 to 12, and one unranked row under them that
+holds lane B**: `test/tools.mjs`'s byte-exactness rail is claimed by
+`claude/mystifying-lumiere-49ce52`, so ranks 4c, 5, 9 and 12b are not
+startable until it merges (#602). Rank 1 shipped
 on 2026-09-17 and **the numbers under it were not shifted up** (#619):
 `SPECS.md` and `ROADMAP.md` already name every row by title as well as by
 rank, for exactly this reason (#522), and four wave A sessions were running
@@ -383,6 +386,7 @@ that survivable (#522).
 | 10 | Bodies: a shared low-poly rig for the fifty | 1 | Fable 5.1 | Local: net | — | C | | [Bodies](SPECS.md#bodies) |
 | 11 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 | Container to the Node line, local: GPU past it | **after 2** | D | | [Feel](SPECS.md#feel) |
 | 12 | The tooling: move-and-delete, a dialogue format (the budget suite shipped, #607 to #611) | 2+ | Opus 5 | Container | — | B (12b), C (12c) | `claude/r12a-budget-suite` (12a) | [The tooling](SPECS.md#the-tooling) |
+| — | **Unranked, and it holds lane B**: `test/tools.mjs`'s byte-exactness rail, red on Windows and green in CI since it was written | ¼ | Opus 5 | Container | — | B | `claude/mystifying-lumiere-49ce52` | [The tooling](SPECS.md#the-tooling) |
 
 **`ROADMAP.md` is these three columns turned into an order**: which row to
 take first, what each one unblocks, and which ones two sessions may hold at
