@@ -30,6 +30,7 @@
 // twelve's own.
 
 import { STATION_CLEARANCE } from './stations.js';
+import { EYE_HEIGHT } from './castle-plan.js';
 
 /**
  * WHAT A BODY IS DOING AT A STOP, AND THE CLIP THE KIT ALREADY HAS FOR IT.
@@ -68,6 +69,13 @@ export const ACTIVITY_CLIPS = {
   // else — a gardener in this pose is a gardener holding a sword.
   guard: 'Idle_Sword',
   muster: 'Idle_Sword',
+  /* THE HOUND'S TWO (#644). Hound.glb ships twelve clips off Quaternius's
+   * animal rig and not one of them is a human's, so these two exist in one
+   * body and `wait` exists in all five. The clip check in test/mystery.mjs
+   * is per person against the body that person wears, not every clip
+   * against every body, which is the change a second rig forced on it. */
+  sniff: 'Idle_2_HeadLow',
+  eat: 'Eating',
 };
 
 /** How long a body stands at one stop before walking to the next, in seconds. */
@@ -93,6 +101,12 @@ export function populaceDefs(populace) {
     tint: p.tint,
     hideNodes: p.hideNodes ?? [],
     hideMaterials: p.hideMaterials ?? [],
+    // The three fields BACKLOG.md rank 10 added (#643), all optional and all
+    // npc.js's: a bone scaled after the height, a clip named ahead of the
+    // body's own list, and a pace. The child and the hound are what use them.
+    boneScale: p.boneScale,
+    clips: p.clips,
+    speed: p.speed,
     dialogue: {},
     populace: true,
     // The HUD's one line about them, and it does not say "Press E" because
@@ -158,6 +172,22 @@ export function validatePopulace(populace, { nav = null, mystery = {}, cast = []
       if (castTints.has(key)) say(`${at}: wears the same tint as the ${castTints.get(key)}, one of the twelve`);
       else if (tints.has(key)) say(`${at}: wears the same tint as ${tints.get(key)}`);
       else tints.set(key, p.id ?? at);
+    }
+    /* THE THREE FIELDS RANK 10 ADDED (#643), each refused in the shape that
+     * would fail silently on screen: a bone scale of 0 is a body with no
+     * head, a speed of 0 is a body that never arrives and holds `walking`
+     * true for the rest of the watch, and a follow with no radius is a dog
+     * that follows from anywhere in the castle. */
+    if (p.boneScale != null) {
+      if (typeof p.boneScale !== 'object' || Array.isArray(p.boneScale)) say(`${at}: boneScale is not an object of bone name to scale`);
+      else for (const [bone, s] of Object.entries(p.boneScale)) if (!(Number.isFinite(s) && s > 0)) say(`${at}: boneScale.${bone} is ${JSON.stringify(s)}, not a positive number`);
+    }
+    if (p.speed != null && !(Number.isFinite(p.speed) && p.speed > 0)) say(`${at}: speed ${JSON.stringify(p.speed)} is not a positive number of m/s`);
+    if (p.clips != null && (typeof p.clips !== 'object' || Array.isArray(p.clips) || Object.values(p.clips).some((c) => typeof c !== 'string'))) say(`${at}: clips is not an object of npc.js clip key to clip name`);
+    if (p.follow != null) {
+      const f = p.follow;
+      if (typeof f !== 'object' || !(Number.isFinite(f.radius) && f.radius > 0) || !(Number.isFinite(f.keep) && f.keep > 0)) say(`${at}: follow needs a positive radius and keep, in metres`);
+      else if (f.keep >= f.radius) say(`${at}: follow.keep ${f.keep} is not inside follow.radius ${f.radius}, so it would never set off`);
     }
   }
 
@@ -363,10 +393,14 @@ export class Populace {
     }
   }
 
-  /** Called every frame from src/main.js's loop, after the bodies' own update. */
-  update(dt) {
+  /**
+   * Called every frame from src/main.js's loop, after the bodies' own update.
+   * `player` is the camera's position, and only a body with `follow` reads it.
+   */
+  update(dt, player = null) {
     for (const body of this.bodies) {
       if (!body.stops.length || !body.npc.group.visible) continue;
+      if (body.person.follow && player && this._follow(body, player, dt)) continue;
       if (body.npc.walking) { body.settled = false; continue; }
       if (!body.settled) { this._arrive(body); continue; }
       if (body.stops.length < 2) continue;
@@ -379,6 +413,70 @@ export class Populace {
       if (route && route.length > 1) { body.npc.walkTo(route); body.settled = false; }
       else this._arrive(body);
     }
+  }
+
+  /**
+   * THE HOUND (#644, and the one behaviour SPECS.md's "Bodies" asks of a dog).
+   * A body with `follow: {radius, keep}` leaves its ring when the player
+   * comes within `radius` metres of it on a floor it can walk to, trots to
+   * `keep` metres short of them along the grid, turns to face them, and
+   * goes back to the stop it left when they are gone. Returns true while it
+   * is the player and not the ring that has the body, so `update` above
+   * leaves the ring's timer alone.
+   *
+   * NO PATH IS WALKED OFF THE GRID. The route is `nav.route` to the cell the
+   * player is standing in, cut short at `keep`, so a dog following through a
+   * doorway is a dog that took the doorway. A player somewhere the grid has
+   * no cell for — the wall walk's stair, mid-jump, out past the barbican —
+   * is a player the dog cannot reach, and it stays where it is rather than
+   * sliding through a wall to get there. Re-routed at most every half
+   * second, because the player moves every frame and a route is a search.
+   */
+  _follow(body, player, dt) {
+    const f = body.person.follow;
+    const me = body.npc.group.position;
+    const gap = Math.hypot(player.x - me.x, player.z - me.z);
+    const feet = player.y - EYE_HEIGHT;
+    const there = this.nav.roomAt(player.x, player.z, feet);
+    body.reroute = (body.reroute ?? 0) - dt;
+    // Two metres of hysteresis on the way out, so a player standing right on
+    // the radius does not make a dog that sets off and turns back each frame.
+    const near = gap <= (body.following ? f.radius + 2 : f.radius);
+    if (near && Math.abs(feet - me.y) < 2.5) {
+      if (gap <= f.keep + 0.3) {
+        // Close enough: stop where it is, and look at them.
+        if (body.npc.walking) body.npc.walkTo([]);
+        body.npc.facePlayer(player);
+        body.npc.playActivity('wait');
+        body.following = true;
+        return true;
+      }
+      if (body.reroute <= 0) {
+        body.reroute = 0.5;
+        const from = { x: me.x, z: me.z, level: body.level ?? body.stops[body.index].level };
+        const to = { x: player.x, z: player.z, level: there.level };
+        const route = this.nav.route(from, to);
+        if (route && route.length > 1) {
+          // Stop `keep` short of the player: drop the cells inside that ring.
+          const cut = route.filter((c, i) => i === 0 || Math.hypot(player.x - c.x, player.z - c.z) > f.keep);
+          if (cut.length > 1) { body.npc.walkTo(cut); body.level = cut[cut.length - 1].level; }
+          body.following = true;
+          body.settled = false;
+          return true;
+        }
+      }
+      if (body.following) return true;
+      return false;
+    }
+    if (!body.following) return false;
+    // The player is gone: back to the stop this body left, along the grid.
+    body.following = false;
+    const stop = body.stops[body.index];
+    const route = this.nav.route({ x: me.x, z: me.z, level: body.level ?? stop.level }, stop);
+    body.level = stop.level;
+    if (route && route.length > 1) { body.npc.walkTo(route); body.settled = false; }
+    else this._arrive(body);
+    return false;
   }
 
   /** Standing at the stop it is on: on the floor, facing, and doing the job. */

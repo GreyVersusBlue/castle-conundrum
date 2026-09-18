@@ -30,15 +30,15 @@ NOW, in parallel, no gates:
   R2  GPU run        --+             R8   quests: the seven errands      lane A
                        |             R6   populace: the next forty       lanes C D
                        |             R4a  the bells call   (lane A: not beside R8)
-                       |             R4b  the since field  (lane A: not beside R8)
 
   Wave A shipped four of its six on 2026-09-17, in parallel, as written:
     R1  fourth body    #603-606      R7  ambient beds   #620-623
     R12a budget suite  #607-611      R6  the first ten  #616-619
+  R4b the since field shipped the same day, #646-649, in a worktree.
                        |
 R2 lands --------------+--> unlocks R11
   (R3 and R5 both shipped 2026-09-17 ahead of R2 landing: R3 from a
-  fallback frame, R5 by rendering the hall directly, #636-638)
+  fallback frame, R5 by rendering the hall directly, #656-658)
 
   R11 feel: shadow + hand    lane D
 
@@ -46,8 +46,9 @@ R4c Thomas Wykes's yard  --> unlocks R9's town
   local, lane B                  container, lane B
 
 Never gated, take whenever the lane is free:
-  R10 bodies (local: net, lane C)    R12b move-and-delete (lane B)
-                                     R12c dialogue format (lane C)
+  R10 bodies (local: net, lane C)    R12c dialogue format (lane C)
+
+  R12b move-and-delete shipped 2026-09-17 (#636 to #642) and lane B is free.
 ```
 
 ---
@@ -70,8 +71,8 @@ confirmed** — which means a container cannot trust a pass either.
 | --- | --- | --- |
 | **R2 The GPU run** | Opus 5 | The run itself. Six things nobody has looked at: a compressed texture (#507), the five that shipped after it (#541 to #546), a tower roof from 12 m (#523), seven trusses over the hall (#527), a Lauds sky (#533), the gaol roll on the guardroom barrels (#571). Plus the standing question: do twelve NPCs off three bodies read as twelve. |
 | **R3 The images** | Opus 5 | The preview and og card come out of R2's screenshots. There is no other source. They land in `tools-and-games/assets/`, not here, and Devon relinks. |
-| ~~**R5 The hall covering**~~ | Sonnet 5 | **Shipped** (#636 to #638). Both criteria were a render, and both were answered by rendering the hall directly rather than by waiting for this row's own run to reach Vespers: `roof.glb`'s vertices (not its bounding box) showed which way it slopes, and the floor read 69.8 to 89.8 of 255. |
-| **R11 Feel**, past its Node line | Sonnet 5 | The Node half — a shadow decal and a hand node exist and do not regress `plan-vs-scene.mjs` — is a container's. Whether a blob shadow reads on stone versus on grass is not. |
+| ~~**R5 The hall covering**~~ | Sonnet 5 | **Shipped** (#656 to #658). Both criteria were a render, and both were answered by rendering the hall directly rather than by waiting for this row's own run to reach Vespers: `roof.glb`'s vertices (not its bounding box) showed which way it slopes, and the floor read 69.8 to 89.8 of 255. |
+| **R11 Feel**, past its Node line | Sonnet 5 | ~~The Node half — a shadow decal and a hand node exist and do not regress `plan-vs-scene.mjs` — is a container's.~~ Shipped (#650 to #654). What is left is what a GPU decides: whether a blob shadow reads on stone versus on grass, what it does on a flight of stairs, and whether the hand reads as a hand. |
 | **R4c The yard**, in practice | Opus 5 | Placeable in Node, but the tool that makes it cheap (`?edit=1`, #583) reads the tile under the player's feet as they walk, and whether a yard reads as a yard is a look. |
 
 **R2 is the single highest-value hour on this list.** It is a ¼ and it unblocks
@@ -86,7 +87,7 @@ could not reach quaternius.com, itch, poly.pizza, OpenGameArt or Patreon.
 | Row | Model | What to fetch |
 | --- | --- | --- |
 | **R1 A fourth body** | Fable 5.1 | Quaternius's Ultimate Modular Women Pack first, checked against `SPECS.md`'s three name lists. The npm registry's two rigged CC0 alternatives were measured and rejected: KayKit is the wrong shape (head joint 57 % up the body against the Quaternius rig's top fifth, #569) and deskrpg is the wrong licence (#570). |
-| **R10 Bodies** | Fable 5.1 | A low-poly one-rig CC0 body per new kind — the child first, per the row's own recommendation. A child scaled down from the existing rig is the cheapest version of "child" and should be tried before anything is fetched at all. |
+| **R10 Bodies** | Fable 5.1 | A low-poly one-rig CC0 body per new kind — the child first, per the row's own recommendation. A child scaled down from the existing rig is the cheapest version of "child" and should be tried before anything is fetched at all. **Tried on 2026-09-17 and it held** (#643): the child is the existing rig with a bigger head, and the only fetch was the hound (#644). |
 
 Both go through `tools/encode-assets.mjs` before commit (#506), which needs
 KTX-Software's `ktx` on PATH. **An uncompressed body passes every suite and is
@@ -101,8 +102,8 @@ the one asset nothing else on this list would catch.**
 ### Container, start to finish
 
 **R6** populace, **R8** side quests, **R9** the town once its gate clears,
-**R12a/b/c** the tooling, **R4a** the bells call, **R4b** the `since` field.
-Six and a half rows of twelve. Every one is data, a validator, a Node suite or
+**R12a/b/c** the tooling, **R4a** the bells call, and **R4b** the `since`
+field, which shipped from one on 2026-09-17. Six and a half rows of twelve. Every one is data, a validator, a Node suite or
 a headless DOM assertion, and every one has an acceptance criterion a container
 can actually meet.
 
@@ -116,8 +117,8 @@ the theme is not what conflicts.
 
 | Lane | The file that decides it | Rows in it |
 | --- | --- | --- |
-| **A** | `src/save.js` — the version number and `migrate` | R4a, R4b, R8 |
-| **B** | `data/scene-config.json`, and `test/tools.mjs`'s byte-exactness rail | R4c, R5, R9, R12b |
+| **A** | `src/save.js` — the version number and `migrate` | R4a, R8 (R4b shipped without touching it) |
+| **B** | `data/scene-config.json`, and `test/tools.mjs`'s byte-exactness rail | R4c, R5, R9 (R12b is done) |
 | **C** | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | R1, R6, R10, R12c |
 | **D** | `src/main.js`'s player rig and spawn | R6, R11 |
 | **E** | `src/audio.js` and `data/sounds.json` | R7 |
@@ -141,9 +142,11 @@ sessions splicing into it is two splices neither one tested against.
 and the cut were both written in LF, so `npm test` was green in CI and one byte
 short here. It runs over both endings on either machine now, so `tools` is no
 longer the suite a session in this lane starts from red. What a row in this
-lane has to keep is the rail itself: 47 assertions in part 1, both endings, and
-a stray-ending count per splice, because the byte diff alone cannot see a
-newline **inside** the row it inserted.
+lane has to keep is the rail itself: 179 assertions across four parts since
+R12b (#636 to #642), both endings, a stray-ending count per splice because the
+byte diff alone cannot see a newline **inside** the row it inserted, and — new
+with the move — a per-row byte compare of everything outside the row that
+changed.
 
 Lane C is the `cast` block **specifically**, not all of `data/npcs.json`. R8
 and R12c write per-person `states` and `default` line arrays, which is a
@@ -180,8 +183,9 @@ A decision number is picked at the end of a row, not the start.
 
 With R1, R7, R12a and R8's reputation increment landed, lane A is free:
 version 6 is in and R8's remaining work is quest files and dialogue, not
-`save.js`. So the rows safe together now are **R8, R6 and R4a or R4b**, three
-of them, plus **R2** on Devon's machine.
+`save.js`. R4b took that free lane on 2026-09-17 and never wrote the lane's
+file at all (#646 to #649), so the rows safe together now are **R8, R6 and
+R4a**, three of them, plus **R2** on Devon's machine.
 
 ### What not to pair
 
@@ -193,11 +197,13 @@ of them, plus **R2** on Devon's machine.
   put on `Woman.glb` by hand afterwards. A clean merge of two lane-C rows is
   not the same as a correct one, and nothing in `npm test` would have said
   so.
-- R8 beside R4a or R4b. Lane A, and both want the version number — though
-  see the note under the lane table: version 6 landed on 2026-09-17 and R8's
-  remaining work does not touch `save.js` at all.
-- R9, R4c and R12b, any two of them. All lane B. (R5 shipped, #636 to #638,
-  and is out of this list.)
+- R8 beside R4a. Lane A, and both want the version number — though see the
+  note under the lane table: version 6 landed on 2026-09-17 and R8's remaining
+  work does not touch `save.js` at all. R4b was the other row in this lane and
+  is gone from it: it shipped without opening `save.js`, which is two rows in a
+  row that sat in lane A for a file neither of them wrote.
+- R9 and R4c, any two of them. All lane B. R5 and R12b were the other two and
+  both shipped (#656 to #658, #636 to #642).
 - R6 beside R11. Lane D, both inside `src/main.js`'s rig.
 
 ---
@@ -212,7 +218,7 @@ gaol roll are answered, and `twelve-at-vespers` and the trusses under a real
 run's own lighting are not. **R3 shipped anyway, from a fallback frame,
 2026-09-17** (#634, #635), and **R5 shipped without waiting for a second run
 either**, by rendering the hall directly rather than by playing to Vespers
-(#636 to #638) — the gate named the wrong half of rank 2 as the blocker; both
+(#656 to #658) — the gate named the wrong half of rank 2 as the blocker; both
 rows needed a render, not specifically *this* render. R2 is also gated itself
 now, behind a new rank 1: a castle the player cannot walk in after opening the
 journal, which the run found and which nothing else could have.
@@ -224,6 +230,15 @@ holding the page open. Another session's `git checkout` in the same working
 tree wiped this row's uncommitted edits mid-run, and Vite full-reloaded the page
 whenever anything under `src/` changed. **A GPU run belongs in its own
 `git worktree`**, and then it genuinely has no lane.
+
+**R4b found the same thing without a GPU anywhere near it** (#646 to #649), so
+it is not a GPU rule. Running beside R3 in one tree, in different lanes and
+with no source file in common, it still got: three suites red on the other
+session's mid-edit `data/scene-config.json` and on `Port 8127 is already in
+use`, and `HEAD` moving under it twice. **A working tree is a resource two
+sessions cannot share**, whatever their lanes say, because `npm test`,
+`dist/`, the harness ports and `HEAD` are one copy each. A `git worktree add`
+plus a junction for `node_modules` is the whole cost. Take one.
 
 ### Gate 1 — R2, the GPU run. Do this one first.
 
@@ -258,24 +273,42 @@ its row open with its text rewritten to say what is done.
 | ~~**R7** Sound~~ | Fable 5.1 | Container | E | **First increment shipped** (#620 to #623). Seven synthesised room tones and the cross-fade. What is left needs speakers (#53). |
 | ~~**R12a** The budget suite~~ | Opus 5 | Container | none | **Shipped** (#607 to #611). 965 draw calls in the outer ward against 1200, 3 point lights, a peak of 7 bodies. 63 % of the castle's meshes is eight tower drums. |
 
-R4a (the bells call) and R4b (the `since` field) are startable today too, but
-both are lane A and R8 is the better use of that lane: R8's next increment is
+R4a (the bells call) is startable today too, and R4b (the `since` field)
+shipped on 2026-09-17 (#646 to #649) without touching `save.js` at all: the
+journal it reads is `state.clues`, which the save has carried since #571. That
+is the second row in a row to sit in lane A and never write the lane's file, so
+**lane A's real membership today is R4a and whatever next wants the version
+number**, and R8's remaining work is quest files and dialogue rather than
+`save.js`.
+
+R8 is still the better use of a session than R4a: R8's next increment is
 specced down to the field names, while R4a is an open design question that has
-to overturn #533 rather than work around it. **That argument weakened on
-2026-09-17**: R8's version bump to 6 is in, so the thing lane A was protecting
-has already happened, and R8's remaining work is quest files and dialogue
-rather than `save.js`. A session on R4a or R4b now collides with R8 only if R8
-touches the save again, which the seven errands do not.
+to overturn #533 rather than work around it.
 
 ### Wave B — the moment R2 lands
 
 | Row | Model | Where | Lane | Note |
 | --- | --- | --- | --- | --- |
 | ~~**R3** The images~~ | Opus 5 | Local: GPU | none | **Shipped** (#634, #635), from a fallback frame rather than R2's screenshots — the run never reached the shot this row wanted. |
-| ~~**R5** The hall covering~~ | Sonnet 5 | Local: GPU | B | **Shipped** (#636 to #638). Seven `roof.glb` pieces, not fourteen — the piece is a whole ridge-and-both-slopes cross-section, found by reading its vertices rather than guessing from its bounding box. The Vespers floor read 69.8 to 89.8 of 255 across the hall's length, well clear of SPECS.md's ~25 line; no second brazier or window needed. |
-| **R11** Feel | Sonnet 5 | Local: GPU past its Node line | D | The shadow decal and the reaching hand only. Nothing else in the theme starts before that pair, because they are the ones most likely to reveal whether the budget has room for the rest at all. |
+| ~~**R5** The hall covering~~ | Sonnet 5 | Local: GPU | B | **Shipped** (#656 to #658). Seven `roof.glb` pieces, not fourteen — the piece is a whole ridge-and-both-slopes cross-section, found by reading its vertices rather than guessing from its bounding box. The Vespers floor read 69.8 to 89.8 of 255 across the hall's length, well clear of SPECS.md's ~25 line; no second brazier or window needed. |
+| **R11** Feel | Sonnet 5 | Local: GPU past its Node line | D | ~~The shadow decal and the reaching hand~~ — **the Node half shipped 2026-09-17** (#650 to #654), ahead of the gate, because it never needed one: two draw calls, a canvas-painted decal, a hand that reaches for whatever the prompt is offering, and nine assertions in `plan-vs-scene.mjs`. What is left is the three shots, and nothing else in the theme starts before somebody has looked at them. |
 
 R11 is the one row left in this wave; it does not gate on anything else here.
+
+**R11 did not wait, and the gate was never what it looked like.** Every row
+marked `Local: GPU` has a Node acceptance criterion on purpose — the closing
+section of this file says so — and R11's turned out to be the whole of its
+first increment's code: two objects in the scene, followed by the player, out
+of every ray, asserted nine ways in a suite CI runs. It shipped on 2026-09-17
+(#650 to #654) with R2 still half open. **What the gate was really protecting
+was the judgement, not the work**: whether a blob reads on stone and on grass,
+and whether a hand reads as a hand, are still unanswered and still R2's
+sitting to answer.
+
+The reading that generalises: for these three rows the gate is on *finishing*,
+not on *starting*, and a session that meets the Node half and calls the row
+closed has misread the split — which is the same sentence at the bottom of this
+file, now with one row's worth of evidence under it.
 
 ### Gate 2 — R4c, Thomas Wykes's yard
 
@@ -301,11 +334,11 @@ plan's list and not a second one (#588 to #591).
 
 | Row | Model | Where | Lane | Note |
 | --- | --- | --- | --- | --- |
-| **R10** Bodies | Fable 5.1 | Local: net | C | Trades activity clips with R6 in both directions; neither strictly gates the other. Try a scaled-down child before fetching anything. |
-| **R12b** Move-and-delete | Opus 5 | Container | B | Turns the editor from a stopwatch into an editor. Every content row got cheaper the day the editor landed and none was blocked on it; the same is true of this. **No longer starts from a red suite**: `test/tools.mjs`'s byte-exactness rail passed on LF and failed on CRLF, which made it red on the dev machine and green in CI; it runs over both endings now (#631 to #633), and a move that rewrites a row in place has to keep it that way. |
+| **R10** Bodies | Fable 5.1 | Local: net | C | ~~The child and the hound~~ shipped 2026-09-17 (#643 to #645), beside seven other rows and colliding with none. What is left, a chicken and a spear, has no CC0 glTF source found yet; the row stays open for them and for the GPU look. Still trades activity clips with R6 in both directions. |
+| ~~**R12b** Move-and-delete~~ | Opus 5 | Container | B | **Shipped 2026-09-17** (#636 to #642). The panel lists the rows within six tiles, `M` moves the selected one to the player's feet, `Delete` twice removes it, and `test/tools.mjs` went from 47 assertions to 179 with insert-then-delete byte-exact on both endings. **Lane B is free again.** |
 | **R12c** The dialogue format | Opus 5 | Container | C | Deliberately unspecified. `WISHLIST.md`'s paragraph is the whole brief. |
 | **R4a** The bells call | Opus 5 | Container | A | Has to overturn #533 rather than work around it. The cheapest shape that does not fight it: `day2.watches`, its own list, with the engine reading whichever list the day names. |
-| **R4b** The `since` field | Opus 5 | Container | A | A fact in `data/lore.json` that changes with what the player did on day one. It needs second-day state to be about, and `day2.knew` (#575) is that state, shipped. |
+| ~~**R4b** The `since` field~~ | Opus 5 | Container | A | **Shipped** (#646 to #649). `since` rows on a fact, a third `performances` pool that says the changed fact in the guardroom at Lauds, and the grammar exported from `src/mystery.js` so there is one copy of it. It never touched `save.js`, which is the thing lane A was for. |
 
 ---
 

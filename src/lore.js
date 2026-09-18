@@ -17,11 +17,33 @@
 // tell is the same failure as a clue whose evidence does not list it (src/mystery.js's
 // `evidence ${id} does not list it as its clue`).
 
+import { dayTwoApplies, dayTwoOutcomes, dayTwoAbsent } from './mystery.js';
+
+/**
+ * A FACT THAT CHANGES WITH WHAT THE PLAYER DID (#646, #596). `text` is what
+ * the canon says; `since` is a list of rows that replace it once the verdict
+ * is in, each `{when?, unless?, knew?, tells, text, why}` on the same
+ * `when`/`unless`/`knew` grammar `day2.castle` and `day2.knew` already share
+ * and imported from src/mystery.js rather than copied, because a second copy
+ * of a grammar is a second copy that drifts.
+ *
+ * `since` MAY ONLY EVER REPLACE, NEVER SUPPLY THE ONLY TEXT, which is #573s
+ * rule for `day2.knew` pointed at the canon: a fact with no row that applies
+ * still reads as `text`, so every play has the fact and only some plays have
+ * the change. The first applicable row wins, in file order.
+ *
+ * `tells` IS WHAT KEEPS THIS OUT OF A DRAWER (#649). The canon is read by this file
+ * and by nothing on the page, so a `since` nobody says is a paragraph in a
+ * JSON file: a row names the `rumours` piece that carries it, the piece cites
+ * the fact the way every other source already does (#551, #592), and
+ * `validateLore` walks every ending and every journal to refuse a piece that
+ * is heard where its row does not apply.
+ */
 const KINDS = new Set(['history', 'person', 'place', 'belief', 'rumour']);
 const CONTRADICTABLE = new Set(['belief', 'rumour']);
 const SOURCE_KINDS = new Set(['document', 'npc', 'chatter', 'epilogue', 'performance']);
 const WARDS = new Set(['outer', 'inner']);
-const POOLS = new Set(['sermons', 'songs']);
+const POOLS = new Set(['sermons', 'songs', 'rumours']);
 
 const asList = (v) => (v == null ? [] : Array.isArray(v) ? v : [v]);
 const nonEmpty = (s) => typeof s === 'string' && s.trim().length > 0;
@@ -87,6 +109,32 @@ function indexChatter(chatter, { npcs, mystery, problems }) {
  * `day2.watch` is checked against `day2.schedule` instead, and against the
  * day-two absences, because a sermon said by a man the player may have hanged
  * is a sermon that does not happen in six endings out of seven.
+ *
+ * WHAT THE THIRD POOL ADDED (#648). A `rumours` piece carries
+ * `when`/`unless`/`knew`, so what the castle is saying on the morning after
+ * depends on the verdict and on the journal. That turns both of the rails
+ * above from a yes/no into a question asked once per ending:
+ *
+ * - **One room at one bell holds one piece** becomes *the first piece there
+ *   that applies*, and the rail becomes *every piece there is reachable*. A
+ *   narrow piece written above a wide one is the point of an order: the
+ *   sharpest thing the castle can say about a player who hanged the smith
+ *   with the gaol roll in his own journal is not sayable as a condition
+ *   disjoint from "somebody hanged". What is refused is a piece no ending and
+ *   no journal ever reaches, because an earlier piece in the same room and
+ *   bell answers everywhere it does. The enumeration is exact rather than
+ *   clever: seven endings times the subsets of the few clue ids the pieces
+ *   themselves name. An unconditioned pool collapses back to the old rail by
+ *   construction, because a second piece with no `when` and no `knew` is
+ *   shadowed everywhere by the first.
+ * - **A piece by a man who may be gone** becomes *a piece by a man who is gone
+ *   in an ending this piece applies to*. `when: ["nobody"]` on a piece the
+ *   prisoner says is a piece said only in the one ending he is alive for,
+ *   which is a thing the old rail could not express and therefore refused.
+ *
+ * So there is still never a choice to make at run time (#592): the manager
+ * takes the first applicable piece, in file order, and this file has already
+ * refused every piece that order would have silenced.
  */
 function indexPerformances(performances, { npcs, mystery, problems }) {
   const say = (m) => problems.push(m);
@@ -94,17 +142,11 @@ function indexPerformances(performances, { npcs, mystery, problems }) {
   const watches = new Set(Array.isArray(mystery?.watches) ? mystery.watches : []);
   const d2 = mystery?.day2 ?? {};
   const rooms = new Set((mystery?.rooms ?? []).map((r) => r.id));
-  // Who is not in the castle on the morning after, in some ending: whoever can
-  // be convicted (the endings are keyed by the accused) and whoever a `full`
-  // ending takes with them.
-  const mayBeAbsent = new Set([
-    ...Object.keys(d2.endings ?? {}).filter((k) => k !== 'full' && k !== 'nobody'),
-    ...Object.values(d2.absent?.also ?? {}).flat(),
-  ]);
+  const outcomes = dayTwoOutcomes(mystery);
   const byId = new Map();
-  const byPlace = new Map(); // "room/watch" -> the piece that has it
+  const byPlace = new Map(); // "room/watch" -> the pieces that want it, in file order
   for (const [pool, entries] of Object.entries(performances ?? {})) {
-    if (!POOLS.has(pool)) say(`performances: pool ${JSON.stringify(pool)} is not sermons or songs`);
+    if (!POOLS.has(pool)) say(`performances: pool ${JSON.stringify(pool)} is not sermons, songs or rumours`);
     for (const e of asList(entries)) {
       const where = `performance ${e?.id ?? '(no id)'}`;
       if (!nonEmpty(e?.id)) { say(`${where}: no id`); continue; }
@@ -115,18 +157,29 @@ function indexPerformances(performances, { npcs, mystery, problems }) {
       if (!rooms.has(e.room)) say(`${where}: in no room (${JSON.stringify(e.room)})`);
       const onDayTwo = e.watch === d2.watch;
       if (!watches.has(e.watch) && !onDayTwo) say(`${where}: watch ${JSON.stringify(e.watch)} is not one of the four bells nor ${JSON.stringify(d2.watch)}`);
+      // A condition on a piece said at one of the four bells is a condition on
+      // a verdict nobody has reached yet, which can only ever read as "never".
+      // Refused here rather than left to be silently never played.
+      if (!onDayTwo && (e.when != null || e.unless != null || e.knew != null)) {
+        say(`${where}: carries when/unless/knew at ${e.watch}, and a verdict is a thing only ${d2.watch} has`);
+      }
       // Two pieces wanting one room at one bell is a choice nothing should have
       // to make: the manager plays the piece for where the player is standing.
+      // On the morning after that becomes one per ending and journal, which is
+      // the enumeration after this loop: it needs every piece in hand first.
       const place = `${e.room}/${e.watch}`;
-      if (byPlace.has(place)) say(`${where}: ${byPlace.get(place)} already has ${e.room} at ${e.watch}, and one room at one bell holds one piece`);
-      else byPlace.set(place, e.id);
+      if (!byPlace.has(place)) byPlace.set(place, []);
+      byPlace.get(place).push({ ...e, pool });
       const n = cast.get(e.npc);
       if (!n) { say(`${where}: ${JSON.stringify(e.npc)} is not in the cast`); continue; }
       if (onDayTwo) {
         const st = d2.schedule?.[e.npc];
         if (!st) say(`${where}: ${e.npc} has no station at ${d2.watch} and cannot perform on the morning after`);
         else if (st.room !== e.room) say(`${where}: ${e.npc} stands in ${st.room} at ${d2.watch}, not in ${e.room}`);
-        if (mayBeAbsent.has(e.npc)) say(`${where}: ${e.npc} is gone from the castle at ${d2.watch} in at least one ending, so this would be said in some plays and not others`);
+        // Not "may ever be absent" but "absent in an ending this piece claims".
+        const dead = outcomes.filter((o) => dayTwoApplies({ when: e.when, unless: e.unless }, o) && dayTwoAbsent(mystery, o).has(e.npc));
+        if (dead.length) say(`${where}: ${e.npc} is gone from the castle at ${d2.watch} in at least one ending this piece applies to (${dead.map((o) => o.key).join(", ")}), so this would be said in some plays and not others`);
+        if (!outcomes.some((o) => dayTwoApplies({ when: e.when, unless: e.unless }, o))) say(`${where}: applies to no ending, so it is never said`);
       } else if (watches.has(e.watch)) {
         if ((n.arrives ?? 1) > 1) say(`${where}: ${e.npc} arrives on day ${n.arrives} and is not one of the existing twelve`);
         const st = mystery?.schedule?.[e.npc]?.[e.watch];
@@ -136,7 +189,42 @@ function indexPerformances(performances, { npcs, mystery, problems }) {
       }
     }
   }
+
+  // EVERY PIECE IN ONE ROOM AT ONE BELL IS REACHABLE. The manager takes the
+  // first that applies, so a piece an earlier one answers for everywhere is a
+  // piece nobody will ever hear, and that is the failure worth a name.
+  for (const [place, here] of byPlace) {
+    for (let j = 1; j < here.length; j++) {
+      if (reachable(here[j], here.slice(0, j), outcomes)) continue;
+      const [room, watch] = place.split("/");
+      say(`performance ${here[j].id}: ${here.slice(0, j).map((e) => e.id).join(" and ")} answer${j > 1 ? "" : "s"} for ${room} at ${watch} in every ending and journal this piece claims, so ${here[j].id} is never heard, and one room at one bell holds one piece`);
+    }
+  }
   return byId;
+}
+
+/**
+ * Is there one play that reaches this piece past the ones written above it?
+ * Exact, by enumeration: every ending, times every subset of the clue ids the
+ * pieces in this place name between them. That universe is their own `knew`
+ * lists and nothing wider, which keeps it two or four subsets rather than
+ * 2^36, and is sound because a clue no piece here names cannot change any of
+ * their answers.
+ */
+function reachable(piece, earlier, outcomes) {
+  // No verdict table at all is not a licence: a second piece in one place is
+  // still unreachable, the way it was before any of this was conditional.
+  if (!outcomes.length) return false;
+  const universe = [...new Set([piece, ...earlier].flatMap((e) => asList(e.knew)))];
+  for (const o of outcomes) {
+    for (let mask = 0; mask < (1 << universe.length); mask++) {
+      const held = universe.filter((_, k) => mask & (1 << k));
+      if (!dayTwoApplies(piece, o, held)) continue;
+      if (earlier.some((e) => dayTwoApplies(e, o, held))) continue;
+      return true;
+    }
+  }
+  return false;
 }
 
 /**
@@ -254,11 +342,16 @@ export function validateLore(lore, { documents, npcs, chatter, performances, mys
     }
   };
 
+  const outcomes = dayTwoOutcomes(mystery);
+  const clueIds = new Set((mystery?.clues ?? []).map((c) => c.id));
+  const endingWords = new Set([...epilogues, ...outcomes.map((o) => o.class)]);
+
   for (const f of facts) {
     if (!f || !factsById.has(f.id)) continue;
     if (!KINDS.has(f.kind)) say(`${f.id}: kind ${JSON.stringify(f.kind)} is not history, person, place, belief or rumour`);
     if (!nonEmpty(f.text)) say(`${f.id}: no text`);
     for (const src of asList(f.sources)) sourceOk(f, src);
+    sinceOk(f, { outcomes, clueIds, endingWords, performanceById, mystery, say });
     for (const other of asList(f.contradicts)) {
       const g = factsById.get(other);
       if (!g) { say(`${f.id}: contradicts ${other}, which is not a fact (dangling id)`); continue; }
@@ -296,6 +389,87 @@ export function validateLore(lore, { documents, npcs, chatter, performances, mys
   }
 
   return problems;
+}
+
+/**
+ * Every problem in one fact's `since`. Four kinds, and the first two are what
+ * SPECS.md asked for in so many words: a row may not name an ending or a clue
+ * the mystery has not got.
+ *
+ * 1. The vocabulary. `when`/`unless` name an ending key or a verdict class;
+ *    `knew` names clue ids. A typo in either is a row that reads as "never"
+ *    and says so nowhere.
+ * 2. Reachability. A row that applies to no ending at all is dead text, the
+ *    same failure `day2.castle` already refuses.
+ * 3. It has to be a change. Empty text, or text the same as the fact's own,
+ *    is a row that costs a reader a diff to discover it did nothing.
+ * 4. It has to be told, and told only where it is true (#649). `tells` names a
+ *    performance; that piece must cite this fact back, and every ending and
+ *    journal that reaches the piece must be one this row applies to. A piece
+ *    heard in an ending the row does not cover is the castle saying the new
+ *    thing in a play where the canon still says the old one.
+ */
+function sinceOk(fact, { outcomes, clueIds, endingWords, performanceById, mystery, say }) {
+  const rows = fact.since;
+  if (rows == null) return;
+  if (!Array.isArray(rows) || !rows.length) { say(`${fact.id}: since is not a non-empty list`); return; }
+  const seen = new Map();
+  rows.forEach((row, i) => {
+    const where = `${fact.id}: since[${i}]`;
+    if (!row || typeof row !== 'object') { say(`${where} is not an object`); return; }
+    for (const key of ['when', 'unless']) {
+      for (const k of asList(row[key])) {
+        if (!endingWords.has(k)) say(`${where}: ${key} names ${JSON.stringify(k)}, which is not an ending this mystery can reach nor a verdict class`);
+      }
+    }
+    for (const id of asList(row.knew)) {
+      if (!clueIds.has(id)) say(`${where}: knew names ${JSON.stringify(id)}, which is not a clue in data/mystery.json`);
+    }
+    const live = outcomes.filter((o) => dayTwoApplies(row, o, asList(row.knew)));
+    if (!live.length) say(`${where}: applies to no ending, so the canon never says it`);
+    if (!nonEmpty(row.text)) say(`${where}: no text, so the fact would change into nothing`);
+    else if (row.text.trim() === String(fact.text ?? '').trim()) say(`${where}: the same text the fact already has, so nothing changes`);
+    // Two rows keyed alike is two rows only the first of which is ever read.
+    // Ordering is what resolves a general row after a specific one; it cannot
+    // resolve two rows with the same key.
+    const key = `${asList(row.when).join('|')}>${asList(row.unless).join('|')}>${[...asList(row.knew)].sort().join('|')}`;
+    if (seen.has(key)) say(`${where}: keyed exactly as since[${seen.get(key)}], and only the first would be read`);
+    else seen.set(key, i);
+
+    const piece = performanceById.get(row.tells);
+    if (!nonEmpty(row.tells)) { say(`${where}: no \`tells\`, so nothing in the castle says the changed fact`); return; }
+    if (!piece) { say(`${where}: tells ${JSON.stringify(row.tells)}, which is not a performance`); return; }
+    if (!asList(piece.cites).includes(fact.id)) { say(`${where}: tells ${row.tells}, but that piece's own \`cites\` does not name ${fact.id} back`); return; }
+    // Heard where the row is not true: every ending, every subset of the clue
+    // ids either side names. The piece may be narrower than the row and may
+    // not be wider.
+    const universe = [...new Set([...asList(row.knew), ...asList(piece.knew)])];
+    for (const o of outcomes) {
+      for (let mask = 0; mask < (1 << universe.length); mask++) {
+        const held = universe.filter((_, k) => mask & (1 << k));
+        if (!dayTwoApplies(piece, o, held) || dayTwoApplies(row, o, held)) continue;
+        if (dayTwoAbsent(mystery, o).has(piece.npc)) continue;
+        const journal = held.length ? ` holding ${held.join(', ')}` : '';
+        say(`${where}: ${row.tells} is heard after the verdict ${o.key}${journal}, which this row does not apply to, so the castle would say the changed fact while the canon still says the old one`);
+        return;
+      }
+    }
+  });
+}
+
+/**
+ * What the canon says about one fact after one ending, with one journal: the
+ * first `since` row that applies, or the fact's own `text` when none does.
+ * `outcome` is null on day one, which is the same answer as a fact with no
+ * `since`, because the morning after is the only day this question has a
+ * second answer.
+ */
+export function factText(fact, outcome = null, held = null) {
+  if (!fact) return null;
+  for (const row of asList(fact.since)) {
+    if (dayTwoApplies(row, outcome, held) && nonEmpty(row.text)) return row.text;
+  }
+  return fact.text ?? null;
 }
 
 /** Fact ids with no source at all. A report, not a failure: WISHLIST.md's own rule for theme 3. */

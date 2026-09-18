@@ -154,6 +154,26 @@ function appliesTo(row, outcome) {
 }
 
 /**
+ * THE SAME GRAMMAR, PLUS THE JOURNAL, FOR EVERYTHING OUTSIDE THIS FILE (#647).
+ * `when`/`unless` name the ending; `knew` names clues the player has to be
+ * holding, all of them, the way `day2.knew`'s single `clue` does for one. This
+ * is the export because a second copy of the grammar is a second copy that
+ * drifts: `data/lore.json`'s `since` rows and `data/npcs.json`'s `rumours`
+ * pieces are both read through this and not through a reimplementation of it.
+ *
+ * `held` is the journal (`state.clues`), a Set or a list, or null for "the
+ * player is holding nothing", which is what makes a row with a `knew` fail
+ * closed rather than open.
+ */
+export function dayTwoApplies(row, outcome, held = null) {
+  if (!appliesTo(row, outcome)) return false;
+  const need = asList(row.knew);
+  if (!need.length) return true;
+  const has = held instanceof Set ? (id) => held.has(id) : (id) => asList(held).includes(id);
+  return need.every(has);
+}
+
+/**
  * What the verdict does to the stone (#539). The rows of `day2.castle` that
  * apply to this ending, in the order they are written, each naming a `planId`
  * and one of `castle-plan.js`'s `DAY_SETS` verbs. `castle-builder.js` applies
