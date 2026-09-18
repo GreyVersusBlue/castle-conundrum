@@ -78,6 +78,66 @@ Four facts every row below leans on, stated once:
 
 ---
 
+## The castle you cannot walk
+
+**Rank 1. Size ¼.** Found by the GPU run (#626, #627), and it is the one row on
+this list that stops a player rather than disappointing one.
+
+### The two bugs
+
+- **Four overlays take pointer lock and one gives it back.** `src/ui.js` calls
+  `document.exitPointerLock()` in `openRiddle`, `openJournal`,
+  `openAccusation` and the verdict pane. `src/quest-manager.js` passes
+  `() => this.controlsRef.lock()` as `openRiddle`'s `onClose` and nothing
+  passes anything for the other three. `main.js`'s `unlock` listener would
+  offer the resume panel, but it checks `!ui.isOverlayOpen()`, which is false
+  at the moment `unlock` fires, so it never fires again afterwards either.
+- **A dialogue does not release pointer lock**, so `#dialogue-present` cannot
+  be clicked with a real mouse: the cursor is captured and the canvas takes
+  every pointer event.
+
+### Scope
+
+- **`src/`, and it is lane D.** The shape the evidence points at: release in
+  one place and take back in one place, so a fifth overlay cannot be added
+  without inheriting both halves. The riddle already has the second half and is
+  the model.
+- **A guard-rail, and #34 makes it the first thing written.** Press J, press J
+  again, hold W, assert the player moved. It fails today; it must be seen to
+  fail before the fix lands.
+- **Nothing in `data/`.**
+
+### Acceptance
+
+- J and J again, then W moves the player. Measured today: 3.7 m before the
+  journal, 0.00 m after.
+- A dialogue's Present button is reachable by `page.click`, not only by a
+  synthetic `.click()`.
+- The two assertions already in `test/play-castle.mjs` go green and the
+  `regrip()` calls around them become dead and come out.
+
+### Open calls
+
+- **Release-and-restore, or never release at all?** Recommend **release and
+  restore**: the journal, the picker and the accusation panel are all things
+  you point at, and the cursor has to exist for them. Never-release would mean
+  making all four keyboard-only, which is a bigger change and worse for a phone.
+- **What about Esc?** Out of scope here. `main.js` already handles the Esc path
+  and it works; this row is about the overlays that take the lock themselves.
+
+### Dependencies
+
+- **It gates rank 2.** The day cannot be played to the end around it — the
+  suite only gets through by taking pointer lock back in a way no player can.
+- Lane D, so not beside rank 11 or anything else in `main.js`'s player rig.
+
+### Constraints
+
+- #53 (nothing but a real window and a real keyboard was ever going to see it).
+- #34 (break it first; it is already broken, so watch the guard-rail fail).
+
+---
+
 ## The GPU run
 
 **Ranks 2 and 3. Size ¼ each.** `npm run play` is 102 assertions and a numbered
