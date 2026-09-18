@@ -5218,3 +5218,67 @@ than the one it said it was.
   under it happens to be. Left alone because it is a different file and a
   different lane, and written down here rather than scrolled past, which is the
   mistake #618 is an example of and this entry is the correction to.
+
+## Rank 3, the preview and og card: a fallback shot, not the one the spec asked for (2026-09-17)
+
+**Ranked row 3, on `claude/r3-preview-og-card`, no lane.** `SPECS.md`'s
+recommended source — the Great Hall at Vespers, six of the twelve and the HUD
+— does not exist: the GPU run (rank 2) aborted before reaching Vespers,
+stopped by the pointer-lock bug that same run found and that is rank 1 now
+(#626). `shots/play/` has twelve frames and none of them is
+`twelve-at-vespers.png`. Devon was asked and chose the fallback rather than
+holding the row for a second run: `08-the-chapel-at-prime.png`, the constable,
+the chaplain and the apprentice, mid-dialogue, HUD and journal chrome
+included. Decisions #634 and #635.
+
+- **The source is the chapel-at-Prime shot, by Devon's choice, and the row is
+  not `twelve-at-vespers`** (#634). It shows three of the twelve rather than
+  six, and a quest panel and a dialogue line rather than the game's wider
+  claim. It is real gameplay chrome and not a posed shot, which is what the
+  row's `og:image:alt` already said ("Castle Conundrum, mid-play.") and still
+  says truthfully. **Revisit once rank 1 is fixed and a run reaches
+  Vespers**: nothing here is load-bearing on the chapel shot in particular,
+  and the next run's `twelve-at-vespers.png` is a straight swap.
+
+- **Both images were built with this repo's own `sharp`, not
+  tools-and-games' canvas trick, and to that project's own numbers** (#635).
+  `promote-previews.mjs` (`tools-and-games/Tools/board-check/`) already
+  answers every open question a fresh attempt would re-ask: 330x200 under
+  60 KB for the preview, 1200x630 under 300 KB for the og card, both cropped
+  from the same frame with the crop window's centre 0.42 of the way down the
+  source rather than dead centre (every capture's foreground stands above the
+  midline, its floor below). That project reasons its way out of an image
+  library — `npm install` there has to work with no CDN reachable, so the
+  crop, resize and JPEG encode happen in a page's own canvas instead. Neither
+  constraint holds here: `sharp` has been a `package.json` dependency of this
+  repo since the move (#493, for `tools/encode-assets.mjs`) and is already on
+  disk. `sharp.extract` and `.resize(..., { kernel: lanczos3 })` reproduce the
+  same crop and the same halving-safe downscale in four lines instead of a
+  page evaluate, and a quality ladder of 82/76/70/62/55 stopped at 82 for
+  both sizes: 13.6 KB and 99.3 KB, both comfortably under budget on the first
+  try, because a screenshot this size compresses easily next to a rendered
+  frame at native resolution.
+
+  **The images live in this repo, under `assets/og/`, not in
+  `tools-and-games/assets/`** — the other open call, and Devon's answer
+  matches `SPECS.md`'s recommendation. `index.html`'s `og:image` and
+  `twitter:image` now read
+  `https://greyversusblue.github.io/castle-conundrum/assets/og/castle-conundrum.jpg`,
+  replacing the `greyversusblue.com` copy the comment above them had called
+  deliberate since #504. The board-side relink in `tools-and-games` (its own
+  `assets/og/castle-conundrum.jpg` and `assets/previews/castle-conundrum.jpg`,
+  330x200, the size this row's `castle-conundrum-preview.jpg` matches) is
+  Devon's to do there; nothing in this row touches that repo. `assets/og/` is
+  not under the reachability sweep (`poly-haven` and `NPCs` only) because it
+  is not a runtime asset — nothing in `src/` fetches it, a crawler does — so
+  the sweep's comment says so rather than the sweep growing a third name to
+  ignore.
+
+  `test/built.mjs` gains the line `SPECS.md` asked for: `og:image`'s path,
+  read off the built `index.html` and resolved against `og:url`, has to exist
+  in `dist/`. Verified against #34: renamed `castle-conundrum.jpg` out from
+  under it, ran the suite, watched `FAIL og:image's path exists in dist/ —
+  assets/og/castle-conundrum.jpg`, put the file back, green again. Fourteen
+  suites green (thirteen plus this one line, not a fourteenth suite),
+  `npm run build` green. `npm run play` not run — no `src/` changed, and the
+  images being right is a look, not a script (#53).
