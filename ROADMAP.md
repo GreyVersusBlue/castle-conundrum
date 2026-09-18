@@ -36,10 +36,10 @@ NOW, in parallel, no gates:
     R1  fourth body    #603-606      R7  ambient beds   #620-623
     R12a budget suite  #607-611      R6  the first ten  #616-619
                        |
-R2 lands --------------+--> unlocks R5, R11
-  (R3 shipped 2026-09-17 from a fallback frame, ahead of R2 landing)
+R2 lands --------------+--> unlocks R11
+  (R3 and R5 both shipped 2026-09-17 ahead of R2 landing: R3 from a
+  fallback frame, R5 by rendering the hall directly, #636-638)
 
-  R5  hall covering          local GPU, lane B
   R11 feel: shadow + hand    lane D
 
 R4c Thomas Wykes's yard  --> unlocks R9's town
@@ -70,7 +70,7 @@ confirmed** — which means a container cannot trust a pass either.
 | --- | --- | --- |
 | **R2 The GPU run** | Opus 5 | The run itself. Six things nobody has looked at: a compressed texture (#507), the five that shipped after it (#541 to #546), a tower roof from 12 m (#523), seven trusses over the hall (#527), a Lauds sky (#533), the gaol roll on the guardroom barrels (#571). Plus the standing question: do twelve NPCs off three bodies read as twelve. |
 | **R3 The images** | Opus 5 | The preview and og card come out of R2's screenshots. There is no other source. They land in `tools-and-games/assets/`, not here, and Devon relinks. |
-| **R5 The hall covering** | Sonnet 5 | Both criteria are a render. `partsOf` gives all four of `roof.glb`'s parts the same 1 x 1 x 1 box, so nothing in Node can tell which way a kit roof piece slopes; and whether a covered hall goes dark is a luma read off the floor (#438). |
+| ~~**R5 The hall covering**~~ | Sonnet 5 | **Shipped** (#636 to #638). Both criteria were a render, and both were answered by rendering the hall directly rather than by waiting for this row's own run to reach Vespers: `roof.glb`'s vertices (not its bounding box) showed which way it slopes, and the floor read 69.8 to 89.8 of 255. |
 | **R11 Feel**, past its Node line | Sonnet 5 | The Node half — a shadow decal and a hand node exist and do not regress `plan-vs-scene.mjs` — is a container's. Whether a blob shadow reads on stone versus on grass is not. |
 | **R4c The yard**, in practice | Opus 5 | Placeable in Node, but the tool that makes it cheap (`?edit=1`, #583) reads the tile under the player's feet as they walk, and whether a yard reads as a yard is a look. |
 
@@ -196,7 +196,8 @@ of them, plus **R2** on Devon's machine.
 - R8 beside R4a or R4b. Lane A, and both want the version number — though
   see the note under the lane table: version 6 landed on 2026-09-17 and R8's
   remaining work does not touch `save.js` at all.
-- R5, R9, R4c and R12b, any two of them. All lane B.
+- R9, R4c and R12b, any two of them. All lane B. (R5 shipped, #636 to #638,
+  and is out of this list.)
 - R6 beside R11. Lane D, both inside `src/main.js`'s rig.
 
 ---
@@ -207,10 +208,14 @@ of them, plus **R2** on Devon's machine.
 
 **The run happened** (#624 to #630) and did not reach the end of the day, so
 gate 1 is half open: the compressed textures, the tower roof at 12 m and the
-gaol roll are answered, and `twelve-at-vespers`, the trusses and the hall's
-luma read are not — which means **R3 and R5 are still gated**. R2 is also
-gated itself now, behind a new rank 1: a castle the player cannot walk in after
-opening the journal, which the run found and which nothing else could have.
+gaol roll are answered, and `twelve-at-vespers` and the trusses under a real
+run's own lighting are not. **R3 shipped anyway, from a fallback frame,
+2026-09-17** (#634, #635), and **R5 shipped without waiting for a second run
+either**, by rendering the hall directly rather than by playing to Vespers
+(#636 to #638) — the gate named the wrong half of rank 2 as the blocker; both
+rows needed a render, not specifically *this* render. R2 is also gated itself
+now, behind a new rank 1: a castle the player cannot walk in after opening the
+journal, which the run found and which nothing else could have.
 
 **And the lane table below is wrong about R2 in the one way that matters.** It
 gives R2 no lane because it writes no file anything else writes. It does not
@@ -266,12 +271,11 @@ touches the save again, which the seven errands do not.
 
 | Row | Model | Where | Lane | Note |
 | --- | --- | --- | --- | --- |
-| **R3** The images | Opus 5 | Local: GPU | none | Straight out of R2's screenshots. Do it in the same sitting: the run is already done and the shots are already on disk. |
-| **R5** The hall covering | Sonnet 5 | Local: GPU | B | A ¼, and the smallest thing left on the list. Six of the twelve stand in that room at Vespers and the accusation is made there, which is why #528 would not guess at it. |
+| ~~**R3** The images~~ | Opus 5 | Local: GPU | none | **Shipped** (#634, #635), from a fallback frame rather than R2's screenshots — the run never reached the shot this row wanted. |
+| ~~**R5** The hall covering~~ | Sonnet 5 | Local: GPU | B | **Shipped** (#636 to #638). Seven `roof.glb` pieces, not fourteen — the piece is a whole ridge-and-both-slopes cross-section, found by reading its vertices rather than guessing from its bounding box. The Vespers floor read 69.8 to 89.8 of 255 across the hall's length, well clear of SPECS.md's ~25 line; no second brazier or window needed. |
 | **R11** Feel | Sonnet 5 | Local: GPU past its Node line | D | The shadow decal and the reaching hand only. Nothing else in the theme starts before that pair, because they are the ones most likely to reveal whether the budget has room for the rest at all. |
 
-These three do not gate each other. R5 and R11 are different lanes and R3 has
-no lane.
+R11 is the one row left in this wave; it does not gate on anything else here.
 
 ### Gate 2 — R4c, Thomas Wykes's yard
 
