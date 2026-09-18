@@ -970,11 +970,31 @@ section below is kept as written with what shipped noted against each part.
 
 ## Feel
 
-**Rank 11. Size 2+.** `WISHLIST.md` theme 7. Every item in it is "a thing a
+**Rank 11. Size 2+. The first increment's Node half shipped on 2026-09-17**
+(#650 to #654). `WISHLIST.md` theme 7. Every item in it is "a thing a
 GPU decides," gated on `npm run play` the same way **The hall covering**
 already is.
 
-### Scope, first increment
+### What shipped, in one paragraph
+
+`src/player-rig.js` adds one group to the scene: a 0.46 m disc with a radial
+gradient painted into a 64 x 64 canvas at load, sitting 0.02 m over
+`PlayerController.feet` — the plan's own floor height, so the shadow and the
+feet cannot disagree about a slab edge — and a hand of six primitives merged
+into one geometry, which rests below the frame and lerps out to the leaf's own
+`focus`, clamped to 0.78 m from the eye. Two draw calls, 16 KB of texture, no
+file, no second shadow-casting light (#650). It reaches for
+`interaction.currentTarget` rather than searching, so the hand and the prompt
+cannot disagree about which door the player is at (#652), and **every mesh in it
+has `raycast` set to a no-op**, because the rig is a top-level scene child and
+`interaction.js` calls every one of those an occluder (#651). `settle()`
+collapses the smoothing and the world matrix with it, which is what lets the
+suite assert a position and never a duration (#653). Nine assertions in
+`test/plan-vs-scene.mjs`, each broken on purpose; the ray ones cast twice, once
+with `THREE.Mesh`'s own `raycast` put back, so "it did not hit" cannot pass on a
+ray that was never going to hit anything.
+
+### Scope, first increment — the GPU half, which is what is left
 
 - **A shadow on the pavers and a hand that reaches for the door.** Both are
   named in `WISHLIST.md` as the two cheapest presence cues there are.
@@ -989,19 +1009,26 @@ already is.
 
 ### Acceptance, first increment
 
-- Node acceptance: the shadow decal and the hand node exist, are tagged with
-  a `planId` if they are plan pieces, and do not regress `plan-vs-scene.mjs`.
+- ~~Node acceptance: the shadow decal and the hand node exist, are tagged with
+  a `planId` if they are plan pieces, and do not regress `plan-vs-scene.mjs`.~~
+  **Met** (#650 to #654). Neither is a plan piece, so neither carries a
+  `planId`, and that is asserted rather than assumed: the rig moves with the
+  player and a tagged moving object is a box the plan's diff cannot predict.
 - GPU acceptance (#53): a screenshot of the player approaching a door with the
   hand visibly reaching, and a screenshot of the shadow on stone versus on
   grass; one sentence each in `HISTORY.md`, the same bar rank 2's photograph
-  sets.
+  sets. **Still open**, and a third shot was added to it by the work: the disc
+  is flat and a flight of stairs is a ramp, so what it does on a stair is
+  unlooked-at.
 
 ### Open calls
 
-- **Real-time shadow or a baked decal.** Recommend the decal: a real
-  shadow-casting light on the player is a cost this castle has never paid,
-  and the wishlist's own language ("cheapest presence cue") argues for the
-  cheaper of the two.
+- ~~**Real-time shadow or a baked decal.**~~ **Taken: the decal** (#650). A
+  shadow-casting light on the player is a cost this castle has never paid, and
+  the wishlist's own language ("cheapest presence cue") argued for the cheaper
+  of the two. What shipped is cheaper again than a baked file — the gradient is
+  painted into a canvas at load, so there is no asset to encode (#506) and
+  nothing new is fetched (#493).
 - **Everything else in the theme** (weather, fire, examine, wear, sitting) is
   explicitly a later increment each, in no fixed order — `WISHLIST.md` ranks
   none of them against each other, and this spec does not invent an order it
