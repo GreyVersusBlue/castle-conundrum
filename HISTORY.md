@@ -6144,6 +6144,13 @@ is already read off the files. Decisions #659 to #663.
   baseline (#34) — rule 6 above, an errand naming `cornered` (rule 1, four
   assertions including `test/mystery.mjs`'s unreachable-state check), and a
   file left out of `index.json` (the directory rail, which named the missing
-  file on both sides). `npm test` thirteen suites green; `plan-vs-scene` and
-  `built` failed twice on the way there on `Error: Port 8125 is already in
-  use`, which is #655 exactly and not this row's.
+  file on both sides). `npm test` went thirteen suites green once, and red on
+  two different things that are both already in this file. `built` and
+  `plan-vs-scene` died in 0.4 s on `Error: Port 8126 is already in use`, which
+  is #655 exactly, with four other rows testing beside this one.
+  `plan-vs-scene` also failed the chapel-candles beat, which is #633, and the
+  control that section asks for was run rather than assumed: `git checkout
+  origin/main -- src test data` takes this row out of the tree entirely, and
+  the beat is red twice over on that, the same assertion and the same
+  sentence. Neither is this row's, and both are measured rather than argued
+  from a diff.
