@@ -6164,14 +6164,27 @@ binds a fixed port, so two browser suites in two worktrees collide. Both passed
 alone immediately after. `plan-vs-scene` failed twice on one assertion — `none of
 the 12 cells between 0.9 and 2.8 m of the chapel candles offers them (the nearest
 offered "Press E to ring the bell")` — and run alone three times it passed once
-and failed twice. **That is a pre-existing flake in a station probe and it is
-worth somebody's row**: an interaction assertion that is right two runs in three
-is #13's problem wearing a different hat, because a suite that fails at random
-is a suite whose red gets ignored. It is not opened as a row here because this
-session could not tell a real intermittent bug from the contention of five
-Chromiums on one machine, which is #53's line and the reason it needs a quiet
-machine to judge on. `npm run play` not run: no `src/` changed, so there is
-nothing for a GPU to decide (#53).
+and failed twice. That one is local and this session could not tell a real
+intermittent bug from five Chromiums contending on one Windows box, which is
+#53's line exactly.
+
+**`plan-vs-scene` also failed in CI, and the reason it did is that CI on `main`
+has been red since 2026-09-18 03:46 and nobody has said so.** Not this row and
+not this machine: the assertion is `baker stands at (1.25, 0.00, 15.14) and the
+first stop of the Prime ring is (1.25, 0.00, 14.75), 0.385 m off`, and the same
+assertion is red on `main` itself at the merge of PR #47 (0.408 m) and at the
+merge of PR #46 (0.110 m). The last green CI on `main` is the merge of PR #44,
+so **three merges have landed on a red main**. The growing miss — 0.110, then
+0.385, then 0.408 — is the shape of a real-time read of a body that has already
+started walking, taken against a tolerance that assumes it has not, and PR #46
+was r11's work in `src/main.js`'s rig, which is where startup timing lives.
+**This is #13 failing at the level above the suite**: the repo has no
+known-failures file precisely so that a red is acted on, and a red that has
+survived three merges is a known-failures file kept in nobody's head. It is
+flagged on this row's PR and it is not fixed here, because a real-time movement
+assertion is not this container's to judge (#53) and rank 6 and rank 11 own the
+code under it. `npm run play` not run: no `src/` changed, so there is nothing
+for a GPU to decide (#53).
 
 **What is left of rank 12 is nothing.** The placement editor (#583 to #587),
 the budget suite (#607 to #611), move-and-delete (#636 to #642) and the
