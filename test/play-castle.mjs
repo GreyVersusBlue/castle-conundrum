@@ -130,6 +130,8 @@ let failures = 0;
 let shotN = 0;
 /** Who has had their portrait taken. See `converse` below. */
 const photographed = new Set();
+/** So the Present-button bug below is reported once and not once per press. */
+let presentLockSaid = false;
 
 const ok = (label, detail = '') => console.log(`  ok    ${label}${detail ? '  ' + detail : ''}`);
 const bad = (label, detail = '') => { failures++; console.log(`  FAIL  ${label}${detail ? '  ' + detail : ''}`); };
@@ -224,6 +226,24 @@ const regrip = async (where) => {
   return back;
 };
 
+/**
+ * Point the camera at a world point, pitch included.
+ *
+ * `aimAt` in drive.mjs takes an x and a z and a pitch you have to know; what a
+ * piece of evidence needs is "look AT this", and the pitch is the answer rather
+ * than the question. The body and the pouch lie a metre apart on the chapel
+ * floor and the game picks what the camera is facing, so walking to the pouch
+ * while still facing the body presses E on the body a second time: the run that
+ * found this reported "walked to the mason's pouch, 0.75m after 0 bursts" and
+ * then no clue at all, because the body had already given up its one.
+ */
+const lookAtPoint = (x, y, z) => page.evaluate((p) => {
+  const c = window.__cam;
+  c.rotation.order = 'YXZ';
+  const dx = p.x - c.position.x, dy = p.y - c.position.y, dz = p.z - c.position.z;
+  c.rotation.set(Math.atan2(dy, Math.hypot(dx, dz)), Math.atan2(dx, dz) + Math.PI, 0);
+}, { x, y, z });
+
 /** Where the player is standing, and which storey that is. */
 const playerAt = async () => {
   const p = await page.evaluate(() => ({ x: window.__cam.position.x, z: window.__cam.position.z, y: window.__cam.position.y }));
@@ -247,19 +267,75 @@ const playerAt = async () => {
  * beat that does not need it.
  */
 const hike = async (target, level = 0) => {
-  const from = await playerAt();
-  const to = { x: target[0], z: target[1], level };
-  const route = NAV.map((w) => w.path(from, to)).find((p) => p && p.length > 1);
-  if (!route) return false;
-  const marks = [];
-  let last = route[0];
-  for (let i = 1; i < route.length - 1; i++) {
-    const c = route[i], n = route[i + 1];
-    const turn = Math.sign(c.x - last.x) !== Math.sign(n.x - c.x) || Math.sign(c.z - last.z) !== Math.sign(n.z - c.z);
-    if (turn || Math.hypot(c.x - last.x, c.z - last.z) >= 2.5) { marks.push(c); last = c; }
-  }
-  for (const w of marks) {
-    await driveTo(page, [w.x, w.z], async (d) => d < 1.0, { maxBursts: 16, nearAt: 2.5, longMs: 200, shortMs: 90 });
+  /* A WALK NEEDS THE CASTLE BACK FIRST. `regrip` is a no-op when pointer lock
+   * is held, and this is the one place worth paying for it, because without
+   * pointer lock W does nothing and every waypoint below "misses" in a way that
+   * reads exactly like a wall. The journal is not the only overlay that does
+   * this: `ui.js` releases pointer lock for the riddle, the journal, the
+   * accusation panel and the verdict pane, and `quest-manager.js` takes it back
+   * for the riddle ALONE. Presenting a clue opens the journal as a picker, so
+   * the first Present of the day costs the player the castle — the run that
+   * found this got the merchant to admit the cart and then stood at
+   * (-29.6, -0.3) for the rest of Terce, three waypoints missed out of every
+   * hike, "locked false" in every note.
+   */
+  await regrip('an overlay, before a walk');
+  /* BOTH ENDS HAVE TO BE SOMETHING TO STAND ON, and neither reliably is.
+   *
+   * The far end: the chapel bell hangs in the tower's ring, the cloak lies on a
+   * crate, a station can sit in a doorway. `cellAt` answers null for all three.
+   *
+   * The near end is the one that actually bit. `path` returns null when the
+   * FROM cell is null, and the player is routinely standing somewhere that is
+   * not a cell centre — wedged against a tower ring, on a flight's footprint,
+   * pushed half into a doorway by the last walk. The run that found this failed
+   * to reach the cloak with no route at all, from (-18.9, -14.3), where the
+   * previous walk had left the player stuck inside the Kitchen Tower; the same
+   * cloak from a clean start is 71 cells away. So snap both ends to the nearest
+   * cell within 4 m, nearest first.
+   */
+  const snap = (w, x, z, lv) => {
+    if (w.cellAt(x, z, lv)) return { x, z, level: lv };
+    for (let r = 0.5; r <= 4; r += 0.5) {
+      for (let a = 0; a < 16; a++) {
+        const px = x + r * Math.cos(a * Math.PI / 8), pz = z + r * Math.sin(a * Math.PI / 8);
+        if (w.cellAt(px, pz, lv)) return { x: px, z: pz, level: lv };
+      }
+    }
+    return null;
+  };
+  /* AND IT RE-PLANS, because a route walked by a body that cannot steer is a
+   * route the body falls off. Three waypoints missed in a row means the player
+   * is no longer on the line the plan assumed and every waypoint after it is
+   * measured from somewhere they are not — which is how one missed corner
+   * turned into 19 of 33 missed and a player 19.4 m from the porter. Stop,
+   * ask the castle again from where the body actually is, walk that. Twice at
+   * most: a third identical answer is a body that is stuck, not lost. */
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const here = await playerAt();
+    const route = NAV.map((w) => {
+      const a = snap(w, here.x, here.z, here.level), b = snap(w, target[0], target[1], level);
+      return a && b && w.path(a, b);
+    }).find((p) => p && p.length > 1);
+    if (!route) return attempt > 0;
+    const marks = [];
+    let last = route[0];
+    for (let k = 1; k < route.length - 1; k++) {
+      const c = route[k], n = route[k + 1];
+      const turn = Math.sign(c.x - last.x) !== Math.sign(n.x - c.x) || Math.sign(c.z - last.z) !== Math.sign(n.z - c.z);
+      if (turn || Math.hypot(c.x - last.x, c.z - last.z) >= 2.5) { marks.push(c); last = c; }
+    }
+    let missed = 0, run = 0, lost = false;
+    for (const w of marks) {
+      const got = await driveTo(page, [w.x, w.z], async (d) => d < 1.0, { maxBursts: 20, nearAt: 2.5, longMs: 200, shortMs: 90 });
+      if (got) run = 0;
+      else { missed++; if (++run >= 3) { lost = true; break; } }
+    }
+    const at = await playerAt();
+    const left = Math.hypot(at.x - target[0], at.z - target[1]);
+    console.log(`  note  hike ${attempt + 1}: ${marks.length} waypoints toward (${target[0].toFixed(1)}, ${target[1].toFixed(1)}), ` +
+      `${missed} missed, stopped ${left.toFixed(1)}m short at (${at.x.toFixed(1)}, ${at.z.toFixed(1)}) L${at.level}${lost ? ' — lost the line, re-planning' : ''}`);
+    if (!lost || left < 4) return true;
   }
   return true;
 };
@@ -280,7 +356,15 @@ const hike = async (target, level = 0) => {
 const walkTo = async (target, who, level = 0, within = Infinity) => {
   const near = async (d = Infinity) => d <= within && !!(await state()).prompt?.includes(who);
   if (!(await near(0))) await hike(target, level);
-  return driveTo(page, target, near, { maxBursts: 90 });
+  else await regrip('an overlay, before a step');
+  const got = await driveTo(page, target, near, { maxBursts: 90 });
+  if (!got) {
+    const at = await playerAt();
+    const s2 = await state();
+    console.log(`  note  gave up ${Math.hypot(at.x - target[0], at.z - target[1]).toFixed(1)}m from (${target[0].toFixed(1)}, ` +
+      `${target[1].toFixed(1)}) at (${at.x.toFixed(1)}, ${at.z.toFixed(1)}) L${at.level}, looking for "${who}", prompt ${JSON.stringify(s2.prompt)}, locked ${s2.locked}`);
+  }
+  return got;
 };
 
 /**
@@ -963,7 +1047,7 @@ try {
   /** The world point a piece of evidence's prompt is aimed at. */
   const evidenceAt = async (id) => page.evaluate((eid) => {
     const t = (window.__evidence || []).find((x) => x.id === eid);
-    return t ? [t.focus.x, t.focus.z] : null;
+    return t ? [t.focus.x, t.focus.z, t.focus.y] : null;
   }, id);
 
   /** Walk to somebody's station at this bell and step through what they say. */
@@ -1010,6 +1094,10 @@ try {
     const walked = await walkTo(at, 'examine', 0, 3.5);
     assert(!!walked, `walked to the ${label}`, walked ? `${walked.dist}m after ${walked.bursts} bursts` : 'never got in range');
     if (!walked) return null;
+    // Face it before pressing. See `lookAtPoint`: E takes what the camera is
+    // aimed at, not what this function had in mind.
+    await lookAtPoint(at[0], at[2] ?? 1.0, at[1]);
+    await wait(150);
     const before = await held();
     await page.keyboard.press('KeyE');
     await wait(400);
@@ -1033,7 +1121,31 @@ try {
     const hasButton = await page.evaluate(() => !document.getElementById('dialogue-present').classList.contains('hidden'));
     assert(hasButton, `the ${label}'s dialogue offers Present`);
     if (!hasButton) return null;
-    await page.click('#dialogue-present');
+    /* AND IT CANNOT BE CLICKED, which is the other half of the pointer-lock bug
+     * `regrip` describes. A dialogue does not release pointer lock — `ui.js`
+     * calls `document.exitPointerLock()` for the riddle, the journal, the
+     * accusation panel and the verdict pane, and for nothing else — so while a
+     * dialogue is open the cursor is still captured, every pointer event goes
+     * to the locked element, and a real mouse cannot reach this button at all.
+     * Playwright says it plainly: "canvas intercepts pointer events", after
+     * thirty seconds of retrying a button it agrees is visible and enabled.
+     *
+     * THE TWO BUGS HIDE EACH OTHER. Open the journal once and pointer lock is
+     * gone for good (nothing takes it back), which makes this button clickable
+     * for the rest of the game — at the price of never walking again. Play
+     * without opening the journal and you can walk, and you cannot present.
+     * Presenting a clue is how four of the twelve are pressed, so this is not a
+     * corner of the game.
+     *
+     * Said once, then worked around with a synthetic click, which is the same
+     * idiom the journal rows below already use. */
+    const lockedNow = await page.evaluate(() => !!document.pointerLockElement);
+    if (!presentLockSaid) {
+      presentLockSaid = true;
+      assert(!lockedNow, 'a dialogue releases pointer lock, so its Present button can be clicked',
+        lockedNow ? 'pointer lock is held, the canvas takes every pointer event, and no real mouse can reach Present' : '');
+    }
+    await page.evaluate(() => document.getElementById('dialogue-present').click());
     await wait(300);
     const row = await page.evaluate((id) => !!document.querySelector(`#journal-list .journal-row[data-id="${id}"]`), clueId);
     assert(row, `${clueId} is in the list the Present button opens`);
@@ -1160,7 +1272,7 @@ try {
       assert(!!walked, 'walked into the guardroom to the gaol roll',
         walked ? `${walked.dist}m after ${walked.bursts} bursts` : 'never got in range');
       if (walked) {
-        await aimAt(page, rollAt, -0.42);
+        await lookAtPoint(rollAt[0], rollAt[2] ?? 0.9, rollAt[1]);
         await wait(300);
         await snap('the-gaol-roll-on-the-barrel-head');
       }
