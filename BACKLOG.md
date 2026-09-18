@@ -423,7 +423,7 @@ well as by rank, which is what makes that survivable (#522).
 | 7 | Sound: somebody listens to the seven beds, then a bed at a point, the four bells, event sounds | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
 | 8 | Side quests: the seven errands left of the dozen | 2+ | Opus 5 | Container | — | A | | [Side quests](SPECS.md#side-quests) |
 | 9 | A castle to get lost in: the town, the rock and river | 2+ | Opus 5 | Container | **after 4c** | B | | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
-| 10 | Bodies: a shared low-poly rig for the fifty | 1 | Fable 5.1 | Local: net | — | C | | [Bodies](SPECS.md#bodies) |
+| 10 | Bodies: a shared low-poly rig for the fifty (the child and the hound shipped, #643 to #645) | 1 | Fable 5.1 | Local: net | — | C | | [Bodies](SPECS.md#bodies) |
 | 11 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 | Container to the Node line, local: GPU past it | **after 2** | D | | [Feel](SPECS.md#feel) |
 | 12 | The tooling: a dialogue format (the placement editor, its budget suite and its move-and-delete all shipped, #583 to #587, #607 to #611, #636 to #642) | 2+ | Opus 5 | Container | — | C (12c) | | [The tooling](SPECS.md#the-tooling) |
 
@@ -660,6 +660,15 @@ is `npc.js`'s existing hide-node and hide-material machinery, not new code.
 Every body goes through `tools/encode-assets.mjs` before it is committed
 (#506); an uncompressed body is the one asset nothing else on this list would
 catch.
+
+**The child and the hound shipped on 2026-09-17** (#643 to #645). The child is
+not a rig: she is `Woman.glb` at 1.15 m with her head bone a third larger,
+running between her stops, three data fields `npc.js` did not have before. The
+hound is a fifth file, Quaternius's Husky as `assets/NPCs/Hound.glb`, 0.63 MB
+meshopted, with a `follow` that brings it to heel along the grid. What is left
+of the row is a chicken, which neither Quaternius pack ships as glTF, and the
+garrison's spears, which no pack on disk has; and the look at both on a GPU
+that `npm run play` owes (#53).
 
 ## Feel
 

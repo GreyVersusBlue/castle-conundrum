@@ -5418,3 +5418,172 @@ and the branch's `data/` is byte-identical to `main`.
   the parallel-session regime `ROADMAP.md` now assumes makes a fixed port a
   collision waiting for a schedule, and a red suite that is really a port is
   exactly the kind of thing a session learns to scroll past.
+
+## Bodies: the child off the rig that was there, and a hound (2026-09-17)
+
+**Ranked row 10, on `claude/r10-bodies`, under Claude Fable 5.1, on Devon's
+machine, in its own `git worktree`.** The worktree is #624's lesson taken on
+the first day it could be: eight rows were in flight at once (R3, R4a, R4b,
+R5, R10, R11, R12b, R12c) and this one shared the machine with all of them and
+the lane with one. quaternius.com answered, `ktx` v4.4.2 is on PATH.
+Decisions #643 to #645, **written as #634 to #636 and moved twice**: rank 3's
+preview and og card merged as PR #42 while this was open and took #634 and
+#635, and rank 12b merged as PR #45 during the rebase that followed and took
+#636 to #642. That is #619's and #633's lesson a fourth and a fifth time, with
+the read a fresh fetch every time; a number picked at the end of a row still
+moves if the row waits an hour for review. Ten Node suites green; the three browser suites lost
+their first run to `Port 8127 is already in use`, which was another session's
+`npm test` on the same machine and not this branch, and are written up at the
+bottom. `npm run build` green. `npm run play` was not run (#53): this row's
+GPU question is the same one rank 2 already owes, and it is written up as
+still owed. `dist/` is 31 MB.
+
+- **The child is the rig that was already there, with a bigger head** (#643).
+  `SPECS.md`'s open call said to try scaling the existing rig before fetching
+  anything, and the try was a line-up on a grey background, the way #606
+  looked at the woman: a 1.8 m Farmer, then `Adventurer.glb` at 1.2 m, then
+  the same with its `Head` bone at 1.3, then `Woman.glb` at 1.15 m with its
+  head at 1.3. **A shrunk Adventurer is a small bearded man.** The beard and
+  the backpack are the tells and nothing about proportion helps while they
+  are there. The hooded woman's rig is the one that reads: no beard, a hood
+  where the hair would be, and with the head a third larger on a body two
+  thirds the height it is one part in five and a half against an adult's one
+  in seven and a half, which is a child of seven or so. A second line-up put
+  the head at 1.3, 1.45 and 1.4 on 1.2 m, 1.2 m and 1.1 m: 1.45 is a cartoon,
+  1.1 m stands at the player's chest. She is 1.15 m with `Head` at 1.35.
+
+  Three fields carry it, all on the def and none on an id: `boneScale`, a
+  bone name to a scalar applied after the height normalise and untouched by
+  the clips, which key position and rotation only; `clips`, one clip name
+  put ahead of `npc.js`'s list for a key, so her walk is `Run`; and `speed`,
+  in m/s, because a Run clip at the adult 1.1 m/s is a body running on the
+  spot. She is Gwenllian, the well-wife's girl, `#a9c4d6`, and she runs a
+  three-stop ring from the laundry across the outer ward at Prime at 2.2 m/s.
+  `validatePopulace` refuses a bone scaled to 0 (a body with no head), a
+  speed of 0 (a body that never arrives and holds `walking` for the watch)
+  and a `clips` value that is not a string, and `test/mystery.mjs` asks it
+  each of those.
+
+  **And her first stop was on a staircase, which nothing in Node said.** The
+  laundry is a drum, its stair hugs the wall, and a stair tread is a walk
+  cell with a floor: `cellAt` answers `h: 1.65` for it and `roomAt` says
+  `laundry`, so `validatePopulace` passed a stop that put her four treads up
+  with the laundress at the foot. Found by photographing her, moved to a
+  tread-free cell. The validator does not refuse a stop on a stair, because
+  a body on a stair is sometimes the point; what it could say is the height,
+  and it does not yet.
+
+- **The hound is a fifth file, and the only fetch** (#644). quaternius.com
+  lists two animal packs and both pages say CC0 with a link to the deed.
+  The Ultimate Animated Animal Pack's Drive folder has a `glTF/` of twelve:
+  Alpaca, Bull, Cow, Deer, Donkey, Fox, Horse, Horse_White, Husky, ShibaInu,
+  Stag, Wolf, 1.4 to 3.4 MB each. The Farm Animals pack, which is where a
+  chicken would be, has `Blends/`, `FBX/` and `OBJ/` and no glTF at all, so
+  **there is no chicken this sitting** and the row says so below. Husky and
+  ShibaInu were fetched, 3.06 and 2.89 MB, one data-URI buffer each, 1920
+  and 1950 triangles, 49 joints, twelve clips by the same names: `Attack
+  Death Eating Gallop Gallop_Jump Idle Idle_2 Idle_2_HeadLow Idle_HitReact1
+  Idle_HitReact2 Jump_ToIdle Walk`. The Husky is the hound: bigger,
+  wolf-shaped, and at 0.7 m beside the 1.8 m Farmer it is a dog and the
+  Shiba at 0.5 m is a fox. It is 3.19 units tall and 3.88 long as authored,
+  so `modelHeight` is not optional on it the way it is not on the women.
+
+  The re-export is the same four moves as #604, for the same reasons. The
+  pack names the five materials `Material`, `Material.001`, `Material.002`,
+  `Material.003` and `Material.006`; they are `Coat` (732 triangles, the dark
+  top), `Coat_Light` (1090, belly and muzzle), `Eye` (24), `Eye_White` (14)
+  and `Nose` (60), read off the triangle counts and the base colours. The
+  coat was lifted from 0.065 and 0.36 linear to 0.55 and 0.85, because a
+  tint is a multiply and a tawny tint on a near-black coat is a near-black
+  dog; the markings survive as tint times 0.55 against tint times 0.85. The
+  node and the mesh were `Cube` and are `Hound`. `Nose` joined
+  `BARE_MATERIALS` in `npc.js`, beside skin, eyes, brows and hair, for the
+  reason those are there. Encoded, 1.71 MB of raw floats to 0.63 MB.
+
+  It is Gelert, the Constable's hound, `#b08a5a`, and it has the one
+  behaviour the spec asks of a dog: `follow: {radius: 6, keep: 1.8}`. Within
+  6 m of the player on a floor `nav.route` can reach, `Populace._follow`
+  leaves the ring, routes to the cell the player stands in, drops every cell
+  inside 1.8 m of them and walks the rest, then turns to face them and
+  waits; two metres of hysteresis on the way out, a re-route at most every
+  half second, and the route back to the stop it left when they are gone.
+  Every step is a grid cell, so a dog following through a doorway took the
+  doorway. **Seen, on this GPU**: the live page at Prime, the camera put
+  4.2 m from its first stop, and six seconds later the hound at 1.8 m
+  facing the camera with `Gelert — the Constable's hound` over it. The one
+  line outside this row's lane is `main.js` passing `camera.position` into
+  `populace.update`, lane D's file, and the PR says so. The bark is not in:
+  a sound is `src/audio.js`'s and lane E's, and rank 7's remaining half is
+  event sounds.
+
+  Two new activities, `sniff` (`Idle_2_HeadLow`, the head down) and `eat`
+  (`Eating`), exist in one body and `wait` exists in all five. Its ring is
+  the outer ward at Prime and Vespers, a place to watch the muster from at
+  Terce, and the kitchen at Sext.
+
+- **Three rails, each broken on purpose first, and one the second rig forced**
+  (#645). The encoder and `test/assets.mjs`'s check 5 both found bodies
+  through `cast` alone, which was #605's finding pointed at a second door:
+  the first populace body the cast did not wear would have landed raw with
+  every suite green. Both read `data/populace.json` now. The clip check in
+  `test/mystery.mjs` asked every clip in `ACTIVITY_CLIPS` of every body the
+  household wears, which was true of four bodies that are one rig and is
+  false of a dog: `Hound.glb` has `Eating` and no `Idle_Sword`, the guard the
+  reverse, and neither is wrong until somebody writes the serjeant's `muster`
+  onto the dog. The check is per person now, each person's jobs against the
+  clips in the file that person wears, plus one line that every clip the
+  table names is in some body on disk. And the row's Node acceptance from
+  `SPECS.md` is asserted: **10 silhouettes off 5 body files**, a silhouette
+  being body, height, hidden nodes, hidden materials, held prop and bone
+  scale, with tint left out on purpose because every tint is already unique
+  and counting it makes the number thirteen colours on one body.
+
+  The follow is driven in Node, which is what `populace.js` having no
+  three.js in it (#616) was for: the real grid, the real hound, and a body
+  that is a plain object recording what it was told. Eight assertions: placed
+  at its stop on a load, sent along a route one frame after a player stands
+  4 m off, the route ending 2.00 m short of them, every point on it a grid
+  cell, facing and waiting once there, and routed back to the stop when they
+  are 40 m away.
+
+  What is not counted, and is said rather than fixed: `test/budget.mjs`'s
+  bodies-per-ward number is read off `mystery.schedule` and has never
+  included the household, so the twelve of them, now with a dog, are not in
+  its 7-per-ward peak. That is rank 6's number to answer to (#609) and the
+  file that says 20 is where it should be argued.
+
+**Broken on purpose, from a green baseline** (#34). Four breaks, each
+reverted, green again after.
+
+1. `Hound.glb` on disk and in `populace.json`, before `npm run assets:encode`.
+   `assets` exited 1 on `assets/NPCs/Hound.glb has no EXT_meshopt_compression
+   — run npm run assets:encode before committing it (#506)`. Before this
+   branch that check would have said nothing, because the hound is in no
+   `cast`.
+2. `hideNodes`, `hideMaterials`, `heldProp`, `boneScale` and `modelHeight`
+   stripped from every entry in both data files. `mystery` exited 1 on
+   `5 silhouettes off 5 body files, across the cast and the household`.
+3. The hound's Terce stop given `muster`. `validatePopulace` found nothing,
+   because `muster` is a real activity, and `mystery` exited 1 on `hound does
+   "muster" in assets/NPCs/Hound.glb, which ships no clip called Idle_Sword`.
+4. The `walkTo` cut out of `_follow`'s route branch. `mystery` exited 1 three
+   times: `one frame later it has been sent along a route — walks: 0`,
+   `arrived, it faces the player and waits`, and `and when they are gone it
+   is routed back to the stop it left — no walk`.
+
+**What is left of the row.** A chicken, which needs a source: neither
+Quaternius pack ships a bird as glTF, and a Blender or FBX export is a
+conversion this repo has no tool for. The garrison's spears, which are a held
+prop on the rig that exists and not a body, and no pack on disk has a spear:
+the Kenney kit's 106 pieces are architecture. And the look at both on a real
+run, which is rank 2's `twelve-at-vespers` question with fourteen in it now.
+
+**The browser suites.** `plan-vs-scene`, `touch` and `built` fell over twice in
+under a second each on `Port 8125 is already in use` and `Port 8127 is already
+in use`: two other sessions' `node` processes on this machine were listening on
+8127 and 8128, and the ports are constants in each suite. Run a third time with
+the three constants moved to 8225 to 8228 in the working copy and put back
+after, **all three passed**, and with them `plan-vs-scene`'s chapel-candles
+beat that #606 and #633 both record as red on this machine on an untouched
+`main`. Thirteen of thirteen, then, in two runs. The port constants are a
+small thing to leave for whoever next runs two suites on one machine.

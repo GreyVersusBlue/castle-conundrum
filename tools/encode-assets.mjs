@@ -274,7 +274,12 @@ const props = new Set([
 for (const rel of [...props].sort()) await encodeGLTF(path.join(ROOT, rel), { textures: true, mesh: true });
 
 console.log('\nthe NPC bodies');
-for (const rel of [...new Set(npcs.cast.map((n) => n.modelPath))].sort())
+// The household's bodies too (#645). Until the hound, every body the populace
+// wore was one the cast already named; the first one it did not would have
+// landed raw with every suite green, which is #605's lesson at a second door.
+const populace = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/populace.json'), 'utf8'));
+const bodies = new Set([...npcs.cast.map((n) => n.modelPath), ...(populace.people ?? []).map((p) => p.modelPath)]);
+for (const rel of [...bodies].sort())
   await encodeGLTF(path.join(ROOT, rel), { textures: false, mesh: true });
 
 fs.rmSync(TMP, { recursive: true, force: true });

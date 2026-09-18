@@ -13,6 +13,14 @@
 // because SkeletonUtils.clone() shares them by reference and tinting one Farmer
 // otherwise tints all four.
 //
+// AND A FIFTH BODY THAT IS NOT A PERSON (#644). The hound under assets/NPCs is
+// the same shape of thing as the four: a rigged glTF with named clips, height-
+// normalised, tinted, walked along the same grid. Nothing below knows it is a
+// dog. What it lacks — a right hand, a Wave — it lacks by data: `def.clips`
+// names the clip a body greets with, and a body with none keeps idling.
+// `boneScale` and `speed` are the other two fields this row added, and both
+// exist for the child: a scaled-down adult with a bigger head, running.
+//
 // WALKING BETWEEN STATIONS. `def.patrol` is a loop, which is what the three of v1
 // had. `walkTo(points)` is the Phase 6 form: a one-shot route from src/stations.js,
 // cell centres 0.5 m apart with the floor height at each, so an NPC crossing the
@@ -27,8 +35,9 @@ const WAYPOINT_EPS = 0.05;
 const TURN_SPEED = 4.0; // rad/s — how fast an npc swings round to a new heading
 const CLIMB_SPEED = 1.6; // m/s the feet rise or fall towards the next waypoint's floor
 const DEFAULT_HEIGHT = 1.8; // metres; player eye height is 1.7, so npcs read as adults
-// What the tint does not touch.
-const BARE_MATERIALS = [/^skin$/i, /^eye/i, /^eyebrow/i, /^hair/i];
+// What the tint does not touch. A nose is the hound's (#644): black on every
+// dog there is, and a tawny nose is the same wrong species a green face is.
+const BARE_MATERIALS = [/^skin$/i, /^eye/i, /^eyebrow/i, /^hair/i, /^nose$/i];
 
 // Clip-name preferences, most-wanted first. Matched case-insensitively against whatever
 // the loaded file happens to ship, so a model with a different animation set still finds
@@ -64,6 +73,11 @@ export class NPC {
     this._loop = this._waypoints.length > 0;
     this._waypointIndex = 0;
     this._targetYaw = this.group.rotation.y;
+    /* HOW FAST THE FEET MOVE, in m/s (#643). Every adult walks at the one
+     * speed; a child runs between her stops at twice it, and the clip she
+     * runs with comes off `def.clips` below, because a Run clip played at a
+     * walking pace is a body running on the spot. */
+    this.speed = def.speed ?? PATROL_SPEED;
 
     this._mixer = null;
     this._actions = {};
@@ -145,11 +159,27 @@ export class NPC {
 
     if (this.def.tint) tintBody(model, this.def.tint);
 
+    /* A CHILD IS AN ADULT WITH A BIGGER HEAD (#643). Scaling the whole rig
+     * down to 1.15 m gives a small bearded man, which is what the first
+     * line-up showed; what makes it a child is the head at a third larger
+     * on the shorter body, one part in five and a half against an adult's
+     * one in seven and a half. `boneScale` is that: a bone name to a scalar,
+     * applied after the height, and the animation leaves it alone because
+     * the clips key position and rotation and never scale. It is a variation
+     * axis like `tint` and `hideNodes`, not a child rig, and the day the
+     * proportions read wrong on a GPU is the day a real one is sourced. */
+    for (const [bone, scale] of Object.entries(this.def.boneScale || {})) {
+      model.traverse((obj) => { if (obj.isBone && obj.name === bone) obj.scale.setScalar(scale); });
+    }
+
     if (animations.length) {
       this._clips = animations;
       this._mixer = new THREE.AnimationMixer(model);
       for (const [key, names] of Object.entries(CLIPS)) {
-        const clip = pickClip(animations, names);
+        // `def.clips` puts one name ahead of the list for this body: the
+        // child's walk is `Run`, and the hound has no `Wave` to greet with.
+        const wanted = this.def.clips?.[key] ? [this.def.clips[key], ...names] : names;
+        const clip = pickClip(animations, wanted);
         if (clip) this._actions[key] = this._mixer.clipAction(clip);
       }
       // The greeting is a one-shot; drop back to idle rather than holding its last pose
@@ -330,7 +360,7 @@ export class NPC {
     }
 
     to.normalize();
-    this.group.position.addScaledVector(to, Math.min(PATROL_SPEED * dt, dist));
+    this.group.position.addScaledVector(to, Math.min(this.speed * dt, dist));
     // The feet follow the floor the route was read off, rather than sliding up
     // a flight at a constant y: every waypoint carries the height of the cell
     // it is the centre of.
