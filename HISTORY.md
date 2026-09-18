@@ -6185,10 +6185,41 @@ castle, reached from the other side.
   rather than as the game having restarted. It is the same `#start-overlay` the
   Esc path shows and has never been looked at in either situation.
 
-**`npm test`: fourteen suites, twelve green in one run.** `plan-vs-scene` failed
-on #633's chapel-candles beat, and the control was run the way #655's finding
-says to — `git stash`, the suite again, red on the clean tree with the same
-assertion and the same sentence, then `git stash pop`. `map` failed in 0.4 s,
-which is #655's port collision with another worktree's copy of this suite; it is
-green alone. `npm run play` not run: no GPU here.
+**`npm test` here: fourteen suites, thirteen green.** `plan-vs-scene` failed on
+#633's chapel-candles beat, and the control was run the way #655's finding says
+to — `git stash`, the suite again, red on the clean tree with the same assertion
+and the same sentence, then `git stash pop`. An earlier run also lost `map` in
+0.4 s, which is #655's port collision with another worktree's copy of this
+suite; it is green alone. `npm run play` not run: no GPU here.
+
+### And CI is red on `main`, on the same suite and a different beat
+
+**Said here because it was found here and because "13 of 14 green" on this
+machine would otherwise be the whole test report.** This branch's CI run failed
+`plan-vs-scene` on the populace beat:
+
+```
+FAIL  baker stands at (1.25, 0.00, 14.81) and the first stop of the
+      Prime ring is (1.25, 0.00, 14.75), 0.055 m off
+```
+
+**It is not this row's.** The identical assertion, on the same body, failed on
+`main` at 04:08 UTC on 2026-09-18 — run 35305787194, the merge of PR #47, before
+this branch existed — at 0.408 m rather than 0.055. Two different distances from
+the same stop is a body that has started walking its Prime ring by the time the
+page is read, which is a time and not a place.
+
+**`TOL` is the problem and it is 0.01 m.** That is `plan-vs-scene.mjs`'s tolerance
+for diffing a placed object's `Box3` against the plan, and this beat borrows it
+for an NPC the populace is animating. A geometry tolerance on a moving body is a
+stopwatch dressed as a ruler; how much slack a ring's first stop is actually owed
+is a number somebody in lane C should pick with the step size in hand, so it is
+not picked here. **Not fixed in this row**, which is `src/ui.js` and the pointer:
+an unrelated tolerance change buried in a rank 1 PR is how the record stops being
+readable. Filed in `BACKLOG.md` under where things stand.
+
+**Both the local flake and this one are the same shape**, which is worth saying
+once: `plan-vs-scene.mjs` reads a live page, and three of its beats now depend on
+how far that page has got by the time the read happens. #633 measured the chapel
+candles tracking machine load in one afternoon. This is the second.
 

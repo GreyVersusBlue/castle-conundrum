@@ -279,6 +279,17 @@ than the one this row named. The Lauds sky (#533) is past where the run
 reaches. Nobody has put a thumb on a phone (#530); that half is untouched and
 is still the feel.
 
+**CI on `main` is red, and it is nobody's row yet.** `plan-vs-scene.mjs`'s
+populace beat fails in CI on the baker's first Prime stop — 0.408 m off on the
+merge of PR #47 (2026-09-18, run 35305787194), 0.055 m off on rank 1's branch
+the same morning. Two distances from one stop is a body already walking its ring
+when the page is read, and the beat measures it against `TOL`, which is 0.01 m
+because that is what `plan-vs-scene.mjs` diffs static geometry at. A moving body
+is owed a different number and picking it wants the ring's step size in hand,
+which is lane C's. It is written up under rank 1's section in `HISTORY.md` with
+both runs named. **Until somebody takes it, CI has no green run on `main` and
+every PR inherits the same red suite.**
+
 **And the run found the thing it exists to find**, which was a castle you
 could not walk in after opening the journal: a bug in `src/`, not in the suite,
 and nothing but a hand on a keyboard was ever going to see it. **It shipped as
