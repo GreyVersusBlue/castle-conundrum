@@ -17,6 +17,14 @@
 // `test/tools.mjs` asserts by diffing the whole file against the original with
 // the new row cut back out.
 //
+// IT WRITES THE FILE'S OWN LINE ENDING and not the one this file was typed
+// with. data/scene-config.json is checked out CRLF on Windows and LF on Linux —
+// `core.autocrlf` is `true` on the dev machine and the file carries 2546 line
+// endings either way — so every newline below comes from `eolOf(source)`. A
+// hardcoded `\n` spliced into a CRLF file rewrites the one existing line ending
+// the splice has to put back, which is byte-exactness failing by exactly one
+// byte on the machine CLAUDE.md calls the dev machine (#618, #624).
+//
 // Nothing here writes to disk and nothing here knows about Vite: this is a
 // string in and a string out, so the suite can drive it without a dev server.
 
@@ -67,24 +75,42 @@ function closingBracket(source, open) {
 }
 
 /**
+ * The line ending `source` is written with, taken off its first line. Every
+ * newline this module writes comes from here, so a splice into a CRLF file
+ * leaves a CRLF file and a splice into an LF file leaves an LF one. The bytes
+ * that make this load-bearing rather than tidy are the ones `insertRow` has to
+ * restore: it strips the ending and indent before the closing bracket to hang a
+ * comma off the last element, and putting back `\n` where the file had `\r\n`
+ * is a one-byte change outside the new row (#624).
+ */
+export function eolOf(source) {
+  const i = source.indexOf('\n');
+  return i > 0 && source[i - 1] === '\r' ? '\r\n' : '\n';
+}
+
+/**
  * One row, rendered at `indent` spaces in the file's own style: two-space
  * nesting, numbers as they were given, and an array of numbers broken one per
  * line the way every `tile` and `size` in the file already is.
+ *
+ * `eol` defaults to `\n` rather than reading it off anything, because a row on
+ * its own has no file to read it off. `insertRow` is the caller that has one
+ * and it always passes it.
  */
-export function formatRow(row, indent = 4) {
+export function formatRow(row, indent = 4, eol = '\n') {
   const pad = ' '.repeat(indent);
   const inner = ' '.repeat(indent + 2);
   const blocks = [];
   for (const [k, v] of Object.entries(row)) {
     if (v === undefined) continue;
     if (Array.isArray(v)) {
-      const items = v.map((x) => `${inner}  ${JSON.stringify(x)}`).join(',\n');
-      blocks.push(`${inner}${JSON.stringify(k)}: [\n${items}\n${inner}]`);
+      const items = v.map((x) => `${inner}  ${JSON.stringify(x)}`).join(`,${eol}`);
+      blocks.push(`${inner}${JSON.stringify(k)}: [${eol}${items}${eol}${inner}]`);
     } else {
       blocks.push(`${inner}${JSON.stringify(k)}: ${JSON.stringify(v)}`);
     }
   }
-  return `${pad}{\n${blocks.join(',\n')}\n${pad}}`;
+  return `${pad}{${eol}${blocks.join(`,${eol}`)}${eol}${pad}}`;
 }
 
 /**
@@ -107,10 +133,14 @@ export function insertRow(source, key, row) {
   const anchor = empty ? open : close;
   const lineStart = source.lastIndexOf('\n', anchor) + 1;
   const pad = /^[ \t]*/.exec(source.slice(lineStart))[0];
-  const text = formatRow(row, pad.length + 2);
-  // A non-empty array's last element needs the comma the file never gave it.
+  const eol = eolOf(source);
+  const text = formatRow(row, pad.length + 2, eol);
+  /* A non-empty array's last element needs the comma the file never gave it.
+   * `\s*$` eats the line ending and the closing bracket's indent along with it,
+   * and the `${eol}${text}${eol}${pad}` below is what puts them back — which is
+   * the whole reason `eol` has to be the file's and not this file's. */
   const head = empty ? source.slice(0, open + 1) : source.slice(0, close).replace(/\s*$/, ',');
-  return `${head}\n${text}\n${pad}${source.slice(close)}`;
+  return `${head}${eol}${text}${eol}${pad}${source.slice(close)}`;
 }
 
 /** The arrays a placement may be written into, and the keys each row may carry. */
