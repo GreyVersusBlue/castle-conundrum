@@ -25,6 +25,21 @@
 // the splice has to put back, which is byte-exactness failing by exactly one
 // byte on the machine CLAUDE.md calls the dev machine (#618, #624).
 //
+// IT READS THE FILE AS WELL AS APPENDING TO IT NOW. `insertRow` was the whole
+// module for as long as the editor could only add, and correcting a placement
+// meant hand-editing the file the tool exists to stop anyone hand-editing.
+// `rowSpans` finds the [start, end) of every element of a top-level array by
+// walking the text, and `replaceRow` and `deleteRow` are the two edits that
+// span makes possible. Both are the same promise as `insertRow`: every byte
+// outside the row they touch is the byte it was.
+//
+// THE SPAN IS WALKED AND NOT SEARCHED FOR. `source.indexOf(formatRow(row))`
+// would look right and would be wrong twice over: two identical rows (the file
+// has three braziers and nothing distinguishes two of them but a tile) resolve
+// to the first, and a row whose text in the file is not what `formatRow` would
+// write resolves to nothing at all. `test/tools.mjs` inserts the same brazier
+// twice and edits the first of the pair for exactly that reason.
+//
 // Nothing here writes to disk and nothing here knows about Vite: this is a
 // string in and a string out, so the suite can drive it without a dev server.
 
@@ -74,6 +89,71 @@ function closingBracket(source, open) {
   throw new Error('place: the array is never closed');
 }
 
+/** The `[` and `]` of the top-level `key` array. Throws rather than returning nothing, so a misspelled key is a 500 and never a silent no-op (#13). */
+function arrayOf(source, key) {
+  const at = topLevelKey(source, key);
+  if (at === -1) throw new Error(`place: scene-config.json has no top-level "${key}"`);
+  const open = source.indexOf('[', at);
+  if (open === -1 || source.slice(at, open).trim()) throw new Error(`place: "${key}" is not an array`);
+  return { open, close: closingBracket(source, open) };
+}
+
+/**
+ * The `{ start, end }` byte span of every element of the top-level `key`
+ * array, in order — `start` at the element's first character and `end` one
+ * past its last, so `source.slice(start, end)` is that element's text and
+ * nothing else: not the comma after it, not the indent before it.
+ *
+ * It is the same string walk `closingBracket` does, one level in, so the index
+ * it hands back is the index `JSON.parse` would give the same element. The
+ * suite holds it to that: for all 31 placeable rows in the real file it parses
+ * each span's text and compares it with `JSON.parse(file)[key][i]`, because a
+ * span finder checked against a second span finder is a check agreeing with
+ * itself (#34, #500).
+ */
+export function rowSpans(source, key) {
+  const { open, close } = arrayOf(source, key);
+  const spans = [];
+  let depth = 0, inStr = false, esc = false, start = -1, last = -1;
+  const endScalar = (i) => { if (start !== -1 && depth === 0) { spans.push({ start, end: last + 1 }); start = -1; } };
+  for (let i = open + 1; i < close; i++) {
+    const ch = source[i];
+    if (inStr) {
+      if (esc) esc = false;
+      else if (ch === '\\') esc = true;
+      else if (ch === '"') inStr = false;
+      last = i;
+      continue;
+    }
+    if (depth === 0 && ch === ',') { endScalar(i); continue; }
+    if (/\s/.test(ch)) continue;
+    if (start === -1) start = i;
+    last = i;
+    if (ch === '"') { inStr = true; continue; }
+    if (ch === '{' || ch === '[') depth++;
+    else if (ch === '}' || ch === ']') {
+      depth--;
+      // Only a bracket that closes the element itself ends it. A `}` inside a
+      // nested object is depth 1 going to 0 only for the outermost one.
+      if (depth === 0) { spans.push({ start, end: i + 1 }); start = -1; }
+    }
+  }
+  endScalar(close);
+  return spans;
+}
+
+/** `spans[index]`, or a throw naming both numbers. An index off the end is the failure a stale panel commits, and it must not write anything. */
+function spanAt(spans, key, index) {
+  if (!Number.isInteger(index) || index < 0 || index >= spans.length)
+    throw new Error(`place: "${key}" has ${spans.length} row(s), so there is no row ${index}`);
+  return spans[index];
+}
+
+/** The column `start` sits at, which is the indent `formatRow` has to write the replacement at. */
+function columnOf(source, start) {
+  return start - (source.lastIndexOf('\n', start) + 1);
+}
+
 /**
  * The line ending `source` is written with, taken off its first line. Every
  * newline this module writes comes from here, so a splice into a CRLF file
@@ -119,11 +199,7 @@ export function formatRow(row, indent = 4, eol = '\n') {
  * misspelled key is a 500 from the dev server and never a silent no-op (#13).
  */
 export function insertRow(source, key, row) {
-  const at = topLevelKey(source, key);
-  if (at === -1) throw new Error(`place: scene-config.json has no top-level "${key}"`);
-  const open = source.indexOf('[', at);
-  if (open === -1 || source.slice(at, open).trim()) throw new Error(`place: "${key}" is not an array`);
-  const close = closingBracket(source, open);
+  const { open, close } = arrayOf(source, key);
   const empty = !source.slice(open + 1, close).trim();
   /* The array's own indent, which an element sits two spaces inside of. It
    * comes off the line the CLOSING bracket is on, except when the array is
@@ -141,6 +217,68 @@ export function insertRow(source, key, row) {
    * the whole reason `eol` has to be the file's and not this file's. */
   const head = empty ? source.slice(0, open + 1) : source.slice(0, close).replace(/\s*$/, ',');
   return `${head}${eol}${text}${eol}${pad}${source.slice(close)}`;
+}
+
+/**
+ * `source` with element `index` of its top-level `key` array rewritten as
+ * `row`, and nothing else touched at all. This is the move: the panel hands
+ * back the row it read with a new `tile`, and the span it goes into is the one
+ * `rowSpans` walked to rather than one a text search guessed at.
+ *
+ * The replacement is written at the column the old row started at, so a row
+ * two spaces inside its array stays two spaces inside it. `formatRow` writes
+ * its own leading indent and the span does not include one, which is why the
+ * first `indent` characters come back off.
+ *
+ * What it does NOT promise is that rewriting a row with its own parsed value
+ * is a no-op: a row the file spells `2.0` comes back from `JSON.stringify` as
+ * `2`, which is #584's churn confined to the one row being edited. Every byte
+ * outside the span is still the byte it was, and that is the rail.
+ */
+export function replaceRow(source, key, index, row) {
+  const span = spanAt(rowSpans(source, key), key, index);
+  const indent = columnOf(source, span.start);
+  const text = formatRow(row, indent, eolOf(source)).slice(indent);
+  return `${source.slice(0, span.start)}${text}${source.slice(span.end)}`;
+}
+
+/**
+ * `source` with element `index` of its top-level `key` array gone, along with
+ * the one comma and one line ending that held it in place.
+ *
+ * WHICH SIDE THE COMMA COMES OFF IS THE WHOLE PROBLEM, and there are three
+ * cases rather than one. A row with something before it takes the separator on
+ * its left — cut from the end of the previous element — which is exactly
+ * `insertRow` run backwards, and is why the suite can assert that inserting a
+ * row and deleting it again gives back the file byte for byte. The first of
+ * several takes the separator on its right, and the last one standing leaves
+ * `[]`, which is the empty form `insertRow` already knows how to fill.
+ */
+export function deleteRow(source, key, index) {
+  const { open, close } = arrayOf(source, key);
+  const spans = rowSpans(source, key);
+  const span = spanAt(spans, key, index);
+  if (spans.length === 1) return `${source.slice(0, open + 1)}${source.slice(close)}`;
+  if (index > 0) return `${source.slice(0, spans[index - 1].end)}${source.slice(span.end)}`;
+  return `${source.slice(0, span.start)}${source.slice(spans[1].start)}`;
+}
+
+/**
+ * A row's `comment` with the editor's own last sentence replaced by `note`
+ * rather than another one stacked on top of it.
+ *
+ * The editor writes where it put a thing into the comment, because no
+ * placeable array has a `room` key and a second answer beside the builder's
+ * would be a second answer to drift (#583). A move makes that sentence a lie,
+ * and appending the correction after it leaves both. Whatever a person wrote
+ * is kept; only the editor's own trailing sentence is overwritten.
+ */
+export function noteComment(comment, note) {
+  // To the end of the line and not to the first `.`: the sentence it is
+  // cutting ends `at 0.60 m.` and a `[^.]*` stops dead at the decimal point,
+  // which leaves half the old note in front of the new one.
+  const kept = String(comment ?? '').replace(/\s*(?:Placed|Moved) with \?edit=1 [^\n]*$/, '').trim();
+  return kept ? `${kept.replace(/\.?$/, '.')} ${note}` : note;
 }
 
 /** The arrays a placement may be written into, and the keys each row may carry. */

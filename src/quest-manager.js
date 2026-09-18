@@ -40,6 +40,7 @@
 // already refuses all three once a verdict is recorded.
 
 import { QuestGraph, judgeAnswer, renderLines, WARDS } from './quest-graph.js';
+import { dayTwoApplies } from './mystery.js';
 
 /** "prime" -> "Prime". The four bells are shown as they are named in the data. */
 const label = (id) => (typeof id === 'string' && id ? id[0].toUpperCase() + id.slice(1) : '');
@@ -154,17 +155,26 @@ export class QuestManager {
     /* THE SET PIECES (#592, BACKLOG.md rank 8). data/npcs.json's `performances`,
      * flattened to one map keyed by the room and the bell, which is the only
      * question this file ever asks of it: the player is standing in `room` at
-     * `watch`, is anybody performing? `validateLore` (src/lore.js, run by
-     * test/lore.mjs and not by the page) refuses a pool with two pieces in one
-     * room at one bell, so there is never a choice to make here and no order to
-     * depend on. `_heard` is what makes it once (#594):
+     * `watch`, is anybody performing?
+     *
+     * A PLACE HOLDS A LIST SINCE #648, and the list is in file order, because
+     * the `rumours` pool's three pieces are all the guardroom at Lauds and
+     * which one is said is the verdict and the journal. The first that applies
+     * wins; `validateLore` (src/lore.js, run by test/lore.mjs and not by the
+     * page) has already refused every piece an earlier one answers for
+     * everywhere, so a place still never has a choice to make, only an order to
+     * read in. `_heard` is what makes it once (#594):
      * per page rather than per save, because a sermon is a thing that happens
      * in a room and not a thing the player holds (#39: nothing about it has
      * to survive a reload, and a reload standing in the chapel at Vespers
      * hearing Vespers again is right rather than wrong). */
     this._performances = new Map();
     for (const [pool, entries] of Object.entries(performances ?? {})) {
-      for (const e of entries ?? []) this._performances.set(`${e.room}/${e.watch}`, { ...e, pool });
+      for (const e of entries ?? []) {
+        const place = `${e.room}/${e.watch}`;
+        if (!this._performances.has(place)) this._performances.set(place, []);
+        this._performances.get(place).push({ ...e, pool });
+      }
     }
     this._heard = new Set();
     this._playing = null; // the piece the band is in the middle of, or null
@@ -180,6 +190,10 @@ export class QuestManager {
     // asked the engine. Null on day one, and null is what says which day it is
     // to every method below that has to answer differently.
     this._dayLines = null;
+    // The ending the player reached, for the `rumours` pool (#648). Same null,
+    // same reason: no verdict is what day one is, and a conditioned piece with
+    // no verdict to read applies to nothing.
+    this._dayOutcome = null;
 
     this._actions = {
       openRiddle: () => this.ui.openRiddle(
@@ -494,11 +508,33 @@ export class QuestManager {
    * what it is for.
    */
 
-  /** The piece due where the player is standing at the bell the engine is on, or null. */
+  /**
+   * The piece due where the player is standing at the bell the engine is on,
+   * or null: the first in this place whose conditions the play answers.
+   *
+   * An unconditioned piece is every piece written for one of the four bells
+   * (src/lore.js refuses a condition there, because a verdict is a thing only
+   * the morning after has), so day one takes the same road it always did. A
+   * `rumours` piece reads the ending `_applyDay` recorded and the journal the
+   * save carried over, live off the engine rather than copied, the way
+   * `dayTwoKnew` reads `state.clues` (#573).
+   *
+   * ONCE THE FIRST APPLICABLE PIECE HAS BEEN HEARD THE PLACE IS QUIET. It does
+   * not fall through to the next one: two rumours in one guardroom at one bell
+   * is the castle saying two things about the same morning, and which of them
+   * is true is what the conditions already decided.
+   */
   performanceHere() {
     if (!this._room) return null;
-    const piece = this._performances.get(`${this._room}/${this.watch}`);
+    const here = this._performances.get(`${this._room}/${this.watch}`) ?? [];
+    const piece = here.find((e) => this._pieceApplies(e));
     return piece && !this._heard.has(piece.id) ? piece : null;
+  }
+
+  /** Does one piece answer to this play? Unconditioned pieces always do. */
+  _pieceApplies(e) {
+    if (e.when == null && e.unless == null && e.knew == null) return true;
+    return dayTwoApplies(e, this._dayOutcome, this.engine?.state?.clues ?? []);
   }
 
   /** What the band is saying now, or null: the piece, not the line. */
@@ -697,6 +733,10 @@ export class QuestManager {
     const day = this.engine?.beginDay2?.();
     if (!day) return;
     this._dayLines = day.lines;
+    // BEFORE `applyWatch` BELOW, which performs: a rumour read against a null
+    // outcome applies to nothing, and the guardroom would be silent on the one
+    // morning the pool exists for.
+    this._dayOutcome = day.outcome ?? null;
     this.ui.closeAccusation?.();
     // The stone's half (#539). `day.castle` is already resolved for the ending
     // the player reached, so nothing here knows what a verdict is.

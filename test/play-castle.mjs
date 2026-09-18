@@ -552,7 +552,7 @@ try {
     // item floating 1.74 m in the air.
     const resting = [];
     for (const c of s.children) {
-      // The player's own shadow and hand are not furniture (#637). They stand
+      // The player's own shadow and hand are not furniture (#651). They stand
       // wherever the player stands, which during this beat is in this room.
       if (c.userData?.playerRig) continue;
       const b = new THREE.Box3().setFromObject(c);
@@ -603,7 +603,7 @@ try {
     // gate braziers lit the courtyard convincingly from inside 4 m of solid stone.
     const stoneBoxes = [];
     for (const c of s.children) {
-      if (c.userData?.playerRig) continue;       // the player's shadow and hand, not stone (#637)
+      if (c.userData?.playerRig) continue;       // the player's shadow and hand, not stone (#651)
       const b = new THREE.Box3().setFromObject(c);
       if (!isFinite(b.min.x)) continue;
       if (b.max.y - b.min.y < 1.5) continue;     // scenery, not structure

@@ -222,8 +222,9 @@ rank 2's alone.
 ## A second day
 
 **Rank 4. Size 2+. Increments 1 and 2 shipped on 2026-09-15 and 2026-09-16
-(#533 to #540, PRs #16 and #18), and increment 3's gaol roll on 2026-09-17
-(#571 to #575).** The morning after exists, the castle knows about it, and
+(#533 to #540, PRs #16 and #18), increment 3's gaol roll on 2026-09-17
+(#571 to #575) and increment 3's fact that changes the same day (#646 to
+#649).** The morning after exists, the castle knows about it, and
 it now knows one thing about the player as well as about the verdict: one
 watch (`lauds`), thirteen stations, sixty line sets keyed by what the player
 said and three keyed by what he read, seven closing panes, a thirteenth cast
@@ -288,7 +289,7 @@ players with the same verdict and different journals.
 
 ### Increment 3: what is left
 
-Two threads, and both want something this repo has not got.
+One thread, and it wants something this repo has not got.
 
 - **It needs a town to walk to.** The lead is in Thomas Wykes's yard and the
   yard is outside the west barbican. The town side shipped (#546): there is
@@ -302,21 +303,45 @@ Two threads, and both want something this repo has not got.
   against one day. The cheapest shape that does not is `day2.watches`, its own
   list, with the engine reading whichever list the day says.
 
-- **And it inherited a fact that changes** (#596). The lore row closed with
-  one piece unbuilt and this is where it went: a `since` field on a fact in
-  `data/lore.json`, and a rumour about what the player did on day one, so that
-  the canon can say something different on the morning after. It needs
-  second-day state to be about, which is why it was never rank 8's to start;
-  `day2.knew` (#575) and the seven endings are that state. The shape to beat:
-  a fact carries `since: {ending?, knew?}` with the same `when`/`unless`
-  grammar `day2.castle` and `day2.knew` already share, and `validateLore`
-  refuses a `since` naming an ending or a clue the mystery has not got. What
-  it costs is one more pool for the caption band (#592) or one more line set;
-  it does not need a new UI.
-
 Both of the threads above now have somewhere to put "the player found this
 out", which neither had before `day2.knew` (#575): a lead found in the yard is
 a clue, and a clue is what a `knew` row is keyed on.
+
+### What increment 3's fact that changes shipped (#649 to #649)
+
+The third thread the lore row left behind when it closed (#596), and the one
+that needed second-day state to be about. It touched no lane-A file: the key
+did not move and the version is still 6.
+
+- **`data/lore.json`**: a fact may carry `since`, a list of
+  `{when?, unless?, knew?, tells, text, why}` rows on the shared grammar, the
+  first that applies replacing the fact's `text`, and never the only text a
+  fact has (#646, and #573's rule pointed at the canon). One fact uses it,
+  `the-clerk-who-asked`, a `rumour` about the player: what the castle decided
+  a man from Caernarfon who spent a day asking had been doing.
+- **`src/mystery.js`**: `dayTwoApplies(row, outcome, held)` exported, the
+  private `appliesTo` plus `knew` (#647). `day2.castle` and `day2.knew` keep
+  the private one; the canon and the pool below read the export, so there is
+  one grammar rather than three copies of one.
+- **`data/npcs.json`**: a third `performances` pool, `rumours`, three pieces
+  in the guardroom at Lauds, all Dafydd ap Rhys, keyed by the verdict and by
+  the journal (#648). **A place now holds a list and the first applicable piece
+  wins**, so #592's "one room at one bell holds one piece" became "every piece
+  in a place is reachable", and its "a piece by anybody a verdict may take"
+  became "absent in an ending this piece applies to". Both are enumerated
+  exactly: seven endings times the subsets of the clue ids the pieces name.
+- **`src/quest-manager.js`**: `performanceHere` picks the first applicable,
+  `_dayOutcome` is recorded in `_applyDay` before `applyWatch` performs, and
+  the journal is read live off the engine.
+- **`src/lore.js`**: `factText`, and the `since` rails. A row may not name an
+  ending or a clue the mystery has not got, may not apply to nothing, may not
+  restate the fact, and **has to be told and told only where it is true**:
+  `tells` names the piece, the piece cites the fact back, and the validator
+  walks every ending and journal to refuse a piece heard where its row does not
+  apply (#649).
+- **Suites**: `test/lore.mjs` section 10, 27 assertions; `test/quest.mjs`'s
+  guardroom-at-Lauds section, 15. Nine breaks from a green baseline, in
+  `HISTORY.md`.
 
 ### What is left after increment 3
 
@@ -330,9 +355,11 @@ a clue, and a clue is what a `knew` row is keyed on.
 - Increment 3's town half no longer waits on Poly Haven access (#546); it
   waits on someone placing Thomas Wykes's yard on the ground the town side
   built.
-- **Do not run alongside anything else that touches `save.js`.** The gaol
-  roll did not have to: the journal day two reads is `state.clues`, which the
-  save already carried, so the key and the version did not move (#571, #573).
+- **Do not run alongside anything else that touches `save.js`.** Neither of
+  the two increments that have landed since had to: the journal day two reads
+  is `state.clues`, which the save already carried, so the key and the version
+  did not move (#571, #573, and #649 to #649 the same way). What is left of
+  this row is the yard, which is lane B and not lane A at all.
 
 ### Constraints
 
@@ -354,6 +381,16 @@ a clue, and a clue is what a `knew` row is keyed on.
 - #573: a `day2.knew` row may replace a line set and may never be the only
   one. Every reachable ending still resolves through the key/class/default
   cascade with no journal at all, and `src/mystery.js` validates it that way.
+- #646: the same rule for the canon. A `since` row replaces a fact's text and
+  may never be the only text it has.
+- #647: there is one `when`/`unless`/`knew` grammar and it is exported from
+  `src/mystery.js`. A fifth reader writes no fourth copy of it.
+- #648: a conditioned performance is a `day2.watch` performance. A verdict is
+  a thing only the morning after has, so `when` at one of the four bells is
+  refused rather than silently never played.
+- #649: a `since` row has to be told, and told only where it is true. A row
+  with no `tells`, or a piece heard in an ending its row does not cover, is a
+  failure and not a warning.
 
 ---
 
@@ -850,6 +887,30 @@ because the map is the plan's list and not a second one.
 (#419); this row is the second body-sourcing question after rank 1's, which
 won its search on 2026-09-17 (#603), at the
 scale of a child, a dog, a chicken and a garrison rather than one woman.
+**The child and the hound shipped on 2026-09-17** (#643 to #645), and the
+section below is kept as written with what shipped noted against each part.
+
+### What shipped
+
+- **The child is the existing rig** (#643), which is the open call below
+  answered the cheap way and seen to hold: `Woman.glb` at 1.15 m with
+  `boneScale: {Head: 1.35}`, `clips: {walk: "Run"}` and `speed: 2.2`, three
+  fields `npc.js` reads off any def and `populaceDefs` passes through. A
+  shrunk `Adventurer.glb` was tried first and is a small bearded man.
+- **The dog is a fifth file** (#644): Quaternius's Ultimate Animated Animal
+  Pack, CC0, `Husky.gltf` re-exported as `assets/NPCs/Hound.glb` with its
+  five materials named (`Coat`, `Coat_Light`, `Nose`, `Eye`, `Eye_White`)
+  and the coat lifted so the tint is the colour, meshopted to 0.63 MB. It
+  has `follow: {radius: 6, keep: 1.8}` and `sniff` and `eat` in
+  `ACTIVITY_CLIPS`; the bark is not in, because a sound is lane E's.
+- **The rails** (#645): `tools/encode-assets.mjs` and `test/assets.mjs`
+  check 5 find bodies through `populace.json` as well as `cast`; the clip
+  check in `test/mystery.mjs` is per person against the body that person
+  wears; the silhouette count below is asserted at 10 shapes off 5 files;
+  and the follow is driven in Node against the real grid with a fake body.
+- **Not shipped**: the chicken, because the Farm Animals pack has no glTF
+  export and the animal pack has no bird; the garrison's spear, because no
+  pack on disk has one; and the GPU look at either (#53).
 
 ### Scope
 
@@ -910,7 +971,7 @@ scale of a child, a dog, a chicken and a garrison rather than one woman.
 ## Feel
 
 **Rank 11. Size 2+. The first increment's Node half shipped on 2026-09-17**
-(#636 to #640). `WISHLIST.md` theme 7. Every item in it is "a thing a
+(#650 to #654). `WISHLIST.md` theme 7. Every item in it is "a thing a
 GPU decides," gated on `npm run play` the same way **The hall covering**
 already is.
 
@@ -922,13 +983,13 @@ gradient painted into a 64 x 64 canvas at load, sitting 0.02 m over
 feet cannot disagree about a slab edge — and a hand of six primitives merged
 into one geometry, which rests below the frame and lerps out to the leaf's own
 `focus`, clamped to 0.78 m from the eye. Two draw calls, 16 KB of texture, no
-file, no second shadow-casting light (#636). It reaches for
+file, no second shadow-casting light (#650). It reaches for
 `interaction.currentTarget` rather than searching, so the hand and the prompt
-cannot disagree about which door the player is at (#638), and **every mesh in it
+cannot disagree about which door the player is at (#652), and **every mesh in it
 has `raycast` set to a no-op**, because the rig is a top-level scene child and
-`interaction.js` calls every one of those an occluder (#637). `settle()`
+`interaction.js` calls every one of those an occluder (#651). `settle()`
 collapses the smoothing and the world matrix with it, which is what lets the
-suite assert a position and never a duration (#639). Nine assertions in
+suite assert a position and never a duration (#653). Nine assertions in
 `test/plan-vs-scene.mjs`, each broken on purpose; the ray ones cast twice, once
 with `THREE.Mesh`'s own `raycast` put back, so "it did not hit" cannot pass on a
 ray that was never going to hit anything.
@@ -950,7 +1011,7 @@ ray that was never going to hit anything.
 
 - ~~Node acceptance: the shadow decal and the hand node exist, are tagged with
   a `planId` if they are plan pieces, and do not regress `plan-vs-scene.mjs`.~~
-  **Met** (#636 to #640). Neither is a plan piece, so neither carries a
+  **Met** (#650 to #654). Neither is a plan piece, so neither carries a
   `planId`, and that is asserted rather than assumed: the rig moves with the
   player and a tagged moving object is a box the plan's diff cannot predict.
 - GPU acceptance (#53): a screenshot of the player approaching a door with the
@@ -962,7 +1023,7 @@ ray that was never going to hit anything.
 
 ### Open calls
 
-- ~~**Real-time shadow or a baked decal.**~~ **Taken: the decal** (#636). A
+- ~~**Real-time shadow or a baked decal.**~~ **Taken: the decal** (#650). A
   shadow-casting light on the player is a cost this castle has never paid, and
   the wishlist's own language ("cheapest presence cue") argued for the cheaper
   of the two. What shipped is cheaper again than a baked file — the gradient is
@@ -1033,17 +1094,17 @@ taken to produce.
 
 ### Scope, next increment
 
-- **The editor's own next want is a way to move and delete**, not only to
-  add. Placing is one press; correcting a placement is still hand-editing the
-  file. A row selected in the panel, dragged to the player's tile and written
-  back over its own text is the same splice machinery reading rather than
-  appending, and it is what turns the tool from a stopwatch into an editor.
-  **The live failure that used to be waiting here is gone**: `test/tools.mjs`
-  was red on a Windows checkout and green on a Linux one, and it now runs over
-  an LF copy and a CRLF copy of the real file on either machine (#631 to #633).
-  The rail this increment has to keep is 47 assertions in part 1, and one of
-  them is a count of stray line endings, because the byte diff on its own is
-  blind to a newline inside the row that was inserted.
+- ~~**The editor's own next want is a way to move and delete**~~ **shipped
+  2026-09-17** (#636 to #642). The panel lists every row within six tiles of the
+  player, nearest first, rebuilt as they walk; `M` writes the selected one to
+  the tile they are standing on and `Delete`, twice inside four seconds, cuts it
+  out. `rowSpans` walks the text for a row's span rather than searching for it,
+  because three of the file's 31 rows are not what `formatRow` would write and
+  an exact twin would resolve to the first of the pair. `test/tools.mjs` went
+  from 47 assertions to 179 and the headline is that an insert and a delete of
+  the same row give back the file byte for byte, on both endings, for all three
+  arrays. `/__place` takes `add`, `move` and `delete`, and each verb's row count
+  is checked before anything is written.
 - **The dialogue format is this row's third and is deliberately unspecified**
   (speaker, state, conditions, effects, one line each, compiled to
   `npcs.json`/`quests/*.json` at build time). `WISHLIST.md`'s paragraph is the
@@ -1051,9 +1112,14 @@ taken to produce.
 
 ### Acceptance, next increment
 
-- Anything the editor learns to write keeps `test/tools.mjs`'s byte-exactness
+- ~~Anything the editor learns to write keeps `test/tools.mjs`'s byte-exactness
   rail: a move that rewrites a row in place still has to leave every other
-  byte alone. On both line endings.
+  byte alone. On both line endings.~~ **Met** (#639): the rail asserts it per
+  row rather than per array — every byte before a rewritten row's span and every
+  byte after it, for all 31 placeable rows, on both endings. What a move does
+  change inside the span is a `-2.0` becoming `-2`, which is #584's churn
+  confined to the one row being edited and is the bargain the module is.
+- **What is left of this row is the dialogue format alone.**
 
 ### Open calls
 

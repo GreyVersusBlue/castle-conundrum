@@ -381,6 +381,9 @@ console.log('\nevery Poly Haven prop and every NPC body is meshopt-encoded');
     ...config.interiorProps.map(p => config.polyhavenBase + p.model),
     ...npcData.cast.filter(n => n.heldProp).map(n => config.polyhavenBase + n.heldProp),
     ...npcData.cast.map(n => n.modelPath),
+    // And the household's: the hound is the first body the cast does not
+    // wear (#644), and this list found bodies through `cast` until then (#645).
+    ...(populace.people ?? []).map(p => p.modelPath),
   ])].filter(rel => fs.existsSync(path.join(ROOT, rel)));
   const raw = files.filter(rel => !(readGLTF(path.join(ROOT, rel)).json.extensionsUsed || []).includes('EXT_meshopt_compression'));
   for (const rel of raw) fail(`${rel} has no EXT_meshopt_compression — run \`npm run assets:encode\` before committing it (#506)`);

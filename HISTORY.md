@@ -5282,26 +5282,499 @@ included. Decisions #634 and #635.
   suites green (thirteen plus this one line, not a fourteenth suite),
   `npm run build` green. `npm run play` not run — no `src/` changed, and the
   images being right is a look, not a script (#53).
+## The tooling, move-and-delete: the editor stops being a stopwatch (2026-09-17)
 
+**Rank 12b, claimed on `claude/r12b-move-and-delete`, lane B.** `?edit=1` could
+add a prop and nothing else, so correcting a placement meant opening the 2546-line
+file the tool exists to stop anyone opening, counting rows, and typing two
+numbers. It can move one and delete one now. Decisions #636 to #642. Four files:
+`tools/place.mjs`, `test/tools.mjs`, `src/edit-mode.js`, `vite.config.js`.
+Thirteen suites green, `npm run build` green, `npm run play` not run — nothing
+here is in `src/main.js` or in anything a built page loads.
+
+**Lane B was the reason this waited and it was clear when it was taken**: the
+byte-exactness rail this increment has to keep was red on Windows until #631 to
+#633 fixed it that morning, and this row started from a green 47-assertion
+baseline rather than from that failure.
+
+- **A row is found by walking the text, not by searching for it** (#636).
+  `rowSpans(source, key)` returns the `{ start, end }` of every element of a
+  top-level array, walking the string the way `closingBracket` already did, one
+  level in. The obvious alternative — `source.indexOf(formatRow(row))` — is
+  wrong twice over, both ways are quiet, and the numbers were measured rather
+  than assumed. **Three of the file's 31 placeable rows are not what `formatRow`
+  would write**, so `indexOf` on them returns -1 and the edit silently targets
+  nothing: 28 of 31 come back byte-identical at their own indent and the other
+  three carry a `1.0` or a `-2.0` where `JSON.stringify` writes `1` and `-2`,
+  which is #584 arriving from the reading end instead of the writing end. And of
+  the 28 that would be found, **an exact twin resolves to the first of the
+  pair** — the committed file has no duplicate today and the editor can make one
+  in two key presses, because a brazier placed twice on the same tile is the
+  same 6 lines twice. Editing the second would rewrite the first, and the file
+  would parse, read right, and have moved a prop nobody asked about. The suite
+  does exactly that, for all three arrays, and edits the first of the pair.
+- **The span is checked against `JSON.parse` and not against a second walk**
+  (#637, and #34's rule, and #500's). For all 31 placeable rows in the real
+  file, on both line endings, `JSON.parse(source.slice(start, end))` has to
+  equal `JSON.parse(file)[key][i]`. That is 62 assertions that cost nothing and
+  they pin the two things a span can get wrong independently: which row it is,
+  and where the row stops. A span one character long fails the parse; a span one
+  row off fails the compare. A span finder proved by a second span finder is a
+  check agreeing with itself, which is the shape two dead line-of-sight checks
+  had in this project already.
+- **Which side of a row the comma comes off is the whole of `deleteRow`**
+  (#638). Three cases, not one. A row with something before it takes the
+  separator on its **left**, which is `insertRow` run backwards — and that is
+  what makes the headline assertion possible: **insert a row, delete it again,
+  and the file is the file it started as, byte for byte**, on both endings, for
+  all three arrays. The first of several takes the separator on its right. The
+  last one standing leaves `[]`, which is the empty form `insertRow` already
+  knew how to fill, so an array can be emptied and refilled without a person
+  touching it. `deleteRow` writes no newline at all — it only slices — so it is
+  the one function here that cannot have #631's bug by construction.
+- **`replaceRow` promises what is outside the row, and only that** (#639).
+  Rewriting a row with its own parsed value is **not** a no-op and is not meant
+  to be: a tile the file spells `-2.0` comes back from `JSON.stringify` as `-2`.
+  That is #584's churn, confined to the one row being edited, which is the
+  bargain the whole module is. What it does promise is that every byte before
+  the span and every byte after it is unchanged, and the suite asserts that per
+  row rather than per array. **The move's real diff on the live dev server was
+  three lines on a 96 KB file** — two numbers and the comment — with the row's
+  `model`, `rotationY`, `noCollide` and `yOffset` carried through untouched,
+  because a move is a move and not a re-placement: the panel's dropdowns
+  describe the next thing to place and have nothing to say about a prop already
+  in the file.
+- **The panel never keeps its own copy of the array** (#640). Every write
+  answers with the whole array as it now stands on disk and the panel replaces
+  what it had. This is not tidiness. A delete shifts every index after it, and a
+  list that remembered the old order would name the wrong row on the very next
+  click — the file would still parse and the prop that moved would be one nobody
+  asked about, which is the same silent failure #636 is about, arriving from the
+  other end. Driven live: deleting `builtProps[9]` renumbered `gaol-roll` from
+  15 to 14 and `watch-bill` from 14 to 13 in the panel's list, in the same tick.
+- **Delete is the only verb here that arms** (#641). Two presses inside four
+  seconds. The other two add something a person can see and undo by deleting it;
+  this one takes away a row that cost somebody a walk to place, and a mis-pressed
+  key while running through a doorway should not be what does it. It is bound to
+  `Delete` and deliberately **not** to `Backspace`, which is a browser's back
+  button in enough setups that a mis-press would leave the castle rather than a
+  prop. `M` moves, `N` picks the next row without reaching for the mouse, and the
+  list offers every row within six tiles, nearest first, rebuilt as the player
+  walks — but never while the `<select>` has the keyboard, because rebuilding one
+  somebody is scrolling closes it under their hand.
+- **The dev server counts rows before it writes** (#642). `/__place` takes
+  `add`, `move` or `delete` now, and each verb says what it should do to the
+  array's length. An `add` that lost a row and a `delete` that ate two both
+  produce text `JSON.parse` accepts, so the count is checked against the verb's
+  promise and nothing is written when it does not hold. That is a second net
+  under `test/tools.mjs`'s at the one place the suite cannot stand: the side
+  that actually opens the file. A stale index is refused rather than clamped —
+  `place: "builtProps" has 15 row(s), so there is no row 99` — because a clamp
+  would move the last row instead of failing.
+
+**Seven guards, broken on purpose, from a green baseline** (#34). Five went red
+first time: the search-instead-of-walk mutant took out the index checks, a
+hardcoded `\n` in `replaceRow` took out all three CRLF rows, a span one byte
+long took out the parse compare, a clamped index took out eight, and cutting the
+old note at the first full stop took out three. **The sixth stayed green, and it
+was the mutant that was wrong, not the suite.** Flipping `deleteRow`'s two
+branches — right-hand cut for everything but the last row instead of left-hand
+cut for everything but the first — is a different implementation of the same
+function, not a bug: every row in these arrays sits at the same indent, so the
+two cuts produce identical bytes. Replaced with two that are real, a delete that
+eats one byte past the row (`94212 bytes in, 94211 back out`) and one that
+leaves the separating comma behind (`94213 back out`); both red. Recorded rather
+than quietly swapped, because "the break left the suite green" and "the break was
+not a break" look the same from the outside and only one of them is a hole (#147).
+
+**What it was proved on.** `test/tools.mjs` is 179 assertions, up from 47, over
+an LF copy and a CRLF copy of the real file. The panel itself was walked on the
+dev server: a move and a delete written to the real `data/scene-config.json`, the
+three-line diff read, the page reloaded, and the castle built from the edited
+file. Both markers were confirmed in the live scene through `test/drive.mjs`'s
+own probe rather than by eye — the green box on the last placement, hidden until
+there is one, and an amber box on the selected row at `[-33.42, 0.4, 11.26]` for
+a row at tile `-8.3557, 2.8149`, following the list as `N` walked it. `git
+checkout -- data/scene-config.json` afterwards: **this row ships no content**,
+and the branch's `data/` is byte-identical to `main`.
+
+- **The editor will happily delete a row a suite depends on, and that is
+  correct.** `builtProps[9]` is the engineer's drawing, which `test/mystery.mjs`
+  reads; deleting it left the dev server green and the castle standing. The diff
+  is for a person and `npm test` is the net, which is what #583 decided when it
+  chose not to commit.
+- **`plan-vs-scene`'s chapel-candles beat is still red here and it is still not
+  this branch's.** #633 measured it four runs out of four on this machine and
+  187.3 s in CI, and nothing has moved: `git diff origin/main --name-only` is
+  four markdown files, `test/tools.mjs`, `tools/place.mjs`, `vite.config.js`
+  and `src/edit-mode.js`, and that suite loads the page without `?edit=1`, so
+  the editor module is not in its graph at all. Running it here is running it at
+  `main`.
+- **`test/harness.mjs` binds fixed ports and eight sessions now share this
+  machine.** Two of three full `npm test` runs here failed on `Port 8126 is
+  already in use` and `Port 8127 is already in use`, in `built` and `touch`, both
+  of which pass alone and passed in the third run. Not this row's and not fixed
+  here — it is `harness.mjs`, which is nobody's lane and everybody's file — but
+  the parallel-session regime `ROADMAP.md` now assumes makes a fixed port a
+  collision waiting for a schedule, and a red suite that is really a port is
+  exactly the kind of thing a session learns to scroll past.
+
+## Bodies: the child off the rig that was there, and a hound (2026-09-17)
+
+**Ranked row 10, on `claude/r10-bodies`, under Claude Fable 5.1, on Devon's
+machine, in its own `git worktree`.** The worktree is #624's lesson taken on
+the first day it could be: eight rows were in flight at once (R3, R4a, R4b,
+R5, R10, R11, R12b, R12c) and this one shared the machine with all of them and
+the lane with one. quaternius.com answered, `ktx` v4.4.2 is on PATH.
+Decisions #643 to #645, **written as #634 to #636 and moved twice**: rank 3's
+preview and og card merged as PR #42 while this was open and took #634 and
+#635, and rank 12b merged as PR #45 during the rebase that followed and took
+#636 to #642. That is #619's and #633's lesson a fourth and a fifth time, with
+the read a fresh fetch every time; a number picked at the end of a row still
+moves if the row waits an hour for review. Ten Node suites green; the three browser suites lost
+their first run to `Port 8127 is already in use`, which was another session's
+`npm test` on the same machine and not this branch, and are written up at the
+bottom. `npm run build` green. `npm run play` was not run (#53): this row's
+GPU question is the same one rank 2 already owes, and it is written up as
+still owed. `dist/` is 31 MB.
+
+- **The child is the rig that was already there, with a bigger head** (#643).
+  `SPECS.md`'s open call said to try scaling the existing rig before fetching
+  anything, and the try was a line-up on a grey background, the way #606
+  looked at the woman: a 1.8 m Farmer, then `Adventurer.glb` at 1.2 m, then
+  the same with its `Head` bone at 1.3, then `Woman.glb` at 1.15 m with its
+  head at 1.3. **A shrunk Adventurer is a small bearded man.** The beard and
+  the backpack are the tells and nothing about proportion helps while they
+  are there. The hooded woman's rig is the one that reads: no beard, a hood
+  where the hair would be, and with the head a third larger on a body two
+  thirds the height it is one part in five and a half against an adult's one
+  in seven and a half, which is a child of seven or so. A second line-up put
+  the head at 1.3, 1.45 and 1.4 on 1.2 m, 1.2 m and 1.1 m: 1.45 is a cartoon,
+  1.1 m stands at the player's chest. She is 1.15 m with `Head` at 1.35.
+
+  Three fields carry it, all on the def and none on an id: `boneScale`, a
+  bone name to a scalar applied after the height normalise and untouched by
+  the clips, which key position and rotation only; `clips`, one clip name
+  put ahead of `npc.js`'s list for a key, so her walk is `Run`; and `speed`,
+  in m/s, because a Run clip at the adult 1.1 m/s is a body running on the
+  spot. She is Gwenllian, the well-wife's girl, `#a9c4d6`, and she runs a
+  three-stop ring from the laundry across the outer ward at Prime at 2.2 m/s.
+  `validatePopulace` refuses a bone scaled to 0 (a body with no head), a
+  speed of 0 (a body that never arrives and holds `walking` for the watch)
+  and a `clips` value that is not a string, and `test/mystery.mjs` asks it
+  each of those.
+
+  **And her first stop was on a staircase, which nothing in Node said.** The
+  laundry is a drum, its stair hugs the wall, and a stair tread is a walk
+  cell with a floor: `cellAt` answers `h: 1.65` for it and `roomAt` says
+  `laundry`, so `validatePopulace` passed a stop that put her four treads up
+  with the laundress at the foot. Found by photographing her, moved to a
+  tread-free cell. The validator does not refuse a stop on a stair, because
+  a body on a stair is sometimes the point; what it could say is the height,
+  and it does not yet.
+
+- **The hound is a fifth file, and the only fetch** (#644). quaternius.com
+  lists two animal packs and both pages say CC0 with a link to the deed.
+  The Ultimate Animated Animal Pack's Drive folder has a `glTF/` of twelve:
+  Alpaca, Bull, Cow, Deer, Donkey, Fox, Horse, Horse_White, Husky, ShibaInu,
+  Stag, Wolf, 1.4 to 3.4 MB each. The Farm Animals pack, which is where a
+  chicken would be, has `Blends/`, `FBX/` and `OBJ/` and no glTF at all, so
+  **there is no chicken this sitting** and the row says so below. Husky and
+  ShibaInu were fetched, 3.06 and 2.89 MB, one data-URI buffer each, 1920
+  and 1950 triangles, 49 joints, twelve clips by the same names: `Attack
+  Death Eating Gallop Gallop_Jump Idle Idle_2 Idle_2_HeadLow Idle_HitReact1
+  Idle_HitReact2 Jump_ToIdle Walk`. The Husky is the hound: bigger,
+  wolf-shaped, and at 0.7 m beside the 1.8 m Farmer it is a dog and the
+  Shiba at 0.5 m is a fox. It is 3.19 units tall and 3.88 long as authored,
+  so `modelHeight` is not optional on it the way it is not on the women.
+
+  The re-export is the same four moves as #604, for the same reasons. The
+  pack names the five materials `Material`, `Material.001`, `Material.002`,
+  `Material.003` and `Material.006`; they are `Coat` (732 triangles, the dark
+  top), `Coat_Light` (1090, belly and muzzle), `Eye` (24), `Eye_White` (14)
+  and `Nose` (60), read off the triangle counts and the base colours. The
+  coat was lifted from 0.065 and 0.36 linear to 0.55 and 0.85, because a
+  tint is a multiply and a tawny tint on a near-black coat is a near-black
+  dog; the markings survive as tint times 0.55 against tint times 0.85. The
+  node and the mesh were `Cube` and are `Hound`. `Nose` joined
+  `BARE_MATERIALS` in `npc.js`, beside skin, eyes, brows and hair, for the
+  reason those are there. Encoded, 1.71 MB of raw floats to 0.63 MB.
+
+  It is Gelert, the Constable's hound, `#b08a5a`, and it has the one
+  behaviour the spec asks of a dog: `follow: {radius: 6, keep: 1.8}`. Within
+  6 m of the player on a floor `nav.route` can reach, `Populace._follow`
+  leaves the ring, routes to the cell the player stands in, drops every cell
+  inside 1.8 m of them and walks the rest, then turns to face them and
+  waits; two metres of hysteresis on the way out, a re-route at most every
+  half second, and the route back to the stop it left when they are gone.
+  Every step is a grid cell, so a dog following through a doorway took the
+  doorway. **Seen, on this GPU**: the live page at Prime, the camera put
+  4.2 m from its first stop, and six seconds later the hound at 1.8 m
+  facing the camera with `Gelert — the Constable's hound` over it. The one
+  line outside this row's lane is `main.js` passing `camera.position` into
+  `populace.update`, lane D's file, and the PR says so. The bark is not in:
+  a sound is `src/audio.js`'s and lane E's, and rank 7's remaining half is
+  event sounds.
+
+  Two new activities, `sniff` (`Idle_2_HeadLow`, the head down) and `eat`
+  (`Eating`), exist in one body and `wait` exists in all five. Its ring is
+  the outer ward at Prime and Vespers, a place to watch the muster from at
+  Terce, and the kitchen at Sext.
+
+- **Three rails, each broken on purpose first, and one the second rig forced**
+  (#645). The encoder and `test/assets.mjs`'s check 5 both found bodies
+  through `cast` alone, which was #605's finding pointed at a second door:
+  the first populace body the cast did not wear would have landed raw with
+  every suite green. Both read `data/populace.json` now. The clip check in
+  `test/mystery.mjs` asked every clip in `ACTIVITY_CLIPS` of every body the
+  household wears, which was true of four bodies that are one rig and is
+  false of a dog: `Hound.glb` has `Eating` and no `Idle_Sword`, the guard the
+  reverse, and neither is wrong until somebody writes the serjeant's `muster`
+  onto the dog. The check is per person now, each person's jobs against the
+  clips in the file that person wears, plus one line that every clip the
+  table names is in some body on disk. And the row's Node acceptance from
+  `SPECS.md` is asserted: **10 silhouettes off 5 body files**, a silhouette
+  being body, height, hidden nodes, hidden materials, held prop and bone
+  scale, with tint left out on purpose because every tint is already unique
+  and counting it makes the number thirteen colours on one body.
+
+  The follow is driven in Node, which is what `populace.js` having no
+  three.js in it (#616) was for: the real grid, the real hound, and a body
+  that is a plain object recording what it was told. Eight assertions: placed
+  at its stop on a load, sent along a route one frame after a player stands
+  4 m off, the route ending 2.00 m short of them, every point on it a grid
+  cell, facing and waiting once there, and routed back to the stop when they
+  are 40 m away.
+
+  What is not counted, and is said rather than fixed: `test/budget.mjs`'s
+  bodies-per-ward number is read off `mystery.schedule` and has never
+  included the household, so the twelve of them, now with a dog, are not in
+  its 7-per-ward peak. That is rank 6's number to answer to (#609) and the
+  file that says 20 is where it should be argued.
+
+**Broken on purpose, from a green baseline** (#34). Four breaks, each
+reverted, green again after.
+
+1. `Hound.glb` on disk and in `populace.json`, before `npm run assets:encode`.
+   `assets` exited 1 on `assets/NPCs/Hound.glb has no EXT_meshopt_compression
+   — run npm run assets:encode before committing it (#506)`. Before this
+   branch that check would have said nothing, because the hound is in no
+   `cast`.
+2. `hideNodes`, `hideMaterials`, `heldProp`, `boneScale` and `modelHeight`
+   stripped from every entry in both data files. `mystery` exited 1 on
+   `5 silhouettes off 5 body files, across the cast and the household`.
+3. The hound's Terce stop given `muster`. `validatePopulace` found nothing,
+   because `muster` is a real activity, and `mystery` exited 1 on `hound does
+   "muster" in assets/NPCs/Hound.glb, which ships no clip called Idle_Sword`.
+4. The `walkTo` cut out of `_follow`'s route branch. `mystery` exited 1 three
+   times: `one frame later it has been sent along a route — walks: 0`,
+   `arrived, it faces the player and waits`, and `and when they are gone it
+   is routed back to the stop it left — no walk`.
+
+**What is left of the row.** A chicken, which needs a source: neither
+Quaternius pack ships a bird as glTF, and a Blender or FBX export is a
+conversion this repo has no tool for. The garrison's spears, which are a held
+prop on the rig that exists and not a body, and no pack on disk has a spear:
+the Kenney kit's 106 pieces are architecture. And the look at both on a real
+run, which is rank 2's `twelve-at-vespers` question with fourteen in it now.
+
+**The browser suites.** `plan-vs-scene`, `touch` and `built` fell over twice in
+under a second each on `Port 8125 is already in use` and `Port 8127 is already
+in use`: two other sessions' `node` processes on this machine were listening on
+8127 and 8128, and the ports are constants in each suite. Run a third time with
+the three constants moved to 8225 to 8228 in the working copy and put back
+after, **all three passed**, and with them `plan-vs-scene`'s chapel-candles
+beat that #606 and #633 both record as red on this machine on an untouched
+`main`. Thirteen of thirteen, then, in two runs. The port constants are a
+small thing to leave for whoever next runs two suites on one machine.
+
+## A fact that changes with what the player did, and the castle that says it (2026-09-17)
+
+Rank 4's fourth thread, the one the lore row left behind when it closed (#596):
+a `since` field on a fact in `data/lore.json`, so the canon says something
+different on the morning after. Decisions #649 to #649, on `claude/r4b-since`,
+lane A. **It never touches `src/save.js`.** The journal the second day reads is
+`state.clues`, which the save has carried since before the gaol roll (#571,
+#573), and the ending is `outcomeOf`'s, off `state.accusations`. The key did not
+move and the version is still 6. All thirteen suites green on this branch and `npm run build` green inside
+`built`; `npm run play` not run (#53). No run of the thirteen got all of them in
+one pass: the browser suites take fixed ports and another session on this
+machine was holding them, so `map` and `built` each had to be re-run on their
+own and each went green immediately. Every failure in every run was `Port 812x
+is already in use`. Nothing failed on an assertion, and the reason is at the
+bottom of this entry.
+
+`data/lore.json` goes from 65 facts to 66 and `data/npcs.json`'s `performances`
+from two pools to three. `test/lore.mjs` gains a tenth section of 27
+assertions, `test/quest.mjs` a section of 15.
+
+- **`since` is a list of rows and it may only ever replace** (#646). A fact
+  carries `since: [{when?, unless?, knew?, tells, text, why}]`, the first row
+  that applies wins, and a play that matches no row reads the fact exactly as
+  written. That is #573's rule for `day2.knew` pointed at the canon and it is
+  the reason `factText` takes the base text as its floor rather than as another
+  branch: every ending has the fact, and only some endings have the change.
+  Read it and the answer is one of five today: day one, the smith hanged with
+  the gaol roll in the journal, the smith hanged without it, nobody hanged, and
+  every other verdict.
+
+  The one fact is `the-clerk-who-asked`, a `rumour`, and what it is about is the
+  player: a man came up from Caernarfon and spent a day asking, and by the
+  morning after the castle has decided what that was. It is the first thing in
+  this game whose **content** rather than whose line set turns on what the
+  player found.
+
+- **The grammar is exported, not copied** (#647). `src/mystery.js` grows
+  `dayTwoApplies(row, outcome, held)`: `appliesTo`'s `when`/`unless` plus
+  `knew`, a list of clues all of which have to be in the journal. `day2.castle`
+  and `day2.knew` keep the private `appliesTo`; `data/lore.json`'s `since` rows
+  and `data/npcs.json`'s `rumours` pieces both read through the export.
+  `src/lore.js` now imports from `src/mystery.js`, which it did not before, and
+  that is the point: a second copy of a grammar is a second copy that drifts,
+  and the thing being claimed here is that a row means the same in all four
+  places.
+
+  `knew` fails closed. No journal is "holding nothing", so a conditioned row
+  with no clues in hand does not apply, rather than applying to everything.
+
+- **A room at a bell holds a list, and the rail becomes reachability** (#648).
+  The third pool is `rumours`: three pieces, all the guardroom at Lauds, all
+  Dafydd ap Rhys, who is off watch and awake there in every one of the seven
+  endings. Which one he says is the verdict and the journal.
+
+  #592 wrote two rails and conditions made both of them wrong in the same way.
+  *One room at one bell holds one piece* would have refused the pool outright;
+  *a piece by a man a verdict can take out of the castle* would have refused a
+  piece written for the one ending that man survives. Both are now asked once
+  per ending rather than once:
+
+  - **Every piece in a place has to be reachable.** The manager takes the first
+    that applies, so what is refused is a piece an earlier one answers for in
+    every ending and every journal. An unconditioned pool collapses back to the
+    old rail by construction, because a second piece with no `when` and no
+    `knew` is shadowed everywhere by the first, and the shipped break for it
+    still fails: `sermon-vespers-osyth answers for chapel at vespers in every
+    ending and journal this piece claims`.
+  - **Absent in an ending this piece applies to**, not absent in any ending at
+    all. The suite asserts both halves: the roll piece put in the prisoner's
+    mouth is refused, and the same piece under `when: ["nobody"]` is allowed,
+    which is a sentence the old rail could not say.
+
+  The enumeration behind both is exact rather than clever: seven endings times
+  the subsets of the clue ids the pieces in that place name between them. That
+  universe is two subsets today and is sound because a clue no piece there names
+  cannot change any of their answers.
+
+  **A condition at one of the four bells is refused** as well. A verdict is a
+  thing only the morning after has, so `when` on a Sext song can only ever read
+  as "never", and a piece that is silently never played is the failure #13 is
+  about.
+
+- **`tells` is the tie, and it is checked in both directions** (#649). The canon
+  is read by `src/lore.js` and by nothing on the page. A `since` row with
+  nothing saying it out loud is therefore a paragraph in a drawer, and a piece
+  heard where its row does not apply is the castle and the canon saying
+  different things in one play, with nothing on screen to show it. So a row
+  names the piece that carries it, the piece names the fact back in its own
+  `cites` the way a document and a chatter pair already do (#551, #592), and the
+  validator walks every ending and every journal to refuse a piece heard
+  anywhere its row is not true.
+
+  The break that proves it is the one worth having: narrow the row to `when:
+  ["full"]` and leave `rumour-lauds-roll` alone, and the suite says `rumour-
+  lauds-roll is heard after the verdict prisoner holding gaol-dates, which this
+  row does not apply to`. Nothing in the game would have said so.
+
+**Broken on purpose, from a green baseline** (#34). Nine breaks, each reverted,
+green again after. Both baselines were confirmed to exit 0 first.
+
+| Break | Result |
+| --- | --- |
+| `performanceHere` takes `here[0]` instead of the first that applies | `quest` exit 1 on four, including `the guardroom falls past the roll piece to the one about a hanging — rumour-lauds-roll` and `a fall gets the piece about a morning with no rope in it — rumour-lauds-roll` |
+| `_applyDay` never records the ending | `quest` exit 1 on five: the guardroom is silent at Lauds in all three endings |
+| `_pieceApplies` stops reading `state.clues` | `quest` exit 1 on two. `the guardroom at Lauds is the piece keyed on the roll — rumour-lauds-hanged` |
+| the `since` ending vocabulary rail deleted | `lore` exit 1 on `a since row keyed on an ending that does not exist` |
+| the `since` clue vocabulary rail deleted | `lore` exit 1 on two, including the evidence id written where the clue id was meant |
+| the two-file rail deleted | `lore` exit 1 on `a row narrowed without the piece that says it` |
+| the reachability rail deleted | `lore` exit 1 on three, including #592's own shipped break |
+| the absence rail stops reading the piece's conditions | `lore` exit 1 on two, one of them #592's shipped break |
+| `tells` no longer has to be cited back | `lore` exit 1 on `a row naming a real piece that does not cite it` |
+
+**This row ran in a `git worktree`, and it had to.** It was started in the
+shared tree beside rank 3, and rank 3's session held staged changes to
+`BACKLOG.md`, `HISTORY.md`, `ROADMAP.md`, `SPECS.md`, `index.html` and
+`test/built.mjs` while this one was editing `data/` and `src/`. Nothing
+collided in a source file, exactly as the lanes predict (rank 3 has no lane and
+this is lane A), but three things happened anyway that a lane cannot cover:
+
+1. **`npm test` was red for three suites and none of them was this row's.**
+   `lore` and `plan-vs-scene` failed on a `data/scene-config.json` the other
+   session had the `engineer-drawing` slab deleted out of mid-edit; both pass
+   against `HEAD:data/scene-config.json` and were confirmed to. `built` failed
+   on `Port 8127 is already in use`, which is the other session's harness.
+2. **`HEAD` moved under this row five times and the numbers moved twice.**
+   `8732d80`, `7074c07`, `4724f25`, then rank 3 as PR #42, rank 12b as PR #45
+   and rank 10 as PR #43. This entry was **written as #636 to #639, renumbered
+   to #643 to #646, and landed at #646 to #649**. The numbers were read off
+   `origin/main` at write time per #619 and `origin/main` topped out at #633
+   when they were read; rank 12b merged first and took #636 to #642, and then
+   rank 10 merged and took #643 to #645 while this row was rebasing onto them.
+
+   **That is four rows in a row to renumber, and #619's rule stopped none of
+   them.** "Read `HISTORY.md` on `origin/main` when you write the entry" is a
+   rule about a moment, and the moment it names is not the moment that decides:
+   the writing is minutes before the merge and the merge is what allocates.
+   Reading later does not help either, because this row read three times and
+   still moved twice. **The number is decided by merge order and nothing a
+   branch can do changes that**, so the honest shapes are either to take it
+   from the merge itself or to accept the renumber as routine and make it cheap.
+   It is nearly cheap already: 40 references across eleven files, bumped by
+   script in a minute, twice.
+
+   What made both bumps safe is an accident worth not relying on. Rank 12b's
+   range was #636 to **#642** and this row's was #636 to **#639**; rank 10's
+   was #643 to **#645** and this row's by then #643 to **#646**. Both times
+   the two ranges were told apart by their ends. Two rows that had written the
+   same range would have had no automatic way to say which "#636" belonged to
+   whom, and every bare number in prose would have had to be read by hand. That
+   is the same shape as the problem #491 solved once across repos, and it is
+   not solved within one.
+3. A `git checkout` in that tree would have taken this row's uncommitted work
+   with it, which is exactly what #624 to #630 recorded happening to the GPU
+   run.
+4. Rank 12b hit the port collision too and wrote it up from the other side.
+   Two rows finding one defect independently on one afternoon is the clearest
+   evidence yet that the fixed harness port is the next thing to fix.
+
+#602 says a lane is a file. **What this says is that a lane is not enough when
+the two sessions share a working tree**: the tree itself is the resource, and
+`npm test`, `dist/`, the dev server's ports and `HEAD` are all one copy of a
+thing that two rows want. The GPU run's entry called a worktree a GPU-run rule.
+It is not. It is a two-sessions-one-machine rule, and it costs one `git worktree
+add` plus a junction for `node_modules`.
 ## Feel: a shadow on the ground and a hand on the door (2026-09-17)
 
 **Rank 11's first increment, claimed on `claude/r11-feel`, lane D.** Its own
 worktree, because the tree `CLAUDE.md` calls the repo root was another
 session's and had that session's uncommitted edits sitting in it. Decisions
-#636 to #641. One new file, `src/player-rig.js`; 16 lines of `main.js`, 175 of
+#650 to #655. One new file, `src/player-rig.js`; 16 lines of `main.js`, 175 of
 `test/plan-vs-scene.mjs` and two of `test/play-castle.mjs`. Thirteen suites
 green, `npm run play` not run.
 
-**Written as #634 to #639 and landed at #636 to #641**, which is the fourth
-renumber from the same cause in three days. The rule #633 wrote down was
-followed to the letter — a fresh `git fetch origin` immediately before the entry
-was written, `origin/main` at `df28b6c`, highest number #633 — and R3 merged as
-PR #42 forty minutes later carrying #634 and #635. **A fresh fetch at write time
-is still not enough when the entry takes an hour to write and another row is in
-flight.** The thing that actually costs nothing is the one this row did: keep
-the numbers to one mechanical substitution across a known list of files, so the
-renumber is a script and not a re-read. Nine citations in `HISTORY.md`, nineteen
-across the other four markdown files, and two in `test/play-castle.mjs`.
+**Written as #634 to #639, landed at #636 to #641, and renumbered again to
+#650 to #655 at merge time** — the fifth renumber from the same cause in three
+days, and the biggest jump yet. Two other rows (#643 to #645's R10 and #649's
+R4b) both merged ahead of this one while it sat open, on the same afternoon
+this row was written; a third (this repo's own R5) is still open and gets the
+same treatment when its turn comes. The rule #633 wrote down — a fresh
+`git fetch origin` immediately before the entry is written — was followed for
+the *first* pass and was never going to survive two more rows landing during
+review. **The fix that actually holds is the one already in this entry**:
+numbers kept to one mechanical substitution across a known file list, so a
+second renumber at merge time is the same script run again against whatever
+`origin/main` looks like by then, not a re-read of six files by hand. Nine
+citations in `HISTORY.md`, nineteen across the other four markdown files, and
+two in `test/play-castle.mjs`.
 
 **The Node half only, and the row stays open.** `SPECS.md` splits this row on
 purpose: whether the two objects EXIST, follow the player and stay out of every
@@ -5310,7 +5783,7 @@ The second half is nine sentences of screenshot the next run on Devon's machine
 has to take, and it is written down at the bottom of this entry rather than
 claimed.
 
-- **A decal, not a shadow-casting light** (#636). The open call in `SPECS.md`
+- **A decal, not a shadow-casting light** (#650). The open call in `SPECS.md`
   recommended the decal on the grounds that `WISHLIST.md`'s own words for it
   were "cheapest presence cue", and this takes it. The castle has exactly one
   shadow-casting light, the sun, at a 2048 map (#530); a second one tied to the
@@ -5329,14 +5802,14 @@ claimed.
   honest.
 
 - **The shadow is on the plan's floor, not on a ray cast down from the camera**
-  (#636, same commit). `PlayerController.feet` is the height
+  (#650, same commit). `PlayerController.feet` is the height
   `castle-plan.js`'s `standAt` put the player at, which is the same answer the
   walkability grid stands on (#511). Taking it from there rather than measuring
   it means the shadow and the feet cannot disagree about a slab edge or a step
   of a flight even in principle — there is one number and both read it.
 
 - **Every mesh in the rig refuses rays, and the control is inside the
-  assertion** (#637). This is the thing that would have broken the castle
+  assertion** (#651). This is the thing that would have broken the castle
   quietly rather than loudly. The rig is a top-level child of the scene, and
   `interaction.js`'s line-of-sight test calls every top-level child that is not
   a target an occluder; `play-castle.mjs` sweeps the same list to check the
@@ -5372,7 +5845,7 @@ claimed.
   there.
 
 - **The hand reaches for the target the prompt is offering, and does not go
-  looking** (#638). `main.js` hands `interaction.currentTarget` to the rig one
+  looking** (#652). `main.js` hands `interaction.currentTarget` to the rig one
   line after `interaction.update()` computes it. The rig reaches only for a
   target that is `isLock` and still `active`, which is the getter `locks()`
   already gives the interaction system, so an answered door stops being reached
@@ -5387,7 +5860,7 @@ claimed.
   distance from the eye, 0.78 m, so what the arm's length means is one number
   and the offset cannot quietly lengthen it.
 
-- **`settle()` brings the world matrix with it** (#639). The rig smooths its
+- **`settle()` brings the world matrix with it** (#653). The rig smooths its
   reach with `1 - exp(-dt * rate)` so the rate does not depend on the frame
   rate, and `settle()` collapses the smoothing outright, for the reason
   `PlayerController.settle()` exists: **the suite then asserts a position and
@@ -5404,7 +5877,7 @@ claimed.
   moves the rig for anything reading `.position` and leaves it where it was for
   anything casting a ray at it.
 
-- **The hand's colour is read off a body, not written in the file** (#640). A
+- **The hand's colour is read off a body, not written in the file** (#654). A
   hex constant in `player-rig.js` would be a second copy of a number that lives
   in a glTF, and the two would drift the first time rank 10 adds a body. The tint
   leaves `Skin` alone (#419, and `BARE_MATERIALS` in `npc.js`), so every body in
@@ -5479,7 +5952,7 @@ rather than argued from a diff.
 ### And a finding on the way past: thirteen suites on fixed ports, five sessions at once
 
 **`npm test` is not safe to run twice at the same time on one machine, and
-five rows running in parallel is exactly that** (#641). Each browser suite
+five rows running in parallel is exactly that** (#655). Each browser suite
 hardcodes a port — 8125 `plan-vs-scene`, 8126 `built`, 8128 `map` — chosen so
 the suites do not collide with *each other*, which they do not. They collide
 with the same suite in another worktree: `Error: Port 8128 is already in use`,
