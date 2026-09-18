@@ -6065,7 +6065,7 @@ speccing it — "speaker, state, conditions, effects, one line each, compiled to
 `npcs.json`/`quests/*.json` at build time", with `WISHLIST.md`'s paragraph as
 the whole brief. Decisions #659 to #662. The twelve's 118 lines now read top to
 bottom in `dialogue/castle.dlg`, 20398 bytes, 13 speakers and 40 states, and
-`test/dialogue.mjs` is the fourteenth suite at 0.3 s and 111 assertions.
+`test/dialogue.mjs` is the fourteenth suite at 0.3 s and 112 assertions.
 
 - **The format is six sigils and one file, and only two of them are written
   back** (#659). `@ id | name | role | ward` is a speaker, `: state` one of
@@ -6130,7 +6130,7 @@ bottom in `dialogue/castle.dlg`, 20398 bytes, 13 speakers and 40 states, and
   and `data/npcs.json` gained exactly four lines. Reverted afterwards; the
   merchant has two states, as before.
 
-**The suite: 111 assertions in seven parts, both line endings throughout**
+**The suite: 112 assertions in seven parts, both line endings throughout**
 (#632). The walk is held to `JSON.parse` for all 40 dialogue spans rather than
 to a second span finder (#34, #500). Every one of the 40 states rewritten with
 its own lines has to give back `npcs.json` byte for byte, which is the only
@@ -6140,7 +6140,7 @@ added and deleted again, and the last state deleted and added back, both give
 the file back byte for byte for all 13 speakers. Part 5 rebuilds the whole .dlg
 out of `data/` and compares it with what is committed, part 6 compiles what is
 committed back and requires `npcs.json` and all five quest files unchanged, and
-part 7 breaks each of the 15 `parse` rules and 11 `problems` rules on purpose.
+part 7 breaks each of the 16 `parse` rules and 11 `problems` rules on purpose.
 
 **Four breaks, from a green baseline** (#34). A line ending hardcoded in
 `formatLines` — the exact bug that lived in `test/tools.mjs`'s rail for its
@@ -6154,10 +6154,24 @@ Changing one word of one line in the .dlg and not compiling it turns 5 red and
 `mystery.json` and not re-extracting turns 2 red, one of them naming the
 speaker, the state, what the file says and what the graph says.
 
-`npm test` fourteen suites green — `map` failed once on `Port 8128 is already
-in use`, which is a parallel session's dev server in another worktree and not
-this row, and passed alone immediately after. `npm run play` not run: no `src/`
-changed, so there is nothing for a GPU to decide (#53).
+**`npm test` fourteen suites green in one run, and not in the next two.** The
+two failures are both this machine and neither is this row, which changes no
+`src/` and no `data/` at all — the staged file list is four docs, `package.json`,
+`test/run.mjs`, and the three files this row adds. `map` and `built` each failed
+once on `Port 8128 is already in use` and `Port 8127 is already in use`: five
+sessions were running in `git worktree`s on one Windows box and `test/harness.mjs`
+binds a fixed port, so two browser suites in two worktrees collide. Both passed
+alone immediately after. `plan-vs-scene` failed twice on one assertion — `none of
+the 12 cells between 0.9 and 2.8 m of the chapel candles offers them (the nearest
+offered "Press E to ring the bell")` — and run alone three times it passed once
+and failed twice. **That is a pre-existing flake in a station probe and it is
+worth somebody's row**: an interaction assertion that is right two runs in three
+is #13's problem wearing a different hat, because a suite that fails at random
+is a suite whose red gets ignored. It is not opened as a row here because this
+session could not tell a real intermittent bug from the contention of five
+Chromiums on one machine, which is #53's line and the reason it needs a quiet
+machine to judge on. `npm run play` not run: no `src/` changed, so there is
+nothing for a GPU to decide (#53).
 
 **What is left of rank 12 is nothing.** The placement editor (#583 to #587),
 the budget suite (#607 to #611), move-and-delete (#636 to #642) and the

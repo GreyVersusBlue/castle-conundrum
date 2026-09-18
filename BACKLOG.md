@@ -774,7 +774,7 @@ rewire the mystery behind `src/mystery.js`'s validator, which reads
 overruling the spec's own words for #506's reason), it lives outside `data/` so
 `vite.config.js` cannot publish it, and the write is `tools/place.mjs`'s splice
 generalised to a nested path (#661). `test/dialogue.mjs` is the fourteenth
-suite: 111 assertions, 0.3 s, both line endings, and it is the only thing
+suite: 112 assertions, 0.3 s, both line endings, and it is the only thing
 standing between the .dlg and the drift a second copy of 118 lines invites.
 
 **The row is retired. What it does not cover** is the rest of the spoken text —

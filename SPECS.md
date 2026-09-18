@@ -682,7 +682,7 @@ and `setValue`, `addKey` and `deleteKey` are the three edits a span makes
 possible (#661). **The authoring loop is a stub**: wire a press in
 `mystery.json`, run extract, and the state appears with its `?` line and no
 lines, and compile refuses it until somebody writes one (#662).
-`test/dialogue.mjs` is the fourteenth suite, 111 assertions, 0.3 s, both line
+`test/dialogue.mjs` is the fourteenth suite, 112 assertions, 0.3 s, both line
 endings.
 
 ### Scope, next increment
