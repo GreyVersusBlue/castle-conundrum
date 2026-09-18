@@ -47,6 +47,20 @@ check(!/libs\//.test(html),
 check(!fs.existsSync(path.join(ROOT, 'libs')),
   'libs/ is not in the repo either');
 
+// og:image is a crawler fetch, not a page fetch, so nothing the browser half of
+// this suite watches (page.__served) ever sees it (#493 is untouched either
+// way). The only way to catch a stale meta tag is to read it and look. Break:
+// rename the file; this line names the meta tag rather than the file, the way
+// #501 already learned to.
+{
+  const ogImage = html.match(/<meta property="og:image" content="([^"]+)">/)?.[1];
+  const ogUrl = html.match(/<meta property="og:url" content="([^"]+)">/)?.[1];
+  const rel = ogImage && ogUrl && ogImage.startsWith(ogUrl) ? ogImage.slice(ogUrl.length) : null;
+  check(rel && fs.existsSync(path.join(dist, rel)),
+    `og:image's path exists in dist/`,
+    rel ? rel : `og:image (${ogImage}) is not under og:url (${ogUrl})`);
+}
+
 const bytes = (dir) => fs.readdirSync(dir, { withFileTypes: true, recursive: true })
   .filter(e => e.isFile())
   .reduce((n, e) => n + fs.statSync(path.join(e.parentPath ?? e.path, e.name)).size, 0);

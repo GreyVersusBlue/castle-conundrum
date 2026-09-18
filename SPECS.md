@@ -140,11 +140,16 @@ this list that stops a player rather than disappointing one.
 
 ## The GPU run
 
-**Ranks 2 and 3. Size ¼ each.** `npm run play` is 102 assertions and a numbered
-screenshot per beat into `shots/play/`, and no run of it since Phase 5 has
-happened on a machine with real compositing (#53). Phases 5, 6 and 7 each list
-a GPU exit criterion as outstanding. The second of the two makes a new preview
-and og card from that run.
+**Rank 2. Size ¼.** `npm run play` is 102 assertions and a numbered screenshot
+per beat into `shots/play/`, and no run of it since Phase 5 has happened on a
+machine with real compositing (#53). Phases 5, 6 and 7 each list a GPU exit
+criterion as outstanding.
+
+**Rank 3, the preview and og card that used to sit under this same section,
+shipped on 2026-09-17** (#634, #635) from a fallback frame rather than the run
+this section still asks for — see `HISTORY.md`. Its own scope, acceptance,
+open calls and dependencies are gone from here with it; what is left below is
+rank 2's alone.
 
 ### Scope, the run
 
@@ -198,44 +203,8 @@ and og card from that run.
 - No new guard-rail: the run is the check. The `snap` beat is a screenshot, not
   an assertion, and says so in its comment.
 
-### Scope, the images
-
-- Two images: the board preview and the 1200x630 og card
-  (`index.html`'s `og:image:width`/`height`). Composed from the run's shots,
-  the HUD included (#374, #379 were about the old images showing none of it).
-- `index.html`'s `og:image` and `twitter:image` currently point at
-  `https://greyversusblue.com/assets/og/castle-conundrum.jpg` on purpose (#504):
-  the images live in `tools-and-games/assets/`. Where the new ones go decides
-  whether that line changes.
-
-### Acceptance, the images
-
-- Two files exist and are linked from wherever they end up; the og card is
-  1200x630; `index.html`'s meta matches the actual file if it moved here.
-- If the images land in this repo: `test/built.mjs` gains a line that the
-  `og:image` URL's path exists in `dist/` (the page does not fetch it, so the
-  served-set diff cannot see it). Break: rename the file; the line names the
-  meta tag.
-
-### Open calls
-
-- **Where the images live.** `BACKLOG.md` says this is Devon's and he relinks.
-  Recommend **this repo, under `assets/og/`, with `og:image` pointing at
-  `https://greyversusblue.github.io/castle-conundrum/assets/og/castle-conundrum.jpg`**,
-  because the page's URL already moved here (#504) and an image that lives in
-  a different repo from the page it depicts goes stale the way the current one
-  did. Mark it as needing Devon's yes; do the board-side relink in
-  `tools-and-games` only if asked. `assets/og/` is not under the reachability
-  sweep (`poly-haven` and `NPCs` only) and does not need to be: it is not a
-  runtime asset. Say so in the sweep's comment.
-- **Which shot is the card.** Recommend the Vespers hall with six of the twelve
-  and the HUD, not the barbican spawn: the card should show the game's claim
-  (twelve suspects) rather than a wall.
-
 ### Dependencies
 
-- **The images cannot start until the run has happened**, and `BACKLOG.md` says
-  so.
 - The run needs a machine with a GPU, which is Devon's; a session can add the
   `snap` beat and cannot run it. If a session is asked to take the run without
   one, the honest output is the beat and a note, not a claim.
@@ -246,10 +215,7 @@ and og card from that run.
 ### Constraints
 
 - #53 (the whole point of the row).
-- #504 (if `og:image` moves, that is the line to change, and the crawler fetch
-  is not a page fetch so #493 does not bind either way).
-- #34 does not apply to the run (no rail added); applies to the images'
-  `built.mjs` line if they move here.
+- #34 does not apply: no rail is added.
 
 ---
 

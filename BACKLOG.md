@@ -271,13 +271,22 @@ tower roof actually looks like from on top of it, which is mostly parapet.
 **Not settled, and rank 2 stays open for it.** The day does not yet run end to
 end, so there is no `twelve-at-vespers`, no shot of the seven trusses from
 under them (#527) and no luma read off the hall floor (#438) — which is what
-ranks 3 and 5 are waiting on, so **both of those gates are still shut**. The
-Lauds sky (#533) is past where the run reaches. Nobody has put a thumb on a
-phone (#530); that half is untouched and is still the feel.
+rank 5 is waiting on, so **that gate is still shut**. The Lauds sky (#533) is
+past where the run reaches. Nobody has put a thumb on a phone (#530); that
+half is untouched and is still the feel.
 
 **And the run found the thing it exists to find.** Rank 1 below is a castle you
 cannot walk in after you open the journal, and it is a bug in `src/`, not in
 the suite. Nothing but a hand on a keyboard was ever going to see it.
+
+**Rank 3 shipped the same day anyway** (#634, #635): asked to choose between
+holding the row for a second run or a fallback frame, Devon took the fallback.
+The new preview and og card are built from the chapel-at-Prime shot rather
+than the Vespers hall the spec wanted, and they live in this repo's
+`assets/og/` now rather than in `tools-and-games`. **Rank 3 is done, gone from
+the ranked table above, and its own scope is gone from `SPECS.md`**; what it
+shared with rank 2 stays in "The GPU run" section below, rewritten to say
+what shipped.
 
 ## How this repo is worked
 
@@ -393,20 +402,21 @@ format, which is all that is left of the row.
 
 ## The ranked table
 
-**It started at 2 and has a 1 again.** The first rank 1 shipped on 2026-09-17
-and its number was retired rather than reused (#619); the rank 1 below is a
-different row, opened the same day by what the GPU run found (#624 to #630).
-That is the retirement rule working as intended rather than against it: a rank
-is a priority and not an id, so the number came back to the top of the list
-when something belonged there. Every row below is named by title in `SPECS.md`
-and `ROADMAP.md` as well as by rank, which is what makes that survivable
-(#522).
+**It started at 2 and has a 1 again, and now has a gap at 3 too.** The first
+rank 1 shipped on 2026-09-17 and its number was retired rather than reused
+(#619); the rank 1 below is a different row, opened the same day by what the
+GPU run found (#624 to #630). That is the retirement rule working as intended
+rather than against it: a rank is a priority and not an id, so the number
+came back to the top of the list when something belonged there. Rank 3
+shipped the same day, from a fallback source rather than the shot the spec
+asked for (#634, #635), and its number is gone the same way rank 1's first
+use is. Every row below is named by title in `SPECS.md` and `ROADMAP.md` as
+well as by rank, which is what makes that survivable (#522).
 
 | Rank | Item | Size | Model | Where | Gate | Lane | Claimed | Detail |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | The castle you cannot walk: pointer lock after an overlay, and a Present nobody can click | ¼ | Opus 5 | Container | — | D | | [The castle you cannot walk](SPECS.md#the-castle-you-cannot-walk) |
 | 2 | The GPU run: the day end to end, and somebody looks at the twelve (the run happened, #624 to #630) | 1 | Opus 5 | Local: GPU | **after 1** | — | | [The GPU run](SPECS.md#the-gpu-run) |
-| 3 | A new preview and og card, from that run | ¼ | Opus 5 | Local: GPU | **after 2** | — | | [The GPU run](SPECS.md#the-gpu-run) |
 | 4 | A second day: increment 3, the town half and the bells question | 2+ | Opus 5 | 4a/4b container, 4c local | — | A (4a/4b), B (4c) | | [A second day](SPECS.md#a-second-day) |
 | 5 | The hall's covering, and the two windows under it | ¼ | Sonnet 5 | Local: GPU | **after 2** | B | | [The hall covering](SPECS.md#the-hall-covering) |
 | 6 | Life: a populace: the fifty, the activity clips and the ambient talk | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
@@ -443,26 +453,33 @@ red, and works around both so the rest of the day can be played.
 
 ## The GPU run
 
-*Where: local, GPU, both of them. Gate: rank 2 is after rank 1; rank 3 after 2. Lane: none.*
+*Where: local, GPU. Gate: after rank 1. Lane: none.*
 
-**Ranks 2 and 3. The run happened on 2026-09-17** (#624 to #630) and the row
-stays open because the day does not reach the end yet. What it costs to get
-there is now a known list rather than a guess: rank 1 above, and a walker that
-still wanders onto a stair (#630). **What is still unanswered is the visual
-half** — `twelve-at-vespers` with six in the Great Hall, the seven trusses from
-under them (#527), and the luma read off the hall floor (#438). Ranks 3 and 5
-wait on exactly those, and the beats that take them are written and in the
-file; nothing reaches them.
+**Rank 2. The run happened on 2026-09-17** (#624 to #630) and the row stays
+open because the day does not reach the end yet. What it costs to get there is
+now a known list rather than a guess: rank 1 above, and a walker that still
+wanders onto a stair (#630). **What is still unanswered is the visual half** —
+`twelve-at-vespers` with six in the Great Hall, the seven trusses from under
+them (#527), and the luma read off the hall floor (#438). Rank 5 waits on
+exactly those, and the beats that take them are written and in the file;
+nothing reaches them.
 
 Settled by the run and not open any more: the compressed textures (#507) look
 right on a real GPU, the three flights to a tower roof at 12 m are walkable
 (#523), and the gaol roll reads on the barrel-head (#571).
 
-Rank 3 depends on rank 2 having happened. The board preview and og card in
-`tools-and-games` are from before Phase 3: they show the archway wide open in a
-7x7 courtyard that no longer exists, with none of the HUD the game has now
-(#374, #379). New images come out of the same run. **Where they go is Devon's**
-— those two files live in `tools-and-games/assets/` and he relinks.
+**Rank 3 shipped the same day, and not from the shot this spec meant** (#634,
+#635). The old board preview and og card in `tools-and-games` were from before
+Phase 3: they showed the archway wide open in a 7x7 courtyard that no longer
+exists, with none of the HUD the game has now (#374, #379). The obvious
+replacement, `twelve-at-vespers`, does not exist — the run stops short of it —
+so Devon chose a fallback frame instead of holding the row open behind rank 2
+a second time: `08-the-chapel-at-prime.png`, three of the twelve mid-dialogue,
+HUD and journal chrome included. The new preview and og card live in this
+repo, `assets/og/`, not in `tools-and-games`: `index.html`'s `og:image` and
+`twitter:image` point at this repo's own GitHub Pages URL now. Revisit the
+source once rank 2 reaches Vespers; nothing about where the images live or how
+they were built is specific to this frame.
 
 ## A second day
 
