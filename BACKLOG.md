@@ -402,7 +402,7 @@ and `ROADMAP.md` as well as by rank, which is what makes that survivable
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | The castle you cannot walk: pointer lock after an overlay, and a Present nobody can click | ¼ | Opus 5 | Container | — | D | | [The castle you cannot walk](SPECS.md#the-castle-you-cannot-walk) |
 | 2 | The GPU run: the day end to end, and somebody looks at the twelve (the run happened, #624 to #630) | 1 | Opus 5 | Local: GPU | **after 1** | — | | [The GPU run](SPECS.md#the-gpu-run) |
-| 3 | A new preview and og card, from that run | ¼ | Opus 5 | Local: GPU | **after 2** | — | | [The GPU run](SPECS.md#the-gpu-run) |
+| 3 | A new preview and og card, from that run | ¼ | Opus 5 | Local: GPU | **after 2** | — | `claude/r3-preview-og-card` | [The GPU run](SPECS.md#the-gpu-run) |
 | 4 | A second day: increment 3, the town half and the bells question | 2+ | Opus 5 | 4a/4b container, 4c local | — | A (4a/4b), B (4c) | | [A second day](SPECS.md#a-second-day) |
 | 5 | The hall's covering, and the two windows under it | ¼ | Sonnet 5 | Local: GPU | **after 2** | B | | [The hall covering](SPECS.md#the-hall-covering) |
 | 6 | Life: a populace: the fifty, the activity clips and the ambient talk | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
