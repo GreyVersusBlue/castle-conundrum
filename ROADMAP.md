@@ -46,8 +46,9 @@ R4c Thomas Wykes's yard  --> unlocks R9's town
   local, lane B                  container, lane B
 
 Never gated, take whenever the lane is free:
-  R10 bodies (local: net, lane C)    R12b move-and-delete (lane B)
-                                     R12c dialogue format (lane C)
+  R10 bodies (local: net, lane C)    R12c dialogue format (lane C)
+
+  R12b move-and-delete shipped 2026-09-17 (#636 to #642) and lane B is free.
 ```
 
 ---
@@ -117,7 +118,7 @@ the theme is not what conflicts.
 | Lane | The file that decides it | Rows in it |
 | --- | --- | --- |
 | **A** | `src/save.js` — the version number and `migrate` | R4a, R4b, R8 |
-| **B** | `data/scene-config.json`, and `test/tools.mjs`'s byte-exactness rail | R4c, R5, R9, R12b |
+| **B** | `data/scene-config.json`, and `test/tools.mjs`'s byte-exactness rail | R4c, R5, R9 (R12b is done) |
 | **C** | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | R1, R6, R10, R12c |
 | **D** | `src/main.js`'s player rig and spawn | R6, R11 |
 | **E** | `src/audio.js` and `data/sounds.json` | R7 |
@@ -141,9 +142,11 @@ sessions splicing into it is two splices neither one tested against.
 and the cut were both written in LF, so `npm test` was green in CI and one byte
 short here. It runs over both endings on either machine now, so `tools` is no
 longer the suite a session in this lane starts from red. What a row in this
-lane has to keep is the rail itself: 47 assertions in part 1, both endings, and
-a stray-ending count per splice, because the byte diff alone cannot see a
-newline **inside** the row it inserted.
+lane has to keep is the rail itself: 179 assertions across four parts since
+R12b (#636 to #642), both endings, a stray-ending count per splice because the
+byte diff alone cannot see a newline **inside** the row it inserted, and — new
+with the move — a per-row byte compare of everything outside the row that
+changed.
 
 Lane C is the `cast` block **specifically**, not all of `data/npcs.json`. R8
 and R12c write per-person `states` and `default` line arrays, which is a
@@ -196,7 +199,8 @@ of them, plus **R2** on Devon's machine.
 - R8 beside R4a or R4b. Lane A, and both want the version number — though
   see the note under the lane table: version 6 landed on 2026-09-17 and R8's
   remaining work does not touch `save.js` at all.
-- R5, R9, R4c and R12b, any two of them. All lane B.
+- R5, R9 and R4c, any two of them. All lane B. R12b was the fourth and it
+  shipped (#636 to #642).
 - R6 beside R11. Lane D, both inside `src/main.js`'s rig.
 
 ---
@@ -298,7 +302,7 @@ plan's list and not a second one (#588 to #591).
 | Row | Model | Where | Lane | Note |
 | --- | --- | --- | --- | --- |
 | **R10** Bodies | Fable 5.1 | Local: net | C | Trades activity clips with R6 in both directions; neither strictly gates the other. Try a scaled-down child before fetching anything. |
-| **R12b** Move-and-delete | Opus 5 | Container | B | Turns the editor from a stopwatch into an editor. Every content row got cheaper the day the editor landed and none was blocked on it; the same is true of this. **No longer starts from a red suite**: `test/tools.mjs`'s byte-exactness rail passed on LF and failed on CRLF, which made it red on the dev machine and green in CI; it runs over both endings now (#631 to #633), and a move that rewrites a row in place has to keep it that way. |
+| ~~**R12b** Move-and-delete~~ | Opus 5 | Container | B | **Shipped 2026-09-17** (#636 to #642). The panel lists the rows within six tiles, `M` moves the selected one to the player's feet, `Delete` twice removes it, and `test/tools.mjs` went from 47 assertions to 179 with insert-then-delete byte-exact on both endings. **Lane B is free again.** |
 | **R12c** The dialogue format | Opus 5 | Container | C | Deliberately unspecified. `WISHLIST.md`'s paragraph is the whole brief. |
 | **R4a** The bells call | Opus 5 | Container | A | Has to overturn #533 rather than work around it. The cheapest shape that does not fight it: `day2.watches`, its own list, with the engine reading whichever list the day names. |
 | **R4b** The `since` field | Opus 5 | Container | A | A fact in `data/lore.json` that changes with what the player did on day one. It needs second-day state to be about, and `day2.knew` (#575) is that state, shipped. |

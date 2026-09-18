@@ -222,8 +222,9 @@ file and asserts over both rather than over whatever git handed the machine. Par
 things found on the way that are not in it are in `HISTORY.md` under #633.
 
 **Twelve ranked items, numbered 1 to 12. Nothing is claimed, and lane B is
-free**: the byte-exactness rail merged as PR #40 (#631 to #633), so ranks 4c,
-5, 9 and 12b are startable again. The **first** rank 1 shipped
+free**: the byte-exactness rail merged as PR #40 (#631 to #633) and 12b's
+move-and-delete after it (#636 to #642), so ranks 4c, 5 and 9 are startable and
+12b is done. The **first** rank 1 shipped
 on 2026-09-17 and **the numbers under it were not shifted up** (#619):
 `SPECS.md` and `ROADMAP.md` already name every row by title as well as by
 rank, for exactly this reason (#522), and four wave A sessions were running
@@ -243,8 +244,10 @@ rank 12 two** — rank 8's first errand, the journal's tab, four more errands
 (#597 to #599) and reputation by ward (#612 to #615), rank 12's placement
 editor and then its budget suite (#607 to #611). Rank 8's next increment is a
 container's: the seven errands left.
-**Rank 12 is down to the dialogue format and move-and-delete**, and the live
-failure that was waiting for whoever took the second of those is gone:
+**Rank 12 is down to the dialogue format.** Move-and-delete shipped on
+2026-09-17 (#636 to #642) — the panel lists the rows within six tiles, `M` moves
+the selected one to the player's feet and `Delete` twice removes it — and the
+live failure that had been waiting for whoever took it went the same morning:
 `test/tools.mjs`'s byte-exactness rail was red on a Windows checkout and green
 on a Linux one, and it now runs over both endings on either machine (#631 to
 #633). **Rank 9's map shipped the same day** (#588 to #591),
@@ -366,7 +369,7 @@ together.
 | Lane | The file that decides it | Rows |
 | --- | --- | --- |
 | A | `src/save.js` — the version number and `migrate` | 4a, 4b, 8 |
-| B | `data/scene-config.json` — and `test/tools.mjs`'s byte-exactness rail | 4c, 5, 9, 12b |
+| B | `data/scene-config.json` — and `test/tools.mjs`'s byte-exactness rail | 4c, 5, 9 (12b is done) |
 | C | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | 1, 6, 10, 12c |
 | D | `src/main.js`'s player rig and spawn | 6, 11 |
 | E | `src/audio.js` and `data/sounds.json` | 7 |
@@ -384,8 +387,9 @@ already names them separately: **4a** is the bells-on-day-two design call and
 `day2.watches`, **4b** is the `since` field on a fact that changes (#596), and
 **4c** is Thomas Wykes's yard. 4a and 4b are a container's; 4c wants the
 editor walked and the yard looked at. Rank 12 splits the same way and for the
-same reason: **12a** the budget suite (shipped, #607 to #611), **12b** move-and-delete
-in the editor, **12c** the dialogue format.
+same reason: **12a** the budget suite (shipped, #607 to #611), **12b**
+move-and-delete in the editor (shipped, #636 to #642), **12c** the dialogue
+format, which is all that is left of the row.
 
 ## The ranked table
 
@@ -411,7 +415,7 @@ and `ROADMAP.md` as well as by rank, which is what makes that survivable
 | 9 | A castle to get lost in: the town, the rock and river | 2+ | Opus 5 | Container | **after 4c** | B | | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
 | 10 | Bodies: a shared low-poly rig for the fifty | 1 | Fable 5.1 | Local: net | — | C | | [Bodies](SPECS.md#bodies) |
 | 11 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 | Container to the Node line, local: GPU past it | **after 2** | D | | [Feel](SPECS.md#feel) |
-| 12 | The tooling: move-and-delete, a dialogue format (the budget suite shipped, #607 to #611) | 2+ | Opus 5 | Container | — | B (12b), C (12c) | `claude/r12a-budget-suite` (12a) | [The tooling](SPECS.md#the-tooling) |
+| 12 | The tooling: a dialogue format (the placement editor, its budget suite and its move-and-delete all shipped, #583 to #587, #607 to #611, #636 to #642) | 2+ | Opus 5 | Container | — | C (12c) | | [The tooling](SPECS.md#the-tooling) |
 
 **`ROADMAP.md` is these three columns turned into an order**: which row to
 take first, what each one unblocks, and which ones two sessions may hold at
@@ -655,7 +659,8 @@ until **The GPU run** (ranks 2 and 3) has happened.
 
 ## The tooling
 
-*Where: container. Gate: none. Lanes: B (12b), C (12c). 12a had no lane and is done.*
+*Where: container. Gate: none. Lane: C (12c). 12a had no lane and 12b held lane
+B; both are done.*
 
 **Rank 12, and a 2+. The placement editor shipped on 2026-09-17** (#583 to
 #587). `?edit=1` on the dev server mounts a panel that reads the tile under
@@ -689,7 +694,18 @@ finding: 970 of the castle's 1539 meshes, 63 % of everything it draws, is the
 eight tower drums.** Rank 10's fifty bodies fit neither skinned ceiling, which
 is the answer the row was taken to produce.
 
-**What is left** is a move-and-delete in the editor so correcting a placement
-is not still hand-editing, and the dialogue format. `SPECS.md` specs the next
-increment.
+**Move-and-delete shipped the same day** (#636 to #642). The panel lists every
+row within six tiles of the player, nearest first, rebuilt as they walk; `M`
+writes the selected one to the tile they are standing on and `Delete` twice
+inside four seconds cuts it out. A row's span is walked for and not searched
+for, because three of the file's 31 placeable rows are not what `formatRow`
+would write — `indexOf` on those returns -1 and edits nothing — and an exact
+twin, which the editor can make in two key presses, would resolve to the first
+of the pair. `test/tools.mjs` went from 47 assertions to 179, and the headline
+is that **an insert and a delete of the same row give back the file byte for
+byte**, on both endings, for all three arrays. `/__place` takes three verbs now
+and checks each one's row count before it writes.
+
+**What is left is the dialogue format.** `SPECS.md` specs it, in the sense that
+it deliberately does not: `WISHLIST.md`'s paragraph is the brief.
 

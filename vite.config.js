@@ -66,7 +66,23 @@ function decoders() {
  * It writes data/scene-config.json and it does not commit: the diff is for a
  * person to read before it goes anywhere. `insertRow` splices one element in
  * as text rather than re-serialising the file, for the reason tools/place.mjs
- * explains at length. */
+ * explains at length.
+ *
+ * THREE VERBS AND NOT ONE. `add` was the whole endpoint for as long as the
+ * editor could only append; `move` and `delete` are the increment that turns
+ * it from a stopwatch into an editor, and they are the same splice machinery
+ * reading the file rather than appending to it. What they cost here is a row
+ * count: an `add` that loses a row and a `delete` that eats two both produce
+ * text that parses, so the count before and after is checked against what the
+ * verb promised and nothing is written when it does not hold. That is a second
+ * net under test/tools.mjs's, at the one place the suite cannot stand — the
+ * side that actually opens the file. */
+const VERBS = {
+  add: { splice: (p, text, key, _i, row) => p.insertRow(text, key, row), delta: 1, checks: true },
+  move: { splice: (p, text, key, i, row) => p.replaceRow(text, key, i, row), delta: 0, checks: true },
+  delete: { splice: (p, text, key, i) => p.deleteRow(text, key, i), delta: -1, checks: false },
+};
+
 function placementEditor() {
   const file = path.resolve(import.meta.dirname, 'data/scene-config.json');
   return {
@@ -83,17 +99,28 @@ function placementEditor() {
         try {
           const chunks = [];
           for await (const c of req) chunks.push(c);
-          const { key, row } = JSON.parse(Buffer.concat(chunks).toString('utf8'));
-          const { insertRow, checkRow } = await import('./tools/place.mjs');
-          checkRow(key, row);
+          const { op = 'add', key, row, index } = JSON.parse(Buffer.concat(chunks).toString('utf8'));
+          const verb = VERBS[op];
+          if (!verb) throw new Error(`place: no such op ${JSON.stringify(op)} (${Object.keys(VERBS).join(', ')})`);
+          const place = await import('./tools/place.mjs');
+          if (verb.checks) place.checkRow(key, row);
           const before = fs.readFileSync(file, 'utf8');
-          const after = insertRow(before, key, row);
+          const was = JSON.parse(before)[key];
+          if (!Array.isArray(was)) throw new Error(`place: "${key}" is not an array`);
+          const after = verb.splice(place, before, key, index, row);
           // Parse what is about to be written, never what was handed in: a
           // splice that produced text JSON.parse refuses would otherwise leave
           // scene-config.json broken and every suite red.
           const parsed = JSON.parse(after);
+          const want = was.length + verb.delta;
+          if (parsed[key].length !== want)
+            throw new Error(`place: ${op} should have left ${want} rows in "${key}" and left ${parsed[key].length} — nothing written`);
           fs.writeFileSync(file, after);
-          send(200, { ok: true, key, index: parsed[key].length - 1 });
+          // The whole array back, so the panel's list is what is on disk and
+          // not what it thinks is on disk. A delete shifts every index after
+          // it, and a panel that kept its own copy would name the wrong row on
+          // the very next click.
+          send(200, { ok: true, op, key, rows: parsed[key], index: op === 'add' ? parsed[key].length - 1 : index });
         } catch (e) {
           send(400, { ok: false, error: String(e && e.message ? e.message : e) });
         }
