@@ -28,7 +28,7 @@
 
 import * as THREE from 'three';
 import { loadGLTF, loadModel } from './assets.js';
-import { ACTIVITY_CLIPS } from './populace.js';
+import { ACTIVITY_CLIPS, heldPropPath } from './populace.js';
 
 const PATROL_SPEED = 1.1; // m/s
 const WAYPOINT_EPS = 0.05;
@@ -125,7 +125,7 @@ export class NPC {
     this.group.add(body);
 
     if (this.def.heldProp) {
-      await this._attachHeldProp(this.polyhavenBase + this.def.heldProp);
+      await this._attachHeldProp(heldPropPath(this.polyhavenBase, this.def.heldProp), this.def.heldPropFit || {});
     }
 
     this.scene.add(this.group);
@@ -221,8 +221,17 @@ export class NPC {
    * hardcoded per asset, so a different prop or a differently-named rig still lands
    * somewhere sane. Falls back to hanging the prop off the body's right side, which is
    * all a placeholder capsule (no bones) can do.
+   *
+   * THE FIT IS DATA WHEN THE DEFAULTS ARE WRONG (#660). The defaults are a
+   * mace's: 0.6 m long, gripped 14 % up from the butt, heavy end hanging
+   * down past the fist. A spear is none of those. `fit.length` is the
+   * real-world length in metres, `fit.grip` the fraction along the long axis
+   * where the hand closes (0 the butt, 1 the tip), and `fit.tipUp` sends the
+   * far end UP past the shoulder instead of down: the butt hangs by the knee
+   * and the head stands over the helmet, which is how a spear is carried at
+   * rest and how it reads as a spear from across a ward.
    */
-  async _attachHeldProp(path) {
+  async _attachHeldProp(path, fit = {}) {
     const prop = await loadModel(path);
     prop.traverse((o) => { if (o.isMesh) o.castShadow = true; });
     this.group.updateMatrixWorld(true);
@@ -231,12 +240,14 @@ export class NPC {
     const size = box.getSize(new THREE.Vector3());
     const axis = size.x > size.y && size.x > size.z ? 'x' : size.y > size.z ? 'y' : 'z';
     const length = size[axis];
+    const propLength = fit.length ?? PROP_LENGTH;
+    const grip = fit.grip ?? GRIP_FRACTION;
 
     // Re-origin the prop onto its grip point: centred across the two short axes, and
-    // GRIP_FRACTION of the way up the long one.
+    // `grip` of the way up the long one.
     const centre = box.getCenter(new THREE.Vector3());
     prop.position.set(-centre.x, -centre.y, -centre.z);
-    prop.position[axis] = -(box.min[axis] + length * GRIP_FRACTION);
+    prop.position[axis] = -(box.min[axis] + length * grip);
 
     // A holder carries the orientation and scale so the grip offset above stays untouched.
     const holder = new THREE.Group();
@@ -247,7 +258,7 @@ export class NPC {
     // The holder's scale multiplies whatever its parent already scales by, so divide
     // that out to land at a real-world PROP_LENGTH wherever it ends up attached.
     const parentScale = parent.getWorldScale(new THREE.Vector3()).x || 1;
-    if (length > 0.0001) holder.scale.setScalar(PROP_LENGTH / length / parentScale);
+    if (length > 0.0001) holder.scale.setScalar(propLength / length / parentScale);
 
     if (hand) {
       // Child bone offsets are already expressed in the hand bone's own space, so their
@@ -259,8 +270,10 @@ export class NPC {
       if (fingers.lengthSq() < 1e-8) fingers.set(0, -1, 0);
       fingers.normalize();
 
+      // `tipUp` sends the prop's far end the other way: the tip stands up
+      // past the shoulder and the butt hangs by the knee.
       const propAxis = new THREE.Vector3();
-      propAxis.setComponent({ x: 0, y: 1, z: 2 }[axis], 1);
+      propAxis.setComponent({ x: 0, y: 1, z: 2 }[axis], fit.tipUp ? -1 : 1);
       holder.quaternion.setFromUnitVectors(propAxis, fingers);
       holder.position.copy(fingers).multiplyScalar(0.05 / parentScale);
     } else {

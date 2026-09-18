@@ -2,8 +2,9 @@
   "comment": "The household. Ten people who have nothing to do with the mason's death and everything to do with whether the castle reads as lived in (BACKLOG.md rank 6, WISHLIST.md theme 1). None of them holds a clue, tells a lie or has a line: data/npcs.json's twelve are the mystery's, and these ten are the castle's. src/populace.js validates every field below against the plan's own walk grid before the page spawns any of them, and test/mystery.mjs runs the same validator in Node.",
   "routineComment": "A routine is a LOOP INSIDE A WATCH, not a timetable (#547, answer 3). The clock is the four bells the player rings and it does not move between them, so `prime` is a LIST of stops walked round and round until Terce. A list of one is somebody who stands still for the whole watch. A watch left out entirely is somebody who is not in the castle at that bell, and src/main.js hides the body, the same answer the merchant gets before Terce.",
   "tileComment": "Every tile below is the centre of a real cell in the 0.5 m walk grid, which is why they read as multiples of 0.125 offset by 0.0625 rather than as round numbers. They were picked off the grid rather than guessed at, and the validator holds them there: floor under the stop, inside the room it names, 1.5 m clear of every other body at that bell, and a walk to the next stop.",
-  "bodyComment": "Five bodies. Four of them already worn by the twelve: `Woman.glb` for the five women (#603 put it in the cast the day this was written, and a populace woman in Farmer.glb would have been the thing that row exists to stop), `King.glb` with its crown hidden for the serjeant, and Farmer and Adventurer for the rest. `modelHeight` 1.65 goes with the women's pack, which is authored shorter than the men's. The fifth is `Hound.glb` (#644), Quaternius's Husky re-exported with its five materials named and its coat lifted so the tint is the colour, and nobody in the cast wears it.",
+  "bodyComment": "Six bodies and a prop. Four of the bodies already worn by the twelve: `Woman.glb` for the five women (#603 put it in the cast the day this was written, and a populace woman in Farmer.glb would have been the thing that row exists to stop), `King.glb` with its crown hidden for the serjeant, and Farmer and Adventurer for the rest. `modelHeight` 1.65 goes with the women's pack, which is authored shorter than the men's. The fifth is `Hound.glb` (#644), Quaternius's Husky re-exported with its five materials named and its coat lifted so the tint is the colour, and nobody in the cast wears it. The sixth is `Hen.glb` (#659) and the prop is `Spear.glb` (#660), both Quaternius's off poly.pizza; see rank10bComment.",
   "rank10Comment": "The child and the hound are BACKLOG.md rank 10's first increment (#643 to #645). The child is not a child rig: she is Woman.glb at 1.15 m with `boneScale` putting her head a third larger, `clips.walk` naming Run and `speed` 2.2 so she runs between her stops, which is what a scaled-down adult looked like it was missing when the two were put side by side. The hound has `follow`: within 6 m of the player on a floor the grid can route to, it leaves its ring, trots to 1.8 m short of them and looks at them, and goes back to its stop when they are gone.",
+  "rank10bComment": "Two hens and a spear are rank 10's second increment (#659 to #661). `Hen.glb` is Quaternius's Farm Animals chicken, fetched as glTF from poly.pizza because the pack itself ships none, re-exported with its five clips named and its one material `Feathers`; the atlas is the colour and the tint is a multiply over it, so the white hen's tint is near-white and the brown hen's is tawny. `peck` is its clip and exists in its body only. `Spear.glb` is Quaternius's too, a held prop under assets/NPCs rather than under polyhavenBase, which is what `heldPropPath` in src/populace.js decides; `heldPropFit` says it is 2.1 m long, gripped 40 % up from the butt, tip up, because npc.js's defaults are a mace's. The serjeant and the man-at-arms carry it and the archer does not.",
   "activityComment": "`activity` is the job, and src/populace.js's ACTIVITY_CLIPS maps it to a clip the body doing it ships. The nine human jobs resolve to one of three idle variants, because the first increment added no asset and no clip and the kit has no sweep, stir, hammer or spar in it; that is why every human job below is one a body does standing still. `sniff` and `eat` are the hound's (#643) and exist in its body only, and test/mystery.mjs checks each person's jobs against the clips in that person's own file.",
   "day2Comment": "Nobody here has a Lauds stop, so the morning after has the cast and nothing else. That is the increment's boundary and not a claim about the fiction; a later one gives the household a second day.",
   "gardenComment": "There is no gardener, and there was one until the grid was asked. `garden` is a room id in mystery.json that no point in this castle resolves to: there are 93 walkable cells east of the east gate and every one of them is inside the Chapel Tower's or the King's Tower's own disc, so `roomAt` names a tower and never the garden. A stop written there would be a stop in a room that does not exist on the ground. The hen-wife keeps the outer ward instead.",
@@ -132,6 +133,8 @@
       "role": "serjeant of the garrison",
       "modelPath": "assets/NPCs/King.glb",
       "hideMaterials": ["Gold"],
+      "heldProp": "assets/NPCs/Spear.glb",
+      "heldPropFit": { "length": 2.1, "grip": 0.4, "tipUp": true },
       "tint": "#3b4a63",
       "routine": {
         "prime": [
@@ -153,6 +156,8 @@
       "name": "Cadell",
       "role": "a man-at-arms",
       "modelPath": "assets/NPCs/Adventurer.glb",
+      "heldProp": "assets/NPCs/Spear.glb",
+      "heldPropFit": { "length": 2.1, "grip": 0.4, "tipUp": true },
       "tint": "#5a6478",
       "routine": {
         "prime": [
@@ -295,6 +300,61 @@
         "vespers": [
           { "room": "outer-ward", "tile": [-6.437, -0.937], "activity": "sniff" },
           { "room": "outer-ward", "tile": [-6.437, 1.063], "activity": "wait", "facing": 90 }
+        ]
+      }
+    },
+    {
+      "id": "hen-white",
+      "name": "Gwenno",
+      "role": "one of the hen-wife's fowl",
+      "modelPath": "assets/NPCs/Hen.glb",
+      "modelHeight": 0.45,
+      "speed": 0.9,
+      "tint": "#f2ecdf",
+      "routine": {
+        "prime": [
+          { "room": "outer-ward", "tile": [-6.813, 0.688], "activity": "peck" },
+          { "room": "outer-ward", "tile": [-6.063, -0.313], "activity": "peck" },
+          { "room": "outer-ward", "tile": [-6.313, 1.188], "activity": "wait", "facing": 180 }
+        ],
+        "terce": [
+          { "room": "outer-ward", "tile": [-6.063, -0.313], "activity": "peck" },
+          { "room": "outer-ward", "tile": [-6.313, 1.188], "activity": "peck" }
+        ],
+        "sext": [
+          { "room": "outer-ward", "tile": [-6.313, 1.188], "activity": "peck" },
+          { "room": "outer-ward", "tile": [-6.063, -0.313], "activity": "wait", "facing": 90 }
+        ],
+        "vespers": [
+          { "room": "outer-ward", "tile": [-6.063, -0.313], "activity": "peck" },
+          { "room": "outer-ward", "tile": [-6.813, 0.688], "activity": "wait", "facing": 0 }
+        ]
+      }
+    },
+    {
+      "id": "hen-brown",
+      "name": "Brith",
+      "role": "one of the hen-wife's fowl",
+      "modelPath": "assets/NPCs/Hen.glb",
+      "modelHeight": 0.42,
+      "speed": 0.9,
+      "tint": "#b9855a",
+      "routine": {
+        "prime": [
+          { "room": "outer-ward", "tile": [-5.313, 1.188], "activity": "peck" },
+          { "room": "outer-ward", "tile": [-5.563, -0.313], "activity": "peck" }
+        ],
+        "terce": [
+          { "room": "outer-ward", "tile": [-5.563, -0.313], "activity": "peck" },
+          { "room": "outer-ward", "tile": [-4.563, 0.938], "activity": "peck" }
+        ],
+        "sext": [
+          { "room": "outer-ward", "tile": [-5.313, 1.188], "activity": "peck" },
+          { "room": "outer-ward", "tile": [-5.563, -0.313], "activity": "wait", "facing": 270 }
+        ],
+        "vespers": [
+          { "room": "outer-ward", "tile": [-5.313, 1.188], "activity": "wait", "facing": 0 },
+          { "room": "outer-ward", "tile": [-4.563, 0.938], "activity": "peck" }
         ]
       }
     }

@@ -41,6 +41,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { readGLTF, triangles } from './gltf.mjs';
+import { heldPropPath } from '../src/populace.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, '..');
@@ -92,6 +93,9 @@ const refs = [
    * loads, and `build()` rejects on it inside a Promise.all in main.js, which
    * is a loading screen that stops with no castle behind it. */
   ...(populace.people ?? []).map(p => [p.modelPath, `${p.id || p.name}'s body`]),
+  // And what they carry (#660): the garrison's spear is the first held prop
+  // the cast does not, and the first that is not Poly Haven's.
+  ...(populace.people ?? []).filter(p => p.heldProp).map(p => [heldPropPath(config.polyhavenBase, p.heldProp), `${p.id || p.name}'s heldProp`]),
 ];
 const seen = new Set();
 for (const [rel, label] of refs) {
@@ -321,6 +325,8 @@ console.log('\nnothing on disk that nothing asks for');
     ...config.interiorProps.map(p => [config.polyhavenBase + p.model, p.model.split('/')[0]]),
     ...npcData.cast.filter(n => n.heldProp)
       .map(n => [config.polyhavenBase + n.heldProp, `${n.id || n.name}'s heldProp`]),
+    ...(populace.people ?? []).filter(p => p.heldProp)
+      .map(p => [heldPropPath(config.polyhavenBase, p.heldProp), `${p.id || p.name}'s heldProp`]),
   ];
   for (const [rel, why] of gltfRefs) {
     need(rel, why);
@@ -384,6 +390,8 @@ console.log('\nevery Poly Haven prop and every NPC body is meshopt-encoded');
     // And the household's: the hound is the first body the cast does not
     // wear (#644), and this list found bodies through `cast` until then (#645).
     ...(populace.people ?? []).map(p => p.modelPath),
+    // And what the household carries (#660), which is not Poly Haven's.
+    ...(populace.people ?? []).filter(p => p.heldProp).map(p => heldPropPath(config.polyhavenBase, p.heldProp)),
   ])].filter(rel => fs.existsSync(path.join(ROOT, rel)));
   const raw = files.filter(rel => !(readGLTF(path.join(ROOT, rel)).json.extensionsUsed || []).includes('EXT_meshopt_compression'));
   for (const rel of raw) fail(`${rel} has no EXT_meshopt_compression — run \`npm run assets:encode\` before committing it (#506)`);
