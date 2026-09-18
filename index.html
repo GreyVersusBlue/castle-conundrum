@@ -8,26 +8,26 @@
      Tools/board-check/sync-social-tags.mjs and is hand-maintained here: that
      generator stayed there when the project moved (#491), and it has no copy
      here because it reads a board this repo does not have.
-     og:url is where this page is actually served from (#504). og:image is
-     still greyversusblue.com's copy, and that is deliberate rather than
-     forgotten: the two card images stayed in tools-and-games when the project
-     left, that URL resolves, and a crawler fetching it is not the page
-     fetching it, so the same-origin rule (#493) is untouched. If the image
-     ever moves here, this is the line to change. -->
+     og:url is where this page is actually served from (#504). og:image moved
+     here from greyversusblue.com's copy on 2026-09-17 (#631): the page's own
+     URL already lives here, and an image that lives in a different repo from
+     the page it depicts goes stale the way that one did (#374, #379). The
+     crawler fetch is not the page fetching it, so the same-origin rule (#493)
+     is untouched either way. -->
 <meta name="description" content="The master mason is dead at the stair foot. Twelve suspects, four bells, one accusation.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="greyversusblue">
 <meta property="og:url" content="https://greyversusblue.github.io/castle-conundrum/">
 <meta property="og:title" content="Castle Conundrum — greyversusblue">
 <meta property="og:description" content="The master mason is dead at the stair foot. Twelve suspects, four bells, one accusation.">
-<meta property="og:image" content="https://greyversusblue.com/assets/og/castle-conundrum.jpg">
+<meta property="og:image" content="https://greyversusblue.github.io/castle-conundrum/assets/og/castle-conundrum.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Castle Conundrum, mid-play.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Castle Conundrum — greyversusblue">
 <meta name="twitter:description" content="The master mason is dead at the stair foot. Twelve suspects, four bells, one accusation.">
-<meta name="twitter:image" content="https://greyversusblue.com/assets/og/castle-conundrum.jpg">
+<meta name="twitter:image" content="https://greyversusblue.github.io/castle-conundrum/assets/og/castle-conundrum.jpg">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%233B2A1A'/%3E%3Ccircle cx='16' cy='16' r='10' fill='%237E2A20'/%3E%3Ccircle cx='13' cy='13' r='3.5' fill='%23A8443A'/%3E%3C/svg%3E">
 <!-- gvb:social:end -->
   <link rel="stylesheet" href="./src/ui.css" />

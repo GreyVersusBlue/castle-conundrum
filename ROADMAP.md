@@ -36,9 +36,9 @@ NOW, in parallel, no gates:
     R1  fourth body    #603-606      R7  ambient beds   #620-623
     R12a budget suite  #607-611      R6  the first ten  #616-619
                        |
-R2 lands --------------+--> unlocks R3, R5, R11
+R2 lands --------------+--> unlocks R5, R11
+  (R3 shipped 2026-09-17 from a fallback frame, ahead of R2 landing)
 
-  R3  preview + og card      local GPU, no lane
   R5  hall covering          local GPU, lane B
   R11 feel: shadow + hand    lane D
 
