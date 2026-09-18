@@ -66,13 +66,32 @@
       { "hz": 660, "gain": 0.58, "decay": 1.1, "name": "nominal" },
       { "hz": 1000, "gain": 0.20, "decay": 0.55, "name": "superquint, and the last one worth having" }
     ],
-    "partialsComment": "A bell is not a chime, and the difference is the tierce: a struck bell's partials are inharmonic, and the minor third at 1.2x the prime is the interval that makes a bell sound like a bell rather than like a sine at 330 Hz. The ratios here are the standard five of a tuned bell (hum 0.5, prime 1, tierce 1.2, quint 1.5, nominal 2) on a 330 Hz prime, which is a bell of about a hundredweight: a chapel bell one man pulls, not a cathedral's. Higher partials die first, which is what the per-partial `decay` is for and what makes the tail a hum rather than a ring."
+    "partialsComment": "A bell is not a chime, and the difference is the tierce: a struck bell's partials are inharmonic, and the minor third at 1.2x the prime is the interval that makes a bell sound like a bell rather than like a sine at 330 Hz. The ratios here are the standard five of a tuned bell (hum 0.5, prime 1, tierce 1.2, quint 1.5, nominal 2) on a 330 Hz prime, which is a bell of about a hundredweight: a chapel bell one man pulls, not a cathedral's. Higher partials die first, which is what the per-partial `decay` is for and what makes the tail a hum rather than a ring.",
+    "rings": {
+      "1": { "name": "Terce", "strokes": 1, "gapSeconds": 0, "gain": 1.0 },
+      "2": { "name": "Sext", "strokes": 2, "gapSeconds": 1.3, "gain": 1.0 },
+      "3": { "name": "Vespers", "strokes": 6, "gapSeconds": 0.9, "gain": 0.9 },
+      "4": { "name": "the summons", "strokes": 3, "gapSeconds": 1.8, "gain": 1.15 }
+    },
+    "gapSpread": 0.08,
+    "ringsComment": "The four rings, by the `n` of the engine's own `bell:<n>` (#682): the day starts at Prime with no bell, so 1 is the ring that brings Terce, 2 Sext, 3 Vespers, and 4 the ring that moves no watch and brings the Constable. Each is the same bell struck `strokes` times, `gapSeconds` apart give or take `gapSpread` of itself, at `gain` of the bell's own. Terce is one stroke, a morning's first note. Sext is two. Vespers is the whole peal, six strokes a little quicker and a little quieter, because the man on the rope is ringing and not striking. The summons is three, slow and heavy: a passing bell, which is what it is. test/layout.mjs holds this block to every `n` the engine can emit and no other; a ring the file has nothing for is one stroke in src/audio.js, and the check is what stops that ever being heard. NOBODY HAS HEARD THESE EITHER (#53)."
   },
 
   "ambient": {
-    "comment": "What a place sounds like when nobody is doing anything in it (BACKLOG.md's Sound row, first increment). A BED IS A PLACE'S ROOM TONE, synthesised like everything else in this file: looped noise through a filter per layer, each layer swelling on its own slow sine so it breathes rather than hisses, a drone or two where a room has one, and random pops where there is a fire. One bed sounds at a time. src/audio.js cross-fades to the bed of whatever room the HUD's room line names (#515), over `fadeSeconds`, so walking out of the kitchen is the fire going away behind you and not a cut. NOT SPATIALISED YET: a bed is in your head, not at a point in the room, so the kitchen is silent from the ward outside its door. That is the increment after this one.",
+    "comment": "What a place sounds like when nobody is doing anything in it (BACKLOG.md's Sound row, first increment). A BED IS A PLACE'S ROOM TONE, synthesised like everything else in this file: looped noise through a filter per layer, each layer swelling on its own slow sine so it breathes rather than hisses, a drone or two where a room has one, and random pops where there is a fire. A BED SOUNDS AT ITS PLACE (#680, the second increment): every room with a bed is a source, heard through a panner of its own at the point of the room nearest you, and the nearest few within `spatial.hearMetres` sound at once, so the kitchen is heard from the ward outside its door and fills your head across the threshold with no fade at the door. Open ground is the one bed still in your head, faded up and down over `fadeSeconds` on the room change the HUD's room line names (#515), because a ward has no near wall to be heard from. `spatial` is the whole of how a bed is placed and how far it carries.",
 
     "fadeSeconds": 1.2,
+    "spatial": {
+      "panning": "equalpower",
+      "earMetres": 1.7,
+      "hearMetres": 14,
+      "atOnce": 3,
+      "restepMetres": 2,
+      "refMetres": 1.5,
+      "maxMetres": 40,
+      "rolloff": 2,
+      "comment": "A source is heard from the point of its room's footprint nearest you (src/audio.js `sourcePoint`), `earMetres` over its floor, which is the eye height in src/castle-plan.js and test/layout.mjs holds it there: inside the room that point is your own head, and from the ward it is the near wall. Not the room's centre (#680): the south walk is 18 m long. `hearMetres` is how far a source is heard from and `atOnce` how many at most, nearest first, asked again every `restepMetres` of ground and on every room change. `refMetres` is the distance inside which a source is at full and `rolloff` how fast it falls off past it, on the inverse model: at 14 m a source is 1.5 / (1.5 + 2 x 12.5) of itself, 6 %, which is where it goes. `panning` is equalpower and not the bell's HRTF, because a room tone has no direction worth a head model and three HRTF panners is a cost a phone notices. A drum's storeys with the same bed are one source (#681), so a stair climbed inside a tower is no fade at all."
+    },
     "loopSeconds": 4,
     "loopComment": "The beds read their noise from a buffer of their own, `loopSeconds` long. The footstep's one-second buffer looped under a steady filter is a one-second pattern an ear picks out inside a minute; four seconds with every layer starting at a random offset is not.",
 

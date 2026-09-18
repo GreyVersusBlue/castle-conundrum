@@ -87,6 +87,9 @@ async function init() {
   // --- World geometry ---
   const castle = new CastleBuilder(scene, config);
   await castle.build();
+  // Every room with a bed becomes a source the bed sounds from, off the plan's
+  // own bounds (#680); test/map.mjs section 2b is what says this line is here.
+  audio.placeBeds(castle.plan);
 
   // --- Braziers (flicker lights) ---
   const brazierUpdates = config.braziers.map((b) =>
@@ -367,6 +370,10 @@ async function init() {
         if (!here.open) quest.handleEnter(here.id, here.level);
       }
     }
+    // And where the head is, every frame: which beds are within earshot and
+    // the point each is heard from (#680). After `enter`, so a room change
+    // and the room's own bed land in the same frame.
+    audio.at(camera.position);
     if (player.isLocked && player.moving) auto.mark(); // walking: the position is dirty
     for (const npc of npcs) npc.update(dt, camera.position);
     for (const one of folk) one.update(dt, camera.position);

@@ -49,9 +49,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { partsOf } from './gltf.mjs';
-import { makePlan, walkability, collidersWith, moveBody, GRID, HEAD_LOW, HEAD_HIGH, BODY_RADIUS, DAY_SETS } from '../src/castle-plan.js';
+import { makePlan, walkability, collidersWith, moveBody, GRID, HEAD_LOW, HEAD_HIGH, BODY_RADIUS, DAY_SETS, EYE_HEIGHT } from '../src/castle-plan.js';
 import { dayTwoOutcomes, dayTwoCastle } from '../src/mystery.js';
-import { stepClassOf, bedOf } from '../src/audio.js';
+import { stepClassOf, bedOf, bedSources, sourcePoint, audibleFrom, ringOf } from '../src/audio.js';
 import { castleNav } from '../src/stations.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -1161,6 +1161,77 @@ console.log('\nevery zone has an ambient bed');
   if (stale.length) fail(`data/sounds.json's byRoom names ${stale.map(b => `"${b}"`).join(', ')}, which the castle does not build`);
   else pass(`every one of byRoom's ${Object.keys(amb.byRoom || {}).length} names is a place in the castle`);
   if (!(amb.fadeSeconds > 0)) fail(`ambient.fadeSeconds is ${amb.fadeSeconds}: a cross-fade of no length is a cut`);
+
+  /* The second increment (#680 to #682): a bed at a point. Every room with a
+   * bed is a source, and the Node criterion is that every source is heard
+   * from a point inside its own footprint, from anywhere the listener can be.
+   * The rest is ears (#53). */
+  const spatial = amb.spatial || {};
+  const sources = bedSources(plan, sounds);
+  const withBed = plan.rooms.filter(r => bedOf(sounds, r));
+  const placedRooms = sources.flatMap(s => s.rooms);
+  if (placedRooms.length !== withBed.length || new Set(placedRooms).size !== placedRooms.length) fail(`bedSources puts ${placedRooms.length} rooms in ${sources.length} sources and the plan has ${withBed.length} rooms with a bed`);
+  else pass(`every one of the plan's ${withBed.length} rooms with a bed is in exactly one of ${sources.length} sources`);
+  // A drum's storeys with the same bed are one source (#681), which only
+  // works because they share a footprint; a source whose rooms do not is a
+  // point inside one room and outside another.
+  let apart = 0;
+  for (const s of sources) {
+    const rooms = s.rooms.map(id => plan.rooms.find(r => r.id === id));
+    const a = rooms[0];
+    const off = rooms.filter(r => r.bounds.min.x !== a.bounds.min.x || r.bounds.max.x !== a.bounds.max.x || r.bounds.min.z !== a.bounds.min.z || r.bounds.max.z !== a.bounds.max.z
+      || (r.shape?.kind ?? null) !== (a.shape?.kind ?? null) || r.shape?.cx !== a.shape?.cx || r.shape?.cz !== a.shape?.cz || r.shape?.radius !== a.shape?.radius);
+    if (off.length) { fail(`source "${s.key}" merges ${off.map(r => `"${r.id}"`).join(', ')} with "${a.id}" and their footprints differ`); apart++; }
+  }
+  const kings = sources.find(s => s.key === 'kings-tower:tower');
+  if (!kings || !kings.rooms.includes('kings-tower-1') || !kings.rooms.includes('kings-tower-2')) fail(`the King's Tower's first floor and top room are not one source: ${kings ? kings.rooms.join(', ') : 'no source "kings-tower:tower"'}`);
+  else if (!apart) pass(`${sources.filter(s => s.rooms.length > 1).length} sources are a drum's storeys sharing a bed, the King's Tower's ${kings.rooms.join(' and ')} among them`);
+  const inside = (s, p) => p.x >= s.bounds.min.x - 1e-6 && p.x <= s.bounds.max.x + 1e-6 && p.z >= s.bounds.min.z - 1e-6 && p.z <= s.bounds.max.z + 1e-6
+    && (!s.shape || Math.hypot(p.x - s.shape.cx, p.z - s.shape.cz) <= s.shape.radius + 1e-6);
+  const overAFloor = (s, p) => p.y >= s.floors[0] + spatial.earMetres - 1e-6 && p.y <= s.floors[s.floors.length - 1] + spatial.earMetres + 1e-6;
+  const far = [{ x: -200, y: -50, z: -200 }, { x: 200, y: 60, z: 200 }, { x: -200, y: EYE_HEIGHT, z: 200 }, { x: 200, y: EYE_HEIGHT, z: -200 }, { x: 0, y: EYE_HEIGHT, z: 0 }];
+  let outside = 0;
+  for (const s of sources) {
+    const points = [sourcePoint(s, null, spatial.earMetres), ...far.map(f => sourcePoint(s, f, spatial.earMetres))];
+    for (const p of points) {
+      if (!inside(s, p)) { fail(`source "${s.key}" is heard from (${p.x.toFixed(2)}, ${p.z.toFixed(2)}), which is outside its own footprint`); outside++; break; }
+      if (!overAFloor(s, p)) { fail(`source "${s.key}" is heard from ${p.y.toFixed(2)} m up, which is over none of its floors (${s.floors.join(', ')} + ${spatial.earMetres})`); outside++; break; }
+    }
+  }
+  if (!outside) pass(`every source is heard from a point inside its own footprint and over its own floor, from its centre and from ${far.length} far corners`);
+  if (spatial.earMetres !== EYE_HEIGHT) fail(`ambient.spatial.earMetres is ${spatial.earMetres} and the eye is at ${EYE_HEIGHT}: a bed heard from the floor or the ceiling`);
+  const sane = [
+    ['hearMetres', spatial.hearMetres > 0], ['atOnce', Number.isInteger(spatial.atOnce) && spatial.atOnce >= 1], ['restepMetres', spatial.restepMetres > 0],
+    ['refMetres', spatial.refMetres > 0 && spatial.refMetres < spatial.hearMetres], ['maxMetres', spatial.maxMetres >= spatial.hearMetres], ['rolloff', spatial.rolloff > 0],
+    ['panning', spatial.panning === 'equalpower' || spatial.panning === 'HRTF'],
+  ];
+  for (const [k, ok] of sane) if (!ok) fail(`ambient.spatial.${k} is ${JSON.stringify(spatial[k])}`);
+  // From test/map.mjs's ward point, something is heard, not everything, and
+  // the nearest first: the ward between the kitchen and the hall hears both.
+  const wardPoint = { x: -10, y: EYE_HEIGHT, z: 0 };
+  const heard = audibleFrom(sources, wardPoint, spatial);
+  const sorted = heard.every((h, i) => i === 0 || h.metres >= heard[i - 1].metres);
+  if (!heard.length) fail(`nothing is heard from the ward at (${wardPoint.x}, ${wardPoint.z}): hearMetres ${spatial.hearMetres} reaches no room`);
+  else if (heard.length > spatial.atOnce || !sorted) fail(`from the ward at (${wardPoint.x}, ${wardPoint.z}) ${heard.length} sources are heard against atOnce ${spatial.atOnce}, ${sorted ? 'nearest first' : 'and not nearest first'}`);
+  else pass(`from the ward at (${wardPoint.x}, ${wardPoint.z}) ${heard.length} sources are heard, nearest first: ${heard.map(h => `${h.source.bed} (${h.source.key}) at ${h.metres.toFixed(1)} m`).join(', ')}`);
+
+  /* The four rings (#682): `bell.rings` keyed by the `n` of the engine's own
+   * `bell:<n>`, which is 1 to the number of watches, and no other. */
+  const rings = sounds.bell?.rings || {};
+  const emitted = Array.from({ length: mystery.watches.length }, (_, i) => String(i + 1));
+  let badRing = 0;
+  for (const n of emitted) {
+    const r = rings[n];
+    if (!r) { fail(`the engine rings bell:${n} and data/sounds.json's bell.rings has nothing for it`); badRing++; }
+    else if (!(Number.isInteger(r.strokes) && r.strokes >= 1)) { fail(`bell.rings["${n}"].strokes is ${JSON.stringify(r.strokes)}`); badRing++; }
+    else if (r.strokes > 1 && !(r.gapSeconds > 0)) { fail(`bell.rings["${n}"] is ${r.strokes} strokes ${r.gapSeconds} s apart, which is one stroke`); badRing++; }
+    else if (!(r.gain > 0)) { fail(`bell.rings["${n}"].gain is ${JSON.stringify(r.gain)}: a ring nobody hears`); badRing++; }
+  }
+  const never = Object.keys(rings).filter(n => !emitted.includes(n));
+  if (never.length) { fail(`bell.rings has ${never.map(n => `"${n}"`).join(', ')} and the engine never rings ${never.length === 1 ? 'it' : 'them'}: the day has ${emitted.length} rings`); badRing++; }
+  if (!badRing) pass(`the ${emitted.length} rings the engine can emit each have a character: ${emitted.map(n => `${rings[n].strokes} for ${rings[n].name ?? n}`).join(', ')}`);
+  const stray = ringOf(sounds, emitted.length + 1);
+  if (stray.strokes !== 1 || stray.gain !== 1) fail(`ringOf a ring the file has nothing for is ${JSON.stringify(stray)} and not one plain stroke`);
 }
 
 /* --------------------------------------------------- WHERE CHECK 5 WENT ---
