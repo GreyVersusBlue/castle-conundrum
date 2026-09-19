@@ -280,10 +280,10 @@ at a grazing angle reads as stone, no banding, and the ETC1S/UASTC split holds.
 The gaol roll on the barrel-head (#571). A body at interact range, and what a
 tower roof actually looks like from on top of it, which is mostly parapet.
 
-**It ran four more times on 2026-09-19** (#696 to #703), and the looking is
+**It ran four more times on 2026-09-19** (#708 to #715), and the looking is
 done. The twelve at Vespers, the Lauds sky, the covered hall and eleven of the
 twelve bodies at interact range were all photographed and written up, one
-sentence per body. **Two of the twelve do not read as two** (#699): the
+sentence per body. **Two of the twelve do not read as two** (#711): the
 Constable and the Steward are one white-haired man in a black tunic, told
 apart by a red collar and a green one, and past three metres there is nothing
 to tell. The three women are the clearest bodies in the castle, which is the
@@ -293,7 +293,7 @@ Prime's 203.4 — and no dawn colour in it.
 
 **Not settled, and rank 2 stays open for it.** The day still does not run end
 to end. Two of the three stops were this suite lying to itself and are fixed
-(#696, #697); the third is rank 1's walker (#698), and it stopped at #630's
+(#708, #709); the third is rank 1's walker (#710), and it stopped at #630's
 own recorded coordinate. Nobody has put a thumb on a phone (#530); that half
 is untouched and is still the feel, and it is now the whole of rank 2's
 unlooked-at list.
@@ -303,7 +303,7 @@ different beat from the one below.** `npm test` at `f5d0c0e`, in a clean tree,
 fails `plan-vs-scene` on `none of the 12 cells between 0.9 and 2.8 m of the
 chapel candles offers them (the nearest offered "Press E to ring the bell")`.
 That is the same behaviour that swaps the body and the pouch in `npm run play`
-(#702's neighbour): a nearer interaction target out-ranks the one the beat is
+(#714's neighbour): a nearer interaction target out-ranks the one the beat is
 aimed at, in the chapel both times. Whether `InteractionSystem` should prefer
 what the camera points at over what is nearest is a `src/` question nobody has
 asked. The populace beat below is the older report and was not seen failing on
@@ -468,7 +468,7 @@ All three shipped and **the row is retired**.
 
 **It starts at 1 again, and 3, 5, 8 and 12 are numbers that have left the list
 rather than gaps in it.** The number 1 has now been used three times: the
-walker on the stair took it on 2026-09-19 (#698), because it is the one thing
+walker on the stair took it on 2026-09-19 (#710), because it is the one thing
 between `npm run play` and the end of the day and rank 2 cannot close without
 it. Before that it had been used twice and retired twice:
 the fourth body on 2026-09-17 (#619), and then the castle you cannot walk,
@@ -489,8 +489,8 @@ which is what makes that survivable (#522).
 
 | Rank | Item | Size | Model | Where | Gate | Lane | Claimed | Detail |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | The walker on the stair: `hike` drives the player up a ramp and every re-plan starts a storey too high (#630, #698) | ¼ | Opus 5 | Container | — | — | | [The walker on the stair](SPECS.md#the-walker-on-the-stair) |
-| 2 | The GPU run: the looks are taken (#699 to #703); the day still stops at rank 1's walker | 1 | Opus 5 | Local: GPU | **after 1** | — | | [The GPU run](SPECS.md#the-gpu-run) |
+| 1 | The walker on the stair: `hike` drives the player up a ramp and every re-plan starts a storey too high (#630, #710) | ¼ | Opus 5 | Container | — | — | | [The walker on the stair](SPECS.md#the-walker-on-the-stair) |
+| 2 | The GPU run: the looks are taken (#711 to #715); the day still stops at rank 1's walker | 1 | Opus 5 | Local: GPU | **after 1** | — | | [The GPU run](SPECS.md#the-gpu-run) |
 | 4 | A second day: increment 3, the town half and the bells question (4b, the fact that changes, shipped #646 to #649) | 2+ | Opus 5 | 4a container, 4c local | — | A (4a), B (4c) | | [A second day](SPECS.md#a-second-day) |
 | 6 | Life: a populace: the fifty, the activity clips and the ambient talk | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: somebody listens to the seven beds and the four rings, then event sounds (a bed at a point and the rings shipped, #680 to #683) | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
@@ -506,7 +506,7 @@ the same time. This table still ranks; that file sequences (#601).
 
 *Where: container. Gate: none. Lane: none. It gates rank 2.*
 
-**Rank 1, new on 2026-09-19** (#698). `test/play-castle.mjs`'s `hike` walks
+**Rank 1, new on 2026-09-19** (#710). `test/play-castle.mjs`'s `hike` walks
 the castle's own path graph, and the path graph treats a flight as walkable
 floor. So the shortest route out of the chapel runs across the Chapel Tower's
 stair ramp, the player is driven up it, and every re-plan after that starts a
@@ -534,7 +534,7 @@ is rank 2's.
 
 *Where: local, GPU. Gate: after rank 1. Lane: none.*
 
-**Rank 2. It ran again on 2026-09-19, four times** (#696 to #703), and the
+**Rank 2. It ran again on 2026-09-19, four times** (#708 to #715), and the
 judgement half of the row is done: the twelve at Vespers, the Lauds sky, the
 covered hall and eleven of the twelve bodies at interact range have all been
 looked at and written up in `HISTORY.md`, one sentence per body. **What is
@@ -549,23 +549,23 @@ open.
 
 **Settled and closed.** The compressed textures (#507), the three flights to a
 tower roof at 12 m (#523), the gaol roll on the barrel-head (#571). And now:
-whether twelve read as twelve — **no, two of them do not** (#699), the
+whether twelve read as twelve — **no, two of them do not** (#711), the
 Constable and the Steward being one white-haired man in a red collar and a
-green one; the Lauds sky (#700), which has its own number, 151.2 of 255
-against Prime's 203.4, and no dawn colour in it; and the covered hall (#701),
+green one; the Lauds sky (#712), which has its own number, 151.2 of 255
+against Prime's 203.4, and no dawn colour in it; and the covered hall (#713),
 whose seven trusses are invisible from the floor and which shows a sliver of
 sky at its south-east corner.
 
 **Three things came out of it that are nobody's row yet** and are written up
 in `HISTORY.md` rather than here, because none of them is big enough to rank
 and all three are one-line fixes: `Press E to talk to the Sir Roger Lestrange`
-on every NPC in the game (#703), five checks in `test/play-castle.mjs` that are
-stale or vacuous including one that can only fail on a GPU (#702), and a
+on every NPC in the game (#715), five checks in `test/play-castle.mjs` that are
+stale or vacuous including one that can only fail on a GPU (#714), and a
 journal walk assertion that read 0.69, 1.30, 0.51 and 0.69 m across four runs
 of the same beat, against 3.75 m for an unobstructed walk on the same machine.
 
 **Two of the four runs were stopped by this suite, not by the castle**
-(#696, #697), and both fixes are in `test/play-castle.mjs`: `present()` never
+(#708, #709), and both fixes are in `test/play-castle.mjs`: `present()` never
 shut the dialogue it opened, and nothing clicked the resume panel that #661
 puts up when the browser refuses a relock. Both had been read as `src/` bugs
 before.

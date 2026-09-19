@@ -83,7 +83,7 @@ Four facts every row below leans on, stated once:
 
 ## The walker on the stair
 
-**Rank 1. Size ¼. New on 2026-09-19** (#698). It gates "The GPU run" and
+**Rank 1. Size ¼. New on 2026-09-19** (#710). It gates "The GPU run" and
 nothing gates it.
 
 ### Scope
@@ -147,7 +147,7 @@ nothing gates it.
 **Rank 2. Size ¼. Gated on rank 1 since 2026-09-19.** `npm run play` is 102
 assertions and a numbered screenshot per beat into `shots/play/`. It has now
 been run on a machine with real compositing four times over two sittings
-(#624 to #630 on 2026-09-17, #696 to #703 on 2026-09-19) and the day has never
+(#624 to #630 on 2026-09-17, #708 to #715 on 2026-09-19) and the day has never
 reached the end.
 
 **The judgement half of this row is done, and the walk half is not.** The
@@ -169,13 +169,13 @@ rank 2's alone.
 - **Nothing in `src/`.** The run is the deliverable. `test/play-castle.mjs` is
   the only file this row may change, and on 2026-09-19 it changed by 67 lines
   in two helpers: `present()` now runs the dialogue box out the way `converse`
-  does (#696), and `hike` clicks the resume panel when the browser has refused
-  a relock (#697). Both of those had been read as `src/` bugs before.
+  does (#708), and `hike` clicks the resume panel when the browser has refused
+  a relock (#709). Both of those had been read as `src/` bugs before.
 - ~~The `snap('twelve-at-vespers')` beat~~ is written, standing at the hall's
   west end rather than the north doorway the spec named, because the doorways
   are at x -20 and -12 and the six stand from x -27.2 to -12, so the doorway
   puts half the cast behind the camera. **Do twelve read as twelve? No: two of
-  them do not** (#699). The Constable and the Steward are one white-haired man
+  them do not** (#711). The Constable and the Steward are one white-haired man
   in a black tunic, told apart by a red collar and a green one, and past about
   three metres there is nothing to tell. The three women are the clearest
   bodies in the castle and the lesson is that silhouette works where tint does
@@ -195,7 +195,7 @@ rank 2's alone.
     unchanged in 2026-09-19's frames: the climb works and the view is mostly
     parapet, with the merlons' inward faces near-black.
   - ~~**Seven trusses over the Great Hall**~~ (#527). **Moot, not answered**
-    (#701). Rank 5's covering sits under them and not one truss is visible
+    (#713). Rank 5's covering sits under them and not one truss is visible
     from the hall floor. Seven pieces of geometry nobody in the game will see.
     And rank 5's "no gap to the sky" is not quite right: a sliver of the
     Vespers sky colour shows at the hall's south-east corner.
@@ -205,13 +205,13 @@ rank 2's alone.
     constants, and neither GPU sitting had a phone in the room.
   - ~~A luma read off the Great Hall's floor~~. Overtaken twice: rank 5 read
     the covered floor at 69.8 to 89.8 of 255 (#656 to #658), and 2026-09-19
-    read it at 57.8 from the west end (#701). Both are well clear of the ~25
+    read it at 57.8 from the west end (#713). Both are well clear of the ~25
     line and the row it was for has shipped.
   - ~~**The gaol roll on the guardroom barrels**~~ (#571). Answered: it lies on
     the barrel-head rather than floating over it. It reads as an untextured
     olive slab rather than as parchment, which is a material question and not
     the support question this list asked.
-  - **And one the list did not have**: the Lauds sky (#533, #700), measured
+  - **And one the list did not have**: the Lauds sky (#533, #712), measured
     at 151.2 of 255 against Prime's 203.4, with no dawn colour in it and the
     day's own four watches out of order. See `HISTORY.md` for the table.
 
@@ -226,7 +226,7 @@ rank 2's alone.
   got before each one, which is how the remaining cause was isolated.
 - ~~`shots/play/` contains the numbered set, `twelve-at-vespers.png` among
   them~~, **and a human has looked at it and written one sentence per body:
-  told apart or not.** The second half is done (#699) and the first is not:
+  told apart or not.** The second half is done (#711) and the first is not:
   the numbered set stops where the walker stops, and the Vespers frame came
   from a hand-run look into `shots/look/` instead. That is the shape of the
   split this row keeps running into — the judgement does not need the walk,
@@ -240,9 +240,9 @@ rank 2's alone.
   beat and cannot run it. If a session is asked to take the run without one,
   the honest output is the beat and a note, not a claim.
 - ~~The fourth body is still owed the run's photograph~~ (#606). **Taken**
-  (#699): Marged, Nest and Lady Alys are in `shots/look2/`, and `Woman.glb`
+  (#711): Marged, Nest and Lady Alys are in `shots/look2/`, and `Woman.glb`
   does the job the tint was being asked to do.
-- **Rank 1, the walker on the stair, gates it** (#698). Until `hike` stops
+- **Rank 1, the walker on the stair, gates it** (#710). Until `hike` stops
   driving the player up the Chapel Tower ramp, the day stops at the second
   bell, and no amount of looking answers that.
 - The journal beat's walk assertion (#659) has been run on a GPU now, three

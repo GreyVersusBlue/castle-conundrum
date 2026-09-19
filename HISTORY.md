@@ -6699,8 +6699,8 @@ measured what it shipped.
 
 **Rank 2, on `claude/r2-gpu-run-2`, no lane, in its own `git worktree`**
 (#624's rule). `npm run play` was run four times on Devon's machine. It exits
-non-zero every time and the day still stops at the second bell. Decisions #696
-to #703. **Nothing in `src/` changed**; `test/play-castle.mjs` changed by 67
+non-zero every time and the day still stops at the second bell. Decisions #708
+to #715. **Nothing in `src/` changed**; `test/play-castle.mjs` changed by 67
 lines in two helpers and a comment.
 
 **The judgement half of the row is done.** The twelve at Vespers, the Lauds
@@ -6736,7 +6736,7 @@ further from a body standing still. In run four he walks to every one of them
 and comes up short. The beats fail either way, and they fail for a different
 reason, and only one of those reasons is now open.
 
-- **`present()` never shut the dialogue it opened** (#696). The first `present`
+- **`present()` never shut the dialogue it opened** (#708). The first `present`
   of the day is the merchant at Terce. `shots/play/19-aborted.png` from run one
   is the diagnosis in one frame: Thomas Wykes's box still open, Present still
   on it. `converse` runs a box out with up to ten E presses and `present` did
@@ -6754,7 +6754,7 @@ reason, and only one of those reasons is now open.
   `converse` already had.
 
 - **The browser refuses a relock partway through a day, and nothing clicked the
-  panel the castle puts up** (#697). Run two lost the pointer twice with no
+  panel the castle puts up** (#709). Run two lost the pointer twice with no
   dialogue anywhere near it: `locked false` at the pouch in the chapel, then
   the journal's J/J handed the castle back (W moved 1.30 m), then `locked
   false` again on the walk west, 49.9 m short of the cook.
@@ -6784,7 +6784,7 @@ reason, and only one of those reasons is now open.
   #661 built the panel for.
 
 - **What is left is #630's walker, and it stopped at #630's own coordinate**
-  (#698). Run three, with both fixes in, drove the player up the Chapel Tower's
+  (#710). Run three, with both fixes in, drove the player up the Chapel Tower's
   stair ramp and left him there: `stopped 49.4m short at (22.4, 15.2) L1`, then
   `38.1m short at (23.4, 14.4) L1`. #630 recorded its own last stall at
   **(23.4, 14.4) on level 1, partway up the Chapel Tower's stairs**, named the
@@ -6798,7 +6798,7 @@ reason, and only one of those reasons is now open.
 
 ### What somebody looked at
 
-- **The Constable and the Steward are the same man in two collars** (#699).
+- **The Constable and the Steward are the same man in two collars** (#711).
   This is the answer to `PLAN.md`'s standing Risk and to Q53, and it is no.
 
   **Sir Roger Lestrange, the Constable** — white hair and beard, black tunic,
@@ -6827,7 +6827,7 @@ reason, and only one of those reasons is now open.
   of them is a man in a black tunic. The merchant is not in the castle at
   Vespers at all.
 
-- **The Lauds sky has its own number and no dawn in it** (#700; #533's GPU
+- **The Lauds sky has its own number and no dawn in it** (#712; #533's GPU
   criterion). One camera in the outer ward at (-20, 0) pitched up 0.55 rad, a
   360x200 px patch of sky, mean RGB of 255, Prime measured twice and repeating
   to the decimal:
@@ -6853,7 +6853,7 @@ reason, and only one of those reasons is now open.
   between the second and the third. Whoever takes #533's second half has two
   jobs: give Lauds a colour, and put the four in order.
 
-- **The hall covering hides the trusses, and it does not close** (#701).
+- **The hall covering hides the trusses, and it does not close** (#713).
 
   **#527 is moot rather than answered.** Whether `structure-cross.glb`
   stretched to 0.5 x 2.5 x 7.25 reads as a hammerbeam or as scaffolding does
@@ -6874,7 +6874,7 @@ reason, and only one of those reasons is now open.
   ~25 line, so the room is not dark; one wall of it is.
 
 - **Five checks in `test/play-castle.mjs` are wrong, and two can only be wrong
-  on a GPU** (#702). All five fire before the player takes a step, in all four
+  on a GPU** (#714). All five fire before the player takes a step, in all four
   runs, identically.
 
   **`every texture is at the GPU anisotropy ceiling` — `cap 16, worst 1, 130
@@ -6901,7 +6901,7 @@ reason, and only one of those reasons is now open.
   `IN Scene` for all three.
 
 - **And one bug that is not a check failing, it is every frame of the game**
-  (#703). The interact prompt reads **`Press E to talk to the Sir Roger
+  (#715). The interact prompt reads **`Press E to talk to the Sir Roger
   Lestrange`**. `src/interaction.js:143` builds ``Press E to talk to the
   ${shown.name}`` and all thirteen of `data/npcs.json`'s `cast` carry a proper
   name, so it is "the Marged", "the Father Anselm", "the Nest", "the Lady
