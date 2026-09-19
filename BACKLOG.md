@@ -448,7 +448,7 @@ which is what makes that survivable (#522).
 | 2 | The GPU run: the day end to end, and somebody looks at the twelve (the run happened, #624 to #630) | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
 | 4 | A second day: increment 3, the town half and the bells question (4b, the fact that changes, shipped #646 to #649) | 2+ | Opus 5 | 4a container, 4c local | — | A (4a), B (4c) | | [A second day](SPECS.md#a-second-day) |
 | 6 | Life: a populace: the fifty, the activity clips and the ambient talk | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
-| 7 | Sound: somebody listens to the seven beds, then a bed at a point, the four bells, event sounds | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
+| 7 | Sound: somebody listens to the seven beds and the four rings, then event sounds (a bed at a point and the rings shipped, #680 to #683) | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
 | 8 | Side quests: the seven errands left of the dozen | 2+ | Opus 5 | Container | — | A | | [Side quests](SPECS.md#side-quests) |
 | 9 | A castle to get lost in: the town, the rock and river | 2+ | Opus 5 | Container | **after 4c** | B | | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
 | 10 | Bodies: a shared low-poly rig for the fifty (the child and the hound shipped, #643 to #645) | 1 | Fable 5.1 | Local: net | — | C | | [Bodies](SPECS.md#bodies) |
@@ -570,15 +570,26 @@ its id first and a drum room's storey second, with no default, and
 43 zones to a bed. The cross-fade is 1.2 s on the HUD's own room change
 (#515), and a bed is built when entered and torn down when faded.
 
-**What is left, in order.** First, somebody with speakers listens (#53):
-every number in the block is a guess and the file says so. Then a bed at a
-point per room through a panner, the way the bell already is, so the kitchen
-is heard from the ward outside its door rather than switching on at the
-threshold. Then the four bells given a character each, which is a `partials`
-and `gain` change to the existing `bell` block. Event sounds still wait on
-rank 6's activity clips. Recorded CC0 audio is admitted since #548, named by
-`data/sounds.json` and run through `tools/encode-assets.mjs` like any asset
-(#506), and none has been looked for.
+**A bed at a point and the four rings shipped on 2026-09-18** (#680 to
+#683). Every room with a bed is a source, heard through a panner of its own
+at the point of the room nearest the player, and the nearest three within
+14 m sound at once: the kitchen from the ward outside its door, and the hall
+at the player's own head across the threshold with no fade at the door. The
+ward stays in the head. A drum's storeys with the same bed are one source,
+so a stair inside a tower fades nothing. `ambient.spatial` is the whole of
+it, `bedSources`, `sourcePoint` and `audibleFrom` in `src/audio.js` are pure
+over the plan, and `test/layout.mjs` check 13 holds all 30 sources to a
+point inside their own footprint. The bell rings by the engine's own `n`:
+one stroke for Terce, two for Sext, six for Vespers, three slow for the
+summons, in `bell.rings`.
+
+**What is left, in order.** Somebody with speakers listens (#53): every
+number in both blocks is a guess and the file says so, and the two most
+likely wrong are 14 m of earshot through a stone wall and a tower roof heard
+from the hall under it. Event sounds still wait on rank 6's activity clips.
+Recorded CC0 audio is admitted since #548, named by `data/sounds.json` and
+run through `tools/encode-assets.mjs` like any asset (#506), and none has
+been looked for.
 
 ## Side quests
 

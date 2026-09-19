@@ -443,12 +443,18 @@ and has no rain, and the garden cannot be stood in (#469), so none of the
 three has a bed (#621). Scope and Acceptance are kept as written, as the
 record of what was asked for.
 
-**The next increment is a bed at a point.** A `PannerNode` per sounding bed at
-its room's centre off the plan, the way `bellAt` already places the bell, with
-the nearest few beds sounding at once rather than one; open ground stays in
-the head. The Node criterion is that every bed-bearing room yields a point
-inside its own bounds; the rest is ears (#53). After it, the bells, which
-Dependencies below already describes.
+**The second increment, a bed at a point and the four rings, shipped on
+2026-09-18** (#680 to #683). A `PannerNode` per source, at the point of the
+room's footprint nearest the player rather than its centre (#680, because the
+south walk is 18 m long), the nearest three within 14 m sounding at once, open
+ground in the head; a drum's storeys with the same bed are one source (#681);
+`bell.rings` gives the four rings a stroke count and a gap each (#682). The
+Node criterion held is that every source is heard from a point inside its own
+footprint, from anywhere; the rest is ears (#53). `ambient.spatial` in
+`data/sounds.json` is the whole of the tuning.
+
+**What is left is event sounds**, which Dependencies below says wait on rank
+6, and the listening.
 
 ### Scope
 

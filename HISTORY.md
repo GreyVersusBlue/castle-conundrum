@@ -6223,3 +6223,96 @@ once: `plan-vs-scene.mjs` reads a live page, and three of its beats now depend o
 how far that page has got by the time the read happens. #633 measured the chapel
 candles tracking machine load in one afternoon. This is the second.
 
+## Sound, the second increment: a bed at a point, and four rings that are not the same bell (2026-09-18)
+
+**Ranked row 7's second increment, on `claude/r7-bed-at-a-point`, lane E, in
+a `git worktree`** beside other sessions, so the band is #680 to #683 and
+taken clear of the #660s the shared checkout was using (#620's rule). What
+`SPECS.md` asked for after the beds: a panner per bed at a point off the plan,
+the nearest few sounding at once, open ground in the head; and the four bells
+given a character each. Both shipped. `npm test` thirteen suites green on the
+Windows machine this was written on, `npm run build` green. `npm run play`
+was not run, and nothing here has been heard (#53): the machine had no
+speakers on the session.
+
+- **A source is heard from the point of its room nearest the player, not
+  from the room's centre** (#680). `SPECS.md` said the centre, the way
+  `bellAt` places the bell, and the bell is a bell: a thing at a point. A
+  room tone is the room, and the south walk is 18 m long; a source at its
+  middle is one heard from the far end of the walk and not from the merlon
+  beside you. `sourcePoint` clamps the player into the room's box, or onto
+  its disc, at ear height over the nearest of its floors. Inside the room
+  that is the player's own head, which is what a room tone is inside its
+  room, and the bed fills the head across the threshold with no fade at the
+  door at all; from the ward it is the near wall, which is where the kitchen
+  is heard from outside. The nearest three within 14 m sound at once
+  (`audibleFrom`), asked again every 2 m of ground and on every room change,
+  and the points move every frame. Open ground stays in the head, faded up
+  and down on the HUD's own room change as before (#515, #622), because a
+  ward has no near wall to be heard from. `ambient.spatial` is the whole of
+  it, with `earMetres` held to `EYE_HEIGHT` by check 13. The panners are
+  `equalpower` and not the bell's HRTF: a room tone has no direction worth a
+  head model, and three HRTF panners is a cost a phone notices.
+
+- **A drum's storeys with the same bed are one source** (#681). The first
+  draft keyed sources by room, and a stair climbed inside the King's Tower
+  was the first floor still sounding 4 m below while the top room faded up
+  over it: two fires, at every stair, which is the storey fade #623 built
+  `bedOf`'s second step to refuse. The key is the drum and the bed, so the
+  muniment room under the same drum is a chamber and its own source. 40
+  rooms with a bed, 30 sources, 6 of them a drum's storeys merged. Check 13
+  holds every merged source's rooms to one footprint, because the merge is
+  only right while they share one.
+
+- **The four rings are `bell.rings`, by the engine's own `n`** (#682). The
+  day starts at Prime with no bell, so `bell:1` is the ring that brings Terce
+  and `bell:4` the one that moves no watch. One stroke for Terce, two for
+  Sext, six a little quicker and quieter for Vespers, which is the peal
+  `SPECS.md` asked for, and three slow and heavy for the summons, which is a
+  passing bell. Each gap is the file's give or take 8 %, because a man on a
+  rope is not a clock. `QuestManager.handleBell` passes the `n` off the event
+  it already reads, and `test/quest.mjs`'s recorder holds the four to
+  `1,2,3,4`. Check 13 holds the block to every `n` the engine can emit and no
+  other; `ringOf` a ring the file has nothing for is one plain stroke, and
+  the check is what keeps that from being heard.
+
+- **The storey fact moved out of the browser suite, and the browser suite
+  holds the seams only** (#683, #529 again). `test/map.mjs` 2b used to hand
+  `enter` the King's Tower first floor by hand and want one bed; under
+  sources that is a fact about `bedSources` and provable in Node, and the
+  first rewrite that stood the camera in the first floor for real put a
+  fourth room on the visited set that section 3 counts three of. What 2b
+  holds now is what only a page can: that `main.js` hands the audio the plan
+  (`placeBeds`) and the head's position (`at`) at all, read as three rooms
+  heard from the ward at a distance, the hall at the head in the frame of
+  the change, the ward fading with most of 1200 ms left, and the tower source
+  the loop placed being the drum's. `ambience()` grew `head` and `placed`
+  for it.
+
+**Broken on purpose, from green (#34).**
+
+1. `sourcePoint`'s x clamp replaced with the player's own x. `layout` exited
+   1 on 24 sources, the first `source "clerk-office/0" is heard from
+   (-200.00, -14.00), which is outside its own footprint`.
+2. `"3"` deleted from `bell.rings`. `layout` exited 1: `the engine rings
+   bell:3 and data/sounds.json's bell.rings has nothing for it`.
+3. `handleBell` calling `bell()` with no number. `quest` exited 1: `and each
+   ring carries its number, first to fourth — ,,,`.
+4. `audio.at(camera.position)` deleted from the render loop. `map` exited 1
+   on five, the first `and 0 rooms are heard from outside, each from its near
+   wall within 14 m — []`.
+5. `audio.placeBeds(castle.plan)` deleted. `map` exited 1 on the same five.
+6. The head bed kept indoors (`enter` handing `zoneBed` through for a room).
+   `map` exited 1: `into the Great Hall and the bed is the hall's, with
+   nothing in the head — {"bed":"hall","head":"hall",...}`.
+
+**What was measured.** `data/sounds.json` 188 lines to 207. `src/audio.js`
+363 to 538. `test/layout.mjs` 1191 to 1262, `test/map.mjs` 259 to 269. Seven
+files, 364 lines added and 77 removed. No asset added.
+
+**What nobody has heard.** All of it, again. The three most likely to be
+wrong: 14 m of earshot, which is through a stone wall as often as not, since
+a panner knows distance and not occlusion; a tower roof's wall walk bed heard
+12.5 m up from inside the Great Hall under it, which break 6's output showed
+placed; and whether a 1.5 m reference with a rolloff of 2 leaves a kitchen
+audible at all from 7 m across the ward.

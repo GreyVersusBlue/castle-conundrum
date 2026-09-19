@@ -397,7 +397,7 @@ function rig({ saved = null, withSideQuests = true, quests = null, cast = npcDef
   // The recorder standing in for src/audio.js. It has the one method the
   // manager calls; a suite that hears nothing is the whole point (#53), so what
   // is asserted is the call and never a sound.
-  const audio = { bells: 0, bell() { this.bells++; } };
+  const audio = { bells: 0, rung: [], bell(n) { this.bells++; this.rung.push(n); } };
   const state = saved ?? freshState(quest);
   const engine = createMystery({ mystery, npcs: cast, state });
   const restarts = { n: 0 };
@@ -745,6 +745,9 @@ function rig({ saved = null, withSideQuests = true, quests = null, cast = npcDef
   // the sound is on the engine's own bell:<n>, which is the only thing all
   // four rings have in common.
   check(r.audio.bells === 4, 'four rings, four bells', `${r.audio.bells}`);
+  // And each says which it is: the file gives the four a character apiece
+  // (#682), and a `bell()` with no number is one stroke every time.
+  check(r.audio.rung.join() === '1,2,3,4', 'and each ring carries its number, first to fourth', r.audio.rung.join());
   // A fall named here is the ending, and it is not the same one as three refusals.
   r.ui.say('nobody', []);
   check(r.qm.stage === 'fall' && r.ui.epilogue.class === 'fall' && r.qm.judged, 'calling it a fall ends the day');

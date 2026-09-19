@@ -340,8 +340,10 @@ export class QuestManager {
     const effects = this.engine.ring();
     // The sound is on the engine's own `bell:<n>`, which every ring emits and
     // which a day already ended emits none of, so the fourth ring rings and a
-    // press after the verdict does not (#520).
-    if (effects.some((e) => e.type === 'event' && e.name.startsWith('bell:'))) this.audio?.bell();
+    // press after the verdict does not (#520). Which ring it is goes with it,
+    // because the four are not the same bell (#682).
+    const rang = effects.find((e) => e.type === 'event' && e.name.startsWith('bell:'));
+    if (rang) this.audio?.bell(Number(rang.name.slice('bell:'.length)));
     if (this.engine.watch !== before) this.applyWatch(this.engine.watch);
     this._surface(effects);
     this._onChange?.(this._snapshot());

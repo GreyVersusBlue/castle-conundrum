@@ -152,11 +152,12 @@ try {
   check(out.here.length === 0 && out.visited.length === tour.length, 'out in the ward: no ring, and the ward is not a room on the map', `${out.here.join(',')} / ${out.visited.length}`);
 
   /* ------------------------------- 2b: the same change cross-fades the bed --- */
-  // The Sound row's seam. test/layout.mjs check 13 proves in Node that every
-  // zone has a bed; what it cannot see is that main.js hands the room change
-  // to the audio at all, which is one line in the render loop. No speaker is
-  // asked anything (#53): `ambience()` says which beds exist, not what they
-  // sound like.
+  // The Sound row's seams. test/layout.mjs check 13 proves in Node that every
+  // zone has a bed and every source a point inside its own room; what it
+  // cannot see is that main.js hands the room change and the head's position
+  // to the audio at all, which is two lines in the render loop and one after
+  // the build (#680). No speaker is asked anything (#53): `ambience()` says
+  // which beds exist and where each is heard from, not what they sound like.
   //
   // THE READ IS IN THE FRAME THE BED CHANGES, NOT AFTER IT. The first version
   // stood in the hall with `standIn`, then read, and passed on a GPU and
@@ -172,7 +173,7 @@ try {
   // stood in, and at the points the tour found, so section 3's counts do not
   // move.
   {
-    const fade = await page.evaluate(async () => (await (await fetch('data/sounds.json')).json()).ambient.fadeSeconds);
+    const { fade, spatial } = await page.evaluate(async () => { const a = (await (await fetch('data/sounds.json')).json()).ambient; return { fade: a.fadeSeconds, spatial: a.spatial }; });
     const hop = (p) => page.evaluate((at) => new Promise((resolve) => {
       const before = window.__audio.ambience().bed;
       window.__cam.position.set(at.x, at.y, at.z);
@@ -186,28 +187,37 @@ try {
     const settle = () => page.evaluate((ms) => new Promise((r) => setTimeout(r, ms)), fade * 1000 + 300);
     await settle();
     const ward = await page.evaluate(() => window.__audio.ambience());
-    check(ward.bed === 'ward' && ward.sounding.join() === 'ward', 'out in the ward, the ward\'s bed and nothing else', JSON.stringify(ward));
+    check(ward.bed === 'ward' && ward.head === 'ward' && ward.fading.length === 0, 'out in the ward, the ward\'s bed is in the head and nothing is fading', JSON.stringify(ward));
+    // The kitchen heard from the ward outside its door (#680): rooms within
+    // earshot sound from their near wall, at a distance, and not from the head.
+    check(ward.placed.length >= 1 && ward.placed.length <= spatial.atOnce && ward.placed.every((p) => p.metres > 0 && p.metres <= spatial.hearMetres),
+      `and ${ward.placed.length} rooms are heard from outside, each from its near wall within ${spatial.hearMetres} m`, JSON.stringify(ward.placed));
+    check(ward.sounding.length === 1 + ward.placed.length, 'and those are all that is sounding', ward.sounding.join(', '));
     const hall = await hop(stood['great-hall']);
-    check(hall.bed === 'hall', 'into the Great Hall and the bed is the hall\'s', JSON.stringify(hall));
-    check(hall.sounding.length === 2 && hall.sounding.includes('ward') && hall.sounding.includes('hall'),
-      'and the ward is still sounding under it', hall.sounding.join(', '));
+    check(hall.bed === 'hall' && hall.head === null, 'into the Great Hall and the bed is the hall\'s, with nothing in the head', JSON.stringify(hall));
+    check(hall.sounding.includes('ward') && hall.sounding.includes('hall'), 'and the ward is still sounding under it', hall.sounding.join(', '));
     // Still there in the frame of the change is true of a cut as well: the
     // teardown is a timer and no timer has run yet. What makes it a fade is
     // that the ward has most of `fadeSeconds` left to live.
     const left = hall.fading.find((f) => f.name === 'ward')?.msLeft ?? 0;
     check(left > fade * 500, `and it is a cross-fade, not a cut: the ward has ${Math.round(left)} ms left of a ${fade * 1000} ms fade`, JSON.stringify(hall.fading));
+    // Inside a room its source is at the player's own head, not across the room.
+    const own = hall.placed.find((p) => p.bed === 'hall');
+    check(!!own && own.metres < 0.5, 'and the hall\'s own bed is at the player\'s head, in the same frame', JSON.stringify(hall.placed));
     await settle();
     const faded = await page.evaluate(() => window.__audio.ambience());
-    check(faded.sounding.join() === 'hall', 'a fade later the ward is torn down and the hall is alone', faded.sounding.join(', '));
-    // Two tower rooms are one bed: a storey climbed is not a fade. Said to the
-    // audio directly, because standing in the first floor would be a fourth room.
+    check(!faded.sounding.includes('ward') && faded.sounding.includes('hall') && faded.fading.length === 0, 'a fade later the ward is torn down and the hall stays', faded.sounding.join(', '));
+    // A drum's storeys are one source (#681), so a stair climbed inside the
+    // King's Tower fades nothing. That the two rooms share a source is
+    // test/layout.mjs's to say (#529); what only the page can say is that the
+    // source the loop placed for the top room is the drum's and not the
+    // room's. Standing in the first floor as well would be a fourth room on
+    // the visited set, and section 3 counts three.
     await hop(stood['kings-tower-2']);
     await settle();
-    const same = await page.evaluate(() => {
-      window.__audio.enter({ id: 'kings-tower-1', level: 1, drum: 'kings-tower', open: false });
-      return window.__audio.ambience();
-    });
-    check(same.bed === 'tower' && same.sounding.join() === 'tower', 'the King\'s Tower top room to its first floor is the same bed, and nothing fades', JSON.stringify(same));
+    const up = await page.evaluate(() => window.__audio.ambience());
+    const tower = up.placed.filter((p) => p.bed === 'tower');
+    check(up.bed === 'tower' && tower.length === 1 && tower[0].key === 'kings-tower:tower' && tower[0].metres < 0.5, 'in the King\'s Tower top room: one tower source, the drum\'s, at the head', JSON.stringify(up.placed));
     await page.evaluate(() => { window.__cam.position.set(-10, 1.7, 0); });
     await frames();
   }
