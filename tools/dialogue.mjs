@@ -11,7 +11,7 @@
 // data/quests/<id>.json's `stages`, and what a state is worth — the clue it
 // grants — lives in mystery.json's `clues` under `source: {npc, state}`. Adding
 // one state to one person is four edits in three files, and nothing in any of
-// them shows you the fourth. There are 13 speakers, 40 states and 118 lines in
+// them shows you the fourth. There are 13 speakers, 62 states and 182 lines in
 // there now and the next content row triples that.
 //
 // So: one text file, `dialogue/castle.dlg`, where a speaker's whole
@@ -479,7 +479,7 @@ export function problems(model, parsed) {
  * `setValue` of that one array, a state only the .dlg has is an `addKey`, and a
  * state only the file has is a `deleteKey`. A state whose lines are identical
  * is not touched at all, which is what makes a compile with nothing to do a
- * zero-byte diff rather than a reformat of all 118 lines.
+ * zero-byte diff rather than a reformat of all 182 lines.
  */
 export function applyToNpcs(source, parsed) {
   const cast = JSON.parse(source).cast;

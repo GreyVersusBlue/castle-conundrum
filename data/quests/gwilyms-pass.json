@@ -1,0 +1,55 @@
+{
+  "id": "gwilyms-pass",
+  "title": "A pass for the porter's boy",
+  "npc": "porter",
+  "ward": "inner",
+  "comment": "One of the seven that finish the dozen (BACKLOG.md rank 8), and the one `WISHLIST.md` named: a letter for the town that needs a gate pass, and the Steward signs gate passes. It came out as a boy rather than a letter because the boy is the other thing that list named, and both of them are the same errand from the gate's side. Lore's `gwilym-porter`: Gwilym has kept the cross-wall gate twenty years and his father kept it before him, the gate book is in the two hands, and Gwilym's is the better of them because his father had him taught his letters by the chaplain of that day for the purpose. Lore's `household-and-works`: the Steward keeps the household, the cellar, the muster and the passes.",
+  "pressComment": "THE PRESS IS THE SECOND ROAD AND IT IS NOT A SHORTCUT PAST ANYTHING. `press:steward:summons-is-stewards` is the player proving the summons was in Piers Marrable's hand, which is the mystery's own beat and is worth nothing here except that a man who has just admitted one thing signs the next thing put in front of him without reading it. The errand is the same length either way: the pass still has to be carried back to the gate.",
+  "voiceComment": "The Steward's `admits` is not named here and no stage of this file is his. What this quest changes is Gwilym's lines, and Gwilym's own owned state is `admits` too, on the press on `door-unbarred`, which this file also does not name.",
+  "start": "unasked",
+  "stages": {
+    "unasked": {
+      "objective": "Nobody has asked you for anything at the gate.",
+      "dialogueState": "default",
+      "transitions": [
+        {
+          "on": "talked:porter",
+          "to": "asking"
+        }
+      ],
+      "comment": "Silent until the first conversation with him, which is the one that lands `porter-log` and `porter-barred`. Both of those are the mystery's and neither is touched: his fourth `default` line is about a boy of eleven."
+    },
+    "asking": {
+      "objective": "Gwilym's son is eleven and this gate is his after him. There is a man in Mereford who will teach him his letters, and a boy does not go out of the gate without a pass. Piers Marrable signs passes.",
+      "dialogueState": "pass-asking",
+      "transitions": [
+        {
+          "on": "talked:steward",
+          "to": "signed"
+        },
+        {
+          "on": "press:steward:summons-is-stewards",
+          "to": "signed"
+        }
+      ],
+      "comment": "He has asked Father Anselm twice and will not ask a third time, because twice is asking and three times is something else. He will not ask the Steward at all: Piers Marrable signs for a King's clerk who asks in a corridor and never for a porter who asks at a gate, and Gwilym has twenty years of knowing that."
+    },
+    "signed": {
+      "objective": "The pass is signed: Michaelmas to Lady Day, three mornings a week, out at Prime and in before the gate shuts. Take it to the gate.",
+      "dialogueState": "pass-signed",
+      "transitions": [
+        {
+          "on": "talked:porter",
+          "to": "gone"
+        }
+      ],
+      "comment": "He did not ask whose boy. That is the line either road arrives on, because on one of them he was being asked a favour by the King's clerk and on the other he had just been shown his own hand on a dead man's summons, and on neither of them was he reading."
+    },
+    "gone": {
+      "objective": "It is written in the gate book in Gwilym's hand, and one day it will be written in his son's.",
+      "dialogueState": "pass-gone",
+      "terminal": true,
+      "comment": "Terminal. Twenty years of his and twenty of his father's, and it is the first thing either of them has ever taken out through that gate."
+    }
+  }
+}

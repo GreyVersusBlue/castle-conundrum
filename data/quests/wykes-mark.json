@@ -1,0 +1,39 @@
+{
+  "id": "wykes-mark",
+  "title": "The mark on the bed face",
+  "npc": "merchant",
+  "ward": "outer",
+  "comment": "The last of the seven that finish the dozen (BACKLOG.md rank 8). Lore's `thomas-wykes`: he has a yard of dressed stone in Mereford that the works cut short or cut wrong and sold him at a price, which he carts to Hensford market and sells at another. Lore's `gruffudd-mason` is the answer: Gruffudd cut stone on the north curtain in the second and third years of the works and fell from it, and his son was Hywel ap Gruffudd, who is at the foot of the Chapel Tower stair this morning. Nothing in it is a clue and nothing in it is granted: a mason's mark on a block in a town yard is forty years old and has no more to do with the stair than the crosses at the springings do.",
+  "scheduleComment": "THIS IS THE ONLY ERRAND WHOSE PERSON IS NOT IN THE CASTLE ALL DAY, AND THE GRAPH IS SHAPED AROUND IT. `mystery.json`'s schedule puts Thomas Wykes at the cart at Terce and nowhere at Prime, Sext or Vespers, so both of the conversations this quest turns on are one bell's, and a player who takes the question to the lodge after Sext will finish the errand without hearing him say so. That is why the payoff is written into the objective and into Ieuan's road rather than only into Wykes's last lines: the journal's Done heading is what a player who missed the cart gets, and it carries the whole of it.",
+  "start": "unasked",
+  "stages": {
+    "unasked": {
+      "objective": "Nobody has asked you to read anything cut into stone.",
+      "dialogueState": "default",
+      "transitions": [
+        {
+          "on": "talked:merchant",
+          "to": "asking"
+        }
+      ],
+      "comment": "Silent until the first conversation at the cart, which is the one that lands `merchant-stone`. His fourth `default` line is the block in his yard, and his reason for asking is the one thing about him the mystery never shows: he will not sell a stone with a dead man's mark on it to a man who does not know the mark is there."
+    },
+    "asking": {
+      "objective": "A block in Wykes's yard under the town wall has a mason's mark struck in the bed face, two strokes and a hook. The lodge keeps the marks. Ask Ieuan.",
+      "dialogueState": "mark-asking",
+      "transitions": [
+        {
+          "on": "talked:apprentice",
+          "to": "read"
+        }
+      ],
+      "comment": "Cut deep, on the face that would never be seen once the block was laid, which is where a mason cuts his own. Ieuan counts things, which is why Hywel took him (lore's `ieuan-apprentice`), and the lodge's board is where the marks are kept."
+    },
+    "read": {
+      "objective": "The mark is Gruffudd's, who cut the north curtain in the third year of the works and fell off it. He was Hywel's father. The block goes back up to the lodge on Wykes's own cart, for nothing.",
+      "dialogueState": "mark-read",
+      "terminal": true,
+      "comment": "Terminal, and the ending is the merchant's rather than the boy's: a man of the town who comes and goes through this ward as if it were his own carts a block back up the hill on the day the mason's son is being buried, and tells the Hensford buyer whatever he likes. A player who is still at Terce hears him say it; a player who is not has it on the Done heading, which was the trade this errand made with his schedule."
+    }
+  }
+}

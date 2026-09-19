@@ -1,0 +1,50 @@
+{
+  "id": "stewards-slate",
+  "title": "The kitchen's slate",
+  "npc": "steward",
+  "ward": "inner",
+  "comment": "One of the seven that finish the dozen (BACKLOG.md rank 8). Lore's `marged-cook`: Marged keeps her reckoning in chalk on a slate against the west wall because she cannot write and will not be cheated, and the Steward has learned to read it. Lore's `royal-inspections` is why it matters today rather than at Michaelmas. Nothing here is the mystery's: the Steward's summons, his denial and his admission are all `default` and `admits`, which this file does not name, and `talked:cook` is an event the kitchen emits whatever anybody is asking her about. What it is for is that Piers Marrable's one beat in the mystery is a man protecting himself, and eleven years of a cook's arithmetic going into the roll under her own name is the same man doing the other thing.",
+  "voiceComment": "`admits` is the press on `summons-is-stewards` and is not named here. If the player presses him mid-errand, `_syncStates` puts the press over the errand and the admission is what is heard, which is #578's second half.",
+  "start": "unasked",
+  "stages": {
+    "unasked": {
+      "objective": "Nobody has asked you to write anything down.",
+      "dialogueState": "default",
+      "transitions": [
+        {
+          "on": "talked:steward",
+          "to": "asking"
+        }
+      ],
+      "comment": "Silent until the first conversation with him. His fourth `default` line is the one about the slate, and it lands in the same conversation as `steward-denies`, which is the mystery's and is untouched."
+    },
+    "asking": {
+      "objective": "Marged keeps the kitchen's whole account in chalk on a slate against the west wall, and cannot write. Go and read it with her.",
+      "dialogueState": "slate-asking",
+      "transitions": [
+        {
+          "on": "talked:cook",
+          "to": "copied"
+        }
+      ],
+      "comment": "He will not be seen copying a cook's chalk himself and he will not have her brought up. The exchequer's man is a day's ride out and a slate is a thing a Caernarfon clerk decides not to look at."
+    },
+    "copied": {
+      "objective": "You have the kitchen's year in a hand Caernarfon will read. Take it back to Piers Marrable.",
+      "dialogueState": "slate-copied",
+      "transitions": [
+        {
+          "on": "talked:steward",
+          "to": "ruled"
+        }
+      ],
+      "comment": "The figures are hers and they are not over. Eleven years of feeding forty mouths with one girl, one boy and whatever the household lets her have, and no line anywhere in his books says so."
+    },
+    "ruled": {
+      "objective": "The kitchen's account is in the household roll in a clerk's hand, under Marged's own name.",
+      "dialogueState": "slate-ruled",
+      "terminal": true,
+      "comment": "Terminal. Under her name and not under his, which he asks for and then asks you not to tell her, which is the whole of Piers Marrable in two lines."
+    }
+  }
+}

@@ -48,7 +48,10 @@ async function init() {
   const sideQuests = await Promise.all(sideQuestFiles.map((f) => loadJSON(`data/quests/${f}`)));
   const sideProblems = validateQuestSet(
     sideQuestFiles.map((file, i) => ({ file, def: sideQuests[i] })),
-    { npcs: npcData.cast, mystery: mysteryData, actions: QuestManager.sideActions, reputation: npcData.reputation },
+    // `tokens` is rule 6's and nothing else's (#693): the frame's own token
+    // keys, so the set validator can see that Sir Roger's `default` lines are
+    // what pose `{ACCUSE}` and refuse an errand that would end on top of them.
+    { npcs: npcData.cast, mystery: mysteryData, actions: QuestManager.sideActions, tokens: Object.keys(questData.tokens ?? {}), reputation: npcData.reputation },
   );
   if (sideProblems.length) throw new Error(`data/quests/ is not a valid quest set:\n  - ${sideProblems.join('\n  - ')}`);
 

@@ -414,8 +414,13 @@ did not move and the version is still 6.
 
 ### Dependencies
 
-- **Two of rank 8's seven errands wanted somebody from this file** and have
-  one now.
+- **Two of the side quests row's errands were specced as wanting somebody
+  from this file and in the end did not.** That row closed on 2026-09-18
+  (#691 to #695) by keeping both ideas and dropping the body each wanted: the
+  porter's boy is an errand on the porter with the boy never on screen, and
+  the child's dog was let go rather than replaced, on the ground that a dog is
+  the one of the two that is not a conversation and belongs to rank 10's
+  hound. Nothing in this row is owed to that one any more.
 - **Rank 10** is what unblocks the four deferred activities.
 - **Lanes C and D still**: `data/npcs.json`'s `cast` is read to check ids and
   tints against, and `src/main.js` spawns the ten beside the twelve.
@@ -512,208 +517,6 @@ footprint, from anywhere; the rest is ears (#53). `ambient.spatial` in
   pattern).
 - #519, #548 (synthesis-only reversed; a sound stays synthesised until a
   recording beats it, not the other way round).
-
----
-
-## Side quests
-
-**Rank 8. Size 2+. Four increments shipped on 2026-09-17** (#576 to #581,
-the journal's tab at #595, four more errands at #597 to #599, and reputation
-by ward at #612 to #615).
-`WISHLIST.md` theme 4. The format, the set validator and the cook's missing
-knife are in: `data/quests/` is the directory, `data/quests/index.json` names
-its files because a browser cannot read a directory, `validateQuestSet` in
-`src/quest-graph.js` is the rail, and `src/quest-manager.js` runs every file
-in the set off the same event stream the frame hears without a second class.
-The save is version 6: 4 for `quests`, 6 for the two ward counters. The
-journal's fourth tab is in too, five errands, and reputation. **What is left
-is the seven errands**, and what is below says which.
-
-### What shipped, in one paragraph
-
-A quest file is the frame's own graph plus `id` (which has to be the file's
-name), `npc` (whose lines it may change) and `ward` (`outer` or `inner`,
-#599). It has no actions: `QuestManager.sideActions` is empty and a file
-naming any action is refused by name. Three set rules hold it apart from the
-mystery: no stage may put its person in a state `mystery.json`'s clue graph
-owns (#577, and `_syncStates` puts a press above a side quest as the second
-half of the same rule), only one quest per person may hold a non-default
-`dialogueState` (#578, the conservative form of "two states at one bell"),
-and every `on` has to be an event the game actually emits. A fourth holds
-every file to a ward. The cook's knife turns on `clue:knife-missing`,
-`clue:knife-found` and `talked:cook`, grants nothing, and `test/quest.mjs`
-proves it by playing the same four presses of E with and without the quest
-and diffing the journals; the four that followed are held to the same diff
-in one walk through all five.
-
-### The five errands (#576, #598)
-
-| File | Person | Ward | Turns on | The favour |
-| --- | --- | --- | --- | --- |
-| `cooks-knife.json` | Marged | outer | `clue:knife-missing`, `clue:knife-found`, `talked:cook` | She points back at the lantern. |
-| `ladys-hawk.json` | Lady Alys | inner | `talked:lady`, `clue:tally-on-walk` | What the south walk is, said sooner by somebody else. |
-| `candle-count.json` | Father Anselm | inner | `talked:chaplain`, `clue:chapel-candle` | How long a man stood at the turn of his stair; and "put it to me". |
-| `sentrys-dice.json` | Dafydd | outer | `talked:sentry`, `talked:porter`, `press:porter:door-unbarred` | One more man who knew about the bar, after the porter has said it. |
-| `hywels-chisel.json` | Ieuan | outer | `talked:apprentice`, `talked:prisoner`, `press:prisoner:prisoner-inside` | Two endings: his own edge, or the forge at Prime. |
-
-Every state a stage names is one the clue graph does not own, and once a
-press moves the person the press is what is heard (#578). Each person's
-`default` got a fourth line that opens the thread on the first conversation.
-
-### The catch-up (#597)
-
-`clue:<id>` fires once. A quest reaching a stage that waits on a clue the
-player already holds is walked forward, at the end of the batch of effects
-that moved it (`_surface` is the batch; `_settleSide` after its loop), through
-every such transition until a stage waits on something not yet done, with one
-toast for the stage it ends up in. `talked:` is never caught up. A save is
-settled the same way once at construction. The knife shipped without this
-and a barrel opened before Marged mentioned it stranded the thread in
-`hunting` for the day.
-
-### What the tab shipped as (#595)
-
-"Asked of you", the journal's fourth tab, beside clues, documents read (#551)
-and the map (#589). `QuestManager.questJournal()` is what `_openJournal`
-hands the UI: every quest whose stage is no longer its `start`, with the
-objective of the stage it is at now, and null rather than an empty list when
-there are none, so the tab is not offered at all in a castle where nobody has
-asked for anything. A terminal quest goes under a Done heading with its title
-struck through rather than off the page. The Present picker inside a
-conversation is still clues alone.
-
-### What reputation shipped as (#612 to #615)
-
-Two counters the save carries, `outer` and `inner`, one moved per errand
-finished in that ward (the file's `ward` is which, #599). `SAVE_VERSION` is
-6 and the key did not move (#36). It is `day`'s case rather than `read`'s:
-`migrate` counts the terminal quests a version-5 save is already carrying,
-per ward, because zeroes would say a player who finished three errands
-yesterday had done none of them, and that is the one thing about the field
-only `migrate` can say (#37, #147). `repair`'s rail is a ceiling — each
-counter clamps to the number of quest files in that ward — and not a
-recount: a favour done is a thing that happened.
-
-`_settleSide` is where a counter moves and the only place it moves, on the
-same line the toast is written from. It cannot double-count because
-`validateQuest` has refused a terminal stage with a way out of it since
-#393, so a quest at an ending cannot move again.
-
-Two things read the counters. `data/npcs.json`'s `reputation` block holds
-`outer` and `inner` — each a list of `{at, line}`, the highest threshold
-reached winning — and `closing`, keyed to both counters added together. A
-ward's line goes on the **end** of whatever the person you walked up to was
-going to say, and who says it is the ward, off the cast's own `ward`, in
-whatever state they are standing in: it is the castle talking and not one
-more person with an errand. `closing` is one line under the verdict in the
-epilogue pane, and null for a player who ran no errand, who is shown nothing
-rather than a line saying they did nothing. It is not a dialogue state, it is
-not said on a press, and it is not said on the morning after. Thresholds ship
-at outer 2 and 3, inner 1 and 2, closing 1, 3 and 5, and `validateQuestSet`
-holds every one of them to an errand that exists to be finished.
-
-### What the dialogue format shipped, in one paragraph
-
-`dialogue/castle.dlg` (#687 to #690, 2026-09-18). 13 speakers, 40 states, 118
-lines, 20398 bytes, six sigils: `@ id | name | role | ward`, `: state`,
-`? press default on wax-matches` or `? quest cooks-knife at hunting`, `% ` that
-stage's objective, `! says clerk-cloak`, `| ` one line of dialogue. **`|` and
-`%` compile back into `data/npcs.json` and `data/quests/`, and the other four
-are rebuilt from the clue graph on every compile and refused if the file has
-drifted from them.** That asymmetry is the row's one design call: the graph
-lives in `mystery.json`'s `presses` and `clues` and the quests' `stages`, where
-`src/mystery.js`'s validator can see it, and a compiler able to invent a press
-out of a line of prose could rewire the mystery behind that validator's back.
-It is hand-run — `npm run dialogue:extract`, `:compile`, `:check` — and not a
-build step, which is where the scope line below was overruled: `dist/` has no
-transform in it on purpose, because a build-time pipeline makes `npm run dev`
-serve one thing and `dist/` another, which is #506's argument and
-`test/built.mjs`'s served-set diff failing by construction (#688). The .dlg
-sits outside `data/` so `vite.config.js` cannot publish it. The write is
-`tools/place.mjs`'s splice generalised to a nested path — `membersOf` walks any
-object or array, `locate` follows `['cast', 7, 'dialogue', 'chisel-forge']`,
-and `setValue`, `addKey` and `deleteKey` are the three edits a span makes
-possible (#689). **The authoring loop is a stub**: wire a press in
-`mystery.json`, run extract, and the state appears with its `?` line and no
-lines, and compile refuses it until somebody writes one (#690).
-`test/dialogue.mjs` is the fifteenth suite, 112 assertions, 0.3 s, both line
-endings.
-
-### Scope, next increment
-
-- **The seven left of the dozen.** `WISHLIST.md` named eight and five are
-  written. Of the three it named, one wants nobody new: a letter for the town
-  that needs a gate pass, and the Steward signs gate passes (Thomas Wykes is
-  at the cart at Terce and in the town by Sext, so it is a Terce errand on
-  him, or it is the porter's, whose one owned state is `admits`). Two want
-  rank 6's populace, because their person is not one of the twelve: a child's
-  dog in the east garden, and the porter's boy who wants his letters from the
-  clerk, who is the player. The four it never named are the next session's
-  to name, one voice each on the seven people no errand has yet (the
-  Constable, the Steward, the Clerk, the porter, Nest, Madoc, the merchant),
-  in any state the clue graph does not own.
-- **A second quest on one person**, if one is ever wanted, is what replaces
-  #578's conservative rule with a real co-activity check. Nothing needs it
-  yet and nothing should invent it before something does.
-- **A threshold per new errand, or not.** Every errand added raises its
-  ward's ceiling, so `data/npcs.json`'s `reputation` block may gain a band;
-  it does not have to, and a session that adds errands and leaves the
-  thresholds alone is still green. What is not optional is that the block
-  stays inside the ceilings, which `validateQuestSet` says.
-
-### Acceptance, next increment
-
-- Every new quest file passes `validateQuestSet` as it ships and each new
-  rule, if any, is broken on purpose once (#34).
-- A new quest shows up on the tab the moment it leaves its start stage, with
-  no change to `src/ui.js`: the tab reads the graph, so a quest file is still
-  the whole of a quest.
-- The walk through every errand with and without the set leaves the identical
-  journal (`test/quest.mjs`, the last block of "the next four").
-- The journal assertion is a DOM one and the save assertion is not: what a
-  reload has to survive is the stage, which version 4 carries, and the two
-  counters, which version 6 does (#39).
-
-### Open calls
-
-- **Where reputation is read out.** Recommended a line per ward threshold
-  and one in a closing pane, and that is what shipped (#614), with the ward
-  lines appended to what a person was going to say rather than replacing it.
-  The `chatter` pool was the obvious-looking home and is not one: nothing
-  plays it yet, and a pair is two bodies talking, which needs rank 6.
-- **Does a side quest ever speak on the morning after?** It does not, and
-  `_dispatchSide` returns early on day two (#576's code, `mystery.js`'s
-  `_dayLines` would cover any state it set anyway). Recommend leaving it
-  there: a second day with its own threads is rank 4's row and not this one's.
-- **Where a quest's objective lives when the tab exists.** Recommended the tab
-  and the toast both, not the tracker, and that is what shipped (#595): the
-  tracker is one line and it is the frame's (#393, #579).
-- **What a fourth `default` line costs.** Each errand opens on the fourth
-  line of a `default` set that was three, so a first conversation is one line
-  longer. Recommend leaving it: the line is last, so a player re-reading the
-  first three is not made to; and the alternative, a stage that opens on a
-  bell so the person starts on the errand's own lines, hides the mystery's
-  statements behind an errand, which is the thing #550 question 6 forbids.
-
-### Dependencies
-
-- Rank 6's populace unlocks the four errands in `WISHLIST.md`'s dozen whose
-  person is not one of the twelve; it does not block the three that need
-  nobody new, nor reputation. What the lore row left for a quest to lean on
-  is `data/lore.json`'s sixty-five facts, thirteen documents and four
-  performed pieces.
-
-### Constraints
-
-- #550 question 6 (a side quest never gates or removes a mystery clue), held
-  by `validateQuestSet` and by `_syncStates`' order.
-- #500 (a quest prop that is not already a plan piece needs one, tagged and
-  diffed like anything else). No increment yet has added a prop; the merlin
-  is a line and not a bird.
-- #36, #37 (the key does not move; a new field is a version bump through
-  `migrate` and a rail in `repair`). Met at version 6 (#612).
-- #13, #34 (the set validator exits non-zero and every rule gets broken on
-  purpose once).
 
 ---
 
@@ -1034,6 +837,33 @@ itself (#34, #500). **The finding: 970 of the castle's 1539 meshes, 63 % of
 everything it draws, is the eight tower drums.** Rank 10's fifty bodies fit
 neither skinned ceiling and are not meant to, which is the answer this row was
 taken to produce.
+
+### What the dialogue format shipped, in one paragraph
+
+`dialogue/castle.dlg` (#687 to #690, 2026-09-18). 13 speakers, 62 states, 182
+lines, 34243 bytes, six sigils: `@ id | name | role | ward`, `: state`,
+`? press default on wax-matches` or `? quest cooks-knife at hunting`, `% ` that
+stage's objective, `! says clerk-cloak`, `| ` one line of dialogue. **`|` and
+`%` compile back into `data/npcs.json` and `data/quests/`, and the other four
+are rebuilt from the clue graph on every compile and refused if the file has
+drifted from them.** That asymmetry is the row's one design call: the graph
+lives in `mystery.json`'s `presses` and `clues` and the quests' `stages`, where
+`src/mystery.js`'s validator can see it, and a compiler able to invent a press
+out of a line of prose could rewire the mystery behind that validator's back.
+It is hand-run — `npm run dialogue:extract`, `:compile`, `:check` — and not a
+build step, which is where the scope line below was overruled: `dist/` has no
+transform in it on purpose, because a build-time pipeline makes `npm run dev`
+serve one thing and `dist/` another, which is #506's argument and
+`test/built.mjs`'s served-set diff failing by construction (#688). The .dlg
+sits outside `data/` so `vite.config.js` cannot publish it. The write is
+`tools/place.mjs`'s splice generalised to a nested path — `membersOf` walks any
+object or array, `locate` follows `['cast', 7, 'dialogue', 'chisel-forge']`,
+and `setValue`, `addKey` and `deleteKey` are the three edits a span makes
+possible (#689). **The authoring loop is a stub**: wire a press in
+`mystery.json`, run extract, and the state appears with its `?` line and no
+lines, and compile refuses it until somebody writes one (#690).
+`test/dialogue.mjs` is the fifteenth suite, 112 assertions, 0.3 s, both line
+endings.
 
 ### Scope, next increment
 

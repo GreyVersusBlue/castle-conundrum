@@ -156,23 +156,24 @@ with the move — a per-row byte compare of everything outside the row that
 changed.
 
 Lane C is the `cast` block **specifically**, not all of `data/npcs.json`. R8
-writes per-person `states` and `default` line arrays, which is a
-different region of the same file and merges cleanly. R8 also owns the
+and R12c wrote per-person `states` and `default` line arrays, which is a
+different region of the same file and merges cleanly. R8 also owned the
 file's `reputation` block outright (#614), which is a third region again and
-is nobody else's. A session doing either
-should still say so in its PR. **R12c is done and it left lane C a new
-obligation**: every `dialogue` block in that file is now also
-`dialogue/castle.dlg`, and `test/dialogue.mjs` fails if the two disagree. A
-row that adds a state or rewords a line runs `npm run dialogue:extract`
-before it commits, or writes the line in the .dlg and runs
-`npm run dialogue:compile` instead (#687 to #690).
+was nobody else's. **Both rows are closed** — R12c at #687 to #690, R8 at
+#691 to #695 — so nothing is claiming that region now. **What R12c left is an
+obligation on whoever writes there next**: every `dialogue` block in that file
+is now also `dialogue/castle.dlg`, and `test/dialogue.mjs` fails if the two
+disagree. A row that adds a state or rewords a line runs
+`npm run dialogue:extract` before it commits, or writes the line in the .dlg
+and runs `npm run dialogue:compile` instead (#687 to #690).
 
 ### Three that are genuinely safe together right now
 
 **R8 (lane A), R6 (lanes C and D), R12a (no lane).** Different files, different
 suites, no gate on any of them, and the backlog's existing advice already
 points here: *"a session running beside one of those is better off on 8 or
-12."*
+12."* R8 and R12a have both closed since; the claim is left standing because
+what it was claiming is what the afternoon below tested.
 
 **The claim was tested the same afternoon and it held.** Five sessions ran at
 once — R1, R6, R7, R8 and R12a — and four of them shipped (#603 to #606, #607
@@ -285,7 +286,7 @@ its row open with its text rewritten to say what is done.
 | Row | Model | Where | Lane | Next increment |
 | --- | --- | --- | --- | --- |
 | **R2** The GPU run | Opus 5 | **Local: GPU** | none | Gate 1, above. And now four more things nobody has looked at: a fourth body, seven ambient beds nobody has heard, and what the eight tower drums actually cost. |
-| **R8** Side quests | Opus 5 | Container | A | ~~Reputation by ward~~ shipped 2026-09-17 (#612 to #615): two counters at save version 6, a line per ward threshold, one line under the verdict. What is left is the seven errands of the dozen; five of the seven need nobody new. |
+| ~~**R8** Side quests~~ | Opus 5 | Container | A | **Shipped, and the row is closed** (#691 to #695). The seven errands left of the dozen went in on 2026-09-18, one voice each on the seven people who had none, so `data/quests/` is twelve files and every person the day one schedule puts in the castle has an errand. A sixth set rule came with them: a terminal stage may not park a person whose `default` lines pose one of the frame's tokens. No `save.js` change and no version bump. |
 | **R6** Life: a populace | Opus 5 | Container | C, D | ~~The file, the validator and the first ten~~ shipped 2026-09-17 (#616 to #618): a routine is a ring per bell, nine activities on three clips the kit already had, no asset added. What is left is the other forty, the ambient talk once two bodies are within 3 m, and the four activities that want a clip — which is the half that trades with R10. **It has a number to answer to**: 20 skinned bodies per ward against a peak of 7 before the ten, 17 after (#609). |
 | ~~**R1** A fourth body~~ | Fable 5.1 | Local: net | C | **Shipped** (#603 to #606). Quaternius's Ultimate Modular Women Pack, meshopt to 1.02 MB, worn by the cook, the laundress and the lady. |
 | ~~**R7** Sound~~ | Fable 5.1 | Container | E | **First increment shipped** (#620 to #623). Seven synthesised room tones and the cross-fade. **Second shipped 2026-09-18** (#680 to #683): a bed at a point, the nearest three at once, and the four rings. What is left needs speakers (#53), then rank 6's clips for event sounds. |
@@ -296,12 +297,14 @@ shipped on 2026-09-17 (#646 to #649) without touching `save.js` at all: the
 journal it reads is `state.clues`, which the save has carried since #571. That
 is the second row in a row to sit in lane A and never write the lane's file, so
 **lane A's real membership today is R4a and whatever next wants the version
-number**, and R8's remaining work is quest files and dialogue rather than
-`save.js`.
+number**. R8 made it three in a row: closing the dozen was quest files and
+dialogue, and the two ward counters were already clamped against whatever
+`data/quests/` holds, so seven new files raised both ceilings on the next
+load with nothing written down twice (#691).
 
-R8 is still the better use of a session than R4a: R8's next increment is
-specced down to the field names, while R4a is an open design question that has
-to overturn #533 rather than work around it.
+**R4a is what is left of lane A**, and it is an open design question that has
+to overturn #533 rather than work around it, which is a different kind of
+session from the two that just shipped out of that lane.
 
 ### Wave B — the moment R2 lands
 
@@ -354,7 +357,7 @@ plan's list and not a second one (#588 to #591).
 | --- | --- | --- | --- | --- |
 | **R10** Bodies | Fable 5.1 | Local: net | C | ~~The child and the hound~~ shipped 2026-09-17 (#643 to #645). ~~Two hens and the spear~~ shipped 2026-09-18 (#684 to #686), off poly.pizza. What is left is the GPU look, and the four activity clips R6 wants, which no body on disk has. Still trades activity clips with R6 in both directions. |
 | ~~**R12b** Move-and-delete~~ | Opus 5 | Container | B | **Shipped 2026-09-17** (#636 to #642). The panel lists the rows within six tiles, `M` moves the selected one to the player's feet, `Delete` twice removes it, and `test/tools.mjs` went from 47 assertions to 179 with insert-then-delete byte-exact on both endings. **Lane B is free again.** |
-| ~~**R12c** The dialogue format~~ | Opus 5 | Container | C | **Shipped 2026-09-18** (#687 to #690). `dialogue/castle.dlg`: six sigils, 13 speakers, 40 states, 118 lines, and what reaches each state written above it. `|` and `%` compile back into `data/npcs.json` and `data/quests/`; `@`, `:`, `?` and `!` are rebuilt from the clue graph and checked, never authored. `test/dialogue.mjs` is the fifteenth suite, 112 assertions. **Rank 12 is retired whole.** |
+| ~~**R12c** The dialogue format~~ | Opus 5 | Container | C | **Shipped 2026-09-18** (#687 to #690). `dialogue/castle.dlg`: six sigils, 13 speakers, 62 states, 182 lines, and what reaches each state written above it. `|` and `%` compile back into `data/npcs.json` and `data/quests/`; `@`, `:`, `?` and `!` are rebuilt from the clue graph and checked, never authored. `test/dialogue.mjs` is the fifteenth suite, 112 assertions. **Rank 12 is retired whole.** |
 | **R4a** The bells call | Opus 5 | Container | A | Has to overturn #533 rather than work around it. The cheapest shape that does not fight it: `day2.watches`, its own list, with the engine reading whichever list the day names. |
 | ~~**R4b** The `since` field~~ | Opus 5 | Container | A | **Shipped** (#646 to #649). `since` rows on a fact, a third `performances` pool that says the changed fact in the guardroom at Lauds, and the grammar exported from `src/mystery.js` so there is one copy of it. It never touched `save.js`, which is the thing lane A was for. |
 

@@ -956,12 +956,21 @@ console.log('\nthe next four, and the catch-up');
 const byId = (id) => sideQuests.find((q) => q.id === id);
 const linesOf = (id, state) => npcDefs.find((n) => n.id === id).dialogue[state];
 {
-  check(sideQuests.length === 5, `five side quests ship (${sideQuests.map((q) => q.id).join(', ')})`);
+  check(sideQuests.length === 12, `twelve side quests ship (${sideQuests.map((q) => q.id).join(', ')})`);
   const wards = Object.fromEntries(sideQuests.map((q) => [q.id, q.ward]));
-  check(sideQuests.filter((q) => q.ward === 'outer').length === 3 && sideQuests.filter((q) => q.ward === 'inner').length === 2,
-    'three in the outer ward and two in the inner', JSON.stringify(wards));
+  check(sideQuests.filter((q) => q.ward === 'outer').length === 7 && sideQuests.filter((q) => q.ward === 'inner').length === 5,
+    'seven in the outer ward and five in the inner', JSON.stringify(wards));
   const people = sideQuests.map((q) => q.npc);
-  check(new Set(people).size === people.length, 'and five different people, which is the one-voice rule with nothing to refuse', people.join(', '));
+  check(new Set(people).size === people.length, 'and twelve different people, which is the one-voice rule with nothing to refuse', people.join(', '));
+  // AND THAT IS EVERY SPEAKING PERSON IN THE CASTLE (#691 to #695). The dozen
+  // closed by giving an errand to each of the seven who had none, so the set
+  // is now the cast minus the one man who is not in it on day one: the King's
+  // inspector, who has not dismounted. A thirteenth file has nobody left to be
+  // about, which is the one-voice rule arriving at its own end rather than
+  // being enforced.
+  const speaking = npcDefs.filter((n) => n.id in mystery.schedule).map((n) => n.id);
+  check(same([...people].sort(), [...speaking].sort()), 'one errand each on every person the day one schedule puts in the castle, and none on the inspector',
+    `${speaking.filter((id) => !people.includes(id)).join(', ') || 'none'} left over`);
 
   // Rule 4: a file with no ward, or a ward the castle does not have.
   const opts = { npcs: npcDefs, mystery, actions: QuestManager.sideActions };
@@ -1078,7 +1087,13 @@ const linesOf = (id, state) => npcDefs.find((n) => n.id === id).dialogue[state];
   const porterBefore = engine.npcState('porter');
   r.talk('porter');
   check(npc('sentry').dialogueState === 'dice-told' && at().objective === dice.stages.told.objective, 'the porter spoken to is the message delivered', npc('sentry').dialogueState);
-  check(engine.npcState('porter') === porterBefore && npc('porter').dialogueState === 'default', 'and the porter said what he always says: nothing here changes his lines');
+  // The dice quest names the sentry and nothing else. Since the dozen closed
+  // the porter has an errand of his own (`gwilyms-pass`), so what this asserts
+  // is the two halves that matter: the engine's idea of him has not moved, and
+  // the state he IS in belongs to his own file and not to this one.
+  check(engine.npcState('porter') === porterBefore, 'and the engine has not moved the porter: nothing here touches his lines');
+  check(!Object.keys(byId('sentrys-dice').stages).some((s) => byId('sentrys-dice').stages[s].dialogueState === npc('porter').dialogueState),
+    'the state he is standing in is his own errand’s and is in no stage of this one', npc('porter').dialogueState);
   qm.handleInteract(npc('sentry'));
   const told = ui.dialogue.lines; ui.endDialogue();
   check(same(told, linesOf('sentry', 'dice-told')), 'he knows Gwilym said nothing');
@@ -1117,7 +1132,11 @@ const linesOf = (id, state) => npcDefs.find((n) => n.id === id).dialogue[state];
   check(engine.holds('hywel-sober') && engine.holds('apprentice-tallies'), 'Ieuan’s first conversation lands both of his statements');
   check(npc('apprentice').dialogueState === 'chisel-asking' && at().objective === chisel.stages.asking.objective, 'and asks for a question carried to the bars', npc('apprentice').dialogueState);
   r.talk('prisoner');
-  check(engine.holds('prisoner-story') && npc('prisoner').dialogueState === 'default', 'Madoc says the lead, the cart and the seal, and nothing here touches his lines');
+  // The same split as the porter above: the chisel names Ieuan and nobody
+  // else, and the state Madoc is standing in after that conversation is his
+  // own errand's (`madocs-fire`, #691 to #695) and not this file's.
+  check(engine.holds('prisoner-story') && engine.npcState('prisoner') === 'default', 'Madoc says the lead, the cart and the seal, and the engine has not moved him');
+  check(!Object.values(chisel.stages).some((s) => s.dialogueState === npc('prisoner').dialogueState), 'and no stage of the chisel names the state he is in', npc('prisoner').dialogueState);
   check(npc('apprentice').dialogueState === 'chisel-heard', 'which Ieuan already knows he said', npc('apprentice').dialogueState);
   r.talk('apprentice');
   check(at().done === true && npc('apprentice').dialogueState === 'chisel-own-edge' && at().objective === chisel.stages['own-edge'].objective, 'so he puts his own edge on the second chisel', at().objective);
@@ -1136,29 +1155,215 @@ const linesOf = (id, state) => npcDefs.find((n) => n.id === id).dialogue[state];
 {
   // THE PROOF THAT NONE OF THEM TOUCHED ANYTHING. One walk through every
   // errand, the same walk through a manager with no side quests, and the
-  // journals compared by id and order. Then the tab, with five on it.
+  // journals compared by id and order. Then the tab, with the dozen on it.
+  //
+  // THE WALK IS THE ACCEPTANCE CRITERION FOR THE WHOLE ROW AND IT GREW WITH
+  // IT (#691 to #695). The five it was written for are the first five lines;
+  // the seven that closed the dozen are under them, and the order is not free:
+  // Thomas Wykes is at the cart at Terce and nowhere at any other bell, so his
+  // errand is the last two calls, and the sentry is asleep at Prime, so the
+  // dice are still after the ring. Everything else is one watch's worth of
+  // walking in whatever order a player finds people in.
   const walk = (x) => {
+    x.talk('constable');
     x.talk('lady'); x.examine('tally'); x.talk('lady');
     x.talk('chaplain'); x.examine('candle'); x.talk('chaplain');
     x.talk('apprentice'); x.talk('prisoner'); x.examine('gaol-roll'); x.present('prisoner', 'prisoner-inside'); x.talk('apprentice');
+    x.talk('prisoner');
     x.talk('cook'); x.examine('knife'); x.talk('cook');
+    x.talk('steward'); x.talk('cook'); x.talk('steward');
+    x.talk('porter'); x.talk('steward'); x.talk('porter');
+    x.talk('clerk'); x.talk('lady'); x.talk('clerk');
+    x.talk('laundress'); x.talk('chaplain'); x.talk('laundress');
+    x.talk('constable');
     while (x.engine.watch !== 'terce') x.ring();
     x.talk('sentry'); x.talk('porter'); x.examine('walk-door'); x.present('porter', 'door-unbarred'); x.talk('sentry');
+    x.talk('merchant'); x.talk('apprentice');
   };
   const r = rig(); walk(r);
   const control = rig({ withSideQuests: false }); walk(control);
   const ids = (x) => x.engine.journal().map((c) => c.id);
-  check(same(ids(r), ids(control)), 'the same walk through all five errands with and without them leaves the identical journal', `${ids(r).join(',')} vs ${ids(control).join(',')}`);
+  check(same(ids(r), ids(control)), 'the same walk through all twelve errands with and without them leaves the identical journal', `${ids(r).join(',')} vs ${ids(control).join(',')}`);
   check(r.qm.openQuests().every((q) => q.done), 'and every errand is done at the end of it', r.qm.openQuests().filter((q) => !q.done).map((q) => q.id).join(', '));
-  for (const id of ['lady', 'chaplain', 'apprentice', 'sentry', 'cook']) {
+  for (const id of sideQuests.map((q) => q.npc)) {
     check(control.npc(id).dialogueState === (control.engine.npcState(id) === 'default' ? 'default' : control.engine.npcState(id)), `and without them ${id} is only ever where the engine puts them`, control.npc(id).dialogueState);
   }
   r.qm.handleJournal();
   const tab = r.ui.journal?.quests;
   r.ui.closeJournal();
-  check(Array.isArray(tab) && tab.length === 5 && tab.every((q) => q.done), 'the journal’s tab carries all five, done', JSON.stringify(tab?.map((q) => [q.id, q.done])));
-  check(r.state.quests && Object.keys(r.state.quests).length === 5 && r.state.quests['sentrys-dice'] === 'paid' && r.state.quests['hywels-chisel'] === 'fetched',
-    'and the save carries a stage for each of the five', JSON.stringify(r.state.quests));
+  check(Array.isArray(tab) && tab.length === 12 && tab.every((q) => q.done), 'the journal’s tab carries all twelve, done', JSON.stringify(tab?.map((q) => [q.id, q.done])));
+  check(r.state.quests && Object.keys(r.state.quests).length === 12 && r.state.quests['sentrys-dice'] === 'paid' && r.state.quests['hywels-chisel'] === 'fetched' && r.state.quests['wykes-mark'] === 'read',
+    'and the save carries a stage for each of the twelve', JSON.stringify(r.state.quests));
+  check(same(r.qm.reputation(), { outer: 7, inner: 5 }), 'and both ward counters are at their ceilings, which is what a dozen errands run is worth', JSON.stringify(r.qm.reputation()));
+}
+
+/* ------------------------ 4d: the seven that closed the dozen (rank 8) -------
+ * One voice each on the seven people who had none: the Steward's slate, the
+ * Constable's song, the Clerk's inherited six years, the porter's pass, Nest's
+ * windlass, Madoc's forge and the mark on a stone in a town yard. The walk
+ * above already holds all twelve to the one thing the row is for, which is that
+ * the journal is identical with and without them; what is here is the beats
+ * each of the seven has that the other eleven do not.
+ *
+ * AND ONE NEW RULE, WHICH THE CONSTABLE FORCED (#693). `{ACCUSE}` is a line in
+ * Sir Roger's `default` set and it is how the player is asked for a name. An
+ * errand that ended on a state of its own would take that line off the screen
+ * from the moment it finished until Vespers and every suite in this repo would
+ * have stayed green, because the accusation overlay opens on `talked:constable`
+ * and not on the line. `validateQuestSet`'s rule 6 is the answer and the break
+ * below is its proof.
+ */
+console.log('\nthe seven that closed the dozen');
+{
+  const opts = { npcs: npcDefs, mystery, actions: QuestManager.sideActions, tokens: Object.keys(quest.tokens ?? {}) };
+  check(validateQuestSet(sideSet, opts).length === 0, 'validateQuestSet finds nothing wrong with the twelve as they ship', validateQuestSet(sideSet, opts).join('; '));
+  // Rule 6, broken on purpose. `written` is one of the two endings of the
+  // Constable's errand and both of them are `default`; give one of them a state
+  // of its own and the day's own question goes quiet.
+  const parked = JSON.parse(JSON.stringify(byId('rogers-verse')));
+  parked.stages.written.dialogueState = 'verse-englished';
+  let p = validateQuestSet([...sideSet.filter((q) => q.def.id !== 'rogers-verse'), { file: 'rogers-verse.json', def: parked }], opts);
+  check(p.some((x) => /rogers-verse\.json: written is terminal and leaves constable in `verse-englished` for the rest of the day, but \{ACCUSE\} is a line in their `default` set/.test(x)),
+    'validateQuestSet rejects an ending that parks the Constable out of the lines that pose {ACCUSE}', p.join('; ') || 'said nothing');
+  // And it is about the token and not about the Constable: the same shape on
+  // somebody whose `default` poses nothing is what the other eleven already
+  // are, and passing no tokens at all switches the rule off entirely.
+  p = validateQuestSet([...sideSet.filter((q) => q.def.id !== 'rogers-verse'), { file: 'rogers-verse.json', def: parked }], { ...opts, tokens: [] });
+  check(p.length === 0, 'and with no tokens passed it says nothing: the rule is the token, not the man', p.join('; '));
+  check(sideQuests.filter((q) => Object.values(q.stages).some((s) => s.terminal && s.dialogueState !== 'default')).length === 11,
+    'eleven of the twelve end in a state of their own, which is what makes the Constable’s the exception the rule is for');
+}
+{
+  // THE SLATE, THE SONG AND THE SIX YEARS, in one walk. Each of the three opens
+  // on its person's first conversation and lands the mystery's own statements
+  // in the same breath, which is the shape every errand in this directory has.
+  const r = rig();
+  const { qm, engine, npc } = r;
+  const at = (id) => qm.openQuests().find((q) => q.id === id);
+  r.talk('steward');
+  check(engine.holds('steward-denies') && npc('steward').dialogueState === 'slate-asking',
+    'Piers Marrable denies the summons, which is the mystery’s, and asks for the kitchen’s slate, which is not', npc('steward').dialogueState);
+  check(engine.npcState('steward') === 'default', 'and the engine still has him in `default`');
+  r.talk('cook');
+  check(at('stewards-slate').objective === byId('stewards-slate').stages.copied.objective, 'Marged read her own chalk to you', at('stewards-slate').objective);
+  r.talk('steward');
+  check(at('stewards-slate').done === true && npc('steward').dialogueState === 'slate-ruled', 'and the kitchen’s year goes in the roll under her name', npc('steward').dialogueState);
+
+  // The press over the finished errand, the same way the hawk and the candle
+  // are covered: a side quest never keeps a pressed man's admission off screen.
+  engine.discover('summons-is-stewards');
+  r.present('steward', 'summons-is-stewards');
+  check(engine.npcState('steward') === 'admits' && same(r.ui.dialogue.lines, linesOf('steward', 'admits')),
+    'and the gallows sevens presented to him are still what makes him admit the summons', npc('steward').dialogueState);
+
+  r.talk('clerk');
+  check(engine.holds('clerk-abed') && npc('clerk').dialogueState === 'bassett-asking', 'Master Robert is abed from Compline and wants six years of a dead drunk’s ledger checked', npc('clerk').dialogueState);
+  r.talk('lady');
+  r.talk('clerk');
+  check(at('bassetts-years').done === true, 'Lady Alys knows what Caernarfon keeps, which closes it');
+}
+{
+  // THE SONG. Two roads, and both endings hand Sir Roger back to `default`,
+  // which is rule 6 in the game rather than in the validator. And the
+  // accusation opens in every stage of the errand, which is the thing the rule
+  // exists to keep true-looking from being true by accident.
+  const verse = byId('rogers-verse');
+  const r = rig();
+  const { qm, ui, npc } = r;
+  const at = () => qm.openQuests().find((q) => q.id === 'rogers-verse');
+  r.talk('constable');
+  check(npc('constable').dialogueState === 'verse-asking' && at().objective === verse.stages.asking.objective, 'the song opens on the conversation the day itself opens on', npc('constable').dialogueState);
+  check(linesOf('constable', 'verse-asking').at(-1).includes('mason'), 'and his errand lines still end by asking for a name, because {ACCUSE} is `default`’s', linesOf('constable', 'verse-asking').at(-1));
+  r.talk('porter');
+  check(npc('constable').dialogueState === 'verse-englished', 'Gwilym has both tongues, so the verses come back in the King’s', npc('constable').dialogueState);
+  ui.closeAccusation();
+  r.talk('constable');
+  check(at().done === true && npc('constable').dialogueState === 'default', 'and telling Sir Roger ends it and gives him back', npc('constable').dialogueState);
+  check(ui.accusation !== null, 'with the accusation still opening on that same conversation, the way it does on every one of them');
+  ui.closeAccusation();
+  const back = (() => { qm.handleInteract(npc('constable')); const l = ui.dialogue.lines; ui.endDialogue(); return l; })();
+  check(back.includes(quest.tokens['{ACCUSE}']), 'and {ACCUSE} is on the screen again, which is the whole of what rule 6 is for', back.at(-1)?.slice(0, 40));
+
+  // The other road: Dafydd will not give a Constable the words.
+  const r2 = rig();
+  r2.talk('constable');
+  while (r2.engine.watch !== 'terce') r2.ring();
+  r2.talk('sentry');
+  check(r2.npc('constable').dialogueState === 'verse-refused', 'the sentry gives the tune and not the words', r2.npc('constable').dialogueState);
+  r2.talk('porter');
+  check(r2.npc('constable').dialogueState === 'verse-englished', 'and a refusal is not an ending: the porter is still a road out of it', r2.npc('constable').dialogueState);
+  const r3 = rig();
+  r3.talk('constable');
+  while (r3.engine.watch !== 'terce') r3.ring();
+  r3.talk('sentry'); r3.talk('constable');
+  check(r3.qm.openQuests().find((q) => q.id === 'rogers-verse').done === true && r3.npc('constable').dialogueState === 'default',
+    'or the refusal is carried back, which ends it the other way and gives him back just the same', r3.npc('constable').dialogueState);
+}
+{
+  // THE WINDLASS AND THE FORGE. Two files with two roads each and one ending
+  // apiece, and the ending is the same stage whichever road reached it.
+  const r = rig();
+  const at = (id) => r.qm.openQuests().find((q) => q.id === id);
+  r.talk('laundress');
+  check(r.engine.holds('laundress-cloak') && r.npc('laundress').dialogueState === 'well-asking', 'Nest says whose cloak it is and asks for the windlass turned', r.npc('laundress').dialogueState);
+  r.talk('chaplain');
+  check(r.npc('laundress').dialogueState === 'well-blessed', 'the chaplain will say in the hall that a well is a well', r.npc('laundress').dialogueState);
+  r.talk('laundress');
+  check(at('nests-windlass').done === true, 'and the copper stands full against the morning');
+
+  const r2 = rig();
+  while (r2.engine.watch !== 'terce') r2.ring();
+  r2.talk('laundress'); r2.talk('sentry'); r2.talk('laundress');
+  check(r2.qm.openQuests().find((q) => q.id === 'nests-windlass').done === true && r2.npc('laundress').dialogueState === 'well-drawn',
+    'and Dafydd at the windlass is the other road to the same copper', r2.npc('laundress').dialogueState);
+
+  // Madoc's forge, and the press that beats it.
+  const r3 = rig();
+  r3.talk('prisoner');
+  check(r3.engine.holds('prisoner-story') && r3.npc('prisoner').dialogueState === 'fire-asking', 'Madoc says the lead, the cart and the seal, and then asks about his fire', r3.npc('prisoner').dialogueState);
+  r3.examine('gaol-roll');
+  r3.present('prisoner', 'prisoner-inside');
+  check(r3.engine.npcState('prisoner') === 'forge' && same(r3.ui.dialogue.lines, linesOf('prisoner', 'forge')),
+    'the roll presented to him is still eight days at the forge and not one word about a hearth', r3.ui.dialogue.lines.at(-1)?.slice(0, 40));
+  r3.talk('cook'); r3.talk('prisoner');
+  check(r3.qm.openQuests().find((q) => q.id === 'madocs-fire').done === true, 'and the kitchen’s boy banks it, under a press that never stopped being what he says');
+}
+{
+  // THE PASS, AND ITS SECOND ROAD, WHICH IS A PRESS. `press:steward:
+  // summons-is-stewards` is the only press any file in this directory listens
+  // for that is not on the person the file is about: a man who has just been
+  // shown his own hand on a dead mason's summons signs the next thing put in
+  // front of him without reading it.
+  const r = rig();
+  r.talk('porter');
+  check(r.engine.holds('porter-log') && r.npc('porter').dialogueState === 'pass-asking', 'Gwilym gives the gate book and asks for a pass for his boy', r.npc('porter').dialogueState);
+  r.talk('steward'); r.talk('porter');
+  check(r.qm.openQuests().find((q) => q.id === 'gwilyms-pass').done === true, 'asked for in a corridor, it is signed, and it goes in the book');
+
+  const r2 = rig();
+  r2.talk('porter');
+  r2.engine.discover('summons-is-stewards');
+  r2.present('steward', 'summons-is-stewards');
+  check(r2.qm.openQuests().find((q) => q.id === 'gwilyms-pass').objective === byId('gwilyms-pass').stages.signed.objective,
+    'and a Steward who has just admitted the summons signs it without looking up', r2.qm.openQuests().find((q) => q.id === 'gwilyms-pass').objective);
+  check(r2.engine.npcState('steward') === 'admits' && r2.npc('porter').dialogueState === 'pass-signed', 'with the press itself untouched: it is still the mystery’s beat', r2.npc('porter').dialogueState);
+}
+{
+  // THE MARK, AND THE ONE PERSON WHO IS NOT HERE ALL DAY. Thomas Wykes is at
+  // the cart at Terce and nowhere at Prime, Sext or Vespers, so his errand
+  // cannot open before the first bell and it does not.
+  const r = rig();
+  r.qm.handleInteract(r.npc('merchant'));
+  check(r.ui.dialogue.lines[0] === mystery.ui.absent || r.ui.dialogue.lines[0] === mystery.ui.asleep, 'at Prime the merchant is not in the castle', r.ui.dialogue.lines[0]?.slice(0, 40));
+  r.ui.endDialogue();
+  check(r.qm.openQuests().find((q) => q.id === 'wykes-mark').started === false, 'so nothing has been asked of you at the cart');
+  while (r.engine.watch !== 'terce') r.ring();
+  r.talk('merchant');
+  check(r.engine.holds('merchant-stone') && r.npc('merchant').dialogueState === 'mark-asking', 'at Terce he buys stone, and wants the mark on one block read', r.npc('merchant').dialogueState);
+  r.talk('apprentice');
+  check(r.qm.openQuests().find((q) => q.id === 'wykes-mark').done === true && r.npc('merchant').dialogueState === 'mark-read',
+    'Ieuan reads it as Gruffudd’s, and the block goes back up the hill on Wykes’s own cart', r.npc('merchant').dialogueState);
+  check(!r.engine.journal().some((c) => c.id === 'body-stair'), 'and not one clue of the mystery came out of any of it: the body is still only found by looking at it');
 }
 
 /* ------------------------------- 4c: reputation by ward (rank 8) -------------
@@ -1192,9 +1397,16 @@ const repLine = (key, at) => reputation[key].find((e) => e.at === at).line;
     const p = bad(mutate);
     check(p.some((x) => re.test(x)), `validateQuestSet rejects ${label}`, p.length ? `said: ${p.join('; ')}` : 'said nothing');
   };
-  expect(`an outer threshold past the ${wardCount('outer')} errands the outer ward has`, (r) => { r.outer.at(-1).at = wardCount('outer') + 1; }, /past the 3 errand\(s\) there are to finish/);
-  expect(`an inner one past its ${wardCount('inner')}`, (r) => { r.inner.at(-1).at = 9; }, /reputation\.inner: at 9 is past the 2 errand\(s\)/);
-  expect('a closing threshold past the whole set', (r) => { r.closing.at(-1).at = sideQuests.length + 1; }, /reputation\.closing: at 6 is past the 5 errand\(s\)/);
+  // The three ceilings come off the files rather than out of this file, because
+  // they moved once already: they were 3, 2 and 5 until the dozen closed and
+  // are 7, 5 and 12 now (#691 to #695), and a literal here is a suite that has
+  // to be edited every time an errand is written.
+  expect(`an outer threshold past the ${wardCount('outer')} errands the outer ward has`, (r) => { r.outer.at(-1).at = wardCount('outer') + 1; },
+    new RegExp(`reputation\\.outer: at ${wardCount('outer') + 1} is past the ${wardCount('outer')} errand\\(s\\) there are to finish`));
+  expect(`an inner one past its ${wardCount('inner')}`, (r) => { r.inner.at(-1).at = wardCount('inner') + 4; },
+    new RegExp(`reputation\\.inner: at ${wardCount('inner') + 4} is past the ${wardCount('inner')} errand\\(s\\)`));
+  expect('a closing threshold past the whole set', (r) => { r.closing.at(-1).at = sideQuests.length + 1; },
+    new RegExp(`reputation\\.closing: at ${sideQuests.length + 1} is past the ${sideQuests.length} errand\\(s\\)`));
   expect('a threshold of zero, which is a line said before anything is done', (r) => { r.outer[0].at = 0; }, /at 0 is not a whole number of errands, one or more/);
   expect('a list out of order, which the highest-wins read would silently invert', (r) => { r.outer = [r.outer[1], r.outer[0]]; }, /at 2 does not come after 3/);
   expect('two lines at one threshold', (r) => { r.inner[1].at = r.inner[0].at; }, /at 1 does not come after 1/);
@@ -1211,14 +1423,22 @@ const repLine = (key, at) => reputation[key].find((e) => e.at === at).line;
   const { qm, npc } = r;
   const said = (id) => { qm.handleInteract(npc(id)); const l = r.ui.dialogue.lines; r.ui.endDialogue(); return l; };
   check(same(qm.reputation(), { outer: 0, inner: 0 }), 'a fresh day owes nobody anything', JSON.stringify(qm.reputation()));
-  check(same(said('constable'), renderLines(linesOf('constable', 'default'), quest.tokens)), 'and the Constable says his three lines and the accusation token, with nothing after them');
+  check(same(said('constable'), renderLines(linesOf('constable', 'default'), quest.tokens)), 'and the Constable says his four lines and the accusation token, with nothing after them');
 
   r.talk('lady'); r.examine('tally'); r.talk('lady');
   check(qm.openQuests().find((q) => q.id === 'ladys-hawk').done === true, 'the merlin is off the south walk');
   check(same(qm.reputation(), { outer: 0, inner: 1 }), 'which moves the inner counter and not the outer one', JSON.stringify(qm.reputation()));
   const heard = said('constable');
   check(heard.at(-1) === repLine('inner', 1), 'and Sir Roger, who asked for none of it, has heard about it', heard.at(-1)?.slice(0, 40));
-  check(same(heard.slice(0, -1), renderLines(linesOf('constable', 'default'), quest.tokens)), 'on the end of what he was going to say anyway, which is untouched');
+  // WHATEVER HE WAS GOING TO SAY, which since the dozen closed is his own
+  // errand's lines and not `default`: the first `said('constable')` above is
+  // the conversation that opened `rogers-verse`. The aside is still exactly
+  // one line on the end of a line set this file did not choose, which is the
+  // thing being asserted; naming the state here would make it an assertion
+  // about which errand he is standing in.
+  const state = npc('constable').dialogueState;
+  check(state !== 'default', 'who is standing in his own errand by now, because talking to him is how it opens', state);
+  check(same(heard.slice(0, -1), renderLines(linesOf('constable', state), quest.tokens)), 'on the end of what he was going to say anyway, which is untouched');
   check(same(said('cook'), linesOf('cook', 'default')), 'and Marged, in the other ward, says what she always said');
 
   // The second inner errand moves it to the second band, and the first line is

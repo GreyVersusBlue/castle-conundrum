@@ -1,0 +1,65 @@
+{
+  "id": "nests-windlass",
+  "title": "The well after dark",
+  "npc": "laundress",
+  "ward": "outer",
+  "comment": "One of the seven that finish the dozen (BACKLOG.md rank 8). Lore's `well-curse`: no man of the garrison will draw from the south-west well after dark and every one of them has a reason that is not quite the last man's. Lore's `well-depth` has the other half and the line this errand turns on: the laundress, who draws from it every day, says it tastes of rock. Two roads, and both of them are somebody else saying out loud what she has been saying for six years: the sentry turns the windlass, or the chaplain says in the hall at Vespers that a well is a well.",
+  "mysteryComment": "NOT ONE WORD OF THIS IS ABOUT HER HUSBAND, ON PURPOSE. Nest's `wife` is the press on `prisoner-story` and it is a herring the mystery owns (#550, question 6): an errand that had her mention Madoc would be handing the player `nest-is-wife` without the press, which is the whole of the rule this row is held to. So her errand is a copper of water, which is what she would ask a passing clerk for anyway, and the press is still the only thing in the castle that says whose wife she is.",
+  "start": "unasked",
+  "stages": {
+    "unasked": {
+      "objective": "Nobody has asked you to go anywhere in the dark.",
+      "dialogueState": "default",
+      "transitions": [
+        {
+          "on": "talked:laundress",
+          "to": "asking"
+        }
+      ],
+      "comment": "Silent until the first conversation with her, which is the one that lands `laundress-cloak`. Her fourth `default` line is the windlass: she can turn it or she can carry it, and she cannot do both."
+    },
+    "asking": {
+      "objective": "The south-west well is the only sweet water in the castle and no man of the garrison will turn its windlass after dark. Nest needs the copper filled for the morning wash. Ask Dafydd, or ask the chaplain to say out loud that a well is a well.",
+      "dialogueState": "well-asking",
+      "transitions": [
+        {
+          "on": "talked:sentry",
+          "to": "sworn"
+        },
+        {
+          "on": "talked:chaplain",
+          "to": "blessed"
+        }
+      ],
+      "comment": "Two roads and they are not the same favour. One is a man at a windlass for an hour; the other is a priest telling eighty years of the garrison's own story that it is a story, in the hall, at Vespers, in front of all of them."
+    },
+    "sworn": {
+      "objective": "Dafydd will come to the windlass at dark, and will talk the whole time, and will not admit that is what he was doing. Tell Nest.",
+      "dialogueState": "well-sworn",
+      "transitions": [
+        {
+          "on": "talked:laundress",
+          "to": "drawn"
+        }
+      ],
+      "comment": "He asked for nothing and will deny it tomorrow. A man whose grandfather spent nine years on the other bank of that river has his own reasons for not being frightened of what is in the water, and none of them are the ones the garrison gives."
+    },
+    "blessed": {
+      "objective": "Father Anselm will say it at Vespers, in Latin first and then in the King's tongue. Tell Nest.",
+      "dialogueState": "well-blessed",
+      "transitions": [
+        {
+          "on": "talked:laundress",
+          "to": "drawn"
+        }
+      ],
+      "comment": "He does not bless the well, because a well is not in his gift and because he suspects the garrison enjoys the story more than it fears the water. He says it is a well. That is all she asked for."
+    },
+    "drawn": {
+      "objective": "The copper stands full against the morning, and the south-west well is a well.",
+      "dialogueState": "well-drawn",
+      "terminal": true,
+      "comment": "Terminal, and one ending for both roads, because from the copper's side there is no difference between them. What she says about it is the thing she has not said to a King's man before: that she was asked for something small and it was done the same day."
+    }
+  }
+}

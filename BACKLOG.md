@@ -140,8 +140,11 @@ the cook's missing knife is the first of them. The save is version 4 for
 the same day (#595), four more errands after it (#597 to #599), and
 **reputation by ward the same day again** (#612 to #615): two counters at save
 version 6, a line per ward threshold on the end of what anybody in that ward
-says, and one line under the verdict. **Rank 8 is still open**: what is left
-in it is the seven errands of the dozen still unwritten.
+says, and one line under the verdict. **The seven errands left of the dozen
+shipped on 2026-09-18 and closed the row** (#691 to #695): one voice each on
+the seven people who had none, so every person the day one schedule puts in
+the castle now has an errand, and `validateQuestSet` gained a sixth rule to
+stop one of them parking the Constable out of the lines that pose `{ACCUSE}`.
 
 **The placement editor shipped on 2026-09-17** (#583 to #587), and it came out
 of a finding about the row above it. **Rank 9's first increment was already
@@ -172,9 +175,11 @@ at Vespers is the sentry on the bench end with a verse the high table has
 never been told the words of; the kitchen at Sext is Marged counting the forty
 mouths she feeds off one oven; and the chapel at Lauds is a filled grave on
 the morning after. `src/lore.js` refuses a piece whose speaker is not really
-in that room at that bell. **Rank 8 is closed and gone from this file**: the
-one thing left in it, a `since` field for a fact that changes, went to rank 4's
-spec as its own open call recommended, and every row below it moved up one.
+in that room at that bell. **The lore row is closed and gone from this file**:
+the one thing left in it, a `since` field for a fact that changes, went to rank
+4's spec as its own open call recommended, and every row below it moved up one.
+It held rank 8 on the day it closed and a different row holds that number now,
+which is why it is named here by title (#522).
 **Rank 9's journal tab shipped in the same PR**: "Asked of you", the fourth
 tab, carrying every side quest the player has met and keeping the finished ones
 under a Done heading rather than dropping them off the page.
@@ -188,8 +193,12 @@ smith's answer was left in the smith's mouth. The rule it forced is #597: a
 quest reaching a stage that waits on a clue the player already holds is
 walked forward at the end of the batch that moved it, which closes the
 barrel-before-Marged hole the knife shipped with. `validateQuestSet` holds
-every file to a `ward`. **Rank 8 is still open**: seven of the dozen, and
-reputation by ward, which five errands is now enough to make visible.
+every file to a `ward`. **The last seven shipped on 2026-09-18** (#691 to
+#695) and the row closed with them: the Steward's slate, the Constable's song,
+the Clerk's inherited six years, the porter's pass, Nest's windlass, Madoc's
+forge and a mason's mark on a block in a town yard. Twelve files, seven outer
+and five inner, and the walk that proves the journal is identical without them
+grew with the set.
 
 **The ambient beds shipped on 2026-09-17** (#620 to #623): `data/sounds.json`
 carries an `ambient` block of seven synthesised room tones, `bedOf` in
@@ -239,14 +248,14 @@ not: all three want a GPU (#518). **Rank 4 no longer has a thread a container ca
 the gaol roll was it and it shipped (#571 to #575), and what is left of
 increment 3 is a yard to build in the town and a design call to make about
 bells on day two. Of ranks 6 to 12, the ones whose next increment is data and
-validators rather than a render (6, 8 and 12) are the ones a container can
-start; 7, 10 and 11 all want either a recorded sound, a body on disk, or a GPU
+validators rather than a render (6 and 12, and 8 until it closed) are the ones
+a container can start; 7, 10 and 11 all want either a recorded sound, a body on disk, or a GPU
 before their first increment closes, and 9 has nothing left in it that does
 not wait on rank 4's yard. **Rank 8 shipped four increments on 2026-09-17 and
-rank 12 two** — rank 8's first errand, the journal's tab, four more errands
-(#597 to #599) and reputation by ward (#612 to #615), rank 12's placement
-editor and then its budget suite (#607 to #611). Rank 8's next increment is a
-container's: the seven errands left.
+closed on 2026-09-18; rank 12 shipped two** — rank 8's first errand, the
+journal's tab, four more errands (#597 to #599), reputation by ward (#612 to
+#615) and then the seven that finished the dozen (#691 to #695), rank 12's
+placement editor and then its budget suite (#607 to #611).
 **Rank 12 is down to the dialogue format.** Move-and-delete shipped on
 2026-09-17 (#636 to #642) — the panel lists the rows within six tiles, `M` moves
 the selected one to the player's feet and `Delete` twice removes it — and the
@@ -393,8 +402,9 @@ produce one.
    ground west of the barbican carries a building.
 
 Three softer ones are worth naming and are not gates: rank 6's populace
-unlocked two of rank 8's seven errands and rank 7's event sounds when its
-first ten shipped (#616), rank 10 and
+unlocked rank 7's event sounds when its first ten shipped (#616) and was
+named as unlocking two of rank 8's errands, which in the end it did not have
+to: both kept their idea and dropped the body they wanted (#692), rank 10 and
 rank 6 trade activity clips both ways, and rank 12's budget suite was more
 useful once there were more bodies to count. None of the three blocked a start,
 and the budget suite went first anyway (#609) — a ceiling on a castle with
@@ -406,7 +416,7 @@ together.
 
 | Lane | The file that decides it | Rows |
 | --- | --- | --- |
-| A | `src/save.js` — the version number and `migrate` | 4a, 4b, 8 |
+| A | `src/save.js` — the version number and `migrate` | 4a, 4b (8 is done) |
 | B | `data/scene-config.json` — and `test/tools.mjs`'s byte-exactness rail | 4c, 5, 9 (12b is done) |
 | C | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | 6, 10 (12c is done) |
 | D | `src/main.js`'s player rig and spawn | 6, 11 |
@@ -414,11 +424,14 @@ together.
 
 Lane A is the one the specs already warned about in words: **"do not run
 alongside anything else that touches `save.js`"** is written into rank 4's
-dependencies, and rank 8's next increment is a version bump to 6. Lane C is
-the `cast` block specifically, not the whole of `data/npcs.json`: rank 8
-writes per-person `states` and `default` line arrays, which is a
-different region of the same file and merges, but a session doing it
-should say so in its PR. Rank 12c left that lane a standing obligation:
+dependencies. Rank 8 was the other row in it and turned out never to need the
+file at all: closing the dozen added seven quest files and no field, and both
+ward counters are already clamped against whatever `data/quests/` holds, so
+the ceilings rose on the next load with nothing written down twice (#691).
+Lane C is the `cast` block specifically, not the whole of `data/npcs.json`.
+Ranks 8 and 12c both wrote per-person `states` and `default` line arrays there,
+which is a different region of the same file and merges, and both are closed.
+**What 12c left behind is a standing obligation on whoever writes there next**:
 every `dialogue` block in that file is also `dialogue/castle.dlg` now, and
 `test/dialogue.mjs` fails if the two disagree, so a row that adds a state or
 rewords a line runs `npm run dialogue:extract` before it commits (#687).
@@ -434,7 +447,7 @@ All three shipped and **the row is retired**.
 
 ## The ranked table
 
-**It starts at 2, and 1, 3, 5 and 12 are numbers that have left the list
+**It starts at 2, and 1, 3, 5, 8 and 12 are numbers that have left the list
 rather than gaps in it.** The number 1 has been used twice and retired twice:
 the fourth body on 2026-09-17 (#619), and then the castle you cannot walk,
 which the GPU run opened the same day (#624 to #630) and which shipped on
@@ -444,10 +457,11 @@ back to the top of the list when something belonged there, and went again when
 it was done. Rank 3 shipped on 2026-09-17 from a fallback source rather than
 the shot the spec asked for (#634, #635), and rank 5 the same day, by rendering
 the hall directly rather than waiting on a second GPU run to reach Vespers
-(#656 to #658). Rank 12 is the first row to leave by finishing rather than by
-being retired part-way: its three increments shipped across two days and the
-last of them, the dialogue format, closed it on 2026-09-18 (#687 to #690).
-Every row
+(#656 to #658). **Two rows left by finishing rather than by being retired
+part-way, both on 2026-09-18**: rank 12, whose three increments shipped across
+two days and whose last one, the dialogue format, closed it (#687 to #690);
+and rank 8, when the last seven of `WISHLIST.md`'s dozen errands went in and
+the theme ran out of rows rather than out of interest (#691 to #695). Every row
 below is named by title in `SPECS.md` and `ROADMAP.md` as well as by rank,
 which is what makes that survivable (#522).
 
@@ -457,7 +471,6 @@ which is what makes that survivable (#522).
 | 4 | A second day: increment 3, the town half and the bells question (4b, the fact that changes, shipped #646 to #649) | 2+ | Opus 5 | 4a container, 4c local | — | A (4a), B (4c) | | [A second day](SPECS.md#a-second-day) |
 | 6 | Life: a populace: the fifty, the activity clips and the ambient talk | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: somebody listens to the seven beds and the four rings, then event sounds (a bed at a point and the rings shipped, #680 to #683) | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
-| 8 | Side quests: the seven errands left of the dozen | 2+ | Opus 5 | Container | — | A | | [Side quests](SPECS.md#side-quests) |
 | 9 | A castle to get lost in: the town, the rock and river | 2+ | Opus 5 | Container | **after 4c** | B | | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
 | 10 | Bodies: a shared low-poly rig for the fifty (the child and the hound shipped, #643 to #645; two hens and the spear, #684 to #686) | 1 | Fable 5.1 | Local: net | — | C | | [Bodies](SPECS.md#bodies) |
 | 11 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 | Container to the Node line, local: GPU past it | **after 2** | D | shadow + hand shipped 2026-09-17 (#650 to #654) | [Feel](SPECS.md#feel) |
@@ -598,58 +611,6 @@ Recorded CC0 audio is admitted since #548, named by `data/sounds.json` and
 run through `tools/encode-assets.mjs` like any asset (#506), and none has
 been looked for.
 
-## Side quests
-
-*Where: container. Gate: none, but two of the seven errands want rank 6. Lane: A.*
-
-**Rank 8, and a 2+. Four increments shipped on 2026-09-17** (#576 to #581,
-#595, #597 to #599, #612 to #615): the format, the set validator and the
-cook's missing knife; then the journal's tab; then four more errands; then
-reputation by ward.
-`data/quests/` holds one `QuestGraph` per file with two fields the frame does
-not need, `id` and `npc`; `data/quests/index.json` names the files because a
-browser cannot read a directory, and `test/quest.mjs` holds that list to the
-directory in both directions. `validateQuestSet` is what makes a file in
-there a side quest rather than a second mystery: no stage may put its person
-in a state `mystery.json`'s clue graph owns, only one quest per person may
-change what they say, and every event a transition turns on has to be one the
-game emits. The cook's knife turns on two clues the mystery has owned since
-Phase 3 and grants neither, which `test/quest.mjs` proves by playing the same
-four presses of E with and without the quest and diffing the journals.
-
-**The journal's tab shipped second** (#595): "Asked of you", the fourth tab,
-showing every quest that has left its start stage with the objective it is at
-now, and a finished one under a Done heading rather than off the page. A quest
-nobody has met is not on it, and a castle where none has been met is not
-offered the tab at all.
-
-**Four more shipped third** (#597 to #599): the lady's merlin on the south
-walk, which is where the tally stick is; the chaplain's candle account, which
-the mystery's candle on his stair closes; the sentry's four pence, carried
-through the gate, with one more thing to say only after the porter has
-admitted the bar; and Hywel's chisel, with two endings, one for a player who
-hears the smith say nothing and one for a player who has the roll. A quest
-reaching a stage that waits on a clue the player already holds is walked
-forward at the end of the batch (#597), and every file names its `ward`
-(#599). Five errands, three outer and two inner.
-
-**Reputation by ward shipped fourth** (#612 to #615): `outer` and `inner`,
-two counters the save carries at version 6, one moved per errand finished in
-that ward. `migrate` counts what a version-5 save had already finished rather
-than writing zeroes, and `repair` clamps each to the errands that ward has.
-Two things read them and nothing else does: a line on the **end** of whatever
-anybody in that ward says, off `data/npcs.json`'s new `reputation` block, and
-one line under the verdict in the epilogue pane, with nothing at all shown to
-a player who ran no errand. Not a state, not on a press, not on the morning
-after. `validateQuestSet` holds every threshold to an errand that exists to be
-finished, which is the rule worth having: an unreachable one is silent in the
-game and looks exactly like a line not yet earned.
-
-**What is left.** The seven of `WISHLIST.md`'s dozen still unwritten: three it
-named, of which two want rank 6's populace (a child's dog, the porter's boy
-who wants his letters) and one does not (a letter for the town that needs a
-gate pass), and four it never named. `SPECS.md` specs the next increment.
-
 ## A castle to get lost in
 
 *Where: container. Gate: after rank 4c's yard. Lane: B.*
@@ -782,8 +743,8 @@ byte**, on both endings, for all three arrays. `/__place` takes three verbs now
 and checks each one's row count before it writes.
 
 **What was left was the dialogue format, and it shipped on 2026-09-18** (#687
-to #690). `dialogue/castle.dlg` is every word the twelve say — 13 speakers, 40
-states, 118 lines, 20398 bytes — with what moves a speaker into each state and
+to #690). `dialogue/castle.dlg` is every word the twelve say — 13 speakers, 62
+states, 182 lines, 34243 bytes — with what moves a speaker into each state and
 what the state is worth written above its lines. Six sigils: `@` a speaker, `:`
 a state, `?` a press or a quest stage, `%` that stage's objective, `!` a clue
 the state grants, `|` one line. **`|` and `%` compile back into
@@ -796,7 +757,7 @@ overruling the spec's own words for #506's reason), it lives outside `data/` so
 `vite.config.js` cannot publish it, and the write is `tools/place.mjs`'s splice
 generalised to a nested path (#689). `test/dialogue.mjs` is the fifteenth
 suite: 112 assertions, 0.3 s, both line endings, and it is the only thing
-standing between the .dlg and the drift a second copy of 118 lines invites.
+standing between the .dlg and the drift a second copy of 182 lines invites.
 
 **The row is retired. What it does not cover** is the rest of the spoken text —
 `npcs.json`'s `chatter` and `performances` pools, its `reputation` lines, and

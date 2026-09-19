@@ -5,7 +5,7 @@
 //
 // Exits non-zero on any failure.
 //
-// WHAT THIS SUITE IS FOR. The .dlg is a second copy of 118 lines of dialogue
+// WHAT THIS SUITE IS FOR. The .dlg is a second copy of 182 lines of dialogue
 // that also live in data/npcs.json, and a second copy of anything is a copy
 // that drifts. The only reason it is allowed to exist is that this file forbids
 // the drift: part 5 rebuilds the whole .dlg out of data/ and compares it with
@@ -95,7 +95,7 @@ console.log('the walk, against the real data/npcs.json');
         if (JSON.stringify(got) !== JSON.stringify(expect)) wrong++;
       }
     }
-    check(members === 40 && !wrong,
+    check(members === 62 && !wrong,
       `${ending}: all ${members} dialogue spans parse to what JSON.parse gives for the same member`,
       `${wrong} wrong`);
   }
@@ -126,7 +126,7 @@ console.log('\nthe splice: a state rewritten, and nothing else');
         if (out === source) same++;
         else differ.push(`${cast[i].id}/${state}`);
       }
-    check(same === 40 && !differ.length,
+    check(same === 62 && !differ.length,
       `${ending}: all ${same} states rewritten with their own lines are the file byte for byte`,
       differ.slice(0, 3).join(', '));
 
