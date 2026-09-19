@@ -438,9 +438,9 @@ rewords a line runs `npm run dialogue:extract` before it commits (#687).
 
 Rank 4 splits three ways because its remaining threads do, and the spec
 already names them separately: **4a** is the bells-on-day-two design call and
-`day2.watches`, **4b** is the `since` field on a fact that changes (#596), and
-**4c** is Thomas Wykes's yard. 4a and 4b are a container's; 4c wants the
-editor walked and the yard looked at. Rank 12 split the same way and for the
+`day2.watches` (#699 to #702), **4b** is the `since` field on a fact that
+changes (#596), and **4c** is Thomas Wykes's yard. 4a and 4b are a container's
+and both have shipped; 4c wants the editor walked and the yard looked at. Rank 12 split the same way and for the
 same reason: **12a** the budget suite (#607 to #611), **12b** move-and-delete
 in the editor (#636 to #642), **12c** the dialogue format (#687 to #690).
 All three shipped and **the row is retired**.
@@ -468,7 +468,7 @@ which is what makes that survivable (#522).
 | Rank | Item | Size | Model | Where | Gate | Lane | Claimed | Detail |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 2 | The GPU run: the day end to end, and somebody looks at the twelve (the run happened, #624 to #630) | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
-| 4 | A second day: increment 3, the town half and the bells question (4b, the fact that changes, shipped #646 to #649) | 2+ | Opus 5 | 4a container, 4c local | — | A (4a), B (4c) | | [A second day](SPECS.md#a-second-day) |
+| 4 | A second day: increment 3, the town half (4a, the bells call, shipped #699 to #702; 4b, the fact that changes, #646 to #649) | 2+ | Opus 5 | 4c local | — | B (4c) | | [A second day](SPECS.md#a-second-day) |
 | 6 | Life: a populace: the fifty, the activity clips and the ambient talk | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: somebody listens to the seven beds, the four rings and the first two event sounds (a bed at a point and the rings, #680 to #683; the door and the hound, #696 to #698) | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
 | 9 | A castle to get lost in: the town, the rock and river | 2+ | Opus 5 | Container | **after 4c** | B | | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
@@ -523,7 +523,7 @@ they were built is specific to this frame.
 
 ## A second day
 
-*Where: 4a container, 4c local. Gate: none; 4c gates rank 9. Lanes: A (4a), B (4c). 4b shipped.*
+*Where: 4c local. Gate: none; 4c gates rank 9. Lane: B (4c). 4a and 4b shipped.*
 
 **Rank 4, and a 2+. Increments 1 and 2 shipped on 2026-09-15 and 2026-09-16**
 (#533 to #540) and **increment 3's gaol roll on 2026-09-17** (#571 to #575):
@@ -544,11 +544,19 @@ refuses the two halves to drift. It is the first thing in this game whose
 content, and not only whose line set, turns on what the player found. It
 touched no lane-A file.
 
-**Two threads are left and both wait on something.** The missing 128 sheets
-are in Thomas Wykes's yard, which nobody has placed on the ground the town
-side laid (#541 to #546). A schedule with more than one watch still has to
-argue with #533 rather than work around it. Both of them have somewhere to
-put "the player found this out" now, which neither had before. `SPECS.md`
+**The bells call was settled on 2026-09-19** (#699 to #702). The morning after
+names its own bells in `day2.watches`, the engine reads whichever list the day
+names, and `state.watch` is an index into that list rather than into the four.
+#533 is overturned in that clause and stands in the other: `watches` is still
+exactly four and a second day is still a `day` field. The list is one long, so
+the morning is unchanged on the screen except in one place: the chapel bell
+was returning nothing at all on day two and rings now. A second morning bell is
+a data edit here, not an engine change.
+
+**One thread is left and it waits on something.** The missing 128 sheets are in
+Thomas Wykes's yard, which nobody has placed on the ground the town side laid
+(#541 to #546). It has somewhere to put "the player found this out", which it
+did not before, and it now has a morning that can move as well. `SPECS.md`
 specs what is left.
 
 ## Life: a populace

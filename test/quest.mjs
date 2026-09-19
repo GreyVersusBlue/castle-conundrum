@@ -602,8 +602,10 @@ function rig({ saved = null, withSideQuests = true, quests = null, cast = npcDef
   check(state.accusations.length === 1 && state.accusations[0].verdict === 'full' && state.accusations[0].watch === 'vespers', 'and the accusation is in the save');
 
   // After the verdict, nothing of the first day repeats.
+  const bellsAtVerdict = r.audio.bells;
   const rings = r.ring().length;
-  check(rings === 0 && qm.stage === 'full', 'after the verdict the bell does nothing');
+  check(rings === 0 && qm.stage === 'full' && r.audio.bells === bellsAtVerdict,
+    'after the verdict the bell does nothing, and it is not heard either (#520)', `${rings} effects, ${r.audio.bells - bellsAtVerdict} rings`);
 
   /* --- THE MORNING AFTER (#533 to #537). The pane's one button is the second
    * day now, and the difference between the two is one word on it. */
@@ -611,9 +613,28 @@ function rig({ saved = null, withSideQuests = true, quests = null, cast = npcDef
   ui.restart();
   check(r.restarts.n === 0, 'and pressing it does not erase the save');
   check(qm.stage === 'morning' && qm.day === 2 && state.day === 2, 'the frame is in `morning` and the save is on day two', `${qm.stage}, day ${state.day}`);
-  check(ui.accusation === null && r.watches.at(-1) === mystery.day2.watch && ui.watch === 'Lauds',
+  check(ui.accusation === null && r.watches.at(-1) === mystery.day2.watches[0] && ui.watch === 'Lauds',
     'the panel is closed, the world is at Lauds and the HUD says so', `${r.watches.at(-1)} / ${ui.watch}`);
   check(Object.values(r.castle.shown).every((v) => v === false), 'nothing examinable is on the ground: no evidence is listed at Lauds');
+
+  /* THE ROPE IN THE CHAPEL IS A BELL AGAIN ON THE MORNING AFTER (#700). Between
+   * the verdict and the epilogue it does nothing and is not heard, which is the
+   * assertion above; from the morning it rings. This is the whole observable
+   * difference the row makes today, because `day2.watches` is one long: the
+   * last bell of a day moves no watch, and on the morning there is no Constable
+   * behind it either, so what is left is the ring itself. The sound is the
+   * manager reading the engine's own `bell:<n>`, numbered within the morning's
+   * list, so it is `bell:1` and it borrows the one-stroke character #682 wrote
+   * for a morning. */
+  const beforeMorningBell = r.audio.bells;
+  const morningRing = r.ring();
+  check(r.audio.bells === beforeMorningBell + 1 && r.audio.rung.at(-1) === 1,
+    'the bell rings on the morning after, one stroke, where it used to return nothing at all',
+    `${r.audio.bells - beforeMorningBell} rings, the last of them bell:${r.audio.rung.at(-1)}`);
+  check(morningRing.length === 1 && !morningRing.some((e) => e.type === 'demand')
+    && r.watches.at(-1) === mystery.day2.watches[0] && ui.watch === 'Lauds' && qm.stage === 'morning',
+    'and it moves no watch, demands no name and leaves the frame in `morning`',
+    `${morningRing.length} effects / ${ui.watch} / ${qm.stage}`);
   // And the stone moved too (#539). The full ending lets Madoc out and leaves
   // the inspector's own door standing open behind him.
   check(r.castle.days.length >= 1 && same(r.castle.days.at(-1), [{ piece: 'cell-bars', set: 'gone' }, { piece: 'muniment', set: 'open' }]),
@@ -662,7 +683,7 @@ function rig({ saved = null, withSideQuests = true, quests = null, cast = npcDef
   check(r.qm.stage === 'fall', 'a fall, and the pane is up');
   r.ui.restart();
   check(r.qm.stage === 'morning' && r.qm.day === 2, 'the button opens the morning');
-  check(r.engine.stationOf('inspector')?.room === 'kings-hall' && r.watches.at(-1) === mystery.day2.watch,
+  check(r.engine.stationOf('inspector')?.room === 'kings-hall' && r.watches.at(-1) === mystery.day2.watches[0],
     'the morning opens with the cast moved: the inspector is in the King\'s Hall at Lauds',
     `${r.engine.stationOf('inspector')?.room} / ${r.watches.at(-1)}`);
   // A DIFFERENT ENDING IS A DIFFERENT CASTLE (#539). Madoc hangs in nobody's
@@ -1835,7 +1856,7 @@ const pieceOf = (id) => Object.values(performances).flat().find((e) => e.id === 
   r.qm.handleEnter('chapel', 0);
   check(r.qm.performing === null, 'the chapel at Terce, with the day judged, is still quiet');
   r.ui.restart();
-  check(r.qm.day === 2 && r.engine.watch === mystery.day2.watch, 'the button opens the morning after, at Lauds', `day ${r.qm.day} / ${r.engine.watch}`);
+  check(r.qm.day === 2 && r.engine.watch === mystery.day2.watches[0], 'the button opens the morning after, at Lauds', `day ${r.qm.day} / ${r.engine.watch}`);
   check(r.qm.performing?.id === 'sermon-lauds-cadeyrn', 'and the player standing in the chapel gets the second sermon where they stand', r.qm.performing?.id);
   r.tick();
   check(r.ui.captions.join(' ').includes('Cadeyrn'), 'which is the works\' own saint over a grave that is filled, and not yesterday\'s', r.ui.captions.at(-1));

@@ -175,8 +175,8 @@ rank 2's alone.
 
 **Rank 4. Size 2+. Increments 1 and 2 shipped on 2026-09-15 and 2026-09-16
 (#533 to #540, PRs #16 and #18), increment 3's gaol roll on 2026-09-17
-(#571 to #575) and increment 3's fact that changes the same day (#646 to
-#649).** The morning after exists, the castle knows about it, and
+(#571 to #575), increment 3's fact that changes the same day (#646 to
+#649) and the bells call on 2026-09-19 (#699 to #702).** The morning after exists, the castle knows about it, and
 it now knows one thing about the player as well as about the verdict: one
 watch (`lauds`), thirteen stations, sixty line sets keyed by what the player
 said and three keyed by what he read, seven closing panes, a thirteenth cast
@@ -248,16 +248,12 @@ One thread, and it wants something this repo has not got.
   ground, a road and fog past the barbican now, but nothing built on it —
   Thomas Wykes's yard itself, and whatever stands in it, is still increment
   3's to place.
-- **It needs bells on day two**, or a single-watch mystery, which is the one
-  design question worth settling first. A second day with more than one watch
-  has to argue with #533 rather than work around it: `watches` is four because
-  `ring()`'s fourth is the Constable's demand and both length rails are written
-  against one day. The cheapest shape that does not is `day2.watches`, its own
-  list, with the engine reading whichever list the day says.
 
-Both of the threads above now have somewhere to put "the player found this
-out", which neither had before `day2.knew` (#575): a lead found in the yard is
-a clue, and a clue is what a `knew` row is keyed on.
+It has somewhere to put "the player found this out", which it did not have
+before `day2.knew` (#575): a lead found in the yard is a clue, and a clue is
+what a `knew` row is keyed on. **And the bells question behind it is answered**
+(#699 to #702, below), so a yard that wants the morning to move has a morning
+that can.
 
 ### What increment 3's fact that changes shipped (#649 to #649)
 
@@ -295,6 +291,42 @@ did not move and the version is still 6.
   guardroom-at-Lauds section, 15. Nine breaks from a green baseline, in
   `HISTORY.md`.
 
+### What the bells call shipped (#699 to #702)
+
+The design question increment 3 left open, settled on 2026-09-19, and the
+smallest thing that fits the answer. It touched `src/save.js` for a helper and
+two lines and left the version at 6.
+
+- **`data/mystery.json`**: `day2.watch` is `day2.watches`, a list of the
+  morning's own bell ids, none of them one of the four. It is one long
+  (`lauds`), because `day2.schedule` is one station per person for the whole
+  morning and `day2.lines` is keyed by the verdict and not by the bell, so a
+  second morning bell with nothing written per-bell behind it is a sky change
+  and a noise. The list is what makes a second one a data edit here rather than
+  an engine change (#699).
+- **`src/mystery.js`**: `dayWatchesOf(mystery, day)` exported, the one place
+  that picks between the two lists, and `state.watch` is an index into whichever
+  one the day names. `ring()` walks the day's own list and numbers its rings
+  within it; `beginDay2` brings the index back to 0 on the way in and only on
+  the way in, so a morning that has rung on is not rewound by being re-entered.
+  Five validator rails on the list itself.
+- **`src/stations.js`**, **`src/lore.js`**, **`src/save.js`**: all three read
+  the list instead of a single id. The save's `watch` clamp is day-aware, and
+  the demotion of an incoherent `day: 2` re-clamps against day one.
+- **The chapel bell rings on the morning after** (#700), where it had been
+  returning no effects at all since day two shipped: `ring()` opened on
+  `ended()`, which is true from the verdict onward. The last bell of a day
+  moves no watch, which day one's fourth already did, and the morning's has no
+  Constable behind it, so what is left is the ring and its sound.
+- **Suites**: `test/mystery.mjs` drives a two-bell morning end to end off a
+  clone of the data and carries the five validator breaks; `test/save.mjs`
+  holds the day-aware clamp; `test/quest.mjs` holds the bell ringing at Lauds
+  and staying silent between the verdict and the epilogue; `test/layout.mjs`
+  holds every bell of both days to a ring character in `data/sounds.json` and a
+  sky in `data/scene-config.json`, reading both and writing neither. Eight
+  breaks from a green baseline, in `HISTORY.md`, one of which stayed green the
+  first time and is why the nav assertion exists.
+
 ### What is left after increment 3
 
 1. **Somebody looks at a Lauds sky.** The five numbers in
@@ -318,8 +350,11 @@ did not move and the version is still 6.
 - #36 and #413 (key unchanged; the version moved to 2 in increment 1).
 - #37 (`repair` every load).
 - #39, #481, #34 throughout.
-- #533: a second day is a `day` field and `watches` is four. A fifth bell has to
-  overturn that decision rather than work around it.
+- #533, as #699 left it: a second day is still a `day` field and `watches` is
+  still exactly four. What is overturned is the clause that made the morning
+  unable to move. The morning names its own bells in `day2.watches` and the
+  engine reads whichever list the day names. A row that wants a second morning
+  bell writes it in `data/mystery.json`.
 - #535: there is no body at the gallows, and a gallows is Devon's call.
 - #539: an overlay may only ever give the player castle, never take it away.
   Every verb that could is refused against the plan, and `test/layout.mjs`
@@ -343,6 +378,18 @@ did not move and the version is still 6.
 - #649: a `since` row has to be told, and told only where it is true. A row
   with no `tells`, or a piece heard in an ending its row does not cover, is a
   failure and not a warning.
+- #699: `state.watch` indexes the day's own bell list, so no id may be in both
+  lists and `day2.watches` is the one spelling: the singular `day2.watch` is
+  refused outright rather than accepted as a second source.
+- #700: the last bell of a day rings and moves nothing. The morning's carries
+  no `demand`, because the morning has no Constable asking for a name.
+- #701: a day numbers its rings within its own list, so the morning's bells
+  borrow the four characters `data/sounds.json` already has. A morning bell
+  with no ring character, or with no sky in `data/scene-config.json`, is a
+  failure in `test/layout.mjs`. Both of those files are read there and written
+  by nobody in this row.
+- #702: the version is still 6. A row here bumps it when a field arrives, not
+  when `repair` learns to ask a better question (#37).
 
 ---
 
