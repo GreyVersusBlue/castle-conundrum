@@ -46,9 +46,11 @@ R4c Thomas Wykes's yard  --> unlocks R9's town
   local, lane B                  container, lane B
 
 Never gated, take whenever the lane is free:
-  R10 bodies (local: net, lane C)    R12c dialogue format (lane C)
+  R10 bodies (local: net, lane C)
 
   R12b move-and-delete shipped 2026-09-17 (#636 to #642) and lane B is free.
+  R12c the dialogue format shipped 2026-09-18 (#687 to #690) and rank 12 is
+  retired whole.
 ```
 
 ---
@@ -124,7 +126,7 @@ the theme is not what conflicts.
 | --- | --- | --- |
 | **A** | `src/save.js` — the version number and `migrate` | R4a, R8 (R4b shipped without touching it) |
 | **B** | `data/scene-config.json`, and `test/tools.mjs`'s byte-exactness rail | R4c, R5, R9 (R12b is done) |
-| **C** | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | R1, R6, R10, R12c |
+| **C** | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | R1, R6, R10 (R12c is done) |
 | **D** | `src/main.js`'s player rig and spawn | R6, R11 |
 | **E** | `src/audio.js` and `data/sounds.json` | R7 |
 | **none** | | R2, R3, R12a |
@@ -154,11 +156,16 @@ with the move — a per-row byte compare of everything outside the row that
 changed.
 
 Lane C is the `cast` block **specifically**, not all of `data/npcs.json`. R8
-and R12c write per-person `states` and `default` line arrays, which is a
+writes per-person `states` and `default` line arrays, which is a
 different region of the same file and merges cleanly. R8 also owns the
 file's `reputation` block outright (#614), which is a third region again and
 is nobody else's. A session doing either
-should still say so in its PR.
+should still say so in its PR. **R12c is done and it left lane C a new
+obligation**: every `dialogue` block in that file is now also
+`dialogue/castle.dlg`, and `test/dialogue.mjs` fails if the two disagree. A
+row that adds a state or rewords a line runs `npm run dialogue:extract`
+before it commits, or writes the line in the .dlg and runs
+`npm run dialogue:compile` instead (#687 to #690).
 
 ### Three that are genuinely safe together right now
 
@@ -208,7 +215,8 @@ R4a**, three of them, plus **R2** on Devon's machine.
   is gone from it: it shipped without opening `save.js`, which is two rows in a
   row that sat in lane A for a file neither of them wrote.
 - R9 and R4c, any two of them. All lane B. R5 and R12b were the other two and
-  both shipped (#656 to #658, #636 to #642).
+  both shipped (#656 to #658, #636 to #642). R12c has left lane C as well
+  (#687 to #690).
 - R6 beside R11. Lane D, both inside `src/main.js`'s rig.
 
 ---
@@ -346,7 +354,7 @@ plan's list and not a second one (#588 to #591).
 | --- | --- | --- | --- | --- |
 | **R10** Bodies | Fable 5.1 | Local: net | C | ~~The child and the hound~~ shipped 2026-09-17 (#643 to #645). ~~Two hens and the spear~~ shipped 2026-09-18 (#684 to #686), off poly.pizza. What is left is the GPU look, and the four activity clips R6 wants, which no body on disk has. Still trades activity clips with R6 in both directions. |
 | ~~**R12b** Move-and-delete~~ | Opus 5 | Container | B | **Shipped 2026-09-17** (#636 to #642). The panel lists the rows within six tiles, `M` moves the selected one to the player's feet, `Delete` twice removes it, and `test/tools.mjs` went from 47 assertions to 179 with insert-then-delete byte-exact on both endings. **Lane B is free again.** |
-| **R12c** The dialogue format | Opus 5 | Container | C | Deliberately unspecified. `WISHLIST.md`'s paragraph is the whole brief. |
+| ~~**R12c** The dialogue format~~ | Opus 5 | Container | C | **Shipped 2026-09-18** (#687 to #690). `dialogue/castle.dlg`: six sigils, 13 speakers, 40 states, 118 lines, and what reaches each state written above it. `|` and `%` compile back into `data/npcs.json` and `data/quests/`; `@`, `:`, `?` and `!` are rebuilt from the clue graph and checked, never authored. `test/dialogue.mjs` is the fifteenth suite, 112 assertions. **Rank 12 is retired whole.** |
 | **R4a** The bells call | Opus 5 | Container | A | Has to overturn #533 rather than work around it. The cheapest shape that does not fight it: `day2.watches`, its own list, with the engine reading whichever list the day names. |
 | ~~**R4b** The `since` field~~ | Opus 5 | Container | A | **Shipped** (#646 to #649). `since` rows on a fact, a third `performances` pool that says the changed fact in the guardroom at Lauds, and the grammar exported from `src/mystery.js` so there is one copy of it. It never touched `save.js`, which is the thing lane A was for. |
 

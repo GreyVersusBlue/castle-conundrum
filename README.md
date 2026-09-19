@@ -72,15 +72,21 @@ re-encode**, not a build step: `npm run assets:encode` runs
 [KTX-Software](https://github.com/KhronosGroup/KTX-Software)'s `ktx` on PATH.
 Run it on anything you add before you commit it.
 
+Every word the twelve say is also `dialogue/castle.dlg`, one line per line, with
+what moves a speaker into each state and what the state is worth written above
+it. `npm run dialogue:compile` splices it back into `data/npcs.json` and
+`data/quests/`, `npm run dialogue:extract` writes it out again, and
+`test/dialogue.mjs` fails if the two have drifted (#687 to #690).
+
 ## The suites
 
 ```
-npm test              # all fourteen, cheapest first, non-zero on any failure
+npm test              # all fifteen, cheapest first, non-zero on any failure
 npm test layout       # or any subset by name
 ```
 
-Nine of them are Node against source and take seconds: `gltf`, `assets`,
-`layout`, `budget`, `quest`, `mystery`, `save`, `lore` and `tools`.
+Ten of them are Node against source and take seconds: `gltf`, `assets`,
+`layout`, `budget`, `quest`, `mystery`, `save`, `lore`, `tools` and `dialogue`.
 `plan-vs-scene` drives a headless Chromium over `npm run dev`, waits for the
 castle to finish building, and diffs every placed object's live `Box3` against
 `src/castle-plan.js`'s box at 0.01 m. `touch` drives the same dev server on a
@@ -90,7 +96,7 @@ after a reload. `overlays` opens and shuts every screen that covers the castle
 and asks who holds the pointer after each one. `built` is the one check that
 loads what `npm run build` produced.
 
-`npm run play` is the fifteenth and is not in `npm test`. It opens a real
+`npm run play` is the sixteenth and is not in `npm test`. It opens a real
 visible window, takes pointer lock, and plays the whole day with real input —
 twelve people, ten pieces of evidence, three bells, a reload at Sext and the
 full ending — leaving a screenshot per beat in `shots/play/`. It needs a machine

@@ -3,7 +3,7 @@
 A first-person medieval murder mystery in three.js. Twelve suspects, four
 bells, one accusation, and a morning after it. `index.html` at the repo root,
 source in `src/`, the mystery and the castle as data in `data/`, 39 MB of glTF
-and textures in `assets/`, fourteen suites in `test/`.
+and textures in `assets/`, fifteen suites in `test/`.
 
 **`PLAN.md` is the most valuable file here.** It is 64 K of phase plans — what
 the castle is, why the order is what it is, and the seven phases that built it,
@@ -158,7 +158,10 @@ file keeps a pointer saying which band left.
 | `npm run build` | `dist/`: the hashed bundle in `dist/bundle/`, `assets/` and `data/` copied in whole, the Basis transcoder into `dist/decoders/basis/`. |
 | `npm run preview` | Serves `dist/`. |
 | `npm run assets:encode` | Re-encodes `assets/` in place, KTX2 and meshopt. Hand-run, needs `ktx` (#506). |
-| `npm test` | All fourteen suites, cheapest first, non-zero on any failure. `npm test layout built` runs a subset. |
+| `npm run dialogue:extract` | `data/` out to `dialogue/castle.dlg`. Hand-run (#687). |
+| `npm run dialogue:compile` | `dialogue/castle.dlg` back into `data/npcs.json` and `data/quests/`. Hand-run. |
+| `npm run dialogue:check` | Neither, and exits non-zero if the two have drifted. `test/dialogue.mjs` runs the same check. |
+| `npm test` | All fifteen suites, cheapest first, non-zero on any failure. `npm test layout built` runs a subset. |
 | `npm run play` | **Opens a real visible window** and plays the whole day with pointer lock, WASD and real key presses. Hand-run, on a GPU (#53). Screenshots land in `shots/play/`. |
 
 `npm test` is what CI runs. `npm run play` is not in CI and is not going to be.
