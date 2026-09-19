@@ -76,7 +76,26 @@ export const ACTIVITY_CLIPS = {
    * against every body, which is the change a second rig forced on it. */
   sniff: 'Idle_2_HeadLow',
   eat: 'Eating',
+  /* THE HEN'S ONE (#684). Hen.glb is Quaternius's Farm Animals bird, five
+   * clips off a seven-joint rig, and `Idle_Peck` is the head going to the
+   * ground and back. `wait` is its Idle and `Run` is what it walks with. */
+  peck: 'Idle_Peck',
 };
+
+/**
+ * WHERE A HELD PROP LIVES (#685). The King's mace is a Poly Haven prop and
+ * `heldProp` has always been read as a path under `polyhavenBase`. The
+ * garrison's spear is not Poly Haven's — it is a Quaternius file under
+ * `assets/NPCs/`, beside the bodies — so a `heldProp` that already starts
+ * with `assets/` is repo-relative and is left alone. One function, used by
+ * npc.js to load it, by test/assets.mjs to check it and by
+ * tools/encode-assets.mjs to encode it, so the three cannot disagree about
+ * which file is meant.
+ */
+export function heldPropPath(polyhavenBase, heldProp) {
+  if (!heldProp) return null;
+  return heldProp.startsWith('assets/') ? heldProp : polyhavenBase + heldProp;
+}
 
 /** How long a body stands at one stop before walking to the next, in seconds. */
 export const DWELL = 9;
@@ -107,6 +126,11 @@ export function populaceDefs(populace) {
     boneScale: p.boneScale,
     clips: p.clips,
     speed: p.speed,
+    // A held prop and how it sits in the hand (#685): the garrison's spear.
+    // `heldProp` is the cast's field, resolved by `heldPropPath`; `heldPropFit`
+    // is new and optional, {length, grip, tipUp}, and npc.js reads it.
+    heldProp: p.heldProp,
+    heldPropFit: p.heldPropFit,
     dialogue: {},
     populace: true,
     // The HUD's one line about them, and it does not say "Press E" because
@@ -188,6 +212,21 @@ export function validatePopulace(populace, { nav = null, mystery = {}, cast = []
       const f = p.follow;
       if (typeof f !== 'object' || !(Number.isFinite(f.radius) && f.radius > 0) || !(Number.isFinite(f.keep) && f.keep > 0)) say(`${at}: follow needs a positive radius and keep, in metres`);
       else if (f.keep >= f.radius) say(`${at}: follow.keep ${f.keep} is not inside follow.radius ${f.radius}, so it would never set off`);
+    }
+    /* A HELD PROP AND ITS FIT (#685). The path is a string test/assets.mjs
+     * resolves to a file; the fit is refused in the shapes that fail
+     * silently in a hand: a length of 0 is a prop scaled to nothing, and a
+     * grip outside 0..1 is a hand holding the air past one end of it. */
+    if (p.heldProp != null && (typeof p.heldProp !== 'string' || !p.heldProp.trim())) say(`${at}: heldProp ${JSON.stringify(p.heldProp)} is not a path`);
+    if (p.heldPropFit != null) {
+      const f = p.heldPropFit;
+      if (typeof f !== 'object' || Array.isArray(f)) say(`${at}: heldPropFit is not an object of length, grip and tipUp`);
+      else {
+        if (f.length != null && !(Number.isFinite(f.length) && f.length > 0)) say(`${at}: heldPropFit.length ${JSON.stringify(f.length)} is not a positive number of metres`);
+        if (f.grip != null && !(Number.isFinite(f.grip) && f.grip >= 0 && f.grip <= 1)) say(`${at}: heldPropFit.grip ${JSON.stringify(f.grip)} is not a fraction from 0 (the butt) to 1 (the tip)`);
+        if (f.tipUp != null && typeof f.tipUp !== 'boolean') say(`${at}: heldPropFit.tipUp ${JSON.stringify(f.tipUp)} is not true or false`);
+      }
+      if (p.heldProp == null) say(`${at}: heldPropFit with no heldProp to fit`);
     }
   }
 

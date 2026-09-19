@@ -803,7 +803,7 @@ console.log('\nthe household in data/populace.json');
   check(problems.length === 0, 'validatePopulace finds nothing wrong, the castle included', problems.join('; '));
 
   const people = populace.people;
-  check(people.length === 12, `${people.length} of them: the first increment's ten (SPECS.md, "Life: a populace"), the child and the hound (#643, #644)`);
+  check(people.length === 14, `${people.length} of them: the first increment's ten (SPECS.md, "Life: a populace"), the child and the hound (#643, #644), and two hens (#684)`);
   /* THE FIRST INCREMENT'S PROMISE WAS NO NEW ASSET, and rank 10 is the row
    * that ends it (#644): the hound is a body nobody in the cast wears. What
    * holds now is narrower and is stated by kind — every body a populace
@@ -869,6 +869,14 @@ console.log('\nthe household in data/populace.json');
     const shapes = new Set(everyone.map(shape));
     const files = new Set(everyone.map((n) => n.modelPath));
     check(shapes.size > files.size, `${shapes.size} silhouettes off ${files.size} body files, across the cast and the household`);
+    /* THE SPEAR IS A SILHOUETTE, NOT A FILE (#685): the two who carry it
+     * wear bodies the cast already wears, so the garrison reads as a
+     * garrison by what is in its hands. The fit is asserted because the
+     * defaults are a mace's and a spear at 0.6 m gripped by the butt is a
+     * dart: it is at least the man's own height and its tip stands up. */
+    const spears = people.filter((p) => /Spear\.glb$/.test(p.heldProp ?? ''));
+    check(spears.length >= 2 && spears.every((p) => p.heldPropFit?.tipUp === true && (p.heldPropFit.length ?? 0) >= (p.modelHeight ?? 1.8)),
+      `${spears.length} of the household carry the spear (${spears.map((p) => p.id).join(', ')}), tip up and at least their own height`);
   }
 
   /* The defs the page builds NPCs from: a label rather than an offer, and no
@@ -969,6 +977,16 @@ console.log('\nthe household validator rejects');
   expect('a room that is not a room',
     (f, people) => { of(people, 'carter').routine.terce[0].room = 'brewhouse'; },
     /^carter at terce, stop 1: room "brewhouse" is not a room in mystery\.json$/);
+  /* THE SPEAR'S FIT (#685), in the shapes that fail silently in a hand. */
+  expect('a held prop fitted to no length',
+    (f, people) => { of(people, 'serjeant').heldPropFit.length = 0; },
+    /^serjeant: heldPropFit\.length 0 is not a positive number of metres$/);
+  expect('a grip past the end of the shaft',
+    (f, people) => { of(people, 'serjeant').heldPropFit.grip = 1.4; },
+    /^serjeant: heldPropFit\.grip 1\.4 is not a fraction from 0 \(the butt\) to 1 \(the tip\)$/);
+  expect('a fit with nothing to fit',
+    (f, people) => { delete of(people, 'serjeant').heldProp; },
+    /^serjeant: heldPropFit with no heldProp to fit$/);
 
   /* AND THE CONTROL. Every break above is one field changed on a file that
    * validates; if the unbroken copy did not, each `expect` would be finding

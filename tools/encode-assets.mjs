@@ -45,6 +45,7 @@ import { NodeIO, PropertyType } from '@gltf-transform/core';
 import { ALL_EXTENSIONS, KHRTextureBasisu } from '@gltf-transform/extensions';
 import { dedup, meshopt, listTextureSlots } from '@gltf-transform/functions';
 import { MeshoptDecoder, MeshoptEncoder } from 'meshoptimizer';
+import { heldPropPath } from '../src/populace.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, '..');
@@ -267,9 +268,13 @@ await encodeMaterialMaps();
 console.log('the ten Poly Haven prop packs');
 const config = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/scene-config.json'), 'utf8'));
 const npcs = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/npcs.json'), 'utf8'));
+const populace = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/populace.json'), 'utf8'));
 const props = new Set([
   ...config.interiorProps.map((p) => config.polyhavenBase + p.model),
   ...npcs.cast.filter((n) => n.heldProp).map((n) => config.polyhavenBase + n.heldProp),
+  // And what the household carries (#685): the spear is under assets/NPCs,
+  // not Poly Haven's, and `heldPropPath` is the one place that knows which.
+  ...(populace.people ?? []).filter((p) => p.heldProp).map((p) => heldPropPath(config.polyhavenBase, p.heldProp)),
 ]);
 for (const rel of [...props].sort()) await encodeGLTF(path.join(ROOT, rel), { textures: true, mesh: true });
 
@@ -277,7 +282,6 @@ console.log('\nthe NPC bodies');
 // The household's bodies too (#645). Until the hound, every body the populace
 // wore was one the cast already named; the first one it did not would have
 // landed raw with every suite green, which is #605's lesson at a second door.
-const populace = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/populace.json'), 'utf8'));
 const bodies = new Set([...npcs.cast.map((n) => n.modelPath), ...(populace.people ?? []).map((p) => p.modelPath)]);
 for (const rel of [...bodies].sort())
   await encodeGLTF(path.join(ROOT, rel), { textures: false, mesh: true });

@@ -92,7 +92,7 @@ could not reach quaternius.com, itch, poly.pizza, OpenGameArt or Patreon.
 | Row | Model | What to fetch |
 | --- | --- | --- |
 | **R1 A fourth body** | Fable 5.1 | Quaternius's Ultimate Modular Women Pack first, checked against `SPECS.md`'s three name lists. The npm registry's two rigged CC0 alternatives were measured and rejected: KayKit is the wrong shape (head joint 57 % up the body against the Quaternius rig's top fifth, #569) and deskrpg is the wrong licence (#570). |
-| **R10 Bodies** | Fable 5.1 | A low-poly one-rig CC0 body per new kind — the child first, per the row's own recommendation. A child scaled down from the existing rig is the cheapest version of "child" and should be tried before anything is fetched at all. **Tried on 2026-09-17 and it held** (#643): the child is the existing rig with a bigger head, and the only fetch was the hound (#644). |
+| **R10 Bodies** | Fable 5.1 | A low-poly one-rig CC0 body per new kind — the child first, per the row's own recommendation. A child scaled down from the existing rig is the cheapest version of "child" and should be tried before anything is fetched at all. **Tried on 2026-09-17 and it held** (#643): the child is the existing rig with a bigger head, and the only fetch was the hound (#644). **The hen and the spear came off poly.pizza on 2026-09-18** (#684, #685), which re-hosts Quaternius's packs as glTF where quaternius.com has only FBX. |
 
 Both go through `tools/encode-assets.mjs` before commit (#506), which needs
 KTX-Software's `ktx` on PATH. **An uncompressed body passes every suite and is
@@ -344,7 +344,7 @@ plan's list and not a second one (#588 to #591).
 
 | Row | Model | Where | Lane | Note |
 | --- | --- | --- | --- | --- |
-| **R10** Bodies | Fable 5.1 | Local: net | C | ~~The child and the hound~~ shipped 2026-09-17 (#643 to #645), beside seven other rows and colliding with none. What is left, a chicken and a spear, has no CC0 glTF source found yet; the row stays open for them and for the GPU look. Still trades activity clips with R6 in both directions. |
+| **R10** Bodies | Fable 5.1 | Local: net | C | ~~The child and the hound~~ shipped 2026-09-17 (#643 to #645). ~~Two hens and the spear~~ shipped 2026-09-18 (#684 to #686), off poly.pizza. What is left is the GPU look, and the four activity clips R6 wants, which no body on disk has. Still trades activity clips with R6 in both directions. |
 | ~~**R12b** Move-and-delete~~ | Opus 5 | Container | B | **Shipped 2026-09-17** (#636 to #642). The panel lists the rows within six tiles, `M` moves the selected one to the player's feet, `Delete` twice removes it, and `test/tools.mjs` went from 47 assertions to 179 with insert-then-delete byte-exact on both endings. **Lane B is free again.** |
 | **R12c** The dialogue format | Opus 5 | Container | C | Deliberately unspecified. `WISHLIST.md`'s paragraph is the whole brief. |
 | **R4a** The bells call | Opus 5 | Container | A | Has to overturn #533 rather than work around it. The cheapest shape that does not fight it: `day2.watches`, its own list, with the engine reading whichever list the day names. |

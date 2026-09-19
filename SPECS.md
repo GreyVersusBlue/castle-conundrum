@@ -813,9 +813,19 @@ section below is kept as written with what shipped noted against each part.
   check in `test/mystery.mjs` is per person against the body that person
   wears; the silhouette count below is asserted at 10 shapes off 5 files;
   and the follow is driven in Node against the real grid with a fake body.
-- **Not shipped**: the chicken, because the Farm Animals pack has no glTF
-  export and the animal pack has no bird; the garrison's spear, because no
-  pack on disk has one; and the GPU look at either (#53).
+- **The chicken is a sixth file** (#684), shipped 2026-09-18: Quaternius's
+  Farm Animals bird off poly.pizza as `assets/NPCs/Hen.glb`, 55 KB meshopted,
+  clips renamed to `Idle`, `Idle_Peck`, `Run`, `Attack`, `Death`, one
+  material `Feathers` over its atlas, and the FBX export's 100x scale baked
+  into the data so three renders it at all. Two hens wear it, near-white and
+  tawny tints over the atlas, with `peck` as the one new activity.
+- **The garrison's spear is a held prop** (#685), shipped 2026-09-18:
+  Quaternius's off poly.pizza as `assets/NPCs/Spear.glb`, 46 KB. `heldProp`
+  under `assets/` is repo-relative (`heldPropPath` in `src/populace.js`, the
+  one copy of the rule), and `heldPropFit` `{length, grip, tipUp}` is the fit
+  a mace's defaults get wrong. The serjeant and the man-at-arms carry it.
+- **Not shipped**: the GPU look at any of it (#53), and the activity clips
+  rank 6 wants (`sweep`, `hammer`, `spar`, `drill`), which no body has.
 
 ### Scope
 

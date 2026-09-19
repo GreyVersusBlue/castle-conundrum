@@ -6316,3 +6316,123 @@ a panner knows distance and not occlusion; a tower roof's wall walk bed heard
 12.5 m up from inside the Great Hall under it, which break 6's output showed
 placed; and whether a 1.5 m reference with a rolloff of 2 leaves a kitchen
 audible at all from 7 m across the ward.
+## Bodies: two hens off poly.pizza, and a spear for the garrison (2026-09-18)
+
+**Ranked row 10, second increment, on `claude/r10-chicken-and-spear`, under
+Claude Fable 5.1, on Devon's machine, in its own `git worktree`** beside a
+main checkout that had another row's uncommitted files in it. quaternius.com
+was not asked this time; poly.pizza was, because #644 had already read the
+Farm Animals pack's Drive folder and found `Blends/`, `FBX/` and `OBJ/` and
+no glTF, and poly.pizza re-hosts Quaternius's packs as `.glb` under the same
+CC0 deed. `ktx` v4.4.2 on PATH. Decisions #684 to #686. They were written
+as #659 to #661, read off a fresh `origin/main` that ended at #658, and PR
+#49 took that band first; they were renumbered whole at merge, in every
+file that cites them. Eleven suites green in one `npm test`;
+`built` lost that run to `Port 8127 is already in use`, another session's
+suite on the same machine, and passed alone; `plan-vs-scene` is red on the
+chapel-candles beat that #633 measured red at `main` on this machine and
+that no file in this branch touches. `npm run build` green. `npm run play`
+was not run (#53): the look at the two new kinds is the same line-up on a
+grey background #606 and #643 used, and it is written up as that and not as
+the castle.
+
+- **The hen is a sixth file, and it needed a bake no body before it did**
+  (#684). poly.pizza's `chicken` search returns two Quaternius chickens.
+  One is the cube-animals toy: a blob, four joints, `Dance`, `Yes`, `No`.
+  The other is the Farm Animals bird: 2140 triangles, a seven-joint rig
+  (`Root`, two legs, `Body`, each with an `_end`), five clips (`Attack`,
+  `Death`, `Idle`, `Idle_Peck`, `Run`) and one 512 px atlas of flat colour
+  blocks, 6 KB. It is `assets/NPCs/Hen.glb`, 55 KB meshopted, with the
+  `AnimalArmature|AnimalArmature|AnimalArmature|` prefix cut off every clip
+  name, the node and mesh named `Hen` and the material `Feathers`.
+
+  **The first render showed nothing where the hens stood, and the box said
+  they were there.** Every bone reported the same world position, the
+  group's origin. The file is an FBX export: `AnimalArmature` and the mesh
+  node both carry scale 100, the bones' translations are 0.003, the vertices
+  span 0.012 units, and the inverse bind matrices carry the rotation and no
+  scale. gltf-transform's `getBounds` reads that as a 1.24-unit bird because
+  it walks the node scales; three r169 rendered it at a few millimetres. The
+  Husky (#644) came from the pack's own `glTF/` folder and has no scale on
+  any node, which is why it never showed the problem. The re-export bakes
+  the 100 into the data: every node scale to 1, every joint translation,
+  every vertex, every bind-matrix translation and the twelve translation
+  samplers multiplied by 100. The file that results has the Husky's shape,
+  and it renders. **This is the fourth move a re-export can need**, after
+  #604's three (name the materials, name the nodes, lift the colours), and
+  it is the one to look for first on any file that came through FBX.
+
+  The atlas is the colour and the tint is a multiply over it, so the tints
+  are chosen the other way round from every body before: near-white
+  `#f2ecdf` keeps the authored white hen with her red comb, and tawny
+  `#b9855a` makes the second one brown. Two hens, Gwenno and Brith, "one of
+  the hen-wife's fowl", 0.45 m and 0.42 m, `speed` 0.9 with `Run` as the
+  walk, and `peck` (`Idle_Peck`, the head to the ground and back) as the one
+  new activity, in one body only, the way `sniff` and `eat` are the hound's.
+  They keep two rings in the outer ward around the hen-wife's two stops.
+  **The validator moved the white hen twice**: her first west ring put a
+  stop 0.98 m from the clerk's Terce station and another 1.45 m from the
+  laundress's at Sext, which is the 1.5 m rule doing exactly what #618 wrote
+  it for, and her ring is east of both now.
+
+- **The spear is a held prop that is not Poly Haven's, and the fit is data**
+  (#685). poly.pizza's `spear` search has two by Quaternius; the one taken
+  is untextured, 1202 triangles, four materials already named (`DarkWood`,
+  `LightWood`, `Steel`, `LightSteel`), authored along +Y with the head at
+  the top, and it is `assets/NPCs/Spear.glb`, 46 KB meshopted. Nothing in
+  it needed renaming. What needed changing was the reading of `heldProp`:
+  it had always been a path under `polyhavenBase`, in `npc.js`, in
+  `test/assets.mjs` twice, in `tools/encode-assets.mjs` once, four copies
+  of one rule. `heldPropPath(base, heldProp)` in `src/populace.js` is the
+  one copy now: a `heldProp` that starts with `assets/` is repo-relative,
+  anything else is Poly Haven's, and all four readers call it. `populace.js`
+  because it is the one `src/` module with no three.js in it, so Node and
+  the encoder can import it (#616).
+
+  `_attachHeldProp`'s defaults are a mace's: 0.6 m long, gripped 14 % up
+  from the butt, heavy end hanging down past the fist. A spear on those
+  numbers is a dart pointing at the floor. `heldPropFit`, optional,
+  `{length, grip, tipUp}`, is the three the defaults got wrong: 2.1 m, the
+  hand 40 % up from the butt, and `tipUp` reversing the axis the holder
+  aligns to the fingers so the head stands over the helmet and the butt
+  hangs by the knee. The serjeant and the man-at-arms carry it; the archer
+  does not, because an archer with a spear is a spearman. On the grey
+  background both read as spears from the first frame, in `Idle_Sword`,
+  and no second line-up was needed. `validatePopulace` refuses a length of
+  0, a grip outside 0..1, a `tipUp` that is not a boolean and a fit with no
+  prop to fit; `test/mystery.mjs` asks it each of those and also asserts
+  the two spears are tip-up and at least the wearer's own height, because
+  the failure of a bad fit is a prop that renders and is wrong. `SPECS.md`'s
+  six variation axes now have a second body with a prop on it: 14
+  silhouettes off 6 body files, up from 10 off 5.
+
+- **The rails, each broken from green first** (#686). Both `heldProp`
+  sweeps in `test/assets.mjs` (check 1, is the file there; check 4, is the
+  file asked for) and the meshopt check 5 read the household's props as well
+  as the cast's, and the encoder's prop list does too. `test/mystery.mjs`
+  counts 14 and names why. Four breaks:
+
+  1. `Hen.glb` and `Spear.glb` written un-encoded over the encoded ones.
+     `assets` exited 1 on `assets/NPCs/Hen.glb has no
+     EXT_meshopt_compression` and the same for the spear.
+  2. Both `heldProp` lines cut out of `populace.json` with `Spear.glb` left
+     on disk. `assets` exited 1 on `nothing references
+     assets/NPCs/Spear.glb`, #390's check 4.
+  3. The serjeant's `tipUp` set false. `mystery` exited 1 on `2 of the
+     household carry the spear (serjeant, man-at-arms), tip up and at least
+     their own height`.
+  4. `peck` pointed at `Idle_Pekc`. `mystery` exited 1 three times: once per
+     hen (`ships no clip called Idle_Pekc`) and once for the table (`peck ->
+     Idle_Pekc`).
+
+  All four restored byte-identical and green again.
+
+**Still owed.** The look at either kind in the castle is `npm run play`'s
+(#53) and rank 2's. `test/budget.mjs`'s bodies-per-ward number still does
+not count the household (#645 said so; two hens and no new light change
+nothing about that). The activity clips rank 6 wants (`sweep`, `hammer`,
+`spar`, `drill`) are still not in any body on disk; the hen's `Idle_Peck`
+is the only clip this increment added to the vocabulary. And the editing
+tool this session used wrote `data/populace.json` back with LF once, which
+a CRLF count caught before any suite ran and `sed` put back (#632); the
+five `.js` and `.mjs` files it edited kept their CRLF.
