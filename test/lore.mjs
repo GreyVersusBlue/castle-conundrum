@@ -238,9 +238,9 @@ console.log('the sermons and the songs: said where the speaker actually stands')
   check(validateLore(lore, args).length === 0, 'as shipped, all seven pieces are said by somebody who is really in that room at that bell');
   const pools = Object.keys(performances);
   check(same(pools.sort(), ['rumours', 'sermons', 'songs']), 'three pools, sermons, songs and rumours', pools.join(', '));
-  const day2 = Object.values(performances).flat().filter((e) => e.watch === mystery.day2.watch);
+  const day2 = Object.values(performances).flat().filter((e) => e.watch === mystery.day2.watches[0]);
   check(day2.length === 4, `four pieces are said on the morning after (${day2.map((e) => e.id).join(', ')})`);
-  check(performances.rumours.every((e) => e.watch === mystery.day2.watch), 'and every rumour is one of them: a rumour is about a verdict, and only the morning after has one');
+  check(performances.rumours.every((e) => e.watch === mystery.day2.watches[0]), 'and every rumour is one of them: a rumour is about a verdict, and only the morning after has one');
 }
 {
   const bad = clone(performances);

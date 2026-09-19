@@ -6694,3 +6694,156 @@ measured what it shipped.
   the beat is red twice over on that, the same assertion and the same
   sentence. Neither is this row's, and both are measured rather than argued
   from a diff.
+## The bells call: the morning after names its own bells (2026-09-19)
+
+**Ranked row 4a, on `claude/r4a-bells-call`, lane A, in a `git worktree`**
+(#624's rule). `SPECS.md`'s "A second day" row carried one open design
+question, *"it needs bells on day two, or a single-watch mystery, which is the
+one design question worth settling first"*, and `ROADMAP.md` gave it what was
+left of lane A. It is settled, the shape is the one all three files
+recommended, and the morning after is still one bell long. Decisions #696 to
+#699. `src/save.js` moved by a helper and two lines and the version did not
+move at all.
+
+- **The morning after names its own bells, and #533 is overturned in its second
+  clause only** (#696). #533 said two things in one sentence: a second day is a
+  `day` field on the save, and `watches` is four. The first is still true and
+  is still what the save carries. The second was doing two jobs and only one of
+  them was ever argued for. It keeps the rails about a two-to-three-watch
+  convicting path honest, and it also said, without saying so, that the morning
+  could never move. So `day2.watch`, a fifth bell id deliberately not in
+  `watches`, is `day2.watches`, a list, and the engine reads whichever list the
+  day names: `watches` on day one, `day2.watches` on day two, and
+  `state.watch` is an index into that list rather than into the four.
+  `watches` is still asserted to be exactly four, so every rail written against
+  that number says exactly what it said.
+
+- **The list is one long today, and the alternative that was rejected is the one
+  that would have written that number down as a rule** (#696, the same
+  decision). A single-watch mystery, meaning "the morning is one bell,
+  forever" with a rail on it and nothing else, is the cheaper answer to the
+  question as it was asked, and it costs nothing today. It was rejected because the question
+  underneath it is not how many bells the morning has but who gets to decide,
+  and the row that will want a second one is increment 3's last thread, Thomas
+  Wykes's yard, which is not designed yet. "One, forever" is a door shut on a
+  row nobody has written, and opening it again later is this same engine change
+  plus an overturned decision. Making it now is six lines in the engine and one
+  in the save. **The morning's content is deliberately unchanged**: one sky, one
+  station per person, one line set each. A second morning bell with no per-bell
+  content is a sky change and a noise, and this row did not write the content
+  that would make one worth ringing. `day2.schedule` is still one station for
+  the whole morning and `day2.lines` is still keyed by the verdict and not by
+  the bell.
+- **The chapel bell was a dead prop on the morning after, and it is a bell
+  again** (#697). `ring()` opened with a bare `if (ended()) return []`, and
+  `ended()` is true from the verdict onward, so pressing E at the rope at Lauds
+  returned no effects at all: no sound, no event, nothing on the screen. That
+  is what a morning with no bells of its own looked like from inside the game,
+  and it is why the list above is not a generalisation with no user: it is the
+  one thing in this row a player can hear. The guard is `ended() && !onDayTwo()`
+  now, which keeps what it was for (#520: a ring between the verdict and the
+  epilogue does nothing, and `test/quest.mjs` asserts the silence as well as the
+  no-op) and lets the morning ring. **The last bell of a day rings and moves
+  nothing**, which day one already did: its fourth is the Constable's demand
+  and the watch stays at Vespers. The morning's is that shape with no
+  Constable behind it: the `bell:<n>` event, the sound, and no `demand`. With
+  one bell in `day2.watches`, every morning ring is that ring.
+
+- **The morning's rings borrow the day's characters, and `test/layout.mjs` is
+  what holds it** (#698). `data/sounds.json`'s `bell.rings` is keyed by the `n`
+  of the engine's own `bell:<n>` (#682) and `test/layout.mjs` holds that block
+  to every `n` the engine can emit **and no other**. A morning bell numbered
+  past the four would be a ring with no sound written for it, and
+  `data/sounds.json` is lane E, which this row is not in. So `ring()` numbers a
+  day's bells within that day's own list: a morning of M bells emits `bell:1` to
+  `bell:M`, and the rail is now the union of the two days' numbers rather than
+  day one's alone. One bell in the morning means `bell:1`, Terce's single
+  stroke, which #682 called "a morning's first note", the one ring in the file
+  already written for a morning. The rail lives where `data/sounds.json` is and
+  not in `src/mystery.js`'s validator, which cannot see that file at all: a
+  proxy there ("the morning may not have more bells than the day") would have
+  been a second owner of one fact, and the check that matters is the one that
+  names the missing ring. **A second rail went in beside it**, for the failure
+  that is silent in the other direction: `setWatch` in `src/scene-setup.js`
+  returns false for a bell `lighting.watches` has never heard of and leaves the
+  scene exactly as it was, so a morning bell with no sky would ring, move the
+  HUD and not move the light. Every bell of both days has a sky now, asserted
+  by reading `data/scene-config.json` and never writing it.
+
+- **No version bump, and the reason is #37's own line rather than an
+  oversight** (#699). `SPECS.md` and the row's brief both expected one, because
+  version 6 is current and the next is 7. `state.watch` did change meaning on day two,
+  where it was ignored outright and now indexes the morning, but **no field
+  arrived and no field changed shape**, so there is no drift for `migrate` to be
+  honest about. What moved is `repair`, which runs on every load (#37): `watch`
+  clamps against whichever list the repaired `day` names, and the demotion of an
+  incoherent `day: 2` re-clamps against day one on the way past, so a save
+  demoted for having no verdict keeps the watch it came in with. A version-6
+  save carrying `day: 2, watch: 3` is not a save from another schema; it is a
+  save carrying a number that never meant anything, and 0 is what it has always
+  been worth. The key is `castleConundrumSave_v1` and the version inside it is
+  still 6 (#36, #413). Lane A's file moved by a helper and two lines.
+
+**What was broken on purpose, from a green baseline of all fifteen suites**
+(#34). Eight, and the fifth is the one worth reading.
+
+1. `beginDay2`'s `if (st.day !== 2)` guard removed, so the morning rewinds on
+   every re-entry. `test/mystery.mjs`: *beginDay2 called again does not rewind a
+   morning that has rung on — lauds / 0* and *and a reload comes back at the
+   bell the save was on — lauds*.
+2. `ring()`'s guard back to a bare `if (ended())`. Six assertions across
+   `mystery` and `quest`, the plainest being *the bell rings on the morning
+   after, one stroke, where it used to return nothing at all — 0 rings, the last
+   of them bell:3*, bell:3 being Vespers, the last thing the day rang before
+   the verdict.
+3. `repair`'s clamp pinned to day one (`clampWatch(s.watch, 1, catalog)`).
+   `test/save.mjs`: *a day-two watch clamps to the 1 bell of the morning, not to
+   the four — 3* and *a morning with two bells in it clamps to 1 — 3*.
+4. The demotion's re-clamp deleted. `test/save.mjs`: *a day 2 demoted for having
+   no verdict is re-clamped against day one and keeps its watch*, printing the
+   whole repaired save with `watch: 0` in it.
+5. **`src/stations.js` cut back to the morning's first bell, and the first time
+   this was tried the whole suite stayed green** (#147). The nav is a second
+   answer to "where does this body stand", and a separate one: `src/main.js`
+   places with `engine.stationOf(id, watch) ? nav.at(id, watch) : null`, so a
+   nav that indexes only the first bell of the morning puts **nobody at all** in
+   the castle at the second. The engine says there is a station there and the
+   lookup that turns it into a point says there is not. Nothing in the suite
+   could see it, because every other reader goes at `day2.schedule` directly.
+   The assertion was written, and the same break then failed it: *and the nav
+   has a point for him at both bells, so main.js can put him somewhere at either
+   — {"x":4.8,"z":-10,...,"room":"kings-hall",...} / null*.
+6. `data/mystery.json`'s morning given a second bell and no sky.
+   `test/layout.mjs`: *lauds-two is a bell the engine can stand at with no sky in
+   data/scene-config.json's lighting.watches: ringing it would change the HUD
+   and not the light*, with the ring rail beside it still green at two bells.
+7. The same file given five morning bells. `test/layout.mjs`: *the engine rings
+   bell:5 and data/sounds.json's bell.rings has nothing for it*.
+8. `src/lore.js` pointed back at the removed singular `d2.watch`. Seven problems
+   out of `validateLore` at once, each naming `(no bell of the morning)` where a
+   bell id belongs, plus the #13 rail underneath it: *and validateLore does not
+   fail on them — a check that only prints is not a check*.
+
+The five validator breaks for `day2.watches` itself are `expect` rows in
+`test/mystery.mjs` and fire as written: an empty list, an id that is not an id,
+an id that is one of the four, one bell written twice, and the singular
+spelling left in the file beside the list.
+
+**And a two-bell morning is driven end to end rather than argued for.**
+`test/mystery.mjs` clones `data/mystery.json`, adds one id to `day2.watches` and
+changes nothing else. `validateMystery` returns zero problems on it, which is
+the row's claim that a second morning bell is a data edit; then the day is
+played to a fall, the morning opens at its first bell with the save index back
+at 0 from day one's 1, the first ring moves it to the second bell and demands
+nothing, the schedule and the nav both answer at both bells, the last ring moves
+nothing, `beginDay2` called again does not rewind it, and a fresh engine on the
+same save comes back at the bell the save was on.
+
+`npm test`: fifteen suites green, with `dist/` at 52.8 MB. Three full runs, and
+the middle one put `plan-vs-scene` red on its own while the other fourteen
+passed; it is green alone and green in the run after it, and the failing
+assertion was not captured, so it is recorded here as a flake rather than
+explained. Two other sessions were testing in the same tree's siblings at the
+time, which is #655's and #633's shape. No `dialogue` block was touched, so
+`npm run dialogue:check` had nothing to say and `test/dialogue.mjs` is green on
+the same .dlg the row started with (#687).

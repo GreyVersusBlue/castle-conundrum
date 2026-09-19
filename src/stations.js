@@ -57,17 +57,20 @@ export function castleNav(plan, mystery) {
   for (const [npcId, byWatch] of Object.entries(schedule)) {
     for (const watch of watches) put(npcId, watch, byWatch?.[watch] ?? null);
   }
-  /* THE SECOND DAY IS A FIFTH WATCH IN HERE AND NOWHERE ELSE (#533). `watches`
-   * stays four everywhere the mystery counts bells; what this file cares about
-   * is "where does a body stand at a named bell", and Lauds is a named bell
-   * with thirteen stations under it. Indexing it here is what lets
-   * `validateMystery` run the day-two schedule through the same five rails as
-   * day one without a second copy of any of them, and lets main.js ask
-   * `nav.at(id, 'lauds')` the way it asks for Terce. The day-two stations are
-   * seeds too: the inspector stands somewhere no day-one station is. */
+  /* THE SECOND DAY'S BELLS ARE EXTRA WATCHES IN HERE AND NOWHERE ELSE (#533,
+   * #696). `watches` stays four everywhere the mystery counts the day's bells;
+   * what this file cares about is "where does a body stand at a named bell",
+   * and Lauds is a named bell with thirteen stations under it. Indexing it here
+   * is what lets `validateMystery` run the day-two schedule through the same
+   * five rails as day one without a second copy of any of them, and lets
+   * main.js ask `nav.at(id, 'lauds')` the way it asks for Terce. The day-two
+   * stations are seeds too: the inspector stands somewhere no day-one station
+   * is. `day2.schedule` is one station per person for the whole morning, so
+   * every bell in `day2.watches` gets the same row. */
   const day2 = mystery?.day2 ?? null;
-  if (day2?.watch) {
-    for (const [npcId, station] of Object.entries(day2.schedule ?? {})) put(npcId, day2.watch, station);
+  for (const w2 of Array.isArray(day2?.watches) ? day2.watches : []) {
+    if (typeof w2 !== 'string' || !w2.trim()) continue;
+    for (const [npcId, station] of Object.entries(day2.schedule ?? {})) put(npcId, w2, station);
   }
 
   const walk = walkability(plan, { seeds });

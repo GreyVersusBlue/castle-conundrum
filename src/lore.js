@@ -106,8 +106,8 @@ function indexChatter(chatter, { npcs, mystery, problems }) {
  * bell, and data/mystery.json's `schedule` already says where everybody is at
  * every bell, so this checks the station itself: the sermon is said where the
  * chaplain actually stands, not where a data file wishes he stood. A piece at
- * `day2.watch` is checked against `day2.schedule` instead, and against the
- * day-two absences, because a sermon said by a man the player may have hanged
+ * one of `day2.watches` (#696) is checked against `day2.schedule` instead, and
+ * against the day-two absences, because a sermon said by a man the player may have hanged
  * is a sermon that does not happen in six endings out of seven.
  *
  * WHAT THE THIRD POOL ADDED (#648). A `rumours` piece carries
@@ -141,6 +141,11 @@ function indexPerformances(performances, { npcs, mystery, problems }) {
   const cast = new Map((npcs ?? []).map((n) => [n.id, n]));
   const watches = new Set(Array.isArray(mystery?.watches) ? mystery.watches : []);
   const d2 = mystery?.day2 ?? {};
+  // The morning's own bells (#696). A list, so the message names every one of
+  // them; with one in it this reads exactly as the single id it replaced.
+  const d2Watches = new Set(asList(d2.watches).filter((w) => typeof w === 'string' && w.trim()));
+  const morningBells = [...d2Watches].map((w) => JSON.stringify(w)).join(' or ') || '(no bell of the morning)';
+  const morningBellList = [...d2Watches].join(' or ') || '(no bell of the morning)';
   const rooms = new Set((mystery?.rooms ?? []).map((r) => r.id));
   const outcomes = dayTwoOutcomes(mystery);
   const byId = new Map();
@@ -155,13 +160,13 @@ function indexPerformances(performances, { npcs, mystery, problems }) {
       const lines = asList(e.lines);
       if (lines.length < 2 || !lines.every(nonEmpty)) say(`${where}: fewer than two non-empty lines`);
       if (!rooms.has(e.room)) say(`${where}: in no room (${JSON.stringify(e.room)})`);
-      const onDayTwo = e.watch === d2.watch;
-      if (!watches.has(e.watch) && !onDayTwo) say(`${where}: watch ${JSON.stringify(e.watch)} is not one of the four bells nor ${JSON.stringify(d2.watch)}`);
+      const onDayTwo = d2Watches.has(e.watch);
+      if (!watches.has(e.watch) && !onDayTwo) say(`${where}: watch ${JSON.stringify(e.watch)} is not one of the four bells nor ${morningBells}`);
       // A condition on a piece said at one of the four bells is a condition on
       // a verdict nobody has reached yet, which can only ever read as "never".
       // Refused here rather than left to be silently never played.
       if (!onDayTwo && (e.when != null || e.unless != null || e.knew != null)) {
-        say(`${where}: carries when/unless/knew at ${e.watch}, and a verdict is a thing only ${d2.watch} has`);
+        say(`${where}: carries when/unless/knew at ${e.watch}, and a verdict is a thing only ${morningBellList} has`);
       }
       // Two pieces wanting one room at one bell is a choice nothing should have
       // to make: the manager plays the piece for where the player is standing.
@@ -174,11 +179,11 @@ function indexPerformances(performances, { npcs, mystery, problems }) {
       if (!n) { say(`${where}: ${JSON.stringify(e.npc)} is not in the cast`); continue; }
       if (onDayTwo) {
         const st = d2.schedule?.[e.npc];
-        if (!st) say(`${where}: ${e.npc} has no station at ${d2.watch} and cannot perform on the morning after`);
-        else if (st.room !== e.room) say(`${where}: ${e.npc} stands in ${st.room} at ${d2.watch}, not in ${e.room}`);
+        if (!st) say(`${where}: ${e.npc} has no station at ${e.watch} and cannot perform on the morning after`);
+        else if (st.room !== e.room) say(`${where}: ${e.npc} stands in ${st.room} at ${e.watch}, not in ${e.room}`);
         // Not "may ever be absent" but "absent in an ending this piece claims".
         const dead = outcomes.filter((o) => dayTwoApplies({ when: e.when, unless: e.unless }, o) && dayTwoAbsent(mystery, o).has(e.npc));
-        if (dead.length) say(`${where}: ${e.npc} is gone from the castle at ${d2.watch} in at least one ending this piece applies to (${dead.map((o) => o.key).join(", ")}), so this would be said in some plays and not others`);
+        if (dead.length) say(`${where}: ${e.npc} is gone from the castle at ${e.watch} in at least one ending this piece applies to (${dead.map((o) => o.key).join(", ")}), so this would be said in some plays and not others`);
         if (!outcomes.some((o) => dayTwoApplies({ when: e.when, unless: e.unless }, o))) say(`${where}: applies to no ending, so it is never said`);
       } else if (watches.has(e.watch)) {
         if ((n.arrives ?? 1) > 1) say(`${where}: ${e.npc} arrives on day ${n.arrives} and is not one of the existing twelve`);

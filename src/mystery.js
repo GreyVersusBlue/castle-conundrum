@@ -28,14 +28,25 @@ const UI_LINES = ['asleep', 'absent', 'gone', 'locked', 'known', 'empty', 'fall'
 const asList = (v) => (v == null ? [] : Array.isArray(v) ? v : [v]);
 
 /* ------------------------------------------------------------- the second day ---
- * THE MORNING AFTER IS A `day` FIELD, NOT A FIFTH BELL (#533). `watches` is
- * asserted to be exactly four in this file, `ring()`'s fourth is the Constable
- * demanding an answer, and every rail about a two-to-three-watch path is
- * written against one day. Eight watches would have made all of that say
- * nothing. So `day2.watch` is a fifth watch id that is deliberately NOT in
- * `watches`: the schedule for it lives under `day2.schedule`, src/stations.js
- * indexes it beside the four, and `ring()` never reaches it because a day with
- * a verdict in it has already ended.
+ * THE MORNING AFTER IS A `day` FIELD, AND IT NAMES ITS OWN BELLS (#533, #696).
+ * #533 said two things in one sentence and only one of them was argued for.
+ * `watches` is asserted to be exactly four in this file, `ring()`'s fourth is
+ * the Constable demanding an answer, and every rail about a two-to-three-watch
+ * path is written against one day: eight ids in that one list would have made
+ * all of it say nothing. That half stands. What the same sentence also said,
+ * without saying so, was that the morning after could never move, and #696
+ * overturns that clause. `day2.watches` is the morning's own list of bell ids,
+ * none of them one of the four, and the engine reads WHICHEVER LIST THE DAY
+ * NAMES. `watches` on day one, `day2.watches` on day two, with `state.watch`
+ * an index into that list rather than into the four. `dayWatchesOf` is the one
+ * place that choice is made; src/save.js, src/stations.js and src/lore.js read
+ * the list and no longer a single id.
+ *
+ * IT IS ONE LONG TODAY, ON PURPOSE. `day2.schedule` is one station per person
+ * for the whole morning and `day2.lines` is keyed by the verdict and not by the
+ * bell, so a second morning bell with nothing written per-bell behind it is a
+ * sky change and a noise. What the list buys is that the row which wants one
+ * writes it in data/mystery.json instead of in here.
  *
  * WHAT THE PLAYER SAID IS THE ONLY INPUT. Seven endings, and every one of them
  * is a different castle on the morning after: a different man missing, a
@@ -43,6 +54,23 @@ const asList = (v) => (v == null ? [] : Array.isArray(v) ? v : [v]);
  * recorded accusation and returns the three names a day two is keyed by — the
  * `key` (one of `accusation.verdicts`' own seven), the `class` (one of the four
  * the engine emits as `verdict:<class>`), and `who` hangs. */
+
+/**
+ * The bells of a day, in order: `watches` for day one, `day2.watches` for the
+ * morning after (#696). Every reader of a watch id goes through this rather
+ * than through `mystery.watches` plus a special case, because the special case
+ * is what made `day2.watch` a single id in four files at once.
+ *
+ * A day two with no list of its own falls back to the four instead of to
+ * nothing: `validateMystery` refuses that data, and a morning with no bell to
+ * stand at would put the engine on `undefined` rather than on a wrong bell.
+ */
+export function dayWatchesOf(mystery, day = 1) {
+  const four = Array.isArray(mystery?.watches) ? mystery.watches : [];
+  if (day !== 2) return four;
+  const morning = asList(mystery?.day2?.watches).filter((w) => typeof w === 'string' && w.trim());
+  return morning.length ? morning : four;
+}
 
 /** The outcome of a finished day, or null while it is still running. */
 export function outcomeOf(mystery, state) {
@@ -547,9 +575,24 @@ export function validateMystery(mystery, npcs, quest, nav = null, sideQuests = [
   if (!d2 || typeof d2 !== 'object') {
     say('day2: no second day, so the epilogue is the end of the game');
   } else {
-    const w2 = d2.watch;
-    if (typeof w2 !== 'string' || !w2.trim()) say(`day2.watch: ${JSON.stringify(w2)} is not a watch id`);
-    else if (ix.watchIdx.has(w2)) say(`day2.watch: ${w2} is one of the four bells, and a second day is a day and not a fifth ring`);
+    /* THE MORNING'S OWN BELLS (#696). A list, in order, none of them one of the
+     * four: `watches` is still exactly four (asserted at the top of this file)
+     * and `state.watch` indexes whichever list the day names, so an id in both
+     * lists is a save index that means two different bells. The station rails
+     * below run against the morning's FIRST bell, because `day2.schedule` is
+     * one station per person for the whole morning; a morning that ever writes
+     * a station per bell is the row that has to walk this loop per bell. */
+    const w2list = asList(d2.watches);
+    if (!Array.isArray(d2.watches) || !w2list.length) say(`day2.watches: ${JSON.stringify(d2.watches)} is not a non-empty list of bell ids`);
+    if ('watch' in d2) say('day2.watch: the morning names its bells in `watches`, a list, and there is one spelling of it (#696)');
+    const seen2 = new Set();
+    for (const w of w2list) {
+      if (typeof w !== 'string' || !w.trim()) say(`day2.watches: ${JSON.stringify(w)} is not a watch id`);
+      else if (ix.watchIdx.has(w)) say(`day2.watches: ${w} is one of the four bells, and a morning bell is the morning's own`);
+      else if (seen2.has(w)) say(`day2.watches: ${w} is listed twice, so two bells of the morning are one bell`);
+      else seen2.add(w);
+    }
+    const w2 = w2list[0];
     const outcomes = dayTwoOutcomes(mystery);
     if (!outcomes.length) say('day2: the accusation table has no verdicts, so no morning has a shape');
 
@@ -614,7 +657,7 @@ export function validateMystery(mystery, npcs, quest, nav = null, sideQuests = [
       if (!hangsAndStands.has(o.who)) hangsAndStands.set(o.who, []);
       hangsAndStands.get(o.who).push(o.key);
     }
-    for (const [who, keys] of hangsAndStands) say(`${who}: has a station at ${d2.watch} and hangs in ${keys.join(', ')}`);
+    for (const [who, keys] of hangsAndStands) say(`${who}: has a station at ${w2} and hangs in ${keys.join(', ')}`);
     for (const o of outcomes) {
       for (const id of dayTwoAbsent(mystery, o)) if (!cast.has(id)) say(`day2.absent: ${o.key} takes ${id}, who is not in the cast`);
     }
@@ -855,7 +898,7 @@ export function validateMystery(mystery, npcs, quest, nav = null, sideQuests = [
    * section above because `held` is the discoverability fixed point and that is
    * computed between the two. */
   for (const [i, row] of (mystery.day2?.knew ?? []).entries()) {
-    if (row && clues.has(row.clue) && !held(row.clue)) say(`day2.knew[${i}]: ${row.clue} is not discoverable, so nobody can ever be holding it at ${mystery.day2?.watch}`);
+    if (row && clues.has(row.clue) && !held(row.clue)) say(`day2.knew[${i}]: ${row.clue} is not discoverable, so nobody can ever be holding it at ${dayWatchesOf(mystery, 2)[0]}`);
   }
 
   // --- The two length rails: neither solvable at Prime nor lost by Vespers.
@@ -904,7 +947,13 @@ export function createMystery({ mystery, npcs, state }) {
 
   const day2 = mystery?.day2 ?? null;
   const onDayTwo = () => st.day === 2 && !!day2;
-  const watchId = () => (onDayTwo() ? day2.watch : watches[Math.min(st.watch, watches.length - 1)]);
+  // The day names its bells and `st.watch` indexes that list, not the four
+  // (#696). Both lists are read once here; `dayWatchesOf` is the only place
+  // that picks between them.
+  const dayOneWatches = dayWatchesOf(mystery, 1);
+  const morningWatches = dayWatchesOf(mystery, 2);
+  const dayWatches = () => (onDayTwo() ? morningWatches : dayOneWatches);
+  const watchId = () => { const list = dayWatches(); return list[Math.min(Math.max(st.watch, 0), list.length - 1)]; };
   const holds = (id) => st.clues.includes(id);
   const npcState = (npcId) => st.pressed[npcId]?.at(-1) ?? 'default';
   const ended = () => st.accusations.some((a) => a.verdict);
@@ -943,6 +992,9 @@ export function createMystery({ mystery, npcs, state }) {
   const api = {
     get state() { return st; },
     get watch() { return watchId(); },
+
+    /** The bells of the day the save is on, in order (#696). */
+    get watches() { return [...dayWatches()]; },
     holds,
     npcState,
 
@@ -957,9 +1009,13 @@ export function createMystery({ mystery, npcs, state }) {
      * lookup is the day-two schedule with `absent` already taken out of it, so
      * a caller that asks "is there anybody there" gets the hanged man's answer
      * without knowing there was a hanging. main.js is that caller.
+     *
+     * A bell of the morning is any id in `day2.watches` (#696), and the
+     * schedule is one station per person for the whole of it, so every bell of
+     * the morning reads the same row.
      */
     stationOf(npcId, watch = watchId()) {
-      if (day2 && watch === day2.watch) {
+      if (day2 && asList(day2.watches).includes(watch)) {
         if (!onDayTwo()) return null;
         if (dayTwoAbsent(mystery, outcomeOf(mystery, st)).has(npcId)) return null;
         return day2.schedule?.[npcId] ?? null;
@@ -1012,21 +1068,38 @@ export function createMystery({ mystery, npcs, state }) {
       return effects;
     },
 
-    /** The bell. The fourth ring ends the day: the Constable demands the accusation. */
+    /**
+     * The bell, on whichever day it is. The last ring of a day moves no watch:
+     * on day one that is the fourth, and the Constable demands the accusation.
+     *
+     * THE MORNING'S BELL IS A BELL AGAIN (#697). This opened with a bare
+     * `if (ended())`, and `ended()` is true from the verdict onward, so the
+     * chapel bell rope at Lauds returned no effects at all: no sound, no event,
+     * nothing. The guard is what stops a ring between the verdict and the
+     * epilogue (#520) and it still does, because that is a day one that has
+     * ended. The morning has no Constable to demand anything, so its last ring
+     * is the ring and the sound and nothing else, and with one bell in
+     * `day2.watches` every morning ring is that one. Rings are numbered within
+     * the day's OWN list so the morning borrows the four characters
+     * data/sounds.json already has (#698, and test/layout.mjs holds it).
+     */
     ring() {
-      if (ended()) return [];
+      if (ended() && !onDayTwo()) return [];
+      const list = dayWatches();
       const effects = [];
-      if (st.watch < watches.length - 1) {
+      if (st.watch < list.length - 1) {
         st.watch += 1;
         const n = st.watch;
-        effects.push({ type: 'watch', watch: watches[n], index: n });
-        effects.push({ type: 'stations', stations: Object.fromEntries([...ix.cast.keys()].map((id) => [id, ix.station(id, watches[n])])) });
+        effects.push({ type: 'watch', watch: list[n], index: n });
+        effects.push({ type: 'stations', stations: Object.fromEntries([...ix.cast.keys()].map((id) => [id, api.stationOf(id, list[n])])) });
         effects.push({ type: 'event', name: `bell:${n}` });
+      } else if (onDayTwo()) {
+        effects.push({ type: 'event', name: `bell:${list.length}` });
       } else {
         // The fourth ring. The watch stays at Vespers (the save clamps it to the
         // four); the Constable demands the accusation, and the frame moves.
         effects.push({ type: 'demand', judge: accusation.judge });
-        effects.push({ type: 'event', name: `bell:${watches.length}` });
+        effects.push({ type: 'event', name: `bell:${list.length}` });
       }
       return effects;
     },
@@ -1134,11 +1207,18 @@ export function createMystery({ mystery, npcs, state }) {
      * made. Idempotent — calling it twice reads the same recorded verdict and
      * returns the same morning — which is what lets a save resumed in either
      * day-two stage run it again on the way in.
+     *
+     * THE MORNING STARTS AT ITS FIRST BELL, AND ONLY THE FIRST TIME (#696).
+     * `st.watch` is an index into the day's own list, so it has to come back to
+     * 0 when day one leaves it at 3. It must NOT come back to 0 on the second
+     * call: this runs again on entering `end` and on every reload in either
+     * day-two stage, and a morning that has rung on would be rewound by being
+     * re-entered.
      */
     beginDay2() {
       const outcome = outcomeOf(mystery, st);
       if (!day2 || !outcome) return null;
-      st.day = 2;
+      if (st.day !== 2) { st.day = 2; st.watch = 0; }
       const gone = dayTwoAbsent(mystery, outcome);
       const stations = {}, lines = {};
       for (const npcId of ix.cast.keys()) {
@@ -1150,7 +1230,7 @@ export function createMystery({ mystery, npcs, state }) {
         const said = dayTwoLines(mystery, npcId, outcome, st.clues);
         if (said) lines[npcId] = said;
       }
-      return { day: 2, watch: day2.watch, outcome, stations, lines, absent: [...gone], ends: day2.ends ?? null, castle: dayTwoCastle(mystery, outcome) };
+      return { day: 2, watch: watchId(), watches: [...morningWatches], outcome, stations, lines, absent: [...gone], ends: day2.ends ?? null, castle: dayTwoCastle(mystery, outcome) };
     },
 
     /** The second day's closing pane for the recorded ending, or null. */

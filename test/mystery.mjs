@@ -255,6 +255,23 @@ console.log('the validator rejects');
     (m) => { m.schedule.inspector = { prime: null, terce: null, sext: null, vespers: null }; },
     /^inspector: arrives on day 2 and still has a day-one schedule$/);
 
+  /* THE MORNING'S OWN BELLS (#696). `state.watch` is an index into whichever
+   * list the day names, so every one of these is a save index that would read
+   * as a bell nobody meant: an empty list leaves the morning standing at no
+   * bell, a repeat makes two bells of the morning one bell, an id shared with
+   * day one makes one index mean two different bells, and the singular spelling
+   * left in the file is the second source this row exists to not have. */
+  expect('a morning with no bells of its own', (m) => { m.day2.watches = []; },
+    /^day2\.watches: \[\] is not a non-empty list of bell ids$/);
+  expect('a morning bell that is not a bell id', (m) => { m.day2.watches = [' ']; },
+    /^day2\.watches: " " is not a watch id$/);
+  expect('a morning bell that is one of the four', (m) => { m.day2.watches = ['terce']; },
+    /^day2\.watches: terce is one of the four bells, and a morning bell is the morning's own$/);
+  expect('one bell of the morning written twice', (m) => { m.day2.watches = ['lauds', 'lauds']; },
+    /^day2\.watches: lauds is listed twice, so two bells of the morning are one bell$/);
+  expect('the old singular spelling left beside the list', (m) => { m.day2.watch = 'lauds'; },
+    /^day2\.watch: the morning names its bells in `watches`, a list, and there is one spelling of it \(#696\)$/);
+
   /* AND THE CASTLE'S HALF OF THE MORNING (#539). Six rails, each one a way for
    * `day2.castle` to name something the castle cannot do, and every one of them
    * silent until the one ending it was written for. */
@@ -644,8 +661,8 @@ console.log('\nthe morning after, seven times');
     check(g.stage === 'morning', `${o.key}: the button on the ${before} pane opens the morning`, g.stage);
 
     const day = m.beginDay2();
-    check(day && day.watch === day2.watch && m.day === 2 && state.day === 2,
-      `${o.key}: the engine is on day two at ${day2.watch}, and the save says so`, `${day?.watch} / day ${state.day}`);
+    check(day && day.watch === day2.watches[0] && m.day === 2 && state.day === 2,
+      `${o.key}: the engine is on day two at ${day2.watches[0]}, and the save says so`, `${day?.watch} / day ${state.day}`);
     check(day.outcome.key === o.key && day.outcome.class === o.class && day.outcome.who === o.who,
       `${o.key}: and it read the ending off the accusation, not off a flag`, JSON.stringify(day.outcome));
 
@@ -691,7 +708,18 @@ console.log('\nthe morning after, seven times');
   m.beginDay2();
   check(m.press('steward', 'summons-is-stewards')[0].type === 'shrug' && m.npcState('steward') === 'default',
     'a press that would have moved the Steward at Sext moves nobody at Lauds');
-  check(m.ring().length === 0 && m.watch === 'lauds', 'the bell rings nothing and the watch stays at Lauds', m.watch);
+  /* THE MORNING'S BELL IS A BELL AGAIN (#697). This used to read
+   * `m.ring().length === 0`: `ring()` opened on `ended()`, which is true from
+   * the verdict onward, so the rope at Lauds returned no effects at all: no
+   * sound, no event, nothing on the screen. `day2.watches` has one bell in it,
+   * so the morning's ring is the last ring of its day: it rings, it is numbered
+   * within the morning's own list (#698), and it moves no watch, the way day
+   * one's fourth moves none. What it does NOT carry is a `demand`: the morning
+   * has no Constable asking for a name. */
+  const morningRing = m.ring();
+  check(morningRing.length === 1 && morningRing[0].type === 'event' && morningRing[0].name === 'bell:1'
+    && m.watch === 'lauds' && state.watch === 0,
+    'the morning bell rings bell:1, demands nothing and moves no watch', JSON.stringify(morningRing));
   check(m.accuse('clerk', []).length === 0, 'and there is no second accusation to make');
   check(m.examine('body')[0].type === 'absent', 'the body is not at the foot of the stair on the second morning');
   check(state.clues.length > 0 && m.journal().length === state.clues.length, 'the journal is still in his hand, though', `${m.journal().length} clues`);
@@ -715,6 +743,86 @@ console.log('\nthe morning after, seven times');
     r.m.beginDay2();
     return r;
   }
+}
+
+{
+  /* A MORNING WITH TWO BELLS IN IT (#696). The shipped list is one long, so
+   * everything above exercises the one-bell case and none of it can tell a
+   * `day2.watches` the engine actually reads from a `day2.watches[0]` it does
+   * not. This is the fixture that can: the same data with one id added to the
+   * morning's list and nothing else changed.
+   *
+   * IT STARTS WITH THE VALIDATOR, because the claim the row is making is that a
+   * second morning bell is a data edit. If the file that refuses bad data
+   * refuses this, it is not one. `day2.schedule` is one station per person for
+   * the whole morning and `day2.lines` is keyed by the verdict, so a second
+   * bell adds nothing for either of them to answer for. */
+  const two = clone(mystery);
+  two.day2.watches = ['lauds', 'lauds-two'];
+  const problems = validateMystery(two, cast, frame, castleNav(plan, two), sideQuests);
+  check(problems.length === 0, 'a second bell written into day2.watches is data the validator takes as it stands', problems.join(' | '));
+
+  const state = freshState(frame);
+  const m = createMystery({ mystery: two, npcs: cast, state });
+  const g = new QuestGraph(frame, QuestManager.actions);
+  g.begin();
+  for (const ev of events(m.talk('constable'))) g.dispatch(ev);
+  for (const ev of events(m.ring())) g.dispatch(ev);
+  for (const ev of events(m.accuse('nobody', []))) g.dispatch(ev);
+  g.dispatch('day:2');
+
+  // Day one left the watch at 1 (one ring). The morning is an index into its
+  // own list, so it has to come back to its own first bell.
+  check(state.watch === 1, 'the day ended one ring in, so the save says watch 1', String(state.watch));
+  const day = m.beginDay2();
+  check(m.watch === 'lauds' && state.watch === 0 && day.watch === 'lauds',
+    'the morning opens at its first bell and the save index came back to 0', `${m.watch} / ${state.watch}`);
+  check(day.watches.join(', ') === 'lauds, lauds-two' && m.watches.join(', ') === 'lauds, lauds-two',
+    'and the engine reports the list the morning names, not the four', m.watches.join(', '));
+
+  // The ring walks the morning's own list, and the bell numbers are the
+  // morning's own too, so they stay inside the four characters sounds.json has.
+  const first = m.ring();
+  check(first.some((e) => e.type === 'watch' && e.watch === 'lauds-two' && e.index === 1)
+    && first.some((e) => e.type === 'event' && e.name === 'bell:1')
+    && !first.some((e) => e.type === 'demand'),
+    'the first morning bell moves the morning on to its second watch and demands nothing', JSON.stringify(events(first)));
+  check(m.watch === 'lauds-two' && state.watch === 1, 'the engine and the save are both at the second bell', `${m.watch} / ${state.watch}`);
+
+  // Every bell of the morning reads the same station row: `day2.schedule` is
+  // one station per person for the whole of it.
+  check(m.stationOf('inspector')?.room === two.day2.schedule.inspector.room
+    && m.stationOf('inspector', 'lauds')?.room === two.day2.schedule.inspector.room,
+    'the schedule answers at both bells of the morning', JSON.stringify(m.stationOf('inspector')));
+  check(m.available('inspector')?.station?.room === two.day2.schedule.inspector.room,
+    'and he can still be spoken to at the second bell');
+
+  /* AND SO DOES THE NAV, WHICH IS A SEPARATE ANSWER AND A SILENT ONE. main.js
+   * places a body with `engine.stationOf(id, watch) ? nav.at(id, watch) : null`
+   * (src/main.js), so a nav that indexes only the morning's first bell puts
+   * NOBODY in the castle at the second: the engine says there is a station
+   * there and the lookup that turns it into a point says there is not. Nothing
+   * else in this suite can see that, because every other reader goes at
+   * `day2.schedule` directly. */
+  const twoNav = castleNav(plan, two);
+  const atFirst = twoNav.at('inspector', 'lauds');
+  const atSecond = twoNav.at('inspector', 'lauds-two');
+  check(!!atSecond && atFirst.x === atSecond.x && atFirst.z === atSecond.z && atFirst.room === atSecond.room,
+    'and the nav has a point for him at both bells, so main.js can put him somewhere at either',
+    `${JSON.stringify(atFirst)} / ${JSON.stringify(atSecond)}`);
+
+  const last = m.ring();
+  check(last.length === 1 && last[0].name === 'bell:2' && m.watch === 'lauds-two' && state.watch === 1,
+    'the last bell of the morning rings and moves nothing, the way the fourth of day one does', JSON.stringify(last));
+
+  /* AND IT IS NOT REWOUND BY BEING RE-ENTERED. `_applyDay` runs beginDay2 again
+   * on entering `end` and on every reload in either day-two stage (#696), and a
+   * `st.watch = 0` outside the day-one guard would put a player who had rung on
+   * back at the first bell every time the manager re-applied the day. */
+  m.beginDay2();
+  check(m.watch === 'lauds-two' && state.watch === 1, 'beginDay2 called again does not rewind a morning that has rung on', `${m.watch} / ${state.watch}`);
+  const resumed = createMystery({ mystery: two, npcs: cast, state: clone(state) });
+  check(resumed.day === 2 && resumed.watch === 'lauds-two', 'and a reload comes back at the bell the save was on', resumed.watch);
 }
 
 /* --------------- 7: the gaol roll (#571), and the morning that knows it (#573) ---
@@ -1080,9 +1188,9 @@ console.log('\nthe HUD room line, at every station');
   // stations go through the same resolver as the forty-five.
   const everyStation = { ...mystery.schedule };
   for (const [npcId, station] of Object.entries(mystery.day2.schedule)) {
-    everyStation[npcId] = { ...(everyStation[npcId] ?? {}), [mystery.day2.watch]: station };
+    everyStation[npcId] = { ...(everyStation[npcId] ?? {}), [mystery.day2.watches[0]]: station };
   }
-  const everyWatch = [...mystery.watches, mystery.day2.watch];
+  const everyWatch = [...mystery.watches, mystery.day2.watches[0]];
   for (const [npcId, byWatch] of Object.entries(everyStation)) {
     for (const watch of everyWatch) {
       const point = nav.at(npcId, watch);

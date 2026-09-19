@@ -1216,9 +1216,19 @@ console.log('\nevery zone has an ambient bed');
   else pass(`from the ward at (${wardPoint.x}, ${wardPoint.z}) ${heard.length} sources are heard, nearest first: ${heard.map(h => `${h.source.bed} (${h.source.key}) at ${h.metres.toFixed(1)} m`).join(', ')}`);
 
   /* The four rings (#682): `bell.rings` keyed by the `n` of the engine's own
-   * `bell:<n>`, which is 1 to the number of watches, and no other. */
+   * `bell:<n>`, which is 1 to the number of watches, and no other.
+   *
+   * AND THE MORNING'S RINGS ARE INSIDE THAT SET, NOT BESIDE IT (#698). Since
+   * #696 the morning after names its own bells and `ring()` numbers them within
+   * that list, so a morning of M bells emits `bell:1` to `bell:M`. This is the
+   * only file that can catch a morning bell with no sound written for it,
+   * because data/sounds.json is not a file src/mystery.js's validator can see.
+   * A proxy rail over there would be a second owner of one fact, and the check
+   * that matters is the one that names the missing ring. With one bell in
+   * `day2.watches` the union is the four and the message below is unchanged. */
   const rings = sounds.bell?.rings || {};
-  const emitted = Array.from({ length: mystery.watches.length }, (_, i) => String(i + 1));
+  const dayBells = (n) => Array.from({ length: n }, (_, i) => String(i + 1));
+  const emitted = [...new Set([...dayBells(mystery.watches.length), ...dayBells((mystery.day2?.watches ?? []).length)])];
   let badRing = 0;
   for (const n of emitted) {
     const r = rings[n];
@@ -1230,6 +1240,22 @@ console.log('\nevery zone has an ambient bed');
   const never = Object.keys(rings).filter(n => !emitted.includes(n));
   if (never.length) { fail(`bell.rings has ${never.map(n => `"${n}"`).join(', ')} and the engine never rings ${never.length === 1 ? 'it' : 'them'}: the day has ${emitted.length} rings`); badRing++; }
   if (!badRing) pass(`the ${emitted.length} rings the engine can emit each have a character: ${emitted.map(n => `${rings[n].strokes} for ${rings[n].name ?? n}`).join(', ')}`);
+  const morningBells = (mystery.day2?.watches ?? []).length;
+  if (!morningBells) fail('data/mystery.json has no `day2.watches`, so the morning after stands at no bell (#696)');
+  else pass(`and the morning after rings ${morningBells} of them: bell:1 to bell:${morningBells}`);
+
+  /* AND EVERY BELL EITHER DAY CAN STAND AT HAS A SKY (#696). `setWatch` in
+   * src/scene-setup.js returns false for a watch `lighting.watches` has never
+   * heard of and leaves the scene exactly as it was, which is the right answer
+   * for a save carrying rubbish and the wrong one for a bell the data means:
+   * the castle would ring, the HUD would change and the light would not. One
+   * morning bell has a Lauds sky; a second one written into `day2.watches`
+   * without a sky beside it would be that silent failure, and this is what
+   * says so. */
+  const everyBell = [...mystery.watches, ...(mystery.day2?.watches ?? [])];
+  const skyless = everyBell.filter(w => !config.lighting?.watches?.[w]);
+  if (skyless.length) fail(`${skyless.join(', ')} ${skyless.length === 1 ? 'is a bell' : 'are bells'} the engine can stand at with no sky in data/scene-config.json's lighting.watches: ringing ${skyless.length === 1 ? 'it' : 'one of them'} would change the HUD and not the light`);
+  else pass(`all ${everyBell.length} bells of the two days have a sky: ${everyBell.join(', ')}`);
   const stray = ringOf(sounds, emitted.length + 1);
   if (stray.strokes !== 1 || stray.gain !== 1) fail(`ringOf a ring the file has nothing for is ${JSON.stringify(stray)} and not one plain stroke`);
 }

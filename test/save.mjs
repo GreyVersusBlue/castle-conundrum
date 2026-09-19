@@ -423,9 +423,37 @@ console.log('the second day, through the save');
   // And the engine agrees with the save about which day it is on.
   const state = repaired({ stage: 'morning', day: 2, accusations: verdict });
   const engine = createMystery({ mystery, npcs: cast, state });
-  check(engine.day === 2 && engine.watch === mystery.day2.watch, `the engine on that save is on day two at ${mystery.day2.watch}`, `day ${engine.day} at ${engine.watch}`);
+  check(engine.day === 2 && engine.watch === mystery.day2.watches[0], `the engine on that save is on day two at ${mystery.day2.watches[0]}`, `day ${engine.day} at ${engine.watch}`);
   const undone = createMystery({ mystery, npcs: cast, state: repaired({ stage: 'morning', day: 2 }) });
   check(undone.day === 1 && undone.watch === 'prime', 'and on the repaired incoherent one it is back on day one at Prime', `day ${undone.day} at ${undone.watch}`);
+
+  /* AND THE WATCH IS AN INDEX INTO THE DAY'S OWN LIST (#696). It used to clamp
+   * to 0..3 whatever the day said, because the morning had one bell and the
+   * engine ignored the number entirely. It does not ignore it now: a day-two
+   * save carrying 3 would read as the fourth bell of a morning that has one,
+   * and with the clamp gone the engine falls back on its own `Math.min`, which
+   * is the same shape as the rail #413 wrote for day one and the same reason
+   * it is the save that has to be right (see the watch clamp above).
+   *
+   * The demotion re-clamps, which is the case the ordering makes: `day` is
+   * repaired before `watch` so that the clamp knows the day, and an incoherent
+   * `day: 2` is not found to be incoherent until the accusations below it have
+   * been repaired. A save demoted to day one keeps the watch it came in with. */
+  const morning = mystery.day2.watches.length;
+  check(repaired({ day: 2, watch: 3, accusations: verdict }).watch === morning - 1
+    && repaired({ day: 2, watch: 0, accusations: verdict }).watch === 0,
+    `a day-two watch clamps to the ${morning} bell${morning === 1 ? '' : 's'} of the morning, not to the four`,
+    String(repaired({ day: 2, watch: 3, accusations: verdict }).watch));
+  check(repaired({ day: 1, watch: 3, accusations: verdict }).watch === 3,
+    'and a day-one watch still clamps to the four, on the same save with the same verdict behind it');
+  check(repaired({ day: 2, watch: 3 }).watch === 3 && repaired({ day: 2, watch: 3 }).day === 1,
+    'a day 2 demoted for having no verdict is re-clamped against day one and keeps its watch', JSON.stringify(repaired({ day: 2, watch: 3 })));
+  const two = JSON.parse(JSON.stringify(mystery));
+  two.day2.watches = ['lauds', 'lauds-two'];
+  const wide = buildCatalog(two, quest, documents, sideQuests, rooms);
+  const onTwo = repairState({ stage: quest.start, day: 2, watch: 3, accusations: verdict }, wide);
+  check(wide.morningWatches.length === 2 && onTwo.watch === 1,
+    'a morning with two bells in it clamps to 1, so the ceiling is the data and not a number written beside it', String(onTwo.watch));
 }
 {
   // A reload in `morning`: `applyDay` is on that stage's `enter`, so the cast
@@ -437,7 +465,7 @@ console.log('the second day, through the save');
   const engine = createMystery({ mystery, npcs: cast, state });
   const watches = [];
   const qm = new QuestManager({ quest, mystery, riddle, npcs, ui, castle: stubCastle(), engine, saved: state, onWatch: (w) => watches.push(w) });
-  check(qm.stage === 'morning' && watches.at(-1) === mystery.day2.watch, 'a save in `morning` resumes there and puts the world at Lauds', `${qm.stage} / ${watches.at(-1)}`);
+  check(qm.stage === 'morning' && watches.at(-1) === mystery.day2.watches[0], 'a save in `morning` resumes there and puts the world at Lauds', `${qm.stage} / ${watches.at(-1)}`);
   check(ui.watch === 'Lauds', 'and the HUD says which bell it is', JSON.stringify(ui.watch));
   check(engine.stationOf('prisoner') === null, 'Madoc hanged and his cell is empty');
   qm.handleInteract(npcs.find((n) => n.id === 'laundress'));
