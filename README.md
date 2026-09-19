@@ -75,26 +75,30 @@ Run it on anything you add before you commit it.
 ## The suites
 
 ```
-npm test              # all twelve, cheapest first, non-zero on any failure
+npm test              # all fourteen, cheapest first, non-zero on any failure
 npm test layout       # or any subset by name
 ```
 
-Eight of them are Node against source and take seconds: `gltf`, `assets`,
-`layout`, `quest`, `mystery`, `save`, `lore` and `tools`. `plan-vs-scene` drives a headless
-Chromium over `npm run dev`, waits for the castle to finish building, and diffs
-every placed object's live `Box3` against `src/castle-plan.js`'s box at 0.01 m.
-`touch` drives the same dev server on a 412 x 915 page with a touchscreen and
-taps its way through the HUD. `map` places the camera in three rooms and reads
-the journal's map back, before and after a reload. `built` is the one check
-that loads what `npm run build` produced.
+Nine of them are Node against source and take seconds: `gltf`, `assets`,
+`layout`, `budget`, `quest`, `mystery`, `save`, `lore` and `tools`.
+`plan-vs-scene` drives a headless Chromium over `npm run dev`, waits for the
+castle to finish building, and diffs every placed object's live `Box3` against
+`src/castle-plan.js`'s box at 0.01 m. `touch` drives the same dev server on a
+412 x 915 page with a touchscreen and taps its way through the HUD. `map`
+places the camera in three rooms and reads the journal's map back, before and
+after a reload. `overlays` opens and shuts every screen that covers the castle
+and asks who holds the pointer after each one. `built` is the one check that
+loads what `npm run build` produced.
 
-`npm run play` is the thirteenth and is not in `npm test`. It opens a real visible
-window, takes pointer lock, and plays the whole day with real input — twelve
-people, ten pieces of evidence, three bells, a reload at Sext and the full
-ending — leaving a screenshot per beat in `shots/play/`. It needs a machine
+`npm run play` is the fifteenth and is not in `npm test`. It opens a real
+visible window, takes pointer lock, and plays the whole day with real input —
+twelve people, ten pieces of evidence, three bells, a reload at Sext and the
+full ending — leaving a screenshot per beat in `shots/play/`. It needs a machine
 with real GPU compositing, because a real-time movement assertion under a
 software-rendered Chromium is inconclusive rather than confirmed, in either
-direction.
+direction. Pointer lock itself is not one of the reasons: headless Chromium
+takes it and gives it back exactly as a headed one does, which is why
+`overlays` is allowed in CI.
 
 CI runs `npm run build` and then `npm test`, on every pull request and every
 push to `main`. There is no list of failures that are allowed to stay red.

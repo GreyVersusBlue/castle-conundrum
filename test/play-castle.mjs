@@ -30,9 +30,16 @@
 // because interaction.js tests proximity and facing but never line of sight.
 // That class of bug is invisible to every other check in this folder.
 //
-// WHY HEADED: pointer lock needs a browser compositing frames to a real screen,
-// and so does GPU rendering. `launch({ headed: true })` is the whole difference.
-// A window will open and visibly play the game. That is expected.
+// WHY HEADED: GPU rendering needs a browser compositing frames to a real
+// screen, and so does anything that measures how far a held key carries a body
+// in 700 ms. `launch({ headed: true })` is the whole difference. A window will
+// open and visibly play the game. That is expected.
+//
+// IT IS NOT POINTER LOCK, which this line used to claim as the other half of
+// the reason, and which is wrong: headless Chromium takes pointer lock on a
+// trusted click, reports `document.pointerLockElement`, drops it and takes it
+// back exactly as a headed one does (#659, measured 2026-09-18). That is why
+// test/overlays.mjs is allowed in CI and this file still is not.
 //
 // WHY IT IS NOT IN CI: everything above. #53 — a real-time movement assertion
 // under a software-rendered Chromium is inconclusive, not confirmed, in either
@@ -130,8 +137,6 @@ let failures = 0;
 let shotN = 0;
 /** Who has had their portrait taken. See `converse` below. */
 const photographed = new Set();
-/** So the Present-button bug below is reported once and not once per press. */
-let presentLockSaid = false;
 
 const ok = (label, detail = '') => console.log(`  ok    ${label}${detail ? '  ' + detail : ''}`);
 const bad = (label, detail = '') => { failures++; console.log(`  FAIL  ${label}${detail ? '  ' + detail : ''}`); };
@@ -193,38 +198,6 @@ const state = () => page.evaluate(() => {
 });
 
 /** Walk until the interact prompt names `who`. drive.mjs owns the aim/strafe loop. */
-/**
- * Pointer lock back after an overlay, and a note when it had to be taken.
- *
- * SHUTTING THE JOURNAL LEAVES THE PLAYER UNABLE TO MOVE, and that is a bug in
- * the game rather than in this file. Opening it releases pointer lock, which is
- * right — the journal is a thing you point at. Shutting it gives nothing back:
- * nothing calls `player.lock()`, and main.js's `unlock` listener only offers
- * the "click to resume" panel when no overlay is open, which was false at the
- * moment it fired. So the overlay goes away, the castle comes back, and W, A,
- * S, D and the mouse all do nothing, with no panel and no prompt to say why.
- *
- * Measured on 2026-09-17, on a real GPU with a real keyboard: before the
- * journal, W moves the player 3.7 m; after J and J again, W moves 0.00 m; a
- * plain click on the canvas changes nothing, because there is no handler on it
- * to change anything; `window.__player.lock()` restores it and W moves 3.7 m
- * again. A player has no `window.__player`. THEY ARE STUCK, and the only way
- * out of a castle they cannot walk is to reload the page.
- *
- * This is asserted once, at the journal, where it is first provable — see that
- * beat. Everywhere else it is taken back quietly so the rest of the day can be
- * played, because a suite that stops at the first bug stops finding the second.
- * WHEN THE GAME FIXES THIS, THE ASSERTION GOES GREEN AND EVERY `regrip()` CALL
- * BELOW BECOMES DEAD AND SHOULD COME OUT.
- */
-const regrip = async (where) => {
-  if (await page.evaluate(() => !!document.pointerLockElement)) return true;
-  await page.evaluate(() => window.__player?.lock());
-  await wait(300);
-  const back = await page.evaluate(() => !!document.pointerLockElement);
-  console.log(`  note  pointer lock had to be taken back after ${where}${back ? '' : ' AND COULD NOT BE'}`);
-  return back;
-};
 
 /**
  * Point the camera at a world point, pitch included.
@@ -267,19 +240,16 @@ const playerAt = async () => {
  * beat that does not need it.
  */
 const hike = async (target, level = 0) => {
-  /* A WALK NEEDS THE CASTLE BACK FIRST. `regrip` is a no-op when pointer lock
-   * is held, and this is the one place worth paying for it, because without
-   * pointer lock W does nothing and every waypoint below "misses" in a way that
-   * reads exactly like a wall. The journal is not the only overlay that does
-   * this: `ui.js` releases pointer lock for the riddle, the journal, the
-   * accusation panel and the verdict pane, and `quest-manager.js` takes it back
-   * for the riddle ALONE. Presenting a clue opens the journal as a picker, so
-   * the first Present of the day costs the player the castle — the run that
-   * found this got the merchant to admit the cart and then stood at
-   * (-29.6, -0.3) for the rest of Terce, three waypoints missed out of every
-   * hike, "locked false" in every note.
+  /* A WALK NEEDS THE CASTLE BACK FIRST, AND IT NOW COMES BACK BY ITSELF (#660).
+   * This opened with a `regrip()` that took pointer lock back by hand, because
+   * `ui.js` released it for four overlays and `quest-manager.js` gave it back
+   * for one: presenting a clue opens the journal as a picker, so the first
+   * Present of the day cost the player the castle, and the run that found it
+   * got the merchant to admit the cart and then stood at (-29.6, -0.3) for the
+   * rest of Terce — three waypoints missed out of every hike, "locked false"
+   * in every note. `ui.js` owns both halves now and test/overlays.mjs holds it
+   * to them, so a walk that misses here is a walk that missed.
    */
-  await regrip('an overlay, before a walk');
   /* BOTH ENDS HAVE TO BE SOMETHING TO STAND ON, and neither reliably is.
    *
    * The far end: the chapel bell hangs in the tower's ring, the cloak lies on a
@@ -356,7 +326,6 @@ const hike = async (target, level = 0) => {
 const walkTo = async (target, who, level = 0, within = Infinity) => {
   const near = async (d = Infinity) => d <= within && !!(await state()).prompt?.includes(who);
   if (!(await near(0))) await hike(target, level);
-  else await regrip('an overlay, before a step');
   const got = await driveTo(page, target, near, { maxBursts: 90 });
   if (!got) {
     const at = await playerAt();
@@ -1125,31 +1094,17 @@ try {
     const hasButton = await page.evaluate(() => !document.getElementById('dialogue-present').classList.contains('hidden'));
     assert(hasButton, `the ${label}'s dialogue offers Present`);
     if (!hasButton) return null;
-    /* AND IT CANNOT BE CLICKED, which is the other half of the pointer-lock bug
-     * `regrip` describes. A dialogue does not release pointer lock — `ui.js`
-     * calls `document.exitPointerLock()` for the riddle, the journal, the
-     * accusation panel and the verdict pane, and for nothing else — so while a
-     * dialogue is open the cursor is still captured, every pointer event goes
-     * to the locked element, and a real mouse cannot reach this button at all.
-     * Playwright says it plainly: "canvas intercepts pointer events", after
-     * thirty seconds of retrying a button it agrees is visible and enabled.
-     *
-     * THE TWO BUGS HIDE EACH OTHER. Open the journal once and pointer lock is
-     * gone for good (nothing takes it back), which makes this button clickable
-     * for the rest of the game — at the price of never walking again. Play
-     * without opening the journal and you can walk, and you cannot present.
-     * Presenting a clue is how four of the twelve are pressed, so this is not a
-     * corner of the game.
-     *
-     * Said once, then worked around with a synthetic click, which is the same
-     * idiom the journal rows below already use. */
-    const lockedNow = await page.evaluate(() => !!document.pointerLockElement);
-    if (!presentLockSaid) {
-      presentLockSaid = true;
-      assert(!lockedNow, 'a dialogue releases pointer lock, so its Present button can be clicked',
-        lockedNow ? 'pointer lock is held, the canvas takes every pointer event, and no real mouse can reach Present' : '');
-    }
-    await page.evaluate(() => document.getElementById('dialogue-present').click());
+    /* AND IT IS CLICKED BY A REAL MOUSE, which it could not be until #660.
+     * A dialogue did not release pointer lock — `ui.js` called
+     * `document.exitPointerLock()` for the riddle, the journal, the accusation
+     * panel and the verdict pane, and for nothing else — so while a dialogue
+     * was open the cursor was still captured, every pointer event went to the
+     * locked element, and Playwright said it plainly: "canvas intercepts
+     * pointer events", after thirty seconds of retrying a button it agreed was
+     * visible and enabled. `page.click` and not a synthetic `.click()`, because
+     * the difference between those two IS the bug: one is a coordinate and the
+     * other is a node. test/overlays.mjs holds the same line headlessly. */
+    await page.click('#dialogue-present');
     await wait(300);
     const row = await page.evaluate((id) => !!document.querySelector(`#journal-list .journal-row[data-id="${id}"]`), clueId);
     assert(row, `${clueId} is in the list the Present button opens`);
@@ -1215,15 +1170,31 @@ try {
   await wait(250);
   assert(await page.evaluate(() => document.getElementById('journal-overlay').classList.contains('hidden')), 'J again shuts it');
 
-  /* AND IT GIVES THE CASTLE BACK, WHICH IT DOES NOT. This is the one assertion
-   * in this file that nothing but a hand on a keyboard could ever have written,
-   * and it is the answer to what `npm run play` is for. See `regrip` above for
-   * the measurements. It is red on purpose and stays red until the game calls
-   * `lock()` when an overlay closes, or offers the resume panel it already has. */
+  /* AND IT GIVES THE CASTLE BACK. This is the one assertion in this file that
+   * nothing but a hand on a keyboard could ever have written, and it is the
+   * answer to what `npm run play` is for: measured on 2026-09-17, W moved the
+   * player 3.7 m before the journal and 0.00 m after J and J again, with no
+   * panel and no prompt to say why, and the only way out was a reload (#626).
+   * It was red on purpose for a day, and #660 is what turned it green.
+   *
+   * THE WALK UNDER IT IS THE HALF A HEADLESS PAGE CANNOT ANSWER (#53).
+   * test/overlays.mjs asserts who holds the pointer, which is the cause and is
+   * the same in a software rasteriser; this asserts that the body then moves,
+   * which is real-time and is not. */
   const afterJournal = await page.evaluate(() => !!document.pointerLockElement);
   assert(afterJournal, 'shutting the journal gives the player back the castle',
     afterJournal ? '' : 'pointer lock is gone, no resume panel is offered, and W does nothing — the player can only reload');
-  await regrip('the journal');
+  {
+    const before = await playerAt();
+    await page.keyboard.down('KeyW');
+    await wait(700);
+    await page.keyboard.up('KeyW');
+    await wait(150);
+    const after = await playerAt();
+    const moved = Math.hypot(after.x - before.x, after.z - before.z);
+    assert(moved > 1.0, 'and W moves the player again, from the same standing start',
+      `${moved.toFixed(2)} m in 700 ms`);
+  }
 
   // The rest of Prime.
   await converse('cook', /Marged/, 'cook');

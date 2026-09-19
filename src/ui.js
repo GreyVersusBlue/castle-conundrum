@@ -80,7 +80,10 @@ export class UI {
     this._onDialogueEnd = null;
     this._onPresent = null;
     this._onRiddleSubmit = null;
-    this._onRiddleClose = null;
+    // Who takes the pointer back when the last overlay goes away. main.js
+    // injects it through `usePointer`; null until it does, which is every
+    // Node stand-in for this class and is why `_takePointer` is a no-op then.
+    this._relock = null;
     this._onJournalPick = null;
     this._acc = null;
     this._toastTimer = null;
@@ -118,6 +121,43 @@ export class UI {
 
   /** Anything modal: E and J are the overlay's while one of these is up. */
   isOverlayOpen() { return this.isRiddleOpen() || this.isJournalOpen() || this.isAccusationOpen(); }
+
+  /* ---- Who holds the pointer (#660) ----
+   *
+   * ONE PLACE LETS IT GO AND ONE PLACE TAKES IT BACK, and every screen that
+   * covers the castle goes through both. It was four `document.exitPointerLock()`
+   * calls scattered through this file and one `controlsRef.lock()` over in
+   * quest-manager.js, and the arithmetic of that is a player who opens the
+   * journal once and never walks again: the overlay goes away, the castle comes
+   * back, and W, A, S, D and the mouse all do nothing with no panel to say why
+   * (#626, #627). A fifth overlay added below inherits both halves or neither.
+   *
+   * A DIALOGUE IS IN THIS LIST TOO, which it never used to be. It is not modal
+   * — E steps it and the player keeps the HUD — but it carries the Present
+   * button, and a button is a thing you point at. While pointer lock is held
+   * every pointer event goes to the locked element, so the canvas ate the click
+   * and no real mouse could reach that button at all; presenting a clue is how
+   * four of the twelve are pressed.
+   */
+
+  /** main.js hands over the one thing that can ask for pointer lock back. */
+  usePointer(relock) { this._relock = relock; }
+
+  /** Is anything on screen still something the player has to point at? */
+  wantsPointer() { return this.isOverlayOpen() || this.isDialogueOpen(); }
+
+  /** Every open goes through here. */
+  _freePointer() { document.exitPointerLock?.(); }
+
+  /**
+   * Every close goes through here, and it asks `wantsPointer` first: shutting
+   * the Present picker drops back into the dialogue that opened it, and
+   * quest-manager.js's `handlePress` closes the journal and opens the next
+   * lines in one call. Taking the pointer back between those two would be a
+   * lock and an unlock in the same frame, which is a flicker at best and
+   * Chrome's own rate limiter at worst.
+   */
+  _takePointer() { if (!this.wantsPointer()) this._relock?.(); }
 
   /* ---- The thumb's HUD (#530) ---- */
 
@@ -265,6 +305,7 @@ export class UI {
     this.el.dialogueName.textContent = name;
     this.el.dialoguePresent.classList.toggle('hidden', !onPresent);
     this.el.dialogue.classList.remove('hidden');
+    this._freePointer();
     this._showCurrentLine();
   }
 
@@ -287,20 +328,23 @@ export class UI {
     this.el.dialoguePresent.classList.add('hidden');
     const cb = this._onDialogueEnd;
     this._onDialogueEnd = null;
+    // The callback first, THEN the pointer: the last line of a conversation is
+    // what opens the accusation panel, and a relock in front of it would be
+    // undone by that panel's own release a moment later.
     if (completed && cb) cb();
+    this._takePointer();
   }
 
   // ---- Riddle ----
   isRiddleOpen() { return !this.el.riddle.classList.contains('hidden'); }
 
-  openRiddle(riddleText, onSubmit, onClose) {
+  openRiddle(riddleText, onSubmit) {
     this._onRiddleSubmit = onSubmit;
-    this._onRiddleClose = onClose || null;
     this.el.riddleText.textContent = riddleText;
     this.el.riddleFeedback.textContent = '';
     this.el.riddleInput.value = '';
     this.el.riddle.classList.remove('hidden');
-    document.exitPointerLock?.();
+    this._freePointer();
     setTimeout(() => this.el.riddleInput.focus(), 50);
   }
 
@@ -316,9 +360,7 @@ export class UI {
 
   closeRiddle() {
     this.el.riddle.classList.add('hidden');
-    const cb = this._onRiddleClose;
-    this._onRiddleClose = null;
-    if (cb) cb();
+    this._takePointer();
   }
 
   // ---- Journal ----
@@ -351,7 +393,7 @@ export class UI {
     this.el.journalTabMap?.classList.toggle('hidden', map === null);
     this.el.journalTabQuests?.classList.toggle('hidden', quests === null);
     this.el.journal.classList.remove('hidden');
-    document.exitPointerLock?.();
+    this._freePointer();
     this._renderJournalTab();
   }
 
@@ -503,6 +545,7 @@ export class UI {
   closeJournal() {
     this.el.journal.classList.add('hidden');
     this._onJournalPick = null;
+    this._takePointer();
   }
 
   // ---- The accusation, the verdict and the epilogue ----
@@ -514,8 +557,8 @@ export class UI {
    * engine, and what comes back is either a note (too early, or refused) or the
    * verdict pane below.
    */
-  openAccusation({ people, fall, clues, present = 3, empty = '', onAccuse, onClose }) {
-    this._acc = { who: null, picked: [], present, onAccuse, onClose };
+  openAccusation({ people, fall, clues, present = 3, empty = '', onAccuse }) {
+    this._acc = { who: null, picked: [], present, onAccuse };
     this.el.accusationNote.textContent = '';
     this.el.verdict.classList.add('hidden');
     this.el.accusationPick.classList.remove('hidden');
@@ -562,7 +605,7 @@ export class UI {
     };
     this._refreshAccusation();
     this.el.accusation.classList.remove('hidden');
-    document.exitPointerLock?.();
+    this._freePointer();
   }
 
   _refreshAccusation() {
@@ -579,9 +622,8 @@ export class UI {
 
   closeAccusation() {
     this.el.accusation.classList.add('hidden');
-    const cb = this._acc?.onClose;
     this._acc = null;
-    if (cb) cb();
+    this._takePointer();
   }
 
   /**
@@ -602,6 +644,6 @@ export class UI {
     this.el.accusation.classList.remove('hidden');
     this.el.restartBtn.textContent = label;
     this.el.restartBtn.onclick = onButton;
-    document.exitPointerLock?.();
+    this._freePointer();
   }
 }

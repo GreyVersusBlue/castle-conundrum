@@ -196,7 +196,7 @@ const stubCastle = () => ({ opened: [], hidden: [], openLock(id) { this.opened.p
   const state = repaired({ stage: 'investigate', riddleWrong: 2, watch: 2, clues: ['summons-note'], pressed: { steward: ['admits'] } });
   const engine = createMystery({ mystery, npcs: cast, state });
   const qm = new QuestManager({
-    quest, mystery, riddle, npcs, ui, castle: stubCastle(), controlsRef: { lock() {} }, engine,
+    quest, mystery, riddle, npcs, ui, castle: stubCastle(), engine,
     saved: state, onChange: (s) => changes.push({ ...s }),
   });
   check(qm.stage === 'investigate' && ui.objective === quest.stages.investigate.objective, 'a saved stage resumes there with its objective', ui.objective);
@@ -218,7 +218,7 @@ const stubCastle = () => ({ opened: [], hidden: [], openLock(id) { this.opened.p
   const state = repaired({ stage: 'fall', watch: 3, accusations: [{ who: 'nobody', clues: [], verdict: 'fall', watch: 'vespers' }] });
   const engine = createMystery({ mystery, npcs: cast, state });
   const restarts = { n: 0 };
-  const qm = new QuestManager({ quest, mystery, riddle, npcs: [], ui, castle: stubCastle(), controlsRef: { lock() {} }, engine, saved: state, restart: () => { restarts.n++; } });
+  const qm = new QuestManager({ quest, mystery, riddle, npcs: [], ui, castle: stubCastle(), engine, saved: state, restart: () => { restarts.n++; } });
   check(qm.judged && !qm.victory && !!ui.epilogue, 'resumed at `fall`: the epilogue is on the screen again, and the day is judged without the game being over (#537)');
   check(ui.epilogue.epilogue === mystery.accusation.verdicts.nobody.epilogue, 'and it is the fall\'s own epilogue, rebuilt from the save', ui.epilogue.epilogue?.slice(0, 40));
   check(ui.epilogueLabel === 'The next morning', 'its button offers the second day rather than a fresh one', JSON.stringify(ui.epilogueLabel));
@@ -232,7 +232,7 @@ const stubCastle = () => ({ opened: [], hidden: [], openLock(id) { this.opened.p
   // A fresh save, or a save at start, begins at start with no onChange surprises.
   const ui = stubUI();
   const changes = [];
-  const qm = new QuestManager({ quest, mystery, riddle, npcs: [], ui, castle: stubCastle(), controlsRef: {}, saved: null, onChange: (s) => changes.push(s) });
+  const qm = new QuestManager({ quest, mystery, riddle, npcs: [], ui, castle: stubCastle(), saved: null, onChange: (s) => changes.push(s) });
   check(qm.stage === quest.start && changes.length === 1 && changes[0].stage === quest.start, 'no save: begins at start and reports it');
 }
 
@@ -377,7 +377,7 @@ console.log('the second day, through the save');
   const seen = (state) => {
     const npcs = read('data/npcs.json').cast.map((def) => ({ id: def.id, name: def.name, def, dialogueState: 'default', getDialogueLines() { return this.def.dialogue[this.dialogueState]; } }));
     const engine = createMystery({ mystery, npcs: cast, state });
-    const qm = new QuestManager({ quest, sideQuests, mystery, riddle, npcs, ui: stubUI(), castle: stubCastle(), controlsRef: { lock() {} }, engine, saved: state });
+    const qm = new QuestManager({ quest, sideQuests, mystery, riddle, npcs, ui: stubUI(), castle: stubCastle(), engine, saved: state });
     return qm.reputation();
   };
   check(seen({ ...repaired({}), reputation: { outer: 99, inner: 0 } }).outer === 99, 'without it: a manager handed an unrepaired 99 carries the 99');
@@ -436,7 +436,7 @@ console.log('the second day, through the save');
   const state = repaired({ stage: 'morning', day: 2, accusations: [{ who: 'prisoner', clues: [], verdict: 'wrong', watch: 'terce' }] });
   const engine = createMystery({ mystery, npcs: cast, state });
   const watches = [];
-  const qm = new QuestManager({ quest, mystery, riddle, npcs, ui, castle: stubCastle(), controlsRef: { lock() {} }, engine, saved: state, onWatch: (w) => watches.push(w) });
+  const qm = new QuestManager({ quest, mystery, riddle, npcs, ui, castle: stubCastle(), engine, saved: state, onWatch: (w) => watches.push(w) });
   check(qm.stage === 'morning' && watches.at(-1) === mystery.day2.watch, 'a save in `morning` resumes there and puts the world at Lauds', `${qm.stage} / ${watches.at(-1)}`);
   check(ui.watch === 'Lauds', 'and the HUD says which bell it is', JSON.stringify(ui.watch));
   check(engine.stationOf('prisoner') === null, 'Madoc hanged and his cell is empty');

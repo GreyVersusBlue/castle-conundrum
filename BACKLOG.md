@@ -279,9 +279,28 @@ than the one this row named. The Lauds sky (#533) is past where the run
 reaches. Nobody has put a thumb on a phone (#530); that half is untouched and
 is still the feel.
 
-**And the run found the thing it exists to find.** Rank 1 below is a castle you
-cannot walk in after you open the journal, and it is a bug in `src/`, not in
-the suite. Nothing but a hand on a keyboard was ever going to see it.
+**CI on `main` is red, and it is nobody's row yet.** `plan-vs-scene.mjs`'s
+populace beat fails in CI on the baker's first Prime stop — 0.408 m off on the
+merge of PR #47 (2026-09-18, run 35305787194), 0.055 m off on rank 1's branch
+the same morning. Two distances from one stop is a body already walking its ring
+when the page is read, and the beat measures it against `TOL`, which is 0.01 m
+because that is what `plan-vs-scene.mjs` diffs static geometry at. A moving body
+is owed a different number and picking it wants the ring's step size in hand,
+which is lane C's. It is written up under rank 1's section in `HISTORY.md` with
+both runs named. **Until somebody takes it, CI has no green run on `main` and
+every PR inherits the same red suite.**
+
+**And the run found the thing it exists to find**, which was a castle you
+could not walk in after opening the journal: a bug in `src/`, not in the suite,
+and nothing but a hand on a keyboard was ever going to see it. **It shipped as
+rank 1 on 2026-09-18** (#659 to #661). `src/ui.js` owns the pointer now, one
+place letting it go and one taking it back, a dialogue is on that list so its
+Present button can be clicked by a real mouse, and a relock the browser refuses
+puts the resume panel up instead of leaving the player nowhere. The fourteenth
+suite, `test/overlays.mjs`, holds all of it headlessly, because pointer lock
+turned out not to be a GPU question at all — two comments that said it was are
+corrected (#659). **Rank 1 is done, its section is gone from this file and from
+`SPECS.md`, and its number is retired.**
 
 **Rank 3 shipped the same day anyway** (#634, #635): asked to choose between
 holding the row for a second run or a fallback frame, Devon took the fallback.
@@ -388,7 +407,7 @@ together.
 | --- | --- | --- |
 | A | `src/save.js` — the version number and `migrate` | 4a, 4b, 8 |
 | B | `data/scene-config.json` — and `test/tools.mjs`'s byte-exactness rail | 4c, 5, 9 (12b is done) |
-| C | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | 1, 6, 10, 12c |
+| C | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | 6, 10, 12c |
 | D | `src/main.js`'s player rig and spawn | 6, 11 |
 | E | `src/audio.js` and `data/sounds.json` | 7 |
 
@@ -411,23 +430,22 @@ format, which is all that is left of the row.
 
 ## The ranked table
 
-**It started at 2 and has a 1 again, and now has gaps at 3 and 5 too.** The
-first rank 1 shipped on 2026-09-17 and its number was retired rather than
-reused (#619); the rank 1 below is a different row, opened the same day by
-what the GPU run found (#624 to #630). That is the retirement rule working as
-intended rather than against it: a rank is a priority and not an id, so the
-number came back to the top of the list when something belonged there. Rank 3
-shipped the same day, from a fallback source rather than the shot the spec
-asked for (#634, #635), and rank 5 shipped the same day too, by rendering the
-hall directly rather than waiting on a second GPU run to reach Vespers (#656
-to #658) — both numbers are gone the same way rank 1's first use is. Every row
+**It starts at 2, and 1, 3 and 5 are retired numbers rather than gaps.** The
+number 1 has been used twice and retired twice: the fourth body on 2026-09-17
+(#619), and then the castle you cannot walk, which the GPU run opened the same
+day (#624 to #630) and which shipped on 2026-09-18 (#659 to #661). That is the
+retirement rule working as intended rather than against it: a rank is a
+priority and not an id, so the number came back to the top of the list when
+something belonged there, and went again when it was done. Rank 3 shipped on
+2026-09-17 from a fallback source rather than the shot the spec asked for
+(#634, #635), and rank 5 the same day, by rendering the hall directly rather
+than waiting on a second GPU run to reach Vespers (#656 to #658). Every row
 below is named by title in `SPECS.md` and `ROADMAP.md` as well as by rank,
 which is what makes that survivable (#522).
 
 | Rank | Item | Size | Model | Where | Gate | Lane | Claimed | Detail |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | The castle you cannot walk: pointer lock after an overlay, and a Present nobody can click | ¼ | Opus 5 | Container | — | D | | [The castle you cannot walk](SPECS.md#the-castle-you-cannot-walk) |
-| 2 | The GPU run: the day end to end, and somebody looks at the twelve (the run happened, #624 to #630) | 1 | Opus 5 | Local: GPU | **after 1** | — | | [The GPU run](SPECS.md#the-gpu-run) |
+| 2 | The GPU run: the day end to end, and somebody looks at the twelve (the run happened, #624 to #630) | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
 | 4 | A second day: increment 3, the town half and the bells question (4b, the fact that changes, shipped #646 to #649) | 2+ | Opus 5 | 4a container, 4c local | — | A (4a), B (4c) | | [A second day](SPECS.md#a-second-day) |
 | 6 | Life: a populace: the fifty, the activity clips and the ambient talk | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: somebody listens to the seven beds, then a bed at a point, the four bells, event sounds | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
@@ -441,36 +459,17 @@ which is what makes that survivable (#522).
 take first, what each one unblocks, and which ones two sessions may hold at
 the same time. This table still ranks; that file sequences (#601).
 
-## The castle you cannot walk
-
-*Where: container. Gate: none; it gates rank 2. Lane: D.*
-
-**Rank 1, and it is a ¼ that stops the game.** Found by the GPU run on
-2026-09-17 (#626, #627). `src/ui.js` calls `document.exitPointerLock()` for
-four overlays — the riddle, the journal, the accusation panel and the verdict
-pane — and `src/quest-manager.js` takes pointer lock back for **the riddle
-alone**. Open the journal and shut it and the player cannot move, cannot look,
-is offered no resume panel, and has no way back but reloading the page:
-measured, W moves the player 3.7 m before and 0.00 m after. Separately, a
-dialogue never releases pointer lock, so its **Present button cannot be clicked
-by a real mouse** — the cursor is captured and every pointer event goes to the
-canvas. **The two hide each other**: open the journal once and Present works
-for the rest of the game, at the price of never walking again. Presenting is
-how four of the twelve are pressed, so neither half is a corner of the game.
-The fix is `src/`, lane D, and it wants a guard-rail that presses J twice and
-asserts the player can still move. `test/play-castle.mjs` already asserts both,
-red, and works around both so the rest of the day can be played.
-
 ## The GPU run
 
-*Where: local, GPU. Gate: after rank 1. Lane: none.*
+*Where: local, GPU. Gate: none since 2026-09-18. Lane: none.*
 
 **Rank 2. The run happened on 2026-09-17** (#624 to #630) and the row stays
-open because the day does not reach the end yet. What it costs to get there is
-now a known list rather than a guess: rank 1 above, and a walker that still
-wanders onto a stair (#630). **What is still unanswered is `twelve-at-vespers`
-itself** — six of the twelve in the Great Hall, lit by a real day's run rather
-than a scripted one — and the beat that takes it is written and in the file;
+open because the day does not reach the end yet. What it costs to get there was
+a known list of two: the castle you cannot walk, which shipped on 2026-09-18
+(#659 to #661), and a walker that still wanders onto a stair (#630). One left.
+**What is still unanswered is `twelve-at-vespers` itself** — six of the
+twelve in the Great Hall, lit by a real day's run rather than a scripted one
+— and the beat that takes it is written and in the file;
 nothing reaches it yet.
 
 Settled by the run and not open any more: the compressed textures (#507) look

@@ -113,11 +113,19 @@ export async function servePreview(port) {
 // download for that: `channel: 'chrome'` reuses the system install.
 //
 // `headed: true` opens a real visible window, and only `npm run play` wants
-// one. It wants it for a specific reason: the Pointer Lock API and real GPU
-// rendering both need a browser that is actually compositing frames to a
-// screen. A software-rendered headless Chromium can put static geometry exactly
-// where a GPU would — that is why plan-vs-scene.mjs is allowed in CI — but it
-// cannot settle a question about movement or physics either way (#53).
+// one. It wants it for a specific reason: real GPU rendering needs a browser
+// that is actually compositing frames to a screen, and so does any reading of
+// how far a held key carries a body. A software-rendered headless Chromium can
+// put static geometry exactly where a GPU would — that is why plan-vs-scene.mjs
+// is allowed in CI — but it cannot settle a question about movement or physics
+// either way (#53).
+//
+// THE POINTER LOCK API IS NOT ON THAT LIST, though this comment said it was
+// until 2026-09-18. Headless Chromium takes pointer lock on a trusted click,
+// reports `document.pointerLockElement`, drops it on `exitPointerLock()` and
+// takes it back on the next request, and it enforces the same four-request
+// ration a headed one does (#659, #661). test/overlays.mjs runs in CI on the
+// strength of that.
 //
 // Chrome slows or stops requestAnimationFrame, timers and compositing in a
 // window it thinks nobody is looking at, so a headed walk covers no ground the

@@ -10,6 +10,28 @@ import { SILENCE } from './audio.js';
 const WALK_SPEED = 5.2;
 const SPRINT_MULT = 1.75;
 
+/* POINTER LOCK IS RATIONED, AND THE RATION IS THE BROWSER'S (#661).
+ *
+ * Measured in Chrome on 2026-09-18, from `test/blank.html` with nothing else
+ * on the page: FOUR `requestPointerLock()` calls are granted and the fifth is
+ * refused with `NotAllowedError: Too many pointer lock requests in a short
+ * window of time`; the budget comes back 2049 ms after it ran out. Nothing in
+ * the game asked that often until ui.js started taking the pointer back on
+ * every overlay close (#660) — five overlays opened and shut inside two
+ * seconds is a player mashing J, and it is not hypothetical.
+ *
+ * A refused request is not free: it fires `pointerlockerror`, which three's own
+ * PointerLockControls answers with a console.error, and `lock()` there drops
+ * the promise on the floor so the rejection surfaces as an unhandled one. So
+ * this counts its own asks and stops ONE SHORT of the browser's budget rather
+ * than finding out. Three in 2.2 s is under the measured limit on Chrome and
+ * over nothing a player does deliberately; a browser with no limit at all
+ * (Firefox has none) loses nothing but the fourth ask in a two-second burst,
+ * which the resume panel catches anyway.
+ */
+const LOCK_BURST = 3;
+const LOCK_WINDOW_MS = 2200;
+
 export class PlayerController {
   /**
    * `getColliders` answers with `src/castle-plan.js`'s own collider list — the
@@ -44,6 +66,8 @@ export class PlayerController {
     this.walked = 0;
     this.stepClass = null;
     this.touch = null;
+    // When the last few `lock()` calls went out, for the ration above.
+    this._asks = [];
     this.controls = new PointerLockControls(camera, domElement);
     this.keys = new Set();
     this.enabled = false;
@@ -64,7 +88,32 @@ export class PlayerController {
    */
   useTouch(touch) { this.touch = touch; }
   get onTouch() { return !!this.touch; }
-  lock() { if (!this.touch) this.controls.lock(); }
+
+  /**
+   * Ask for pointer lock, and ANSWER WHETHER IT WAS GIVEN (#661). Every caller
+   * of this has somewhere else to go when it was not — main.js puts the resume
+   * panel up — and none of them could tell before, because three's own
+   * `controls.lock()` returns undefined and swallows the promise.
+   *
+   * Resolves true without asking when the pointer is already held: `_takePointer`
+   * in ui.js calls this on every overlay close, and most of those closes happen
+   * with the lock still in hand.
+   */
+  lock() {
+    if (this.touch) return Promise.resolve(true);
+    if (document.pointerLockElement) return Promise.resolve(true);
+    const now = performance.now();
+    this._asks = this._asks.filter((t) => now - t < LOCK_WINDOW_MS);
+    if (this._asks.length >= LOCK_BURST) return Promise.resolve(false);
+    this._asks.push(now);
+    let asked;
+    try { asked = this.controls.domElement.requestPointerLock(); } catch { return Promise.resolve(false); }
+    // A browser old enough to return undefined here reports success it has not
+    // had yet. It also fires `pointerlockerror` if it fails, which is three's
+    // console.error, and there is nothing to be done about that from here.
+    return Promise.resolve(asked).then(() => true, () => false);
+  }
+
   unlock() { if (!this.touch) this.controls.unlock(); }
   get isLocked() { return this.touch ? this.enabled : this.controls.isLocked; }
 

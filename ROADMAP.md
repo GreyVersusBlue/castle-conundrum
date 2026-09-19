@@ -56,8 +56,13 @@ Never gated, take whenever the lane is free:
 ## 1. What needs a machine this container is not
 
 Three different reasons, and they are not interchangeable. Calling all three
-"needs a GPU" is what the old header did, and it is why rank 1 sat unstarted
-behind the wrong excuse.
+"needs a GPU" is what the old header did, and it is why the fourth body sat
+unstarted behind the wrong excuse. **The castle you cannot walk was the same
+mistake made twice**: `test/harness.mjs` said the Pointer Lock API needed a
+browser compositing to a real screen, which is why that row read as a GPU row,
+and it is measurably false — headless Chromium takes pointer lock, drops it and
+takes it back exactly as a headed one does (#659). The row shipped from a
+container with a headless suite in front of it.
 
 ### Local: a GPU (#53)
 
@@ -219,9 +224,14 @@ run's own lighting are not. **R3 shipped anyway, from a fallback frame,
 2026-09-17** (#634, #635), and **R5 shipped without waiting for a second run
 either**, by rendering the hall directly rather than by playing to Vespers
 (#656 to #658) — the gate named the wrong half of rank 2 as the blocker; both
-rows needed a render, not specifically *this* render. R2 is also gated itself
-now, behind a new rank 1: a castle the player cannot walk in after opening the
-journal, which the run found and which nothing else could have.
+rows needed a render, not specifically *this* render.
+
+**R2 was gated for a day behind a new rank 1** — a castle the player could not
+walk in after opening the journal, which the run found and which nothing else
+could have — **and that shipped on 2026-09-18** (#659 to #661). `src/ui.js`
+owns the pointer now, `test/overlays.mjs` is the fourteenth suite and holds it
+headlessly, and `npm run play`'s journal beat asserts the walk as well as the
+pointer. **R2 has no gate in front of it.**
 
 **And the lane table below is wrong about R2 in the one way that matters.** It
 gives R2 no lane because it writes no file anything else writes. It does not

@@ -35,6 +35,7 @@ const SUITES = [
   ['plan-vs-scene', 'the plan against the castle the browser actually builds'],
   ['touch', 'the second input scheme, on a page with a touchscreen'],
   ['map', "the journal's map: rooms fill in as they are stood in, and survive a reload"],
+  ['overlays', 'every overlay gives the castle back: who holds the pointer, and who gives it back'],
   // Headless browser against dist/: the one check that loads the build.
   ['built', 'the built page fetches the same castle the source page does'],
 ];

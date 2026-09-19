@@ -357,9 +357,9 @@ function stubUI() {
     caption(name, line) { this.captionName = name; this.captionLine = line; this.captions.push(`${name}: ${line}`); this.log.push('caption'); },
     clearCaption() { this.captionName = null; this.captionLine = null; this.log.push('caption:clear'); },
     openDialogue(name, lines, onEnd, { onPresent = null } = {}) { this.dialogue = { name, lines, onEnd, onPresent }; this.log.push(`dialogue:${name}`); },
-    openRiddle(text, onSubmit, onClose) { this.riddleOpen = true; this.riddleText = text; this._submit = onSubmit; this._close = onClose; this.log.push('riddle:open'); },
+    openRiddle(text, onSubmit) { this.riddleOpen = true; this.riddleText = text; this._submit = onSubmit; this.log.push('riddle:open'); },
     setRiddleFeedback(t) { this.feedback.push(t); },
-    closeRiddle() { this.riddleOpen = false; this.log.push('riddle:close'); this._close?.(); },
+    closeRiddle() { this.riddleOpen = false; this.log.push('riddle:close'); },
     openJournal(entries, { empty = '', present = null, map = null, quests = null } = {}) { this.journal = { entries, empty, present, map, quests }; this.log.push(`journal:${present ? 'present' : 'read'}:${entries.length}`); },
     closeJournal() { this.journal = null; },
     openAccusation(o) { this.accusation = o; this.note = null; this.log.push('accusation:open'); },
@@ -394,7 +394,6 @@ function rig({ saved = null, withSideQuests = true, quests = null, cast = npcDef
     // row is castle-builder.js's and is asserted in the browser.
     applyDay(changes) { this.days.push(changes); },
   };
-  const controls = { locks: 0, lock() { this.locks++; } };
   // The recorder standing in for src/audio.js. It has the one method the
   // manager calls; a suite that hears nothing is the whole point (#53), so what
   // is asserted is the call and never a sound.
@@ -410,7 +409,7 @@ function rig({ saved = null, withSideQuests = true, quests = null, cast = npcDef
     // granted, hid or gated one clue shows up as a difference of one id (#550,
     // question 6).
     quest, sideQuests: quests ?? (withSideQuests ? sideQuests : []),
-    mystery, riddle, npcs, ui, castle, controlsRef: controls, engine, audio,
+    mystery, riddle, npcs, ui, castle, engine, audio,
     saved, restart: () => { restarts.n++; }, rooms,
     // The set pieces (#592), and the clock they step on. Both default to
     // nothing, so every beat above this line runs in a castle where nobody
@@ -432,7 +431,7 @@ function rig({ saved = null, withSideQuests = true, quests = null, cast = npcDef
   });
   const npc = (id) => npcs.find((n) => n.id === id);
   return {
-    qm, ui, npcs, castle, controls, engine, state, restarts, watches, changes, npc, audio,
+    qm, ui, npcs, castle, engine, state, restarts, watches, changes, npc, audio,
     /** E on somebody, then step through to the end of what they say. */
     talk(id) { qm.handleInteract(npc(id)); ui.endDialogue(); return ui.toasts; },
     /** E on somebody, the Present button, then a clue in the list that opens. */
@@ -568,7 +567,11 @@ function rig({ saved = null, withSideQuests = true, quests = null, cast = npcDef
   ui.answer('the sky');
   check(ui.riddleOpen && ui.feedback.length === 2 && /Hint:/.test(ui.feedback[1]), 'two wrong answers: two feedbacks and a hint');
   ui.answer('River');
-  check(!ui.riddleOpen && r.controls.locks === 1, 'the right answer closes the overlay and re-locks the pointer');
+  // WHO TAKES THE POINTER BACK IS NOT THIS FILE'S ANY MORE (#660). This used
+  // to read a `controlsRef.lock()` counter too, and the riddle was the only
+  // overlay of the four that ever called one. src/ui.js owns both halves now,
+  // and test/overlays.mjs asserts them in a browser with a real pointer in it.
+  check(!ui.riddleOpen, 'the right answer closes the overlay');
   check(state.locks.includes('muniment') && r.castle.opened.includes('muniment'), 'and opens the muniment room in the engine and in the castle', r.castle.opened.join(','));
   r.examine('ledger');
   check(r.holds('ledger') && r.holds('lead-sold'), 'the ledger, and lead-sold deduced against the apprentice\'s count');
@@ -787,7 +790,7 @@ function rig({ saved = null, withSideQuests = true, quests = null, cast = npcDef
   const bad = JSON.parse(JSON.stringify(quest));
   bad.stages.full.enter = ['openPortcullis'];
   let err = null;
-  try { new QuestManager({ quest: bad, riddle, npcs: [], ui: {}, castle: {}, controlsRef: {} }); } catch (e) { err = e; }
+  try { new QuestManager({ quest: bad, riddle, npcs: [], ui: {}, castle: {} }); } catch (e) { err = e; }
   check(err && /openPortcullis/.test(err.message), 'the manager refuses a graph naming an action it lacks, and says which', err?.message.split('\n')[0]);
 }
 
