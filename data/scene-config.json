@@ -901,6 +901,83 @@
       "interior": true,
       "base": 4,
       "comment": "The mason's lodge is a roof on four poles and no walls, so its `run` is the roof: `base` lifts a run off the ground, which is also how Phase 5's floor slabs will be written. It carries a collider and cannot be reached under it at head height, 4 m up."
+    },
+    {
+      "id": "town-wall",
+      "from": [
+        -16,
+        -8
+      ],
+      "to": [
+        -16,
+        7
+      ],
+      "height": 8,
+      "thickness": 3,
+      "material": "medieval_blocks_02",
+      "repeatMetres": 3,
+      "interior": true,
+      "doorways": [
+        {
+          "at": 0,
+          "width": 4,
+          "height": 5.5
+        }
+      ],
+      "comment": "Mereford's wall, 64 m of it, 18 m west of the castle's own ground and running off into the fog both ways, with the town gate the road passes through cut in it at z 0. Rank 4c (#546's ground, built on). `interior: true` is the field that says no battlements, and this run wants none for a reason worth writing down: a kit merlon stands 1.2 to 2.4 m outward of the run's centreline (#514), so at least half of its footprint is over stone only on a run 3.6 m thick or more, and a 4 m town wall beside a 4 m curtain reads as a second castle. It is plain, and 24 m from the nearest place the player can stand.",
+      "doorwaysComment": "The town gate, 4 m wide and 5.5 m to the head, so `outside-road`'s own 4 m of cobble (z -2 to 2) runs through it with 2.5 m of lintel over. Nothing walks through it: the castle is sealed (test/layout.mjs check 4) and this gap is a hole in the colliders that the flood fill never reaches."
+    },
+    {
+      "id": "wykes-yard-north",
+      "from": [
+        -15,
+        -4.25
+      ],
+      "to": [
+        -13,
+        -4.25
+      ],
+      "height": 1.4,
+      "thickness": 0.8,
+      "material": "medieval_blocks_02",
+      "repeatMetres": 1.5,
+      "interior": true,
+      "comment": "The yard's back wall, 12 m along its north side, built of the same seconds Wykes sells: waist high, because what it keeps out is a cart and not a man."
+    },
+    {
+      "id": "wykes-yard-east",
+      "from": [
+        -12.5,
+        -3.6
+      ],
+      "to": [
+        -12.5,
+        -1.75
+      ],
+      "height": 1.4,
+      "thickness": 0.8,
+      "material": "medieval_blocks_02",
+      "repeatMetres": 1.5,
+      "interior": true,
+      "comment": "The yard's east wall, stopping 0.2 m short of the north one rather than turning the corner into it. Two runs of the same height whose boxes overlap share a top over that overlap, which is what test/layout.mjs check 10 exists to refuse (#513). The yard's south side has no wall at all: it is the mouth the carts come in by, off the road."
+    },
+    {
+      "id": "wykes-shed-roof",
+      "from": [
+        -15.125,
+        -3.25
+      ],
+      "to": [
+        -14,
+        -3.25
+      ],
+      "height": 0.3,
+      "thickness": 6,
+      "material": "old_planks_02",
+      "repeatMetres": 3,
+      "interior": true,
+      "base": 3,
+      "comment": "The shed's deck, the mason's lodge's own trick (`masons-lodge-roof`): a run lifted on `base` is a roof and four poles hold it up. 8.5 x 6 m with its underside at 3 m, its west end butted into the town wall's east face at x -62.5. The two roof.glb pitches sit on its top at 3.3, which is the Great Hall's arrangement one storey down (#527): the structure carries the covering rather than the covering standing on nothing."
     }
   ],
   "drumsComment": "Every drum is radius 4, 12 m high, 24 sectors, hollow to 2.8, and from the walk they were eight of one thing (#516) until rank 4 (#541) split them by ward: the four outer drums stay defense_wall, the four inner ones (Stockhouse, King's, Bakehouse, Chapel) are castle_brick_02_red, so a tower tells you which ward you are in before its tint does. `tint` multiplies the stone's diffuse for that drum only, kept over the new brick as over the old: the outer four cool (blue-grey, warm grey, green-grey, slate), the inner four warm (sand, gold, ochre, pale). Ten materials over two texture sets; src/assets.js caches the maps by URL. Runs and rooms take `tint` the same way.",
@@ -1784,6 +1861,24 @@
         ]
       },
       "comment": "The walk over the cross-wall, Stockhouse Tower to Bakehouse Tower over the porter's gate. `walk-crosses` is granted on stepping onto it."
+    },
+    {
+      "id": "wykes-yard",
+      "level": 0,
+      "ward": "outside",
+      "name": "Wykes's yard",
+      "bounds": {
+        "min": [
+          -62,
+          -17
+        ],
+        "max": [
+          -50,
+          -5
+        ]
+      },
+      "floor": "stone_pavers",
+      "comment": "Rank 4c: the first thing built on the ground rank 5 laid west of the barbican (#546). Thomas Wykes's stone yard, 12 x 12 m, under Mereford's wall and open to the road on its south side, which is where his cart goes in and out. `data/quests/wykes-mark.json` is what it has to match: \"a block in my yard under the town wall, mark struck in the bed face\". THE PLAYER NEVER STANDS HERE AND THAT IS THE DECISION, not an oversight: `ward` is \"outside\" rather than outer or inner, test/layout.mjs holds an outside room to being unreachable, and check 4's sealed castle is what makes it so. It is on the journal's map for the same reason the fog is out there at all."
     }
   ],
   "courtyard": {
@@ -2122,7 +2217,146 @@
       {"id": "town-tree-1", "model": "tree-large.glb", "tile": [-13, 2], "rotationY": 15, "comment": "Rank 5 (#541). Beside the road, south side, closest to the barbican."},
       {"id": "town-tree-2", "model": "tree-large.glb", "tile": [-13, -2.5], "rotationY": 200, "comment": "Rank 5 (#541). Beside the road, north side, across from town-tree-1."},
       {"id": "town-tree-3", "model": "tree-large.glb", "tile": [-20, 3], "rotationY": 80, "comment": "Rank 5 (#541). Beside the road, south side, further out."},
-      {"id": "town-tree-4", "model": "tree-large.glb", "tile": [-27, -2], "rotationY": 260, "comment": "Rank 5 (#541). Beside the road, north side, fading toward the fog."}
+      {"id": "town-tree-4", "model": "tree-large.glb", "tile": [-27, -2], "rotationY": 260, "comment": "Rank 5 (#541). Beside the road, north side, fading toward the fog."},
+      {
+        "model": "structure-pole.glb",
+        "tile": [
+          -15.4,
+          -3.9
+        ],
+        "scale": 3,
+        "comment": "Wykes's shed, north-west post. Four poles at 3 m under `wykes-shed-roof`, the mason's lodge's four at 4 m one storey down."
+      },
+      {
+        "model": "structure-pole.glb",
+        "tile": [
+          -13.6,
+          -3.9
+        ],
+        "scale": 3
+      },
+      {
+        "model": "structure-pole.glb",
+        "tile": [
+          -15.4,
+          -2.6
+        ],
+        "scale": 3
+      },
+      {
+        "model": "structure-pole.glb",
+        "tile": [
+          -13.6,
+          -2.6
+        ],
+        "scale": 3
+      },
+      {
+        "id": "wykes-shed-pitch-1",
+        "model": "roof.glb",
+        "tile": [
+          -15,
+          -3.25
+        ],
+        "rotationY": 90,
+        "scale": [
+          6,
+          2,
+          4
+        ],
+        "base": 3.3,
+        "noCollide": true,
+        "roofs": "wykes-yard",
+        "comment": "The shed's covering, west half. roof.glb's own cross-section is both slopes and the ridge in one piece (#656), so one piece spans the shed's whole 6 m width and two of them its 8 m length. `base` 3.3 is the deck's top, `noCollide` because a collider 3.3 m up in a yard nobody walks in is weight for nothing (#427)."
+      },
+      {
+        "id": "wykes-shed-pitch-2",
+        "model": "roof.glb",
+        "tile": [
+          -14,
+          -3.25
+        ],
+        "rotationY": 90,
+        "scale": [
+          6,
+          2,
+          4
+        ],
+        "base": 3.3,
+        "noCollide": true,
+        "roofs": "wykes-yard",
+        "comment": "The shed's covering, east half."
+      },
+      {
+        "model": "ladder.glb",
+        "tile": [
+          -15.4,
+          -2.125
+        ],
+        "rotationY": 0,
+        "scale": 2.5,
+        "comment": "A ladder against the town wall, south of the shed."
+      },
+      {
+        "model": "barrels.glb",
+        "tile": [
+          -13.9,
+          -3.65
+        ],
+        "rotationY": 25,
+        "scale": 1.6,
+        "comment": "Under the shed, east end."
+      },
+      {
+        "model": "bricks.glb",
+        "tile": [
+          -14.75,
+          -1.95
+        ],
+        "rotationY": 10,
+        "scale": 3,
+        "comment": "Rough stone, unsquared, waiting its turn: the pile a dressed block does not come off. Two of these and five dressed blocks is the whole of what the yard sells."
+      },
+      {
+        "model": "bricks.glb",
+        "tile": [
+          -13,
+          -3.375
+        ],
+        "rotationY": 200,
+        "scale": 3,
+        "comment": "The second rough pile, against the east wall."
+      },
+      {
+        "model": "pulley-crate.glb",
+        "tile": [
+          -13.875,
+          -1.875
+        ],
+        "rotationY": 90,
+        "scale": 2.5,
+        "comment": "The hoist over the loading place at the yard mouth, with a crate on it. The kit has no sheerlegs and no cart; this is what it has, and it is the same piece the clerk's lead left on at the west gate."
+      },
+      {
+        "model": "detail-crate-ropes.glb",
+        "tile": [
+          -13.25,
+          -2.75
+        ],
+        "rotationY": -15,
+        "scale": 2.5,
+        "comment": "A roped crate in the open half of the yard."
+      },
+      {
+        "model": "tree-shrub.glb",
+        "tile": [
+          -12.75,
+          -3.8
+        ],
+        "rotationY": 120,
+        "scale": 2,
+        "comment": "The one thing growing in the yard, in the corner the carts do not turn in."
+      }
     ]
   },
   "interiorProps": [
@@ -2546,6 +2780,81 @@
         0.3
       ],
       "comment": "The gaol roll, lying on the barrel-head in the guardroom's east half, across the room from the watch-bill. A built slab rather than a model, the way the cloak is (#571): the kit has no roll of parchment and #506 rules out a new asset for a shape nothing on disk has. `base` 0.79 is 3 mm over the barrels' own 0.787 m top, so it rests on them rather than floating or sinking into them; the barrels are 0.947 x 0.48 m at their 1.6 scale and this 0.4 x 0.3 slab, rotated with them, sits inside that footprint with 0.03 m to spare on the short axis. Placed in Node against the plan, not by eye: clear of every stone sector, every flight and every other box in the tower, inside the 2.8 m ring, with 90 walkable cells within 1.5 m of it."
+    },
+    {
+      "id": "wykes-block",
+      "material": "medieval_blocks_02",
+      "tile": [
+        -15.15,
+        -3.25
+      ],
+      "base": 0,
+      "size": [
+        1.6,
+        0.6,
+        0.85
+      ],
+      "comment": "THE BLOCK. `data/quests/wykes-mark.json`: \"a block in my yard under the town wall, mark struck in the bed face, two strokes and a hook\". Gruffudd's mark, cut on the face that would never be seen once the block was laid, and Gruffudd fell off the north curtain in the third year of the works. It lies alone under the shed against the town wall, off the two courses beside it, because a block a man will not sell is not a block he stacks. The mark itself is not modelled: the nearest the player can stand is the North-west Tower's roof, 22 m away, and a scratch 0.02 m deep is nothing from there. It is the errand's subject and never the errand's place (the row's open call, settled in favour of seeing it)."
+    },
+    {
+      "id": "wykes-course-1",
+      "material": "medieval_blocks_02",
+      "tile": [
+        -14.25,
+        -3.25
+      ],
+      "base": 0,
+      "size": [
+        2.0,
+        0.5,
+        1.0
+      ],
+      "comment": "Dressed stone, three courses, stacked the way a yard stacks it: biggest down, each course set back. The works cut these short or cut them wrong and sold them to Wykes at a price (lore's `thomas-wykes`)."
+    },
+    {
+      "id": "wykes-course-2",
+      "material": "medieval_blocks_02",
+      "tile": [
+        -14.25,
+        -3.25
+      ],
+      "base": 0.5,
+      "size": [
+        1.8,
+        0.45,
+        0.9
+      ],
+      "comment": "On `wykes-course-1`, whose top is 0.5. test/layout.mjs check 1d is what holds this number to that one (#574)."
+    },
+    {
+      "id": "wykes-course-3",
+      "material": "medieval_blocks_02",
+      "tile": [
+        -14.25,
+        -3.25
+      ],
+      "base": 0.95,
+      "size": [
+        1.6,
+        0.4,
+        0.8
+      ],
+      "comment": "On `wykes-course-2`, whose top is 0.95."
+    },
+    {
+      "id": "wykes-slab",
+      "material": "medieval_blocks_02",
+      "tile": [
+        -13.125,
+        -2
+      ],
+      "base": 0,
+      "size": [
+        2.4,
+        0.4,
+        1.2
+      ],
+      "comment": "One long slab lying out in the open half of the yard, under the hoist, which is where the cart is loaded from."
     }
   ],
   "drumsComment": "Eight drums. `interior.doors` is every opening in the ring: `base` is the opening's floor (0, 4 or 8, a level's height), `theta` its bearing in three's cylinder angle (0 is +z, south; 90 is +x, east), `arc` its width in degrees, and both have to land on the drum's own vertices. The level-0 door is the room's; the level-1 doors (three of them) lead to the chambers built over the rooms beside those towers; the level-2 doors are where the wall walk passes through the tower's top room, sixty degrees wide because a 2 m deck's cells cross the ring over about thirty degrees and the grid's sector boxes bulge past that. The Stockhouse Tower's west door at level 2 carries `bar`: it is the walk door the porter swears he bars every night, it ships open because he did not, and `bar.closed` is the one thing test/layout.mjs forces shut to prove the wards would separate if he had. `stairs` names the side of the tower the upper flight and its well go on, which is the outer side, away from where the walk crosses. `lowerFlight: false` on the two towers whose ground room is shut leaves them the upper flight only.",

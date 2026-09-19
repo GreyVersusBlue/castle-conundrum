@@ -151,9 +151,17 @@ const wardsOf = (box) => {
  * with no ward at all, which would otherwise be silently invisible to the
  * populace budget. `cross-walk` is the interesting one — the walk over the
  * porter's gate, declared `inner`, reaching both. */
+/* `outside` IS THE THIRD ANSWER, from rank 4c. Wykes's yard is a room past the
+ * curtain and `wardsOf` has always had a bucket for it; what it had not got was
+ * permission to be a room's declared ward. It is not a loosening: `wardsOf`
+ * returns `['outside']` exactly when the box reaches neither rectangle, so a
+ * yard declaring `outside` and drifting into the outer ward fails on the same
+ * line an outer room drifting out of it does. test/layout.mjs check 4c is the
+ * other half, and holds the same rooms to being clear of the curtain and
+ * reachable by nobody. */
 for (const r of plan.rooms) {
-  if (r.ward !== 'outer' && r.ward !== 'inner') {
-    fail(`room "${r.id}" declares ward ${JSON.stringify(r.ward)}, which is neither "outer" nor "inner"`);
+  if (r.ward !== 'outer' && r.ward !== 'inner' && r.ward !== 'outside') {
+    fail(`room "${r.id}" declares ward ${JSON.stringify(r.ward)}, which is none of "outer", "inner" or "outside"`);
     continue;
   }
   if (!wardsOf(r.bounds).includes(r.ward)) {

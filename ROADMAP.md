@@ -42,8 +42,8 @@ R2 lands --------------+--> unlocks R11
 
   R11 feel: shadow + hand    lane D
 
-R4c Thomas Wykes's yard  --> unlocks R9's town
-  local, lane B                  container, lane B
+R4c Thomas Wykes's yard  --> unlocked R9's town, 2026-09-19 (#696 to #700)
+  shipped                        container, lane B, startable now
 
 Never gated, take whenever the lane is free:
   R10 bodies (local: net, lane C)
@@ -80,7 +80,7 @@ confirmed** — which means a container cannot trust a pass either.
 | **R3 The images** | Opus 5 | The preview and og card come out of R2's screenshots. There is no other source. They land in `tools-and-games/assets/`, not here, and Devon relinks. |
 | ~~**R5 The hall covering**~~ | Sonnet 5 | **Shipped** (#656 to #658). Both criteria were a render, and both were answered by rendering the hall directly rather than by waiting for this row's own run to reach Vespers: `roof.glb`'s vertices (not its bounding box) showed which way it slopes, and the floor read 69.8 to 89.8 of 255. |
 | **R11 Feel**, past its Node line | Sonnet 5 | ~~The Node half — a shadow decal and a hand node exist and do not regress `plan-vs-scene.mjs` — is a container's.~~ Shipped (#650 to #654). What is left is what a GPU decides: whether a blob shadow reads on stone versus on grass, what it does on a flight of stairs, and whether the hand reads as a hand. |
-| **R4c The yard**, in practice | Opus 5 | Placeable in Node, but the tool that makes it cheap (`?edit=1`, #583) reads the tile under the player's feet as they walk, and whether a yard reads as a yard is a look. |
+| ~~**R4c The yard**~~ | Opus 5 | **Shipped** (#696 to #700). The look was the half that needed the machine and it is answered: a stone yard from inside it, a roof and a town wall from the North-west Tower's crown, and nothing at all from the west curtain's walk, because that tower's own drum stands in the line. `tools/shot-yard.mjs` is the camera, and it pins the camera rather than moving the spawn, which `validatePopulace` refuses. |
 
 **R2 is the single highest-value hour on this list.** It is a ¼ and it unblocks
 three rows outright.
@@ -108,7 +108,7 @@ the one asset nothing else on this list would catch.**
 
 ### Container, start to finish
 
-**R6** populace, **R8** side quests, **R9** the town once its gate clears,
+**R6** populace, **R8** side quests, **R9** the town, whose gate R4c opened,
 **R12a/b/c** the tooling, **R4a** the bells call, and **R4b** the `since`
 field, which shipped from one on 2026-09-17. Six and a half rows of twelve. Every one is data, a validator, a Node suite or
 a headless DOM assertion, and every one has an acceptance criterion a container
@@ -125,7 +125,7 @@ the theme is not what conflicts.
 | Lane | The file that decides it | Rows in it |
 | --- | --- | --- |
 | **A** | `src/save.js` — the version number and `migrate` | R4a, R8 (R4b shipped without touching it) |
-| **B** | `data/scene-config.json`, and `test/tools.mjs`'s byte-exactness rail | R4c, R5, R9 (R12b is done) |
+| **B** | `data/scene-config.json`, and `test/tools.mjs`'s byte-exactness rail | R9 (R4c, R5 and R12b are done) |
 | **C** | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | R1, R6, R10 (R12c is done) |
 | **D** | `src/main.js`'s player rig and spawn | R6, R11 |
 | **E** | `src/audio.js` and `data/sounds.json` | R7 |
@@ -215,9 +215,10 @@ R4a**, three of them, plus **R2** on Devon's machine.
   work does not touch `save.js` at all. R4b was the other row in this lane and
   is gone from it: it shipped without opening `save.js`, which is two rows in a
   row that sat in lane A for a file neither of them wrote.
-- R9 and R4c, any two of them. All lane B. R5 and R12b were the other two and
-  both shipped (#656 to #658, #636 to #642). R12c has left lane C as well
-  (#687 to #690).
+- R9 is the only row left in lane B. R4c, R5 and R12b were the other three
+  and all three shipped (#696 to #700, #656 to #658, #636 to #642), so there
+  is nothing to pair it badly with. R12c has left lane C as well (#687 to
+  #690).
 - R6 beside R11. Lane D, both inside `src/main.js`'s rig.
 
 ---
@@ -331,17 +332,28 @@ not on *starting*, and a session that meets the Node half and calls the row
 closed has misread the split — which is the same sentence at the bottom of this
 file, now with one row's worth of evidence under it.
 
-### Gate 2 — R4c, Thomas Wykes's yard
+### Gate 2 — R4c, Thomas Wykes's yard. Open since 2026-09-19.
 
-**Local, lane B, Opus 5.** Ground west of the barbican has existed since #546 —
-ground, a road, four trees and fog — and nothing is built on it. The yard is
-the first building, and until one building stands there **R9's town cannot
-start**, because nobody has proven that ground carries one.
+**Shipped, #696 to #700.** The yard stands on the ground #546 laid: a stretch
+of Mereford's wall with the town gate cut in it, a shed on four posts, a low
+yard wall on two sides, five blocks of dressed stone and Gruffudd's mark on
+one of them. 34 meshes, all of them outside both wards, in a bucket
+`test/budget.mjs` still has no ceiling for on purpose.
 
-Take it in the same sitting as R5 if the machine is already up, or after. Same
-lane, so not at the same time.
+**What R9 inherits, and it is more than an open gate.** The `town-wall` run at
+x -64 is 64 m of wall with the gate already in it, to be extended rather than
+replaced. `ward: "outside"` is a room's third answer, with `test/layout.mjs`
+check 4c holding what that word costs: clear of the curtain, standing on a
+piece of `config.ground.outside`, reached by nobody. And the journal's map
+frame grew from 67.6 m wide to 90.8 (#699), with 28 m of empty ground between
+the castle and the yard that R9's street is what fills.
 
-### Wave C — after Gate 2
+**The open call it settled: the player sees the yard and never stands in it**
+(#696). R9 inherits that too. A town the player can walk into is a way out of
+a castle `test/layout.mjs` check 4 asserts is sealed, and that is a decision
+to overturn rather than a street to place.
+
+### Wave C — startable now
 
 | Row | Model | Where | Lane |
 | --- | --- | --- | --- |

@@ -268,7 +268,15 @@ console.log(`\nwalkability: ${walk.cells.length} cells on a ${GRID} m grid from 
 if (!walk.started) fail(`the spawn at ${config.spawn.position} stands on nothing the grid calls a floor`);
 else pass(`the spawn at [${config.spawn.position.join(', ')}] stands on a floor`);
 const rooms = walk.rooms();
-const groundRooms = rooms.filter(r => r.level === 0);
+/* A ROOM PAST THE CURTAIN IS NOT ONE OF THE FOURTEEN. Rank 4c builds Thomas
+ * Wykes's yard on the ground rank 5 laid west of the barbican, and rank 9's
+ * town goes beside it. Such a room declares `ward: "outside"` instead of outer
+ * or inner, and that declaration is what lifts it out of this check, out of
+ * the mystery's room list (3d) and out of the ambient sweep (13). What it
+ * costs is check 4c below, where the declaration is paid for against two
+ * things it cannot move: the curtain box and the flood fill. */
+const isOutside = (r) => r.ward === 'outside';
+const groundRooms = rooms.filter(r => r.level === 0 && !isOutside(r));
 if (groundRooms.length !== 14) fail(`${groundRooms.length} ground rooms in the plan, not the fourteen PLAN.md's room table names`);
 // The levels the castle has, read off the plan (#523), not a literal `[1, 2]`
 // that a fourth storey has to be remembered into.
@@ -290,6 +298,7 @@ const expected = new Map(rooms.map(r => {
   return [r.id, lock ? 'riddle' : (m && m.barred ? 'bars' : null)];
 }));
 for (const room of rooms) {
+  if (isOutside(room)) continue; // check 4c holds these, and holds them to the opposite
   const want = expected.get(room.id);
   const shut = `x ${room.bounds.min.x}..${room.bounds.max.x}, z ${room.bounds.min.z}..${room.bounds.max.z}`;
   if (room.locked !== want) {
@@ -444,7 +453,11 @@ console.log('\nthe morning after, against the plan');
 console.log('\nthe rooms, against mystery.json');
 {
   const want = mystery.rooms.filter(r => r.level === 0 && !r.open).map(r => r.id).sort();
-  const got = plan.rooms.filter(r => r.level === 0).map(r => r.id).sort();
+  // A room outside the curtain is nobody's room in the mystery: the crime
+  // happened inside the walls and the yard west of them is scenery with a
+  // name. Check 4c is what keeps "outside" from being a way to smuggle a
+  // ground room past this list.
+  const got = plan.rooms.filter(r => r.level === 0 && !isOutside(r)).map(r => r.id).sort();
   const missing = want.filter(id => !got.includes(id));
   const extra = got.filter(id => !want.includes(id));
   for (const id of missing) fail(`mystery.json puts people or evidence in "${id}" and the castle has no such room`);
@@ -578,6 +591,43 @@ console.log('\noutside ground, past the base');
     const meetsZ = g.box.max.z >= base.box.min.z - TOL && g.box.min.z <= base.box.max.z + TOL;
     if (!meetsX || !meetsZ) fail(`${g.id} at x ${f2(g.box.min.x)}..${f2(g.box.max.x)}, z ${f2(g.box.min.z)}..${f2(g.box.max.z)} does not meet the base ground's box x ${f2(base.box.min.x)}..${f2(base.box.max.x)}, z ${f2(base.box.min.z)}..${f2(base.box.max.z)} — a gap between the castle's ground and the world`);
     else pass(`${g.id} lies wholly outside the curtain and meets the base ground with no gap`);
+  }
+}
+
+/* -------------- 4c (rank 4c): a room outside the curtain reaches nobody ---
+ * Thomas Wykes's yard is the first thing built on that ground, and rank 9's
+ * town is next. A room out there declares `ward: "outside"`, and that one word
+ * excuses it from three checks above: it is not one of the fourteen ground
+ * rooms, the mystery has never heard of it, and it wants no ambient bed
+ * because nobody will ever be standing in it to hear one.
+ *
+ * SO THE WORD HAS TO BE PAID FOR, and against facts that cannot move with it.
+ * Three of them. Its bounds lie wholly clear of the curtain box, which is
+ * geometry and not a declaration, so a yard quietly dragged inside the walls
+ * fails here rather than going silently unreachable. Its bounds lie inside a
+ * piece of `config.ground.outside`, which is what makes it a building ON rank
+ * 5's ground rather than a paved rectangle in the void, and is the whole claim
+ * rank 9's town is gated on. And no cell of the flood fill from the spawn is
+ * in it: the castle is sealed (check 4), the barbican's west face has no
+ * archway in it, and the player sees this yard and never stands in it. That
+ * last one is the row's open call written as an assertion, so whoever decides
+ * the player should walk out there has to come here and delete it.
+ */
+console.log('\nthe rooms past the curtain');
+{
+  const outsideRooms = rooms.filter(isOutside);
+  if (!outsideRooms.length) fail('no room declares ward "outside", so this check measured nothing. Rank 4c built Wykes\'s yard out there and rank 9 builds the town beside it');
+  const ground = plan.grounds.filter(g => (config.ground.outside || []).some(o => o.id === g.id));
+  for (const r of outsideRooms) {
+    const where = `x ${f2(r.bounds.min.x)}..${f2(r.bounds.max.x)}, z ${f2(r.bounds.min.z)}..${f2(r.bounds.max.z)}`;
+    const clearOfCurtain = r.bounds.max.x <= plan.curtain.min.x || r.bounds.min.x >= plan.curtain.max.x
+      || r.bounds.max.z <= plan.curtain.min.z || r.bounds.min.z >= plan.curtain.max.z;
+    if (!clearOfCurtain) { fail(`${r.id} says ward "outside" and its bounds ${where} are not clear of the curtain box x ${f2(plan.curtain.min.x)}..${f2(plan.curtain.max.x)}, z ${f2(plan.curtain.min.z)}..${f2(plan.curtain.max.z)}`); continue; }
+    const on = ground.find(g => r.bounds.min.x >= g.box.min.x && r.bounds.max.x <= g.box.max.x
+      && r.bounds.min.z >= g.box.min.z && r.bounds.max.z <= g.box.max.z);
+    if (!on) { fail(`${r.id} at ${where} stands on none of config.ground.outside's ${ground.length} pieces (${ground.map(g => g.id).join(', ')}), a floor laid over nothing`); continue; }
+    if (r.reachable) { fail(`${r.id} at ${where} is reachable from the spawn: ${r.cells} standable cells, the first at (${f2(r.at[0].x)}, ${f2(r.at[0].z)}). The castle is meant to be shut in (check 4) and this room is meant to be looked at`); continue; }
+    pass(`${r.id} is clear of the curtain, stands on ${on.id}, and no foot reaches it`);
   }
 }
 
@@ -1133,7 +1183,11 @@ console.log('\nevery zone has an ambient bed');
     zones.set(`${z.id}/${z.level}`, z);
   }
   const swept = zones.size;
-  for (const r of plan.rooms) if (!zones.has(`${r.id}/${r.level}`)) zones.set(`${r.id}/${r.level}`, { id: r.id, level: r.level, drum: r.drum, open: false });
+  // A room past the curtain is not a zone for the same reason the garden is
+  // not one, and the reason is stronger: check 4c asserts that no cell of the
+  // fill is in it, so a bed there would be a room tone nobody can ever be
+  // close enough to cross-fade into.
+  for (const r of plan.rooms) if (!isOutside(r) && !zones.has(`${r.id}/${r.level}`)) zones.set(`${r.id}/${r.level}`, { id: r.id, level: r.level, drum: r.drum, open: false });
   const open = mystery.rooms.filter(r => r.open).map(r => r.id);
   // Open ground no cell is in is not a zone: the garden is behind a gate that
   // never opens (#469) and nobody will ever hear it. Said, not asserted.

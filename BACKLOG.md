@@ -100,8 +100,9 @@ the two walls that exist only at level 1, and a deck plank for the eight tower
 first floors — plus a sixth, `forest_ground_06`, restored out of this repo's
 own history to texture the ground west of the barbican, with a road and four
 trees. `dist/` grew by about 17 MB against 200. Increment 3's town half is
-unblocked; what it still needs is Thomas Wykes's yard built on the ground this
-row laid, and the bells-on-day-two question #533 raises.
+unblocked, and the yard that had to stand on this ground before rank 9's town
+could start went in on 2026-09-19 (#696 to #700). What is left of rank 4 is
+the bells-on-day-two question #533 raises.
 
 **The lore row shipped on 2026-09-16** (#551 to #555): `data/lore.json`'s
 thirty-one facts, six readable documents built as slabs in rooms the castle
@@ -234,8 +235,9 @@ things found on the way that are not in it are in `HISTORY.md` under #633.
 
 **Eight ranked items left, numbered 1 to 11 with gaps. Nothing is claimed, and
 lanes B and C are free**: the byte-exactness rail merged as PR #40 (#631 to
-#633) and 12b's move-and-delete after it (#636 to #642), so ranks 4c and 9 are
-startable, and 12c retired rank 12 whole on 2026-09-18 (#687 to #690). The
+#633) and 12b's move-and-delete after it (#636 to #642), 4c built Wykes's yard
+on 2026-09-19 (#696 to #700) and left lane B free again with **rank 9's gate
+open**, and 12c retired rank 12 whole on 2026-09-18 (#687 to #690). The
 **first** rank 1 shipped
 on 2026-09-17 and **the numbers under it were not shifted up** (#619):
 `SPECS.md` and `ROADMAP.md` already name every row by title as well as by
@@ -398,8 +400,10 @@ produce one.
 3. **Rank 2 before rank 11 ships past its Node acceptance.** The row's own
    spec says nothing in it goes past a `snap` and a sentence until the run has
    happened.
-4. **Rank 4c before rank 9's town.** Thomas Wykes's yard is what proves the
-   ground west of the barbican carries a building.
+4. ~~Rank 4c before rank 9's town.~~ **Open since 2026-09-19** (#696 to
+   #700). Thomas Wykes's yard stands on that ground, passes every plan check,
+   and reads as a building from the North-west Tower's roof. Rank 9 starts
+   from its town wall, its `ward: "outside"` room rule and its map frame.
 
 Three softer ones are worth naming and are not gates: rank 6's populace
 unlocked rank 7's event sounds when its first ten shipped (#616) and was
@@ -417,7 +421,7 @@ together.
 | Lane | The file that decides it | Rows |
 | --- | --- | --- |
 | A | `src/save.js` — the version number and `migrate` | 4a, 4b (8 is done) |
-| B | `data/scene-config.json` — and `test/tools.mjs`'s byte-exactness rail | 4c, 5, 9 (12b is done) |
+| B | `data/scene-config.json` — and `test/tools.mjs`'s byte-exactness rail | 9 (4c, 5 and 12b are done) |
 | C | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | 6, 10 (12c is done) |
 | D | `src/main.js`'s player rig and spawn | 6, 11 |
 | E | `src/audio.js` and `data/sounds.json` | 7 |
@@ -439,8 +443,8 @@ rewords a line runs `npm run dialogue:extract` before it commits (#687).
 Rank 4 splits three ways because its remaining threads do, and the spec
 already names them separately: **4a** is the bells-on-day-two design call and
 `day2.watches`, **4b** is the `since` field on a fact that changes (#596), and
-**4c** is Thomas Wykes's yard. 4a and 4b are a container's; 4c wants the
-editor walked and the yard looked at. Rank 12 split the same way and for the
+**4c** was Thomas Wykes's yard, and shipped on 2026-09-19 (#696 to #700). 4a
+is a container's; 4b and 4c are done. Rank 12 split the same way and for the
 same reason: **12a** the budget suite (#607 to #611), **12b** move-and-delete
 in the editor (#636 to #642), **12c** the dialogue format (#687 to #690).
 All three shipped and **the row is retired**.
@@ -468,10 +472,10 @@ which is what makes that survivable (#522).
 | Rank | Item | Size | Model | Where | Gate | Lane | Claimed | Detail |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 2 | The GPU run: the day end to end, and somebody looks at the twelve (the run happened, #624 to #630) | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
-| 4 | A second day: increment 3, the town half and the bells question (4b, the fact that changes, shipped #646 to #649) | 2+ | Opus 5 | 4a container, 4c local | — | A (4a), B (4c) | | [A second day](SPECS.md#a-second-day) |
+| 4 | A second day: the bells question is all that is left (4b, the fact that changes, shipped #646 to #649; 4c, Wykes's yard, #696 to #700) | 2+ | Opus 5 | Container | — | A | | [A second day](SPECS.md#a-second-day) |
 | 6 | Life: a populace: the fifty, the activity clips and the ambient talk | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: somebody listens to the seven beds and the four rings, then event sounds (a bed at a point and the rings shipped, #680 to #683) | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
-| 9 | A castle to get lost in: the town, the rock and river | 2+ | Opus 5 | Container | **after 4c** | B | | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
+| 9 | A castle to get lost in: the town, the rock and river | 2+ | Opus 5 | Container | — (4c opened it) | B | | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
 | 10 | Bodies: a shared low-poly rig for the fifty (the child and the hound shipped, #643 to #645; two hens and the spear, #684 to #686) | 1 | Fable 5.1 | Local: net | — | C | | [Bodies](SPECS.md#bodies) |
 | 11 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 | Container to the Node line, local: GPU past it | **after 2** | D | shadow + hand shipped 2026-09-17 (#650 to #654) | [Feel](SPECS.md#feel) |
 
@@ -523,7 +527,7 @@ they were built is specific to this frame.
 
 ## A second day
 
-*Where: 4a container, 4c local. Gate: none; 4c gates rank 9. Lanes: A (4a), B (4c). 4b shipped.*
+*Where: container. Gate: none. Lane: A. 4b and 4c shipped.*
 
 **Rank 4, and a 2+. Increments 1 and 2 shipped on 2026-09-15 and 2026-09-16**
 (#533 to #540) and **increment 3's gaol roll on 2026-09-17** (#571 to #575):
@@ -544,12 +548,16 @@ refuses the two halves to drift. It is the first thing in this game whose
 content, and not only whose line set, turns on what the player found. It
 touched no lane-A file.
 
-**Two threads are left and both wait on something.** The missing 128 sheets
-are in Thomas Wykes's yard, which nobody has placed on the ground the town
-side laid (#541 to #546). A schedule with more than one watch still has to
-argue with #533 rather than work around it. Both of them have somewhere to
-put "the player found this out" now, which neither had before. `SPECS.md`
-specs what is left.
+**Thomas Wykes's yard shipped on 2026-09-19** (#696 to #700), on the ground
+the town side laid (#541 to #546): a stretch of town wall with the gate in it,
+a shed on four posts, and five blocks of dressed stone of which one carries
+the mason's mark. The open call went the way the sealed castle pointed:
+**the player sees the yard and never stands in it** (#696). A lead found
+there is still a `day2.knew` row whenever somebody writes it, because a clue
+is granted by `mystery.json` and the grammar never asks how it was come by.
+
+**One thread is left.** A schedule with more than one watch still has to argue
+with #533 rather than work around it. `SPECS.md` specs it.
 
 ## Life: a populace
 
@@ -613,7 +621,7 @@ been looked for.
 
 ## A castle to get lost in
 
-*Where: container. Gate: after rank 4c's yard. Lane: B.*
+*Where: container. Gate: none; rank 4c opened it on 2026-09-19. Lane: B.*
 
 **Rank 9, and a 2+. The volume step was found already built on 2026-09-17**
 (#582) and the row's premise is rewritten against the castle that exists. All
@@ -631,10 +639,16 @@ were considered and refused for that reason: they would make it 22.
 over the 40 rooms the plan computes and the HUD names (#515), with a
 `visited` set on a version-5 save and `test/map.mjs` as the twelfth suite.
 Every room is drawn from the first; a room gives up its name and its fill
-the first time the player stands in it. **What is next is area.** The town
-half still waits on rank 4's Thomas Wykes yard proving the ground west of the
-barbican can carry a building. Filling the nineteen is rank 6's routines and
-whatever documents a later lore row adds, made cheap by rank 12's editor.
+the first time the player stands in it. **What is next is area, and nothing
+is in front of it any more**: rank 4c built Thomas Wykes's yard on the ground
+west of the barbican on 2026-09-19 (#696 to #700), which is the proof this row
+was gated on. Three things it leaves for this row to build from: the
+`town-wall` run at x -64, 64 m of Mereford's wall with the town gate already
+in it; `ward: "outside"` as a room's third answer, with `test/layout.mjs`
+check 4c holding what that word costs; and 28 m of empty ground on the map
+between the castle and the yard, which is where this row's street goes.
+Filling the nineteen is rank 6's routines and whatever documents a later lore
+row adds, made cheap by rank 12's editor.
 
 ## Bodies
 
