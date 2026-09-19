@@ -7086,3 +7086,255 @@ it is what rank 9's town was gated on.
   and is why #599 called a suite green three runs in five worse than one that
   is red. `npm run build` is green and `npm run dialogue:check` says the .dlg
   and `data/` agree, which this row expected because it opened neither.
+
+## The GPU run, second sitting: four runs, and somebody looked at the twelve (2026-09-19)
+
+**Rank 2, on `claude/r2-gpu-run-2`, no lane, in its own `git worktree`**
+(#624's rule). `npm run play` was run four times on Devon's machine. It exits
+non-zero every time and the day still stops at the second bell. Decisions #708
+to #715. **Nothing in `src/` changed**; `test/play-castle.mjs` changed by 67
+lines in two helpers and a comment.
+
+**The judgement half of the row is done.** The twelve at Vespers, the Lauds
+sky, the covered hall and eleven of the twelve bodies at interact range were
+all photographed and looked at — not by playing to them, but the way rank 5
+took its two answers (#656 to #658): `applyWatch(watch, { walk: false })` puts
+the world at a bell with nobody walking, the camera goes where it needs to be,
+and the shutter goes. That is a hand-run look into `shots/look/` and
+`shots/look2/`, it is not committed, and it is not a check (#13).
+
+### What the four runs actually changed, which is less than it looks
+
+**Run one and run four have byte-identical failure lists**: the same 22, in the
+same order, with the same texts, down to `0.69 m in 700 ms` on the journal
+beat. Two bugs were found and fixed between them and **not one assertion
+changed its verdict**. That is worth stating first, because the fixes are real
+and the natural way to write them up would have implied otherwise (#147).
+
+What did change is the `note` lines under the failures, and they are the whole
+story:
+
+| | run one | run four |
+| --- | --- | --- |
+| the sentry | `gave up 18.9m ... at (-29.9, -0.3) ... locked false` | `gave up 1.1m ... at (-18.9, -14.3) ... locked true` |
+| the Stockhouse bar | `32.0m ... at (-29.9, -0.3) ... locked false` | `16.8m ... at (-18.9, -14.3) ... locked true` |
+| the tally stick | `38.3m ... at (-29.9, -0.3) ... locked false` | `1.7m ... at (4.9, 13.6) ... locked true` |
+| the chapel candles | `55.5m ... at (-29.9, -0.3) ... locked false` | `14.7m ... at (9.1, 12.1) ... locked true` |
+| the second bell | `55.1m ... at (-29.9, -0.3) ... locked false` | `14.3m ... at (9.1, 12.1) ... locked true` |
+
+**In run one the player stopped moving at the merchant and never moved again**:
+one coordinate, five beats, the distance growing only because the targets get
+further from a body standing still. In run four he walks to every one of them
+and comes up short. The beats fail either way, and they fail for a different
+reason, and only one of those reasons is now open.
+
+- **`present()` never shut the dialogue it opened** (#708). The first `present`
+  of the day is the merchant at Terce. `shots/play/19-aborted.png` from run one
+  is the diagnosis in one frame: Thomas Wykes's box still open, Present still
+  on it. `converse` runs a box out with up to ten E presses and `present` did
+  not, so it returned with the dialogue open — and a dialogue is on `ui.js`'s
+  list of overlays that hold the pointer released, which is #660's design and
+  not a bug, because releasing it is what lets that Present button be clicked
+  by a real mouse at all.
+
+  **#660 saw this coordinate and read it as a `src/` bug.** Its note in `hike`
+  says the run that found it "got the merchant to admit the cart and then stood
+  at (-29.6, -0.3) for the rest of Terce", and the line under it — "`ui.js`
+  owns both halves now, so a walk that misses here is a walk that missed" — is
+  the assertion's comment being the thing that is wrong (#147). It is true only
+  once the box is shut, and nothing shut it. Four lines, the same loop
+  `converse` already had.
+
+- **The browser refuses a relock partway through a day, and nothing clicked the
+  panel the castle puts up** (#709). Run two lost the pointer twice with no
+  dialogue anywhere near it: `locked false` at the pouch in the chapel, then
+  the journal's J/J handed the castle back (W moved 1.30 m), then `locked
+  false` again on the walk west, 49.9 m short of the cook.
+
+  #661 already knew this could happen: `src/main.js` hands `ui.usePointer` a
+  relock that falls back to `ui.showStartAgain()` "because the browser rations
+  pointer lock and hands out four requests before it starts refusing". A day of
+  play is far more than four. So the castle does exactly what it was built to
+  do, and `npm run play`, which has no hand, walks into a wall.
+
+  **The guard added for it had never fired, so it was made to** (#34). Runs
+  three and four never lost the pointer, so the four lines in `hike` sat
+  unexercised, and a guard nobody has watched work is not a guard. Forced by
+  hand into #661's exact state — `document.exitPointerLock()` then
+  `ui.showStartAgain()` — from a green baseline:
+
+  | | pointer | panel | W in 700 ms |
+  | --- | --- | --- | --- |
+  | baseline | locked | down | **3.75 m** |
+  | relock refused | **gone** | **up** | **0.00 m** |
+  | after the guard's four lines | locked | down | **3.79 m** |
+
+  0.00 m is the bug this file existed to catch in #626, reproduced on purpose;
+  3.79 m is the guard undoing it. **And it clicks the panel rather than calling
+  `window.__player.lock()`**, which is what the `regrip` #660 deleted used to
+  do: that is a handle no player has, and using it would hide the one failure
+  #661 built the panel for.
+
+- **What is left is #630's walker, and it stopped at #630's own coordinate**
+  (#710). Run three, with both fixes in, drove the player up the Chapel Tower's
+  stair ramp and left him there: `stopped 49.4m short at (22.4, 15.2) L1`, then
+  `38.1m short at (23.4, 14.4) L1`. #630 recorded its own last stall at
+  **(23.4, 14.4) on level 1, partway up the Chapel Tower's stairs**, named the
+  fix — drop ramp and wrong-level waypoints when both ends are on the same
+  storey — and did not make it. It is **rank 1** in `BACKLOG.md` now.
+
+  **Its second shape is a wall, not a stair**, and it is in every run: the
+  player slides along a face he cannot find the door in, `locked true`, at
+  (-18.9, -14.3) inside the Kitchen Tower and at (-33.5, 5.0) and (-26.5, 5.0)
+  along the Great Hall's north wall, whose two doorways are at x -20 and -12.
+
+### What somebody looked at
+
+- **The Constable and the Steward are the same man in two collars** (#711).
+  This is the answer to `PLAN.md`'s standing Risk and to Q53, and it is no.
+
+  **Sir Roger Lestrange, the Constable** — white hair and beard, black tunic,
+  **red** collar. **Piers Marrable, the Steward** — white hair, black tunic,
+  **green** collar. Nothing else differs, and past about three metres the
+  collar is gone. `shots/look/04-the-hall-from-the-middle.png` has both in one
+  frame and they read as twins.
+
+  **Master Robert Ferrour, the Clerk** — brown hair and beard, black, no
+  collar: told apart at any range, because hair is a discriminator that works
+  at distance and a collar tint is not. **Dafydd ap Rhys, the sentry** — at
+  Vespers he is mid-performance on the bench end in a gold robe with the
+  brazier on him, and he is the most legible man in the hall, which is the pose
+  and the firelight rather than the body.
+
+  **The three women are the clearest thing in the castle**, and this is #606's
+  photograph, owed since 2026-09-17. **Marged, the cook** — cream coif and
+  apron, a servant woman at any range. **Nest, the laundress** — blue hood and
+  blue dress, unmistakable. **Lady Alys** — her King's Hall station is behind a
+  wall from every angle one camera pass could reach, and she is the one body of
+  the twelve still not photographed. `Woman.glb` works, and the lesson is that
+  **silhouette does what tint was being asked to do**: the argument for a fifth
+  body is now an argument for more shapes, not more colours.
+
+  The porter, chaplain, apprentice and prisoner are in `shots/look2/` and none
+  of them is a man in a black tunic. The merchant is not in the castle at
+  Vespers at all.
+
+- **The Lauds sky has its own number and no dawn in it** (#712; #533's GPU
+  criterion). One camera in the outer ward at (-20, 0) pitched up 0.55 rad, a
+  360x200 px patch of sky, mean RGB of 255, Prime measured twice and repeating
+  to the decimal:
+
+  | watch | sky rgb | luma |
+  | --- | --- | --- |
+  | prime | 198 204 214 | 203.4 |
+  | terce | 168 178 196 | 177.2 |
+  | sext | 180 188 203 | 187.4 |
+  | vespers | 124 116 134 | 119.0 |
+  | **lauds (day 2)** | **142 152 171** | **151.2** |
+
+  Lauds is not a copy of Prime — it is 52 of 255 darker — but it is the same
+  hue as every day watch, blue over green over red, and **Vespers is the only
+  watch in the game whose sky changes colour** (124 over 116, the only row
+  where red leads). The morning after reads as a duller midday.
+  `shots/look2/12-the-lauds-sky-east.png` and `15-the-prime-sky-east.png` are
+  the same photograph but for the HUD word.
+
+  **And the day's own arc is backwards.** Prime is the brightest watch at
+  203.4, Terce drops to 177.2, Sext comes back up to 187.4, Vespers falls to
+  119.0. The sun is brightest at the first bell and the sky gets lighter
+  between the second and the third. Whoever takes #533's second half has two
+  jobs: give Lauds a colour, and put the four in order.
+
+- **The hall covering hides the trusses, and it does not close** (#713).
+
+  **#527 is moot rather than answered.** Whether `structure-cross.glb`
+  stretched to 0.5 x 2.5 x 7.25 reads as a hammerbeam or as scaffolding does
+  not arise: rank 5's deck is under them and **not one truss is visible from
+  the hall floor** (`shots/look/03-the-hall-trusses-and-covering.png`). Seven
+  pieces of geometry nobody in the game will see.
+
+  **There is a gap to the sky at the hall's south-east.** Rank 5 reported "a
+  continuous slate ceiling, no gap to the sky" (#656 to #658). At Vespers, from
+  the floor, a sliver of 124 116 134 — exactly the Vespers sky measured above —
+  shows between the covering and the south wall, in two shots.
+
+  **And the hall's north wall is a black void**, floor to ceiling, in every
+  hall frame, at roughly x -28 to -24: an interior face with no direct sun and
+  now no sky either. Same failure mode as the tower merlons, which #630
+  recorded as near-black from the roof at 12 m and which is unchanged. The
+  covered floor reads 57.8 of 255 from the west end, well clear of `SPECS.md`'s
+  ~25 line, so the room is not dark; one wall of it is.
+
+- **Five checks in `test/play-castle.mjs` are wrong, and two can only be wrong
+  on a GPU** (#714). All five fire before the player takes a step, in all four
+  runs, identically.
+
+  **`every texture is at the GPU anisotropy ceiling` — `cap 16, worst 1, 130
+  textures`.** This has been passing vacuously on every software-rendered run
+  there has ever been: under SwiftShader `MAX_TEXTURE_MAX_ANISOTROPY_EXT` is 1,
+  so "every texture is at the cap" is "every texture is at 1", which is true of
+  a texture nothing tuned. On a real GPU the cap is 16 and something is at 1.
+  The assertion could not fail on the only machine that ever ran it.
+
+  **`every pixel-art texture magnifies NEAREST` — 38 textures at <=128 px.**
+  `tuneTexture` skips compressed textures deliberately, and its comment says
+  that is safe because "nothing compressed is pixel art here anyway — the retro
+  kit is the only thing under 128 px and the kit is deliberately the one thing
+  `tools/encode-assets.mjs` leaves alone (#508)". The check says not all 38 are
+  NEAREST, so half that sentence is false. Which half is for whoever takes it.
+
+  **`thirteen rigged NPC bodies in the scene` — found 27**: 13 suspects plus
+  rank 6's 14 in `data/populace.json`. A hard-coded number rank 6 moved, which
+  nothing in CI reads because this file is not in CI.
+
+  **The two #629 filed are still there**, one red and one newly red:
+  `interior hall walls are the same height as the outer walls` still matches
+  zero meshes, and `no brazier is sealed inside the stonework` now reports
+  `IN Scene` for all three.
+
+- **And one bug that is not a check failing, it is every frame of the game**
+  (#715). The interact prompt reads **`Press E to talk to the Sir Roger
+  Lestrange`**. `src/interaction.js:143` builds ``Press E to talk to the
+  ${shown.name}`` and all thirteen of `data/npcs.json`'s `cast` carry a proper
+  name, so it is "the Marged", "the Father Anselm", "the Nest", "the Lady
+  Alys", all day, every playthrough. The `read` verb has it too: `Press E to
+  read the A gravestone in the chapel floor`. **Nothing in fifteen suites
+  asserts that string** — `grep -rn "Press E to talk" test/` is empty — which
+  is how it survived seven phases and two GPU sittings with a person watching.
+
+### Two things noted and deliberately not changed
+
+**The journal beat's walk assertion is mostly measuring the chapel.** #659's
+`moved > 1.0` had never run on a GPU. Four runs gave **0.69, 1.30, 0.51 and
+0.69 m** in 700 ms. An unobstructed walk on this machine is **3.75 m**,
+measured above, and #626 measured 3.70 m when it wrote the bug up. The beat
+holds W from wherever the pouch left the player, which is the tightest corner
+in the castle — the chapel, between the stair, the body and the pouch — and
+never controls for what is in front of him. The assertion is real and the thing
+it guards is real; the number is geometry. Changing it is a decision about what
+the beat is for, and the row's scope was the run.
+
+**The body and the pouch are one press apart**, and so are the chapel bell and
+the chapel candles. All four runs failed `E on the body: he is at the foot of
+the stair` with `summons-note, pouch-empty`: the player stops 1.0 to 1.8 m
+short of the body's target, `examine` aims at the body, and
+`InteractionSystem` hands him the pouch, which is nearer. Both clues are
+collected and the day proceeds; the two assertions are simply swapped.
+
+**The same behaviour is what has CI red on `main`, and it is not the beat
+`BACKLOG.md` names.** `npm test` on this branch fails one suite,
+`plan-vs-scene`, on `none of the 12 cells between 0.9 and 2.8 m of the chapel
+candles offers them (the nearest offered "Press E to ring the bell")`. Run on
+a clean `origin/main` at `f5d0c0e` with nothing of this row's in the tree, it
+fails identically, so it is not this row's and it is not the baker's Prime
+stop that the backlog wrote up on 2026-09-18. **Two suites are now failing on
+one behaviour**: a nearer interaction target out-ranks the one the beat is
+aimed at, in the chapel both times. Whether `InteractionSystem` should prefer
+what the camera is pointed at over what is closest is a `src/` question
+nobody has asked, and it is bigger than either suite.
+
+**What this cost.** Four runs of about twenty minutes, two of them stopped by
+hand once the cause was certain, plus four hand-run looks. One run was lost to
+`Port 8124 is already in use`, left behind by the Vite server of a run that had
+been killed — #624's rule about a working tree, for a fourth time, in its
+smallest form: the port is one copy too.

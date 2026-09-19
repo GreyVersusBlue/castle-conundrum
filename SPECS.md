@@ -81,13 +81,82 @@ Four facts every row below leans on, stated once:
 
 ---
 
+## The walker on the stair
+
+**Rank 1. Size ¼. New on 2026-09-19** (#710). It gates "The GPU run" and
+nothing gates it.
+
+### Scope
+
+- **`test/play-castle.mjs`'s `hike`, and possibly `walkability` in
+  `src/castle-plan.js`.** The path graph treats a flight as walkable floor, so
+  the shortest route out of the chapel crosses the Chapel Tower's stair ramp.
+  The player is driven up it, and because `hike` re-plans from where the body
+  actually is, every re-plan after that starts a storey too high and produces
+  the same route again. Three identical answers is the `lost the line` path,
+  and then the beat gives up.
+- **#630 named the fix and did not make it**: drop ramp and wrong-level
+  waypoints when both ends of the route are on the same storey. Whether that
+  belongs in the plan's own graph or in the suite's thinning is this row's
+  first judgement call. **Recommendation: the suite.** `src/stations.js` walks
+  the twelve along the same graph and they do not have this problem, because a
+  station is never on a ramp; the player is steered by aim-and-hold and is.
+  A change to the graph would move twelve bodies to fix one.
+- **The wall symptom is the same row.** With pointer lock healthy the player
+  also slides along a face it cannot find the door in: measured at (-18.9,
+  -14.3) inside the Kitchen Tower and at (-33.5, 5.0) and (-26.5, 5.0) along
+  the Great Hall's north wall, whose doorways are at x -20 and -12. A waypoint
+  list that does not put a mark *in* a doorway lets the aim-and-hold loop cut
+  the corner into the jamb.
+
+### Acceptance
+
+- A Node check that the route between two rooms on the same storey contains no
+  waypoint whose level differs from both ends, over every pair of ground rooms
+  the plan knows. That is derivable from the plan in Node, so it belongs in
+  `test/layout.mjs` and not in `plan-vs-scene.mjs` (#529).
+- **The break that proves it** (#34): re-admit one ramp cell to a route and
+  watch the new assertion fail, from a green baseline, and say which one and
+  what it said.
+- The GPU half is rank 2's and is not this row's to claim: `npm run play`
+  reaching the second bell is the proof, and it needs the machine.
+
+### Open calls
+
+- **Does the fix go in the plan or in the suite?** Recommendation above: the
+  suite. Reversible either way and cheap to argue in `HISTORY.md`.
+- **Is the wall symptom one row or two?** Recommendation: one. Both are the
+  waypoint list being wrong about what the body can reach from where it is,
+  and a session that fixes one and not the other leaves the day still stopping.
+
+### Dependencies
+
+- Nothing. It is a container's row start to finish, and it is the only thing
+  between `npm run play` and the end of the day.
+
+### Constraints
+
+- #529 (whatever is provable in Node stays in `layout.mjs`).
+- #34 (a new rail gets broken on purpose first).
+- #53 (a pass under software rendering does not close this; rank 2's run does).
+
+---
+
 ## The GPU run
 
-**Rank 2. Size ¼. Ungated since 2026-09-18**: the row that held it was the
-castle you cannot walk, and that shipped (#659 to #661). `npm run play` is 102
-assertions and a numbered screenshot per beat into `shots/play/`, and no run of
-it since Phase 5 has happened on a machine with real compositing (#53). Phases
-5, 6 and 7 each list a GPU exit criterion as outstanding.
+**Rank 2. Size ¼. Gated on rank 1 since 2026-09-19.** `npm run play` is 102
+assertions and a numbered screenshot per beat into `shots/play/`. It has now
+been run on a machine with real compositing four times over two sittings
+(#624 to #630 on 2026-09-17, #708 to #715 on 2026-09-19) and the day has never
+reached the end.
+
+**The judgement half of this row is done, and the walk half is not.** The
+second sitting answered every render question the list below carried — the
+twelve at Vespers, the Lauds sky, the covered hall, eleven bodies at interact
+range — by putting the world at a bell with `applyWatch(watch, { walk: false
+})` and photographing it, which is how rank 5 answered its two (#656 to #658).
+What is left is `npm run play` itself getting there, and the one thing
+stopping it is rank 1's walker.
 
 **Rank 3, the preview and og card that used to sit under this same section,
 shipped on 2026-09-17** (#634, #635) from a fallback frame rather than the run
@@ -97,72 +166,90 @@ rank 2's alone.
 
 ### Scope, the run
 
-- **Nothing in `src/`.** The run is the deliverable. `test/play-castle.mjs`
-  gains one beat: at Vespers, after `arrives('cook')`, stand in the Great
-  Hall's north doorway, look along the hall, and `snap('twelve-at-vespers')`.
-  Six of the twelve stand there at Vespers (constable, steward, clerk, cook,
-  sentry, laundress); the other six are elsewhere and a second shot from the
-  chapel at Prime (constable, chaplain, apprentice nearby) covers the rest of
-  the visual question, which is: **do twelve read as twelve?**
+- **Nothing in `src/`.** The run is the deliverable. `test/play-castle.mjs` is
+  the only file this row may change, and on 2026-09-19 it changed by 67 lines
+  in two helpers: `present()` now runs the dialogue box out the way `converse`
+  does (#708), and `hike` clicks the resume panel when the browser has refused
+  a relock (#709). Both of those had been read as `src/` bugs before.
+- ~~The `snap('twelve-at-vespers')` beat~~ is written, standing at the hall's
+  west end rather than the north doorway the spec named, because the doorways
+  are at x -20 and -12 and the six stand from x -27.2 to -12, so the doorway
+  puts half the cast behind the camera. **Do twelve read as twelve? No: two of
+  them do not** (#711). The Constable and the Steward are one white-haired man
+  in a black tunic, told apart by a red collar and a green one, and past about
+  three metres there is nothing to tell. The three women are the clearest
+  bodies in the castle and the lesson is that silhouette works where tint does
+  not.
 - **`HISTORY.md`** records what the run said, beat by beat, and what was seen:
   the walk on the Kitchen Tower flights (Phase 5's 5.7, 9.7, 1.7 readings), the
   cross-wall crossing, the cook's walk from kitchen to hall, the reload at
   Sext, the epilogue. A beat that fails on a GPU is a bug; a beat that failed
   under software rendering and passes here was never one.
-- **`BACKLOG.md`**'s header line "Nothing here has been seen on a GPU since
-  Phase 5" comes out.
-- **AND FIVE THINGS LATER SESSIONS ADDED THAT ONLY A RENDER CAN JUDGE**, each
-  worth a shot and a sentence in `HISTORY.md`:
-  - **A tower roof from 12 m** (#523). Four of them, reached up a third flight;
-    the view over the whole plan is the thing the row was for and nothing in CI
-    can see it. Stand on the North-west Tower's roof and look east.
-  - **Seven trusses over the Great Hall** (#527). Whether
-    `structure-cross.glb` stretched to 0.5 x 2.5 x 7.25 reads as a hammerbeam
-    or as scaffolding is the open question. Answered from inside the hall once
-    the covering (rank 5) went on top of them rather than from this run,
-    which never reached Vespers (#656 to #658): a continuous slate ceiling,
-    no gap to the sky.
-  - **A phone** (#530). The stick throw, the sprint threshold, the look rate,
-    the E button's size and the two render numbers are all guesses. One session
-    with a real thumb settles six constants.
-  - ~~A luma read off the Great Hall's floor~~, for the covering row's OPEN
-    baseline. Overtaken: rank 5 shipped without this run reaching Vespers,
-    reading the COVERED floor directly instead (69.8 to 89.8 of 255, #656 to
-    #658) rather than comparing it against an open-sky number this run never
-    produced.
-  - **The gaol roll on the guardroom barrels** (#571). A fifth, added on
-    2026-09-17. `npm run play` does not enter the North-west Tower and no beat
-    was written for it, so this one is a detour rather than a beat: walk into
-    the guardroom, press E at the roll, and look at whether a 0.4 x 0.3 m
-    parchment slab resting 3 mm over a pair of barrels reads as a roll on a
-    barrel-head or as a box floating over one. It is the first built slab in
-    the castle whose support is another prop rather than floor or stone, and
-    `test/layout.mjs` check 1d can only say that something is under it, never
-    what it looks like.
+- ~~**`BACKLOG.md`**'s header line "Nothing here has been seen on a GPU since
+  Phase 5" comes out.~~ **Done on 2026-09-17** by the first sitting (#624 to
+  #630); the paragraph that replaced it says what has been looked at and what
+  has not, and 2026-09-19 rewrote it again.
+- **THE FIVE THINGS ONLY A RENDER COULD JUDGE. Four are answered and one is
+  untouched**, one sentence each in `HISTORY.md` as this list asked:
+  - ~~**A tower roof from 12 m**~~ (#523). Answered 2026-09-17 (#630) and
+    unchanged in 2026-09-19's frames: the climb works and the view is mostly
+    parapet, with the merlons' inward faces near-black.
+  - ~~**Seven trusses over the Great Hall**~~ (#527). **Moot, not answered**
+    (#713). Rank 5's covering sits under them and not one truss is visible
+    from the hall floor. Seven pieces of geometry nobody in the game will see.
+    And rank 5's "no gap to the sky" is not quite right: a sliver of the
+    Vespers sky colour shows at the hall's south-east corner.
+  - **A phone** (#530). **Still untouched.** The stick throw, the sprint
+    threshold, the look rate, the E button's size and the two render numbers
+    are all still guesses. One session with a real thumb settles six
+    constants, and neither GPU sitting had a phone in the room.
+  - ~~A luma read off the Great Hall's floor~~. Overtaken twice: rank 5 read
+    the covered floor at 69.8 to 89.8 of 255 (#656 to #658), and 2026-09-19
+    read it at 57.8 from the west end (#713). Both are well clear of the ~25
+    line and the row it was for has shipped.
+  - ~~**The gaol roll on the guardroom barrels**~~ (#571). Answered: it lies on
+    the barrel-head rather than floating over it. It reads as an untextured
+    olive slab rather than as parchment, which is a material question and not
+    the support question this list asked.
+  - **And one the list did not have**: the Lauds sky (#533, #712), measured
+    at 151.2 of 255 against Prime's 203.4, with no dawn colour in it and the
+    day's own four watches out of order. See `HISTORY.md` for the table.
 
 ### Acceptance, the run
 
 - `npm run play` exits 0 on a machine with a GPU, or exits non-zero with the
-  failing beat named and filed as a new backlog row.
-- `shots/play/` contains the numbered set, `twelve-at-vespers.png` among them,
-  and a human has looked at it and written one sentence per body: told apart
-  or not. That sentence is the answer to Q53's risk and is the fourth body's
-  evidence after the fact.
+  failing beat named and filed as a new backlog row. **Met on 2026-09-19 in
+  the second form, four times**: exit 1, 22 failures, the failing beats named,
+  and the one cause that is not this suite's own filed as rank 1. **The two
+  suite bugs that were fixed changed no assertion's verdict** — run one and run
+  four have byte-identical failure lists — they changed only how far the player
+  got before each one, which is how the remaining cause was isolated.
+- ~~`shots/play/` contains the numbered set, `twelve-at-vespers.png` among
+  them~~, **and a human has looked at it and written one sentence per body:
+  told apart or not.** The second half is done (#711) and the first is not:
+  the numbered set stops where the walker stops, and the Vespers frame came
+  from a hand-run look into `shots/look/` instead. That is the shape of the
+  split this row keeps running into — the judgement does not need the walk,
+  and the walk is still owed.
 - No new guard-rail: the run is the check. The `snap` beat is a screenshot, not
   an assertion, and says so in its comment.
 
 ### Dependencies
 
-- The run needs a machine with a GPU, which is Devon's; a session can add the
-  `snap` beat and cannot run it. If a session is asked to take the run without
-  one, the honest output is the beat and a note, not a claim.
-- The fourth body (the first rank 1, shipped #603) is still owed the run's
-  photograph: nobody has seen Marged, Nest or Lady Alys in the castle (#606).
-  It is this row's to take.
-- **Nothing gates it any more.** The castle you cannot walk (the second rank 1)
-  shipped on 2026-09-18, so the day can be played past the first overlay; the
-  journal beat there now asserts the walk as well as the pointer, and that
-  assertion has never been run on a GPU (#659).
+- The run needs a machine with a GPU, which is Devon's; a session can add a
+  beat and cannot run it. If a session is asked to take the run without one,
+  the honest output is the beat and a note, not a claim.
+- ~~The fourth body is still owed the run's photograph~~ (#606). **Taken**
+  (#711): Marged, Nest and Lady Alys are in `shots/look2/`, and `Woman.glb`
+  does the job the tint was being asked to do.
+- **Rank 1, the walker on the stair, gates it** (#710). Until `hike` stops
+  driving the player up the Chapel Tower ramp, the day stops at the second
+  bell, and no amount of looking answers that.
+- The journal beat's walk assertion (#659) has been run on a GPU now, three
+  times, and read 0.69, 1.30 and 0.51 m against its `> 1.0` threshold. It is
+  measuring the chapel's geometry more than it is measuring the pointer. What
+  to do about that is a decision about what the beat is for, and it is left
+  open rather than guessed at.
 
 ### Constraints
 

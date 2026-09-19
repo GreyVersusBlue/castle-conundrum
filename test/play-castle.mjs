@@ -240,16 +240,41 @@ const playerAt = async () => {
  * beat that does not need it.
  */
 const hike = async (target, level = 0) => {
-  /* A WALK NEEDS THE CASTLE BACK FIRST, AND IT NOW COMES BACK BY ITSELF (#660).
-   * This opened with a `regrip()` that took pointer lock back by hand, because
-   * `ui.js` released it for four overlays and `quest-manager.js` gave it back
-   * for one: presenting a clue opens the journal as a picker, so the first
-   * Present of the day cost the player the castle, and the run that found it
-   * got the merchant to admit the cart and then stood at (-29.6, -0.3) for the
-   * rest of Terce — three waypoints missed out of every hike, "locked false"
-   * in every note. `ui.js` owns both halves now and test/overlays.mjs holds it
-   * to them, so a walk that misses here is a walk that missed.
-   */
+  /* A WALK NEEDS THE CASTLE BACK FIRST, AND ON A REAL BROWSER IT DOES NOT
+   * ALWAYS COME BACK BY ITSELF (#661).
+   *
+   * This opened with a `regrip()` that took pointer lock back by hand through
+   * `window.__player`, and #660 deleted it on the grounds that `ui.js` owns
+   * both halves now and `test/overlays.mjs` holds it to them — so "a walk that
+   * misses here is a walk that missed". That line was written from a headless
+   * page and it is not true on a headed one.
+   *
+   * WHAT A GPU SAW, 2026-09-19. `src/main.js` hands `ui.usePointer` a relock
+   * that falls back to `ui.showStartAgain()` when the browser refuses, because
+   * Chrome rations pointer lock and hands out about four requests before it
+   * starts saying no (#661). A day of play is far more than four: every
+   * dialogue, the journal, the riddle and the panels each give it up and ask
+   * for it back. So the refusal fires, the castle does exactly what #661 built
+   * it to do — puts the start panel up, one click from playing again — and
+   * this suite, which has no hand, walks into a wall for the rest of the day.
+   * Two runs, two different places it fired: at the pouch in the chapel and
+   * again on the walk west out of it, both `locked false`, both recovered by
+   * nothing.
+   *
+   * SO THE WALK CLICKS THE PANEL, WHICH IS WHAT A PLAYER DOES. Not
+   * `window.__player.lock()`: that is a handle no player has, and using it
+   * would hide the very failure #661 designed the panel for. The panel being
+   * up is the castle working. Clicking it is the hand this file is supposed
+   * to be. */
+  if (!(await state()).locked) {
+    const panel = await page.evaluate(() =>
+      !document.getElementById('start-overlay').classList.contains('hidden'));
+    if (panel) {
+      await page.click('#start-button');
+      await wait(500);
+      console.log(`  note  the castle asked to be resumed; clicked Start again, locked ${(await state()).locked}`);
+    }
+  }
   /* BOTH ENDS HAVE TO BE SOMETHING TO STAND ON, and neither reliably is.
    *
    * The far end: the chapel bell hangs in the tower's ring, the cloak lies on a
@@ -1114,6 +1139,31 @@ try {
     await wait(400);
     const stateAfter = await page.evaluate((id) => window.__mystery.npcState(id), npcId);
     const after = await held();
+    /* AND THE BOX IS RUN OUT, THE WAY `converse` RUNS ONE OUT. Without these
+     * four lines the dialogue is still open when this returns, showing what
+     * the person answered, and a dialogue is on `ui.js`'s list of overlays
+     * that hold the pointer released — which is #660's design and not a bug,
+     * because releasing it is what lets the Present button above be clicked
+     * by a real mouse. The player cannot walk until the box is shut.
+     *
+     * MEASURED ON A GPU, 2026-09-19. The first `present` of the day is the
+     * merchant at Terce. The run reached him at (-29.9, -0.3), he admitted
+     * the cart, and the player never moved again: the sentry, the Stockhouse
+     * bar, the tally stick, the chapel candles and the second bell all read
+     * `never got in range` from that one coordinate, every give-up note said
+     * `locked false`, and the abort frame is Thomas Wykes's dialogue still on
+     * the screen with Present still on it. 22 failures, 9 of them this.
+     *
+     * #660 SAW THE SAME COORDINATE AND READ IT AS A `src/` BUG. Its note in
+     * `hike` says the run "got the merchant to admit the cart and then stood
+     * at (-29.6, -0.3) for the rest of Terce", and the line under it — "so a
+     * walk that misses here is a walk that missed" — is the assertion's
+     * comment being the thing that is wrong (#147). It is true only once the
+     * box is shut, and nothing shut it. */
+    for (let i = 0; i < 10 && (await state()).dialogueOpen; i++) {
+      await page.keyboard.press('KeyE');
+      await wait(320);
+    }
     return { state: stateAfter, gained: after.filter((x) => !before.includes(x)) };
   };
 
@@ -1436,7 +1486,13 @@ try {
    *
    * WAIT FOR ALL SIX, not just the cook. `arrives` polls one body at a time;
    * a bell sends all six walking at once, and a photograph taken while four of
-   * them are still crossing the ward is a photograph of an empty hall. */
+   * them are still crossing the ward is a photograph of an empty hall.
+   *
+   * THE SHOT ITSELF IS A SCREENSHOT AND NOT AN ASSERTION. The two
+   * assertions here count bodies; whether six bodies off three Kenney rigs
+   * and one Quaternius one read as six people is a judgement a person makes
+   * from the file afterwards, and it goes into HISTORY.md as a sentence per
+   * body. Nothing in this run can fail on it. */
   const HALL_SIX = ['constable', 'steward', 'clerk', 'cook', 'sentry', 'laundress'];
   const late = [];
   for (const id of HALL_SIX) { const a = await arrives(id); if (!a || a.late) late.push(id); }
