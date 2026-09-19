@@ -6694,3 +6694,91 @@ measured what it shipped.
   the beat is red twice over on that, the same assertion and the same
   sentence. Neither is this row's, and both are measured rather than argued
   from a diff.
+
+## Sound, the third increment: a door and a dog, the two event sounds that need no clip (2026-09-19)
+
+**Ranked row 7, on `claude/r7-event-sounds`, lane E, in a `git worktree`**
+(#624's rule). `SPECS.md`'s "Sound: a soundscape" row had the beds (#620 to
+#623) and a bed at a point with the four rings (#680 to #683) shipped, and
+event sounds waiting on rank 6's activity clips. Two of them never needed a
+clip: a door swings on `openLock` and `shutLeaf`, which are moments the
+builder already has, and the hound that shipped in #644 stands at the
+player's heels with nothing to sync a bark to. Both are in, synthesised
+(#519, #548), and nobody has heard either (#53). Decisions #696 to #698,
+picked off `origin/main` at the end of the row, which ended at #695.
+
+- **An event sound is a list of parts in `data/sounds.json`, a cue is a
+  name in `src/audio.js`, and `test/layout.mjs` check 14 holds the two to
+  each other both ways** (#696). `events.byCue` maps what the engine does
+  to a sound and `events.sounds` is each sound as `parts`: a noise burst or
+  a tone, at an offset from the cue, with a struck envelope (`decay`) or a
+  held one (`attack`, `hold`, `release`), a slide (`toHz`) and an optional
+  filter on a tone, and a `repeat` for a double bark. That is `steps`'
+  `byMaterial` and `classes`, and `ambient`'s `byRoom` and `beds`, a third
+  time, and the file's own precedent is why: the runtime holds no default,
+  `eventOf` and `cueSound` are the only lookups, and the check calls them
+  rather than re-reading the file. `CUES` is the code's half: `door-open`,
+  `door-shut`, `hound-near`, each with a line saying what fires it. Every
+  event plays through a panner of its own at the point the cue names, HRTF,
+  torn down 200 ms after its last part, because a latch comes from somewhere
+  and three a minute is not three room tones a frame. Broken on purpose from
+  green four ways, one assertion each: a fourth cue named in `CUES`
+  ("the engine fires "hammer" (nothing yet) and data/sounds.json's
+  events.byCue says nothing about what it sounds like"), `door-shut` pointed
+  at a sound the file does not define ("resolves to the event sound "slam",
+  which data/sounds.json's events.sounds do not define", and the orphaned
+  `latch-and-slam` named in the same run), a `byCue` entry no cue fires
+  (named, with the three cues that are), and the bark's `withinMetres` set
+  to 9 against a follow radius of 6 (""hound-near" barks within 9 m and
+  hound follows within 6 m: the cue never fires that close").
+
+- **A leaf's cue fires on a change of state and not on every call, and
+  nothing plays before the start button** (#697). `applyDay` is idempotent
+  and runs on entering `morning` and again on entering `end` (#539), and
+  `src/main.js` opens every remembered lock with `instant: true` on a save's
+  resume; a builder that cued on every call would slam the Clerk's door twice
+  on the second morning and latch the muniment room's at every reload.
+  `openLock` fires only when the leaf was shut (`!opening && progress < 1`)
+  and `shutLeaf` only when it was open, through one `onLeaf` hook the
+  builder holds and `main.js` points at the audio, from `gd.centre` or,
+  for a leaf with none, its hinge. The audio's half: a cue on a context that
+  is not `running` is logged and not played, which is the crackle's own rule
+  (#622), because a suspended context's clock does not move and every node
+  scheduled before the button would land on the instant it is pressed.
+  `events()` is the log, for the suite. `test/plan-vs-scene.mjs` drives the
+  muniment leaf through open, shut, shut, open and holds the log to
+  `door-shut door-open`, once each, from the leaf's centre to 0.01 m. Broken
+  twice: the guard taken off `openLock` gave "cued: door-open, door-shut,
+  door-open" against the same sentence, and the wire commented out of
+  `main.js` gave "cued: nothing".
+
+- **The hound's bark is a cadence over a state, and the state is the
+  populace's to report** (#698). `Populace._follow` already knows every
+  frame whether the hound is inside its follow radius; it now cues
+  `hound-near` on those frames with the hound's position and the gap, and
+  keeps no clock. The sound's `cadence` in the file is the clock:
+  `withinMetres` 5, `firstSeconds` 0.6, `everySeconds` 7 give or take half,
+  and leaving the radius clears it so the next approach barks quickly again.
+  The radius is held inside the follow radius by check 14, above, because a
+  cue only fires inside the populace's radius and a `withinMetres` past it
+  is a bark that never comes. The bark itself is a sawtooth falling from
+  560 Hz to 380 Hz through a bandpass at 1100 Hz, a square an octave under,
+  and 70 ms of breath, twice, 0.26 s apart: the formant is the number most
+  likely to be wrong in the whole file and the file says so.
+  `test/plan-vs-scene.mjs` puts the camera 1.5 m from Gelert, drives the
+  populace by hand with a supplied dt for `firstSeconds` plus 400 ms of the
+  page's own clock, and holds that one bark is cued from where he stands and
+  none before the wait is up. Broken twice: the populace's cue turned off
+  gave "0 cued" and "Infinity m off", and `firstSeconds` ignored in the
+  cadence gave "28 frames had one early". That last run also failed the
+  chapel-candles beat, which is #633 and was green in the run before and the
+  run after; it is not this row's.
+
+**What was not done, and why.** No recording landed, so #506 and #390 were
+not exercised: the sounds stay synthesised until one beats them (#548). The
+hammer, the sweep and the rest wait on rank 6's activity clips, as
+`SPECS.md` says. Whether any of this sounds right is Devon's ears (#53), and
+the listening checklist for the seven beds, the four rings and the two
+events is in `SPECS.md` under the row; this entry claims that the cues fire
+at the right moments from the right points, and nothing about how they
+sound.

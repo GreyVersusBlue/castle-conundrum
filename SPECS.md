@@ -458,8 +458,22 @@ Node criterion held is that every source is heard from a point inside its own
 footprint, from anywhere; the rest is ears (#53). `ambient.spatial` in
 `data/sounds.json` is the whole of the tuning.
 
-**What is left is event sounds**, which Dependencies below says wait on rank
-6, and the listening.
+**The third increment, the two event sounds that need no clip, shipped on
+2026-09-19** (#696 to #698). `data/sounds.json` has an `events` block:
+`byCue` maps what the engine does to a sound, `sounds` is each sound as a
+list of parts (a noise burst or a tone, at an offset, struck or held), and
+`spatial` is the panner every one plays through, at the point the cue names.
+`CUES` in `src/audio.js` is the code's half: `door-open` and `door-shut`,
+fired by `openLock` and `shutLeaf` from the leaf's centre on a change of
+state only, and `hound-near`, cued by the populace every frame the hound is
+inside its follow radius and paced into barks by the sound's own `cadence`.
+`test/layout.mjs` check 14 holds every cue to a sound and every sound to a
+cue, and `test/plan-vs-scene.mjs` holds the two wires in `src/main.js`.
+Nothing plays before the start button (#697). The rest of the event sounds,
+the hammer and the sweep, still wait on rank 6's clips.
+
+**What is left is the listening**, and the checklist for it is at the end of
+this section.
 
 ### Scope
 
@@ -498,7 +512,9 @@ footprint, from anywhere; the rest is ears (#53). `ambient.spatial` in
   synthesised until a recording beats it" is `WISHLIST.md`'s own line.
 - **Event sounds (door, bark, hammer strike)** are named in the theme but are
   the increment after this one: they want an activity clip to sync to, which
-  is rank 6's to add first.
+  is rank 6's to add first. (The door and the bark turned out to need no
+  clip, and shipped as the third increment, #696 to #698. The hammer still
+  waits.)
 
 ### Dependencies
 
@@ -517,6 +533,61 @@ footprint, from anywhere; the rest is ears (#53). `ambient.spatial` in
   pattern).
 - #519, #548 (synthesis-only reversed; a sound stays synthesised until a
   recording beats it, not the other way round).
+
+### Listening checklist
+
+Nobody has heard any of this (#53). `npm run play` on the dev machine, with
+speakers or headphones, and `data/sounds.json` open beside it: every number
+below is tuned there and nowhere else. Write what was wrong, not that it was
+wrong, and put the answers in `HISTORY.md` against this row.
+
+**The seven beds** (`ambient.beds`; stand in each, then walk out of it):
+
+- [ ] `ward`: the head bed on open ground. Does it read as outdoors, and is it
+      still there under the kitchen and the hall heard through their walls?
+- [ ] `wallwalk`: up on the walk. Is the wind a wind, and does it stop at the
+      top of the stair or bleed down it?
+- [ ] `kitchen`: from the ward outside its door first, then across the
+      threshold. Is the crackle a fire and not a click, and is the threshold
+      a step and not a fade?
+- [ ] `hall`: the same test at the Great Hall's door. The near wall is where
+      it is heard from outside; is that what it sounds like?
+- [ ] `chapel`: the two-note drone is tuned to the bell. Ring it there. Do the
+      two agree?
+- [ ] `chamber`: the lodge and the solars. Quiet enough to be a room and not
+      silence?
+- [ ] `tower`: climb the King's Tower. Nothing should fade on the stair
+      (#681). Does anything?
+- [ ] The two most likely wrong: 14 m of earshot through stone
+      (`spatial.hearMetres`), and a tower roof heard from the hall under it.
+
+**The four rings** (`bell.rings`; press E at the bell four times, once per
+watch, from the chapel and then from the far ward):
+
+- [ ] Terce, one stroke. Is it a bell and not a chime? The tierce at 396 Hz
+      is what should make the difference.
+- [ ] Sext, two strokes 1.3 s apart. Two, or one with an echo?
+- [ ] Vespers, six at 0.9 s. A peal, or a machine? `gapSpread` is 0.08.
+- [ ] The summons, three at 1.8 s and louder. Does it read as heavier, or
+      only as slower?
+- [ ] From the far ward: thin and placed, or gone?
+
+**The two event sounds** (`events.sounds`):
+
+- [ ] The muniment door, `latch-and-swing`: answer the word standing in front
+      of it. A click, a second click, then a rush and a low hinge for the
+      2.5 s the leaf takes. Is the hinge sawtooth a hinge, or a buzz? Is the
+      whole thing at the door and not in the head?
+- [ ] The same door on the second morning, `latch-and-slam`: the Clerk's word
+      goes back over it as Lauds opens. A short swing, a thud, a latch. Is
+      it audible from where the day starts, and should it be?
+- [ ] The hound, `bark`: walk up to Gelert in the outer ward at Prime and
+      stand. A double bark inside a second, then one every 7 s or so while
+      you stay. Is 560 Hz falling to 380 Hz through an 1100 Hz formant a dog,
+      or a duck? Walk away past 5 m and back: the first bark should be quick
+      again.
+- [ ] Does anything fire before Enter the Castle is pressed? It must not
+      (#697); a save resumed with the door open is the case to try.
 
 ---
 

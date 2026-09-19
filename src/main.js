@@ -93,6 +93,11 @@ async function init() {
   // Every room with a bed becomes a source the bed sounds from, off the plan's
   // own bounds (#680); test/map.mjs section 2b is what says this line is here.
   audio.placeBeds(castle.plan);
+  // A door's latch and swing (#696): the builder says when a leaf changes
+  // state, from where, and the audio plays it there. Wired before the save is
+  // resumed below, so an `instant` open on load is logged as one the
+  // suspended context did not play, rather than never reported.
+  castle.onLeaf = (ev) => audio.cue(ev.cue, ev);
 
   // --- Braziers (flicker lights) ---
   const brazierUpdates = config.braziers.map((b) =>
@@ -144,7 +149,9 @@ async function init() {
   if (populaceProblems.length) throw new Error(`data/populace.json does not fit the castle:\n  - ${populaceProblems.join('\n  - ')}`);
   const folk = populaceDefs(populaceData).map((def) => new NPC(def, scene, config.polyhavenBase));
   await Promise.all(folk.map((n) => n.build()));
-  const populace = new Populace({ people: populaceData.people, npcs: folk, nav });
+  // The hound's bark (#696): the populace says when a follow body is near,
+  // and data/sounds.json's cadence says when that is a bark.
+  const populace = new Populace({ people: populaceData.people, npcs: folk, nav, cue: (name, ev) => audio.cue(name, ev) });
   populace.setWatch(engine.watch, { walk: false });
 
   // --- Player ---

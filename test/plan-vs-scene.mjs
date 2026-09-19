@@ -843,6 +843,73 @@ try {
         'and the morning after puts the leaf and every one of its boxes back a second time',
         JSON.stringify(shut.back));
       check(shut.left.boxes === 0, 'and the beat leaves the door as it found it, open', JSON.stringify(shut.left));
+
+      /* AND EACH SWING IS A CUE (#696). test/layout.mjs check 14 holds every
+       * cue to a sound in the file; what only the page can say is that the
+       * builder fires one, that main.js wired it to the audio, and that it
+       * fires on a change of state and not on every call: the cycle above is
+       * shut, open, shut, open, and a second `openLock` on an open leaf has
+       * to be silence, or the second day's idempotent `applyDay` is two
+       * doors. No speaker is asked anything (#53): `events()` is the log. */
+      const cued = await page.evaluate(async ({ id }) => {
+        const castle = window.__castle, audio = window.__audio;
+        const gd = castle.gates.get(id);
+        const before = audio.events().length;
+        castle.openLock(id, { instant: true }); // already open: no cue
+        castle.applyDay([{ piece: id, set: 'shut' }]);
+        castle.applyDay([{ piece: id, set: 'shut' }]); // already shut: no cue
+        castle.openLock(id, { instant: true });
+        const fired = audio.events().slice(before);
+        const c = gd.centre;
+        return { fired, centre: c ? { x: c.x, y: c.y, z: c.z } : null };
+      }, { id: leaf.piece });
+      const cues = cued.fired.map((e) => e.cue);
+      check(cues.join(' ') === 'door-shut door-open',
+        `shutting it and opening it again cues door-shut then door-open, once each, and the two calls that changed nothing cue nothing`,
+        `cued: ${cues.join(', ') || 'nothing'}`);
+      check(cued.fired.every((e) => e.sound), 'and each cue resolved to a sound in data/sounds.json', JSON.stringify(cued.fired.map((e) => e.sound)));
+      const off = cued.fired.map((e) => (e.at && cued.centre) ? Math.hypot(e.at.x - cued.centre.x, e.at.y - cued.centre.y, e.at.z - cued.centre.z) : Infinity);
+      check(off.every((d) => d < 0.01), `and each is heard from the leaf's own centre`, off.map((d) => d.toFixed(2)).join(', '));
+    }
+  }
+
+  /* THE HOUND'S BARK (#696). `Populace._follow` cues `hound-near` every
+   * frame the hound is inside its radius, and the audio's cadence turns the
+   * frames into a bark `firstSeconds` after the approach. The camera is put
+   * beside the hound, the loop is driven by hand with a supplied dt as the
+   * ring beat above is, and the clock the cadence reads is the page's own,
+   * so the wait is a real one of `firstSeconds` and a margin, which is well
+   * under a second. What is held is that a bark is cued from where the hound
+   * stands and none before the wait is up; how it sounds is #53's. */
+  {
+    const barked = await page.evaluate(async ({ dt }) => {
+      const pop = window.__populace, audio = window.__audio, cam = window.__cam;
+      const body = pop.bodies.find((b) => b.person.follow && b.npc.group.visible);
+      if (!body) return null;
+      const sounds = await (await fetch('data/sounds.json')).json();
+      const cad = sounds.events.sounds[sounds.events.byCue['hound-near']].cadence;
+      const me = body.npc.group.position;
+      const home = { x: cam.position.x, y: cam.position.y, z: cam.position.z };
+      cam.position.set(me.x + 1.5, me.y + 1.7, me.z);
+      const before = audio.events().length;
+      const t0 = performance.now();
+      let early = 0, frames = 0;
+      while (performance.now() - t0 < cad.firstSeconds * 1000 + 400) {
+        pop.update(dt, cam.position);
+        frames++;
+        if (performance.now() - t0 < cad.firstSeconds * 1000 - 50 && audio.events().length > before) early++;
+        await new Promise((r) => requestAnimationFrame(r));
+      }
+      const fired = audio.events().slice(before).filter((e) => e.cue === 'hound-near');
+      cam.position.set(home.x, home.y, home.z);
+      return { id: body.person.id, name: body.npc.name, at: { x: me.x, y: me.y, z: me.z }, fired, early, frames, first: cad.firstSeconds };
+    }, { dt: 0.05 });
+    if (!barked) fail('no populace body follows the player at Prime, so nothing here can bark');
+    else {
+      check(barked.fired.length >= 1, `${barked.name} beside the player cues a bark inside ${barked.first} s plus a margin (${barked.frames} frames driven)`, `${barked.fired.length} cued`);
+      check(barked.early === 0, `and none before the cadence's ${barked.first} s were up`, `${barked.early} frames had one early`);
+      const d = barked.fired.length ? Math.hypot(barked.fired[0].at.x - barked.at.x, barked.fired[0].at.z - barked.at.z) : Infinity;
+      check(d < 0.01, `and it is heard from where the hound stands`, `${d.toFixed(2)} m off`);
     }
   }
 
