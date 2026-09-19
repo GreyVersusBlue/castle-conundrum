@@ -956,7 +956,7 @@ const linesOf = (id, state) => npcDefs.find((n) => n.id === id).dialogue[state];
     'seven in the outer ward and five in the inner', JSON.stringify(wards));
   const people = sideQuests.map((q) => q.npc);
   check(new Set(people).size === people.length, 'and twelve different people, which is the one-voice rule with nothing to refuse', people.join(', '));
-  // AND THAT IS EVERY SPEAKING PERSON IN THE CASTLE (#659 to #663). The dozen
+  // AND THAT IS EVERY SPEAKING PERSON IN THE CASTLE (#691 to #695). The dozen
   // closed by giving an errand to each of the seven who had none, so the set
   // is now the cast minus the one man who is not in it on day one: the King's
   // inspector, who has not dismounted. A thirteenth file has nobody left to be
@@ -1128,7 +1128,7 @@ const linesOf = (id, state) => npcDefs.find((n) => n.id === id).dialogue[state];
   r.talk('prisoner');
   // The same split as the porter above: the chisel names Ieuan and nobody
   // else, and the state Madoc is standing in after that conversation is his
-  // own errand's (`madocs-fire`, #659 to #663) and not this file's.
+  // own errand's (`madocs-fire`, #691 to #695) and not this file's.
   check(engine.holds('prisoner-story') && engine.npcState('prisoner') === 'default', 'Madoc says the lead, the cart and the seal, and the engine has not moved him');
   check(!Object.values(chisel.stages).some((s) => s.dialogueState === npc('prisoner').dialogueState), 'and no stage of the chisel names the state he is in', npc('prisoner').dialogueState);
   check(npc('apprentice').dialogueState === 'chisel-heard', 'which Ieuan already knows he said', npc('apprentice').dialogueState);
@@ -1152,7 +1152,7 @@ const linesOf = (id, state) => npcDefs.find((n) => n.id === id).dialogue[state];
   // journals compared by id and order. Then the tab, with the dozen on it.
   //
   // THE WALK IS THE ACCEPTANCE CRITERION FOR THE WHOLE ROW AND IT GREW WITH
-  // IT (#659 to #663). The five it was written for are the first five lines;
+  // IT (#691 to #695). The five it was written for are the first five lines;
   // the seven that closed the dozen are under them, and the order is not free:
   // Thomas Wykes is at the cart at Terce and nowhere at any other bell, so his
   // errand is the last two calls, and the sentry is asleep at Prime, so the
@@ -1199,7 +1199,7 @@ const linesOf = (id, state) => npcDefs.find((n) => n.id === id).dialogue[state];
  * the journal is identical with and without them; what is here is the beats
  * each of the seven has that the other eleven do not.
  *
- * AND ONE NEW RULE, WHICH THE CONSTABLE FORCED (#661). `{ACCUSE}` is a line in
+ * AND ONE NEW RULE, WHICH THE CONSTABLE FORCED (#693). `{ACCUSE}` is a line in
  * Sir Roger's `default` set and it is how the player is asked for a name. An
  * errand that ended on a state of its own would take that line off the screen
  * from the moment it finished until Vespers and every suite in this repo would
@@ -1393,7 +1393,7 @@ const repLine = (key, at) => reputation[key].find((e) => e.at === at).line;
   };
   // The three ceilings come off the files rather than out of this file, because
   // they moved once already: they were 3, 2 and 5 until the dozen closed and
-  // are 7, 5 and 12 now (#659 to #663), and a literal here is a suite that has
+  // are 7, 5 and 12 now (#691 to #695), and a literal here is a suite that has
   // to be edited every time an errand is written.
   expect(`an outer threshold past the ${wardCount('outer')} errands the outer ward has`, (r) => { r.outer.at(-1).at = wardCount('outer') + 1; },
     new RegExp(`reputation\\.outer: at ${wardCount('outer') + 1} is past the ${wardCount('outer')} errand\\(s\\) there are to finish`));

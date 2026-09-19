@@ -1,6 +1,6 @@
 {
   "comment": "The side quests, one file per quest (BACKLOG.md rank 8). A browser cannot read a directory, so the files are named here and nowhere else; test/quest.mjs reads the directory off disk and holds this list to it exactly, in both directions, so a quest file added without a line here fails the suite rather than sitting unloaded.",
-  "orderComment": "The order is the order they were written and nothing reads it: the manager runs every file in the set off the same event stream, and which one moves first inside one conversation is not a thing any of them can see. The first five are #576 to #599; the seven under them finish the dozen (#659 to #663), one voice each on the seven people who had none.",
+  "orderComment": "The order is the order they were written and nothing reads it: the manager runs every file in the set off the same event stream, and which one moves first inside one conversation is not a thing any of them can see. The first five are #576 to #599; the seven under them finish the dozen (#691 to #695), one voice each on the seven people who had none.",
   "quests": [
     "cooks-knife.json",
     "ladys-hawk.json",

@@ -152,7 +152,7 @@ Lane C is the `cast` block **specifically**, not all of `data/npcs.json`. R8
 and R12c wrote per-person `states` and `default` line arrays, which is a
 different region of the same file and merges cleanly. R8 also owned the
 file's `reputation` block outright (#614), which is a third region again and
-was nobody else's. R8 is closed (#659 to #663), so R12c is the only row left
+was nobody else's. R8 is closed (#691 to #695), so R12c is the only row left
 in that region; a session doing it should still say so in its PR.
 
 ### Three that are genuinely safe together right now
@@ -268,7 +268,7 @@ its row open with its text rewritten to say what is done.
 | Row | Model | Where | Lane | Next increment |
 | --- | --- | --- | --- | --- |
 | **R2** The GPU run | Opus 5 | **Local: GPU** | none | Gate 1, above. And now four more things nobody has looked at: a fourth body, seven ambient beds nobody has heard, and what the eight tower drums actually cost. |
-| ~~**R8** Side quests~~ | Opus 5 | Container | A | **Shipped, and the row is closed** (#659 to #663). The seven errands left of the dozen went in on 2026-09-18, one voice each on the seven people who had none, so `data/quests/` is twelve files and every person the day one schedule puts in the castle has an errand. A sixth set rule came with them: a terminal stage may not park a person whose `default` lines pose one of the frame's tokens. No `save.js` change and no version bump. |
+| ~~**R8** Side quests~~ | Opus 5 | Container | A | **Shipped, and the row is closed** (#691 to #695). The seven errands left of the dozen went in on 2026-09-18, one voice each on the seven people who had none, so `data/quests/` is twelve files and every person the day one schedule puts in the castle has an errand. A sixth set rule came with them: a terminal stage may not park a person whose `default` lines pose one of the frame's tokens. No `save.js` change and no version bump. |
 | **R6** Life: a populace | Opus 5 | Container | C, D | ~~The file, the validator and the first ten~~ shipped 2026-09-17 (#616 to #618): a routine is a ring per bell, nine activities on three clips the kit already had, no asset added. What is left is the other forty, the ambient talk once two bodies are within 3 m, and the four activities that want a clip — which is the half that trades with R10. **It has a number to answer to**: 20 skinned bodies per ward against a peak of 7 before the ten, 17 after (#609). |
 | ~~**R1** A fourth body~~ | Fable 5.1 | Local: net | C | **Shipped** (#603 to #606). Quaternius's Ultimate Modular Women Pack, meshopt to 1.02 MB, worn by the cook, the laundress and the lady. |
 | ~~**R7** Sound~~ | Fable 5.1 | Container | E | **First increment shipped** (#620 to #623). Seven synthesised room tones and the cross-fade. What is left needs speakers (#53). |
@@ -282,7 +282,7 @@ is the second row in a row to sit in lane A and never write the lane's file, so
 number**. R8 made it three in a row: closing the dozen was quest files and
 dialogue, and the two ward counters were already clamped against whatever
 `data/quests/` holds, so seven new files raised both ceilings on the next
-load with nothing written down twice (#659).
+load with nothing written down twice (#691).
 
 **R4a is what is left of lane A**, and it is an open design question that has
 to overturn #533 rather than work around it, which is a different kind of

@@ -368,7 +368,7 @@ export function validateQuestSet(quests, { npcs = [], mystery = {}, actions = []
     }
 
     /* RULE 6: A QUEST GIVES BACK A PERSON WHO POSES ONE OF THE FRAME'S TOKENS
-     * (BACKLOG.md rank 8, #661). `{ACCUSE}` is a line in Sir Roger's `default`
+     * (BACKLOG.md rank 8, #693). `{ACCUSE}` is a line in Sir Roger's `default`
      * set and it is how the player is asked for a name; `validateAgainstNpcs`
      * already holds that token and `openAccusation` to each other, but it looks
      * only at the frame and cannot see this directory at all. A side quest that

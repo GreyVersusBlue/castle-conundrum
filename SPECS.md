@@ -468,7 +468,7 @@ did not move and the version is still 6.
 
 - **Two of the side quests row's errands were specced as wanting somebody
   from this file and in the end did not.** That row closed on 2026-09-18
-  (#659 to #663) by keeping both ideas and dropping the body each wanted: the
+  (#691 to #695) by keeping both ideas and dropping the body each wanted: the
   porter's boy is an errand on the porter with the boy never on screen, and
   the child's dog was let go rather than replaced, on the ground that a dog is
   the one of the two that is not a conversation and belongs to rank 10's

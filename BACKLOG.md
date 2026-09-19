@@ -141,7 +141,7 @@ the same day (#595), four more errands after it (#597 to #599), and
 **reputation by ward the same day again** (#612 to #615): two counters at save
 version 6, a line per ward threshold on the end of what anybody in that ward
 says, and one line under the verdict. **The seven errands left of the dozen
-shipped on 2026-09-18 and closed the row** (#659 to #663): one voice each on
+shipped on 2026-09-18 and closed the row** (#691 to #695): one voice each on
 the seven people who had none, so every person the day one schedule puts in
 the castle now has an errand, and `validateQuestSet` gained a sixth rule to
 stop one of them parking the Constable out of the lines that pose `{ACCUSE}`.
@@ -193,8 +193,8 @@ smith's answer was left in the smith's mouth. The rule it forced is #597: a
 quest reaching a stage that waits on a clue the player already holds is
 walked forward at the end of the batch that moved it, which closes the
 barrel-before-Marged hole the knife shipped with. `validateQuestSet` holds
-every file to a `ward`. **The last seven shipped on 2026-09-18** (#659 to
-#663) and the row closed with them: the Steward's slate, the Constable's song,
+every file to a `ward`. **The last seven shipped on 2026-09-18** (#691 to
+#695) and the row closed with them: the Steward's slate, the Constable's song,
 the Clerk's inherited six years, the porter's pass, Nest's windlass, Madoc's
 forge and a mason's mark on a block in a town yard. Twelve files, seven outer
 and five inner, and the walk that proves the journal is identical without them
@@ -253,7 +253,7 @@ before their first increment closes, and 9 has nothing left in it that does
 not wait on rank 4's yard. **Rank 8 shipped four increments on 2026-09-17 and
 closed on 2026-09-18; rank 12 shipped two** — rank 8's first errand, the
 journal's tab, four more errands (#597 to #599), reputation by ward (#612 to
-#615) and then the seven that finished the dozen (#659 to #663), rank 12's
+#615) and then the seven that finished the dozen (#691 to #695), rank 12's
 placement editor and then its budget suite (#607 to #611).
 **Rank 12 is down to the dialogue format.** Move-and-delete shipped on
 2026-09-17 (#636 to #642) — the panel lists the rows within six tiles, `M` moves
@@ -384,7 +384,7 @@ produce one.
 Three softer ones are worth naming and are not gates: rank 6's populace
 unlocked rank 7's event sounds when its first ten shipped (#616) and was
 named as unlocking two of rank 8's errands, which in the end it did not have
-to: both kept their idea and dropped the body they wanted (#660), rank 10 and
+to: both kept their idea and dropped the body they wanted (#692), rank 10 and
 rank 6 trade activity clips both ways, and rank 12's budget suite was more
 useful once there were more bodies to count. None of the three blocked a start,
 and the budget suite went first anyway (#609) — a ceiling on a castle with
@@ -407,7 +407,7 @@ alongside anything else that touches `save.js`"** is written into rank 4's
 dependencies. Rank 8 was the other row in it and turned out never to need the
 file at all: closing the dozen added seven quest files and no field, and both
 ward counters are already clamped against whatever `data/quests/` holds, so
-the ceilings rose on the next load with nothing written down twice (#659).
+the ceilings rose on the next load with nothing written down twice (#691).
 Lane C is the `cast` block specifically, not the whole of `data/npcs.json`:
 rank 12c writes per-person `states` and `default` line arrays, which is a
 different region of the same file and merges, but a session doing it should
@@ -433,7 +433,7 @@ number came back to the top of the list when something belonged there. Rank 3
 shipped the same day, from a fallback source rather than the shot the spec
 asked for (#634, #635), and rank 5 shipped the same day too, by rendering the
 hall directly rather than waiting on a second GPU run to reach Vespers (#656
-to #658). **Rank 8 closed on 2026-09-18** (#659 to #663), when the last seven
+to #658). **Rank 8 closed on 2026-09-18** (#691 to #695), when the last seven
 of `WISHLIST.md`'s dozen errands went in and the theme ran out of rows rather
 than out of interest. All four numbers are gone the same way rank 1's first
 use is. Every row below is named by title in `SPECS.md` and `ROADMAP.md` as

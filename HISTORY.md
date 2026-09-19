@@ -6067,11 +6067,14 @@ are in. `data/quests/` has twelve files, `data/npcs.json` has twenty-three new
 dialogue states and seven new `default` lines, `src/quest-graph.js` has a sixth
 set rule, and `src/save.js` and `src/quest-manager.js` are untouched: the row
 turned out to be content, because everything the counters and the journal need
-is already read off the files. Decisions #659 to #663.
+is already read off the files. Decisions #691 to #695, written as #659 to
+#663 off a `main` that ended at #658 and renumbered whole at merge, in every
+file that cites them: PR #49 took that band first and PRs #48, #50 and #51
+went in ahead of this one.
 
 - **The seven are one errand each on the seven people who had none, and the
   three `WISHLIST.md` named are inside that count rather than beside it**
-  (#659). The row's scope named a letter for the town that needs a gate pass,
+  (#691). The row's scope named a letter for the town that needs a gate pass,
   a child's dog in the east garden, the porter's boy who wants his letters,
   and "four the next session's to name". Two of those wanted rank 6's populace
   and rank 6 has not shipped. The count came out right anyway because the unit
@@ -6088,7 +6091,7 @@ is already read off the files. Decisions #659 to #663.
   inspector, who has not dismounted. A thirteenth file has nobody to be about.
 
 - **The two errands that wanted a body they cannot have kept their idea and
-  dropped the body** (#660). The porter's boy is `gwilyms-pass` and the boy is
+  dropped the body** (#692). The porter's boy is `gwilyms-pass` and the boy is
   never in the castle: he is eleven, the gate is his after his father, and the
   whole errand is one pass signed in a corridor. The gate pass `WISHLIST.md`
   named separately merged into it, because a letter for the town and a boy for
@@ -6099,7 +6102,7 @@ is already read off the files. Decisions #659 to #663.
   longer depends on rank 6 for anything.
 
 - **Rule 6: a terminal stage may not park a person whose `default` lines pose
-  one of the frame's tokens** (#661). `{ACCUSE}` is a line in Sir Roger's
+  one of the frame's tokens** (#693). `{ACCUSE}` is a line in Sir Roger's
   `default` set and it is how the player is asked for a name. An errand on the
   Constable that ended in a state of its own would take the day's own question
   off the screen from the moment the errand finished until Vespers, and
@@ -6120,7 +6123,7 @@ is already read off the files. Decisions #659 to #663.
   his own words.
 
 - **The reputation bands are not one per errand, and the `closing` line at 5
-  was wrong the moment the dozen closed** (#662). The ceilings went from 3, 2
+  was wrong the moment the dozen closed** (#694). The ceilings went from 3, 2
   and 5 to 7, 5 and 12, which `validateQuestSet`'s rule 5 reads off the files,
   so every band that shipped is still reachable and nothing was forced. What
   went in is four outer (2, 3, 5, 7), three inner (1, 2, 4) and five closing
@@ -6132,7 +6135,7 @@ is already read off the files. Decisions #659 to #663.
   where it is true again.
 
 - **The walk in `test/quest.mjs` is this row's acceptance criterion and it
-  grew from five errands to twelve** (#663). One walk through every errand,
+  grew from five errands to twelve** (#695). One walk through every errand,
   the same calls through a manager built with no side quests, and the two
   journals compared by clue id and order: a side quest that granted, hid or
   gated one clue is a difference of one id. It is identical at twelve the way
