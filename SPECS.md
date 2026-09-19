@@ -176,13 +176,13 @@ rank 2's alone.
 **Rank 4. Size 2+. Increments 1 and 2 shipped on 2026-09-15 and 2026-09-16
 (#533 to #540, PRs #16 and #18), increment 3's gaol roll on 2026-09-17
 (#571 to #575), increment 3's fact that changes the same day (#646 to
-#649) and the bells call on 2026-09-19 (#699 to #702).** The morning after exists, the castle knows about it, and
+#649) and the bells call and Thomas Wykes's yard on 2026-09-19 (#699 to #707).** The morning after exists, the castle knows about it, and
 it now knows one thing about the player as well as about the verdict: one
 watch (`lauds`), thirteen stations, sixty line sets keyed by what the player
 said and three keyed by what he read, seven closing panes, a thirteenth cast
 entry whose conversation ends the game, and three rows of stone that move
 depending on which of the seven endings was reached. What follows is what
-shipped, then what is left of increment 3.
+shipped, and nothing of increment 3 is left.
 
 ### What increment 1 shipped (PR #16, #533 to #538)
 
@@ -239,15 +239,20 @@ what he said (#573), with nine validator rails; `changeApplies` is
 (#574); `test/mystery.mjs` section 7, the roll walked end to end and two
 players with the same verdict and different journals.
 
-### Increment 3: what is left
+### Increment 3: the yard, shipped
 
-One thread, and it wants something this repo has not got.
+Nothing is left of increment 3. The town half shipped and the bells call
+shipped before it.
 
-- **It needs a town to walk to.** The lead is in Thomas Wykes's yard and the
-  yard is outside the west barbican. The town side shipped (#546): there is
-  ground, a road and fog past the barbican now, but nothing built on it —
-  Thomas Wykes's yard itself, and whatever stands in it, is still increment
-  3's to place.
+- **The yard shipped on 2026-09-19** (#703 to #707). Thomas Wykes's yard
+  stands on the ground rank 5 laid west of the barbican: a stretch of
+  Mereford's wall with the town gate in it, a shed on four posts, a low yard
+  wall on two sides, and five blocks of dressed stone of which one carries
+  Gruffudd's mark. **The player sees it and never stands in it** (#703), which
+  is the row's open call settled: the castle is sealed, `test/layout.mjs`
+  check 4 asserts it, and the barbican's west face has no archway. A lead
+  found there is still a `day2.knew` row whenever somebody writes that thread,
+  because the `knew` grammar never asks how the player came by a clue.
 
 It has somewhere to put "the player found this out", which it did not have
 before `day2.knew` (#575): a lead found in the yard is a clue, and a clue is
@@ -336,9 +341,9 @@ two lines and left the version at 6.
 
 ### Dependencies
 
-- Increment 3's town half no longer waits on Poly Haven access (#546); it
-  waits on someone placing Thomas Wykes's yard on the ground the town side
-  built.
+- Increment 3's town half waited on Poly Haven access, then on the yard, and
+  now on neither: rank 5 laid the ground (#546) and rank 4c built the yard on
+  it (#703 to #707). What is left of this row is the bells question alone.
 - **Do not run alongside anything else that touches `save.js`.** Neither of
   the two increments that have landed since had to: the journal day two reads
   is `state.clues`, which the save already carried, so the key and the version
@@ -455,9 +460,12 @@ two lines and left the version at 6.
 - **Whether `garden` should be made real** (#618). `mystery.json` lists it and
   nothing in the castle resolves to it: the 93 walkable cells east of the east
   gate are all inside the Chapel Tower's or the King's Tower's disc. It is
-  either ground somebody builds — rank 4c's yard is the nearer precedent — or
-  a room id that should come out of the file. Not this row's call, but this
-  row is where it was found.
+  either ground somebody builds or a room id that should come out of the file.
+  **Rank 4c's yard is now a real precedent rather than a nearer one** (#703 to
+  #707): a room outside the walls, on the map, named, with things standing in
+  it, that nobody ever walks into. The garden is behind a gate that never
+  opens, which is the same shape. Not this row's call, but this row is where
+  it was found.
 
 ### Dependencies
 
@@ -671,11 +679,19 @@ and the well chamber this section also named were considered and refused
 The order inside this row is unchanged — volume, then area, then a second
 castle — and the volume step is done, so what is next is area.
 
-- **The town.** Ground west of the barbican exists (#541 to #546) and Thomas
-  Wykes's yard is rank 4's own thread to place on it; this row's town half is
-  the rest of a walled town's street, church and quay, and it still starts
-  only once that yard has proven the ground can carry a building. That
-  dependency is unchanged and is the one thing genuinely gating this row.
+- **The town, and the gate in front of it is open.** Ground west of the
+  barbican exists (#541 to #546) and Thomas Wykes's yard now stands on it
+  (#703 to #707), which is the proof this row was waiting for: a building out
+  there passes every plan check, costs 34 meshes in a bucket with no ceiling
+  on it, and reads as a building from the one vantage the castle gives. This
+  row's town half is the rest of a walled town's street, church and quay, and
+  **it starts from three things the yard leaves behind**. The `town-wall` run
+  at x -64 is 64 m of Mereford's wall with the town gate already cut in it, to
+  be extended rather than replaced. A room outside the curtain declares
+  `ward: "outside"` and `test/layout.mjs` check 4c is what that word costs
+  (#704). And the journal's map frame grew from 67.6 m wide to 90.8 to fit the
+  yard (#706), with 28 m of empty ground between the castle and it that this
+  row's street is what fills.
 - **The map: shipped** (#588 to #591). The journal's third tab, "The
   castle", is `src/stations.js`'s `nav.rooms()` drawn by `src/ui.js`: one
   inline SVG per storey in world metres, a `<circle>` for a tower room and a

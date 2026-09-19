@@ -6936,3 +6936,153 @@ explained. Two other sessions were testing in the same tree's siblings at the
 time, which is #655's and #633's shape. No `dialogue` block was touched, so
 `npm run dialogue:check` had nothing to say and `test/dialogue.mjs` is green on
 the same .dlg the row started with (#687).
+
+## Rank 4c, Thomas Wykes's yard: the first thing built outside the walls (2026-09-19)
+
+**Lane B, local, decisions #703 to #707.** The ground west of the barbican has
+been there since rank 5 laid it on 2026-09-16 (#541 to #546) with a road, four
+trees and 150 m of fog, and nothing had ever been built on it. Wykes's stone
+yard is: a stretch of Mereford's wall with the town gate cut in it, a shed on
+four posts under that wall, a low yard wall on two sides and the road on the
+third, four blocks of dressed stone and the fifth with Gruffudd's mark on it.
+It is 34 meshes and one ground patch, every one of them outside both wards, and
+it is what rank 9's town was gated on.
+
+- **The player sees the yard and never stands in it** (#703). The row's open
+  call, settled in the brief before anything was placed. Four things decided
+  it, and the first is the only one that would have been expensive to overturn:
+  the castle is sealed and `test/layout.mjs` check 4 asserts it, by flooding
+  from the spawn and failing on one reachable cell outside the curtain box.
+  `config.gates`' own comment has said for two phases that "the thing that
+  never opens again is the way OUT of the castle, and the barbican's west face
+  has no archway in it at all", so a walk to the yard is an archway in that
+  face, a fifth crossing, and check 4 rewritten from a property into a list of
+  exceptions. The other three are cheaper and point the same way.
+  `data/quests/wykes-mark.json` is terminal in three stages and the player
+  enters the yard in none of them: the block is described at Wykes's cart and
+  the mark is read off the lodge's board. This row's goal is that the ground
+  carries a building, which is a rendering claim and not a traversal one. And
+  `day2.knew` does not need feet, because a clue is granted by `mystery.json`
+  and the `knew` grammar never asks how the player came by it, so a lead in
+  this yard can be granted by looking at it. **What it costs is one room on the
+  journal's map that can never be filled in**, and that is the intended reading
+  rather than a wart.
+
+- **A room may declare `ward: "outside"`, and the word is paid for in a check
+  of its own** (#704). A room past the curtain breaks four things at once and
+  every one of them is right to break: it is a fifteenth ground room, it is
+  unreachable, the mystery has never heard of it, and it asks for an ambient
+  bed in a place no cell is in. The declaration lifts it out of all four,
+  `test/layout.mjs` checks 3, 3d and 13 plus `test/budget.mjs`'s ward rail,
+  which grew a third answer rather than an exemption. **So the declaration buys
+  nothing on its own.** New check 4c holds every outside room to three facts it
+  cannot move: its bounds lie wholly clear of `plan.curtain`, which is geometry;
+  its bounds lie inside a piece of `config.ground.outside`, which is the whole
+  of this row's claim that the building stands on rank 5's ground; and no cell
+  of the flood fill is in it, which is #703 written as an assertion, so that
+  whoever reverses it has to come here and delete a line. `budget.mjs` needed no
+  new rule at all: `wardsOf` has returned `['outside']` for a box reaching
+  neither ward since #611, so a yard that drifts into the outer ward fails on
+  the same line an outer room drifting out of it does.
+
+  **Four breaks from a green baseline** (#34). Dragging the yard inside the
+  walls to x -30..-18: `wykes-yard says ward "outside" and its bounds x
+  -30.00..-18.00, z -18.00..-6.00 are not clear of the curtain box x
+  -46.00..34.00, z -20.00..20.00`, with the shed's two roof pieces naming
+  themselves 32 m and 28 m past its west wall on the way out. Moving it to z
+  44..56, off the north edge of `outside-ground`: `wykes-yard at x
+  -62.00..-50.00, z 44.00..56.00 stands on none of config.ground.outside's 2
+  pieces (outside-ground, outside-road), a floor laid over nothing`. Cutting a
+  1.2 m doorway in `barbican-west` so the castle leaks: check 4 named 48963
+  reachable cells outside the curtain and check 4c named the consequence,
+  `wykes-yard ... is reachable from the spawn: 370 standable cells, the first at
+  (-50.75, -5.25)`. And changing the one word to `"outer"` fired five
+  assertions in `layout`: the fifteen ground rooms, the unreachable room, the
+  room the mystery has never heard of, the missing ambient bed, and 4c itself
+  reporting that no room declares `outside` so it measured nothing. `budget`
+  added a sixth, `room "wykes-yard" says ward "outer" but its bounds x -62..-50
+  do not reach that ward's rectangle`.
+
+- **The town wall carries no battlements, and the reason is a number** (#705).
+  It is one run, 64 m of it, 3 m thick and 8 m high at x -64, with the town
+  gate as a `doorways` entry at z 0, 4 m wide and 5.5 m to the head, so
+  `outside-road`'s own 4 m of cobble runs through it with 2.5 m of lintel over.
+  Crenellating it was the first draft and #514's arithmetic refuses it: a kit
+  merlon's body stands 1.2 to 2.4 m outward of the run's centreline, so check
+  9's "at least half of every merlon's footprint over stone" wants a run **3.6 m
+  thick or more**, and the only thickness in this castle that satisfies it is
+  the curtain's own 4 m. A 4 m town wall 18 m from a 4 m curtain reads as a
+  second castle, so the run takes `interior: true`, which in `castle-plan.js` is
+  the field that means "no battlements and no walk" and is the mason's lodge's
+  own flag. The wall is plain, and the nearest place the player can stand is
+  28 m from it.
+
+  The same family of check caught the yard's own two walls in a smaller way.
+  Check 10 refuses two pieces whose tops share a height over a common footprint
+  (#513), and two 1.4 m runs turning a corner into each other overlap by
+  0.16 m² at exactly one height. The east wall stops **0.2 m short** of the
+  north one instead of meeting it, which a person reads as the way in at the
+  corner and the suite reads as no shared plane at all.
+
+- **The journal's map frame went from 67.6 m wide to 90.8, and that is the
+  price of the yard being on it** (#706). The map draws every storey on one
+  frame, deliberately (#589), and the frame is the extent of `plan.rooms` plus a
+  metre. The castle's westernmost room is the north walk at x -34 and the yard's
+  west edge is x -62, so the drawing grew 23.2 m of mostly empty ground on its
+  left and the castle dropped to 74 % of the frame's width. Nothing was done
+  about it and nothing should be: **the 28 m between them is the barbican and
+  the road, and it is exactly where rank 9's town goes.** If rank 9 never
+  happens, this is the row to come back to. The height did not move: the yard is
+  12 m deep in z and the castle already spanned 39.6.
+
+- **The camera is pinned, not the spawn, and the yard reads as a yard** (#707).
+  `tools/shot-yard.mjs` is hand-run on the dev machine and asserts nothing. It
+  exists because there is no walk to this yard and `npm run play` has no beat
+  that would ever face that way. Moving `config.spawn` out of the castle to put
+  a camera there was the obvious way and it does not work: the walkability fill
+  moves with the spawn, and `validatePopulace` throws on the page before the
+  castle finishes building, naming ten people's forty stops as "floor the player
+  cannot walk to". So the spawn is left alone and the camera is written back
+  every frame through the same `updateMatrixWorld` patch `test/drive.mjs`'s
+  scene probe already installs, after the rig has had its go at it.
+
+  Six shots, in `shots/yard/`, which is gitignored like every other shot here.
+  **Standing in the yard it reads as a stone yard**: paving, a pitched shed
+  against the town wall, three courses stacked biggest-down, the marked block
+  lying apart from them, a hoist over the loading place, crates, a shrub in the
+  corner the carts do not turn in. **From where the player can actually stand it
+  reads as a roof and a wall.** The North-west Tower's roof at 12 m is the one
+  vantage, and through a crenel of its crown you get the shed's green pitch, one
+  of its posts, the town wall behind it and the fog past that, with the stone in
+  the yard under the line the parapet allows. The west curtain's walk is not a
+  vantage at all and this row found out why: the North-west Tower's drum is 4 m
+  of stone standing in that exact line, and the barbican's parapet closes what
+  the drum does not. From the spawn, west is 8 m of unbroken wall, which is #703
+  seen from the other end. **The verdict in one sentence: the yard reads as a
+  yard from inside it and as a building from the castle, which is what the row
+  needed, and what the west wants next is rank 9's town rather than anything
+  more in this yard.**
+
+- **The outside bucket went from 10 meshes to 44 and still has no ceiling.**
+  `test/budget.mjs` counts a mesh in every ward its box reaches and calls
+  anything reaching neither `outside`; that was the road, the ground and four
+  trees, and it is now those plus the yard. The two wards did not move: outer
+  993 of 1200 and inner 643, both of them this row's baseline rather than
+  #611's 965, because rank 5's seven hall coverings landed in between. The
+  ceiling is left unset on purpose: a number anchored on one yard is anchored on
+  nothing, and rank 9's town is the row that will know what to put there.
+
+- **One suite failure this row did not cause, measured rather than argued.**
+  `plan-vs-scene`'s chapel-candles beat went red in two of four full `npm test`
+  runs here and green three times out of three when run alone, and the control
+  was run rather than assumed: `git stash -u` takes this row out of the tree
+  entirely, and the beat is red on that, the same assertion and the same
+  sentence, `none of the 12 cells between 0.9 and 2.8 m of the chapel candles
+  offers them (the nearest offered "Press E to ring the bell")`. It is the flake
+  #546's batch first recorded and #599's batch measured as intermittent, three
+  failures in five runs of an unchanged file, still. **Two of the four full runs
+  of this row are fifteen suites green and the other two are fourteen with that
+  one beat red**, which is the same ratio that file has printed for three days
+  and is why #599 called a suite green three runs in five worse than one that
+  is red. `npm run build` is green and `npm run dialogue:check` says the .dlg
+  and `data/` agree, which this row expected because it opened neither.
