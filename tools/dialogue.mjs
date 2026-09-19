@@ -35,7 +35,7 @@
 // mystery.json and not this file. What they get instead is an equality: `check`
 // rebuilds every `@`, `:`, `?` and `!` from the three JSON files and refuses if
 // one byte of the rebuild is not what the .dlg says. The annotations cannot
-// drift, and they cannot be authored either. That is the bargain (#659).
+// drift, and they cannot be authored either. That is the bargain (#687).
 //
 // THE WRITE IS A TEXT SPLICE AND NOT A RE-SERIALISE, for tools/place.mjs's
 // reason and measured the same way: `JSON.stringify(JSON.parse(raw), null, 2)`

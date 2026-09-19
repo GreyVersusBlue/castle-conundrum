@@ -226,7 +226,7 @@ things found on the way that are not in it are in `HISTORY.md` under #633.
 **Eight ranked items left, numbered 1 to 11 with gaps. Nothing is claimed, and
 lanes B and C are free**: the byte-exactness rail merged as PR #40 (#631 to
 #633) and 12b's move-and-delete after it (#636 to #642), so ranks 4c and 9 are
-startable, and 12c retired rank 12 whole on 2026-09-18 (#659 to #662). The
+startable, and 12c retired rank 12 whole on 2026-09-18 (#687 to #690). The
 **first** rank 1 shipped
 on 2026-09-17 and **the numbers under it were not shifted up** (#619):
 `SPECS.md` and `ROADMAP.md` already name every row by title as well as by
@@ -402,7 +402,7 @@ different region of the same file and merges, but a session doing it
 should say so in its PR. Rank 12c left that lane a standing obligation:
 every `dialogue` block in that file is also `dialogue/castle.dlg` now, and
 `test/dialogue.mjs` fails if the two disagree, so a row that adds a state or
-rewords a line runs `npm run dialogue:extract` before it commits (#659).
+rewords a line runs `npm run dialogue:extract` before it commits (#687).
 
 Rank 4 splits three ways because its remaining threads do, and the spec
 already names them separately: **4a** is the bells-on-day-two design call and
@@ -410,7 +410,7 @@ already names them separately: **4a** is the bells-on-day-two design call and
 **4c** is Thomas Wykes's yard. 4a and 4b are a container's; 4c wants the
 editor walked and the yard looked at. Rank 12 split the same way and for the
 same reason: **12a** the budget suite (#607 to #611), **12b** move-and-delete
-in the editor (#636 to #642), **12c** the dialogue format (#659 to #662).
+in the editor (#636 to #642), **12c** the dialogue format (#687 to #690).
 All three shipped and **the row is retired**.
 
 ## The ranked table
@@ -427,7 +427,7 @@ hall directly rather than waiting on a second GPU run to reach Vespers (#656
 to #658) — both numbers are gone the same way rank 1's first use is. Rank 12
 is the first row to leave by finishing rather than by being retired part-way:
 its three increments shipped across two days and the fourth, the dialogue
-format, closed it on 2026-09-18 (#659 to #662). Every row
+format, closed it on 2026-09-18 (#687 to #690). Every row
 below is named by title in `SPECS.md` and `ROADMAP.md` as well as by rank,
 which is what makes that survivable (#522).
 
@@ -760,8 +760,8 @@ is that **an insert and a delete of the same row give back the file byte for
 byte**, on both endings, for all three arrays. `/__place` takes three verbs now
 and checks each one's row count before it writes.
 
-**What was left was the dialogue format, and it shipped on 2026-09-18** (#659
-to #662). `dialogue/castle.dlg` is every word the twelve say — 13 speakers, 40
+**What was left was the dialogue format, and it shipped on 2026-09-18** (#687
+to #690). `dialogue/castle.dlg` is every word the twelve say — 13 speakers, 40
 states, 118 lines, 20398 bytes — with what moves a speaker into each state and
 what the state is worth written above its lines. Six sigils: `@` a speaker, `:`
 a state, `?` a press or a quest stage, `%` that stage's objective, `!` a clue
@@ -770,10 +770,10 @@ the state grants, `|` one line. **`|` and `%` compile back into
 clue graph on every compile and refused if they have drifted, never authored** —
 because a compiler that could invent a press out of a line of prose could
 rewire the mystery behind `src/mystery.js`'s validator, which reads
-`mystery.json` and not the .dlg. It is hand-run and not a build step (#660,
+`mystery.json` and not the .dlg. It is hand-run and not a build step (#688,
 overruling the spec's own words for #506's reason), it lives outside `data/` so
 `vite.config.js` cannot publish it, and the write is `tools/place.mjs`'s splice
-generalised to a nested path (#661). `test/dialogue.mjs` is the fourteenth
+generalised to a nested path (#689). `test/dialogue.mjs` is the fourteenth
 suite: 112 assertions, 0.3 s, both line endings, and it is the only thing
 standing between the .dlg and the drift a second copy of 118 lines invites.
 

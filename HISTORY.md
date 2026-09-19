@@ -6063,12 +6063,14 @@ hall itself, directly. Decisions #656 to #658.
 lane C, in a `git worktree`.** `SPECS.md` specced it by deliberately not
 speccing it — "speaker, state, conditions, effects, one line each, compiled to
 `npcs.json`/`quests/*.json` at build time", with `WISHLIST.md`'s paragraph as
-the whole brief. Decisions #659 to #662. The twelve's 118 lines now read top to
+the whole brief. Decisions #687 to #690, written as #659 to #662 off a
+`main` that ended at #658 and renumbered whole at merge, in every file that
+cites them, because PR #49 took that band first. The twelve's 118 lines now read top to
 bottom in `dialogue/castle.dlg`, 20398 bytes, 13 speakers and 40 states, and
 `test/dialogue.mjs` is the fourteenth suite at 0.3 s and 112 assertions.
 
 - **The format is six sigils and one file, and only two of them are written
-  back** (#659). `@ id | name | role | ward` is a speaker, `: state` one of
+  back** (#687). `@ id | name | role | ward` is a speaker, `: state` one of
   their states, `? press default on wax-matches` or `? quest cooks-knife at
   hunting` what moves them into it, `% ...` that quest stage's objective,
   `! says clerk-cloak` the clue the state grants, `| ...` one line of dialogue,
@@ -6086,7 +6088,7 @@ bottom in `dialogue/castle.dlg`, 20398 bytes, 13 speakers and 40 states, and
   one place, in the order a person reads them.
 
 - **It is a hand-run compiler and not a build step, which is where the spec's
-  own words were overruled** (#660). `SPECS.md` said "compiled to
+  own words were overruled** (#688). `SPECS.md` said "compiled to
   `npcs.json`/`quests/*.json` at build time". Nothing may be generated at build
   time here: `dist/` has no transform in it on purpose, because a build-time
   pipeline makes `npm run dev` serve one thing and `dist/` another, which is
@@ -6102,7 +6104,7 @@ bottom in `dialogue/castle.dlg`, 20398 bytes, 13 speakers and 40 states, and
   says so (#586's habit, pointed at a third target).
 
 - **The write is a text splice over a nested path, which is `tools/place.mjs`
-  generalised** (#661). Same measured reason: a round trip through
+  generalised** (#689). Same measured reason: a round trip through
   `JSON.stringify` is not `data/npcs.json`. What is new is that the thing being
   replaced is `cast[7].dialogue["chisel-forge"]` and not an element of a
   top-level array, so `membersOf` walks any object or array and hands back the
@@ -6118,7 +6120,7 @@ bottom in `dialogue/castle.dlg`, 20398 bytes, 13 speakers and 40 states, and
   rewording is one line and not 118.
 
 - **The authoring loop is a stub, and the compiler refuses a half-done one**
-  (#662). `extract` lists every state `npcs.json` has, then every state the
+  (#690). `extract` lists every state `npcs.json` has, then every state the
   press list or a quest stage names that `npcs.json` has not got, so wiring a
   press in `mystery.json` and re-running extract drops a `: state` with its `?`
   line and no `|` lines into the file, waiting to be written. `compile` refuses

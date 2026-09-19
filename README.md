@@ -76,7 +76,7 @@ Every word the twelve say is also `dialogue/castle.dlg`, one line per line, with
 what moves a speaker into each state and what the state is worth written above
 it. `npm run dialogue:compile` splices it back into `data/npcs.json` and
 `data/quests/`, `npm run dialogue:extract` writes it out again, and
-`test/dialogue.mjs` fails if the two have drifted (#659 to #662).
+`test/dialogue.mjs` fails if the two have drifted (#687 to #690).
 
 ## The suites
 

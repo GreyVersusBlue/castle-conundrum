@@ -243,7 +243,7 @@ never in `dist/`. **It shipped on 2026-09-17** (#583 to #587): a panel that
 reads the tile under the player's feet and writes the row into
 `data/scene-config.json` on a key press. The budget suite followed the same
 day (#607 to #611), move-and-delete after it (#636 to #642), and the dialogue
-format on 2026-09-18 (#659 to #662) — `dialogue/castle.dlg`, every word the
+format on 2026-09-18 (#687 to #690) — `dialogue/castle.dlg`, every word the
 twelve say, with what reaches each state written above its lines. **Nothing of
 this theme is open.** What none of the four covers is the rest of the spoken
 text: the `chatter` and `performances` pools, the `reputation` lines and

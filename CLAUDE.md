@@ -158,7 +158,7 @@ file keeps a pointer saying which band left.
 | `npm run build` | `dist/`: the hashed bundle in `dist/bundle/`, `assets/` and `data/` copied in whole, the Basis transcoder into `dist/decoders/basis/`. |
 | `npm run preview` | Serves `dist/`. |
 | `npm run assets:encode` | Re-encodes `assets/` in place, KTX2 and meshopt. Hand-run, needs `ktx` (#506). |
-| `npm run dialogue:extract` | `data/` out to `dialogue/castle.dlg`. Hand-run (#659). |
+| `npm run dialogue:extract` | `data/` out to `dialogue/castle.dlg`. Hand-run (#687). |
 | `npm run dialogue:compile` | `dialogue/castle.dlg` back into `data/npcs.json` and `data/quests/`. Hand-run. |
 | `npm run dialogue:check` | Neither, and exits non-zero if the two have drifted. `test/dialogue.mjs` runs the same check. |
 | `npm test` | All fourteen suites, cheapest first, non-zero on any failure. `npm test layout built` runs a subset. |
