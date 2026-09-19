@@ -42,7 +42,7 @@ R2 lands --------------+--> unlocks R11
 
   R11 feel: shadow + hand    lane D
 
-R4c Thomas Wykes's yard  --> unlocked R9's town, 2026-09-19 (#696 to #700)
+R4c Thomas Wykes's yard  --> unlocked R9's town, 2026-09-19 (#703 to #707)
   shipped                        container, lane B, startable now
 
 Never gated, take whenever the lane is free:
@@ -80,7 +80,7 @@ confirmed** — which means a container cannot trust a pass either.
 | **R3 The images** | Opus 5 | The preview and og card come out of R2's screenshots. There is no other source. They land in `tools-and-games/assets/`, not here, and Devon relinks. |
 | ~~**R5 The hall covering**~~ | Sonnet 5 | **Shipped** (#656 to #658). Both criteria were a render, and both were answered by rendering the hall directly rather than by waiting for this row's own run to reach Vespers: `roof.glb`'s vertices (not its bounding box) showed which way it slopes, and the floor read 69.8 to 89.8 of 255. |
 | **R11 Feel**, past its Node line | Sonnet 5 | ~~The Node half — a shadow decal and a hand node exist and do not regress `plan-vs-scene.mjs` — is a container's.~~ Shipped (#650 to #654). What is left is what a GPU decides: whether a blob shadow reads on stone versus on grass, what it does on a flight of stairs, and whether the hand reads as a hand. |
-| ~~**R4c The yard**~~ | Opus 5 | **Shipped** (#696 to #700). The look was the half that needed the machine and it is answered: a stone yard from inside it, a roof and a town wall from the North-west Tower's crown, and nothing at all from the west curtain's walk, because that tower's own drum stands in the line. `tools/shot-yard.mjs` is the camera, and it pins the camera rather than moving the spawn, which `validatePopulace` refuses. |
+| ~~**R4c The yard**~~ | Opus 5 | **Shipped** (#703 to #707). The look was the half that needed the machine and it is answered: a stone yard from inside it, a roof and a town wall from the North-west Tower's crown, and nothing at all from the west curtain's walk, because that tower's own drum stands in the line. `tools/shot-yard.mjs` is the camera, and it pins the camera rather than moving the spawn, which `validatePopulace` refuses. |
 
 **R2 is the single highest-value hour on this list.** It is a ¼ and it unblocks
 three rows outright.
@@ -216,7 +216,7 @@ R4a**, three of them, plus **R2** on Devon's machine.
   is gone from it: it shipped without opening `save.js`, which is two rows in a
   row that sat in lane A for a file neither of them wrote.
 - R9 is the only row left in lane B. R4c, R5 and R12b were the other three
-  and all three shipped (#696 to #700, #656 to #658, #636 to #642), so there
+  and all three shipped (#703 to #707, #656 to #658, #636 to #642), so there
   is nothing to pair it badly with. R12c has left lane C as well (#687 to
   #690).
 - R6 beside R11. Lane D, both inside `src/main.js`'s rig.
@@ -334,7 +334,7 @@ file, now with one row's worth of evidence under it.
 
 ### Gate 2 — R4c, Thomas Wykes's yard. Open since 2026-09-19.
 
-**Shipped, #696 to #700.** The yard stands on the ground #546 laid: a stretch
+**Shipped, #703 to #707.** The yard stands on the ground #546 laid: a stretch
 of Mereford's wall with the town gate cut in it, a shed on four posts, a low
 yard wall on two sides, five blocks of dressed stone and Gruffudd's mark on
 one of them. 34 meshes, all of them outside both wards, in a bucket
@@ -345,11 +345,11 @@ x -64 is 64 m of wall with the gate already in it, to be extended rather than
 replaced. `ward: "outside"` is a room's third answer, with `test/layout.mjs`
 check 4c holding what that word costs: clear of the curtain, standing on a
 piece of `config.ground.outside`, reached by nobody. And the journal's map
-frame grew from 67.6 m wide to 90.8 (#699), with 28 m of empty ground between
+frame grew from 67.6 m wide to 90.8 (#706), with 28 m of empty ground between
 the castle and the yard that R9's street is what fills.
 
 **The open call it settled: the player sees the yard and never stands in it**
-(#696). R9 inherits that too. A town the player can walk into is a way out of
+(#703). R9 inherits that too. A town the player can walk into is a way out of
 a castle `test/layout.mjs` check 4 asserts is sealed, and that is a decision
 to overturn rather than a street to place.
 

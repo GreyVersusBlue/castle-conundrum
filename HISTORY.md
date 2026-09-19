@@ -6697,7 +6697,7 @@ measured what it shipped.
 
 ## Rank 4c, Thomas Wykes's yard: the first thing built outside the walls (2026-09-19)
 
-**Lane B, local, decisions #696 to #700.** The ground west of the barbican has
+**Lane B, local, decisions #703 to #707.** The ground west of the barbican has
 been there since rank 5 laid it on 2026-09-16 (#541 to #546) with a road, four
 trees and 150 m of fog, and nothing had ever been built on it. Wykes's stone
 yard is: a stretch of Mereford's wall with the town gate cut in it, a shed on
@@ -6706,7 +6706,7 @@ third, four blocks of dressed stone and the fifth with Gruffudd's mark on it.
 It is 34 meshes and one ground patch, every one of them outside both wards, and
 it is what rank 9's town was gated on.
 
-- **The player sees the yard and never stands in it** (#696). The row's open
+- **The player sees the yard and never stands in it** (#703). The row's open
   call, settled in the brief before anything was placed. Four things decided
   it, and the first is the only one that would have been expensive to overturn:
   the castle is sealed and `test/layout.mjs` check 4 asserts it, by flooding
@@ -6727,7 +6727,7 @@ it is what rank 9's town was gated on.
   rather than a wart.
 
 - **A room may declare `ward: "outside"`, and the word is paid for in a check
-  of its own** (#697). A room past the curtain breaks four things at once and
+  of its own** (#704). A room past the curtain breaks four things at once and
   every one of them is right to break: it is a fifteenth ground room, it is
   unreachable, the mystery has never heard of it, and it asks for an ambient
   bed in a place no cell is in. The declaration lifts it out of all four,
@@ -6737,7 +6737,7 @@ it is what rank 9's town was gated on.
   cannot move: its bounds lie wholly clear of `plan.curtain`, which is geometry;
   its bounds lie inside a piece of `config.ground.outside`, which is the whole
   of this row's claim that the building stands on rank 5's ground; and no cell
-  of the flood fill is in it, which is #696 written as an assertion, so that
+  of the flood fill is in it, which is #703 written as an assertion, so that
   whoever reverses it has to come here and delete a line. `budget.mjs` needed no
   new rule at all: `wardsOf` has returned `['outside']` for a box reaching
   neither ward since #611, so a yard that drifts into the outer ward fails on
@@ -6761,7 +6761,7 @@ it is what rank 9's town was gated on.
   added a sixth, `room "wykes-yard" says ward "outer" but its bounds x -62..-50
   do not reach that ward's rectangle`.
 
-- **The town wall carries no battlements, and the reason is a number** (#698).
+- **The town wall carries no battlements, and the reason is a number** (#705).
   It is one run, 64 m of it, 3 m thick and 8 m high at x -64, with the town
   gate as a `doorways` entry at z 0, 4 m wide and 5.5 m to the head, so
   `outside-road`'s own 4 m of cobble runs through it with 2.5 m of lintel over.
@@ -6783,7 +6783,7 @@ it is what rank 9's town was gated on.
   corner and the suite reads as no shared plane at all.
 
 - **The journal's map frame went from 67.6 m wide to 90.8, and that is the
-  price of the yard being on it** (#699). The map draws every storey on one
+  price of the yard being on it** (#706). The map draws every storey on one
   frame, deliberately (#589), and the frame is the extent of `plan.rooms` plus a
   metre. The castle's westernmost room is the north walk at x -34 and the yard's
   west edge is x -62, so the drawing grew 23.2 m of mostly empty ground on its
@@ -6793,7 +6793,7 @@ it is what rank 9's town was gated on.
   happens, this is the row to come back to. The height did not move: the yard is
   12 m deep in z and the castle already spanned 39.6.
 
-- **The camera is pinned, not the spawn, and the yard reads as a yard** (#700).
+- **The camera is pinned, not the spawn, and the yard reads as a yard** (#707).
   `tools/shot-yard.mjs` is hand-run on the dev machine and asserts nothing. It
   exists because there is no walk to this yard and `npm run play` has no beat
   that would ever face that way. Moving `config.spawn` out of the castle to put
@@ -6815,7 +6815,7 @@ it is what rank 9's town was gated on.
   the yard under the line the parapet allows. The west curtain's walk is not a
   vantage at all and this row found out why: the North-west Tower's drum is 4 m
   of stone standing in that exact line, and the barbican's parapet closes what
-  the drum does not. From the spawn, west is 8 m of unbroken wall, which is #696
+  the drum does not. From the spawn, west is 8 m of unbroken wall, which is #703
   seen from the other end. **The verdict in one sentence: the yard reads as a
   yard from inside it and as a building from the castle, which is what the row
   needed, and what the west wants next is rank 9's town rather than anything
