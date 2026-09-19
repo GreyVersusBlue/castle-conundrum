@@ -176,7 +176,7 @@ rank 2's alone.
 **Rank 4. Size 2+. Increments 1 and 2 shipped on 2026-09-15 and 2026-09-16
 (#533 to #540, PRs #16 and #18), increment 3's gaol roll on 2026-09-17
 (#571 to #575), increment 3's fact that changes the same day (#646 to
-#649) and the bells call on 2026-09-19 (#696 to #699).** The morning after exists, the castle knows about it, and
+#649) and the bells call on 2026-09-19 (#699 to #702).** The morning after exists, the castle knows about it, and
 it now knows one thing about the player as well as about the verdict: one
 watch (`lauds`), thirteen stations, sixty line sets keyed by what the player
 said and three keyed by what he read, seven closing panes, a thirteenth cast
@@ -252,7 +252,7 @@ One thread, and it wants something this repo has not got.
 It has somewhere to put "the player found this out", which it did not have
 before `day2.knew` (#575): a lead found in the yard is a clue, and a clue is
 what a `knew` row is keyed on. **And the bells question behind it is answered**
-(#696 to #699, below), so a yard that wants the morning to move has a morning
+(#699 to #702, below), so a yard that wants the morning to move has a morning
 that can.
 
 ### What increment 3's fact that changes shipped (#649 to #649)
@@ -291,7 +291,7 @@ did not move and the version is still 6.
   guardroom-at-Lauds section, 15. Nine breaks from a green baseline, in
   `HISTORY.md`.
 
-### What the bells call shipped (#696 to #699)
+### What the bells call shipped (#699 to #702)
 
 The design question increment 3 left open, settled on 2026-09-19, and the
 smallest thing that fits the answer. It touched `src/save.js` for a helper and
@@ -303,7 +303,7 @@ two lines and left the version at 6.
   morning and `day2.lines` is keyed by the verdict and not by the bell, so a
   second morning bell with nothing written per-bell behind it is a sky change
   and a noise. The list is what makes a second one a data edit here rather than
-  an engine change (#696).
+  an engine change (#699).
 - **`src/mystery.js`**: `dayWatchesOf(mystery, day)` exported, the one place
   that picks between the two lists, and `state.watch` is an index into whichever
   one the day names. `ring()` walks the day's own list and numbers its rings
@@ -313,7 +313,7 @@ two lines and left the version at 6.
 - **`src/stations.js`**, **`src/lore.js`**, **`src/save.js`**: all three read
   the list instead of a single id. The save's `watch` clamp is day-aware, and
   the demotion of an incoherent `day: 2` re-clamps against day one.
-- **The chapel bell rings on the morning after** (#697), where it had been
+- **The chapel bell rings on the morning after** (#700), where it had been
   returning no effects at all since day two shipped: `ring()` opened on
   `ended()`, which is true from the verdict onward. The last bell of a day
   moves no watch, which day one's fourth already did, and the morning's has no
@@ -350,7 +350,7 @@ two lines and left the version at 6.
 - #36 and #413 (key unchanged; the version moved to 2 in increment 1).
 - #37 (`repair` every load).
 - #39, #481, #34 throughout.
-- #533, as #696 left it: a second day is still a `day` field and `watches` is
+- #533, as #699 left it: a second day is still a `day` field and `watches` is
   still exactly four. What is overturned is the clause that made the morning
   unable to move. The morning names its own bells in `day2.watches` and the
   engine reads whichever list the day names. A row that wants a second morning
@@ -378,17 +378,17 @@ two lines and left the version at 6.
 - #649: a `since` row has to be told, and told only where it is true. A row
   with no `tells`, or a piece heard in an ending its row does not cover, is a
   failure and not a warning.
-- #696: `state.watch` indexes the day's own bell list, so no id may be in both
+- #699: `state.watch` indexes the day's own bell list, so no id may be in both
   lists and `day2.watches` is the one spelling: the singular `day2.watch` is
   refused outright rather than accepted as a second source.
-- #697: the last bell of a day rings and moves nothing. The morning's carries
+- #700: the last bell of a day rings and moves nothing. The morning's carries
   no `demand`, because the morning has no Constable asking for a name.
-- #698: a day numbers its rings within its own list, so the morning's bells
+- #701: a day numbers its rings within its own list, so the morning's bells
   borrow the four characters `data/sounds.json` already has. A morning bell
   with no ring character, or with no sky in `data/scene-config.json`, is a
   failure in `test/layout.mjs`. Both of those files are read there and written
   by nobody in this row.
-- #699: the version is still 6. A row here bumps it when a field arrives, not
+- #702: the version is still 6. A row here bumps it when a field arrives, not
   when `repair` learns to ask a better question (#37).
 
 ---
@@ -505,8 +505,22 @@ Node criterion held is that every source is heard from a point inside its own
 footprint, from anywhere; the rest is ears (#53). `ambient.spatial` in
 `data/sounds.json` is the whole of the tuning.
 
-**What is left is event sounds**, which Dependencies below says wait on rank
-6, and the listening.
+**The third increment, the two event sounds that need no clip, shipped on
+2026-09-19** (#696 to #698). `data/sounds.json` has an `events` block:
+`byCue` maps what the engine does to a sound, `sounds` is each sound as a
+list of parts (a noise burst or a tone, at an offset, struck or held), and
+`spatial` is the panner every one plays through, at the point the cue names.
+`CUES` in `src/audio.js` is the code's half: `door-open` and `door-shut`,
+fired by `openLock` and `shutLeaf` from the leaf's centre on a change of
+state only, and `hound-near`, cued by the populace every frame the hound is
+inside its follow radius and paced into barks by the sound's own `cadence`.
+`test/layout.mjs` check 14 holds every cue to a sound and every sound to a
+cue, and `test/plan-vs-scene.mjs` holds the two wires in `src/main.js`.
+Nothing plays before the start button (#697). The rest of the event sounds,
+the hammer and the sweep, still wait on rank 6's clips.
+
+**What is left is the listening**, and the checklist for it is at the end of
+this section.
 
 ### Scope
 
@@ -545,7 +559,9 @@ footprint, from anywhere; the rest is ears (#53). `ambient.spatial` in
   synthesised until a recording beats it" is `WISHLIST.md`'s own line.
 - **Event sounds (door, bark, hammer strike)** are named in the theme but are
   the increment after this one: they want an activity clip to sync to, which
-  is rank 6's to add first.
+  is rank 6's to add first. (The door and the bark turned out to need no
+  clip, and shipped as the third increment, #696 to #698. The hammer still
+  waits.)
 
 ### Dependencies
 
@@ -564,6 +580,61 @@ footprint, from anywhere; the rest is ears (#53). `ambient.spatial` in
   pattern).
 - #519, #548 (synthesis-only reversed; a sound stays synthesised until a
   recording beats it, not the other way round).
+
+### Listening checklist
+
+Nobody has heard any of this (#53). `npm run play` on the dev machine, with
+speakers or headphones, and `data/sounds.json` open beside it: every number
+below is tuned there and nowhere else. Write what was wrong, not that it was
+wrong, and put the answers in `HISTORY.md` against this row.
+
+**The seven beds** (`ambient.beds`; stand in each, then walk out of it):
+
+- [ ] `ward`: the head bed on open ground. Does it read as outdoors, and is it
+      still there under the kitchen and the hall heard through their walls?
+- [ ] `wallwalk`: up on the walk. Is the wind a wind, and does it stop at the
+      top of the stair or bleed down it?
+- [ ] `kitchen`: from the ward outside its door first, then across the
+      threshold. Is the crackle a fire and not a click, and is the threshold
+      a step and not a fade?
+- [ ] `hall`: the same test at the Great Hall's door. The near wall is where
+      it is heard from outside; is that what it sounds like?
+- [ ] `chapel`: the two-note drone is tuned to the bell. Ring it there. Do the
+      two agree?
+- [ ] `chamber`: the lodge and the solars. Quiet enough to be a room and not
+      silence?
+- [ ] `tower`: climb the King's Tower. Nothing should fade on the stair
+      (#681). Does anything?
+- [ ] The two most likely wrong: 14 m of earshot through stone
+      (`spatial.hearMetres`), and a tower roof heard from the hall under it.
+
+**The four rings** (`bell.rings`; press E at the bell four times, once per
+watch, from the chapel and then from the far ward):
+
+- [ ] Terce, one stroke. Is it a bell and not a chime? The tierce at 396 Hz
+      is what should make the difference.
+- [ ] Sext, two strokes 1.3 s apart. Two, or one with an echo?
+- [ ] Vespers, six at 0.9 s. A peal, or a machine? `gapSpread` is 0.08.
+- [ ] The summons, three at 1.8 s and louder. Does it read as heavier, or
+      only as slower?
+- [ ] From the far ward: thin and placed, or gone?
+
+**The two event sounds** (`events.sounds`):
+
+- [ ] The muniment door, `latch-and-swing`: answer the word standing in front
+      of it. A click, a second click, then a rush and a low hinge for the
+      2.5 s the leaf takes. Is the hinge sawtooth a hinge, or a buzz? Is the
+      whole thing at the door and not in the head?
+- [ ] The same door on the second morning, `latch-and-slam`: the Clerk's word
+      goes back over it as Lauds opens. A short swing, a thud, a latch. Is
+      it audible from where the day starts, and should it be?
+- [ ] The hound, `bark`: walk up to Gelert in the outer ward at Prime and
+      stand. A double bark inside a second, then one every 7 s or so while
+      you stay. Is 560 Hz falling to 380 Hz through an 1100 Hz formant a dog,
+      or a duck? Walk away past 5 m and back: the first bark should be quick
+      again.
+- [ ] Does anything fire before Enter the Castle is pressed? It must not
+      (#697); a save resumed with the door open is the case to try.
 
 ---
 

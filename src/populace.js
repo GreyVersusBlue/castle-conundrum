@@ -386,9 +386,13 @@ export function validatePopulace(populace, { nav = null, mystery = {}, cast = []
  * the castle is the same castle twice and nobody moves in lockstep.
  */
 export class Populace {
-  constructor({ people, npcs, nav, dwell = DWELL }) {
+  constructor({ people, npcs, nav, dwell = DWELL, cue = null }) {
     this.nav = nav;
     this.dwell = dwell;
+    // Somebody to tell that a follow body is near the player (#696):
+    // `cue('hound-near', { id, at, metres })`, every frame it holds. The
+    // audio's cadence turns the frames into barks; nothing here keeps time.
+    this.cue = cue;
     const byId = new Map(npcs.map((n) => [n.id, n]));
     this.bodies = people
       .filter((p) => byId.has(p.id))
@@ -482,6 +486,8 @@ export class Populace {
     // the radius does not make a dog that sets off and turns back each frame.
     const near = gap <= (body.following ? f.radius + 2 : f.radius);
     if (near && Math.abs(feet - me.y) < 2.5) {
+      // The hound is at the player's heels: say so, from where it stands.
+      if (this.cue) this.cue('hound-near', { id: body.person.id, at: { x: me.x, y: me.y, z: me.z }, metres: gap });
       if (gap <= f.keep + 0.3) {
         // Close enough: stop where it is, and look at them.
         if (body.npc.walking) body.npc.walkTo([]);

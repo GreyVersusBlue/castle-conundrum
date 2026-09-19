@@ -106,7 +106,7 @@ function indexChatter(chatter, { npcs, mystery, problems }) {
  * bell, and data/mystery.json's `schedule` already says where everybody is at
  * every bell, so this checks the station itself: the sermon is said where the
  * chaplain actually stands, not where a data file wishes he stood. A piece at
- * one of `day2.watches` (#696) is checked against `day2.schedule` instead, and
+ * one of `day2.watches` (#699) is checked against `day2.schedule` instead, and
  * against the day-two absences, because a sermon said by a man the player may have hanged
  * is a sermon that does not happen in six endings out of seven.
  *
@@ -141,7 +141,7 @@ function indexPerformances(performances, { npcs, mystery, problems }) {
   const cast = new Map((npcs ?? []).map((n) => [n.id, n]));
   const watches = new Set(Array.isArray(mystery?.watches) ? mystery.watches : []);
   const d2 = mystery?.day2 ?? {};
-  // The morning's own bells (#696). A list, so the message names every one of
+  // The morning's own bells (#699). A list, so the message names every one of
   // them; with one in it this reads exactly as the single id it replaced.
   const d2Watches = new Set(asList(d2.watches).filter((w) => typeof w === 'string' && w.trim()));
   const morningBells = [...d2Watches].map((w) => JSON.stringify(w)).join(' or ') || '(no bell of the morning)';

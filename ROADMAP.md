@@ -109,7 +109,7 @@ the one asset nothing else on this list would catch.**
 ### Container, start to finish
 
 **R6** populace, **R8** side quests, **R9** the town once its gate clears,
-**R12a/b/c** the tooling, **R4a** the bells call (#696 to #699), and **R4b** the `since`
+**R12a/b/c** the tooling, **R4a** the bells call (#699 to #702), and **R4b** the `since`
 field, which shipped from one on 2026-09-17. Six and a half rows of twelve. Every one is data, a validator, a Node suite or
 a headless DOM assertion, and every one has an acceptance criterion a container
 can actually meet.
@@ -213,7 +213,7 @@ R4a**, three of them, plus **R2** on Devon's machine.
 - R8 beside R4a. Both closed, and neither one ever wrote the lane's file.
   Version 6 landed on 2026-09-17; R8's remaining work never touched `save.js`,
   R4b shipped without opening it, and R4a opened it for a helper and two lines
-  in `repair` and left the version at 6 (#699). **Three rows in a row sat in
+  in `repair` and left the version at 6 (#702). **Three rows in a row sat in
   lane A for a file none of them bumped**, which is worth reading the next time
   a row is held out of this lane.
 - R9 and R4c, any two of them. All lane B. R5 and R12b were the other two and
@@ -290,10 +290,10 @@ its row open with its text rewritten to say what is done.
 | ~~**R8** Side quests~~ | Opus 5 | Container | A | **Shipped, and the row is closed** (#691 to #695). The seven errands left of the dozen went in on 2026-09-18, one voice each on the seven people who had none, so `data/quests/` is twelve files and every person the day one schedule puts in the castle has an errand. A sixth set rule came with them: a terminal stage may not park a person whose `default` lines pose one of the frame's tokens. No `save.js` change and no version bump. |
 | **R6** Life: a populace | Opus 5 | Container | C, D | ~~The file, the validator and the first ten~~ shipped 2026-09-17 (#616 to #618): a routine is a ring per bell, nine activities on three clips the kit already had, no asset added. What is left is the other forty, the ambient talk once two bodies are within 3 m, and the four activities that want a clip — which is the half that trades with R10. **It has a number to answer to**: 20 skinned bodies per ward against a peak of 7 before the ten, 17 after (#609). |
 | ~~**R1** A fourth body~~ | Fable 5.1 | Local: net | C | **Shipped** (#603 to #606). Quaternius's Ultimate Modular Women Pack, meshopt to 1.02 MB, worn by the cook, the laundress and the lady. |
-| ~~**R7** Sound~~ | Fable 5.1 | Container | E | **First increment shipped** (#620 to #623). Seven synthesised room tones and the cross-fade. **Second shipped 2026-09-18** (#680 to #683): a bed at a point, the nearest three at once, and the four rings. What is left needs speakers (#53), then rank 6's clips for event sounds. |
+| ~~**R7** Sound~~ | Fable 5.1 | Container | E | **First increment shipped** (#620 to #623). Seven synthesised room tones and the cross-fade. **Second shipped 2026-09-18** (#680 to #683): a bed at a point, the nearest three at once, and the four rings. **Third shipped 2026-09-19** (#696 to #698): the door and the hound's bark, the two event sounds that need no clip. What is left needs speakers (#53), then rank 6's clips for the rest of the event sounds. |
 | ~~**R12a** The budget suite~~ | Opus 5 | Container | none | **Shipped** (#607 to #611). 965 draw calls in the outer ward against 1200, 3 point lights, a peak of 7 bodies. 63 % of the castle's meshes is eight tower drums. |
 
-R4a (the bells call) shipped on 2026-09-19 (#696 to #699), and R4b (the `since` field)
+R4a (the bells call) shipped on 2026-09-19 (#699 to #702), and R4b (the `since` field)
 shipped on 2026-09-17 (#646 to #649) without touching `save.js` at all: the
 journal it reads is `state.clues`, which the save has carried since #571. That
 is the second row in a row to sit in lane A and never write the lane's file, so
@@ -308,7 +308,7 @@ that sat in lane A without moving the version number: it overturned #533's
 second clause, put `day2.watches` in the data, and changed `repair`'s watch
 clamp to read the day's own list. That is a repair change, which runs on every
 load, rather than a field arriving, which is what a version number is for (#37,
-#699). The next row that wants version 7 takes the lane.
+#702). The next row that wants version 7 takes the lane.
 
 ### Wave B — the moment R2 lands
 
@@ -362,7 +362,7 @@ plan's list and not a second one (#588 to #591).
 | **R10** Bodies | Fable 5.1 | Local: net | C | ~~The child and the hound~~ shipped 2026-09-17 (#643 to #645). ~~Two hens and the spear~~ shipped 2026-09-18 (#684 to #686), off poly.pizza. What is left is the GPU look, and the four activity clips R6 wants, which no body on disk has. Still trades activity clips with R6 in both directions. |
 | ~~**R12b** Move-and-delete~~ | Opus 5 | Container | B | **Shipped 2026-09-17** (#636 to #642). The panel lists the rows within six tiles, `M` moves the selected one to the player's feet, `Delete` twice removes it, and `test/tools.mjs` went from 47 assertions to 179 with insert-then-delete byte-exact on both endings. **Lane B is free again.** |
 | ~~**R12c** The dialogue format~~ | Opus 5 | Container | C | **Shipped 2026-09-18** (#687 to #690). `dialogue/castle.dlg`: six sigils, 13 speakers, 62 states, 182 lines, and what reaches each state written above it. `|` and `%` compile back into `data/npcs.json` and `data/quests/`; `@`, `:`, `?` and `!` are rebuilt from the clue graph and checked, never authored. `test/dialogue.mjs` is the fifteenth suite, 112 assertions. **Rank 12 is retired whole.** |
-| ~~**R4a** The bells call~~ | Opus 5 | Container | A | **Shipped 2026-09-19** (#696 to #699). `day2.watches` is the morning's own list and the engine reads whichever list the day names; #533 is overturned in that clause and stands in the other. It is one bell long, so what changed on the screen is that the chapel bell rings on the morning after instead of returning nothing. No version bump. |
+| ~~**R4a** The bells call~~ | Opus 5 | Container | A | **Shipped 2026-09-19** (#699 to #702). `day2.watches` is the morning's own list and the engine reads whichever list the day names; #533 is overturned in that clause and stands in the other. It is one bell long, so what changed on the screen is that the chapel bell rings on the morning after instead of returning nothing. No version bump. |
 | ~~**R4b** The `since` field~~ | Opus 5 | Container | A | **Shipped** (#646 to #649). `since` rows on a fact, a third `performances` pool that says the changed fact in the guardroom at Lauds, and the grammar exported from `src/mystery.js` so there is one copy of it. It never touched `save.js`, which is the thing lane A was for. |
 
 ---

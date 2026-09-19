@@ -617,7 +617,7 @@ function rig({ saved = null, withSideQuests = true, quests = null, cast = npcDef
     'the panel is closed, the world is at Lauds and the HUD says so', `${r.watches.at(-1)} / ${ui.watch}`);
   check(Object.values(r.castle.shown).every((v) => v === false), 'nothing examinable is on the ground: no evidence is listed at Lauds');
 
-  /* THE ROPE IN THE CHAPEL IS A BELL AGAIN ON THE MORNING AFTER (#697). Between
+  /* THE ROPE IN THE CHAPEL IS A BELL AGAIN ON THE MORNING AFTER (#700). Between
    * the verdict and the epilogue it does nothing and is not heard, which is the
    * assertion above; from the morning it rings. This is the whole observable
    * difference the row makes today, because `day2.watches` is one long: the

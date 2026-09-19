@@ -438,7 +438,7 @@ rewords a line runs `npm run dialogue:extract` before it commits (#687).
 
 Rank 4 splits three ways because its remaining threads do, and the spec
 already names them separately: **4a** is the bells-on-day-two design call and
-`day2.watches` (#696 to #699), **4b** is the `since` field on a fact that
+`day2.watches` (#699 to #702), **4b** is the `since` field on a fact that
 changes (#596), and **4c** is Thomas Wykes's yard. 4a and 4b are a container's
 and both have shipped; 4c wants the editor walked and the yard looked at. Rank 12 split the same way and for the
 same reason: **12a** the budget suite (#607 to #611), **12b** move-and-delete
@@ -468,9 +468,9 @@ which is what makes that survivable (#522).
 | Rank | Item | Size | Model | Where | Gate | Lane | Claimed | Detail |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 2 | The GPU run: the day end to end, and somebody looks at the twelve (the run happened, #624 to #630) | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
-| 4 | A second day: increment 3, the town half (4a, the bells call, shipped #696 to #699; 4b, the fact that changes, #646 to #649) | 2+ | Opus 5 | 4c local | — | B (4c) | | [A second day](SPECS.md#a-second-day) |
+| 4 | A second day: increment 3, the town half (4a, the bells call, shipped #699 to #702; 4b, the fact that changes, #646 to #649) | 2+ | Opus 5 | 4c local | — | B (4c) | | [A second day](SPECS.md#a-second-day) |
 | 6 | Life: a populace: the fifty, the activity clips and the ambient talk | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
-| 7 | Sound: somebody listens to the seven beds and the four rings, then event sounds (a bed at a point and the rings shipped, #680 to #683) | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
+| 7 | Sound: somebody listens to the seven beds, the four rings and the first two event sounds (a bed at a point and the rings, #680 to #683; the door and the hound, #696 to #698) | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
 | 9 | A castle to get lost in: the town, the rock and river | 2+ | Opus 5 | Container | **after 4c** | B | | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
 | 10 | Bodies: a shared low-poly rig for the fifty (the child and the hound shipped, #643 to #645; two hens and the spear, #684 to #686) | 1 | Fable 5.1 | Local: net | — | C | | [Bodies](SPECS.md#bodies) |
 | 11 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 | Container to the Node line, local: GPU past it | **after 2** | D | shadow + hand shipped 2026-09-17 (#650 to #654) | [Feel](SPECS.md#feel) |
@@ -544,7 +544,7 @@ refuses the two halves to drift. It is the first thing in this game whose
 content, and not only whose line set, turns on what the player found. It
 touched no lane-A file.
 
-**The bells call was settled on 2026-09-19** (#696 to #699). The morning after
+**The bells call was settled on 2026-09-19** (#699 to #702). The morning after
 names its own bells in `day2.watches`, the engine reads whichever list the day
 names, and `state.watch` is an index into that list rather than into the four.
 #533 is overturned in that clause and stands in the other: `watches` is still
@@ -611,13 +611,28 @@ point inside their own footprint. The bell rings by the engine's own `n`:
 one stroke for Terce, two for Sext, six for Vespers, three slow for the
 summons, in `bell.rings`.
 
+**The first two event sounds shipped on 2026-09-19** (#696 to #698): a
+door and the hound, the two that needed no clip. `events` in
+`data/sounds.json` is a sound per cue as a list of parts, `CUES` in
+`src/audio.js` is the three cues the engine fires, and `test/layout.mjs`
+check 14 holds the two to each other both ways. The builder fires
+`door-open` and `door-shut` from a leaf's centre on a change of state only,
+so the second day's idempotent `applyDay` is one door and not two; the
+populace cues `hound-near` every frame the hound is inside its radius and
+the file's `cadence` turns that into a bark 0.6 s after the approach and
+every 7 s after. Nothing plays before the start button: a cue on a
+suspended context is logged and not played. `test/plan-vs-scene.mjs` holds
+the two wires.
+
 **What is left, in order.** Somebody with speakers listens (#53): every
-number in both blocks is a guess and the file says so, and the two most
-likely wrong are 14 m of earshot through a stone wall and a tower roof heard
-from the hall under it. Event sounds still wait on rank 6's activity clips.
-Recorded CC0 audio is admitted since #548, named by `data/sounds.json` and
-run through `tools/encode-assets.mjs` like any asset (#506), and none has
-been looked for.
+number in all three blocks is a guess and the file says so, and the three
+most likely wrong are 14 m of earshot through a stone wall, a tower roof
+heard from the hall under it, and the bark's formant. The listening
+checklist is in `SPECS.md` under this row. Hammer, sweep and the rest of the
+event sounds wait on rank 6's activity clips to sync to. Recorded CC0 audio
+is admitted since #548, named by `data/sounds.json` and run through
+`tools/encode-assets.mjs` like any asset (#506), and none has been looked
+for.
 
 ## A castle to get lost in
 

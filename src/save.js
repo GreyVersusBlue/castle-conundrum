@@ -53,8 +53,8 @@
 // the number of quests data/quests/ has in that ward, which is the most a
 // counter can honestly read: one per errand, and an errand finishes once.
 //
-// AND WHY THERE IS NO VERSION 7 (#699). The morning after names its own bells
-// now (#696) and `watch` is an index into whichever list the day says, where
+// AND WHY THERE IS NO VERSION 7 (#702). The morning after names its own bells
+// now (#699) and `watch` is an index into whichever list the day says, where
 // on day two it used to be ignored outright. No field arrived and no field
 // changed shape, so there is no drift for `migrate` to be honest about. #37's
 // line runs the other way here. What moved is `repair`, which runs on every
@@ -112,7 +112,7 @@ export function buildCatalog(mystery, quest, documents = [], sideQuests = [], ro
     if (q.ward in wards) wards[q.ward] += 1;
   }
   const watches = dayWatchesOf(mystery, 1);
-  // The morning's own bells (#696). `watch` is an index into whichever list the
+  // The morning's own bells (#699). `watch` is an index into whichever list the
   // day names, so the clamp has to know which day it is repairing.
   const morningWatches = dayWatchesOf(mystery, 2);
   const clues = new Set((mystery?.clues ?? []).map((c) => c.id));
@@ -144,7 +144,7 @@ export function reputationIn(quests, catalog) {
 }
 
 const nonNegInt = (v) => (Number.isInteger(v) && v >= 0 ? v : 0);
-/** A save's `watch`, held to the bells of the day it says it is on (#696). */
+/** A save's `watch`, held to the bells of the day it says it is on (#699). */
 const clampWatch = (v, day, catalog) => {
   const list = day === 2 ? (catalog.morningWatches ?? []) : (catalog.watches ?? []);
   const top = Math.max(0, list.length - 1);
@@ -186,7 +186,7 @@ export function repairState(state, catalog) {
    * accusations are repaired above this line, so what is tested is the list
    * that survives repair rather than the one that came in. */
   out.day = s.day === 2 ? 2 : 1;
-  /* THE WATCH IS AN INDEX INTO THE DAY'S OWN LIST (#696), so what it clamps to
+  /* THE WATCH IS AN INDEX INTO THE DAY'S OWN LIST (#699), so what it clamps to
    * depends on `out.day` above: 0..3 on day one, 0..(the morning's bells minus
    * one) on day two. It stays in this slot because test/save.mjs asserts the
    * fifteen fields in order; the demotion below re-clamps when it moves the

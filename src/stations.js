@@ -58,7 +58,7 @@ export function castleNav(plan, mystery) {
     for (const watch of watches) put(npcId, watch, byWatch?.[watch] ?? null);
   }
   /* THE SECOND DAY'S BELLS ARE EXTRA WATCHES IN HERE AND NOWHERE ELSE (#533,
-   * #696). `watches` stays four everywhere the mystery counts the day's bells;
+   * #699). `watches` stays four everywhere the mystery counts the day's bells;
    * what this file cares about is "where does a body stand at a named bell",
    * and Lauds is a named bell with thirteen stations under it. Indexing it here
    * is what lets `validateMystery` run the day-two schedule through the same

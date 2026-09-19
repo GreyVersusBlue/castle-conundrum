@@ -203,5 +203,61 @@
       }
     },
     "bedsComment": "Seven places. `gain` is the whole bed against a footstep's 0.10 to 0.20: every bed sits under the feet, and the quiet ones (a timber chamber, the chapel) are a fifth of a step, because a room tone is the thing you notice going away and not the thing you hear. `layers` are filtered noise; `swellHz` and `swellDepth` move a layer's gain between (1 - depth) and 1 of itself on a sine, and no two layers in a bed share a rate, so the sum never repeats on a period anyone will sit through. The ward is wind with the top off and the ground under it. THE GARDEN HAS NO BED, and had one for an hour: it is behind the east gate, which never opens (#469), so no walkable cell in the castle is in it and check 13 called its bed dead. The day that gate opens, the same check fails on a garden with nothing to say, which is the right day to write it. The wall walk is 8 m up and is the loud one: more wind, higher, and a narrow band at 1500 Hz that is the merlons whistling when it gusts. The kitchen (and the bakehouse, which is an oven) is a fire: a low roar that flutters three times a second, and `pops`, random filtered clicks at `perSecond`, which are the crackle. The hall is a big stone box: almost nothing, and low. The chapel is the hall quieter, over a drone a fifth apart at half the bell's hum (82.5 Hz under the bell's 165), so the bell is in tune with the room it hangs over. A chamber is timber, cloth and a shut door: the quietest thing in the castle. A tower is a stone drum with arrow loops: the low of the hall and one narrow whistle at 880 Hz that is mostly not there. EVERY NUMBER HERE IS A GUESS MADE WITHOUT SPEAKERS (#53). Whether a kitchen sounds like a kitchen is a question for a machine with ears, and this file is where the answer gets typed."
+  },
+  "events": {
+    "comment": "The sounds a thing happening makes (#696): a door, and the hound. Synthesised like everything above (#519, #548): a sound here is a list of `parts`, each one noise burst or one tone at an offset from the cue, and src/audio.js plays the list at the point the cue names through a panner of its own. `byCue` is the map from what the engine does to what it sounds like, and `sounds` is the sounds; that is `steps`' byMaterial and classes, and `ambient`'s byRoom and beds, a third time. The cues are src/audio.js's CUES, and test/layout.mjs holds this block to that list both ways: a cue with no entry here and an entry no cue fires are both red. A cue that is a state and not a moment (`hound-near`, fired every frame the hound is inside its follow radius) carries a `cadence`, and the cadence is what turns the frames into barks. NOBODY HAS HEARD ANY OF THIS (#53).",
+
+    "spatial": {
+      "panning": "HRTF",
+      "refMetres": 1.5,
+      "maxMetres": 40,
+      "rolloff": 1.3,
+      "comment": "One panner per play, at the point the cue names, torn down when the last part has decayed. HRTF and not equalpower, because a bark and a latch come from somewhere and the head model is what says where; three of these a minute is not the cost three room tones a frame would be."
+    },
+
+    "byCue": {
+      "door-open": "latch-and-swing",
+      "door-shut": "latch-and-slam",
+      "hound-near": "bark"
+    },
+
+    "sounds": {
+      "latch-and-swing": {
+        "gain": 0.7,
+        "parts": [
+          { "type": "noise", "at": 0.0, "filter": "bandpass", "hz": 2400, "q": 6, "decay": 0.03, "gain": 0.5, "name": "the latch lifting: one bright click" },
+          { "type": "tone", "at": 0.0, "wave": "triangle", "hz": 3100, "toHz": 2500, "decay": 0.06, "gain": 0.18, "name": "the bolt's ring under it" },
+          { "type": "noise", "at": 0.06, "filter": "bandpass", "hz": 1800, "q": 4, "decay": 0.04, "gain": 0.3, "name": "the latch dropping again" },
+          { "type": "noise", "at": 0.18, "filter": "lowpass", "hz": 320, "q": 1.2, "attack": 0.4, "hold": 1.4, "release": 0.6, "gain": 0.14, "name": "the leaf swinging: a low rush for as long as the leaf takes to open, which is 2.5 s in castle-builder.js" },
+          { "type": "tone", "at": 0.25, "wave": "sawtooth", "hz": 210, "toHz": 150, "filter": "lowpass", "filterHz": 900, "attack": 0.5, "hold": 1.0, "release": 0.7, "gain": 0.05, "name": "the hinge: a sawtooth sliding down a fifth over the swing, quiet, under the rush" }
+        ]
+      },
+      "latch-and-slam": {
+        "gain": 0.8,
+        "parts": [
+          { "type": "noise", "at": 0.0, "filter": "lowpass", "hz": 260, "q": 1.0, "attack": 0.05, "hold": 0.25, "release": 0.15, "gain": 0.16, "name": "the leaf coming round, short" },
+          { "type": "noise", "at": 0.42, "filter": "lowpass", "hz": 500, "q": 0.9, "decay": 0.12, "gain": 0.55, "name": "the slam: a thud" },
+          { "type": "tone", "at": 0.42, "wave": "sine", "hz": 90, "decay": 0.16, "gain": 0.4, "name": "and the weight under it" },
+          { "type": "noise", "at": 0.48, "filter": "bandpass", "hz": 2200, "q": 5, "decay": 0.035, "gain": 0.4, "name": "the latch catching" }
+        ]
+      },
+      "bark": {
+        "gain": 0.6,
+        "cadence": {
+          "withinMetres": 5,
+          "firstSeconds": 0.6,
+          "everySeconds": 7,
+          "spread": 0.5,
+          "comment": "The hound is cued every frame it is inside its follow radius (6 m in data/populace.json). It barks `firstSeconds` after the player comes inside `withinMetres` and then every `everySeconds` give or take `spread` of itself, and going back out resets the clock, so the first bark on the next approach is quick again. `withinMetres` has to be inside the follow radius or the cue never fires while the bark would; test/layout.mjs holds that."
+        },
+        "repeat": { "times": 2, "gapSeconds": 0.26, "spread": 0.25, "comment": "two barks a quarter-second apart, which is a dog and not a doorbell" },
+        "parts": [
+          { "type": "tone", "at": 0.0, "wave": "sawtooth", "hz": 560, "toHz": 380, "filter": "bandpass", "filterHz": 1100, "filterQ": 1.4, "attack": 0.012, "decay": 0.11, "gain": 0.5, "name": "the voice: a sawtooth dropping a fourth through a formant, which is the vowel of a bark" },
+          { "type": "tone", "at": 0.0, "wave": "square", "hz": 280, "toHz": 190, "filter": "lowpass", "filterHz": 700, "attack": 0.012, "decay": 0.09, "gain": 0.16, "name": "the chest under it" },
+          { "type": "noise", "at": 0.0, "filter": "bandpass", "hz": 1600, "q": 0.9, "decay": 0.07, "gain": 0.22, "name": "the breath" }
+        ]
+      }
+    },
+    "soundsComment": "A `part` is `noise` (the shared noise buffer through a `filter` at `hz` and `q`) or `tone` (a `wave` at `hz`, sliding to `toHz` if given, through an optional `filter` at `filterHz`/`filterQ`). Its envelope is either a strike, `decay` seconds to silence, or a held one, `attack` up, `hold` at the top and `release` down. `at` is the offset from the cue in seconds. A sound's own `gain` scales all its parts, and `repeat` plays the list again `times` in all, `gapSeconds` apart give or take `spread`. The hinge sawtooth and the bark's formant are the two numbers most likely to be wrong in this file, in that order."
   }
 }

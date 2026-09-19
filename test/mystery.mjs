@@ -255,7 +255,7 @@ console.log('the validator rejects');
     (m) => { m.schedule.inspector = { prime: null, terce: null, sext: null, vespers: null }; },
     /^inspector: arrives on day 2 and still has a day-one schedule$/);
 
-  /* THE MORNING'S OWN BELLS (#696). `state.watch` is an index into whichever
+  /* THE MORNING'S OWN BELLS (#699). `state.watch` is an index into whichever
    * list the day names, so every one of these is a save index that would read
    * as a bell nobody meant: an empty list leaves the morning standing at no
    * bell, a repeat makes two bells of the morning one bell, an id shared with
@@ -270,7 +270,7 @@ console.log('the validator rejects');
   expect('one bell of the morning written twice', (m) => { m.day2.watches = ['lauds', 'lauds']; },
     /^day2\.watches: lauds is listed twice, so two bells of the morning are one bell$/);
   expect('the old singular spelling left beside the list', (m) => { m.day2.watch = 'lauds'; },
-    /^day2\.watch: the morning names its bells in `watches`, a list, and there is one spelling of it \(#696\)$/);
+    /^day2\.watch: the morning names its bells in `watches`, a list, and there is one spelling of it \(#699\)$/);
 
   /* AND THE CASTLE'S HALF OF THE MORNING (#539). Six rails, each one a way for
    * `day2.castle` to name something the castle cannot do, and every one of them
@@ -708,12 +708,12 @@ console.log('\nthe morning after, seven times');
   m.beginDay2();
   check(m.press('steward', 'summons-is-stewards')[0].type === 'shrug' && m.npcState('steward') === 'default',
     'a press that would have moved the Steward at Sext moves nobody at Lauds');
-  /* THE MORNING'S BELL IS A BELL AGAIN (#697). This used to read
+  /* THE MORNING'S BELL IS A BELL AGAIN (#700). This used to read
    * `m.ring().length === 0`: `ring()` opened on `ended()`, which is true from
    * the verdict onward, so the rope at Lauds returned no effects at all: no
    * sound, no event, nothing on the screen. `day2.watches` has one bell in it,
    * so the morning's ring is the last ring of its day: it rings, it is numbered
-   * within the morning's own list (#698), and it moves no watch, the way day
+   * within the morning's own list (#701), and it moves no watch, the way day
    * one's fourth moves none. What it does NOT carry is a `demand`: the morning
    * has no Constable asking for a name. */
   const morningRing = m.ring();
@@ -746,7 +746,7 @@ console.log('\nthe morning after, seven times');
 }
 
 {
-  /* A MORNING WITH TWO BELLS IN IT (#696). The shipped list is one long, so
+  /* A MORNING WITH TWO BELLS IN IT (#699). The shipped list is one long, so
    * everything above exercises the one-bell case and none of it can tell a
    * `day2.watches` the engine actually reads from a `day2.watches[0]` it does
    * not. This is the fixture that can: the same data with one id added to the
@@ -816,7 +816,7 @@ console.log('\nthe morning after, seven times');
     'the last bell of the morning rings and moves nothing, the way the fourth of day one does', JSON.stringify(last));
 
   /* AND IT IS NOT REWOUND BY BEING RE-ENTERED. `_applyDay` runs beginDay2 again
-   * on entering `end` and on every reload in either day-two stage (#696), and a
+   * on entering `end` and on every reload in either day-two stage (#699), and a
    * `st.watch = 0` outside the day-one guard would put a player who had rung on
    * back at the first bell every time the manager re-applied the day. */
   m.beginDay2();

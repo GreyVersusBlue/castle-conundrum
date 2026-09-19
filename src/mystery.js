@@ -28,13 +28,13 @@ const UI_LINES = ['asleep', 'absent', 'gone', 'locked', 'known', 'empty', 'fall'
 const asList = (v) => (v == null ? [] : Array.isArray(v) ? v : [v]);
 
 /* ------------------------------------------------------------- the second day ---
- * THE MORNING AFTER IS A `day` FIELD, AND IT NAMES ITS OWN BELLS (#533, #696).
+ * THE MORNING AFTER IS A `day` FIELD, AND IT NAMES ITS OWN BELLS (#533, #699).
  * #533 said two things in one sentence and only one of them was argued for.
  * `watches` is asserted to be exactly four in this file, `ring()`'s fourth is
  * the Constable demanding an answer, and every rail about a two-to-three-watch
  * path is written against one day: eight ids in that one list would have made
  * all of it say nothing. That half stands. What the same sentence also said,
- * without saying so, was that the morning after could never move, and #696
+ * without saying so, was that the morning after could never move, and #699
  * overturns that clause. `day2.watches` is the morning's own list of bell ids,
  * none of them one of the four, and the engine reads WHICHEVER LIST THE DAY
  * NAMES. `watches` on day one, `day2.watches` on day two, with `state.watch`
@@ -57,7 +57,7 @@ const asList = (v) => (v == null ? [] : Array.isArray(v) ? v : [v]);
 
 /**
  * The bells of a day, in order: `watches` for day one, `day2.watches` for the
- * morning after (#696). Every reader of a watch id goes through this rather
+ * morning after (#699). Every reader of a watch id goes through this rather
  * than through `mystery.watches` plus a special case, because the special case
  * is what made `day2.watch` a single id in four files at once.
  *
@@ -575,7 +575,7 @@ export function validateMystery(mystery, npcs, quest, nav = null, sideQuests = [
   if (!d2 || typeof d2 !== 'object') {
     say('day2: no second day, so the epilogue is the end of the game');
   } else {
-    /* THE MORNING'S OWN BELLS (#696). A list, in order, none of them one of the
+    /* THE MORNING'S OWN BELLS (#699). A list, in order, none of them one of the
      * four: `watches` is still exactly four (asserted at the top of this file)
      * and `state.watch` indexes whichever list the day names, so an id in both
      * lists is a save index that means two different bells. The station rails
@@ -584,7 +584,7 @@ export function validateMystery(mystery, npcs, quest, nav = null, sideQuests = [
      * a station per bell is the row that has to walk this loop per bell. */
     const w2list = asList(d2.watches);
     if (!Array.isArray(d2.watches) || !w2list.length) say(`day2.watches: ${JSON.stringify(d2.watches)} is not a non-empty list of bell ids`);
-    if ('watch' in d2) say('day2.watch: the morning names its bells in `watches`, a list, and there is one spelling of it (#696)');
+    if ('watch' in d2) say('day2.watch: the morning names its bells in `watches`, a list, and there is one spelling of it (#699)');
     const seen2 = new Set();
     for (const w of w2list) {
       if (typeof w !== 'string' || !w.trim()) say(`day2.watches: ${JSON.stringify(w)} is not a watch id`);
@@ -948,7 +948,7 @@ export function createMystery({ mystery, npcs, state }) {
   const day2 = mystery?.day2 ?? null;
   const onDayTwo = () => st.day === 2 && !!day2;
   // The day names its bells and `st.watch` indexes that list, not the four
-  // (#696). Both lists are read once here; `dayWatchesOf` is the only place
+  // (#699). Both lists are read once here; `dayWatchesOf` is the only place
   // that picks between them.
   const dayOneWatches = dayWatchesOf(mystery, 1);
   const morningWatches = dayWatchesOf(mystery, 2);
@@ -993,7 +993,7 @@ export function createMystery({ mystery, npcs, state }) {
     get state() { return st; },
     get watch() { return watchId(); },
 
-    /** The bells of the day the save is on, in order (#696). */
+    /** The bells of the day the save is on, in order (#699). */
     get watches() { return [...dayWatches()]; },
     holds,
     npcState,
@@ -1010,7 +1010,7 @@ export function createMystery({ mystery, npcs, state }) {
      * a caller that asks "is there anybody there" gets the hanged man's answer
      * without knowing there was a hanging. main.js is that caller.
      *
-     * A bell of the morning is any id in `day2.watches` (#696), and the
+     * A bell of the morning is any id in `day2.watches` (#699), and the
      * schedule is one station per person for the whole of it, so every bell of
      * the morning reads the same row.
      */
@@ -1072,7 +1072,7 @@ export function createMystery({ mystery, npcs, state }) {
      * The bell, on whichever day it is. The last ring of a day moves no watch:
      * on day one that is the fourth, and the Constable demands the accusation.
      *
-     * THE MORNING'S BELL IS A BELL AGAIN (#697). This opened with a bare
+     * THE MORNING'S BELL IS A BELL AGAIN (#700). This opened with a bare
      * `if (ended())`, and `ended()` is true from the verdict onward, so the
      * chapel bell rope at Lauds returned no effects at all: no sound, no event,
      * nothing. The guard is what stops a ring between the verdict and the
@@ -1081,7 +1081,7 @@ export function createMystery({ mystery, npcs, state }) {
      * is the ring and the sound and nothing else, and with one bell in
      * `day2.watches` every morning ring is that one. Rings are numbered within
      * the day's OWN list so the morning borrows the four characters
-     * data/sounds.json already has (#698, and test/layout.mjs holds it).
+     * data/sounds.json already has (#701, and test/layout.mjs holds it).
      */
     ring() {
       if (ended() && !onDayTwo()) return [];
@@ -1208,7 +1208,7 @@ export function createMystery({ mystery, npcs, state }) {
      * returns the same morning — which is what lets a save resumed in either
      * day-two stage run it again on the way in.
      *
-     * THE MORNING STARTS AT ITS FIRST BELL, AND ONLY THE FIRST TIME (#696).
+     * THE MORNING STARTS AT ITS FIRST BELL, AND ONLY THE FIRST TIME (#699).
      * `st.watch` is an index into the day's own list, so it has to come back to
      * 0 when day one leaves it at 3. It must NOT come back to 0 on the second
      * call: this runs again on entering `end` and on every reload in either

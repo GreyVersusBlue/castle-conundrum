@@ -51,7 +51,7 @@ import { fileURLToPath } from 'node:url';
 import { partsOf } from './gltf.mjs';
 import { makePlan, walkability, collidersWith, moveBody, GRID, HEAD_LOW, HEAD_HIGH, BODY_RADIUS, DAY_SETS, EYE_HEIGHT } from '../src/castle-plan.js';
 import { dayTwoOutcomes, dayTwoCastle } from '../src/mystery.js';
-import { stepClassOf, bedOf, bedSources, sourcePoint, audibleFrom, ringOf } from '../src/audio.js';
+import { stepClassOf, bedOf, bedSources, sourcePoint, audibleFrom, ringOf, CUES, eventOf, cueSound } from '../src/audio.js';
 import { castleNav } from '../src/stations.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -1218,8 +1218,8 @@ console.log('\nevery zone has an ambient bed');
   /* The four rings (#682): `bell.rings` keyed by the `n` of the engine's own
    * `bell:<n>`, which is 1 to the number of watches, and no other.
    *
-   * AND THE MORNING'S RINGS ARE INSIDE THAT SET, NOT BESIDE IT (#698). Since
-   * #696 the morning after names its own bells and `ring()` numbers them within
+   * AND THE MORNING'S RINGS ARE INSIDE THAT SET, NOT BESIDE IT (#701). Since
+   * #699 the morning after names its own bells and `ring()` numbers them within
    * that list, so a morning of M bells emits `bell:1` to `bell:M`. This is the
    * only file that can catch a morning bell with no sound written for it,
    * because data/sounds.json is not a file src/mystery.js's validator can see.
@@ -1241,10 +1241,10 @@ console.log('\nevery zone has an ambient bed');
   if (never.length) { fail(`bell.rings has ${never.map(n => `"${n}"`).join(', ')} and the engine never rings ${never.length === 1 ? 'it' : 'them'}: the day has ${emitted.length} rings`); badRing++; }
   if (!badRing) pass(`the ${emitted.length} rings the engine can emit each have a character: ${emitted.map(n => `${rings[n].strokes} for ${rings[n].name ?? n}`).join(', ')}`);
   const morningBells = (mystery.day2?.watches ?? []).length;
-  if (!morningBells) fail('data/mystery.json has no `day2.watches`, so the morning after stands at no bell (#696)');
+  if (!morningBells) fail('data/mystery.json has no `day2.watches`, so the morning after stands at no bell (#699)');
   else pass(`and the morning after rings ${morningBells} of them: bell:1 to bell:${morningBells}`);
 
-  /* AND EVERY BELL EITHER DAY CAN STAND AT HAS A SKY (#696). `setWatch` in
+  /* AND EVERY BELL EITHER DAY CAN STAND AT HAS A SKY (#699). `setWatch` in
    * src/scene-setup.js returns false for a watch `lighting.watches` has never
    * heard of and leaves the scene exactly as it was, which is the right answer
    * for a save carrying rubbish and the wrong one for a bell the data means:
@@ -1258,6 +1258,70 @@ console.log('\nevery zone has an ambient bed');
   else pass(`all ${everyBell.length} bells of the two days have a sky: ${everyBell.join(', ')}`);
   const stray = ringOf(sounds, emitted.length + 1);
   if (stray.strokes !== 1 || stray.gain !== 1) fail(`ringOf a ring the file has nothing for is ${JSON.stringify(stray)} and not one plain stroke`);
+}
+
+/* ---------------------------------------- 14: every cue the engine fires has a sound ---
+ * The Sound row's third increment (#696): event sounds. `CUES` in src/audio.js
+ * is every event the engine can fire and `events.byCue` in data/sounds.json is
+ * what each sounds like, and this holds the two to each other both ways, the
+ * way check 12 holds surfaces to step classes and check 13 zones to beds. What
+ * resolves a cue is `eventOf` and `cueSound` from src/audio.js, so a lookup
+ * the runtime would get wrong is one this check gets wrong the same way, and
+ * not a second copy that agrees with the file by construction. A cue with a
+ * `cadence` is a state, fired every frame it holds, and its `withinMetres`
+ * has to sit inside the follow radius of some body in data/populace.json,
+ * or the cue never fires while the bark would.
+ */
+console.log('\nevery cue has an event sound');
+{
+  const sounds = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/sounds.json'), 'utf8'));
+  const populace = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/populace.json'), 'utf8'));
+  const ev = sounds.events || {};
+  const defs = ev.sounds || {};
+  const cues = Object.keys(CUES);
+  const used = new Set();
+  let silent = 0;
+  const finite = (v) => typeof v === 'number' && Number.isFinite(v);
+  const partOk = (pt) => {
+    if (!pt || (pt.type !== 'noise' && pt.type !== 'tone')) return 'is neither noise nor tone';
+    if (!(pt.hz > 0)) return `has hz ${JSON.stringify(pt.hz)}`;
+    if (!(pt.gain > 0)) return `has gain ${JSON.stringify(pt.gain)}: a part nobody hears`;
+    if (!(pt.decay > 0) && !(pt.attack > 0 && pt.release > 0)) return 'has neither a decay nor an attack and release: no envelope';
+    if (pt.at != null && !(finite(pt.at) && pt.at >= 0)) return `starts at ${JSON.stringify(pt.at)}`;
+    if (pt.toHz != null && !(pt.toHz > 0)) return `slides to ${JSON.stringify(pt.toHz)} Hz`;
+    return null;
+  };
+  for (const cue of cues) {
+    const key = eventOf(sounds, cue);
+    if (!key) { fail(`the engine fires "${cue}" (${CUES[cue]}) and data/sounds.json's events.byCue says nothing about what it sounds like`); silent++; continue; }
+    const def = cueSound(sounds, cue);
+    if (!def) { fail(`"${cue}" resolves to the event sound "${key}", which data/sounds.json's events.sounds do not define`); silent++; continue; }
+    used.add(key);
+    if (!Array.isArray(def.parts) || !def.parts.length) { fail(`event sound "${key}" has no parts: a cue that fires silence`); silent++; continue; }
+    const bad = def.parts.map((pt, i) => [i, partOk(pt)]).filter(([, why]) => why);
+    if (bad.length) { fail(`event sound "${key}" part ${bad[0][0] + 1}${bad[0][1] ? ' ' + bad[0][1] : ''}`); silent++; continue; }
+    if (def.gain != null && !(def.gain > 0)) { fail(`event sound "${key}" has gain ${JSON.stringify(def.gain)}`); silent++; continue; }
+    if (def.repeat && !(Number.isInteger(def.repeat.times) && def.repeat.times >= 1 && (def.repeat.times === 1 || def.repeat.gapSeconds > 0))) { fail(`event sound "${key}" repeats ${JSON.stringify(def.repeat)}`); silent++; continue; }
+    if (def.cadence) {
+      const c = def.cadence;
+      if (!(c.withinMetres > 0 && c.firstSeconds >= 0 && c.everySeconds > 0)) { fail(`"${cue}" has a cadence of ${JSON.stringify(c)}`); silent++; continue; }
+      const followers = (populace.people || []).filter((p) => p.follow?.radius > 0);
+      const inside = followers.filter((p) => c.withinMetres <= p.follow.radius);
+      if (!followers.length) { fail(`"${cue}" is paced by a cadence and no body in data/populace.json follows anyone to fire it`); silent++; continue; }
+      if (!inside.length) { fail(`"${cue}" barks within ${c.withinMetres} m and ${followers.map((p) => `${p.id} follows within ${p.follow.radius} m`).join(', ')}: the cue never fires that close`); silent++; continue; }
+    }
+  }
+  if (!silent) pass(`all ${cues.length} cues the engine fires have an event sound: ${cues.map((c) => `${c} is ${eventOf(sounds, c)}${cueSound(sounds, c).cadence ? ` every ~${cueSound(sounds, c).cadence.everySeconds} s within ${cueSound(sounds, c).cadence.withinMetres} m` : ''}`).join(', ')}`);
+  const stray = Object.keys(ev.byCue || {}).filter((c) => !CUES[c]);
+  if (stray.length) fail(`data/sounds.json's events.byCue names ${stray.map((c) => `"${c}"`).join(', ')}, which the engine never fires: the cues are ${cues.join(', ')}`);
+  else pass(`every one of byCue's ${Object.keys(ev.byCue || {}).length} names is a cue the engine fires`);
+  const dead = Object.keys(defs).filter((k) => !used.has(k));
+  if (dead.length) fail(`data/sounds.json defines the event ${dead.length === 1 ? 'sound' : 'sounds'} ${dead.map((k) => `"${k}"`).join(', ')} that no cue resolves to`);
+  else pass(`all ${Object.keys(defs).length} event sounds are fired by some cue`);
+  const sp = ev.spatial || {};
+  const sane = [['refMetres', sp.refMetres > 0], ['maxMetres', sp.maxMetres > sp.refMetres], ['rolloff', sp.rolloff > 0], ['panning', sp.panning === 'equalpower' || sp.panning === 'HRTF']];
+  for (const [k, ok] of sane) if (!ok) fail(`events.spatial.${k} is ${JSON.stringify(sp[k])}`);
+  if (eventOf(sounds, 'no-such-cue') !== null || cueSound(sounds, 'no-such-cue') !== null) fail('eventOf a cue the file has nothing for is not null');
 }
 
 /* --------------------------------------------------- WHERE CHECK 5 WENT ---

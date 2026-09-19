@@ -427,7 +427,7 @@ console.log('the second day, through the save');
   const undone = createMystery({ mystery, npcs: cast, state: repaired({ stage: 'morning', day: 2 }) });
   check(undone.day === 1 && undone.watch === 'prime', 'and on the repaired incoherent one it is back on day one at Prime', `day ${undone.day} at ${undone.watch}`);
 
-  /* AND THE WATCH IS AN INDEX INTO THE DAY'S OWN LIST (#696). It used to clamp
+  /* AND THE WATCH IS AN INDEX INTO THE DAY'S OWN LIST (#699). It used to clamp
    * to 0..3 whatever the day said, because the morning had one bell and the
    * engine ignored the number entirely. It does not ignore it now: a day-two
    * save carrying 3 would read as the fourth bell of a morning that has one,
