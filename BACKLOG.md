@@ -280,19 +280,38 @@ at a grazing angle reads as stone, no banding, and the ETC1S/UASTC split holds.
 The gaol roll on the barrel-head (#571). A body at interact range, and what a
 tower roof actually looks like from on top of it, which is mostly parapet.
 
-**Not settled, and rank 2 stays open for it.** The day does not yet run end to
-end, so there is no `twelve-at-vespers` shot of a real run's own lighting.
-Rank 5 turned out not to need it — the hall's covering and its floor's luma
-read came from rendering the hall directly rather than from playing to
-Vespers (#656 to #658) — so that particular gate is answered a different way
-than the one this row named. The Lauds sky (#533) is past where the run
-reaches. Nobody has put a thumb on a phone (#530); that half is untouched and
-is still the feel.
+**It ran four more times on 2026-09-19** (#696 to #703), and the looking is
+done. The twelve at Vespers, the Lauds sky, the covered hall and eleven of the
+twelve bodies at interact range were all photographed and written up, one
+sentence per body. **Two of the twelve do not read as two** (#699): the
+Constable and the Steward are one white-haired man in a black tunic, told
+apart by a red collar and a green one, and past three metres there is nothing
+to tell. The three women are the clearest bodies in the castle, which is the
+argument for silhouette over tint made by a photograph rather than by a
+paragraph. The Lauds sky (#533) has its own number — 151.2 of 255 against
+Prime's 203.4 — and no dawn colour in it.
 
-**CI on `main` is red, and it is nobody's row yet.** `plan-vs-scene.mjs`'s
-populace beat fails in CI on the baker's first Prime stop — 0.408 m off on the
-merge of PR #47 (2026-09-18, run 35305787194), 0.055 m off on rank 1's branch
-the same morning. Two distances from one stop is a body already walking its ring
+**Not settled, and rank 2 stays open for it.** The day still does not run end
+to end. Two of the three stops were this suite lying to itself and are fixed
+(#696, #697); the third is rank 1's walker (#698), and it stopped at #630's
+own recorded coordinate. Nobody has put a thumb on a phone (#530); that half
+is untouched and is still the feel, and it is now the whole of rank 2's
+unlooked-at list.
+
+**CI on `main` is red, and it is nobody's row yet — and on 2026-09-19 it is a
+different beat from the one below.** `npm test` at `f5d0c0e`, in a clean tree,
+fails `plan-vs-scene` on `none of the 12 cells between 0.9 and 2.8 m of the
+chapel candles offers them (the nearest offered "Press E to ring the bell")`.
+That is the same behaviour that swaps the body and the pouch in `npm run play`
+(#702's neighbour): a nearer interaction target out-ranks the one the beat is
+aimed at, in the chapel both times. Whether `InteractionSystem` should prefer
+what the camera points at over what is nearest is a `src/` question nobody has
+asked. The populace beat below is the older report and was not seen failing on
+2026-09-19; both are written down because neither has been chased.
+
+`plan-vs-scene.mjs`'s populace beat fails in CI on the baker's first Prime
+stop — 0.408 m off on the merge of PR #47 (2026-09-18, run 35305787194),
+0.055 m off on rank 1's branch the same morning. Two distances from one stop is a body already walking its ring
 when the page is read, and the beat measures it against `TOL`, which is 0.01 m
 because that is what `plan-vs-scene.mjs` diffs static geometry at. A moving body
 is owed a different number and picking it wants the ring's step size in hand,
@@ -447,8 +466,11 @@ All three shipped and **the row is retired**.
 
 ## The ranked table
 
-**It starts at 2, and 1, 3, 5, 8 and 12 are numbers that have left the list
-rather than gaps in it.** The number 1 has been used twice and retired twice:
+**It starts at 1 again, and 3, 5, 8 and 12 are numbers that have left the list
+rather than gaps in it.** The number 1 has now been used three times: the
+walker on the stair took it on 2026-09-19 (#698), because it is the one thing
+between `npm run play` and the end of the day and rank 2 cannot close without
+it. Before that it had been used twice and retired twice:
 the fourth body on 2026-09-17 (#619), and then the castle you cannot walk,
 which the GPU run opened the same day (#624 to #630) and which shipped on
 2026-09-18 (#659 to #661). That is the retirement rule working as intended
@@ -467,7 +489,8 @@ which is what makes that survivable (#522).
 
 | Rank | Item | Size | Model | Where | Gate | Lane | Claimed | Detail |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 2 | The GPU run: the day end to end, and somebody looks at the twelve (the run happened, #624 to #630) | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
+| 1 | The walker on the stair: `hike` drives the player up a ramp and every re-plan starts a storey too high (#630, #698) | ¼ | Opus 5 | Container | — | — | | [The walker on the stair](SPECS.md#the-walker-on-the-stair) |
+| 2 | The GPU run: the looks are taken (#699 to #703); the day still stops at rank 1's walker | 1 | Opus 5 | Local: GPU | **after 1** | — | | [The GPU run](SPECS.md#the-gpu-run) |
 | 4 | A second day: increment 3, the town half and the bells question (4b, the fact that changes, shipped #646 to #649) | 2+ | Opus 5 | 4a container, 4c local | — | A (4a), B (4c) | | [A second day](SPECS.md#a-second-day) |
 | 6 | Life: a populace: the fifty, the activity clips and the ambient talk | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: somebody listens to the seven beds and the four rings, then event sounds (a bed at a point and the rings shipped, #680 to #683) | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
@@ -479,22 +502,81 @@ which is what makes that survivable (#522).
 take first, what each one unblocks, and which ones two sessions may hold at
 the same time. This table still ranks; that file sequences (#601).
 
+## The walker on the stair
+
+*Where: container. Gate: none. Lane: none. It gates rank 2.*
+
+**Rank 1, new on 2026-09-19** (#698). `test/play-castle.mjs`'s `hike` walks
+the castle's own path graph, and the path graph treats a flight as walkable
+floor. So the shortest route out of the chapel runs across the Chapel Tower's
+stair ramp, the player is driven up it, and every re-plan after that starts a
+storey too high. #630 found this on 2026-09-17, named the fix — drop ramp and
+wrong-level waypoints when both ends are on the same storey — and did not make
+it, on the grounds that a fix nobody has run is not a fix (#53). Two GPU
+sittings later it is still the thing that stops the day: run three of
+2026-09-19 stalled at **(22.4, 15.2) L1** and then **(23.4, 14.4) L1**, the
+second being #630's own recorded coordinate to the decimetre.
+
+**It has a second symptom and it is a wall, not a stair.** With pointer lock
+healthy, the player slides along a face it cannot find the door in: (-18.9,
+-14.3) inside the Kitchen Tower, and (-33.5, 5.0) and (-26.5, 5.0) along the
+Great Hall's north wall, whose two doorways are at x -20 and -12. Both shapes
+are one row because both are the hike's waypoint list being wrong about what
+the body can reach from where it is.
+
+**And it is a container's row**, despite gating a GPU one: the path graph is
+`walkability(plan)` in `src/castle-plan.js`, the waypoint thinning is in
+`test/play-castle.mjs`, and both can be reasoned about and unit-tested in
+Node. Only the proof that the day now runs needs the machine, and that proof
+is rank 2's.
+
 ## The GPU run
 
-*Where: local, GPU. Gate: none since 2026-09-18. Lane: none.*
+*Where: local, GPU. Gate: after rank 1. Lane: none.*
 
-**Rank 2. The run happened on 2026-09-17** (#624 to #630) and the row stays
-open because the day does not reach the end yet. What it costs to get there was
-a known list of two: the castle you cannot walk, which shipped on 2026-09-18
-(#659 to #661), and a walker that still wanders onto a stair (#630). One left.
-**What is still unanswered is `twelve-at-vespers` itself** — six of the
-twelve in the Great Hall, lit by a real day's run rather than a scripted one
-— and the beat that takes it is written and in the file;
-nothing reaches it yet.
+**Rank 2. It ran again on 2026-09-19, four times** (#696 to #703), and the
+judgement half of the row is done: the twelve at Vespers, the Lauds sky, the
+covered hall and eleven of the twelve bodies at interact range have all been
+looked at and written up in `HISTORY.md`, one sentence per body. **What is
+left is only the walk**, and the walk is rank 1's.
 
-Settled by the run and not open any more: the compressed textures (#507) look
-right on a real GPU, the three flights to a tower roof at 12 m are walkable
-(#523), and the gaol roll reads on the barrel-head (#571).
+**The looks were taken the way rank 5 took its two** (#656 to #658):
+`applyWatch(watch, { walk: false })` puts the world at a bell with nobody
+walking, the camera goes where it needs to be, and the shutter goes. That is a
+hand-run look, it is not committed, and it is not a substitute for the run —
+it is how a render question gets answered while a movement question is still
+open.
+
+**Settled and closed.** The compressed textures (#507), the three flights to a
+tower roof at 12 m (#523), the gaol roll on the barrel-head (#571). And now:
+whether twelve read as twelve — **no, two of them do not** (#699), the
+Constable and the Steward being one white-haired man in a red collar and a
+green one; the Lauds sky (#700), which has its own number, 151.2 of 255
+against Prime's 203.4, and no dawn colour in it; and the covered hall (#701),
+whose seven trusses are invisible from the floor and which shows a sliver of
+sky at its south-east corner.
+
+**Three things came out of it that are nobody's row yet** and are written up
+in `HISTORY.md` rather than here, because none of them is big enough to rank
+and all three are one-line fixes: `Press E to talk to the Sir Roger Lestrange`
+on every NPC in the game (#703), five checks in `test/play-castle.mjs` that are
+stale or vacuous including one that can only fail on a GPU (#702), and a
+journal walk assertion that read 0.69, 1.30, 0.51 and 0.69 m across four runs
+of the same beat, against 3.75 m for an unobstructed walk on the same machine.
+
+**Two of the four runs were stopped by this suite, not by the castle**
+(#696, #697), and both fixes are in `test/play-castle.mjs`: `present()` never
+shut the dialogue it opened, and nothing clicked the resume panel that #661
+puts up when the browser refuses a relock. Both had been read as `src/` bugs
+before.
+
+**And neither fix made a single assertion pass.** Run one and run four have
+byte-identical failure lists, 22 apiece. What changed is underneath them: in
+run one the player stopped at the merchant and never moved again, five beats
+giving up from one coordinate with `locked false`; in run four he walks to
+every one of them and comes up short, `locked true` throughout, the sentry at
+1.1 m instead of 18.9. The beats fail either way and they now fail for rank
+1's reason, which is the only one still open.
 
 **Rank 5 shipped the same day, without waiting for a second run** (#656 to
 #658). The gate below named this row's blocker as "the visual half" of rank
@@ -517,9 +599,12 @@ so Devon chose a fallback frame instead of holding the row open behind rank 2
 a second time: `08-the-chapel-at-prime.png`, three of the twelve mid-dialogue,
 HUD and journal chrome included. The new preview and og card live in this
 repo, `assets/og/`, not in `tools-and-games`: `index.html`'s `og:image` and
-`twitter:image` point at this repo's own GitHub Pages URL now. Revisit the
-source once rank 2 reaches Vespers; nothing about where the images live or how
-they were built is specific to this frame.
+`twitter:image` point at this repo's own GitHub Pages URL now. **A Vespers
+frame exists now** — `shots/look/02-twelve-at-vespers.png`, 2026-09-19 — and
+it is not obviously the better card: the hall at Vespers is a dark room with
+two legible bodies in it and a black north wall, against a chapel frame with
+three people and the HUD. Revisit it if somebody wants to; nothing about where
+the images live or how they were built is specific to either frame.
 
 ## A second day
 

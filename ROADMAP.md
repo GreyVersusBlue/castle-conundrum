@@ -76,7 +76,7 @@ confirmed** — which means a container cannot trust a pass either.
 
 | Row | Model | Why the GPU |
 | --- | --- | --- |
-| **R2 The GPU run** | Opus 5 | The run itself. Six things nobody has looked at: a compressed texture (#507), the five that shipped after it (#541 to #546), a tower roof from 12 m (#523), seven trusses over the hall (#527), a Lauds sky (#533), the gaol roll on the guardroom barrels (#571). Plus the standing question: do twelve NPCs off three bodies read as twelve. |
+| **R2 The GPU run** | Opus 5 | ~~Six things nobody has looked at~~ — five are looked at now (#630, #699 to #703), and the answer to the standing question is **no, two of the twelve do not read as two**: the Constable and the Steward are one white-haired man in a red collar and a green one. What is left needs the machine for a different reason: `npm run play` has to reach the end, and R1's walker is what stops it. |
 | **R3 The images** | Opus 5 | The preview and og card come out of R2's screenshots. There is no other source. They land in `tools-and-games/assets/`, not here, and Devon relinks. |
 | ~~**R5 The hall covering**~~ | Sonnet 5 | **Shipped** (#656 to #658). Both criteria were a render, and both were answered by rendering the hall directly rather than by waiting for this row's own run to reach Vespers: `roof.glb`'s vertices (not its bounding box) showed which way it slopes, and the floor read 69.8 to 89.8 of 255. |
 | **R11 Feel**, past its Node line | Sonnet 5 | ~~The Node half — a shadow decal and a hand node exist and do not regress `plan-vs-scene.mjs` — is a container's.~~ Shipped (#650 to #654). What is left is what a GPU decides: whether a blob shadow reads on stone versus on grass, what it does on a flight of stairs, and whether the hand reads as a hand. |
@@ -259,15 +259,33 @@ sessions cannot share**, whatever their lanes say, because `npm test`,
 `dist/`, the harness ports and `HEAD` are one copy each. A `git worktree add`
 plus a junction for `node_modules` is the whole cost. Take one.
 
-### Gate 1 — R2, the GPU run. Do this one first.
+### Gate 1 — ~~R2, the GPU run~~. It is R1, the walker on the stair, now.
 
-**Local, GPU, Opus 5, size ¼.** Not because it is the hardest but because it is
-the cheapest thing that unblocks the most: three rows wait on it and one of
-them (R3) has no other possible source. It also carries six unlooked-at
-questions that have been stacking up since Phase 5, and one of those — whether
-the ETC1S/UASTC split #507 chose on a reading of what each codec does to which
-channels actually holds up — gets more expensive to answer the more assets ship
-on top of it.
+**This gate has moved twice and both times for the same reason: the thing in
+front of R2 was never the looking, it was the walking.** First it was the
+castle you cannot walk, which shipped on 2026-09-18 (#659 to #661). Now it is
+the walker on the stair (#698), and the shape of the argument is identical.
+
+**R1 the walker: container, Opus 5, size ¼, no lane.** `hike` drives the player
+up the Chapel Tower's stair ramp because the path graph treats a flight as
+walkable floor, and every re-plan then starts a storey too high. #630 named
+the fix on 2026-09-17 and did not make it; two GPU sittings later it is still
+the only thing between `npm run play` and the end of the day. It wants no GPU
+and no lane, and it is a ¼.
+
+**R2 the GPU run: local, GPU, Opus 5, size ¼, gated on R1.** Its judgement
+half is done — the twelve, the Lauds sky, the covered hall and eleven bodies
+at interact range were all looked at on 2026-09-19 (#699 to #703), the
+unlooked-at list is down to one item and that item is a phone (#530). What is
+left is the run reaching the end, which is R1's to unblock.
+
+**The general lesson, now with three instances under it.** Every row marked
+`Local: GPU` splits into a judgement that needs eyes and a proof that needs
+the machine to behave, and the two have failed independently every single
+time. R5 got its judgement without its run. R11 shipped its Node half without
+its judgement. R2 has now got its judgement without its run. **Do not gate a
+looking on a walking**, and do not let a row claim the walking is done because
+the looking is.
 
 Nothing is gated on R2 *starting*, so everything in wave A runs alongside it.
 
@@ -285,7 +303,8 @@ its row open with its text rewritten to say what is done.
 
 | Row | Model | Where | Lane | Next increment |
 | --- | --- | --- | --- | --- |
-| **R2** The GPU run | Opus 5 | **Local: GPU** | none | Gate 1, above. And now four more things nobody has looked at: a fourth body, seven ambient beds nobody has heard, and what the eight tower drums actually cost. |
+| **R1** The walker on the stair | Opus 5 | Container | none | Gate 1, above. `hike` drives the player up a ramp; #630 named the fix and did not make it. A ¼, and the day does not end without it. |
+| **R2** The GPU run | Opus 5 | **Local: GPU** | none | **Gated on R1 since 2026-09-19.** Its looking is done (#699 to #703); its walking is not. The unlooked-at list is one item long and it is a phone (#530). |
 | ~~**R8** Side quests~~ | Opus 5 | Container | A | **Shipped, and the row is closed** (#691 to #695). The seven errands left of the dozen went in on 2026-09-18, one voice each on the seven people who had none, so `data/quests/` is twelve files and every person the day one schedule puts in the castle has an errand. A sixth set rule came with them: a terminal stage may not park a person whose `default` lines pose one of the frame's tokens. No `save.js` change and no version bump. |
 | **R6** Life: a populace | Opus 5 | Container | C, D | ~~The file, the validator and the first ten~~ shipped 2026-09-17 (#616 to #618): a routine is a ring per bell, nine activities on three clips the kit already had, no asset added. What is left is the other forty, the ambient talk once two bodies are within 3 m, and the four activities that want a clip — which is the half that trades with R10. **It has a number to answer to**: 20 skinned bodies per ward against a peak of 7 before the ten, 17 after (#609). |
 | ~~**R1** A fourth body~~ | Fable 5.1 | Local: net | C | **Shipped** (#603 to #606). Quaternius's Ultimate Modular Women Pack, meshopt to 1.02 MB, worn by the cook, the laundress and the lady. |
