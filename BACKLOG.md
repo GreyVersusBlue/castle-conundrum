@@ -89,8 +89,7 @@ the barrel-head in the guardroom, that convicts nobody, and `day2.knew` — the
 first thing on the second day keyed by what the player found rather than by
 what he said, which is what stops the King's man telling a clerk who had the
 roll off the barrel-head that nobody in this castle ever looked at it.
-**Rank 4 is still open**: the town half and the bells-on-day-two question are
-untouched.
+**Rank 4 has since shipped whole** (#699 to #707): the bells call and the yard.
 
 **The texture sets and the town side shipped on 2026-09-16** (#541 to #546):
 `ktx` was on PATH and Poly Haven answered this time, so both rows that #518
@@ -101,8 +100,8 @@ first floors — plus a sixth, `forest_ground_06`, restored out of this repo's
 own history to texture the ground west of the barbican, with a road and four
 trees. `dist/` grew by about 17 MB against 200. Increment 3's town half is
 unblocked, and the yard that had to stand on this ground before rank 9's town
-could start went in on 2026-09-19 (#703 to #707). What is left of rank 4 is
-the bells-on-day-two question #533 raises.
+could start went in on 2026-09-19 (#703 to #707). The bells question #533 raised shipped
+the same day (#699 to #702), and rank 4 retired whole with it.
 
 **The lore row shipped on 2026-09-16** (#551 to #555): `data/lore.json`'s
 thirty-one facts, six readable documents built as slabs in rooms the castle
@@ -233,7 +232,7 @@ file and asserts over both rather than over whatever git handed the machine. Par
 1 went from 17 assertions to 47. **Nothing in the row is open**, and the two
 things found on the way that are not in it are in `HISTORY.md` under #633.
 
-**Eight ranked items left, numbered 1 to 11 with gaps. Nothing is claimed, and
+**Six ranked items left, numbered 1 to 11 with gaps. Nothing is claimed, and
 lanes B and C are free**: the byte-exactness rail merged as PR #40 (#631 to
 #633) and 12b's move-and-delete after it (#636 to #642), 4c built Wykes's yard
 on 2026-09-19 (#703 to #707) and left lane B free again with **rank 9's gate
@@ -246,10 +245,8 @@ the day it closed — renumbering eleven rows across three files would have put
 a conflict in every line of every table, which is the reason rank 1's own
 session gave for leaving the row in. A rank is retired, not reused, the way a
 decision number is (#491). Ranks 2, 3 and 5 still need a machine this one is
-not: all three want a GPU (#518). **Rank 4 no longer has a thread a container can start on its own**:
-the gaol roll was it and it shipped (#571 to #575), and what is left of
-increment 3 is a yard to build in the town and a design call to make about
-bells on day two. Of ranks 6 to 12, the ones whose next increment is data and
+not: all three want a GPU (#518). **Rank 4 shipped whole and is retired**: the gaol roll (#571 to #575), then
+the bells call (#699 to #702) and the yard (#703 to #707). Of ranks 6 to 12, the ones whose next increment is data and
 validators rather than a render (6 and 12, and 8 until it closed) are the ones
 a container can start; 7, 10 and 11 all want either a recorded sound, a body on disk, or a GPU
 before their first increment closes, and 9 has nothing left in it that does
@@ -442,9 +439,9 @@ rewords a line runs `npm run dialogue:extract` before it commits (#687).
 
 Rank 4 splits three ways because its remaining threads do, and the spec
 already names them separately: **4a** is the bells-on-day-two design call and
-`day2.watches`, **4b** is the `since` field on a fact that changes (#596), and
-**4c** was Thomas Wykes's yard, and shipped on 2026-09-19 (#703 to #707). 4a
-is a container's; 4b and 4c are done. Rank 12 split the same way and for the
+`day2.watches` (#699 to #702), **4b** is the `since` field on a fact that
+changes (#596), and **4c** was Thomas Wykes's yard (#703 to #707). All three
+shipped, and rank 4 retired whole on 2026-09-19. Rank 12 split the same way and for the
 same reason: **12a** the budget suite (#607 to #611), **12b** move-and-delete
 in the editor (#636 to #642), **12c** the dialogue format (#687 to #690).
 All three shipped and **the row is retired**.
@@ -472,9 +469,8 @@ which is what makes that survivable (#522).
 | Rank | Item | Size | Model | Where | Gate | Lane | Claimed | Detail |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 2 | The GPU run: the day end to end, and somebody looks at the twelve (the run happened, #624 to #630) | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
-| 4 | A second day: the bells question is all that is left (4b, the fact that changes, shipped #646 to #649; 4c, Wykes's yard, #703 to #707) | 2+ | Opus 5 | Container | — | A | | [A second day](SPECS.md#a-second-day) |
 | 6 | Life: a populace: the fifty, the activity clips and the ambient talk | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
-| 7 | Sound: somebody listens to the seven beds and the four rings, then event sounds (a bed at a point and the rings shipped, #680 to #683) | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
+| 7 | Sound: somebody listens to the seven beds, the four rings and the first two event sounds (a bed at a point and the rings, #680 to #683; the door and the hound, #696 to #698) | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
 | 9 | A castle to get lost in: the town, the rock and river | 2+ | Opus 5 | Container | — (4c opened it) | B | | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
 | 10 | Bodies: a shared low-poly rig for the fifty (the child and the hound shipped, #643 to #645; two hens and the spear, #684 to #686) | 1 | Fable 5.1 | Local: net | — | C | | [Bodies](SPECS.md#bodies) |
 | 11 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 | Container to the Node line, local: GPU past it | **after 2** | D | shadow + hand shipped 2026-09-17 (#650 to #654) | [Feel](SPECS.md#feel) |
@@ -524,40 +520,6 @@ repo, `assets/og/`, not in `tools-and-games`: `index.html`'s `og:image` and
 `twitter:image` point at this repo's own GitHub Pages URL now. Revisit the
 source once rank 2 reaches Vespers; nothing about where the images live or how
 they were built is specific to this frame.
-
-## A second day
-
-*Where: container. Gate: none. Lane: A. 4b and 4c shipped.*
-
-**Rank 4, and a 2+. Increments 1 and 2 shipped on 2026-09-15 and 2026-09-16**
-(#533 to #540) and **increment 3's gaol roll on 2026-09-17** (#571 to #575):
-the morning after is there in seven shapes, the cast says what the verdict
-made of them, the castle moves with them, and one thread of the second
-mystery is answerable. The gaol roll is the eleventh piece of evidence and
-the only one that convicts nobody: its dates put Madoc at the forge by day
-and behind the bars by night, and a player may read them and hang him anyway,
-which is what the King's man says to his face on the morning after. That last
-half is `day2.knew`, three line sets keyed by the journal rather than the
-verdict.
-
-**The fact that changes shipped on 2026-09-17** (#646 to #649), which is the
-third of the three threads the lore row left here when it closed (#596): a
-`since` field on a fact in `data/lore.json`, a third `performances` pool that
-says the changed fact out loud in the guardroom at Lauds, and a validator that
-refuses the two halves to drift. It is the first thing in this game whose
-content, and not only whose line set, turns on what the player found. It
-touched no lane-A file.
-
-**Thomas Wykes's yard shipped on 2026-09-19** (#703 to #707), on the ground
-the town side laid (#541 to #546): a stretch of town wall with the gate in it,
-a shed on four posts, and five blocks of dressed stone of which one carries
-the mason's mark. The open call went the way the sealed castle pointed:
-**the player sees the yard and never stands in it** (#703). A lead found
-there is still a `day2.knew` row whenever somebody writes it, because a clue
-is granted by `mystery.json` and the grammar never asks how it was come by.
-
-**One thread is left.** A schedule with more than one watch still has to argue
-with #533 rather than work around it. `SPECS.md` specs it.
 
 ## Life: a populace
 
@@ -611,13 +573,28 @@ point inside their own footprint. The bell rings by the engine's own `n`:
 one stroke for Terce, two for Sext, six for Vespers, three slow for the
 summons, in `bell.rings`.
 
+**The first two event sounds shipped on 2026-09-19** (#696 to #698): a
+door and the hound, the two that needed no clip. `events` in
+`data/sounds.json` is a sound per cue as a list of parts, `CUES` in
+`src/audio.js` is the three cues the engine fires, and `test/layout.mjs`
+check 14 holds the two to each other both ways. The builder fires
+`door-open` and `door-shut` from a leaf's centre on a change of state only,
+so the second day's idempotent `applyDay` is one door and not two; the
+populace cues `hound-near` every frame the hound is inside its radius and
+the file's `cadence` turns that into a bark 0.6 s after the approach and
+every 7 s after. Nothing plays before the start button: a cue on a
+suspended context is logged and not played. `test/plan-vs-scene.mjs` holds
+the two wires.
+
 **What is left, in order.** Somebody with speakers listens (#53): every
-number in both blocks is a guess and the file says so, and the two most
-likely wrong are 14 m of earshot through a stone wall and a tower roof heard
-from the hall under it. Event sounds still wait on rank 6's activity clips.
-Recorded CC0 audio is admitted since #548, named by `data/sounds.json` and
-run through `tools/encode-assets.mjs` like any asset (#506), and none has
-been looked for.
+number in all three blocks is a guess and the file says so, and the three
+most likely wrong are 14 m of earshot through a stone wall, a tower roof
+heard from the hall under it, and the bark's formant. The listening
+checklist is in `SPECS.md` under this row. Hammer, sweep and the rest of the
+event sounds wait on rank 6's activity clips to sync to. Recorded CC0 audio
+is admitted since #548, named by `data/sounds.json` and run through
+`tools/encode-assets.mjs` like any asset (#506), and none has been looked
+for.
 
 ## A castle to get lost in
 

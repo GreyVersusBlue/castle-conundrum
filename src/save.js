@@ -53,6 +53,17 @@
 // the number of quests data/quests/ has in that ward, which is the most a
 // counter can honestly read: one per errand, and an errand finishes once.
 //
+// AND WHY THERE IS NO VERSION 7 (#702). The morning after names its own bells
+// now (#699) and `watch` is an index into whichever list the day says, where
+// on day two it used to be ignored outright. No field arrived and no field
+// changed shape, so there is no drift for `migrate` to be honest about. #37's
+// line runs the other way here. What moved is `repair`, which runs on every
+// load: `watch` clamps against the repaired `day`'s own list, and the demotion
+// of an incoherent `day: 2` re-clamps against day one on the way past. A
+// version-6 save carrying `day: 2, watch: 3` is not a save from another
+// schema, it is a save carrying a number that never meant anything, and 0 is
+// what it has always been worth.
+//
 // `validate` refuses a non-object and a non-string stage and nothing else;
 // everything past that is `repair`'s, which runs on every load (#37) and
 // builds its catalog from data/mystery.json, data/quest.json and
@@ -64,6 +75,7 @@
 // goes wrong without it.
 
 import { createSaveSlot } from './gvb-save.js';
+import { dayWatchesOf } from './mystery.js';
 // The two wards, from the file that defines them for the quest files themselves,
 // so the save cannot come to know a third one the validator has never heard of.
 import { WARDS } from './quest-graph.js';
@@ -99,7 +111,10 @@ export function buildCatalog(mystery, quest, documents = [], sideQuests = [], ro
     quests.set(q.id, { start: q.start, ward: q.ward, stages: new Set(Object.keys(q.stages ?? {})), terminals });
     if (q.ward in wards) wards[q.ward] += 1;
   }
-  const watches = Array.isArray(mystery?.watches) ? mystery.watches : [];
+  const watches = dayWatchesOf(mystery, 1);
+  // The morning's own bells (#699). `watch` is an index into whichever list the
+  // day names, so the clamp has to know which day it is repairing.
+  const morningWatches = dayWatchesOf(mystery, 2);
   const clues = new Set((mystery?.clues ?? []).map((c) => c.id));
   const evidence = new Set((mystery?.evidence ?? []).map((e) => e.id));
   const locks = new Set((mystery?.locks ?? []).map((l) => l.id));
@@ -110,7 +125,7 @@ export function buildCatalog(mystery, quest, documents = [], sideQuests = [], ro
   for (const p of mystery?.presses ?? []) { if (npcs.has(p.npc)) npcs.get(p.npc).add(p.to); }
   const accusables = new Set([...npcs.keys(), 'nobody']);
   const verdicts = new Set(['full', 'right', 'wrong', 'fall']);
-  return { start: quest?.start ?? 'start', stages, quests, wards, watches, clues, evidence, locks, documents: documentIds, rooms: roomIds, npcs, accusables, verdicts };
+  return { start: quest?.start ?? 'start', stages, quests, wards, watches, morningWatches, clues, evidence, locks, documents: documentIds, rooms: roomIds, npcs, accusables, verdicts };
 }
 
 /**
@@ -129,6 +144,12 @@ export function reputationIn(quests, catalog) {
 }
 
 const nonNegInt = (v) => (Number.isInteger(v) && v >= 0 ? v : 0);
+/** A save's `watch`, held to the bells of the day it says it is on (#699). */
+const clampWatch = (v, day, catalog) => {
+  const list = day === 2 ? (catalog.morningWatches ?? []) : (catalog.watches ?? []);
+  const top = Math.max(0, list.length - 1);
+  return Number.isInteger(v) ? Math.min(Math.max(v, 0), top) : 0;
+};
 const idsIn = (list, set) => (Array.isArray(list) ? [...new Set(list.filter((id) => typeof id === 'string' && set.has(id)))] : []);
 
 /** The repair pass, exported so test/save.mjs can call it on a bare object. */
@@ -165,8 +186,12 @@ export function repairState(state, catalog) {
    * accusations are repaired above this line, so what is tested is the list
    * that survives repair rather than the one that came in. */
   out.day = s.day === 2 ? 2 : 1;
-  const top = Math.max(0, catalog.watches.length - 1);
-  out.watch = Number.isInteger(s.watch) ? Math.min(Math.max(s.watch, 0), top) : 0;
+  /* THE WATCH IS AN INDEX INTO THE DAY'S OWN LIST (#699), so what it clamps to
+   * depends on `out.day` above: 0..3 on day one, 0..(the morning's bells minus
+   * one) on day two. It stays in this slot because test/save.mjs asserts the
+   * fifteen fields in order; the demotion below re-clamps when it moves the
+   * day, which is the only thing that can change the answer after this line. */
+  out.watch = clampWatch(s.watch, out.day, catalog);
   out.clues = idsIn(s.clues, catalog.clues);
   out.pressed = {};
   if (s.pressed && typeof s.pressed === 'object' && !Array.isArray(s.pressed)) {
@@ -190,7 +215,7 @@ export function repairState(state, catalog) {
       watch: catalog.watches.includes(a.watch) ? a.watch : null,
     });
   }
-  if (out.day === 2 && !out.accusations.some((a) => a.verdict)) out.day = 1;
+  if (out.day === 2 && !out.accusations.some((a) => a.verdict)) { out.day = 1; out.watch = clampWatch(s.watch, 1, catalog); }
   out.refusals = nonNegInt(s.refusals);
   out.riddleWrong = nonNegInt(s.riddleWrong);
   const p = s.player;
