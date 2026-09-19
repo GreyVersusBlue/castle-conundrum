@@ -51,7 +51,7 @@ import { fileURLToPath } from 'node:url';
 import { partsOf } from './gltf.mjs';
 import { makePlan, walkability, collidersWith, moveBody, GRID, HEAD_LOW, HEAD_HIGH, BODY_RADIUS, DAY_SETS, EYE_HEIGHT } from '../src/castle-plan.js';
 import { dayTwoOutcomes, dayTwoCastle } from '../src/mystery.js';
-import { stepClassOf, bedOf, bedSources, sourcePoint, audibleFrom, ringOf } from '../src/audio.js';
+import { stepClassOf, bedOf, bedSources, sourcePoint, audibleFrom, ringOf, CUES, eventOf, cueSound } from '../src/audio.js';
 import { castleNav } from '../src/stations.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -268,7 +268,15 @@ console.log(`\nwalkability: ${walk.cells.length} cells on a ${GRID} m grid from 
 if (!walk.started) fail(`the spawn at ${config.spawn.position} stands on nothing the grid calls a floor`);
 else pass(`the spawn at [${config.spawn.position.join(', ')}] stands on a floor`);
 const rooms = walk.rooms();
-const groundRooms = rooms.filter(r => r.level === 0);
+/* A ROOM PAST THE CURTAIN IS NOT ONE OF THE FOURTEEN. Rank 4c builds Thomas
+ * Wykes's yard on the ground rank 5 laid west of the barbican, and rank 9's
+ * town goes beside it. Such a room declares `ward: "outside"` instead of outer
+ * or inner, and that declaration is what lifts it out of this check, out of
+ * the mystery's room list (3d) and out of the ambient sweep (13). What it
+ * costs is check 4c below, where the declaration is paid for against two
+ * things it cannot move: the curtain box and the flood fill. */
+const isOutside = (r) => r.ward === 'outside';
+const groundRooms = rooms.filter(r => r.level === 0 && !isOutside(r));
 if (groundRooms.length !== 14) fail(`${groundRooms.length} ground rooms in the plan, not the fourteen PLAN.md's room table names`);
 // The levels the castle has, read off the plan (#523), not a literal `[1, 2]`
 // that a fourth storey has to be remembered into.
@@ -290,6 +298,7 @@ const expected = new Map(rooms.map(r => {
   return [r.id, lock ? 'riddle' : (m && m.barred ? 'bars' : null)];
 }));
 for (const room of rooms) {
+  if (isOutside(room)) continue; // check 4c holds these, and holds them to the opposite
   const want = expected.get(room.id);
   const shut = `x ${room.bounds.min.x}..${room.bounds.max.x}, z ${room.bounds.min.z}..${room.bounds.max.z}`;
   if (room.locked !== want) {
@@ -444,7 +453,11 @@ console.log('\nthe morning after, against the plan');
 console.log('\nthe rooms, against mystery.json');
 {
   const want = mystery.rooms.filter(r => r.level === 0 && !r.open).map(r => r.id).sort();
-  const got = plan.rooms.filter(r => r.level === 0).map(r => r.id).sort();
+  // A room outside the curtain is nobody's room in the mystery: the crime
+  // happened inside the walls and the yard west of them is scenery with a
+  // name. Check 4c is what keeps "outside" from being a way to smuggle a
+  // ground room past this list.
+  const got = plan.rooms.filter(r => r.level === 0 && !isOutside(r)).map(r => r.id).sort();
   const missing = want.filter(id => !got.includes(id));
   const extra = got.filter(id => !want.includes(id));
   for (const id of missing) fail(`mystery.json puts people or evidence in "${id}" and the castle has no such room`);
@@ -578,6 +591,43 @@ console.log('\noutside ground, past the base');
     const meetsZ = g.box.max.z >= base.box.min.z - TOL && g.box.min.z <= base.box.max.z + TOL;
     if (!meetsX || !meetsZ) fail(`${g.id} at x ${f2(g.box.min.x)}..${f2(g.box.max.x)}, z ${f2(g.box.min.z)}..${f2(g.box.max.z)} does not meet the base ground's box x ${f2(base.box.min.x)}..${f2(base.box.max.x)}, z ${f2(base.box.min.z)}..${f2(base.box.max.z)} — a gap between the castle's ground and the world`);
     else pass(`${g.id} lies wholly outside the curtain and meets the base ground with no gap`);
+  }
+}
+
+/* -------------- 4c (rank 4c): a room outside the curtain reaches nobody ---
+ * Thomas Wykes's yard is the first thing built on that ground, and rank 9's
+ * town is next. A room out there declares `ward: "outside"`, and that one word
+ * excuses it from three checks above: it is not one of the fourteen ground
+ * rooms, the mystery has never heard of it, and it wants no ambient bed
+ * because nobody will ever be standing in it to hear one.
+ *
+ * SO THE WORD HAS TO BE PAID FOR, and against facts that cannot move with it.
+ * Three of them. Its bounds lie wholly clear of the curtain box, which is
+ * geometry and not a declaration, so a yard quietly dragged inside the walls
+ * fails here rather than going silently unreachable. Its bounds lie inside a
+ * piece of `config.ground.outside`, which is what makes it a building ON rank
+ * 5's ground rather than a paved rectangle in the void, and is the whole claim
+ * rank 9's town is gated on. And no cell of the flood fill from the spawn is
+ * in it: the castle is sealed (check 4), the barbican's west face has no
+ * archway in it, and the player sees this yard and never stands in it. That
+ * last one is the row's open call written as an assertion, so whoever decides
+ * the player should walk out there has to come here and delete it.
+ */
+console.log('\nthe rooms past the curtain');
+{
+  const outsideRooms = rooms.filter(isOutside);
+  if (!outsideRooms.length) fail('no room declares ward "outside", so this check measured nothing. Rank 4c built Wykes\'s yard out there and rank 9 builds the town beside it');
+  const ground = plan.grounds.filter(g => (config.ground.outside || []).some(o => o.id === g.id));
+  for (const r of outsideRooms) {
+    const where = `x ${f2(r.bounds.min.x)}..${f2(r.bounds.max.x)}, z ${f2(r.bounds.min.z)}..${f2(r.bounds.max.z)}`;
+    const clearOfCurtain = r.bounds.max.x <= plan.curtain.min.x || r.bounds.min.x >= plan.curtain.max.x
+      || r.bounds.max.z <= plan.curtain.min.z || r.bounds.min.z >= plan.curtain.max.z;
+    if (!clearOfCurtain) { fail(`${r.id} says ward "outside" and its bounds ${where} are not clear of the curtain box x ${f2(plan.curtain.min.x)}..${f2(plan.curtain.max.x)}, z ${f2(plan.curtain.min.z)}..${f2(plan.curtain.max.z)}`); continue; }
+    const on = ground.find(g => r.bounds.min.x >= g.box.min.x && r.bounds.max.x <= g.box.max.x
+      && r.bounds.min.z >= g.box.min.z && r.bounds.max.z <= g.box.max.z);
+    if (!on) { fail(`${r.id} at ${where} stands on none of config.ground.outside's ${ground.length} pieces (${ground.map(g => g.id).join(', ')}), a floor laid over nothing`); continue; }
+    if (r.reachable) { fail(`${r.id} at ${where} is reachable from the spawn: ${r.cells} standable cells, the first at (${f2(r.at[0].x)}, ${f2(r.at[0].z)}). The castle is meant to be shut in (check 4) and this room is meant to be looked at`); continue; }
+    pass(`${r.id} is clear of the curtain, stands on ${on.id}, and no foot reaches it`);
   }
 }
 
@@ -1133,7 +1183,11 @@ console.log('\nevery zone has an ambient bed');
     zones.set(`${z.id}/${z.level}`, z);
   }
   const swept = zones.size;
-  for (const r of plan.rooms) if (!zones.has(`${r.id}/${r.level}`)) zones.set(`${r.id}/${r.level}`, { id: r.id, level: r.level, drum: r.drum, open: false });
+  // A room past the curtain is not a zone for the same reason the garden is
+  // not one, and the reason is stronger: check 4c asserts that no cell of the
+  // fill is in it, so a bed there would be a room tone nobody can ever be
+  // close enough to cross-fade into.
+  for (const r of plan.rooms) if (!isOutside(r) && !zones.has(`${r.id}/${r.level}`)) zones.set(`${r.id}/${r.level}`, { id: r.id, level: r.level, drum: r.drum, open: false });
   const open = mystery.rooms.filter(r => r.open).map(r => r.id);
   // Open ground no cell is in is not a zone: the garden is behind a gate that
   // never opens (#469) and nobody will ever hear it. Said, not asserted.
@@ -1216,9 +1270,19 @@ console.log('\nevery zone has an ambient bed');
   else pass(`from the ward at (${wardPoint.x}, ${wardPoint.z}) ${heard.length} sources are heard, nearest first: ${heard.map(h => `${h.source.bed} (${h.source.key}) at ${h.metres.toFixed(1)} m`).join(', ')}`);
 
   /* The four rings (#682): `bell.rings` keyed by the `n` of the engine's own
-   * `bell:<n>`, which is 1 to the number of watches, and no other. */
+   * `bell:<n>`, which is 1 to the number of watches, and no other.
+   *
+   * AND THE MORNING'S RINGS ARE INSIDE THAT SET, NOT BESIDE IT (#701). Since
+   * #699 the morning after names its own bells and `ring()` numbers them within
+   * that list, so a morning of M bells emits `bell:1` to `bell:M`. This is the
+   * only file that can catch a morning bell with no sound written for it,
+   * because data/sounds.json is not a file src/mystery.js's validator can see.
+   * A proxy rail over there would be a second owner of one fact, and the check
+   * that matters is the one that names the missing ring. With one bell in
+   * `day2.watches` the union is the four and the message below is unchanged. */
   const rings = sounds.bell?.rings || {};
-  const emitted = Array.from({ length: mystery.watches.length }, (_, i) => String(i + 1));
+  const dayBells = (n) => Array.from({ length: n }, (_, i) => String(i + 1));
+  const emitted = [...new Set([...dayBells(mystery.watches.length), ...dayBells((mystery.day2?.watches ?? []).length)])];
   let badRing = 0;
   for (const n of emitted) {
     const r = rings[n];
@@ -1230,8 +1294,88 @@ console.log('\nevery zone has an ambient bed');
   const never = Object.keys(rings).filter(n => !emitted.includes(n));
   if (never.length) { fail(`bell.rings has ${never.map(n => `"${n}"`).join(', ')} and the engine never rings ${never.length === 1 ? 'it' : 'them'}: the day has ${emitted.length} rings`); badRing++; }
   if (!badRing) pass(`the ${emitted.length} rings the engine can emit each have a character: ${emitted.map(n => `${rings[n].strokes} for ${rings[n].name ?? n}`).join(', ')}`);
+  const morningBells = (mystery.day2?.watches ?? []).length;
+  if (!morningBells) fail('data/mystery.json has no `day2.watches`, so the morning after stands at no bell (#699)');
+  else pass(`and the morning after rings ${morningBells} of them: bell:1 to bell:${morningBells}`);
+
+  /* AND EVERY BELL EITHER DAY CAN STAND AT HAS A SKY (#699). `setWatch` in
+   * src/scene-setup.js returns false for a watch `lighting.watches` has never
+   * heard of and leaves the scene exactly as it was, which is the right answer
+   * for a save carrying rubbish and the wrong one for a bell the data means:
+   * the castle would ring, the HUD would change and the light would not. One
+   * morning bell has a Lauds sky; a second one written into `day2.watches`
+   * without a sky beside it would be that silent failure, and this is what
+   * says so. */
+  const everyBell = [...mystery.watches, ...(mystery.day2?.watches ?? [])];
+  const skyless = everyBell.filter(w => !config.lighting?.watches?.[w]);
+  if (skyless.length) fail(`${skyless.join(', ')} ${skyless.length === 1 ? 'is a bell' : 'are bells'} the engine can stand at with no sky in data/scene-config.json's lighting.watches: ringing ${skyless.length === 1 ? 'it' : 'one of them'} would change the HUD and not the light`);
+  else pass(`all ${everyBell.length} bells of the two days have a sky: ${everyBell.join(', ')}`);
   const stray = ringOf(sounds, emitted.length + 1);
   if (stray.strokes !== 1 || stray.gain !== 1) fail(`ringOf a ring the file has nothing for is ${JSON.stringify(stray)} and not one plain stroke`);
+}
+
+/* ---------------------------------------- 14: every cue the engine fires has a sound ---
+ * The Sound row's third increment (#696): event sounds. `CUES` in src/audio.js
+ * is every event the engine can fire and `events.byCue` in data/sounds.json is
+ * what each sounds like, and this holds the two to each other both ways, the
+ * way check 12 holds surfaces to step classes and check 13 zones to beds. What
+ * resolves a cue is `eventOf` and `cueSound` from src/audio.js, so a lookup
+ * the runtime would get wrong is one this check gets wrong the same way, and
+ * not a second copy that agrees with the file by construction. A cue with a
+ * `cadence` is a state, fired every frame it holds, and its `withinMetres`
+ * has to sit inside the follow radius of some body in data/populace.json,
+ * or the cue never fires while the bark would.
+ */
+console.log('\nevery cue has an event sound');
+{
+  const sounds = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/sounds.json'), 'utf8'));
+  const populace = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/populace.json'), 'utf8'));
+  const ev = sounds.events || {};
+  const defs = ev.sounds || {};
+  const cues = Object.keys(CUES);
+  const used = new Set();
+  let silent = 0;
+  const finite = (v) => typeof v === 'number' && Number.isFinite(v);
+  const partOk = (pt) => {
+    if (!pt || (pt.type !== 'noise' && pt.type !== 'tone')) return 'is neither noise nor tone';
+    if (!(pt.hz > 0)) return `has hz ${JSON.stringify(pt.hz)}`;
+    if (!(pt.gain > 0)) return `has gain ${JSON.stringify(pt.gain)}: a part nobody hears`;
+    if (!(pt.decay > 0) && !(pt.attack > 0 && pt.release > 0)) return 'has neither a decay nor an attack and release: no envelope';
+    if (pt.at != null && !(finite(pt.at) && pt.at >= 0)) return `starts at ${JSON.stringify(pt.at)}`;
+    if (pt.toHz != null && !(pt.toHz > 0)) return `slides to ${JSON.stringify(pt.toHz)} Hz`;
+    return null;
+  };
+  for (const cue of cues) {
+    const key = eventOf(sounds, cue);
+    if (!key) { fail(`the engine fires "${cue}" (${CUES[cue]}) and data/sounds.json's events.byCue says nothing about what it sounds like`); silent++; continue; }
+    const def = cueSound(sounds, cue);
+    if (!def) { fail(`"${cue}" resolves to the event sound "${key}", which data/sounds.json's events.sounds do not define`); silent++; continue; }
+    used.add(key);
+    if (!Array.isArray(def.parts) || !def.parts.length) { fail(`event sound "${key}" has no parts: a cue that fires silence`); silent++; continue; }
+    const bad = def.parts.map((pt, i) => [i, partOk(pt)]).filter(([, why]) => why);
+    if (bad.length) { fail(`event sound "${key}" part ${bad[0][0] + 1}${bad[0][1] ? ' ' + bad[0][1] : ''}`); silent++; continue; }
+    if (def.gain != null && !(def.gain > 0)) { fail(`event sound "${key}" has gain ${JSON.stringify(def.gain)}`); silent++; continue; }
+    if (def.repeat && !(Number.isInteger(def.repeat.times) && def.repeat.times >= 1 && (def.repeat.times === 1 || def.repeat.gapSeconds > 0))) { fail(`event sound "${key}" repeats ${JSON.stringify(def.repeat)}`); silent++; continue; }
+    if (def.cadence) {
+      const c = def.cadence;
+      if (!(c.withinMetres > 0 && c.firstSeconds >= 0 && c.everySeconds > 0)) { fail(`"${cue}" has a cadence of ${JSON.stringify(c)}`); silent++; continue; }
+      const followers = (populace.people || []).filter((p) => p.follow?.radius > 0);
+      const inside = followers.filter((p) => c.withinMetres <= p.follow.radius);
+      if (!followers.length) { fail(`"${cue}" is paced by a cadence and no body in data/populace.json follows anyone to fire it`); silent++; continue; }
+      if (!inside.length) { fail(`"${cue}" barks within ${c.withinMetres} m and ${followers.map((p) => `${p.id} follows within ${p.follow.radius} m`).join(', ')}: the cue never fires that close`); silent++; continue; }
+    }
+  }
+  if (!silent) pass(`all ${cues.length} cues the engine fires have an event sound: ${cues.map((c) => `${c} is ${eventOf(sounds, c)}${cueSound(sounds, c).cadence ? ` every ~${cueSound(sounds, c).cadence.everySeconds} s within ${cueSound(sounds, c).cadence.withinMetres} m` : ''}`).join(', ')}`);
+  const stray = Object.keys(ev.byCue || {}).filter((c) => !CUES[c]);
+  if (stray.length) fail(`data/sounds.json's events.byCue names ${stray.map((c) => `"${c}"`).join(', ')}, which the engine never fires: the cues are ${cues.join(', ')}`);
+  else pass(`every one of byCue's ${Object.keys(ev.byCue || {}).length} names is a cue the engine fires`);
+  const dead = Object.keys(defs).filter((k) => !used.has(k));
+  if (dead.length) fail(`data/sounds.json defines the event ${dead.length === 1 ? 'sound' : 'sounds'} ${dead.map((k) => `"${k}"`).join(', ')} that no cue resolves to`);
+  else pass(`all ${Object.keys(defs).length} event sounds are fired by some cue`);
+  const sp = ev.spatial || {};
+  const sane = [['refMetres', sp.refMetres > 0], ['maxMetres', sp.maxMetres > sp.refMetres], ['rolloff', sp.rolloff > 0], ['panning', sp.panning === 'equalpower' || sp.panning === 'HRTF']];
+  for (const [k, ok] of sane) if (!ok) fail(`events.spatial.${k} is ${JSON.stringify(sp[k])}`);
+  if (eventOf(sounds, 'no-such-cue') !== null || cueSound(sounds, 'no-such-cue') !== null) fail('eventOf a cue the file has nothing for is not null');
 }
 
 /* --------------------------------------------------- WHERE CHECK 5 WENT ---

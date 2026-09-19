@@ -610,6 +610,14 @@ export class CastleBuilder {
     this.gates = new Map(); // id -> { pivot, closedAngle, openAngle, progress, opening }
     this.materials = new Map(); // material name -> MeshStandardMaterial
     this.objects = new Map(); // plan piece id -> the Object3D built for it
+    // Somebody to tell when a leaf moves (#696): `onLeaf({ cue, id, at,
+    // instant })`, with `cue` 'door-open' or 'door-shut' and `at` the leaf's
+    // centre in world metres. main.js points it at the audio. It is called
+    // only on a change of state, so `applyDay`, which is idempotent and runs
+    // twice on the second day, sounds its door once, and a leaf opened
+    // `instant` on a save's resume is still reported, because whether that
+    // is heard is the audio's call (its context is suspended at load).
+    this.onLeaf = null;
   }
 
   tileToWorld(tx, tz) {
@@ -894,7 +902,9 @@ export class CastleBuilder {
   openLock(id, { instant = false } = {}) {
     const gd = this.gates.get(id);
     if (!gd) return false;
+    const wasShut = !gd.opening && gd.progress < 1;
     gd.opening = true;
+    if (wasShut) this._leafMoved('door-open', gd, instant);
     if (instant) {
       gd.progress = 1;
       gd.pivot.rotation.y = gd.openAngle;
@@ -959,7 +969,9 @@ export class CastleBuilder {
   shutLeaf(id) {
     const gd = this.gates.get(id);
     if (!gd) return false;
+    const wasOpen = gd.opening || gd.progress > 0;
     gd.opening = false;
+    if (wasOpen) this._leafMoved('door-shut', gd, true);
     gd.progress = 0;
     gd.pivot.rotation.y = gd.closedAngle;
     gd.blocks = [];
@@ -971,6 +983,13 @@ export class CastleBuilder {
       gd.blocks.push(live);
     }
     return true;
+  }
+
+  /** Tell `onLeaf` a leaf changed state, from its centre or, failing one, its hinge. */
+  _leafMoved(cue, gd, instant) {
+    if (typeof this.onLeaf !== 'function') return;
+    const p = gd.centre || gd.pivot.position;
+    this.onLeaf({ cue, id: gd.id, at: { x: p.x, y: p.y, z: p.z }, instant });
   }
 
   /**

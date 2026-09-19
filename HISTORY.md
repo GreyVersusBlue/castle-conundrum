@@ -6695,6 +6695,398 @@ measured what it shipped.
   sentence. Neither is this row's, and both are measured rather than argued
   from a diff.
 
+## Sound, the third increment: a door and a dog, the two event sounds that need no clip (2026-09-19)
+
+**Ranked row 7, on `claude/r7-event-sounds`, lane E, in a `git worktree`**
+(#624's rule). `SPECS.md`'s "Sound: a soundscape" row had the beds (#620 to
+#623) and a bed at a point with the four rings (#680 to #683) shipped, and
+event sounds waiting on rank 6's activity clips. Two of them never needed a
+clip: a door swings on `openLock` and `shutLeaf`, which are moments the
+builder already has, and the hound that shipped in #644 stands at the
+player's heels with nothing to sync a bark to. Both are in, synthesised
+(#519, #548), and nobody has heard either (#53). Decisions #696 to #698,
+picked off `origin/main` at the end of the row, which ended at #695.
+
+- **An event sound is a list of parts in `data/sounds.json`, a cue is a
+  name in `src/audio.js`, and `test/layout.mjs` check 14 holds the two to
+  each other both ways** (#696). `events.byCue` maps what the engine does
+  to a sound and `events.sounds` is each sound as `parts`: a noise burst or
+  a tone, at an offset from the cue, with a struck envelope (`decay`) or a
+  held one (`attack`, `hold`, `release`), a slide (`toHz`) and an optional
+  filter on a tone, and a `repeat` for a double bark. That is `steps`'
+  `byMaterial` and `classes`, and `ambient`'s `byRoom` and `beds`, a third
+  time, and the file's own precedent is why: the runtime holds no default,
+  `eventOf` and `cueSound` are the only lookups, and the check calls them
+  rather than re-reading the file. `CUES` is the code's half: `door-open`,
+  `door-shut`, `hound-near`, each with a line saying what fires it. Every
+  event plays through a panner of its own at the point the cue names, HRTF,
+  torn down 200 ms after its last part, because a latch comes from somewhere
+  and three a minute is not three room tones a frame. Broken on purpose from
+  green four ways, one assertion each: a fourth cue named in `CUES`
+  ("the engine fires "hammer" (nothing yet) and data/sounds.json's
+  events.byCue says nothing about what it sounds like"), `door-shut` pointed
+  at a sound the file does not define ("resolves to the event sound "slam",
+  which data/sounds.json's events.sounds do not define", and the orphaned
+  `latch-and-slam` named in the same run), a `byCue` entry no cue fires
+  (named, with the three cues that are), and the bark's `withinMetres` set
+  to 9 against a follow radius of 6 (""hound-near" barks within 9 m and
+  hound follows within 6 m: the cue never fires that close").
+
+- **A leaf's cue fires on a change of state and not on every call, and
+  nothing plays before the start button** (#697). `applyDay` is idempotent
+  and runs on entering `morning` and again on entering `end` (#539), and
+  `src/main.js` opens every remembered lock with `instant: true` on a save's
+  resume; a builder that cued on every call would slam the Clerk's door twice
+  on the second morning and latch the muniment room's at every reload.
+  `openLock` fires only when the leaf was shut (`!opening && progress < 1`)
+  and `shutLeaf` only when it was open, through one `onLeaf` hook the
+  builder holds and `main.js` points at the audio, from `gd.centre` or,
+  for a leaf with none, its hinge. The audio's half: a cue on a context that
+  is not `running` is logged and not played, which is the crackle's own rule
+  (#622), because a suspended context's clock does not move and every node
+  scheduled before the button would land on the instant it is pressed.
+  `events()` is the log, for the suite. `test/plan-vs-scene.mjs` drives the
+  muniment leaf through open, shut, shut, open and holds the log to
+  `door-shut door-open`, once each, from the leaf's centre to 0.01 m. Broken
+  twice: the guard taken off `openLock` gave "cued: door-open, door-shut,
+  door-open" against the same sentence, and the wire commented out of
+  `main.js` gave "cued: nothing".
+
+- **The hound's bark is a cadence over a state, and the state is the
+  populace's to report** (#698). `Populace._follow` already knows every
+  frame whether the hound is inside its follow radius; it now cues
+  `hound-near` on those frames with the hound's position and the gap, and
+  keeps no clock. The sound's `cadence` in the file is the clock:
+  `withinMetres` 5, `firstSeconds` 0.6, `everySeconds` 7 give or take half,
+  and leaving the radius clears it so the next approach barks quickly again.
+  The radius is held inside the follow radius by check 14, above, because a
+  cue only fires inside the populace's radius and a `withinMetres` past it
+  is a bark that never comes. The bark itself is a sawtooth falling from
+  560 Hz to 380 Hz through a bandpass at 1100 Hz, a square an octave under,
+  and 70 ms of breath, twice, 0.26 s apart: the formant is the number most
+  likely to be wrong in the whole file and the file says so.
+  `test/plan-vs-scene.mjs` puts the camera 1.5 m from Gelert, drives the
+  populace by hand with a supplied dt for `firstSeconds` plus 400 ms of the
+  page's own clock, and holds that one bark is cued from where he stands and
+  none before the wait is up. Broken twice: the populace's cue turned off
+  gave "0 cued" and "Infinity m off", and `firstSeconds` ignored in the
+  cadence gave "28 frames had one early". That last run also failed the
+  chapel-candles beat, which is #633 and was green in the run before and the
+  run after; it is not this row's.
+
+**What was not done, and why.** No recording landed, so #506 and #390 were
+not exercised: the sounds stay synthesised until one beats them (#548). The
+hammer, the sweep and the rest wait on rank 6's activity clips, as
+`SPECS.md` says. Whether any of this sounds right is Devon's ears (#53), and
+the listening checklist for the seven beds, the four rings and the two
+events is in `SPECS.md` under the row; this entry claims that the cues fire
+at the right moments from the right points, and nothing about how they
+sound.
+
+## The bells call: the morning after names its own bells (2026-09-19)
+
+**Ranked row 4a, on `claude/r4a-bells-call`, lane A, in a `git worktree`**
+(#624's rule). `SPECS.md`'s "A second day" row carried one open design
+question, *"it needs bells on day two, or a single-watch mystery, which is the
+one design question worth settling first"*, and `ROADMAP.md` gave it what was
+left of lane A. It is settled, the shape is the one all three files
+recommended, and the morning after is still one bell long. Decisions #699 to
+#702. `src/save.js` moved by a helper and two lines and the version did not
+move at all.
+
+- **The morning after names its own bells, and #533 is overturned in its second
+  clause only** (#699). #533 said two things in one sentence: a second day is a
+  `day` field on the save, and `watches` is four. The first is still true and
+  is still what the save carries. The second was doing two jobs and only one of
+  them was ever argued for. It keeps the rails about a two-to-three-watch
+  convicting path honest, and it also said, without saying so, that the morning
+  could never move. So `day2.watch`, a fifth bell id deliberately not in
+  `watches`, is `day2.watches`, a list, and the engine reads whichever list the
+  day names: `watches` on day one, `day2.watches` on day two, and
+  `state.watch` is an index into that list rather than into the four.
+  `watches` is still asserted to be exactly four, so every rail written against
+  that number says exactly what it said.
+
+- **The list is one long today, and the alternative that was rejected is the one
+  that would have written that number down as a rule** (#699, the same
+  decision). A single-watch mystery, meaning "the morning is one bell,
+  forever" with a rail on it and nothing else, is the cheaper answer to the
+  question as it was asked, and it costs nothing today. It was rejected because the question
+  underneath it is not how many bells the morning has but who gets to decide,
+  and the row that will want a second one is increment 3's last thread, Thomas
+  Wykes's yard, which is not designed yet. "One, forever" is a door shut on a
+  row nobody has written, and opening it again later is this same engine change
+  plus an overturned decision. Making it now is six lines in the engine and one
+  in the save. **The morning's content is deliberately unchanged**: one sky, one
+  station per person, one line set each. A second morning bell with no per-bell
+  content is a sky change and a noise, and this row did not write the content
+  that would make one worth ringing. `day2.schedule` is still one station for
+  the whole morning and `day2.lines` is still keyed by the verdict and not by
+  the bell.
+- **The chapel bell was a dead prop on the morning after, and it is a bell
+  again** (#700). `ring()` opened with a bare `if (ended()) return []`, and
+  `ended()` is true from the verdict onward, so pressing E at the rope at Lauds
+  returned no effects at all: no sound, no event, nothing on the screen. That
+  is what a morning with no bells of its own looked like from inside the game,
+  and it is why the list above is not a generalisation with no user: it is the
+  one thing in this row a player can hear. The guard is `ended() && !onDayTwo()`
+  now, which keeps what it was for (#520: a ring between the verdict and the
+  epilogue does nothing, and `test/quest.mjs` asserts the silence as well as the
+  no-op) and lets the morning ring. **The last bell of a day rings and moves
+  nothing**, which day one already did: its fourth is the Constable's demand
+  and the watch stays at Vespers. The morning's is that shape with no
+  Constable behind it: the `bell:<n>` event, the sound, and no `demand`. With
+  one bell in `day2.watches`, every morning ring is that ring.
+
+- **The morning's rings borrow the day's characters, and `test/layout.mjs` is
+  what holds it** (#701). `data/sounds.json`'s `bell.rings` is keyed by the `n`
+  of the engine's own `bell:<n>` (#682) and `test/layout.mjs` holds that block
+  to every `n` the engine can emit **and no other**. A morning bell numbered
+  past the four would be a ring with no sound written for it, and
+  `data/sounds.json` is lane E, which this row is not in. So `ring()` numbers a
+  day's bells within that day's own list: a morning of M bells emits `bell:1` to
+  `bell:M`, and the rail is now the union of the two days' numbers rather than
+  day one's alone. One bell in the morning means `bell:1`, Terce's single
+  stroke, which #682 called "a morning's first note", the one ring in the file
+  already written for a morning. The rail lives where `data/sounds.json` is and
+  not in `src/mystery.js`'s validator, which cannot see that file at all: a
+  proxy there ("the morning may not have more bells than the day") would have
+  been a second owner of one fact, and the check that matters is the one that
+  names the missing ring. **A second rail went in beside it**, for the failure
+  that is silent in the other direction: `setWatch` in `src/scene-setup.js`
+  returns false for a bell `lighting.watches` has never heard of and leaves the
+  scene exactly as it was, so a morning bell with no sky would ring, move the
+  HUD and not move the light. Every bell of both days has a sky now, asserted
+  by reading `data/scene-config.json` and never writing it.
+
+- **No version bump, and the reason is #37's own line rather than an
+  oversight** (#702). `SPECS.md` and the row's brief both expected one, because
+  version 6 is current and the next is 7. `state.watch` did change meaning on day two,
+  where it was ignored outright and now indexes the morning, but **no field
+  arrived and no field changed shape**, so there is no drift for `migrate` to be
+  honest about. What moved is `repair`, which runs on every load (#37): `watch`
+  clamps against whichever list the repaired `day` names, and the demotion of an
+  incoherent `day: 2` re-clamps against day one on the way past, so a save
+  demoted for having no verdict keeps the watch it came in with. A version-6
+  save carrying `day: 2, watch: 3` is not a save from another schema; it is a
+  save carrying a number that never meant anything, and 0 is what it has always
+  been worth. The key is `castleConundrumSave_v1` and the version inside it is
+  still 6 (#36, #413). Lane A's file moved by a helper and two lines.
+
+**What was broken on purpose, from a green baseline of all fifteen suites**
+(#34). Eight, and the fifth is the one worth reading.
+
+1. `beginDay2`'s `if (st.day !== 2)` guard removed, so the morning rewinds on
+   every re-entry. `test/mystery.mjs`: *beginDay2 called again does not rewind a
+   morning that has rung on — lauds / 0* and *and a reload comes back at the
+   bell the save was on — lauds*.
+2. `ring()`'s guard back to a bare `if (ended())`. Six assertions across
+   `mystery` and `quest`, the plainest being *the bell rings on the morning
+   after, one stroke, where it used to return nothing at all — 0 rings, the last
+   of them bell:3*, bell:3 being Vespers, the last thing the day rang before
+   the verdict.
+3. `repair`'s clamp pinned to day one (`clampWatch(s.watch, 1, catalog)`).
+   `test/save.mjs`: *a day-two watch clamps to the 1 bell of the morning, not to
+   the four — 3* and *a morning with two bells in it clamps to 1 — 3*.
+4. The demotion's re-clamp deleted. `test/save.mjs`: *a day 2 demoted for having
+   no verdict is re-clamped against day one and keeps its watch*, printing the
+   whole repaired save with `watch: 0` in it.
+5. **`src/stations.js` cut back to the morning's first bell, and the first time
+   this was tried the whole suite stayed green** (#147). The nav is a second
+   answer to "where does this body stand", and a separate one: `src/main.js`
+   places with `engine.stationOf(id, watch) ? nav.at(id, watch) : null`, so a
+   nav that indexes only the first bell of the morning puts **nobody at all** in
+   the castle at the second. The engine says there is a station there and the
+   lookup that turns it into a point says there is not. Nothing in the suite
+   could see it, because every other reader goes at `day2.schedule` directly.
+   The assertion was written, and the same break then failed it: *and the nav
+   has a point for him at both bells, so main.js can put him somewhere at either
+   — {"x":4.8,"z":-10,...,"room":"kings-hall",...} / null*.
+6. `data/mystery.json`'s morning given a second bell and no sky.
+   `test/layout.mjs`: *lauds-two is a bell the engine can stand at with no sky in
+   data/scene-config.json's lighting.watches: ringing it would change the HUD
+   and not the light*, with the ring rail beside it still green at two bells.
+7. The same file given five morning bells. `test/layout.mjs`: *the engine rings
+   bell:5 and data/sounds.json's bell.rings has nothing for it*.
+8. `src/lore.js` pointed back at the removed singular `d2.watch`. Seven problems
+   out of `validateLore` at once, each naming `(no bell of the morning)` where a
+   bell id belongs, plus the #13 rail underneath it: *and validateLore does not
+   fail on them — a check that only prints is not a check*.
+
+The five validator breaks for `day2.watches` itself are `expect` rows in
+`test/mystery.mjs` and fire as written: an empty list, an id that is not an id,
+an id that is one of the four, one bell written twice, and the singular
+spelling left in the file beside the list.
+
+**And a two-bell morning is driven end to end rather than argued for.**
+`test/mystery.mjs` clones `data/mystery.json`, adds one id to `day2.watches` and
+changes nothing else. `validateMystery` returns zero problems on it, which is
+the row's claim that a second morning bell is a data edit; then the day is
+played to a fall, the morning opens at its first bell with the save index back
+at 0 from day one's 1, the first ring moves it to the second bell and demands
+nothing, the schedule and the nav both answer at both bells, the last ring moves
+nothing, `beginDay2` called again does not rewind it, and a fresh engine on the
+same save comes back at the bell the save was on.
+
+`npm test`: fifteen suites green, with `dist/` at 52.8 MB. Three full runs, and
+the middle one put `plan-vs-scene` red on its own while the other fourteen
+passed; it is green alone and green in the run after it, and the failing
+assertion was not captured, so it is recorded here as a flake rather than
+explained. Two other sessions were testing in the same tree's siblings at the
+time, which is #655's and #633's shape. No `dialogue` block was touched, so
+`npm run dialogue:check` had nothing to say and `test/dialogue.mjs` is green on
+the same .dlg the row started with (#687).
+
+## Rank 4c, Thomas Wykes's yard: the first thing built outside the walls (2026-09-19)
+
+**Lane B, local, decisions #703 to #707.** The ground west of the barbican has
+been there since rank 5 laid it on 2026-09-16 (#541 to #546) with a road, four
+trees and 150 m of fog, and nothing had ever been built on it. Wykes's stone
+yard is: a stretch of Mereford's wall with the town gate cut in it, a shed on
+four posts under that wall, a low yard wall on two sides and the road on the
+third, four blocks of dressed stone and the fifth with Gruffudd's mark on it.
+It is 34 meshes and one ground patch, every one of them outside both wards, and
+it is what rank 9's town was gated on.
+
+- **The player sees the yard and never stands in it** (#703). The row's open
+  call, settled in the brief before anything was placed. Four things decided
+  it, and the first is the only one that would have been expensive to overturn:
+  the castle is sealed and `test/layout.mjs` check 4 asserts it, by flooding
+  from the spawn and failing on one reachable cell outside the curtain box.
+  `config.gates`' own comment has said for two phases that "the thing that
+  never opens again is the way OUT of the castle, and the barbican's west face
+  has no archway in it at all", so a walk to the yard is an archway in that
+  face, a fifth crossing, and check 4 rewritten from a property into a list of
+  exceptions. The other three are cheaper and point the same way.
+  `data/quests/wykes-mark.json` is terminal in three stages and the player
+  enters the yard in none of them: the block is described at Wykes's cart and
+  the mark is read off the lodge's board. This row's goal is that the ground
+  carries a building, which is a rendering claim and not a traversal one. And
+  `day2.knew` does not need feet, because a clue is granted by `mystery.json`
+  and the `knew` grammar never asks how the player came by it, so a lead in
+  this yard can be granted by looking at it. **What it costs is one room on the
+  journal's map that can never be filled in**, and that is the intended reading
+  rather than a wart.
+
+- **A room may declare `ward: "outside"`, and the word is paid for in a check
+  of its own** (#704). A room past the curtain breaks four things at once and
+  every one of them is right to break: it is a fifteenth ground room, it is
+  unreachable, the mystery has never heard of it, and it asks for an ambient
+  bed in a place no cell is in. The declaration lifts it out of all four,
+  `test/layout.mjs` checks 3, 3d and 13 plus `test/budget.mjs`'s ward rail,
+  which grew a third answer rather than an exemption. **So the declaration buys
+  nothing on its own.** New check 4c holds every outside room to three facts it
+  cannot move: its bounds lie wholly clear of `plan.curtain`, which is geometry;
+  its bounds lie inside a piece of `config.ground.outside`, which is the whole
+  of this row's claim that the building stands on rank 5's ground; and no cell
+  of the flood fill is in it, which is #703 written as an assertion, so that
+  whoever reverses it has to come here and delete a line. `budget.mjs` needed no
+  new rule at all: `wardsOf` has returned `['outside']` for a box reaching
+  neither ward since #611, so a yard that drifts into the outer ward fails on
+  the same line an outer room drifting out of it does.
+
+  **Four breaks from a green baseline** (#34). Dragging the yard inside the
+  walls to x -30..-18: `wykes-yard says ward "outside" and its bounds x
+  -30.00..-18.00, z -18.00..-6.00 are not clear of the curtain box x
+  -46.00..34.00, z -20.00..20.00`, with the shed's two roof pieces naming
+  themselves 32 m and 28 m past its west wall on the way out. Moving it to z
+  44..56, off the north edge of `outside-ground`: `wykes-yard at x
+  -62.00..-50.00, z 44.00..56.00 stands on none of config.ground.outside's 2
+  pieces (outside-ground, outside-road), a floor laid over nothing`. Cutting a
+  1.2 m doorway in `barbican-west` so the castle leaks: check 4 named 48963
+  reachable cells outside the curtain and check 4c named the consequence,
+  `wykes-yard ... is reachable from the spawn: 370 standable cells, the first at
+  (-50.75, -5.25)`. And changing the one word to `"outer"` fired five
+  assertions in `layout`: the fifteen ground rooms, the unreachable room, the
+  room the mystery has never heard of, the missing ambient bed, and 4c itself
+  reporting that no room declares `outside` so it measured nothing. `budget`
+  added a sixth, `room "wykes-yard" says ward "outer" but its bounds x -62..-50
+  do not reach that ward's rectangle`.
+
+- **The town wall carries no battlements, and the reason is a number** (#705).
+  It is one run, 64 m of it, 3 m thick and 8 m high at x -64, with the town
+  gate as a `doorways` entry at z 0, 4 m wide and 5.5 m to the head, so
+  `outside-road`'s own 4 m of cobble runs through it with 2.5 m of lintel over.
+  Crenellating it was the first draft and #514's arithmetic refuses it: a kit
+  merlon's body stands 1.2 to 2.4 m outward of the run's centreline, so check
+  9's "at least half of every merlon's footprint over stone" wants a run **3.6 m
+  thick or more**, and the only thickness in this castle that satisfies it is
+  the curtain's own 4 m. A 4 m town wall 18 m from a 4 m curtain reads as a
+  second castle, so the run takes `interior: true`, which in `castle-plan.js` is
+  the field that means "no battlements and no walk" and is the mason's lodge's
+  own flag. The wall is plain, and the nearest place the player can stand is
+  28 m from it.
+
+  The same family of check caught the yard's own two walls in a smaller way.
+  Check 10 refuses two pieces whose tops share a height over a common footprint
+  (#513), and two 1.4 m runs turning a corner into each other overlap by
+  0.16 m² at exactly one height. The east wall stops **0.2 m short** of the
+  north one instead of meeting it, which a person reads as the way in at the
+  corner and the suite reads as no shared plane at all.
+
+- **The journal's map frame went from 67.6 m wide to 90.8, and that is the
+  price of the yard being on it** (#706). The map draws every storey on one
+  frame, deliberately (#589), and the frame is the extent of `plan.rooms` plus a
+  metre. The castle's westernmost room is the north walk at x -34 and the yard's
+  west edge is x -62, so the drawing grew 23.2 m of mostly empty ground on its
+  left and the castle dropped to 74 % of the frame's width. Nothing was done
+  about it and nothing should be: **the 28 m between them is the barbican and
+  the road, and it is exactly where rank 9's town goes.** If rank 9 never
+  happens, this is the row to come back to. The height did not move: the yard is
+  12 m deep in z and the castle already spanned 39.6.
+
+- **The camera is pinned, not the spawn, and the yard reads as a yard** (#707).
+  `tools/shot-yard.mjs` is hand-run on the dev machine and asserts nothing. It
+  exists because there is no walk to this yard and `npm run play` has no beat
+  that would ever face that way. Moving `config.spawn` out of the castle to put
+  a camera there was the obvious way and it does not work: the walkability fill
+  moves with the spawn, and `validatePopulace` throws on the page before the
+  castle finishes building, naming ten people's forty stops as "floor the player
+  cannot walk to". So the spawn is left alone and the camera is written back
+  every frame through the same `updateMatrixWorld` patch `test/drive.mjs`'s
+  scene probe already installs, after the rig has had its go at it.
+
+  Six shots, in `shots/yard/`, which is gitignored like every other shot here.
+  **Standing in the yard it reads as a stone yard**: paving, a pitched shed
+  against the town wall, three courses stacked biggest-down, the marked block
+  lying apart from them, a hoist over the loading place, crates, a shrub in the
+  corner the carts do not turn in. **From where the player can actually stand it
+  reads as a roof and a wall.** The North-west Tower's roof at 12 m is the one
+  vantage, and through a crenel of its crown you get the shed's green pitch, one
+  of its posts, the town wall behind it and the fog past that, with the stone in
+  the yard under the line the parapet allows. The west curtain's walk is not a
+  vantage at all and this row found out why: the North-west Tower's drum is 4 m
+  of stone standing in that exact line, and the barbican's parapet closes what
+  the drum does not. From the spawn, west is 8 m of unbroken wall, which is #703
+  seen from the other end. **The verdict in one sentence: the yard reads as a
+  yard from inside it and as a building from the castle, which is what the row
+  needed, and what the west wants next is rank 9's town rather than anything
+  more in this yard.**
+
+- **The outside bucket went from 10 meshes to 44 and still has no ceiling.**
+  `test/budget.mjs` counts a mesh in every ward its box reaches and calls
+  anything reaching neither `outside`; that was the road, the ground and four
+  trees, and it is now those plus the yard. The two wards did not move: outer
+  993 of 1200 and inner 643, both of them this row's baseline rather than
+  #611's 965, because rank 5's seven hall coverings landed in between. The
+  ceiling is left unset on purpose: a number anchored on one yard is anchored on
+  nothing, and rank 9's town is the row that will know what to put there.
+
+- **One suite failure this row did not cause, measured rather than argued.**
+  `plan-vs-scene`'s chapel-candles beat went red in two of four full `npm test`
+  runs here and green three times out of three when run alone, and the control
+  was run rather than assumed: `git stash -u` takes this row out of the tree
+  entirely, and the beat is red on that, the same assertion and the same
+  sentence, `none of the 12 cells between 0.9 and 2.8 m of the chapel candles
+  offers them (the nearest offered "Press E to ring the bell")`. It is the flake
+  #546's batch first recorded and #599's batch measured as intermittent, three
+  failures in five runs of an unchanged file, still. **Two of the four full runs
+  of this row are fifteen suites green and the other two are fourteen with that
+  one beat red**, which is the same ratio that file has printed for three days
+  and is why #599 called a suite green three runs in five worse than one that
+  is red. `npm run build` is green and `npm run dialogue:check` says the .dlg
+  and `data/` agree, which this row expected because it opened neither.
+
 ## The GPU run, second sitting: four runs, and somebody looked at the twelve (2026-09-19)
 
 **Rank 2, on `claude/r2-gpu-run-2`, no lane, in its own `git worktree`**
