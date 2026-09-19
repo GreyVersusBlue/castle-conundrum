@@ -1,5 +1,6 @@
 // audio.js — the sounds the castle makes, synthesised, out of data/sounds.json:
-// the footstep, the chapel bell, and a room tone per place, at the place.
+// the footstep, the chapel bell, a room tone per place, at the place, and the
+// first event sounds: a door and the hound (#696).
 //
 // NO THREE AND NO BYTES. Every sound here is built out of one noise buffer and
 // a handful of oscillators at the moment it plays, so there is no audio file in
@@ -164,11 +165,43 @@ export function ringOf(sounds, n) {
   return r ? { strokes: r.strokes, gapSeconds: r.gapSeconds, gain: r.gain } : { strokes: 1, gapSeconds: 0, gain: 1 };
 }
 
+/**
+ * THE CUES: every event the engine can fire at the audio, and what fires it.
+ * `door-open` and `door-shut` are moments and `hound-near` is a state, cued
+ * every frame the hound is inside its follow radius; the data's `cadence` is
+ * what turns those frames into barks. This list is the code's half of
+ * `events.byCue` in data/sounds.json, and test/layout.mjs holds the two to
+ * each other both ways: a cue with no entry in the file and an entry in the
+ * file no cue fires are both red. Adding a cue is a line here, a line there,
+ * and the check says which is missing until both are in.
+ */
+export const CUES = {
+  'door-open': 'castle-builder.js openLock, on a leaf that was shut',
+  'door-shut': 'castle-builder.js shutLeaf, on a leaf that was open',
+  'hound-near': 'populace.js _follow, every frame a follow body is inside its radius',
+};
+
+/**
+ * What cue `name` sounds like: one of `sounds.events.sounds`' keys, or null
+ * when `byCue` has nothing for it. No default (#13): a cue the file has
+ * nothing for fails in Node, and at runtime it is silence.
+ */
+export function eventOf(sounds, name) {
+  return sounds?.events?.byCue?.[name] ?? null;
+}
+
+/** The sound definition cue `name` resolves to, or null. */
+export function cueSound(sounds, name) {
+  const key = eventOf(sounds, name);
+  return key ? sounds.events?.sounds?.[key] ?? null : null;
+}
+
 /** A silent stand-in with the same shape, for a caller that has no listener. */
 export const SILENCE = {
   resume() {}, footstep() {}, bell() {}, bellAt() {}, enter() {}, placeBeds() {}, at() {},
   ambience() { return { bed: null, head: null, sounding: [], fading: [], placed: [] }; },
   lastRing() { return null; },
+  cue() { return false; }, events() { return []; },
   stride() { return Infinity; },
   classesFor() { return new Map(); },
 };
@@ -261,6 +294,131 @@ export function createAudio(listener, sounds) {
     strike(g.gain, t0, gain, decay);
     osc.start(t0);
     osc.stop(t0 + decay + 0.1);
+  };
+
+  /* --- the events ---
+   * A door, and the hound (#696). A sound is `events.sounds[key]`: a list of
+   * parts, each a noise burst or a tone at an offset from the cue, with a
+   * struck envelope (`decay`) or a held one (`attack`, `hold`, `release`),
+   * played through a panner of its own at the point the cue names and torn
+   * down when the last part is over. `byCue` says which sound a cue gets;
+   * `cueSound` above is that lookup, and test/layout.mjs holds it.
+   *
+   * NOTHING PLAYS BEFORE THE START BUTTON. A suspended context's clock does
+   * not move, so a latch cued on a save's resume (main.js opens every
+   * remembered lock at load) would land on the instant the button is pressed.
+   * A cue on a context that is not running is logged and not played, which
+   * is the crackle's own rule (#622). The log is what test/plan-vs-scene.mjs
+   * reads: which cue, which sound, from where, and whether it made a noise.
+   */
+  const ev = sounds.events || { byCue: {}, sounds: {}, spatial: {} };
+  const evSpatial = ev.spatial || {};
+  const log = [];
+  const LOG_MAX = 64;
+
+  /** An envelope on `param`: struck (`decay`) or held (`attack`/`hold`/`release`). Returns when it ends. */
+  const envelope = (param, t0, peak, part) => {
+    if (part.decay > 0 && !(part.attack > 0)) { strike(param, t0, peak, part.decay); return t0 + 0.004 + part.decay; }
+    const a = part.attack ?? 0.01, h = part.hold ?? 0, r = part.release ?? part.decay ?? 0.05;
+    const p = Math.max(peak, 0.0002);
+    param.cancelScheduledValues(t0);
+    param.setValueAtTime(0.0001, t0);
+    param.exponentialRampToValueAtTime(p, t0 + a);
+    param.setValueAtTime(p, t0 + a + h);
+    param.exponentialRampToValueAtTime(p * 0.001, t0 + a + h + r);
+    param.setValueAtTime(0, t0 + a + h + r + 0.001);
+    return t0 + a + h + r;
+  };
+
+  /** One part of an event sound into `dest` at `t0`, scaled by `scale`. Returns when it ends. */
+  const playPart = (dest, part, t0, scale) => {
+    const g = ctx.createGain();
+    g.gain.value = 0;
+    let src, end;
+    if (part.type === 'noise') {
+      src = ctx.createBufferSource();
+      src.buffer = noise;
+      const filter = ctx.createBiquadFilter();
+      filter.type = part.filter || 'bandpass';
+      filter.frequency.value = vary(part.hz, 0.08);
+      filter.Q.value = part.q ?? 1;
+      src.connect(filter); filter.connect(g);
+      end = envelope(g.gain, t0, part.gain * scale, part);
+      src.start(t0, Math.random() * Math.max(0.01, noise.duration - (end - t0) - 0.05));
+    } else {
+      src = ctx.createOscillator();
+      src.type = part.wave || 'sine';
+      src.frequency.setValueAtTime(vary(part.hz, 0.03), t0);
+      end = envelope(g.gain, t0, part.gain * scale, part);
+      if (part.toHz > 0) src.frequency.exponentialRampToValueAtTime(vary(part.toHz, 0.03), end);
+      if (part.filter) {
+        const filter = ctx.createBiquadFilter();
+        filter.type = part.filter;
+        filter.frequency.value = part.filterHz ?? part.hz;
+        filter.Q.value = part.filterQ ?? 1;
+        src.connect(filter); filter.connect(g);
+      } else {
+        src.connect(g);
+      }
+      src.start(t0);
+    }
+    g.connect(dest);
+    src.stop(end + 0.05);
+    return end;
+  };
+
+  /** The whole sound `def` from point `at`, now. Returns when it ends. */
+  const playSound = (def, at) => {
+    const pn = at ? pannerFor({ panning: evSpatial.panning || 'HRTF', refDistance: evSpatial.refMetres ?? 1.5, maxDistance: evSpatial.maxMetres ?? 40, rolloff: evSpatial.rolloff ?? 1 }) : null;
+    if (pn) moveTo(pn, at);
+    const dest = pn || out;
+    const times = Math.max(1, def.repeat?.times ?? 1);
+    let t0 = ctx.currentTime + 0.001, last = t0;
+    for (let k = 0; k < times; k++) {
+      for (const part of def.parts || []) last = Math.max(last, playPart(dest, part, t0 + (part.at ?? 0), def.gain ?? 1));
+      t0 += vary(def.repeat?.gapSeconds ?? 0, def.repeat?.spread ?? 0);
+    }
+    if (pn) setTimeout(() => pn.disconnect(), (last - ctx.currentTime) * 1000 + 200);
+    return last;
+  };
+
+  const point = (p) => (p && Number.isFinite(p.x) && Number.isFinite(p.z)) ? { x: p.x, y: Number.isFinite(p.y) ? p.y : 0, z: p.z } : null;
+
+  /** A cue that fires now, from `at`. */
+  const fire = (name, key, def, at) => {
+    const played = ctx.state === 'running';
+    if (played) playSound(def, at);
+    log.push({ cue: name, sound: key, at, played, t: performance.now() });
+    if (log.length > LOG_MAX) log.shift();
+  };
+
+  // The hound's clock: when it next barks, in performance.now() ms. Cleared
+  // outside `cadence.withinMetres`, so the first bark on approach is quick.
+  const clocks = new Map(); // cue -> { next }
+
+  /**
+   * A state cue, fired every frame it holds: the data's `cadence` turns the
+   * frames into moments.
+   */
+  const paced = (name, key, def, at, metres) => {
+    const c = def.cadence;
+    const now = performance.now();
+    if (!(metres <= c.withinMetres)) { clocks.delete(name); return; }
+    let clock = clocks.get(name);
+    if (!clock) { clock = { next: now + c.firstSeconds * 1000 }; clocks.set(name, clock); }
+    if (now < clock.next) return;
+    clock.next = now + vary(c.everySeconds, c.spread ?? 0) * 1000;
+    fire(name, key, def, at);
+  };
+
+  const cue = (name, { at = null, metres = null } = {}) => {
+    const key = eventOf(sounds, name);
+    const def = key ? ev.sounds?.[key] : null;
+    if (!def) return false;
+    const p = point(at);
+    if (def.cadence) paced(name, key, def, p, metres ?? 0);
+    else fire(name, key, def, p);
+    return true;
   };
 
   /* --- the beds ---
@@ -492,6 +650,21 @@ export function createAudio(listener, sounds) {
 
     /** The last ring: which `n` and how many strokes it was given. */
     lastRing() { return lastRing; },
+    /**
+     * Something happened: `name` is one of `CUES`, `at` is where in the world
+     * it happened, and `metres` is how far from the player it is, for a cue
+     * with a cadence. A cue the file has nothing for is false and silent; what
+     * refuses one is test/layout.mjs, in Node, before it is ever fired.
+     */
+    cue,
+
+    /**
+     * Every cue fired so far, oldest first and at most the last 64: which cue,
+     * which sound it resolved to, where from, and whether the context was
+     * running to play it. For test/plan-vs-scene.mjs.
+     */
+    events() { return log.map((e) => ({ ...e, at: e.at ? { ...e.at } : null })); },
+
 
     /**
      * One footfall of the given class. An unknown class is silent rather than
