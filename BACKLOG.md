@@ -433,7 +433,7 @@ which is what makes that survivable (#522).
 | 7 | Sound: somebody listens to the seven beds, then a bed at a point, the four bells, event sounds | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
 | 8 | Side quests: the seven errands left of the dozen | 2+ | Opus 5 | Container | — | A | | [Side quests](SPECS.md#side-quests) |
 | 9 | A castle to get lost in: the town, the rock and river | 2+ | Opus 5 | Container | **after 4c** | B | | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
-| 10 | Bodies: a shared low-poly rig for the fifty (the child and the hound shipped, #643 to #645; two hens and the spear, #659 to #661) | 1 | Fable 5.1 | Local: net | — | C | | [Bodies](SPECS.md#bodies) |
+| 10 | Bodies: a shared low-poly rig for the fifty (the child and the hound shipped, #643 to #645; two hens and the spear, #684 to #686) | 1 | Fable 5.1 | Local: net | — | C | | [Bodies](SPECS.md#bodies) |
 | 11 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 | Container to the Node line, local: GPU past it | **after 2** | D | shadow + hand shipped 2026-09-17 (#650 to #654) | [Feel](SPECS.md#feel) |
 | 12 | The tooling: a dialogue format (the placement editor, its budget suite and its move-and-delete all shipped, #583 to #587, #607 to #611, #636 to #642) | 2+ | Opus 5 | Container | — | C (12c) | | [The tooling](SPECS.md#the-tooling) |
 
@@ -679,7 +679,7 @@ running between her stops, three data fields `npc.js` did not have before. The
 hound is a fifth file, Quaternius's Husky as `assets/NPCs/Hound.glb`, 0.63 MB
 meshopted, with a `follow` that brings it to heel along the grid.
 
-**Two hens and the spear shipped on 2026-09-18** (#659 to #661), both off
+**Two hens and the spear shipped on 2026-09-18** (#684 to #686), both off
 poly.pizza, which re-hosts Quaternius's packs as glTF under the same CC0.
 `Hen.glb` is the Farm Animals bird, 55 KB, and it needed a fourth re-export
 move no body before it did: the 100x scale an FBX export leaves on the

@@ -859,13 +859,13 @@ section below is kept as written with what shipped noted against each part.
   check in `test/mystery.mjs` is per person against the body that person
   wears; the silhouette count below is asserted at 10 shapes off 5 files;
   and the follow is driven in Node against the real grid with a fake body.
-- **The chicken is a sixth file** (#659), shipped 2026-09-18: Quaternius's
+- **The chicken is a sixth file** (#684), shipped 2026-09-18: Quaternius's
   Farm Animals bird off poly.pizza as `assets/NPCs/Hen.glb`, 55 KB meshopted,
   clips renamed to `Idle`, `Idle_Peck`, `Run`, `Attack`, `Death`, one
   material `Feathers` over its atlas, and the FBX export's 100x scale baked
   into the data so three renders it at all. Two hens wear it, near-white and
   tawny tints over the atlas, with `peck` as the one new activity.
-- **The garrison's spear is a held prop** (#660), shipped 2026-09-18:
+- **The garrison's spear is a held prop** (#685), shipped 2026-09-18:
   Quaternius's off poly.pizza as `assets/NPCs/Spear.glb`, 46 KB. `heldProp`
   under `assets/` is repo-relative (`heldPropPath` in `src/populace.js`, the
   one copy of the rule), and `heldPropFit` `{length, grip, tipUp}` is the fit

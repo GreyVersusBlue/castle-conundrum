@@ -76,14 +76,14 @@ export const ACTIVITY_CLIPS = {
    * against every body, which is the change a second rig forced on it. */
   sniff: 'Idle_2_HeadLow',
   eat: 'Eating',
-  /* THE HEN'S ONE (#659). Hen.glb is Quaternius's Farm Animals bird, five
+  /* THE HEN'S ONE (#684). Hen.glb is Quaternius's Farm Animals bird, five
    * clips off a seven-joint rig, and `Idle_Peck` is the head going to the
    * ground and back. `wait` is its Idle and `Run` is what it walks with. */
   peck: 'Idle_Peck',
 };
 
 /**
- * WHERE A HELD PROP LIVES (#660). The King's mace is a Poly Haven prop and
+ * WHERE A HELD PROP LIVES (#685). The King's mace is a Poly Haven prop and
  * `heldProp` has always been read as a path under `polyhavenBase`. The
  * garrison's spear is not Poly Haven's — it is a Quaternius file under
  * `assets/NPCs/`, beside the bodies — so a `heldProp` that already starts
@@ -126,7 +126,7 @@ export function populaceDefs(populace) {
     boneScale: p.boneScale,
     clips: p.clips,
     speed: p.speed,
-    // A held prop and how it sits in the hand (#660): the garrison's spear.
+    // A held prop and how it sits in the hand (#685): the garrison's spear.
     // `heldProp` is the cast's field, resolved by `heldPropPath`; `heldPropFit`
     // is new and optional, {length, grip, tipUp}, and npc.js reads it.
     heldProp: p.heldProp,
@@ -213,7 +213,7 @@ export function validatePopulace(populace, { nav = null, mystery = {}, cast = []
       if (typeof f !== 'object' || !(Number.isFinite(f.radius) && f.radius > 0) || !(Number.isFinite(f.keep) && f.keep > 0)) say(`${at}: follow needs a positive radius and keep, in metres`);
       else if (f.keep >= f.radius) say(`${at}: follow.keep ${f.keep} is not inside follow.radius ${f.radius}, so it would never set off`);
     }
-    /* A HELD PROP AND ITS FIT (#660). The path is a string test/assets.mjs
+    /* A HELD PROP AND ITS FIT (#685). The path is a string test/assets.mjs
      * resolves to a file; the fit is refused in the shapes that fail
      * silently in a hand: a length of 0 is a prop scaled to nothing, and a
      * grip outside 0..1 is a hand holding the air past one end of it. */

@@ -222,7 +222,7 @@ export class NPC {
    * somewhere sane. Falls back to hanging the prop off the body's right side, which is
    * all a placeholder capsule (no bones) can do.
    *
-   * THE FIT IS DATA WHEN THE DEFAULTS ARE WRONG (#660). The defaults are a
+   * THE FIT IS DATA WHEN THE DEFAULTS ARE WRONG (#685). The defaults are a
    * mace's: 0.6 m long, gripped 14 % up from the butt, heavy end hanging
    * down past the fist. A spear is none of those. `fit.length` is the
    * real-world length in metres, `fit.grip` the fraction along the long axis

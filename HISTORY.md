@@ -6065,8 +6065,10 @@ main checkout that had another row's uncommitted files in it. quaternius.com
 was not asked this time; poly.pizza was, because #644 had already read the
 Farm Animals pack's Drive folder and found `Blends/`, `FBX/` and `OBJ/` and
 no glTF, and poly.pizza re-hosts Quaternius's packs as `.glb` under the same
-CC0 deed. `ktx` v4.4.2 on PATH. Decisions #659 to #661, read off a fresh
-`origin/main` that ended at #658. Eleven suites green in one `npm test`;
+CC0 deed. `ktx` v4.4.2 on PATH. Decisions #684 to #686. They were written
+as #659 to #661, read off a fresh `origin/main` that ended at #658, and PR
+#49 took that band first; they were renumbered whole at merge, in every
+file that cites them. Eleven suites green in one `npm test`;
 `built` lost that run to `Port 8127 is already in use`, another session's
 suite on the same machine, and passed alone; `plan-vs-scene` is red on the
 chapel-candles beat that #633 measured red at `main` on this machine and
@@ -6076,7 +6078,7 @@ grey background #606 and #643 used, and it is written up as that and not as
 the castle.
 
 - **The hen is a sixth file, and it needed a bake no body before it did**
-  (#659). poly.pizza's `chicken` search returns two Quaternius chickens.
+  (#684). poly.pizza's `chicken` search returns two Quaternius chickens.
   One is the cube-animals toy: a blob, four joints, `Dance`, `Yes`, `No`.
   The other is the Farm Animals bird: 2140 triangles, a seven-joint rig
   (`Root`, two legs, `Body`, each with an `_end`), five clips (`Attack`,
@@ -6115,7 +6117,7 @@ the castle.
   it for, and her ring is east of both now.
 
 - **The spear is a held prop that is not Poly Haven's, and the fit is data**
-  (#660). poly.pizza's `spear` search has two by Quaternius; the one taken
+  (#685). poly.pizza's `spear` search has two by Quaternius; the one taken
   is untextured, 1202 triangles, four materials already named (`DarkWood`,
   `LightWood`, `Steel`, `LightSteel`), authored along +Y with the head at
   the top, and it is `assets/NPCs/Spear.glb`, 46 KB meshopted. Nothing in
@@ -6145,7 +6147,7 @@ the castle.
   six variation axes now have a second body with a prop on it: 14
   silhouettes off 6 body files, up from 10 off 5.
 
-- **The rails, each broken from green first** (#661). Both `heldProp`
+- **The rails, each broken from green first** (#686). Both `heldProp`
   sweeps in `test/assets.mjs` (check 1, is the file there; check 4, is the
   file asked for) and the meshopt check 5 read the household's props as well
   as the cast's, and the encoder's prop list does too. `test/mystery.mjs`

@@ -93,7 +93,7 @@ const refs = [
    * loads, and `build()` rejects on it inside a Promise.all in main.js, which
    * is a loading screen that stops with no castle behind it. */
   ...(populace.people ?? []).map(p => [p.modelPath, `${p.id || p.name}'s body`]),
-  // And what they carry (#660): the garrison's spear is the first held prop
+  // And what they carry (#685): the garrison's spear is the first held prop
   // the cast does not, and the first that is not Poly Haven's.
   ...(populace.people ?? []).filter(p => p.heldProp).map(p => [heldPropPath(config.polyhavenBase, p.heldProp), `${p.id || p.name}'s heldProp`]),
 ];
@@ -390,7 +390,7 @@ console.log('\nevery Poly Haven prop and every NPC body is meshopt-encoded');
     // And the household's: the hound is the first body the cast does not
     // wear (#644), and this list found bodies through `cast` until then (#645).
     ...(populace.people ?? []).map(p => p.modelPath),
-    // And what the household carries (#660), which is not Poly Haven's.
+    // And what the household carries (#685), which is not Poly Haven's.
     ...(populace.people ?? []).filter(p => p.heldProp).map(p => heldPropPath(config.polyhavenBase, p.heldProp)),
   ])].filter(rel => fs.existsSync(path.join(ROOT, rel)));
   const raw = files.filter(rel => !(readGLTF(path.join(ROOT, rel)).json.extensionsUsed || []).includes('EXT_meshopt_compression'));

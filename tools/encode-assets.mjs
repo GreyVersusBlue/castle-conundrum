@@ -272,7 +272,7 @@ const populace = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/populace.json'
 const props = new Set([
   ...config.interiorProps.map((p) => config.polyhavenBase + p.model),
   ...npcs.cast.filter((n) => n.heldProp).map((n) => config.polyhavenBase + n.heldProp),
-  // And what the household carries (#660): the spear is under assets/NPCs,
+  // And what the household carries (#685): the spear is under assets/NPCs,
   // not Poly Haven's, and `heldPropPath` is the one place that knows which.
   ...(populace.people ?? []).filter((p) => p.heldProp).map((p) => heldPropPath(config.polyhavenBase, p.heldProp)),
 ]);
