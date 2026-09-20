@@ -53,6 +53,7 @@ import { makePlan, walkability, collidersWith, moveBody, GRID, HEAD_LOW, HEAD_HI
 import { dayTwoOutcomes, dayTwoCastle } from '../src/mystery.js';
 import { stepClassOf, bedOf, bedSources, sourcePoint, audibleFrom, ringOf, CUES, eventOf, cueSound } from '../src/audio.js';
 import { castleNav } from '../src/stations.js';
+import { routeThrough, marksAlong, onStorey } from './route.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, '..');
@@ -894,6 +895,111 @@ console.log('\na body up and down every flight');
   }
   if (!plan.ramps.length) fail('the plan has no flights, so nothing was climbed');
   else if (climbed === plan.ramps.length * 2) pass(`${plan.ramps.length} flights, each climbed and descended by a ${BODY_RADIUS} m body onto the floor beyond, ${sidestepped} of the ${climbed} walks leaving through the crescent beside the flight`);
+}
+
+/* --------------- 8b: a walk between two rooms on one storey stays on it ---
+ * `walkability(plan).path()` treats a flight as floor, because a flight IS the
+ * only surface over the cells it stands on, and it hands back the shortest walk
+ * in cells without caring how high those cells are. `test/play-castle.mjs`'s
+ * `hike` then aims the player at each one in turn and holds W. Measured on a
+ * GPU on 2026-09-19 (#710): the shortest way out of the chapel crosses the
+ * Chapel Tower's ramp, the player is driven up it, `hike` re-plans from a body
+ * that is now a storey too high, gets the same answer, and gives up on the
+ * third — the run stalled at (22.4, 15.2) L1 and then at (23.4, 14.4) L1.
+ * Worse than the chapel, and never seen because no beat walks it: the clerk's
+ * office to the porter's lodge came back 132 cells with 76 of them off the
+ * ground and a high point of 8.00 m, which is the wall walk.
+ *
+ * `test/route.mjs` is the thinning that fixes it, in the suite rather than in
+ * the plan's graph, because `src/stations.js` walks the twelve along that same
+ * graph and has no such trouble (a station is never on a ramp). This is the
+ * rail: over every pair of ground rooms the fill reaches, the route may not
+ * leave the storey both ends stand on.
+ *
+ * THE LEVEL IS READ OFF THE HEIGHT. A cell carries the level of the SURFACE it
+ * stands on, and a flight's surface carries the level it starts from, so a cell
+ * four metres up the Chapel Tower's lower flight still says `level: 0`.
+ * Asserting on that field alone would pass every ramp cell there is.
+ */
+console.log('\na walk between two rooms on one storey');
+{
+  const ground = rooms.filter(r => r.level === 0 && !isOutside(r) && r.reachable);
+  // The floor of the room nearest its own middle. `at` carries a flight's cells
+  // too, and the foot of the Chapel Tower's stair is inside the chapel.
+  const floorOf = (r) => {
+    const mx = (r.bounds.min.x + r.bounds.max.x) / 2, mz = (r.bounds.min.z + r.bounds.max.z) / 2;
+    let best = null, far = Infinity;
+    for (const a of r.at) {
+      if (!onStorey(plan, a)) continue;
+      const d = Math.hypot(a.x - mx, a.z - mz);
+      if (d < far) { far = d; best = a; }
+    }
+    return best ? { x: best.x, z: best.z, level: 0 } : null;
+  };
+  /* THE SAME AIM-AND-HOLD LOOP, IN NODE. `driveTo` reads where the body is,
+   * points it at the next mark, holds W for a burst and looks again; a burst is
+   * 0.2 s of 5.2 m/s far off and 0.09 s of it inside 2.5 m, so about a metre
+   * and about half of one. This is that loop over `moveBody`, which is the
+   * controller's own body and the same thing check 8 climbs the flights with.
+   * It is arithmetic over the plan and not a real-time measurement, so #53 does
+   * not apply to it either way: what it cannot see is frame timing, and what it
+   * can see is a 0.9 m body against a 0.5 m grid's idea of a route. */
+  const drive = (from, to) => {
+    let body = { x: from.x, z: from.z, feet: from.h };
+    for (let burst = 0; burst < 20; burst++) {
+      const dx = to.x - body.x, dz = to.z - body.z, gap = Math.hypot(dx, dz);
+      if (gap <= 1.0) return { ok: true, x: body.x, z: body.z, feet: body.feet };
+      const run = gap > 2.5 ? 1.04 : 0.47;
+      let covered = 0;
+      for (let n = 0; n < Math.ceil(run / 0.1); n++) {
+        const moved = moveBody(plan, plan.colliders, body, (dx / gap) * 0.1, (dz / gap) * 0.1);
+        if (moved.refused) break;
+        covered += Math.hypot(moved.x - body.x, moved.z - body.z);
+        body = moved;
+      }
+      if (covered < 0.02) return { ok: false, x: body.x, z: body.z, feet: body.feet, left: gap };
+    }
+    return { ok: false, x: body.x, z: body.z, feet: body.feet, left: Math.hypot(to.x - body.x, to.z - body.z) };
+  };
+  let pairs = 0, marked = 0, climbed = 0, stopped = 0;
+  for (let a = 0; a < ground.length; a++) {
+    for (let b = a + 1; b < ground.length; b++) {
+      const from = floorOf(ground[a]), to = floorOf(ground[b]);
+      if (!from || !to) { stopped++; fail(`${(from ? ground[b] : ground[a]).id} has no floor cell on its own storey to stand on`); continue; }
+      pairs++;
+      const route = routeThrough(plan, walk, from, to);
+      if (!route) { climbed++; fail(`no walk from ${ground[a].id} to ${ground[b].id} across the ground floor`); continue; }
+      /* ON THE FLOOR, NOT MERELY ON THE STOREY. A waypoint 1.65 m up the
+       * Chapel Tower's lower flight still ROUNDS to the ground — the storey is
+       * 4 m — and `playerAt` would read the body standing on it as L0 while it
+       * is most of a flight in the air. The floor is the test: within one step
+       * of the storey's own height, which is `onStorey`. */
+      const off = route.filter(w => w.storey !== 0 || !onStorey(plan, w));
+      if (off.length) {
+        climbed++;
+        const high = off.reduce((m, w) => (w.h > m.h ? w : m), off[0]);
+        if (climbed <= 4) fail(`the walk from ${ground[a].id} to ${ground[b].id} leaves the ground: ${off.length} of its ${route.length} waypoints are off it, the highest at (${high.x.toFixed(2)}, ${high.z.toFixed(2)}), h ${high.h.toFixed(2)}, storey ${high.storey}`);
+        continue;
+      }
+      const marks = marksAlong(plan, walk, route);
+      marked += marks.length;
+      const line = [route[0], ...marks, route[route.length - 1]];
+      let at = { x: line[0].x, z: line[0].z, h: line[0].h };
+      for (let k = 1; k < line.length; k++) {
+        const got = drive(at, line[k]);
+        if (!got.ok) {
+          stopped++;
+          if (stopped <= 4) fail(`walking ${ground[a].id} to ${ground[b].id}, the body stops at (${got.x.toFixed(2)}, ${got.z.toFixed(2)}), ${got.left.toFixed(2)} m short of its mark at (${line[k].x.toFixed(2)}, ${line[k].z.toFixed(2)})`);
+          break;
+        }
+        at = { x: got.x, z: got.z, h: line[k].h };
+      }
+    }
+  }
+  if (climbed > 4) fail(`and ${climbed - 4} more walks between two ground rooms that leave the ground`);
+  if (stopped > 4) fail(`and ${stopped - 4} more walks the body cannot drive`);
+  if (!climbed) pass(`${pairs} pairs of the ${ground.length} ground rooms the fill reaches, and no walk between any two of them leaves the ground floor`);
+  if (!stopped) pass(`${marked} waypoints over those ${pairs} walks, every one of them driven by a ${BODY_RADIUS} m body`);
 }
 
 /* ------------------------------ 9: every merlon stands on stone ---
