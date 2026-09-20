@@ -130,6 +130,62 @@ The project lived in `GreyVersusBlue/tools-and-games` under
   That is the line between `npm test`, which CI runs, and `npm run play`, which
   it does not.
 
+## Which model does what
+
+The three subagents this section names live in `.claude/agents/`.
+
+**The model is chosen by what a change touches, not by which row it belongs
+to.** The Model column in `BACKLOG.md` and `ROADMAP.md` is the row's ceiling;
+most of a row's commits sit well under it. About half of this repo's commits
+are renumbering, merge reconciliation, count fixes and CI flake records, and
+none of that is Opus work.
+
+### The lead's protocol
+
+The session's own model is the lead. Before touching a file, the lead reads
+the row's `SPECS.md` section, classifies the next increment with the table
+below, states the class in one line, and dispatches. **The lead does not write
+code or edit the doc files itself for class S or class B work.** It reads the
+subagent's report, runs nothing twice, and moves on. A report is at most
+fifteen lines: files touched, assertions added and which one failed when the
+guard-rail was broken on purpose (#34), the `npm test` result, and any HISTORY
+number it claimed.
+
+If the session's model is Fable or Opus, the lead is the expensive part of the
+session. Keep its turns short: classify, dispatch, read the report. Do not
+have it re-read a diff a green suite already vouched for.
+
+### The table
+
+| Class | Who | The test |
+| --- | --- | --- |
+| **B** bookkeeping | `scribe` (Sonnet) | Renumbering a band after a merge. Retiring a shipped row from `BACKLOG.md`, `ROADMAP.md` and `SPECS.md`. Fixing a count (suites in the CI job name, assertions in a section, files in a list). Resolving a merge of the doc files. Recording a CI flake with its control run. Rewriting a ROADMAP row's text to say what shipped. The decision already exists; the job is writing it down where the rules say. |
+| **S** ship | `builder` (Opus) | The row's `SPECS.md` section exists, every open call in it has a recommendation, the change stays inside one lane, no `save.js` version bump, no numbered decision is overturned, and no assertion moves between suites. Content that fills an existing shape: a quest graph in the format #576 set, populace routines on clips the kit has, a `.dlg` line set, an `ambient` block, a slab in a room the castle already builds. |
+| **O** decide | `architect` (Opus) | Any one of: no `SPECS.md` section yet, or an open call without a recommendation. Touches `save.js`'s version or `migrate` (#36, #37). Overturns or amends a numbered decision. Adds, moves or deletes an assertion across the `layout` / `plan-vs-scene` / `mystery` / `budget` line (#529, #611). Renegotiates a budget ceiling. Needs two lanes at once. A guard-rail that stays green when its bug is reintroduced. |
+| **F** the lead itself | Fable, or whatever the session is | Triage. Asset sourcing and measuring (the shape rank 1 was: fetch, compare rig against the name lists, reject with a number). Reordering `ROADMAP.md` or adding a gate. Answering "what next" from the whole backlog. Anything Devon asks as a question rather than a task. |
+
+Two rules that break ties:
+
+- **A row is usually two or three classes in sequence.** R4a is O (overturn
+  #533, spec `day2.watches`), then S (the engine reads whichever list the day
+  names), then B (record it, renumber if a merge took the band). Dispatch each
+  increment to its own class; do not send the whole row to the architect
+  because its first increment needed one.
+- **When the lead cannot tell S from O, it is O.** `architect` and `builder`
+  are both Opus, so the difference is the job, not the model: `architect`
+  writes the decision down before anything is built. Sending an O job to
+  `builder` skips that, and a decision nobody wrote down is how this project
+  lost the plan-suite rule for a year.
+
+### What each subagent returns to the lead
+
+`scribe` and `builder` end on a report, not a summary of the report. `builder`
+runs `npm test` (or the subset the spec names) and says which suite went red
+first if any did. `architect` ends on a `SPECS.md` section or an amended one,
+with the open calls each carrying a recommendation, so the next increment is
+class S by construction.
+
+
 ## Writing style
 
 Direct, specific, no em dashes, no rule-of-three padding, no corporate
