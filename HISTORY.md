@@ -7338,3 +7338,81 @@ hand once the cause was certain, plus four hand-run looks. One run was lost to
 `Port 8124 is already in use`, left behind by the Vite server of a run that had
 been killed — #624's rule about a working tree, for a fourth time, in its
 smallest form: the port is one copy too.
+
+## The walker on the stair: route on one storey, and round what a body does not fit through (2026-09-19)
+
+**Rank 1, on `claude/r1-walker-on-the-stair`, container, no lane.** Two GPU
+sittings (#624 to #630, #708 to #715) had left one thing between `npm run
+play` and the end of the day: `hike`'s route crossed a flight as if it were
+floor, drove the player up the Chapel Tower's stair, and every re-plan after
+that started a storey too high. `test/route.mjs` is new: 275 lines that do the
+routing and the waypoint thinning `hike` used to do inline. Nothing in `src/`
+changed. `npm test` runs 14 of 15; `npm run build` is green.
+
+- **The fix went into the suite, not the plan's graph** (#716), as the row's
+  first open call recommended. `src/stations.js` walks the twelve along
+  `walkability(plan)`'s own graph and neither of this row's two bugs touches
+  them: a station is never on a ramp, and an NPC is steered cell by cell
+  rather than aimed at and held. Narrowing the graph itself would have moved
+  twelve working bodies to fix one broken one, so `routeThrough` in
+  `test/route.mjs` searches a same-storey pair's own floor alone, and `hike`
+  in `test/play-castle.mjs` calls it instead of `walk.path` directly.
+
+- **The wall symptom is the stair symptom, not a second row** (#717), as the
+  row's second open call recommended. Both are the same waypoint list being
+  wrong about what a 0.9 m body can reach from where it stands: the stair
+  case let the route claim a flight as floor, and the wall case let it hug a
+  wall a prop stood against because the grid samples a point where the body
+  is 0.45 m of radius. `marksAlong` now puts a mark at the widest point of
+  every doorway a route passes through, and a cell a 0.45 m body does not fit
+  in costs five cells rather than one, so the shortest route stops running
+  down `foundation-stone`'s 0.60 m gap against the cross-wall at (-2.6, 4.0)
+  and `barrels-91`'s 0.52 m gap inside the North-west Tower's door. A penalty
+  rather than a ban: banning a tight cell outright cut 21 of the 66
+  room-to-room routes, the porter's lodge and the guardroom among them.
+
+- **The #34 break, and the fact that the brief's own prescribed break cannot
+  fire** (#718). Re-admitting a flight's cells to a same-storey route was the
+  break this row's spec named, and it does nothing: a flight's consecutive
+  cells sit roughly 0.5 m apart in height, `storeyGraph` drops exactly the
+  fill's `sameRamp` rule that joins cells that far apart, and without it a
+  flight is not a connected path at all. The ramp-cell break is unfirable by
+  construction, not a rail that stayed green. Two different breaks did fire,
+  both from a green baseline, both restored afterwards: handing a
+  same-storey pair back to `walk.path` printed `FAIL  the walk from
+  clerk-office to porter-lodge leaves the ground: 78 of its 139 waypoints are
+  off it, the highest at (-18.25, -16.25), h 8.00, storey 2` and exited 1;
+  pricing a tight cell at 1 instead of `TIGHT` printed `FAIL  walking
+  clerk-office to guardroom, the body stops at (-33.73, -14.32), 1.02 m short
+  of its mark at (-34.75, -14.35)` and exited 1. The doorway marks themselves
+  are honestly unrailed (`test/route.mjs` says so in place, #13, #147): with
+  the clearance pricing in, taking them out changes no answer over the 66
+  room-to-room walks either way, 1936 pushed steps of 31,103 against 1913.
+  Rank 2's GPU run is what can still kill or confirm them, not a Node check.
+  This is #147's lesson turned on a rail that cannot be broken, rather than
+  one that stayed green when it should not have.
+
+- **`test/layout.mjs` gained check 8b** (#719): over all 66 pairs of the 12
+  ground rooms the fill reaches, no waypoint of a same-storey route leaves
+  that storey, and a 0.45 m body is driven through every one of the 1577
+  waypoints by `moveBody`, the controller's own. `layout` is 153 ok, 0 fail,
+  in 2.7 s.
+
+- **`npm test` is 14 of 15, and the fifteenth is inherited, not this row's**
+  (#720). `plan-vs-scene` fails `none of the 12 cells between 0.9 and 2.8 m of
+  the chapel candles offers them (the nearest offered "Press E to ring the
+  bell")` on a clean `origin/main` too, verified by stashing this row's
+  changes and running twice. That is the red `BACKLOG.md`'s "CI on `main` is
+  red, and it is nobody's row yet" paragraph already named; it is
+  not folded into this row.
+
+**Left for whoever takes it next.** Two props stand inside a 0.45 m body's
+width of stone: `foundation-stone` against the cross-wall at (-2.6, 4.0) and
+`barrels-91` inside the North-west Tower's door (both #718, above). The
+router goes around both now and does not depend on either being moved; moving
+them is a small row of its own, filed in `BACKLOG.md`.
+
+**Rank 1 is done. Its section is gone from this file and from `SPECS.md`, and
+`ROADMAP.md`'s Gate 1 is back to rank 2, the GPU run** — the walk half of that
+row is answered on Node terms; what it is still owed is the run itself, on a
+GPU (#53).

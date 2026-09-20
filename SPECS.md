@@ -81,71 +81,11 @@ Four facts every row below leans on, stated once:
 
 ---
 
-## The walker on the stair
-
-**Rank 1. Size ¼. New on 2026-09-19** (#710). It gates "The GPU run" and
-nothing gates it.
-
-### Scope
-
-- **`test/play-castle.mjs`'s `hike`, and possibly `walkability` in
-  `src/castle-plan.js`.** The path graph treats a flight as walkable floor, so
-  the shortest route out of the chapel crosses the Chapel Tower's stair ramp.
-  The player is driven up it, and because `hike` re-plans from where the body
-  actually is, every re-plan after that starts a storey too high and produces
-  the same route again. Three identical answers is the `lost the line` path,
-  and then the beat gives up.
-- **#630 named the fix and did not make it**: drop ramp and wrong-level
-  waypoints when both ends of the route are on the same storey. Whether that
-  belongs in the plan's own graph or in the suite's thinning is this row's
-  first judgement call. **Recommendation: the suite.** `src/stations.js` walks
-  the twelve along the same graph and they do not have this problem, because a
-  station is never on a ramp; the player is steered by aim-and-hold and is.
-  A change to the graph would move twelve bodies to fix one.
-- **The wall symptom is the same row.** With pointer lock healthy the player
-  also slides along a face it cannot find the door in: measured at (-18.9,
-  -14.3) inside the Kitchen Tower and at (-33.5, 5.0) and (-26.5, 5.0) along
-  the Great Hall's north wall, whose doorways are at x -20 and -12. A waypoint
-  list that does not put a mark *in* a doorway lets the aim-and-hold loop cut
-  the corner into the jamb.
-
-### Acceptance
-
-- A Node check that the route between two rooms on the same storey contains no
-  waypoint whose level differs from both ends, over every pair of ground rooms
-  the plan knows. That is derivable from the plan in Node, so it belongs in
-  `test/layout.mjs` and not in `plan-vs-scene.mjs` (#529).
-- **The break that proves it** (#34): re-admit one ramp cell to a route and
-  watch the new assertion fail, from a green baseline, and say which one and
-  what it said.
-- The GPU half is rank 2's and is not this row's to claim: `npm run play`
-  reaching the second bell is the proof, and it needs the machine.
-
-### Open calls
-
-- **Does the fix go in the plan or in the suite?** Recommendation above: the
-  suite. Reversible either way and cheap to argue in `HISTORY.md`.
-- **Is the wall symptom one row or two?** Recommendation: one. Both are the
-  waypoint list being wrong about what the body can reach from where it is,
-  and a session that fixes one and not the other leaves the day still stopping.
-
-### Dependencies
-
-- Nothing. It is a container's row start to finish, and it is the only thing
-  between `npm run play` and the end of the day.
-
-### Constraints
-
-- #529 (whatever is provable in Node stays in `layout.mjs`).
-- #34 (a new rail gets broken on purpose first).
-- #53 (a pass under software rendering does not close this; rank 2's run does).
-
----
-
 ## The GPU run
 
-**Rank 2. Size ¼. Gated on rank 1 since 2026-09-19.** `npm run play` is 102
-assertions and a numbered screenshot per beat into `shots/play/`. It has now
+**Rank 2. Size ¼. Its gate, rank 1, shipped 2026-09-19** (#716 to #720).
+`npm run play` is 102 assertions and a numbered screenshot per beat into
+`shots/play/`. It has now
 been run on a machine with real compositing four times over two sittings
 (#624 to #630 on 2026-09-17, #708 to #715 on 2026-09-19) and the day has never
 reached the end.
@@ -155,8 +95,10 @@ second sitting answered every render question the list below carried — the
 twelve at Vespers, the Lauds sky, the covered hall, eleven bodies at interact
 range — by putting the world at a bell with `applyWatch(watch, { walk: false
 })` and photographing it, which is how rank 5 answered its two (#656 to #658).
-What is left is `npm run play` itself getting there, and the one thing
-stopping it is rank 1's walker.
+What is left is `npm run play` itself getting there. Rank 1, the walker on
+the stair, shipped on 2026-09-19 (#716 to #720): the Node check holds over
+every pair of ground rooms, and what is owed now is the run itself, on a GPU
+(#53).
 
 **Rank 3, the preview and og card that used to sit under this same section,
 shipped on 2026-09-17** (#634, #635) from a fallback frame rather than the run
@@ -242,9 +184,11 @@ rank 2's alone.
 - ~~The fourth body is still owed the run's photograph~~ (#606). **Taken**
   (#711): Marged, Nest and Lady Alys are in `shots/look2/`, and `Woman.glb`
   does the job the tint was being asked to do.
-- **Rank 1, the walker on the stair, gates it** (#710). Until `hike` stops
-  driving the player up the Chapel Tower ramp, the day stops at the second
-  bell, and no amount of looking answers that.
+- **Rank 1, the walker on the stair, shipped** (#716 to #720). `hike` no
+  longer drives the player up the Chapel Tower ramp; a same-storey route now
+  searches that storey's floor alone, over every pair of ground rooms the
+  fill reaches. That holds on Node terms; nobody has watched it hold on a GPU
+  yet, which is what this row still owes.
 - The journal beat's walk assertion (#659) has been run on a GPU now, three
   times, and read 0.69, 1.30 and 0.51 m against its `> 1.0` threshold. It is
   measuring the chapel's geometry more than it is measuring the pointer. What

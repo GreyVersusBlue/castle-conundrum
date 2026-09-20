@@ -51,6 +51,7 @@ import { serveDev, launch, prepPage, threeUrl, ROOT } from './harness.mjs';
 import { makePlan, walkability } from '../src/castle-plan.js';
 import { partsOf } from './gltf.mjs';
 import { attachSceneProbe, waitForProbe, walkTo as driveTo, wait, textContent, aimAt } from './drive.mjs';
+import { routeThrough, marksAlong } from './route.mjs';
 import fs from 'node:fs';
 import sharp from 'sharp';
 import path from 'node:path';
@@ -126,9 +127,12 @@ const boundsOf = (rel) => {
 };
 const sceneConfig = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'scene-config.json'), 'utf8'));
 const NAV = [
-  walkability(makePlan(sceneConfig, boundsOf)),
-  walkability(makePlan(sceneConfig, boundsOf, { opened: ['muniment'] })),
-];
+  { opened: [] },
+  { opened: ['muniment'] },
+].map(({ opened }) => {
+  const plan = makePlan(sceneConfig, boundsOf, opened.length ? { opened } : undefined);
+  return { plan, walk: walkability(plan) };
+});
 
 fs.rmSync(OUT, { recursive: true, force: true });
 fs.mkdirSync(OUT, { recursive: true });
@@ -226,12 +230,15 @@ const playerAt = async () => {
 /**
  * Walk the castle's own shortest route to a point, then hand back.
  *
- * The path comes back one 0.5 m cell centre at a time, which is far finer than
- * anything worth steering to, so it is thinned to a waypoint every ~2.5 m and
- * to every corner. Driving every cell would turn a 45 m walk into ninety
- * bursts of 0.5 m and a lot of stopping; driving only the corners walks into
- * door jambs, because the route through a doorway is a corner a body's radius
- * wide. Both were tried.
+ * `route.mjs` is the routing and the thinning, and its header says why it is
+ * in test/ rather than in the plan's graph (#710). Two things it does that
+ * `walkability().path()` on its own does not: it keeps a walk between two
+ * points on one storey ON that storey, so the player is never driven up a
+ * flight it took as a short cut and left a storey too high for every re-plan
+ * after it, and it prices a cell the 0.9 m body does not fit in at five cells,
+ * so the route does not run down the side of a wall a prop is standing
+ * against. `test/layout.mjs`'s check 8b holds both over all 66 pairs of ground
+ * rooms.
  *
  * Returns false when neither fill has a route — a target on a storey the player
  * is not on, or a genuinely sealed room — and every caller treats that as
@@ -308,18 +315,14 @@ const hike = async (target, level = 0) => {
    * most: a third identical answer is a body that is stuck, not lost. */
   for (let attempt = 0; attempt < 3; attempt++) {
     const here = await playerAt();
-    const route = NAV.map((w) => {
-      const a = snap(w, here.x, here.z, here.level), b = snap(w, target[0], target[1], level);
-      return a && b && w.path(a, b);
-    }).find((p) => p && p.length > 1);
-    if (!route) return attempt > 0;
-    const marks = [];
-    let last = route[0];
-    for (let k = 1; k < route.length - 1; k++) {
-      const c = route[k], n = route[k + 1];
-      const turn = Math.sign(c.x - last.x) !== Math.sign(n.x - c.x) || Math.sign(c.z - last.z) !== Math.sign(n.z - c.z);
-      if (turn || Math.hypot(c.x - last.x, c.z - last.z) >= 2.5) { marks.push(c); last = c; }
-    }
+    const found = NAV.map((nav) => {
+      const a = snap(nav.walk, here.x, here.z, here.level), b = snap(nav.walk, target[0], target[1], level);
+      const route = a && b && routeThrough(nav.plan, nav.walk, a, b);
+      return route && route.length > 1 ? { nav, route } : null;
+    }).find(Boolean);
+    if (!found) return attempt > 0;
+    const { route } = found;
+    const marks = marksAlong(found.nav.plan, found.nav.walk, route);
     let missed = 0, run = 0, lost = false;
     for (const w of marks) {
       const got = await driveTo(page, [w.x, w.z], async (d) => d < 1.0, { maxBursts: 20, nearAt: 2.5, longMs: 200, shortMs: 90 });
