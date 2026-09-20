@@ -297,6 +297,17 @@ own recorded coordinate. Nobody has put a thumb on a phone (#530); that half
 is untouched and is still the feel, and it is now the whole of rank 2's
 unlooked-at list.
 
+**The third stop is fixed now, on Node terms** (#716 to #720, 2026-09-19).
+`test/route.mjs` is new: a same-storey walk now searches that storey's own
+floor, so a route can no longer take a flight for a short cut, and a cell a
+0.45 m body does not fit in costs five cells rather than one, so the same fix
+stops the route hugging the two walls a prop stands against
+(`foundation-stone` and `barrels-91`). `test/layout.mjs`'s new check 8b holds
+it over all 66 pairs of the 12 ground rooms: 153 ok, 0 fail. Nobody has
+watched the fixed route carry a real `npm run play` to the second bell yet;
+that proof is rank 2's alone. **Rank 1 is done, its section is gone from this
+file and from `SPECS.md`, and its number is retired.**
+
 **CI on `main` is red, and it is nobody's row yet — and on 2026-09-19 it is a
 different beat from the one below.** `npm test` at `f5d0c0e`, in a clean tree,
 fails `plan-vs-scene` on `none of the 12 cells between 0.9 and 2.8 m of the
@@ -467,17 +478,19 @@ All three shipped and **the row is retired**.
 
 ## The ranked table
 
-**It starts at 1 again, and 3, 5, 8 and 12 are numbers that have left the list
-rather than gaps in it.** The number 1 has now been used three times: the
-walker on the stair took it on 2026-09-19 (#710), because it is the one thing
-between `npm run play` and the end of the day and rank 2 cannot close without
-it. Before that it had been used twice and retired twice:
-the fourth body on 2026-09-17 (#619), and then the castle you cannot walk,
-which the GPU run opened the same day (#624 to #630) and which shipped on
-2026-09-18 (#659 to #661). That is the retirement rule working as intended
-rather than against it: a rank is a priority and not an id, so the number came
-back to the top of the list when something belonged there, and went again when
-it was done. Rank 3 shipped on 2026-09-17 from a fallback source rather than
+**It starts at 2 now, and 1, 3, 5, 8 and 12 are numbers that have left the
+list rather than gaps in it.** The number 1 has been used three times and
+retired three times: the fourth body on 2026-09-17 (#619); the castle you
+cannot walk, which the GPU run opened the same day (#624 to #630) and which
+shipped on 2026-09-18 (#659 to #661); and the walker on the stair, which the
+second GPU sitting reopened the same way on 2026-09-19 (#710) and which
+shipped, on Node terms, the same day (#716 to #720). That is the retirement
+rule working as intended rather than against it: a rank is a priority and not
+an id, so the number came back to the top of the list when something
+belonged there, and went again when it was done. Rank 2, the GPU run, held
+still at 2 through all three: it was never promoted to 1 in the gaps,
+because each time the gap closed with a new thing to walk before it could.
+Rank 3 shipped on 2026-09-17 from a fallback source rather than
 the shot the spec asked for (#634, #635), and rank 5 the same day, by rendering
 the hall directly rather than waiting on a second GPU run to reach Vespers
 (#656 to #658). **Two rows left by finishing rather than by being retired
@@ -490,8 +503,7 @@ which is what makes that survivable (#522).
 
 | Rank | Item | Size | Model | Where | Gate | Lane | Claimed | Detail |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | The walker on the stair: `hike` drives the player up a ramp and every re-plan starts a storey too high (#630, #710) | ¼ | Opus 5 | Container | — | — | | [The walker on the stair](SPECS.md#the-walker-on-the-stair) |
-| 2 | The GPU run: the looks are taken (#711 to #715); the day still stops at rank 1's walker | 1 | Opus 5 | Local: GPU | **after 1** | — | | [The GPU run](SPECS.md#the-gpu-run) |
+| 2 | The GPU run: the looks are taken (#711 to #715); rank 1 shipped (#716 to #720) and the run itself is owed | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
 | 6 | Life: a populace: the fifty, the activity clips and the ambient talk | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: somebody listens to the seven beds, the four rings and the first two event sounds (a bed at a point and the rings, #680 to #683; the door and the hound, #696 to #698) | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
 | 9 | A castle to get lost in: the town, the rock and river | 2+ | Opus 5 | Container | — (4c opened it) | B | | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
@@ -502,43 +514,17 @@ which is what makes that survivable (#522).
 take first, what each one unblocks, and which ones two sessions may hold at
 the same time. This table still ranks; that file sequences (#601).
 
-## The walker on the stair
-
-*Where: container. Gate: none. Lane: none. It gates rank 2.*
-
-**Rank 1, new on 2026-09-19** (#710). `test/play-castle.mjs`'s `hike` walks
-the castle's own path graph, and the path graph treats a flight as walkable
-floor. So the shortest route out of the chapel runs across the Chapel Tower's
-stair ramp, the player is driven up it, and every re-plan after that starts a
-storey too high. #630 found this on 2026-09-17, named the fix — drop ramp and
-wrong-level waypoints when both ends are on the same storey — and did not make
-it, on the grounds that a fix nobody has run is not a fix (#53). Two GPU
-sittings later it is still the thing that stops the day: run three of
-2026-09-19 stalled at **(22.4, 15.2) L1** and then **(23.4, 14.4) L1**, the
-second being #630's own recorded coordinate to the decimetre.
-
-**It has a second symptom and it is a wall, not a stair.** With pointer lock
-healthy, the player slides along a face it cannot find the door in: (-18.9,
--14.3) inside the Kitchen Tower, and (-33.5, 5.0) and (-26.5, 5.0) along the
-Great Hall's north wall, whose two doorways are at x -20 and -12. Both shapes
-are one row because both are the hike's waypoint list being wrong about what
-the body can reach from where it is.
-
-**And it is a container's row**, despite gating a GPU one: the path graph is
-`walkability(plan)` in `src/castle-plan.js`, the waypoint thinning is in
-`test/play-castle.mjs`, and both can be reasoned about and unit-tested in
-Node. Only the proof that the day now runs needs the machine, and that proof
-is rank 2's.
-
 ## The GPU run
 
-*Where: local, GPU. Gate: after rank 1. Lane: none.*
+*Where: local, GPU. Gate: none. Lane: none.*
 
 **Rank 2. It ran again on 2026-09-19, four times** (#708 to #715), and the
 judgement half of the row is done: the twelve at Vespers, the Lauds sky, the
 covered hall and eleven of the twelve bodies at interact range have all been
 looked at and written up in `HISTORY.md`, one sentence per body. **What is
-left is only the walk**, and the walk is rank 1's.
+left is only the walk.** Rank 1, the walker on the stair, shipped 2026-09-19
+(#716 to #720) and is retired; the walk it fixed holds on Node terms and
+nobody has watched it hold on a GPU yet, which is this row's job alone now.
 
 **The looks were taken the way rank 5 took its two** (#656 to #658):
 `applyWatch(watch, { walk: false })` puts the world at a bell with nobody
@@ -563,6 +549,13 @@ on every NPC in the game (#715), five checks in `test/play-castle.mjs` that are
 stale or vacuous including one that can only fail on a GPU (#714), and a
 journal walk assertion that read 0.69, 1.30, 0.51 and 0.69 m across four runs
 of the same beat, against 3.75 m for an unobstructed walk on the same machine.
+
+**A fourth thing came out of rank 1 and is nobody's row either** (#718).
+Route pricing a tight cell found two props standing inside a 0.45 m body's
+width of stone: `foundation-stone` leaves 0.60 m against the cross-wall at
+(-2.6, 4.0), and `barrels-91` leaves 0.52 m inside the North-west Tower's
+door. The router goes around both now and does not depend on either being
+moved; moving the props themselves is a small row nobody has taken.
 
 **Two of the four runs were stopped by this suite, not by the castle**
 (#708, #709), and both fixes are in `test/play-castle.mjs`: `present()` never
