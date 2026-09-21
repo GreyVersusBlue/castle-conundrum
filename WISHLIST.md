@@ -11,9 +11,10 @@ theme, Devon's brief of 2026-09-21, was written and moved out the same day**
 (#742 to #744): what is left
 below is the baseline they were measured against, Devon's own answers, and a
 pointer from each theme's old place to where it lives now, in `BACKLOG.md`
-and `SPECS.md`. **An eighth theme was written on 2026-09-21 and has not
-moved**: explore, a day with nobody waiting for a name, with four questions
-for Devon under it that nobody else can answer.
+and `SPECS.md`. **A second theme, also written on 2026-09-21, carried four
+questions nobody but Devon could answer** — explore, a day with nobody
+waiting for a name — **and he answered all four the same day they were put
+to him, moving it out too** (#750 to #753).
 
 A note on the name. `PLAN.md` was called `WISHLIST.md` until the move
 (#491), and `HISTORY.md` and `data/scene-config.json` still cite it by that
@@ -54,9 +55,9 @@ his answers.
 2026-09-17** (#560 to #567; they are ranks 6 to 12 since the lore row closed
 on the same day, #596): Devon asked for the wishlist taken up now rather
 than wait on rank 5 to close, which question 10's answer below had assumed.
-**Theme 8, explore, is the one theme still in this file**, written
-2026-09-21 against the castle as it stands after #728, and it waits on Devon
-rather than on a session.
+**Both themes written on 2026-09-21, the retro castle and explore, have now
+moved too** (#742 to #744, #750 to #753): nothing waits on Devon here any
+more, and what is below is the record of what he was asked and answered.
 The order between them, and the content inside each, both came across
 unchanged — the ranks below are the order this section already had. What
 follows per theme is a pointer, not the brief: `SPECS.md` has the first
@@ -306,255 +307,16 @@ writes nothing (#748).
 
 ### 8. Explore: a day with nobody waiting for a name
 
-**Not moved. Written 2026-09-21 from Devon's question of the same day, and it
-stays here until he answers questions 11 to 14 below.** Devon is considering a
-mode centred on walking the castle and talking to the twelve, with no case to
-solve, and weighing whether it sits beside the mystery as a second mode or
-becomes the main one with the mystery behind it. He said "perhaps" to the
-second half. Both halves are his, and neither is answered here. What this
-theme does is say what each costs, which numbered decisions each touches,
-and what the first increment is under either answer, written to `SPECS.md`'s
-depth so that the day he says "build it" the row is class S by construction
-and moves out of this file the way the seven before it did.
-
-**Recommendation, stated once.** A second door on the start panel into the
-mystery's own day with its clock's teeth drawn, saved nowhere, first. Not the
-main mode, not yet, and not because the idea is small: because the content
-that would make an hour of chatting worth an hour does not exist, and a main
-mode built on twelve people who each say the same four lines is a walking
-simulator with twelve tape loops in it. The flip from second door to first is
-one default and the entry beat of six suites, and nothing in the first
-increment is spent getting there.
-
-#### What the game already does that is this
-
-The `investigate` stage is free roam. The player rings the bell when they
-like, the clock does not move between bells (#550, question 3), and no clue
-waits on any other except through the presses. The teeth are four and all of
-them are the mystery's:
-
-1. The fourth ring moves no watch, returns a `demand` and moves the frame to
-   `accusing` (#415, #425, #490). #490's own last sentence: "Two transitions
-   in `data/quest.json` reverse it."
-2. `talked:constable` in `investigate` opens the accusation panel, because
-   his `default` lines end in `{ACCUSE}` and `validateAgainstNpcs` holds the
-   token and the action to each other (#479).
-3. The HUD's objective says find out before Vespers.
-4. The start panel's paragraph says you have four bells.
-
-Take those four out and what is left is a castle with the twelve at their 45
-stations, twelve errands that already never touch the mystery (#550
-question 6, #576 to #581, #691 to #695), two sermons, two songs and three
-rumours (#592 to #596, #648), a reputation aside per ward (#614), fourteen
-populace bodies walking rings (#616), thirteen documents to read (#551 to
-#559) and a map that fills in as you stand in rooms (#588 to #591). That is
-a walking day already. It is the mystery's day with the accusation never
-asked for, and it costs one stage, one engine branch and one button. There
-is a precedent for a day defined by what it refuses: #537's morning after
-refuses clues, the bell, the accusation and the Present button, and is still
-a day the player walks. The walking day refuses exactly one of those four.
-
-#### What it does not do, and what "just chatting" would need
-
-Every one of the twelve says the same three to five `default` lines on every
-talk, and every one of those lines is testimony: "he fell", "I sent no
-summons", "abed from Compline". A second talk is the first talk again, word
-for word. The 27 chatter pairs are written for two populace bodies in earshot
-and are unused by the game (#554, #558; rank 6's to spend). The `.dlg` format
-keys a state to a press or a quest stage and nothing else: `@`, `:`, `?` and
-`!` are rebuilt from the clue graph on every compile and refused if they have
-drifted (#687 to #690), so a line set that is reached by "this is the walking
-day" is not a shape the compiler knows, the same gap it already has for
-`chatter`, `performances`, `reputation` and `day2.lines`.
-
-So "chatting" as a loop of its own is two increments past the first, and the
-second of them is class O on its own account. Sizes, so the cost is a
-number: one re-talk per person per watch, at three lines each, is 144 lines,
-against the 182 the whole `.dlg` holds today. The well to draw them from is
-`data/lore.json`'s 61 facts and the 27 chatter pairs already written in the
-castle's voice, 54 lines keyed by ward and watch, which is the one pool that
-could be re-keyed by speaker rather than written fresh.
-
-#### Second mode or main mode
-
-**The case for a second mode.** Everything built is the mystery's. Seven
-phases (#421 to #490), fifteen suites, `test/mystery.mjs` owning the stations
-(#529), the two-to-three-watch path rails (#415, #423), `watches` asserted to
-be exactly four (#533, and #699 kept that clause), a second day keyed on the
-verdict (#533 to #540, #571 to #575), and a save whose every field is a fact
-about the case (#413, versions 2 to 6). None of it has to move for a second
-door; the door reuses all of it. And the content the mode needs to be worth
-its name is not written. A second mode can ship thin and grow.
-
-**The case for the main mode.** Devon's brief of 2026-09-16 is "a castle
-that is lived in", and the seven themes that came out of it are all about
-what the castle is when nobody is being questioned. Lore, side quests,
-performances, a populace, a town seen from the walls: each of those is worth
-more to a player who is lingering than to one who is chasing a sheet by
-Vespers, and the mystery's own clock argues against lingering. A main mode
-says the castle is the game and the case is one thing that happens in it,
-which is what `WISHLIST.md`'s first paragraph already half says.
-
-**What the main mode would overturn.** Not one numbered decision cleanly,
-which is why it is Devon's and not a session's:
-
-- #415 and #490 as the default day's shape. The plan's premise in #411 to
-  #418, shipped in #421 to #490, is "a first-person mystery played across one
-  day". A main explore mode does not delete that, but it stops it being what
-  the start panel says the game is.
-- `index.html`'s start paragraph and objective, the og text (#634, #635) and
-  `README.md`, every one of which describes a mystery.
-- `data/quest.json`'s `start`, which is `arrive`.
-- The entry beat of six browser suites (`plan-vs-scene`, `overlays`, `map`,
-  `touch`, `built`, `play-castle`) and the populace beat, all of which enter
-  the castle through `#start-button` and expect the mystery's day behind it.
-  Each would pick the mystery door explicitly.
-- And it wants increment 3 at once, because a main mode a reload forgets is
-  not a main mode: a `mode` field on the save, version 7, lane A (#36, #37).
-
-None of that is hard. All of it is a decision about what the game is, and
-the class-O row in `CLAUDE.md` says a decision nobody wrote down is how the
-plan-suite rule was lost. This is the one to write down first.
-
-#### The first increment, as it would be specced
-
-Under either answer this is the increment, and it is the same increment. It
-is named here in `SPECS.md`'s five parts so promotion is a copy and not a
-rewrite.
-
-**Scope.** Six files, and `src/save.js` is not one of them.
-
-| File | What changes |
-| --- | --- |
-| `data/quest.json` | A stage `explore`: objective "Nobody is waiting for a name. Walk where you like; the bell is yours.", `dialogueState: default`, the word-lock, `riddle:solved` and `ask:journal` transitions the other three non-terminal stages carry, and `bell:1` to `bell:4` each doing `ringBell` and moving nowhere. No `talked:constable`, no `ask:accuse`. It is reached from `arrive` on `mode:explore` and leaves on `mode:mystery` to `arrive`, so `validateQuest`'s two reachability rules hold without an exemption (see open call 5). `start` stays `arrive`. |
-| `src/mystery.js` | `createMystery({ mystery, npcs, state, mode })`. With `mode: 'explore'`, `ring()` at the day's last index goes back to 0 instead of returning a `demand`, and emits `bell:4` as now; `accuse()` returns `[]`. Nothing else in the engine reads the mode. |
-| `src/quest-manager.js` | Begins the graph at `explore` when constructed for it, the mechanism a resumed save already uses (`begin` at a stage). Passes `mode` through. `handleInteract` on the Constable in `explore` is a conversation and nothing after it, which the stage's own transitions already say. |
-| `src/main.js` | The UI-flow region, not the rig. A second start callback: `freshState(quest)` in memory, `createMystery` with `mode: 'explore'`, a manager begun at `explore`, and no `auto`. The slot is read as now and never written on this path. `restart` and the start-again panel on this path reload without `slot.reset()`. |
-| `index.html`, `src/ui.js` | A second button under Enter the Castle: "Walk the castle", a `link-button` like the touch toggle. `showStart` takes two callbacks. The start-again panel in explore carries "Back to the start", which reloads. |
-| `test/quest.mjs`, `test/mystery.mjs`, `test/overlays.mjs`, `test/plan-vs-scene.mjs` | The rails below. |
-
-Not touched: `src/save.js` (no field, no bump, lane A untouched),
-`data/mystery.json`, `data/npcs.json` and `dialogue/castle.dlg` (no state and
-no line changes, so `npm run dialogue:check` is unchanged), `data/sounds.json`
-(see open call 2), `src/castle-plan.js`, `src/castle-builder.js`.
-
-**Acceptance.** Every item is Node or headless; the look of a second button is
-the GPU run's (#53).
-
-- `test/quest.mjs`: `validateQuest` accepts the graph with `explore` in it.
-  A manager begun at `explore` with an explore engine: three rings walk
-  Prime, Terce, Sext, Vespers; the fourth moves the watch to Prime, no
-  `demand` reaches the UI and no accusation panel opens; `talked:constable`
-  opens nothing; a press still moves its person (the Steward on
-  `summons-is-stewards` goes to `admits`); the errands and the reputation
-  asides run as on day one; the journal fills. **Breaks**: delete the
-  `mode:mystery` transition and the existing rule says
-  `explore: no path from it reaches a terminal stage`; put `talked:constable
-  → openAccusation` on `explore` and the "no overlay after the Constable"
-  assertion fails.
-- `test/mystery.mjs`: `ring()` in explore mode at index 3 lands on 0 with a
-  `watch` effect and no `demand`. **Break**: skip the wrap and the watch reads
-  3. And the wrap leg: every one of the twelve with a Vespers station and a
-  Prime station has a walk between them on the player's grid, in the message
-  shape #475 set (`cook: no path from KI at sext to GH at vespers`). The
-  second day's own "overnight is still a walk" rail in `validateMystery`
-  already routes Vespers to Lauds for the thirteen; this is the same rail
-  pointed back at Prime, and the populace's rings already check their wrap
-  (#616).
-  **Break**: on a clone of the data, move the Constable's Prime station inside
-  the cell's bars, and the rail says `constable: no path from GH at vespers to
-  cell at prime`.
-- `test/overlays.mjs`: the second button releases and takes the pointer the
-  way the first does, which is the one property that suite asserts over every
-  overlay (#659 to #661), and the start-again panel on the explore path has a
-  way back. **Break**: the new button without `player.lock()`.
-- `test/plan-vs-scene.mjs`, which already holds `src/main.js`'s wires
-  (#696 to #698): plant a mystery save at Sext with three clues, press "Walk
-  the castle", talk to two people, ring twice, and read
-  `localStorage.castleConundrumSave_v1` back byte for byte the same. That is
-  #39's line exactly: the mystery save is the thing a reload has to survive.
-  **Break**: let the explore path call `auto.mark()`, and the key differs.
-- `npm test` fifteen of fifteen, `npm run build` clean, `test/built.mjs`'s
-  served set unchanged in kind.
-
-**Open calls, each with a recommendation.**
-
-1. **Loop the day or stop at Vespers?** *Loop.* A day that stops at Vespers
-   leaves Thomas Wykes, who is in the castle at Terce only, one ring away from
-   never; a day that turns over lets the player meet everyone at every bell,
-   and `applyWatch` already puts the world at any bell idempotently, because a
-   resumed save has always needed that (#658). The body is at the stair again
-   at Prime because that is where the day puts it, and question 13 below is
-   whether that is the day Devon wants. Fallback if the wrap rail finds a body
-   with no path: the fourth ring is refused with `mystery.ui`'s own voice.
-2. **What the wrap ring sounds like.** *The fourth character as it is.*
-   `bell.rings` has four, by the engine's `n` (#682, #701); the wrap is
-   `bell:4` and rings three slow strokes. The file names that "the summons",
-   which is the mystery's reading of it; renaming or adding a character is
-   lane E's and not this increment's.
-3. **The Constable's `{ACCUSE}` line.** *Leave it.* He still asks for a name
-   and the player still has no panel to give one in. A per-stage token
-   override is engine growth for one line, and increment 2 gives him an
-   explore line set anyway.
-4. **Where the mode lives.** *A constructor option on `createMystery`, not a
-   field on `state`.* `state` is the save's shape; a field there is a field
-   #37 says arrives with a version number, and this increment saves nothing.
-5. **Are `mode:explore` and `mode:mystery` dispatched or only drawn?** *Drawn.*
-   `main.js` begins the graph at `explore` directly; the two edges exist so
-   `validateQuest` keeps "every stage reachable, every stage reaches a
-   terminal" with no exemption, because an exemption in a validator is a hole.
-   `test/quest.mjs` asserts `begin('explore')`.
-6. **Do heard performances reset on the wrap?** *No.* Once per page (#594): a
-   wrap that replays the hall's song each loop is a jukebox.
-7. **Which button is first?** *Enter the Castle stays first.* Flipping is one
-   line, and it is question 12's.
-8. **Day two in explore.** *None, by construction.* `beginDay2` is reached
-   through a verdict and there is no verdict.
-
-**Dependencies.** Lane D for `src/main.js`, in the UI-flow region rather than
-the rig's; a merge beside rank 6 or rank 11 is different lines of one file,
-but one row per lane is the rule (#602), so take it when D is free.
-`index.html`, `src/ui.js`, `data/quest.json`, `src/mystery.js` and
-`src/quest-manager.js` are in no lane. Not beside anything that edits
-`data/quest.json`, which today is nobody. The texture-variety idea put to the
-architect the same day is not a gate on this increment (question 14); it is a
-soft order on increment 2. One rider: #715's prompt string, `Press E to talk
-to the Sir Roger Lestrange`, is on every body in the game and is nobody's
-row; in a day that is nothing but walking up to people it is the most-read
-line on the screen, so the one-line fix ships with or before this increment.
-
-**Constraints.** #36, #37, #413 (the key does not move and the version stays
-6). #39 (the untouched-save rail reads the save because a reload has to
-survive it). #415 and #490 stand for the mystery's day; the explore stage
-exempts itself in its own transitions, which is the amendment #490 itself
-priced at two transitions, and the session that ships it records the number.
-#529 (the wrap leg is a station question and lives in `test/mystery.mjs`; the
-pointer property lives in `test/overlays.mjs`; a live page's localStorage is
-not provable in Node). #550 (the bells stay the clock; the loop leans on it).
-#594 (once per page). #34, #13 (every break above, from green, FAIL line
-quoted in `HISTORY.md`). #53 (what a second button looks like is unseen).
-#632 (CRLF here, LF in CI).
-
-#### The increments after it
-
-- **Increment 2, the talk-again pool. Class O.** A line set per person per
-  watch that is said on a second talk in place of the testimony, keyed by
-  speaker and watch, which is a third `?` kind for the compiler (`? explore at
-  sext`) and so amends #690's authoring loop; `_linesFor` picks it when the
-  mode is explore and the person has been talked to at this bell. About 144
-  lines. Where texture variety matters, if it lands: a castle that reads as
-  more varied room to room is worth more to the player this increment is for
-  than to the one the first increment is for, so if both are open, that theme
-  goes before this increment and not before increment 1.
-- **Increment 3, a saved explore. Class O, lane A.** Only if the answer to
-  question 12 is yes, or if Devon wants the walking day resumed. A `mode`
-  field, version 7, `repair` clamping it to its two values; the explore day
-  then has a save of its own shape and the button reads which one to resume.
-- **A day before the death.** If question 13's answer is that Hywel is alive
-  in the walking day, that is a thirteenth speaker, twelve new `default` sets,
-  a second schedule and a validator that knows which day it is reading: a
-  content row the size of Phases 6 and 7 together, and not on this list until
-  he says so.
+**Moved to `BACKLOG.md` rank 1, `SPECS.md`'s "Explore: the day before"
+section** (#750 to #753). Devon answered all four questions below on
+2026-09-21, the day they were put to him, and overturned the theme's own
+recommendation on two of the four: the walking day is the main mode, not a
+second door, and it is the day before the death, with Hywel alive, not the
+day of it. What the theme found stands as the well the row now draws from —
+the four teeth of the mystery's clock that the walking day has to refuse, the
+27 chatter pairs and 54 lines already keyed by ward and watch, the 182 lines
+`dialogue/castle.dlg` holds today, and the ~144-line cost of a talk-again
+pool — and `SPECS.md` is where the first increment now lives.
 
 ## Devon's answers, 2026-09-16
 
@@ -595,36 +357,49 @@ The questions are kept here so the answers read against them.
     populace file is still first among the eight, which is the one part of
     this answer that held.
 
-## Questions put on 2026-09-21, not yet answered
+## Devon's answers to questions 11 to 14, 2026-09-21
 
-Four questions from theme 8, Devon's to answer the way he answered the ten
-above. Each carries the architect's recommendation, which is a
-recommendation and not a decision; the answers get numbers in `HISTORY.md`
-the day they come, and theme 8 moves to `SPECS.md` and `BACKLOG.md` on a
-yes to question 11.
+Four questions from theme 8 were put to Devon the day the theme was written
+and he answered all four the same day. They are locked as #750 to #753 in
+`HISTORY.md`. The questions are kept here, with the architect's own
+recommendation still attached, so the answers read against both.
 
 11. **Build the walking day at all?** As a second door on the start panel
     into the mystery's own day with the accusation never asked for, saved
-    nowhere. *Recommend yes.* It is one stage, one engine branch, one
+    nowhere. *Recommended yes.* It is one stage, one engine branch, one
     button and four rails, it touches no lane-A file, and it is the
-    increment both answers to question 12 need first.
-12. **Main mode, or a second one?** *Recommend a second mode now, and revisit
-    once increment 2's talk-again lines exist and somebody has walked the
-    day for an hour.* Everything built is the mystery's; the content that
-    makes a walking day worth its name is not written; and the flip later
-    is one default plus the entry beat of six suites, so nothing is lost by
-    waiting. A yes here also wants increment 3, a saved explore at version
-    7, at once.
-13. **In the walking day, is Hywel dead?** *Recommend yes.* Increments 1 and
-    2 are the day of the death with its clock's teeth drawn: the body at
-    the stair at Prime, the twelve saying what they say, and nobody asking
-    for a name. A day before the death is a thirteenth speaker, twelve new
-    `default` sets, a second schedule and a validator that knows which day
-    it is reading, a content row the size of Phases 6 and 7 together.
-14. **Does this wait on the texture-variety idea?** *Recommend no gate.*
+    increment both answers to question 12 need first. **Yes** (#750).
+12. **Main mode, or a second one?** *Recommended a second mode now, and
+    revisit once increment 2's talk-again lines exist and somebody has
+    walked the day for an hour.* **Main mode, now, overturning the
+    recommendation** (#751): "Walk the castle" is the first door into the
+    game and the mystery sits behind it. The saved explore that a second
+    mode would have deferred, increment 3, ships at once: a `mode` field,
+    version 7, lane A. The start panel's default button flips to "Walk the
+    castle", and the entry beat of six browser suites — `plan-vs-scene`,
+    `overlays`, `map`, `touch`, `built`, `play-castle` — now has to pick the
+    mystery door explicitly.
+13. **In the walking day, is Hywel dead?** *Recommended yes*, because
+    increments 1 and 2 are the day of the death with its clock's teeth
+    drawn: the body at the stair at Prime, the twelve saying what they say,
+    and nobody asking for a name. **No, overturning the recommendation**
+    (#752): the walking day is the day before the death. Hywel alive and
+    speakable, no body at the stair, no lantern, no cloak in the laundry, no
+    summons in anybody's pouch, and none of the twelve saying a word of
+    their day-one testimony. Priced at the recommendation's own number and
+    taken as given: a thirteenth speaker, twelve new `default` sets, a
+    second schedule and a validator that knows which day it is reading, a
+    content row the size of Phases 6 and 7 together.
+14. **Does this wait on the texture-variety idea?** *Recommended no gate.*
     Increment 1 is engine and a button and does not make the castle read
     as more varied; it is also the thing that would first show whether the
-    castle holds a lingering eye at all. If both are open, texture variety
-    goes before increment 2, the content that is for a player who lingers,
-    and not before increment 1. The other theme, if it lands here, carries
-    the same sentence from its side.
+    castle holds a lingering eye at all. **No gate, recommendation taken**
+    (#750). If both rows are open, texture variety goes before increment 2,
+    the content that is for a player who lingers, and not before increment
+    1.
+
+**The rank shift these answers put on `BACKLOG.md`, recorded once** (#753):
+the walking day takes rank 1, "Sight at the body's own height" moves to 2,
+"The GPU run" to 3 with its gate reworded to "after 2", "The retro castle"
+to 4, and rank 11's gate to "after 3". Ranks 6, 7, 9, 10, 11 and 13 do not
+move.
