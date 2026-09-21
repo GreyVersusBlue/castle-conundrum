@@ -48,6 +48,8 @@ R4c Thomas Wykes's yard  --> unlocked R9's town, 2026-09-19 (#703 to #707)
 
 Never gated, take whenever the lane is free:
   R10 bodies (local: net, lane C)
+  R3  the retro castle: increment 1 in a container, lane B, then a look
+      on a GPU before increment 2 (#734 to #736; not beside R9)
 
   R12b move-and-delete shipped 2026-09-17 (#636 to #642) and lane B is free.
   R12c the dialogue format shipped 2026-09-18 (#687 to #690) and rank 12 is
@@ -81,6 +83,7 @@ confirmed** — which means a container cannot trust a pass either.
 | **R3 The images** | Opus 5 | The preview and og card come out of R2's screenshots. There is no other source. They land in `tools-and-games/assets/`, not here, and Devon relinks. |
 | ~~**R5 The hall covering**~~ | Sonnet 5 | **Shipped** (#656 to #658). Both criteria were a render, and both were answered by rendering the hall directly rather than by waiting for this row's own run to reach Vespers: `roof.glb`'s vertices (not its bounding box) showed which way it slopes, and the floor read 69.8 to 89.8 of 255. |
 | **R11 Feel**, past its Node line | Sonnet 5 | ~~The Node half — a shadow decal and a hand node exist and do not regress `plan-vs-scene.mjs` — is a container's.~~ Shipped (#650 to #654). What is left is what a GPU decides: whether a blob shadow reads on stone versus on grass, what it does on a flight of stairs, and whether the hand reads as a hand. |
+| **R3 The retro castle**, past its first increment | Opus 5 | Increment 1 (the generator, the rails, fifteen textures in place of fifteen sets, the memory count) is a container's and needs no `ktx`, no network and no GPU. What is left before increment 2 is the look: one castle or two from the North-west Tower's roof (#630's vantage), the shadowed faces (#438, #713), the same wall at four bells (#474, #712), and `renderer.info.memory.textures` against the header estimate. The checklist is in `SPECS.md`. |
 | ~~**R4c The yard**~~ | Opus 5 | **Shipped** (#703 to #707). The look was the half that needed the machine and it is answered: a stone yard from inside it, a roof and a town wall from the North-west Tower's crown, and nothing at all from the west curtain's walk, because that tower's own drum stands in the line. `tools/shot-yard.mjs` is the camera, and it pins the camera rather than moving the spawn, which `validatePopulace` refuses. |
 
 **R2 is the single highest-value hour on this list.** It is a ¼ and it unblocks
@@ -126,7 +129,7 @@ the theme is not what conflicts.
 | Lane | The file that decides it | Rows in it |
 | --- | --- | --- |
 | **A** | `src/save.js` — the version number and `migrate` | nobody (R4a, R4b and R8 all shipped without bumping it) |
-| **B** | `data/scene-config.json`, and `test/tools.mjs`'s byte-exactness rail | R9 (R4c, R5 and R12b are done) |
+| **B** | `data/scene-config.json`, and `test/tools.mjs`'s byte-exactness rail | R3, R9 (R4c, R5 and R12b are done) |
 | **C** | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | R1, R6, R10 (R12c is done) |
 | **D** | `src/main.js`'s player rig and spawn | R6, R11 |
 | **E** | `src/audio.js` and `data/sounds.json` | R7 |
@@ -217,10 +220,13 @@ R4a**, three of them, plus **R2** on Devon's machine.
   in `repair` and left the version at 6 (#702). **Three rows in a row sat in
   lane A for a file none of them bumped**, which is worth reading the next time
   a row is held out of this lane.
-- R9 is the only row left in lane B. R4c, R5 and R12b were the other three
-  and all three shipped (#703 to #707, #656 to #658, #636 to #642), so there
-  is nothing to pair it badly with. R12c has left lane C as well (#687 to
-  #690).
+- R3 beside R9. Both are lane B and both write `data/scene-config.json`: R3
+  rewrites its `materials` block and R9 splices rooms and runs into it, and
+  two splices neither session tested against each other is what #602 drew
+  the lane for. R9's next increment, the quay, has no `SPECS.md` section and
+  is not startable, so R3 takes the lane today. R4c, R5 and R12b were the
+  lane's other three and all shipped (#703 to #707, #656 to #658, #636 to
+  #642). R12c has left lane C as well (#687 to #690).
 - R6 beside R11. Lane D, both inside `src/main.js`'s rig.
 
 ---
@@ -390,6 +396,15 @@ to overturn rather than a street to place.
 | Row | Model | Where | Lane |
 | --- | --- | --- | --- |
 | **R9** A castle to get lost in: the town | Opus 5 | Container | B |
+| **R3** The retro castle: increment 1 | Opus 5 | Container | B |
+
+**R3 is startable now and R9 is not**, and the two share a lane, so the
+order inside lane B is R3 first (#734 to #736). Its first increment replaces
+the fifteen Poly Haven material sets with fifteen 128 px pixel textures the
+repo draws itself, on the same fifteen names, with the rails and the memory
+count in front of it; it needs no `ktx`, no network and no GPU, which is the
+opposite of every asset row before it. What gates its second increment is a
+look on Devon's machine, in the table under "Local: a GPU" above.
 
 A walled town's street, church and quay on the ground the yard proved. The
 rooms go on the map the day they go in `config.rooms`, because the map is the

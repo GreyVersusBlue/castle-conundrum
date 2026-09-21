@@ -7775,3 +7775,122 @@ the death), and the tiles, which the validator picks between.
   spec, because nothing else tested hush. One full-suite run went red on
   `map`, `Port 8128 is already in use`, from another session on the same
   machine sharing the port; the re-run was 15 of 15 green.
+
+## The retro castle: the stone goes back to stylised, and the textures are the repo's own (2026-09-21)
+
+**A spec, not a batch, the shape of #411 to #418 and #560 to #567.** Devon's
+brief of 2026-09-21: the castle reads as the same everywhere, and he wants
+pixel-art textures produced by a model session rather than photographs, for
+variety room to room and for a retro look, a style call before a cost one.
+No code, no asset, no claim: `SPECS.md` gains "The retro castle: the stone in
+the castle's own pixel art", `BACKLOG.md` a rank 3 row and a summary,
+`ROADMAP.md` a lane B entry, `WISHLIST.md` an eighth theme written and moved
+out on the same day. Worked under Claude Fable 5.1 as the architect, on
+`claude/ai-castle-textures-arch-3s8iah`. Decisions #734 to #736, claimed
+against #733 on a fresh `origin/main` at `978ab2e` (#633's rule); rank 2 and
+rank 9's quay may be running and the band is contiguous for a renumber at
+merge.
+
+**Measured before anything was recommended.** Fifteen material sets under
+`assets/poly-haven/`, 1024 px, three maps each, about 25 MB on disk. A KTX2
+header carries `pixelWidth`, `pixelHeight`, `levelCount` and
+`supercompressionScheme`, and this repo's encoder pairs scheme 1 with ETC1S
+and scheme 2 with UASTC (#507), so pixels per level times 0.5 or 1 byte is
+the texture's memory on the GPU. Over every `.ktx2` on disk that arithmetic
+gives **79.3 MB**, which is the 79.3 MB #506 measured off `renderer.info` on
+the live page, to the decimal; the fifteen sets alone are **44.2 MB** and the
+ten prop packs the other 35.1. The fifteen dress 46 wall runs under five
+names (22 of them one slate), eight drums under two names and eight tints
+(#516), 32 room floors under seven names (18 of them two planks), four
+grounds, the walk and the gate leaves. The Kenney kit beside them is ten
+64 px PNGs, declared `KHR_materials_unlit` in every GLB so GLTFLoader gives
+them `MeshBasicMaterial`, NEAREST-magnified by `tuneTexture` at 128 px and
+under, and left out of the encoder by size (#508). A 128 px RGBA8 texture
+with its mip chain is 85 KB; 128 px over the 3 m repeat #434 set is 43
+texels a metre, against the kit's 16 and Poly Haven's 341.
+
+- **The stone is stylised again, and #411 is overturned on Devon's
+  direction** (#734). #411 reversed round 1's "leave the walls stylised" on
+  Devon's 2026-09-14 choice of eight Poly Haven sets against a 44.4 MB
+  ceiling, and `PLAN.md` said the eight were not to be re-opened. Devon has
+  re-opened them himself: the walls stay built geometry (#432) and carry
+  pixel-art textures the repo draws, and the fifteen sets leave with their
+  roles, folder by folder, the commit their names stop pointing at them
+  (#390). **Replace, not supplement**: a set kept beside a pixel texture is
+  3 MB of video memory for no variety, and the count below refuses it. **The
+  props stay**: a prop is a photoscanned model with authored UVs, and
+  retexturing one is a modelling job; built geometry carries planar
+  world-space UVs at a 3 m repeat (#434), which is exactly the surface a
+  tiling texture goes on with no UV work, and is why the swap is one
+  sitting. **The material is lit and diffuse only**: `MeshStandardMaterial`
+  with a `map`, a constant roughness, no normal and no ARM map, because an
+  unlit castle loses the sun per watch (#474), the shadows, the fill (#438),
+  the braziers (#610) and the Lauds question (#712) in one move, and this is
+  a game whose clock is told partly by light. That is the kit's own model
+  with the sun put back on it, and the kit is recommended relit in the same
+  increment so the look judges one castle. **And #508's exemption becomes a
+  rule by size**: a texture at 128 px or under is a PNG and is not encoded,
+  which #507 and #510's "every texture is KTX2" now reads with; the rail
+  that holds the exemption to 128 px is `test/assets.mjs`'s, so it cannot
+  grow into a 1k PNG. What #630 saw from a tower top, two games in one
+  frame, is the evidence for the brief: it was #411's known cost and nobody
+  had seen the size of it.
+
+- **A texture this repo draws is committed with the program that draws it,
+  is pixel-identical to that program's output, and is credited as the
+  repo's own** (#735). This is #494's provenance concern answered for a
+  generated file rather than a vendored one. #494 deleted a hand-copied
+  1.2 MB library because nothing could say where it came from or how to get
+  the next one; a texture drawn by an image model and dropped into
+  `assets/` is that file again, with a licence story nobody can write down.
+  So the generator is `tools/pixel/`, a table of rows and a handful of
+  drawing families that are pure functions of parameters and a seed, run by
+  hand as `npm run pixel:render` the way the encoder is (#506), and the
+  suite decodes each committed PNG and holds it pixel-identical to the
+  generator's row. Provenance is reproduction rather than a download: the
+  origin of every byte under `assets/pixel/` is a program in the same
+  commit. There is no third party to credit and no CC0 deed to cite;
+  the credits line the row adds to `README.md` says the textures are this
+  project's own, drawn by its own tools under Devon's direction, and the repo's licence,
+  which it has not got, is Devon's call and not this row's. **No
+  image-generation model's output lands under `assets/`**: it fails the
+  identity rail by construction, which is this decision as a check rather
+  than a sentence.
+
+- **Rank 3, lane B, a 2+, and the cost is a fourth count in `test/budget.mjs`
+  rather than a renegotiated ceiling** (#736). Rank 3 because the brief is
+  Devon's own and it changes what every GPU sitting after it is looking at,
+  so it belongs above the content rows and below the run itself; 3 was
+  retired on 2026-09-17 and comes back the way 1 came back three times
+  (#619): a rank is a priority and not an id. Lane B because the row
+  rewrites `data/scene-config.json`'s `materials` block, and rank 9's next
+  increment, the quay, has no section and is not startable, so the lane is
+  free. **Increment 1 is a container's**, no `ktx`, no network, no GPU, the
+  opposite of #518 and #541; the look before increment 2 is Devon's machine
+  (#53). On #611: none of the three counts moves, because a run is one mesh
+  whatever its material, so nothing is renegotiated. What the row spends and
+  saves is a cost no suite counts, which is #609's shape exactly, so
+  texture memory from headers goes into `budget.mjs` as a fourth ceiling
+  beside the other three, recommended at **64 MB**: below today's 79.3 on
+  purpose, so the swap has to land for the suite to go green, and with room
+  for three hundred more pixel textures after it. The size (128 px) and the
+  palette (32 colours) are the row's own named constants, and the wrap
+  rule, the pixel-identity rule and the location rule are `assets.mjs`'s,
+  each with a break named in the spec (#34). Nothing crosses the
+  `layout` / `plan-vs-scene` / `mystery` / `budget` line (#529).
+
+**What was measured rather than taken from the brief.** The KTX2 header
+arithmetic and its agreement with #506; the material counts per role off
+`data/scene-config.json`; the kit's `KHR_materials_unlit` and 64 px images
+off `wall.glb` and its `Textures/`; `tuneTexture`'s 128 px NEAREST branch and
+its refusal to touch a compressed texture; `encodeMaterialMaps` iterating
+`materials` alone; `test/assets.mjs` 3b asserting a complete set over that
+same block, which is the rail that retires with it, and 3c asserting the
+opposite over `plainMaterials` (#448), which is the shape `pixelMaterials`
+takes.
+
+**Not verified here, on purpose.** No suite ran because there is no code
+change; `npm test` and `npm run build` are green on `main` before and after
+this branch, which touches five markdown files. `npm run play` was not run
+and could not be (#53), and nothing here claims a look: the section's
+checklist is what the look will be.
