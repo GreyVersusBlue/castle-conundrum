@@ -1960,5 +1960,98 @@ function morningAfter(r, who, clues = []) {
   check(r.qm.performing === null && r.ui.captions.length === 0, 'no pool, no band', JSON.stringify(r.ui.captions));
 }
 
+/* --------------------------------------------- two of the household, overheard ---
+ * data/populace.json's `talk` pairs (#731, #732). src/populace.js decides a
+ * pair is due and hands it over with `room` set to where its two speakers
+ * stand; that half, and which pairs stand close enough to talk, is
+ * test/mystery.mjs's. What is here is the band's half: the order, the names,
+ * once per page, and that a sermon or a song out-ranks it. Same rig, same
+ * queued clock, same real pool of performances, so the precedence is against
+ * the song that is really in the kitchen at Sext.
+ */
+console.log('\ntwo of the household, overheard');
+const household = read('data/populace.json');
+/** A pair the way Populace hands it over: `room` set, and the two names. */
+const handOver = (id) => {
+  const pair = household.talk.find((t) => t.id === id);
+  const [a, b] = pair.npcs.map((who) => household.people.find((p) => p.id === who));
+  return { pair: { ...pair, room: a.routine[pair.watch][0].room }, names: [a.name, b.name] };
+};
+{
+  // EVERY LINE, IN ORDER, THE NAMES ALTERNATING, AND THEN DARK.
+  const r = performRig();
+  r.ring(); r.ring();
+  const { pair, names } = handOver('talk-sext-inner-ward');
+  r.qm.handleEnter(pair.room, 0);
+  r.qm.overhear(pair, names);
+  check(r.qm.performing?.id === pair.id && r.ui.captionName === names[0] && r.ui.captionLine === pair.lines[0],
+    `${names[0]} opens ${pair.id} on the band`, `${r.ui.captionName}: ${r.ui.captionLine}`);
+  r.tick();
+  const want = pair.lines.map((l, i) => `${names[i % 2]}: ${l}`);
+  check(same(r.ui.captions, want), `all ${pair.lines.length} lines in order, ${names[0]}, ${names[1]}, ${names[0]}`, JSON.stringify(r.ui.captions));
+  check(r.ui.captionLine === null && r.qm.performing === null && r.pending() === 0, 'and the band goes dark after the last, with nothing left on the clock');
+  const said = r.ui.captions.length;
+  r.qm.overhear(pair, names);
+  r.tick();
+  check(r.ui.captions.length === said && r.qm.performing === null, 'a second overhear of the same pair on the same page says nothing', `${r.ui.captions.length} vs ${said}`);
+}
+{
+  // A SONG OUT-RANKS TALK. Marged's Sext song is playing, and a pair handed
+  // over now says nothing: it does not cut her off and it does not queue.
+  const r = performRig();
+  r.ring(); r.ring();
+  r.qm.handleEnter('kitchen', 0);
+  const song = pieceOf('song-sext-kitchen');
+  const { pair, names } = handOver('talk-sext-inner-ward');
+  const got = r.qm.overhear(pair, names);
+  check(got === null && r.qm.performing?.id === song.id && r.ui.captionLine === song.lines[0] && !r.ui.captions.some((c) => c.startsWith(`${names[0]}:`)),
+    'with Marged\'s Sext song playing, overhear says nothing and the song goes on', `${r.qm.performing?.id}: ${r.ui.captionLine}`);
+}
+{
+  // AND TALK NEVER CUTS A PERFORMANCE: the other way round, a talk run is on
+  // the band and the player walks into the kitchen at Sext. The talk stops
+  // and the song starts.
+  const r = performRig();
+  r.ring(); r.ring();
+  const { pair, names } = handOver('talk-sext-inner-ward');
+  r.qm.handleEnter(pair.room, 0);
+  r.qm.overhear(pair, names);
+  r.qm.handleEnter('kitchen', 0);
+  const song = pieceOf('song-sext-kitchen');
+  check(r.qm.performing?.id === song.id && r.ui.captionName === 'Marged' && r.ui.captionLine === song.lines[0],
+    'a talk run playing and the player walks into the kitchen at Sext: the talk is cut and the song starts', `${r.qm.performing?.id}: ${r.ui.captionName}`);
+  const before = r.ui.captions.length;
+  r.tick();
+  check(!r.ui.captions.slice(before).some((c) => c.startsWith(`${names[0]}:`) || c.startsWith(`${names[1]}:`)), 'and no line of the talk wakes up on the clock over her');
+}
+{
+  // THE BELL STOPS TALK the way it stops a sermon.
+  const r = performRig();
+  r.ring(); r.ring();
+  const { pair, names } = handOver('talk-sext-inner-ward');
+  r.qm.handleEnter(pair.room, 0);
+  r.qm.overhear(pair, names);
+  r.ring();
+  check(r.qm.performing === null && r.ui.captionLine === null, 'the Vespers bell over Sext talk ends it', `${r.qm.performing?.id}`);
+}
+{
+  // stopTalk IS BY ID. Another pair's hush leaves the band as it was; this
+  // pair's clears it; and a hush never touches a song.
+  const r = performRig();
+  r.ring(); r.ring();
+  const { pair, names } = handOver('talk-sext-inner-ward');
+  r.qm.handleEnter(pair.room, 0);
+  r.qm.overhear(pair, names);
+  r.qm.stopTalk('talk-sext-outer-ward');
+  check(r.qm.performing?.id === pair.id && r.ui.captionLine === pair.lines[0], 'stopTalk with another pair\'s id leaves the band as it was', `${r.qm.performing?.id}: ${r.ui.captionLine}`);
+  r.qm.stopTalk(pair.id);
+  check(r.qm.performing === null && r.ui.captionLine === null, 'and with this pair\'s id the band goes dark');
+  const s = performRig();
+  s.ring(); s.ring();
+  s.qm.handleEnter('kitchen', 0);
+  s.qm.stopTalk('song-sext-kitchen');
+  check(s.qm.performing?.id === 'song-sext-kitchen', 'and stopTalk with a song\'s id does not stop the song, because a song is not talk', s.qm.performing?.id);
+}
+
 console.log(failures ? `\n${failures} failure(s)` : '\nall good');
 process.exit(failures ? 1 : 0);

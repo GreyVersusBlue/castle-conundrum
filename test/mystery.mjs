@@ -911,7 +911,13 @@ console.log('\nthe household in data/populace.json');
   check(problems.length === 0, 'validatePopulace finds nothing wrong, the castle included', problems.join('; '));
 
   const people = populace.people;
-  check(people.length === 14, `${people.length} of them: the first increment's ten (SPECS.md, "Life: a populace"), the child and the hound (#643, #644), and two hens (#684)`);
+  check(people.length === 19, `${people.length} of them: the first increment's ten (SPECS.md, "Life: a populace"), the child and the hound (#643, #644), two hens (#684), and the inner ward's five (#729)`);
+  /* THE TALK LIST (#731), counted beside the people because a validator that
+   * found nothing in an empty list would pass the same as one that found
+   * nothing in three. */
+  const talk = populace.talk ?? [];
+  check(talk.length === 3 && talk.every((t) => t.lines.every((l) => !/^[A-Z][\w' -]*: /.test(l))),
+    `${talk.length} talk pairs (${talk.map((t) => t.id).join(', ')}), and no line opens with a speaker's name, because the band carries it`);
   /* THE FIRST INCREMENT'S PROMISE WAS NO NEW ASSET, and rank 10 is the row
    * that ends it (#644): the hound is a body nobody in the cast wears. What
    * holds now is narrower and is stated by kind — every body a populace
@@ -1096,6 +1102,32 @@ console.log('\nthe household validator rejects');
     (f, people) => { delete of(people, 'serjeant').heldProp; },
     /^serjeant: heldPropFit with no heldProp to fit$/);
 
+  /* THE TALK PAIRS (#732), each break in the shape SPECS.md names for it. A
+   * pair is only a pair if both speakers stand still on one gossip stop,
+   * in one room, 1.5 to TALK_RADIUS m apart, for the whole of its watch. */
+  const pairOf = (f, id) => f.talk.find((t) => t.id === id);
+  expect('a talk pair moved to a watch neither speaker gossips at',
+    (f) => { pairOf(f, 'talk-sext-inner-ward').watch = 'terce'; },
+    /^talk-sext-inner-ward: tiring-woman has one "wait" stop at terce, not one gossip stop, so the pair is not standing still to talk$/);
+  expect('a speaker 3.5 m from the other',
+    (f, people) => { const m = of(people, 'maid').routine.sext[0].tile; of(people, 'tiring-woman').routine.sext[0].tile = [m[0] + 0.875, m[1]]; },
+    /^talk-sext-inner-ward: tiring-woman and maid stand 3\.50 m apart at sext, outside the 1\.5 to 3 m a pair talks across$/);
+  expect('a pair naming a hen, who has a ring and no gossip stop',
+    (f) => { pairOf(f, 'talk-sext-inner-ward').npcs[0] = 'hen-white'; },
+    /^talk-sext-inner-ward: hen-white has 2 stops at sext, not one gossip stop/);
+  expect('a pair with one line',
+    (f) => { pairOf(f, 'talk-prime-inner-ward').lines.length = 1; },
+    /^talk-prime-inner-ward: 1 line\(s\), and a pair needs at least two$/);
+  expect('two pairs sharing an id',
+    (f) => { f.talk[2].id = f.talk[1].id; },
+    /^talk-sext-outer-ward: two talk pairs share that id$/);
+  expect('a speaker who is not in the household',
+    (f) => { pairOf(f, 'talk-prime-inner-ward').npcs[1] = 'cook'; },
+    /^talk-prime-inner-ward: speaker "cook" is not one of the household in people$/);
+  expect('a pair whose id does not say what it is',
+    (f) => { pairOf(f, 'talk-prime-inner-ward').id = 'prime-inner-ward'; },
+    /^prime-inner-ward: a talk pair's id has to start "talk-"$/);
+
   /* AND THE CONTROL. Every break above is one field changed on a file that
    * validates; if the unbroken copy did not, each `expect` would be finding
    * its message in a list that was never empty (#34). */
@@ -1166,6 +1198,70 @@ console.log('\nthe hound follows the player, on the grid, and goes back');
     check(!!end && Math.abs(end.x - home.x) < 0.05 && Math.abs(end.z - home.z) < 0.05 && npc.walks.length >= 2,
       'and when they are gone it is routed back to the stop it left', end ? `${end.x}, ${end.z}` : 'no walk');
   }
+}
+
+/* ------------------------------------ 8d: who the player overhears (#732) ---
+ * `Populace.talkDue` is the selector: at this watch, which pair stands still
+ * on its two gossip stops with the player in the room and within EARSHOT of
+ * the pair's midpoint. Driven the way 8c drives the hound, over plain-object
+ * bodies on the real grid, with `setWatch(..., {walk: false})` parking every
+ * body on its stop so nothing here waits on a clock (#724). Whether the band
+ * then says the lines is test/quest.mjs's; whether main.js wired the two
+ * together is test/plan-vs-scene.mjs's (#529).
+ */
+console.log('\nwho the player overhears, and from where');
+{
+  const fake = (id) => ({
+    id, walking: false,
+    group: { visible: true, position: { x: 0, y: 0, z: 0 } },
+    walkTo(points) { this.walking = points.length > 1; },
+    placeAt({ x, y = 0, z }) { Object.assign(this.group.position, { x, y, z }); this.walking = false; },
+    playActivity() {}, facePlayer() {},
+  });
+  const handed = [], hushed = [];
+  const folk = new Populace({
+    people: populace.people, npcs: populace.people.map((p) => fake(p.id)), nav, pairs: populace.talk,
+    talk: (pair, names) => handed.push({ pair, names }), hush: (id) => hushed.push(id),
+  });
+  const body = (id) => folk.bodies.find((b) => b.person.id === id);
+  /** The pair's two stops, their midpoint, and a player standing `metres` from it along `dir`. */
+  const standBy = (pairId, metres, dir = [0, 1]) => {
+    const pair = populace.talk.find((t) => t.id === pairId);
+    const [a, b] = pair.npcs.map((id) => body(id).stops[0]);
+    const mid = { x: (a.x + b.x) / 2, z: (a.z + b.z) / 2 };
+    const at = { x: mid.x + dir[0] * metres, z: mid.z + dir[1] * metres };
+    const cell = nav.walk.cellAt(at.x, at.z, a.level);
+    return { x: at.x, y: (cell ? cell.h : a.h) + EYE_HEIGHT, z: at.z, room: nav.roomAt(at.x, at.z, cell ? cell.h : a.h).id, want: a.room };
+  };
+
+  folk.setWatch('sext', { walk: false });
+  const near = standBy('talk-sext-inner-ward', 2);
+  check(near.room === near.want, `a player 2 m from the Sext inner-ward pair is standing in ${near.want}`, `stands in ${near.room}`);
+  check(folk.talkDue(near)?.id === 'talk-sext-inner-ward', 'the Sext bodies parked and the player 2 m from the inner-ward pair: that pair is due', folk.talkDue(near)?.id ?? 'null');
+  const far = standBy('talk-sext-inner-ward', 7);
+  check(far.room === far.want && folk.talkDue(far) === null, `7 m off, still in ${far.want}, and nothing is due: out of the ${6} m earshot`, `${far.room}, ${folk.talkDue(far)?.id ?? 'null'}`);
+
+  // One speaker walking off: `walking` true and `settled` false, as `update`
+  // leaves a body that has been handed a route.
+  const maid = body('maid');
+  maid.npc.walking = true; maid.settled = false;
+  check(folk.talkDue(near) === null, 'one speaker walking and not settled, and the pair is not due', folk.talkDue(near)?.id ?? 'null');
+  maid.npc.walking = false; maid.settled = true;
+
+  // The wire inside Populace: `update` hands a due pair over with its room and
+  // the two names in speaking order, and hushes it when the player walks off.
+  folk.update(0.05, near);
+  const got = handed.at(-1);
+  check(got?.pair.id === 'talk-sext-inner-ward' && got.pair.room === 'inner-ward' && got.names.join() === [body('tiring-woman').person.name, maid.person.name].join(),
+    'update hands that pair to `talk`, with room inner-ward and the two names in speaking order', got ? `${got.pair.id} in ${got.pair.room}, ${got.names.join(' / ')}` : 'nothing handed');
+  folk.update(0.05, standBy('talk-sext-inner-ward', 7));
+  check(hushed.length === 0, 'at 7 m, inside the 2 m of hysteresis past earshot, it is not hushed', hushed.join());
+  folk.update(0.05, standBy('talk-sext-inner-ward', 9));
+  check(hushed.join() === 'talk-sext-inner-ward', 'at 9 m it is hushed, once, by id', hushed.join() || 'not hushed');
+
+  folk.setWatch('prime', { walk: false });
+  const prime = standBy('talk-prime-inner-ward', 1);
+  check(folk.talkDue(prime)?.id === 'talk-prime-inner-ward', 'Prime, with the player at the Prime pair: the Prime pair is due', folk.talkDue(prime)?.id ?? 'null');
 }
 
 /* ---------------- the HUD's room line agrees with the schedule (#515) ---
