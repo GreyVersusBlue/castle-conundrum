@@ -8614,3 +8614,78 @@ header comment (13/62/182 to 14/77/196) and its preamble ("every word the
 twelve say" to "every word the cast says") are prose the fourteenth speaker
 made false the moment it landed; both are corrected in the same commit that
 added him.
+
+---
+
+## Explore, the day before: increment 2 shipped (2026-09-21)
+
+**Increment 2 of rank 1, the two doors, shipped** (#771 to #774, against
+#754 to #756). Commit `2d2a8b1`, worked under Claude Opus 5 as the builder on
+`claude/walking-day-before-death-8apcav`. `npm test` 15 of 15, `npm run build`
+clean, `npm run dialogue:check` reports "dialogue/castle.dlg and data/ agree."
+
+**What shipped, eleven files** (#771). `index.html` gets the second button and
+the panel's paragraph, the meta descriptions, and the day-0 tracker line.
+`src/ui.js`'s `showStart(onStart, onMystery = null)` hides `#start-mystery`
+when handed no second callback, and `showStartAgain` always hides it.
+`src/ui.css` lays the panel's buttons out one per line. `src/main.js` wires the
+second callback, the first plus `quest.enterMystery()`, and hands it only when
+`saved` is null. `README.md`'s opening names both doors. Six suites:
+`test/play-castle.mjs`, `test/overlays.mjs`, `test/touch.mjs`, `test/map.mjs`,
+`test/built.mjs`, `test/plan-vs-scene.mjs`. `#start-button` keeps its id and
+reads "Walk the castle"; `#start-mystery` is the second door, offered on a
+fresh save only (#755, `SPECS.md`'s open call 4).
+
+**Six rails, each broken from green, FAIL lines verbatim** (#34, #13):
+
+1. The second door takes the pointer. Break: the `onMystery` callback without
+   `player.lock()`. `FAIL and takes pointer lock, the way Walk the castle
+   does` — and the suite then aborted on `TimeoutError: Waiting for selector
+   #start-overlay:not(.hidden)`, because with no pointer there is no unlock
+   and no panel, which is the same bug showing twice.
+2. `showStartAgain` never re-offers the second door. Break: drop its
+   `classList.add('hidden')`. `FAIL the panel that comes back mid-day does not
+   offer to restart the day`
+3. #715's live prompt, in `plan-vs-scene`. Break: put the article back in
+   `src/interaction.js`. `FAIL the Constable's prompt is his name and no
+   article: "Press E to talk to the Sir Roger Lestrange" — expected "Press E
+   to talk to Sir Roger Lestrange"`
+4. The panel a resumed save gets. Break: pass `onMystery` unconditionally.
+   `FAIL a resumed save is offered one door and not two — Walk the castle
+   shown true, the day of the death shown true`
+5. The tap on the second door, in `touch`. Break: drop `quest.enterMystery()`
+   from that callback. `FAIL and it is the day of the death`, plus four
+   cascades.
+6. The bundle's second door, in `built`. Break: `onMystery` always null.
+   `FAIL and the built page's second start button puts the crosshair on the
+   screen — crosshair false, panel still up true` and `FAIL and opens on the
+   day of the death, not the day before it — day 0`
+
+**Two things the spec did not cover, both done and named, and each is its own
+numbered decision or a clause.**
+
+- **`test/play-castle.mjs` carried two day-one facts the door alone does not
+  fix** (#772). `rigs.count === 13` is 14 now for Hywel (#752, matching
+  `plan-vs-scene`'s `bodies.length === 14`), and its Play Again beat asserted
+  `stage === 'arrive'`, which a wiped save can no longer be, because a wiped
+  save now opens on the walking day. It expects the fresh walking day and
+  then presses the second door for `arrive` at `prime`.
+- **`src/ui.css` is outside increment 2's scope table** (#773). Three inline
+  buttons in a 460 px panel put the second door beside the first rather than
+  under it, so `#start-overlay .panel button { display: block; margin: auto
+  }`, scoped to that panel.
+
+**One correction to a rail of the builder's own, and it is the most useful
+line in this band** (#774). The resumed-panel plant first wrote the save from
+the live game page and reloaded, and came back at Terce rather than Sext:
+**the autosave flushes on `pagehide`, so the leaving page overwrote the
+plant.** It plants from `test/blank.html` now, which is what that file exists
+for. The FAIL it gave: `and the castle behind the panel is the day it was
+left on, at Sext — day 1, watch terce`. **The rule, for whoever writes the
+next suite that plants a save and then loads the game page: plant from
+`blank.html`, because the page you are leaving writes on the way out.**
+
+**What is unverified, and stays unverified here.** The door is wired and the
+static checks pass, but nobody has run `npm run play` past it: this container
+is software-rendered and the suite needs a real GPU (#53). Whether the day
+actually plays through its new door is rank 3's first act.
