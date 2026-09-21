@@ -12,7 +12,7 @@
 // hinge's scene graph, and the gate's animation.
 
 import * as THREE from 'three';
-import { loadModel, loadPBRMaterial } from './assets.js';
+import { loadModel, loadPixelMaterial } from './assets.js';
 import { makePlan, tileToWorld } from './castle-plan.js';
 
 /* ------------------------------------------------- built stone and its UVs ---
@@ -113,9 +113,9 @@ function ringSection(inner, outer, y0, y1, thetaStart, thetaLength, segs, materi
       r, h, segs, metres));
     // The inner face is the same shell turned outside in, by reversing its
     // winding and negating its normals rather than by cloning the material with
-    // `side: BackSide`. loadPBRMaterial hands back a material and fills its maps
-    // in later, from three callbacks; a clone taken here would be a copy of the
-    // untextured placeholder and would stay grey for the life of the page.
+    // `side: BackSide`. loadPixelMaterial hands back a material and fills its
+    // map in later, from a callback; a clone taken here would be a copy of the
+    // untextured placeholder and would stay white for the life of the page.
     if (r === inner) flipInward(geo);
     const m = mesh(geo, material);
     m.position.y = mid;
@@ -655,9 +655,11 @@ export class CastleBuilder {
 
   /**
    * One MeshStandardMaterial per named stone, shared by every piece using it.
-   * `plainMaterials` are the colour-only ones — the cell's bars and the cloak —
-   * which have no texture set on disk and are kept out of `materials` so that
-   * section can go on meaning "a complete diffuse, normal and arm/rough set".
+   * `pixelMaterials` is the fifteen textures this repo draws (#742): one 128 px
+   * map each, lit, diffuse only. `plainMaterials` are the colour-only ones —
+   * the cell's bars and the cloak — which have no texture on disk and are kept
+   * out of the first section so that it can go on meaning "one map, under
+   * assets/pixel/, that test/assets.mjs can re-render and compare".
    */
   material(name, tint = null) {
     // A tint is a second material over the same maps (#516); the maps are
@@ -665,11 +667,11 @@ export class CastleBuilder {
     // on the GPU.
     const key = tint ? `${name}@${tint}` : name;
     if (!this.materials.has(key)) {
-      const spec = this.config.materials[name];
+      const spec = this.config.pixelMaterials[name];
       const plain = this.config.plainMaterials && this.config.plainMaterials[name];
       if (!spec && !plain) throw new Error(`[Castle Conundrum] no material named "${name}" in scene-config.json`);
       this.materials.set(key, spec
-        ? loadPBRMaterial(spec, 1, spec.fallbackColor || '#8a8175', tint)
+        ? loadPixelMaterial(spec, tint)
         : new THREE.MeshStandardMaterial({
             color: plain.color,
             roughness: plain.roughness ?? 1,
