@@ -66,6 +66,8 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, '..');
 const config = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/scene-config.json'), 'utf8'));
 const mystery = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/mystery.json'), 'utf8'));
+const npcs = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/npcs.json'), 'utf8'));
+const populace = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/populace.json'), 'utf8'));
 
 let failures = 0;
 const fail = (msg) => { console.log(`  FAIL  ${msg}`); failures++; };
@@ -109,9 +111,11 @@ const MAX_SKINNED_PER_WARD = 20;
 const MAX_SKINNED_TOTAL = 32;
 /* Anchored on rank 6 rather than on hardware, because rank 6 is what is about
  * to spend it: twelve cast plus its first ten populace is 22, which fits 32
- * with room left for somebody to be standing in rank 4c's yard. The per-ward 20
- * is the live constraint — the outer ward peaks at 7 today, so rank 6 may put
- * ten more in one ward and no more. Rank 10's "the fifty" fits neither number
+ * with room left for somebody to be standing in rank 4c's yard. The "7 today"
+ * this comment once gave the outer ward was the schedule alone; section 3 has
+ * counted the household since #730, and with rank 6's last five (#729) the
+ * page builds 32, exactly this ceiling, and the outer ward peaks at 18 of 20.
+ * The next body is an argument in HISTORY.md. Rank 10's "the fifty" fits neither number
  * and is not meant to: fifty bodies is fifty AnimationMixers and fifty skinned
  * draw calls, and this is the file that says so out loud. */
 
@@ -296,24 +300,42 @@ console.log('\npoint lights');
 
 /* ================================================ 3: skinned bodies per ward ===
  *
- * One body per person on mystery.json's schedule at the watch it names, and the
- * ward is the ward of the room the station is in. A person with no station at a
- * watch is not standing anywhere at that watch — the merchant is only at the
- * castle at Terce — and is not counted then.
+ * TWO LISTS, BECAUSE THE PAGE BUILDS TWO (#730). The twelve are one body per
+ * person on mystery.json's schedule at the watch it names, in the ward of the
+ * room the station is in; a person with no station at a watch is not
+ * standing anywhere then (the merchant is only at the castle at Terce). The
+ * household is data/populace.json, and until #730 this section never read
+ * it: it printed 12 bodies in the castle while src/main.js built 27.
  *
- * Every one of these is a skinned mesh off one of the four Quaternius bodies
- * (#419, and the woman's at #603) with an AnimationMixer of its own, which is
- * the cost that does not
- * come off the plan and does not frustum-cull away: three.js updates a skeleton
+ * A POPULACE BODY COUNTS IN EVERY WARD ANY STOP OF ITS RING IS IN, at that
+ * watch, by mystery.json's `rooms`. A ring is walked round for the whole
+ * watch, so its mixer is paid for wherever the body can be when the player
+ * is standing there, which is #608's reaching rule applied to a body: the
+ * baker's lad at Terce hauls from the outer ward to the bakehouse and back,
+ * and is counted in both. A body with `follow` counts in both wards at every
+ * watch it has a ring, because the hound leaves its ring for the player and
+ * the porter gate does not stop it.
+ *
+ * THE TOTAL IS EVERY BODY src/main.js BUILDS: all of npcs.json's `cast`, the
+ * inspector included because he is built on day one and hidden, and all of
+ * data/populace.json's `people`. src/npc.js's `update` runs every mixer each
+ * frame before anything reads `visible`, so a hidden body is paid for too.
+ *
+ * Every one of these is a skinned mesh off one of the Quaternius bodies
+ * (#419, the woman's at #603, the hound's and the hen's at #644 and #684)
+ * with an AnimationMixer of its own, which is the cost that does not come off
+ * the plan and does not frustum-cull away: three.js updates a skeleton
  * whether or not the mesh is on screen.
  */
-console.log('\nskinned bodies per ward, at each watch');
+console.log('\nskinned bodies per ward, at each watch, the cast and the household');
 {
   const wardOfRoom = new Map(mystery.rooms.map((r) => [r.id, r.ward]));
   const peak = { outer: 0, inner: 0 };
   const peakAt = { outer: null, inner: null };
+  const wardsAt = new Map(); // "person/watch" -> Set of wards, for the named case
   for (const watch of mystery.watches) {
-    const here = { outer: 0, inner: 0 };
+    const cast = { outer: 0, inner: 0 };
+    const folk = { outer: 0, inner: 0 };
     for (const [who, schedule] of Object.entries(mystery.schedule)) {
       const station = schedule[watch];
       if (!station) continue;
@@ -322,18 +344,43 @@ console.log('\nskinned bodies per ward, at each watch');
         fail(`${who} stands in "${station.room}" at ${watch} and mystery.json gives that room ward ${JSON.stringify(ward)} — the body cannot be budgeted`);
         continue;
       }
-      here[ward]++;
+      cast[ward]++;
     }
+    for (const p of populace.people) {
+      const ring = p.routine?.[watch] ?? [];
+      if (!ring.length) continue;
+      const wards = new Set();
+      for (const stop of ring) {
+        const ward = wardOfRoom.get(stop.room);
+        if (ward !== 'outer' && ward !== 'inner') {
+          fail(`${p.id} has a stop in "${stop.room}" at ${watch} and mystery.json gives that room ward ${JSON.stringify(ward)} — the body cannot be budgeted`);
+          continue;
+        }
+        wards.add(ward);
+      }
+      if (p.follow) for (const w of WARDS) wards.add(w);
+      wardsAt.set(`${p.id}/${watch}`, wards);
+      for (const w of wards) folk[w]++;
+    }
+    const here = { outer: cast.outer + folk.outer, inner: cast.inner + folk.inner };
     for (const w of WARDS) if (here[w] > peak[w]) { peak[w] = here[w]; peakAt[w] = watch; }
-    console.log(`        ${watch}: ${WARDS.map((w) => `${w} ${here[w]}`).join(', ')}`);
+    console.log(`        ${watch}: ${WARDS.map((w) => `${w} ${here[w]} (${cast[w]} + ${folk[w]})`).join(', ')}`);
   }
+  /* THE NAMED CASE, the way `cross-walk` is #608's: a ring that crosses the
+   * porter gate is counted on both sides of it. Count only a ring's first
+   * stop and the baker's lad at Terce is outer-ward only, and this line says
+   * so before any total moves. */
+  const lad = wardsAt.get('baker-lad/terce');
+  if (!lad) fail('the baker\'s lad has no ring at Terce, so the named case for a ring across two wards names nobody');
+  else if (lad.has('outer') && lad.has('inner')) pass('the baker\'s lad at Terce, hauling from the outer ward to the bakehouse, is counted in both wards');
+  else fail(`the baker's lad at Terce hauls from the outer ward to the bakehouse and is counted in ${[...lad].join(' and ')} only`);
   for (const w of WARDS) {
     if (peak[w] > MAX_SKINNED_PER_WARD) fail(`the ${w} ward holds ${peak[w]} skinned bodies at ${peakAt[w]}, over the ceiling of ${MAX_SKINNED_PER_WARD}`);
     else pass(`the ${w} ward peaks at ${peak[w]} skinned bodies (${peakAt[w]}), ${MAX_SKINNED_PER_WARD - peak[w]} under the ceiling of ${MAX_SKINNED_PER_WARD}`);
   }
-  const cast = Object.keys(mystery.schedule).length;
-  if (cast > MAX_SKINNED_TOTAL) fail(`${cast} bodies in the castle, over the ceiling of ${MAX_SKINNED_TOTAL}`);
-  else pass(`${cast} bodies in the castle, ${MAX_SKINNED_TOTAL - cast} under the ceiling of ${MAX_SKINNED_TOTAL}`);
+  const built = npcs.cast.length + populace.people.length;
+  if (built > MAX_SKINNED_TOTAL) fail(`${built} bodies built, over the ceiling of ${MAX_SKINNED_TOTAL} (${npcs.cast.length} cast and ${populace.people.length} household)`);
+  else pass(`${built} bodies built, ${npcs.cast.length} cast and ${populace.people.length} household, ${MAX_SKINNED_TOTAL - built} under the ceiling of ${MAX_SKINNED_TOTAL}`);
 }
 
 /* -------------------------------------------------------------- the sheet --- */

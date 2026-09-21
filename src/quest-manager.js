@@ -547,26 +547,65 @@ export class QuestManager {
   _maybePerform() {
     const piece = this.performanceHere();
     if (!piece) return null;
+    // A PERFORMANCE OUT-RANKS TALK (#732): two of the household gossiping are
+    // cut off where they stand for a sermon, and never the other way round.
+    if (this._playing?.talk) this._stopPerformance();
     this._heard.add(piece.id);
     const who = this.npcs?.find((n) => n.id === piece.npc);
     const name = who?.name ?? piece.npc;
-    // The run is its own object and the step closes over it, so `_stopPerformance`
-    // only has to drop the reference: a step that wakes up to find itself no
-    // longer the run does nothing. No timer is ever cancelled, which is what
-    // lets `_schedule` stay a two-argument function a suite can replace with a
-    // queue (there is no `clearTimeout` to stand in for).
-    const run = { piece };
+    this._run(piece, () => name);
+    return piece;
+  }
+
+  /**
+   * Step one piece's lines onto the band, a caption at a time.
+   *
+   * The run is its own object and the step closes over it, so `_stopPerformance`
+   * only has to drop the reference: a step that wakes up to find itself no
+   * longer the run does nothing. No timer is ever cancelled, which is what
+   * lets `_schedule` stay a two-argument function a suite can replace with a
+   * queue (there is no `clearTimeout` to stand in for).
+   */
+  _run(piece, nameOf, talk = false) {
+    const run = { piece, talk };
     this._playing = run;
     let i = 0;
     const step = () => {
       if (this._playing !== run) return;
       if (i >= piece.lines.length) { this._playing = null; this.ui.clearCaption?.(); return; }
+      const name = nameOf(i);
       const line = piece.lines[i++];
       this.ui.caption?.(name, line);
       this._schedule(step, captionMs(line));
     };
     step();
-    return piece;
+  }
+
+  /**
+   * TWO OF THE HOUSEHOLD, OVERHEARD (#731, #732). src/populace.js hands over a
+   * `talk` pair from data/populace.json when the player is in earshot of its
+   * two speakers, with `room` set to where they stand, and `names` in
+   * speaking order. The lines alternate between the two names, the first
+   * line the first name's.
+   *
+   * ONE BAND AND ONE CLOCK. A talk run is a run like a sermon's: the same
+   * `_playing`, the same `_heard`, the same `_schedule` and `captionMs`. So it
+   * is once per page and never saved (#594, #39), it says nothing while
+   * anything else is on the band, a bell stops it through `_stopPerformance`,
+   * and because the pair carries `room`, `handleEnter`'s own room line stops
+   * it when the player walks out.
+   */
+  overhear(pair, names = []) {
+    if (!pair?.id || !Array.isArray(pair.lines)) return null;
+    if (this._heard.has(pair.id) || this._playing) return null;
+    this._heard.add(pair.id);
+    this._run(pair, (i) => names[i % 2] ?? '', true);
+    return pair;
+  }
+
+  /** The player walked out of earshot of `id`: the band goes dark if it is that pair's. */
+  stopTalk(id) {
+    if (this._playing?.talk && this._playing.piece.id === id) this._stopPerformance();
   }
 
   /** The band goes dark: the player left the room, or the bell moved. */
