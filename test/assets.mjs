@@ -333,7 +333,18 @@ console.log('\nevery pixel material is one 128 px map this repo drew');
         fail(`${rel} is ${w} x ${h} by its IHDR, not ${PIXEL_PX} x ${PIXEL_PX} — the size is what keeps it out of tools/encode-assets.mjs (#508) and what keeps tuneTexture on its NEAREST branch`);
     }
 
-    const { data, info } = await sharp(file).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    /* DECODED, NOT JUST READ. The rails below are about pixels, and a file this
+     * cannot decode is one the page cannot use either: a KTX2 named here — the
+     * swap being quietly undone one slot at a time — throws in sharp rather
+     * than returning anything, and an uncaught throw would take the rest of
+     * this suite with it and report a crash instead of a name. */
+    let data, info;
+    try {
+      ({ data, info } = await sharp(file).ensureAlpha().raw().toBuffer({ resolveWithObject: true }));
+    } catch (err) {
+      fail(`${rel} cannot be decoded as an image at all (${err.message}) — a pixel material's map is a PNG this repo drew, and nothing in Node can read what is at that path`);
+      continue;
+    }
 
     const colours = new Set();
     for (let i = 0; i < data.length; i += 4) colours.add((data[i] << 16) | (data[i + 1] << 8) | data[i + 2]);
