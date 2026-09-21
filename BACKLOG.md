@@ -599,7 +599,7 @@ reference in this file.
 
 | Rank | Item | Size | Model | Where | Gate | Lane | Claimed | Detail |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Explore: the day before the death, the walking day as the main mode, Hywel alive and nobody waiting for a name (#750 to #753) | 2+ | Opus 5 | Container | — | A, D | claude/walking-day-before-death-8apcav | [Explore: the day before](SPECS.md#explore-the-day-before) |
+| 1 | Explore: the day before the death, the walking day as the main mode, Hywel alive and nobody waiting for a name: increment 1 shipped, the engine, the save and a placeholder walking day (#750 to #756, #767 to #770); the two doors, the real lines and the day itself are left | 2+ | Opus 5 | Container | — | A, D | claude/walking-day-before-death-8apcav | [Explore: the day before](SPECS.md#explore-the-day-before) |
 | 2 | Sight at the body's own height: nobody upstairs can be talked to from beside them, and the porter on the walk can be from 8 m below | ¼ | Opus 5 | Container | — | — | | [Sight at the body's own height](SPECS.md#sight-at-the-bodys-own-height) |
 | 3 | The GPU run: the looks are taken (#711 to #715); the walker holds on a GPU (#734, #736) and the third sitting reached the accusation with the wrong ending (#735 to #741) | 1 | Opus 5 | Local: GPU | **after 2** | — | | [The GPU run](SPECS.md#the-gpu-run) |
 | 4 | The retro castle: increment 1 shipped, fifteen sets out and fifteen 128 px textures in (#757 to #766); the look, then variety per room, are left | 2+ | Opus 5 | Container to the look, local: GPU past it | — | B | | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
@@ -619,10 +619,10 @@ the same time. This table still ranks; that file sequences (#601).
 *Where: container. Gate: none. Lanes: A, D.*
 
 **Rank 1, and a 2+. Claimed on `claude/walking-day-before-death-8apcav`,
-2026-09-21. Nothing shipped.** `WISHLIST.md` theme 8 put four questions to
-Devon the day it was written and he answered all four the same day (#750 to
-#753), overturning the theme's own recommendation on two of them: the
-walking day is the main mode, "Walk the castle" the first door into the
+2026-09-21. Increment 1 shipped the same day.** `WISHLIST.md` theme 8 put four
+questions to Devon the day it was written and he answered all four the same
+day (#750 to #753), overturning the theme's own recommendation on two of them:
+the walking day is the main mode, "Walk the castle" the first door into the
 game with the mystery behind it, and it is the day before the death — Hywel
 alive and speakable, no body, no lantern, no cloak, no summons, none of the
 twelve saying a word of their day-one testimony. The first increment the
@@ -631,7 +631,7 @@ threaded through `src/mystery.js` and `src/quest-manager.js`, a second start
 button, and four rails — did not cover what was answered, and the day-before
 content is priced as its own row the size of Phases 6 and 7 together.
 **`SPECS.md`'s section landed on 2026-09-21** (#754 to #756), four increments
-deep with ten open calls answered, so the next increment is class S: the
+deep with ten open calls answered, so every increment after it is class S: the
 engine, the save and a placeholder walking day, then the two doors, then the
 lines, then the day itself. Two things it settled against the theme's own
 pricing. **The save stays at version 6** (#754): the walking day is `day: 0`
@@ -651,6 +651,20 @@ together. The spec keeps it that way on purpose: the walking day's four
 bells borrow the four hours' skies through an alias in
 `data/mystery.json` rather than copying four blocks into
 `data/scene-config.json`, which would have put this row in lane B as well.
+
+**Increment 1 shipped 2026-09-21** (#767 to #770): the `day0` block, the
+fourteenth cast entry, and the engine, save and validator rails that make the
+walking day a day the mystery can stand on, with a placeholder schedule
+(day one's own, copied) and one stub line per speaker. `npm test` 15 of 15.
+Two findings the increment's own commits made: the door out of the walking
+day (`window.__quest.enterMystery()`) had to move into `test/plan-vs-scene.mjs`,
+`test/overlays.mjs` and `test/touch.mjs` a whole increment early, because
+`start: explore` puts those suites on the wrong day the moment it lands; and
+`test/play-castle.mjs` is untouched, so **`npm run play` is broken until
+increment 2 gives it the same door**, which blocks rank 3, the GPU run, until
+then. **Increments 2, 3 and 4 are open**: the two doors and everything that
+says what the game is; the fourteen real `day0` line sets; and the day-before
+content itself, the size of Phases 6 and 7 together.
 
 ## Sight at the body's own height
 

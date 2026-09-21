@@ -8466,3 +8466,151 @@ on both sides together, which is what it is there to catch. The three counts in
 `test/plan-vs-scene.mjs`'s drum beat — one map per material, each drum's map
 its own plan piece's — passes over the new materials with no assertion added
 there and nothing crossing the four-suite line (#529, #611).
+
+---
+
+## Explore, the day before: increment 1 shipped (2026-09-21)
+
+**Increment 1 of rank 1, shipped.** The engine, the save and a placeholder
+walking day are in, against the `SPECS.md` section #754 to #756 wrote.
+Commits `8009a96` and `aa22098`, worked under Claude Opus 5 as the builder on
+`claude/walking-day-before-death-8apcav`, merged from `origin/main` at
+`f5fbe80` and again at `7ed041e` once the retro castle band landed. `npm test`
+15 of 15, `npm run build` clean, `npm run dialogue:check` green.
+
+**What shipped.** `data/mystery.json` gains a `day0` block, `day2`'s sibling:
+its own four bells `prime-eve` to `vespers-eve`, a per-bell thirteen-person
+schedule (day one's stations copied under the new ids, plus Hywel's), the six
+evidence rows that are on the ground (`candle`, `lock`, `ledger`, `knife`,
+`gaol-roll`, `walk-door`), an empty `castle` and a `night` pane. Top level
+beside `ui`: `watchLabels`, `watchLike` and `ui.quiet`. `data/quest.json`
+starts on `explore` (`enter: ["applyDay0"]`, rings four bells to `night`), adds
+`night` (`enter: ["showNight"]`, one transition, `day:1` to `arrive`), and
+`arrive` gains `enter: ["applyDay1"]`. `data/npcs.json` gains a fourteenth
+`cast` entry, `hywel` (`Farmer.glb`, tint `#7a6a52`, `role` "Master mason",
+`ward` "outer", `arrives: 0`), plus fourteen `day0` line sets, one per speaker,
+written through the .dlg and compiled in. `src/mystery.js`: `dayWatchesOf`
+keyed on the literals 0 and 2, `onDayZero()` beside `onDayTwo()`, day-0 clauses
+in `day`, `stationOf`, `available`, `press`, `examine`, `enter`, `ring` and
+`accuse`, `beginDay0`, `beginDay1`, `undoDay`, `beforeDayOne`, and the day-0
+validator rails. `src/save.js`: the `day: 0` clamp, a third bell list in
+`buildCatalog`, and the incoherence rail beside line 218's, at version 6.
+`src/quest-manager.js`: `applyDay0`, `applyDay1`, `showNight` and
+`enterMystery()`. `src/stations.js` indexes the walking day's bells the way
+`day2.watches` is indexed. `src/lore.js` learns `arrives: 0`. `src/main.js`
+sets the sky the manager resolves. `src/interaction.js` drops the article,
+#715's fix. `test/budget.mjs`'s `MAX_SKINNED_TOTAL` goes 32 to 33.
+
+**Every rail's break and its FAIL line, run from a green baseline (#34, #13).**
+
+- `dayWatchesOf` falling through for day 1: `FAIL the mystery entered from the
+  walking day starts at Prime, in \`arrive\`, on day one — prime-eve / arrive /
+  day 1`, plus 27 more day-one beats.
+- `enter` granting on day 0: `FAIL and grants no \`L\` clue: \`walk-crosses\` in
+  a walking day's journal would be the mystery starting the day before it`.
+- `ring`'s day-0 clause dropped: `FAIL it returns a \`night\` effect and
+  \`bell:4\`, and demands nothing … — ["demand","event"]`.
+- The day-0 validator section neutered: 16 FAILs headed `FAIL validateMystery
+  finds nothing wrong, the castle included — day0: no walking day, so the
+  castle opens on the morning the mason is already dead`.
+- The walk into the night: `FAIL rejects a body that cannot walk from its last
+  walking-day station to its day-one Prime one — said: cook: no path from KI at
+  sext-eve to PT at vespers-eve; …`.
+- Hywel's day-one clause: `FAIL rejects a day-one schedule for the man who is
+  dead by Prime — said: apprentice and hywel stand 0.00 m apart at prime …`;
+  his missing day-0 station: `FAIL rejects no station for him on the one day he
+  is alive — said: hywel: no row in day0.schedule …`; his day-two clause:
+  `FAIL rejects a station for him on the morning after his own funeral — said:
+  … hywel: no day-two lines after the verdict full (a full) …`.
+- Lore's chatter clause: `FAIL the fourteenth, Hywel, cannot chatter either —
+  he is dead by Prime — said nothing`.
+- The day-0 clamp list: `FAIL a walking day with two bells in it clamps to 1,
+  so the ceiling is the data and not a number written beside it — 3`.
+- The incoherence rail: `FAIL a day: 0 carrying a recorded verdict comes back
+  as day one — {"day":0,"watch":3}` and `FAIL and so does a day: 0 carrying a
+  clue — {"day":0,"watch":2}`.
+- `index.html` left alone: `FAIL index.html's initial objective is the start
+  stage's … — "The master mason is dead at the foot of the Chapel Tower stair.
+  Find the Constable."` and `FAIL index.html's initial bell is the start
+  stage's own, read out as "Prime, the eve" — "Prime"`.
+- `arrive`'s `applyDay1` dropped: 45 FAILs from `FAIL and at Prime` /
+  `FAIL E on the body: he is at the foot of the stair`, then a hard throw.
+- `_showEvidence`'s day-0 list: `FAIL 0 things are on the ground on the
+  walking day: — and 11 are not: body, candle, cart, …`.
+- `talked:constable` on `explore`: `FAIL and stepping it out opens no
+  accusation panel and moves no stage … — arrive / no panel`.
+- `_skyOf`: `FAIL the world is put at prime-eve with prime's sky … —
+  prime-eve / sky prime-eve`. `_label`: `FAIL and the bell read out as "Prime,
+  the eve" … — "Prime-eve"`.
+- A `watchLike` entry deleted: `FAIL prime-eve is a bell the engine can stand
+  at with no sky … would change the HUD and not the light`; a `watchLike` key
+  that is not a bell: `FAIL mystery.watchLike names matins, which is not a bell
+  of any day …`.
+- `undoDay` as a no-op: `FAIL undoDay of it leaves 701 colliders against the
+  plan's 702 …` and `FAIL undoDay maps open, shut, gone, shown to
+  open,shut,gone,shown`.
+- The ceiling left at 32: `FAIL 33 bodies built, over the ceiling of 32 (14
+  cast and 19 household)`.
+- One rail beyond the spec's nine, `day0.night.{title,text,button}`
+  non-empty: `FAIL rejects a walking day with no pane to end on — said:
+  day0.night.button: no text, so the walking day would end on a blank pane`.
+
+**Five places the spec did not fit the code, and each is its own numbered
+decision or a clause of one.**
+
+- **The door is increment 1's for three suites and increment 2's for the
+  rest** (#767). With `start: explore`, `test/plan-vs-scene.mjs`,
+  `test/overlays.mjs` and `test/touch.mjs` measure the walking day and go red
+  the moment increment 1 lands, 14 FAILs in `plan-vs-scene` alone including
+  `E at the word-lock opened no riddle (stage explore)`. #755's own line,
+  `await page.evaluate(() => window.__quest.enterMystery())`, went into those
+  three now, with a comment saying increment 2 replaces it with a
+  `#start-mystery` click for the two of them that click a panel at all.
+  `test/map.mjs` needed nothing, because it never asserted a fact the walking
+  day changes. So increment 1's own boundary moved off `SPECS.md`'s table: the
+  door is this increment's for three suites and increment 2's for the other
+  three named there. **`test/play-castle.mjs` is untouched and `npm run play`
+  is broken until increment 2 gives it the same door.** That is not in
+  `npm test` and CI does not run it (#53), so nothing went red, and it blocks
+  rank 3, the GPU run, until increment 2 lands. Recorded here as a known break
+  for whoever takes rank 3 next: read this before running `npm run play` and
+  finding it stuck on the walking day.
+- **The save break `SPECS.md` specified was vacuous, and it says so in place**
+  (#768, #147). Both `day1.watches` and `day0.watches` are four bells long on
+  the shipped data, so a clamp rail substituting one list for the other would
+  pass whatever the code did: the third clause of #754's own section names
+  this and the rail added, `test/save.mjs`, asserts the ceiling against a
+  clone whose `day0.watches` is cut to two instead, which is what actually
+  catches a clamp reading the wrong list. `test/save.mjs` carries the comment:
+  "WITHOUT THE THIRD LIST the clamp would use the four, and say so out loud
+  (#147)." This is #147's lesson landing a third time in this project.
+- **`SPECS.md`'s own worked example named the wrong cell** (#769). The walk-
+  into-the-night acceptance criterion in `SPECS.md`'s scope table read "move
+  the cook's `vespers-eve` station into the cell and the rail says `cook: no
+  path from CE at vespers-eve to KI at prime`"; the cook's actual `day0`
+  station is `PT`, not `CE`, so the message the rail gives is `cook: no path
+  from PT at vespers-eve to KI at prime`. `SPECS.md`'s example is corrected
+  with this band.
+- **`test/dialogue.mjs`'s two `62` literals, and a coverage guard with nowhere
+  left to land** (#770). The suite held two hard-coded counts of dialogue
+  states (`members === 62`, `same === 62`) and a rail that needs a speaker with
+  exactly one state (the inspector) to exercise its `{}` branch. Fourteen new
+  `day0` sets took the real count to 77 without moving either literal, and gave
+  every speaker at least two states, so neither literal nor the `{}` branch
+  could be reached honestly. The two literals are computed off the file now
+  (`stateCount`, a sum over `parsed.cast`), asserted with a `>= 62` floor
+  rather than replaced with a new literal, because a hard number is a number
+  every future content row has to edit by hand; the `{}` branch is reached by
+  emptying the shortest block in the fixture outright rather than relying on
+  the inspector's shape to still be the thinnest one in the file.
+
+**Two files outside increment 1's own scope table, touched and why.**
+`index.html`'s two tracker lines (`#quest-watch` to "Prime, the eve",
+`#quest-objective` to the `explore` stage's own text) are what increment 1's
+own acceptance criterion in `SPECS.md` demands — the section's `test/quest.mjs`
+break names the stale text by quoting it — even though the file is not in the
+increment's scope table. `tools/dialogue.mjs`'s speaker-and-state counts in its
+header comment (13/62/182 to 14/77/196) and its preamble ("every word the
+twelve say" to "every word the cast says") are prose the fourteenth speaker
+made false the moment it landed; both are corrected in the same commit that
+added him.
