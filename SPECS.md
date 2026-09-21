@@ -540,93 +540,260 @@ two lines and left the version at 6.
 ## Life: a populace
 
 **Rank 6. Size 2+.** `WISHLIST.md` theme 1. **The first increment shipped on
-2026-09-17** (#616 to #618) and this section is what is left of the row.
+2026-09-17** (#616 to #618), rank 10 added a child, a hound and two hens to
+the same file (#643, #684), and this section is what is left of the row.
+**Amended on 2026-09-20 (#725 to #728)**: the count, the budget and the
+ambient talk below were each measured against the code, each came out
+different from what this section said before, and the next increment is
+class S as written.
 
 ### What shipped
 
-- **`data/populace.json`, ten people, and `src/populace.js`.** A routine is a
-  ring per bell — one LIST of `{room, tile, activity, facing?}` per watch,
-  walked round until the next bell — rather than one station per bell, because
-  the clock does not move between bells (#547, answer 3). `validatePopulace`
-  asks the twelve's own five nav questions plus every leg of the ring and the
-  wrap back to its first stop, and it checks the room with `roomAt` rather
-  than `inNamedRoom`, which is the one place it is stronger than the
-  schedule's: six of the ten stand in open ground, where `inNamedRoom` answers
-  null. `test/mystery.mjs` owns it (#529) and rejects thirteen breaks.
-- **Nine activities onto three clips**, all of them idle variants every body
-  already ships, so no asset and no clip was added. `ACTIVITY_CLIPS` in
-  `src/populace.js` is the table and `npc.js`'s `playActivity` reads it.
+- **`data/populace.json`, fourteen bodies, and `src/populace.js`.** Ten people
+  from #616, then the well-wife's girl, the Constable's hound (with `follow`)
+  and two hens from rank 10. A routine is a ring per bell, one LIST of
+  `{room, tile, activity, facing?}` per watch, walked round until the next
+  bell, because the clock does not move between bells (#547, answer 3).
+  `validatePopulace` asks the twelve's own five nav questions plus every leg
+  of the ring and the wrap back to its first stop, and it checks the room
+  with `roomAt` rather than `inNamedRoom`. `test/mystery.mjs` owns it (#529).
+- **Twelve activities onto six clips**: the nine human jobs on three idle
+  variants every human body ships, `sniff` and `eat` on the hound's rig and
+  `peck` on the hen's. `ACTIVITY_CLIPS` in `src/populace.js` is the table,
+  and `test/mystery.mjs` checks each person's jobs against the clips in that
+  person's own `.glb`.
 - **`label` on an interaction target** (#617): a populace body shows a name
   and a role on the HUD, E at one does nothing, and a label never takes the
   prompt off a suspect standing behind it.
 
+### What the numbers are, measured 2026-09-20
+
+- **Bodies built: 27.** `src/main.js` builds all 13 of `npcs.json`'s `cast`
+  (the inspector too, hidden until day two) and all 14 of `populace.json`,
+  and `src/npc.js`'s `update` runs every body's `AnimationMixer` each frame
+  before anything looks at `visible`. `MAX_SKINNED_TOTAL` is 32.
+  `test/budget.mjs` prints **12**, because it counts `mystery.json`'s
+  `schedule` keys and nothing else (#726).
+- **Bodies per ward, cast plus populace, a ring counted in every ward any of
+  its stops is in and the hound in both:** outer 17, 18, 17, 17 and inner 9,
+  10, 9, 8 at Prime, Terce, Sext and Vespers. The outer ward peaks at **18 of
+  20** at Terce. `ROADMAP.md`'s R6 row says 17, which was the ten before the
+  girl, the hound and the hens.
+- **The twelve's chatter pool cannot be spent by proximity.** Of
+  `data/npcs.json`'s 27 `chatter` pairs, **0** have their two speakers within
+  3 m of each other at the pair's own watch, 3 within 4.0 m, and 5 in the
+  same room. Every line opens with one of the twelve's names (`"Marged:
+  ..."`), so a populace body cannot say one either (#727).
+
 ### Scope, the next increment
 
-- **The other forty.** `data/populace.json` takes them with no schema change;
-  what it needs is places for them to stand, and `roomAt` plus the walk grid
-  will refuse any tile that is not one. The two wards, the three upper floors
-  and the two wall walks carry more than ten, and rank 9's town is where the
-  rest go.
-- **Ambient talk.** `data/npcs.json`'s 27-pair chatter pool, spent once two
-  populace bodies are within 3 m at one bell. The `gossip` activity already
-  marks the stops that are for it: the baker's lad and the well-wife stand
-  2 m apart in the outer ward at Sext and say nothing.
-- **Clips.** `sweep`, `stir`, `hammer` and `spar` are the four `SPECS.md`
-  deferred and they are still deferred: the Quaternius kit has none of them.
-  This is the half of the row that trades with **Bodies** (rank 10) in both
-  directions, and neither strictly gates the other.
-- **Cost.** Instanced meshes and animation LOD. Ten skinned bodies needed
-  none of it; fifty will, and **The tooling**'s budget suite (rank 12a) is
-  what will say when.
+**Five more people, one ambient-talk list, and the budget taught to see
+both.** No new asset, no new clip, no `save.js` change, no lore source kind,
+no `data/scene-config.json`.
+
+- **`data/populace.json`: five people, every stop of every watch in an
+  inner-ward room** (#725). That takes the file to 19 and the page to **32
+  bodies built, exactly `MAX_SKINNED_TOTAL`**, and the inner ward's peak
+  from 10 to 15 of 20. The outer ward stays at 18. Tiles are the builder's
+  to pick off the walk grid, and `validatePopulace` is the check on each.
+  The shape:
+
+  | id | body | Prime | Terce | Sext | Vespers |
+  | --- | --- | --- | --- | --- | --- |
+  | `page` | `Adventurer.glb` | `inner-ward`, one `gossip` stop | `kings-hall`, `serve` | `kings-hall`, `serve` | `steward-chamber`, `wait` |
+  | `sacristan` | `Farmer.glb` | `inner-ward`, one `gossip` stop | `chapel`, `tend` | `chaplain-chamber` level 1, `tend` | `chapel`, `tend` |
+  | `tiring-woman` | `Woman.glb`, `modelHeight` 1.65 | `royal-apartments` level 1, `wait` | `royal-apartments` level 1, `wait` | `inner-ward`, one `gossip` stop | `royal-apartments` level 1, `wait` |
+  | `watchman` | `King.glb` with the crown hidden as the serjeant's is, `Spear.glb` with the serjeant's `heldPropFit` | `south-walk` level 2, ring of 2, `guard` | `south-walk` and `cross-walk` level 2, ring of 2, `guard` | `south-walk` level 2, `guard` | `south-walk` level 2, ring of 2, `guard` |
+  | `writer` | `Adventurer.glb` | `muniment`, `tend` | `muniment`, `tend` | `steward-chamber`, `tend` | `muniment`, `tend` |
+
+  Each gets a name, a `role` for the HUD label, and a tint no body in either
+  file wears; the validator refuses a shared one. **The maid's Sext stop in
+  `inner-ward` becomes a `gossip` stop**, 1.5 to 3.0 m from the
+  tiring-woman's and still 1.5 m clear of the Lady's station there. A
+  one-stop ring that is not a `gossip` stop may grow to two or three stops
+  inside the same room if the builder wants movement. **If a named room has
+  no tile the validator accepts, that stop moves to `inner-ward` with the
+  same activity** and the HISTORY entry names it. No stop of the five goes
+  in an outer-ward room: two of them in the outer ward at Terce is 20 of 20,
+  and three is a failing suite.
+- **`data/populace.json`: a `talk` list of three pairs** (#727). Flat, the
+  way `performances` is and `chatter` is not, because a pair names a watch
+  and, through its stops, a place (#592). A pair is `{id, npcs: [a, b],
+  watch, lines: [...]}`: `id` starts `talk-`, `npcs` are two populace ids in
+  speaking order, and the lines alternate `a`, `b`, `a`, starting with `a`,
+  two to four of them, **with no `"Name: "` prefix**, because the caption
+  band carries the name. The three:
+
+  | id | speakers | watch | where |
+  | --- | --- | --- | --- |
+  | `talk-prime-inner-ward` | `page`, `sacristan` | `prime` | `inner-ward` |
+  | `talk-sext-outer-ward` | `baker-lad`, `well-wife` | `sext` | `outer-ward`, the two `gossip` stops that already stand 2.00 m apart |
+  | `talk-sext-inner-ward` | `tiring-woman`, `maid` | `sext` | `inner-ward` |
+
+  The lines are household talk: bread, water, the Lady's linen, the walk,
+  the ink. **Nothing about the mason, the death or any of the twelve's
+  movements**, because no validator reads a populace line against the
+  timeline, and a line that did would be a clue source nothing knows about.
+  No `cites`: a talk pair tells no lore in this increment and `src/lore.js`
+  is not touched.
+- **`src/populace.js`: the talk rail, the selector and the wire** (#728).
+  - `TALK_RADIUS = 3` and `EARSHOT = 6`, in metres, exported.
+  - `validatePopulace` refuses: a `talk` that is not a list; a pair whose id
+    does not start `talk-` or is used twice; a speaker who is not in
+    `people`, or both speakers the same; a `watch` that is not one of the
+    four; fewer than two lines, or an empty one; and **a pair whose two
+    speakers do not each have a ring of exactly one stop at that watch, with
+    activity `gossip`, in the same room on the same level, from 1.5 m to
+    `TALK_RADIUS` apart**. The ring of one is what makes a pair stand still
+    for the whole watch, which is what gossip is, and what lets a headless
+    beat read it without racing a wall clock (#724).
+  - `Populace.setWatch` records `this.watch`.
+  - `Populace.talkDue(player)` returns the first pair in file order for
+    `this.watch` whose two bodies are visible, `settled` and on their gossip
+    stop, with the player's feet in the same room and level as those stops
+    by `nav.roomAt` (the call `_follow` already makes) and within `EARSHOT`
+    of the pair's midpoint; otherwise null. No three.js and no clock.
+  - `Populace` takes `talk` and `hush` callbacks the way it takes `cue`
+    (#696). `update` calls `talkDue` after the ring loop and hands a due pair,
+    with `room` set to its stops' room, and its two speakers' `name`s to
+    `talk`. While a pair it handed over is
+    playing, a player more than `EARSHOT + 2` m from the midpoint, or out of
+    the room, calls `hush(id)`. The 2 m is the hysteresis `_follow` already
+    uses.
+- **`src/quest-manager.js`: `overhear(pair, names)` and `stopTalk(id)`**
+  (#728). A talk run shares `_playing`, `_heard`, `_schedule` and
+  `captionMs` with a performance, so there is one band and one clock.
+  `overhear` does nothing if `_heard` has the id or `_playing` is anything;
+  otherwise it adds the id to `_heard` and steps the lines with the name
+  alternating `names[0]`, `names[1]`. `_maybePerform` stops a talk run before
+  it starts a piece, and a bell stops one through `_stopPerformance` as it
+  stops a sermon. **A performance out-ranks talk and talk never cuts a
+  performance.** `stopTalk(id)` clears the band only if that pair is the
+  run. Because the run's piece carries `room`, `handleEnter`'s existing
+  `piece.room !== room` line stops talk on a room change as it stops a
+  sermon; without `room` it would stop on every room event.
+- **`src/main.js`**: `Populace` is constructed with `talk: (pair, names) =>
+  quest.overhear(pair, names)` and `hush: (id) => quest.stopTalk(id)`.
+  Nothing else there changes.
+- **`test/budget.mjs` section 3** (#726): count populace bodies per ward per
+  watch beside the schedule's, and count the total as every body the page
+  builds. The rules are under Acceptance. No ceiling moves.
+- **`data/npcs.json`'s `chatterComment`** loses the clause saying the pool is
+  for "a later populace row to spend", and `WISHLIST.md`'s "ambient talk
+  between two populace bodies in earshot is that row's to spend it on" is
+  corrected the same way, both pointing at #727. The pool is not touched.
+- **The B tail**: `ROADMAP.md`'s R6 row ("the next forty", "17 after") and
+  `BACKLOG.md`'s "the other forty" are rewritten to what shipped and the
+  numbers above.
 
 ### Acceptance, the next increment
 
-- Whatever the populace grows to, `validatePopulace` still finds nothing and
-  `test/mystery.mjs` still rejects every break in its list. A new activity is
-  a new row in `ACTIVITY_CLIPS` and the clip check against the `.glb` files
-  is what says the clip is real.
-- Ambient talk: a pair of populace bodies within 3 m at one bell says a line,
-  and a headless assertion in `test/plan-vs-scene.mjs` reads it off the DOM
-  the way the performance captions are read (#592).
+`npm test` 15 of 15. Every new rail is broken on purpose from green and the
+failing line is quoted in `HISTORY.md` (#34).
+
+- **`test/mystery.mjs`** (owns the populace, #529):
+  - `validatePopulace` finds nothing in the file as shipped: 19 people, 3
+    talk pairs, and every existing break still rejected.
+  - Five new breaks, each asserting the message names the fault: a pair
+    moved to `terce` (no gossip stop that watch); one speaker's tile moved
+    3.5 m from the other's; a pair naming `hen-white`; a pair with one line;
+    two pairs sharing an id.
+  - `talkDue`, driven over fake NPCs the way the hound block drives
+    `Populace`: the Sext bodies parked and the player 2 m from the inner
+    pair returns `talk-sext-inner-ward`; the player 7 m off returns null;
+    one speaker `walking` true and `settled` false returns null; Prime with
+    the player at the Prime pair returns the Prime pair. **Break**: delete
+    the `settled` test from `talkDue`, and the walking case goes red.
+- **`test/quest.mjs`** (owns `QuestManager` and the band, as it does for
+  #592's pieces, with its stub UI and queued `_schedule`):
+  - `overhear` captions every line in order with the names alternating, the
+    band goes dark after the last, and a second `overhear` of the same pair
+    on the same page says nothing.
+  - With Marged's Sext song playing, `overhear` says nothing; with a talk
+    run playing, entering the kitchen at Sext cuts it and starts the song.
+    **Break**: remove the `_playing` guard from `overhear`, and the
+    over-the-song case goes red.
+  - `stopTalk` with another pair's id leaves the band as it was.
+- **`test/budget.mjs` section 3** (#726, inside #611's carve-out):
+  - Per ward per watch, a populace body counts in every ward that
+    `mystery.json`'s `rooms` gives any stop of its ring at that watch, and a
+    body with `follow` counts in both wards at every watch it has a ring.
+    The printed table is cast plus populace.
+  - A named case, the way `cross-walk` is for #608: `baker-lad` at Terce
+    (`outer-ward` and `bakehouse`) is counted in both wards. **Break**: count
+    only a ring's first stop, and this line goes red.
+  - The total is `npcs.cast.length + populace.people.length`, printed as
+    bodies built. **Breaks**: a twentieth person with a Prime stop turns
+    `33 bodies built, over the ceiling of 32` red; the `page`'s, the
+    `sacristan`'s and the `writer`'s Terce stops moved into `outer-ward` turn
+    `the outer ward holds 21 skinned bodies at terce, over the ceiling of 20`
+    red.
+- **`test/plan-vs-scene.mjs`, one beat, the wire only** (#728, #529). After
+  the populace placement beat: `window.__populace.setWatch('sext', {walk:
+  false})`, `window.__cam` put 2 m from the inner-ward pair's midpoint at
+  eye height, `pop.update(0.05, cam.position)` driven up to 20 steps the way
+  the hound's bark beat drives it, then `#caption` not hidden and
+  `#caption-line`'s text equal to that pair's first line. Then re-park at
+  `mystery.watches[0]` and put the camera back. **It asserts only that
+  `main.js` handed `Populace` a `talk` that reaches `QuestManager` and the
+  DOM**; which pairs stand within 3 m, and how many, is `mystery.mjs`'s.
+  **Break**: construct `Populace` in `main.js` without `talk`, and the beat
+  goes red on a dark band.
 
 ### Open calls
 
-- **Where the forty stand, before rank 9.** The castle as built has room for
-  perhaps twenty more without crowding. Recommend **stopping at twenty until
-  the town exists**, rather than packing bodies into the wards to hit a
-  number; the row is about whether the castle reads as lived in, and a
-  courtyard of people standing 1.5 m apart reads as a queue.
-- **Whether `garden` should be made real** (#618). `mystery.json` lists it and
-  nothing in the castle resolves to it: the 93 walkable cells east of the east
-  gate are all inside the Chapel Tower's or the King's Tower's disc. It is
-  either ground somebody builds or a room id that should come out of the file.
-  **Rank 4c's yard is now a real precedent rather than a nearer one** (#703 to
-  #707): a room outside the walls, on the map, named, with things standing in
-  it, that nobody ever walks into. The garden is behind a gate that never
-  opens, which is the same shape. Not this row's call, but this row is where
-  it was found.
+Each carries the answer the next increment takes.
+
+- **What "twenty" meant.** It meant twenty more, and it was written the same
+  day as #609 without being checked against it. **Take five, to 19**
+  (#725): 27 bodies built plus five is the total ceiling exactly, and the
+  outer ward has 2 of 20 left at Terce. A sixth body, a town body, or a
+  child or dog from rank 10 is a ceiling renegotiation in `HISTORY.md`, and
+  the evidence it brings should be rank 2's `renderer.info`, not a second
+  guess.
+- **Where the twelve's 27-pair chatter pool goes.** Not this row (#727).
+  Recommend a later lore or dialogue increment hold each pair to the
+  schedule the way #592 holds a performance, which is the pass #554 named
+  and skipped: 5 of the 27 survive a same-room rule as written, and the
+  other 22 need a room and a bell somebody authors.
+- **Whether talk is saved.** No: once per page, in `_heard`, as #594 decided
+  for a sermon, because nothing about an overheard line has to survive a
+  reload (#39) and a version bump is not this class of increment (#36).
+- **Whether populace talk may cite lore.** Not in this increment. A sixth
+  source kind in `src/lore.js` is another row's file; recommend it only once
+  a pair says something the canon does not already say elsewhere.
+- **Clips.** `sweep`, `stir`, `hammer` and `spar` stay deferred until rank 10
+  ships a clip for them; nothing here needs one.
+- **Instancing and animation LOD.** Not in this increment: 32 bodies is
+  inside the ceiling the suite holds. Take it up when a row argues the total
+  above 32, with the measured frame cost in hand.
+- **Lauds.** Nobody in `populace.json` has a Lauds stop and this increment
+  adds none; the morning after keeps the cast and nothing else.
+- **`garden`** (#618). Leave the id in `mystery.json` and put no populace
+  stop in it: no tile resolves to it, and whether it becomes ground is rank
+  9's call, with rank 4c's yard as the precedent (#703 to #707).
 
 ### Dependencies
 
-- **Two of the side quests row's errands were specced as wanting somebody
-  from this file and in the end did not.** That row closed on 2026-09-18
-  (#691 to #695) by keeping both ideas and dropping the body each wanted: the
-  porter's boy is an errand on the porter with the boy never on screen, and
-  the child's dog was let go rather than replaced, on the ground that a dog is
-  the one of the two that is not a conversation and belongs to rank 10's
-  hound. Nothing in this row is owed to that one any more.
-- **Rank 10** is what unblocks the four deferred activities.
-- **Lanes C and D still**: `data/npcs.json`'s `cast` is read to check ids and
-  tints against, and `src/main.js` spawns the ten beside the twelve.
+- **Nothing gates it.** Rank 10 unblocks the four deferred activities and
+  this increment waits on none of them.
+- **Lanes C and D**: `data/populace.json`, `data/npcs.json`'s comment and
+  `src/main.js`'s one constructor. `src/quest-manager.js` is in no other
+  open row's scope today.
+- **Not `data/scene-config.json`**, which rank 9 holds in lane B.
+- **Rank 2's GPU run** is what a later ceiling argument cites; this
+  increment does not wait on it.
 
 ### Constraints
 
-- #500 (a populace stop is not a plan piece and has no `planId`; `populace.js`
-  says so in its own header).
-- #13, #34 (the validator exits non-zero, and every rail it adds has been
-  broken on purpose — including one that had to be rewritten because the
-  first version passed with the bug back in, #616).
-- #529 (the check belongs with `mystery.mjs`).
+- #500: a populace stop is not a plan piece and has no `planId`.
+- #529 and #611: the validator and `talkDue` in `mystery.mjs`, the band in
+  `quest.mjs`, the cost in `budget.mjs`, and `plan-vs-scene.mjs` for the
+  wire and nothing Node can prove.
+- #13, #34: every rail above is broken from green and the failure quoted.
+- #36, #39: talk is not saved and `SAVE_VERSION` stays 6.
+- #724: the beat parks rather than waits, and `TOL` is not touched.
+- #632: any new assertion over a data file's text reads both line endings.
 
 ---
 
