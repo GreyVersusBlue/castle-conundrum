@@ -53,7 +53,7 @@ R4c Thomas Wykes's yard  --> unlocked R9's town, 2026-09-19 (#703 to #707)
 Never gated, take whenever the lane is free:
   R10 bodies (local: net, lane C)
   R13 the floor plan you can see, new 2026-09-21 (#745 to #749)
-      increment 1 writes nothing and is in no lane; 2 and 3 are lane B
+      increment 1 shipped 2026-09-21, the review view; 2 and 3 are lane B
   R4  the retro castle: increment 1 shipped, in a container (#757-766)
       lane B free again; increment 2 waits on a GPU look (#53)
 
@@ -445,7 +445,7 @@ to overturn rather than a street to place.
 
 | Row | Model | Where | Lane |
 | --- | --- | --- | --- |
-| **R13** The floor plan you can see | Opus 5 | Container | B, and none at all for its first increment |
+| **R13** The floor plan you can see, past its first increment | Opus 5 | Container | B |
 | **R9** A castle to get lost in: the town | Opus 5 | Container | B |
 | ~~**R4** The retro castle: increment 1~~ | Opus 5 | Container | B |
 
@@ -458,14 +458,17 @@ before it. **Lane B is free again**; R9 can take it. What gates R4's second
 increment is a look on Devon's machine, in the table under "Local: a GPU"
 above.
 
-**R13 is new on 2026-09-21** (#745 to #749) and it is in this wave because
-nothing gates it. Devon asked for a way to see the whole floor plan; the
-layout turns out to be four arrays of `data/scene-config.json` and not a
+**R13 was decided on 2026-09-21** (#745 to #749) and it is in this wave
+because nothing gates it. Devon asked for a way to see the whole floor plan;
+the layout turns out to be four arrays of `data/scene-config.json` and not a
 line of `src/castle-plan.js`, so the tool writes the file the prop editor
-already writes (#745). **Its first increment writes nothing** — a top-down
-orthographic view over the real scene, drawn from the plan's own boxes
-(#746, #748) — which is why that increment is in no lane and may be claimed
-beside R9. Increments 2 and 3 are lane B and may not.
+already writes (#745). **~~Its first increment~~ shipped the same day**: a
+top-down orthographic view over the real scene, drawn from the plan's own
+boxes (#746, #748), `tools/plan-sheet.mjs` and `src/edit-layout.js`, 29 new
+assertions in `test/tools.mjs`, `npm test` 15 of 15. It needed no lane and
+was claimed beside R9. **What is left is increments 2 and 3**, dragging
+`rooms` and `walls` and then the `doorways`; both are lane B and may not run
+beside R3 or R9's town.
 
 
 A walled town's street, church and quay on the ground the yard proved. The

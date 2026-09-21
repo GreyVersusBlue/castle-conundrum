@@ -7979,6 +7979,67 @@ pins from npm as `"three": "0.169.0"`, so its three code compiles here
 unchanged, but it arrives as source under `src/` or `tools/` and never as a
 vendored copy (#493, #494).
 
+**Increment 1 built, and each guard-rail broken from green, verbatim** (#34).
+`npm test`: 15 of 15 suites, 1772 assertions, 0 failures. `npm run build`:
+clean, 672 ms, 836.81 kB bundle. `npm run play` was not run, and did not need
+to be: nothing here is real-time or physics (#53). No new decision number is
+used below — increment 1 built exactly what #745 to #749 already specified,
+including sourcing an opening from `doorways`, not from derived geometry
+(`SPECS.md`'s own increment-1 scope already said "one per `doorways` opening
+as a point on its run").
+
+Two new files, two touched. `tools/plan-sheet.mjs` is the pure module #748
+asked for: no three, no DOM, no `node:` import, `planSheet(plan, level,
+{ config, mystery })` returns one entry per plan piece meeting the storey (the
+plan's own box, #500), one per room with the plan's own bounds, id, name,
+ward and the mystery's flag, and one per `doorways` opening, its
+`at`/`width`/`height`/`base` read off the run's own config row and its world
+position off the plan piece's own box — never a box recomputed, only boxes
+read. (The plan does not carry `doorways` itself, and deriving an opening
+from box geometry alone produced a phantom opening on `north-curtain-west`
+during the build; the config-row reading above is what `SPECS.md` already
+called for, not a new call.) `src/edit-layout.js` is the view #746 and #747
+asked for: `LAYOUT_SENTINEL = 'castle-layout-editor-v1'`, `V` toggles it,
+`?edit=1&view=plan` opens straight into it, `[`/`]` change storey, Escape
+returns, a `THREE.OrthographicCamera` with `up = (0, 0, -1)` over the real
+built scene framed on `plan.rooms`'s union, the storey filter hiding what is
+wholly above the ceiling and ghosting (opacity 0.25) what is below, and
+`scene.fog` nulled while open and restored on close. `src/edit-mode.js`
+mounts it from the same `import.meta.env.DEV` branch (#747); `src/main.js`'s
+render call is `renderer.render(scene, editor?.camera ?? camera)`.
+
+Two rails. `test/built.mjs`'s single `sentinel` regex is now a list of
+`{ file, re }` pairs, one per module, each asserted present in its own source
+and absent from every file `dist/` ships (#586, #747). `test/tools.mjs` gains
+a fifth part, 29 assertions over `planSheet`: per-storey piece uniqueness,
+plan-object identity of every box (#500), storey containment both ways,
+every room on exactly one sheet with the plan's own bounds and the mystery
+flag, and every opening checked against its run's own config doorways and
+against an actual gap in that run's stone.
+
+- **Break 1** (#586, #747): deleted `import.meta.env.DEV &&` from `main.js`'s
+  branch, built, ran `built.mjs`:
+  `FAIL  the placement editor is in no file dist/ ships — bundle/edit-mode-BZ31_KVA.js`
+  `FAIL  the layout review view is in no file dist/ ships — bundle/edit-mode-BZ31_KVA.js`
+  The served-set diff stayed green in the same run, so #586's evidence
+  extends to the second sentinel. Reverted.
+- **Break 2** (#500): made `planSheet` recompute the great-hall room's bounds
+  from config tiles instead of reading `plan.rooms`:
+  `FAIL  every room on a sheet carries the plan's own bounds — great-hall: bounds.min.x is -32.000 and the plan says -34.000 (2.000 m out)`
+  `FAIL  and it is the plan's own bounds object, so no second derivation can drift from it — great-hall`
+  Reverted.
+
+No suite gained or lost an assertion in `layout.mjs`, `plan-vs-scene.mjs`,
+`mystery.mjs` or `budget.mjs` (#529, #611): this row's rails live only in
+`test/tools.mjs` and `test/built.mjs`. Driven live on the dev server at
+levels 0 and 1 (17 rooms / 182 pieces / 14 openings, and 11 / 115 / 5),
+ghosting correct, no console error — not a GPU or real-time claim (#53 does
+not bite), just confirmation the view renders.
+
+**Increments 2 and 3 are not shipped.** Rooms and runs stay undraggable,
+doorways stay unedited. Both are lane B, which rank 3 and rank 9's town also
+hold (#602): one row per lane at a time, so neither runs beside those.
+
 ## The retro castle: the stone goes back to stylised, and the textures are the repo's own (2026-09-21)
 
 **A spec, not a batch, the shape of #411 to #418 and #560 to #567.** Devon's

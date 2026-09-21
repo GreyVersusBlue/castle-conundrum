@@ -382,18 +382,24 @@ async function init() {
     }
   });
 
-  /* --- the placement editor, dev only (BACKLOG.md rank 13) ---
+  /* --- the placement editor and the floor plan, dev only (BACKLOG.md rank 13) ---
    * `import.meta.env.DEV` is a literal `false` in a build, so Vite drops this
    * whole branch and src/edit-mode.js never enters the production module graph
-   * — not lazily, not at all. The `?edit=1` check is inside the branch rather
-   * than beside it so that the query string alone can never pull it in from a
-   * built page. test/built.mjs greps the bundle for the module's sentinel,
-   * because the question is what got SERVED and not what got asked for (#501).
+   * — not lazily, not at all, and src/edit-layout.js with it, because that one
+   * is reached only from inside this module (#747). ONE branch and one flag:
+   * `?edit=1` mounts both, `&view=plan` opens the floor plan straight away.
+   * The `?edit=1` check is inside the branch rather than beside it so that the
+   * query string alone can never pull it in from a built page. test/built.mjs
+   * greps the bundle for BOTH modules' sentinels, because the question is what
+   * got SERVED and not what got asked for (#501, #586).
    */
   let editor = null;
   if (import.meta.env.DEV && new URLSearchParams(window.location.search).get('edit') === '1') {
     const { mountEditor } = await import('./edit-mode.js');
-    editor = mountEditor({ scene, THREE, camera, nav, config, eyeHeight: EYE_HEIGHT });
+    editor = mountEditor({
+      scene, THREE, camera, nav, config, eyeHeight: EYE_HEIGHT,
+      renderer, plan: castle.plan, castle, mystery: mysteryData,
+    });
   }
 
   // --- Loop ---
@@ -440,7 +446,10 @@ async function init() {
     editor?.update();
     for (const fn of brazierUpdates) fn(t);
 
-    renderer.render(scene, camera);
+    // The player's camera, unless a dev tool is holding one up: `editor` is
+    // null in a build (the branch above is gone), so this is `camera` and the
+    // optional chain compiles to nothing a shipped page can reach.
+    renderer.render(scene, editor?.camera ?? camera);
   });
 }
 
