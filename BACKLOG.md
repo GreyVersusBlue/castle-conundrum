@@ -717,8 +717,16 @@ west of the barbican on 2026-09-19 (#703 to #707), which is the proof this row
 was gated on. Three things it leaves for this row to build from: the
 `town-wall` run at x -64, 64 m of Mereford's wall with the town gate already
 in it; `ward: "outside"` as a room's third answer, with `test/layout.mjs`
-check 4c holding what that word costs; and 28 m of empty ground on the map
-between the castle and the yard, which is where this row's street goes.
+check 4c holding what that word costs; and a map frame that grew to fit the
+yard (#706). **The town's first increment shipped on 2026-09-21** (#725 to
+#728): the town lies west of that wall, not in the 14.5 m strip between it
+and the barbican; six houses and a church, seen from the North-west Tower's
+roof and entered by nobody; outside rooms on a map drawing of their own and
+out of the count, back to 67.6 m and 40 rooms; and what they draw held
+against both wards' ceiling, 131 meshes outside both, the outer ward's sum
+1124 of 1200 and the inner's 774. **What is next is the quay and the river**,
+outside the west gate, deferred because water is a surface kind the plan does
+not have yet; it has no `SPECS.md` section, so it is an `architect` job first.
 Filling the nineteen is rank 6's routines and whatever documents a later lore
 row adds, made cheap by rank 12's editor.
 

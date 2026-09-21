@@ -487,6 +487,17 @@ export class UI {
    * shapes is a puzzle and the journal is not where the puzzles are. Every
    * room is a `.map-room[data-id][data-visited]` twice over, shape and name,
    * which is what test/map.mjs reads.
+   *
+   * THE ROOMS OUTSIDE THE WALLS ARE A DRAWING OF THEIR OWN (#726). Wykes's
+   * yard and Mereford's street and church are rooms the plan builds and
+   * nobody stands in (#703), 33 to 44 m west of the castle: on the storeys'
+   * shared frame they would take it from 67.6 m wide to about 135, with the
+   * castle half of it. So the storeys, their frame, their "n of m" and the
+   * count read only the rooms that are not `ward: "outside"`, and the outside
+   * rooms get a last drawing on their own frame, dashed and named from the
+   * first: a name earned by standing somewhere nobody can stand is never
+   * earned. The split is on the room's own `ward`, so the map is still the
+   * plan's list and not a second one (#588).
    */
   _renderJournalMap(rooms) {
     const NS = 'http://www.w3.org/2000/svg';
@@ -495,36 +506,44 @@ export class UI {
       for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, String(v));
       return el;
     };
-    const stood = rooms.filter((r) => r.visited).length;
+    const outside = rooms.filter((r) => r.ward === 'outside');
+    const castle = rooms.filter((r) => r.ward !== 'outside');
+    const stood = castle.filter((r) => r.visited).length;
     const count = document.createElement('p');
     count.id = 'journal-map-count';
     count.className = 'journal-map-count';
-    count.textContent = `${stood} of ${rooms.length} rooms stood in`;
+    count.textContent = `${stood} of ${castle.length} rooms stood in`;
     this.el.journalList.append(count);
     if (!rooms.length) return;
-    // One frame for every storey: the castle's whole extent plus a metre.
+    // A frame round some rooms: their whole extent plus a metre.
     const pad = 1;
-    const minX = Math.min(...rooms.map((r) => r.bounds.min.x)) - pad;
-    const maxX = Math.max(...rooms.map((r) => r.bounds.max.x)) + pad;
-    const minZ = Math.min(...rooms.map((r) => r.bounds.min.z)) - pad;
-    const maxZ = Math.max(...rooms.map((r) => r.bounds.max.z)) + pad;
-    const levels = [...new Set(rooms.map((r) => r.level))].sort((a, b) => a - b);
+    const frameOf = (list) => {
+      const minX = Math.min(...list.map((r) => r.bounds.min.x)) - pad;
+      const maxX = Math.max(...list.map((r) => r.bounds.max.x)) + pad;
+      const minZ = Math.min(...list.map((r) => r.bounds.min.z)) - pad;
+      const maxZ = Math.max(...list.map((r) => r.bounds.max.z)) + pad;
+      return `${minX} ${minZ} ${maxX - minX} ${maxZ - minZ}`;
+    };
+    const shapeOf = (r, attrs) => (r.shape?.kind === 'disc'
+      ? svgEl('circle', { cx: r.shape.cx, cy: r.shape.cz, r: r.shape.radius, ...attrs })
+      : svgEl('rect', { x: r.bounds.min.x, y: r.bounds.min.z, width: r.bounds.max.x - r.bounds.min.x, height: r.bounds.max.z - r.bounds.min.z, ...attrs }));
+    // One frame for every storey: the castle's own extent, not the town's.
+    const frame = castle.length ? frameOf(castle) : null;
+    const levels = [...new Set(castle.map((r) => r.level))].sort((a, b) => a - b);
     for (const level of levels) {
-      const here = rooms.filter((r) => r.level === level);
+      const here = castle.filter((r) => r.level === level);
       const section = document.createElement('section');
       section.className = 'map-storey';
       section.dataset.level = level;
       const h = document.createElement('h3');
       h.textContent = `${STOREY_NAMES[level] ?? `Level ${level}`} — ${here.filter((r) => r.visited).length} of ${here.length}`;
-      const svg = svgEl('svg', { viewBox: `${minX} ${minZ} ${maxX - minX} ${maxZ - minZ}`, class: 'map-plan', role: 'img', 'aria-label': h.textContent });
+      const svg = svgEl('svg', { viewBox: frame, class: 'map-plan', role: 'img', 'aria-label': h.textContent });
       const names = document.createElement('div');
       names.className = 'map-names';
       for (const r of here) {
         const isHere = r.id === this._roomHere;
         const attrs = { class: `map-room${r.visited ? ' visited' : ''}${isHere ? ' here' : ''}`, 'data-id': r.id, 'data-visited': r.visited ? '1' : '0' };
-        const shape = r.shape?.kind === 'disc'
-          ? svgEl('circle', { cx: r.shape.cx, cy: r.shape.cz, r: r.shape.radius, ...attrs })
-          : svgEl('rect', { x: r.bounds.min.x, y: r.bounds.min.z, width: r.bounds.max.x - r.bounds.min.x, height: r.bounds.max.z - r.bounds.min.z, ...attrs });
+        const shape = shapeOf(r, attrs);
         const title = svgEl('title');
         title.textContent = r.visited ? r.name : `${r.name} (not yet)`;
         shape.append(title);
@@ -540,6 +559,33 @@ export class UI {
       section.append(h, svg, names);
       this.el.journalList.append(section);
     }
+    if (!outside.length) return;
+    const section = document.createElement('section');
+    section.className = 'map-storey map-outside';
+    section.dataset.level = 'outside';
+    const h = document.createElement('h3');
+    h.textContent = 'Outside the walls';
+    const svg = svgEl('svg', { viewBox: frameOf(outside), class: 'map-plan', role: 'img', 'aria-label': h.textContent });
+    const names = document.createElement('div');
+    names.className = 'map-names';
+    for (const r of outside) {
+      const attrs = { class: 'map-room seen', 'data-id': r.id, 'data-outside': '1', 'data-visited': '0' };
+      const shape = shapeOf(r, attrs);
+      const title = svgEl('title');
+      title.textContent = `${r.name} (seen from the walls)`;
+      shape.append(title);
+      svg.append(shape);
+      const name = document.createElement('span');
+      name.className = attrs.class;
+      name.dataset.id = r.id;
+      name.dataset.outside = '1';
+      name.dataset.visited = '0';
+      name.textContent = r.name;
+      name.title = 'Seen from the walls';
+      names.append(name);
+    }
+    section.append(h, svg, names);
+    this.el.journalList.append(section);
   }
 
   closeJournal() {

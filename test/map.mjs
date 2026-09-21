@@ -92,11 +92,16 @@ const readMap = async () => {
       title: document.getElementById('journal-title').textContent.trim(),
       count: document.getElementById('journal-map-count')?.textContent.trim() ?? '',
       storeys: q('.map-storey').map((s) => s.dataset.level),
-      shapes: q('.map-plan .map-room').length,
-      names: q('.map-names .map-room').length,
+      // The castle's rooms, and the ones outside the walls apart (#726).
+      shapes: q('.map-plan .map-room:not([data-outside])').length,
+      names: q('.map-names .map-room:not([data-outside])').length,
+      frames: q('.map-storey:not(.map-outside) .map-plan').map((e) => Number(e.getAttribute('viewBox').trim().split(/\s+/)[2])), // the attribute, not baseVal's float32
+      inStoreys: q('.map-storey:not(.map-outside) .map-room').map((e) => e.dataset.id),
+      outsideShapes: q('.map-outside .map-plan .map-room').map((e) => ({ id: e.dataset.id, outside: e.dataset.outside, visited: e.dataset.visited })),
+      outsideNames: q('.map-outside .map-names .map-room').map((e) => ({ id: e.dataset.id, text: e.textContent.trim(), visited: e.dataset.visited })),
       visited: q('.map-plan .map-room[data-visited="1"]').map((e) => e.dataset.id),
       visitedNames: q('.map-names .map-room[data-visited="1"]').map((e) => e.textContent.trim()),
-      hiddenNames: q('.map-names .map-room[data-visited="0"]').map((e) => e.textContent.trim()),
+      hiddenNames: q('.map-names .map-room[data-visited="0"]:not([data-outside])').map((e) => e.textContent.trim()),
       here: q('.map-plan .map-room.here').map((e) => e.dataset.id),
       tagOf: Object.fromEntries(q('.map-plan .map-room').map((e) => [e.dataset.id, e.tagName.toLowerCase()])),
     };
@@ -113,16 +118,39 @@ try {
   pass('the castle finished building');
   await attachSceneProbe(page, THREE_URL);
   await waitForProbe(page);
-  const total = await page.evaluate(() => window.__castle.plan.rooms.length);
+  // The count and the storeys are the castle's rooms; the ones outside the
+  // walls are drawn apart and never counted (#726). All of it is read off the
+  // page's own plan, so none of it is a number typed here.
+  const plan = await page.evaluate(() => {
+    const rooms = window.__castle.plan.rooms;
+    const castle = rooms.filter((r) => r.ward !== 'outside');
+    return {
+      total: castle.length,
+      width: Math.max(...castle.map((r) => r.bounds.max.x)) - Math.min(...castle.map((r) => r.bounds.min.x)) + 2,
+      outside: rooms.filter((r) => r.ward === 'outside').map((r) => ({ id: r.id, name: window.__quest.rooms.find((x) => x.id === r.id)?.name ?? null })),
+    };
+  });
+  const total = plan.total;
 
   /* ------------------------------------------------ 1: a fresh map is empty --- */
   const fresh = await readMap();
   check(fresh.open && fresh.tabShown && /castle/i.test(fresh.title), 'J then the third tab opens the map', `open ${fresh.open}, tab ${fresh.tabShown}, title "${fresh.title}"`);
   check(fresh.shapes === total && fresh.names === total, `every one of the plan's ${total} rooms is drawn, and named once under it`, `${fresh.shapes} shapes, ${fresh.names} names`);
-  check(fresh.storeys.join(',') === '0,1,2,3', 'four storeys, ground first', fresh.storeys.join(','));
+  check(fresh.storeys.join(',') === '0,1,2,3,outside', 'four storeys, ground first, then outside the walls', fresh.storeys.join(','));
+  check(fresh.frames.length === 4 && fresh.frames.every((wd) => Math.abs(wd - plan.width) < 1e-6),
+    `every storey is framed on the castle's own ${plan.width.toFixed(1)} m, not on the town's`, fresh.frames.join(', '));
+  const strays = fresh.inStoreys.filter((id) => plan.outside.some((o) => o.id === id));
+  check(!strays.length, 'no room outside the walls is drawn on a storey', strays.join(', '));
+  const outIds = plan.outside.map((o) => o.id).sort().join(',');
+  check(plan.outside.length > 0 && fresh.outsideShapes.map((o) => o.id).sort().join(',') === outIds && fresh.outsideNames.map((o) => o.id).sort().join(',') === outIds,
+    `the drawing outside the walls holds exactly the plan's ${plan.outside.length} outside rooms`, `${fresh.outsideShapes.map((o) => o.id).join(',')} / ${outIds}`);
+  const misnamed = plan.outside.filter((o) => !o.name || fresh.outsideNames.find((n) => n.id === o.id)?.text !== o.name);
+  check(!misnamed.length, 'each named with its real name from the first, since nobody can stand in one to earn it', misnamed.map((o) => `${o.id}: "${fresh.outsideNames.find((n) => n.id === o.id)?.text}"`).join(', '));
+  check([...fresh.outsideShapes, ...fresh.outsideNames].every((o) => o.visited === '0') && fresh.outsideShapes.every((o) => o.outside === '1'),
+    'and none of them is filled in', JSON.stringify(fresh.outsideShapes));
   // The spawn is the outer ward, which is ground and not a room, so a fresh
   // page has stood in nothing. If the spawn ever moves indoors this reads 1.
-  check(fresh.visited.length === 0 && /^0 of \d+ rooms/.test(fresh.count), 'nothing is filled in on a fresh page: the spawn is open ground', `${fresh.visited.join(',')} / "${fresh.count}"`);
+  check(fresh.visited.length === 0 && fresh.count === `0 of ${total} rooms stood in`, `nothing is filled in on a fresh page: the spawn is open ground, and the count is out of the castle's ${total}`, `${fresh.visited.join(',')} / "${fresh.count}"`);
   check(fresh.hiddenNames.every((t) => !/[A-Za-z]/.test(t)), 'and no unvisited room gives its name away', fresh.hiddenNames.find((t) => /[A-Za-z]/.test(t)) ?? '');
 
   /* ------------------------------------ 2: standing in a room fills it in --- */
