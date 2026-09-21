@@ -684,6 +684,54 @@ try {
         `rest key is ${turned.rest}`);
     }
   }
+  /* AND TWO OF THEM TALKING REACH THE BAND (#728). `Populace` decides a talk
+   * pair is due and QuestManager plays it; test/mystery.mjs holds the first
+   * half and test/quest.mjs the second, both in Node. What neither can see is
+   * whether src/main.js handed `Populace` a `talk` that reaches the manager
+   * and the DOM, which is this beat and nothing else: which pairs stand within
+   * 3 m, and how many, is mystery.mjs's (#529). Parked rather than waited on
+   * (#724): `setWatch('sext', {walk: false})` stands every body on its stop,
+   * the camera is put 2 m from the inner-ward pair's midpoint at eye height,
+   * and `update` is driven with a supplied dt the way the ring beat above and
+   * the hound's bark below drive it. Then everything is put back. */
+  {
+    const household = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/populace.json'), 'utf8'));
+    const pair = (household.talk ?? []).find((t) => t.id === 'talk-sext-inner-ward');
+    if (!pair) fail('data/populace.json has no talk-sext-inner-ward pair, so nothing here can be overheard');
+    else {
+      const [a, b] = pair.npcs.map((id) => stopWorld(nav, household.people.find((p) => p.id === id).routine[pair.watch][0]));
+      const at = { x: (a.x + b.x) / 2, z: (a.z + b.z) / 2 + 2 };
+      const floor = nav.walk.cellAt(at.x, at.z, a.level);
+      at.y = (floor ? floor.h : a.h) + EYE_HEIGHT;
+      const heard = await page.evaluate(({ at, id, watch, home }) => {
+        const pop = window.__populace, cam = window.__cam, quest = window.__quest;
+        const band = document.getElementById('caption');
+        const back = { x: cam.position.x, y: cam.position.y, z: cam.position.z };
+        const before = { hidden: band.classList.contains('hidden'), performing: quest.performing?.id ?? null };
+        pop.setWatch(watch, { walk: false });
+        cam.position.set(at.x, at.y, at.z);
+        let steps = 0;
+        while (steps < 20) {
+          pop.update(0.05, cam.position);
+          steps++;
+          if (!band.classList.contains('hidden')) break;
+        }
+        const out = {
+          before, steps, hidden: band.classList.contains('hidden'),
+          name: document.getElementById('caption-name').textContent,
+          line: document.getElementById('caption-line').textContent,
+        };
+        quest.stopTalk(id);
+        pop.setWatch(home, { walk: false });
+        cam.position.set(back.x, back.y, back.z);
+        return out;
+      }, { at, id: pair.id, watch: pair.watch, home: mystery.watches[0] });
+      check(heard.before.hidden && heard.before.performing === null, 'the band is dark before the beat, so what lights it is the pair', JSON.stringify(heard.before));
+      check(!heard.hidden && heard.line === pair.lines[0],
+        `2 m from ${pair.npcs.join(' and ')} at ${pair.watch}, the band lights with the pair's first line after ${heard.steps} step(s) of update: main.js's \`talk\` reaches the manager and the DOM`,
+        heard.hidden ? `the band is dark after ${heard.steps} steps` : `it says ${JSON.stringify(heard.line)}`);
+    }
+  }
   /* AND A HIDDEN BODY IS NOT SOMETHING TO PRESS E AT (#538). Two of the
    * thirteen are invisible at Prime and on the morning after the man who
    * hanged is invisible at the station the accusation was made at, which is

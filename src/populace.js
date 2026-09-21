@@ -101,6 +101,22 @@ export function heldPropPath(polyhavenBase, heldProp) {
 export const DWELL = 9;
 
 /**
+ * TWO OF THE HOUSEHOLD TALKING, AND THE PLAYER OVERHEARING THEM (#727, #728).
+ *
+ * `TALK_RADIUS` is how far apart the two speakers of a `talk` pair may stand,
+ * at most, and still be two people talking to each other rather than two
+ * people standing in the same ward; the floor is `STATION_CLEARANCE`, because
+ * nearer than that is two bodies inside each other. `EARSHOT` is how far from
+ * the pair's midpoint the player may stand and still hear it. Both in metres.
+ *
+ * THE POOL IS THE HOUSEHOLD'S OWN, and not data/npcs.json's `chatter`. That
+ * pool is the twelve's: every line opens with one of their names and not one
+ * of its 27 pairs has its speakers within 3 m at the pair's own watch (#727).
+ */
+export const TALK_RADIUS = 3;
+export const EARSHOT = 6;
+
+/**
  * Turn data/populace.json into the defs src/npc.js's NPC constructor takes.
  *
  * `populace: true` is what src/main.js keys the two differences off: a body
@@ -261,7 +277,61 @@ export function validatePopulace(populace, { nav = null, mystery = {}, cast = []
     }
   }
 
+  /* --- 2b: the talk pairs (#727, #728).
+   *
+   * A PAIR STANDS STILL FOR ITS WHOLE WATCH OR IT IS NOT A PAIR. Each speaker
+   * has a ring of exactly one stop at the pair's watch, and that stop is a
+   * `gossip` stop, in the same room on the same level as the other's. A ring
+   * of two is a speaker who walks off mid-sentence, and a headless beat that
+   * had to catch them at the right stop would be racing a wall clock (#724).
+   * How far apart the two stand needs the grid, and is asked in 3b below. */
+  const pairs = [];
+  if (populace.talk != null && !Array.isArray(populace.talk)) say('populace.talk is not a list of pairs');
+  else {
+    const byId = new Map(people.filter((p) => p && typeof p.id === 'string').map((p) => [p.id, p]));
+    const pairIds = new Set();
+    for (const [i, pair] of (populace.talk ?? []).entries()) {
+      const at = typeof pair?.id === 'string' && pair.id ? pair.id : `talk[${i}]`;
+      if (!pair || typeof pair !== 'object') { say(`${at}: not an object`); continue; }
+      if (typeof pair.id !== 'string' || !pair.id.startsWith('talk-')) say(`${at}: a talk pair's id has to start "talk-"`);
+      else if (pairIds.has(pair.id)) say(`${at}: two talk pairs share that id`);
+      else pairIds.add(pair.id);
+      let speakers = true;
+      if (!Array.isArray(pair.npcs) || pair.npcs.length !== 2) { say(`${at}: npcs has to be two speakers, in speaking order`); speakers = false; }
+      else {
+        for (const s of pair.npcs) if (!byId.has(s)) { say(`${at}: speaker ${JSON.stringify(s)} is not one of the household in people`); speakers = false; }
+        if (pair.npcs[0] === pair.npcs[1]) { say(`${at}: both speakers are ${pair.npcs[0]}, and one person does not talk to themselves`); speakers = false; }
+      }
+      const watchOk = typeof pair.watch === 'string' && watches.includes(pair.watch);
+      if (!watchOk) say(`${at}: watch ${JSON.stringify(pair.watch)} is not one of the four bells`);
+      if (!Array.isArray(pair.lines) || pair.lines.length < 2) say(`${at}: ${Array.isArray(pair.lines) ? pair.lines.length : 'no'} line(s), and a pair needs at least two`);
+      else for (const [k, line] of pair.lines.entries()) if (typeof line !== 'string' || !line.trim()) say(`${at}: line ${k + 1} is empty`);
+      if (!speakers || !watchOk) continue;
+      let still = true;
+      for (const s of pair.npcs) {
+        const ring = byId.get(s).routine?.[pair.watch];
+        if (!Array.isArray(ring) || ring.length !== 1 || ring[0]?.activity !== 'gossip') {
+          const what = !Array.isArray(ring) || !ring.length ? 'no stop' : ring.length !== 1 ? `${ring.length} stops` : `one ${JSON.stringify(ring[0]?.activity)} stop`;
+          say(`${at}: ${s} has ${what} at ${pair.watch}, not one gossip stop, so the pair is not standing still to talk`);
+          still = false;
+        }
+      }
+      if (!still) continue;
+      const [a, b] = pair.npcs.map((s) => byId.get(s).routine[pair.watch][0]);
+      if (a.room !== b.room || (a.level ?? 0) !== (b.level ?? 0)) { say(`${at}: ${pair.npcs[0]} is in ${a.room} and ${pair.npcs[1]} in ${b.room} at ${pair.watch}, and a pair talks in one room`); continue; }
+      pairs.push({ at, pair, a, b });
+    }
+  }
+
   if (!nav) return problems;
+
+  /* --- 3b: how far apart the two of a pair stand, on the grid. --- */
+  for (const { at, pair, a, b } of pairs) {
+    const pa = stopWorld(nav, a), pb = stopWorld(nav, b);
+    if (!pa || !pb) continue; // the shape pass already said so
+    const gap = Math.hypot(pa.x - pb.x, pa.z - pb.z);
+    if (gap < STATION_CLEARANCE || gap > TALK_RADIUS) say(`${at}: ${pair.npcs[0]} and ${pair.npcs[1]} stand ${gap.toFixed(2)} m apart at ${pair.watch}, outside the ${STATION_CLEARANCE} to ${TALK_RADIUS} m a pair talks across`);
+  }
 
   /* --- 3: the stops against the castle.
    *
@@ -386,13 +456,24 @@ export function validatePopulace(populace, { nav = null, mystery = {}, cast = []
  * the castle is the same castle twice and nobody moves in lockstep.
  */
 export class Populace {
-  constructor({ people, npcs, nav, dwell = DWELL, cue = null }) {
+  constructor({ people, npcs, nav, dwell = DWELL, cue = null, pairs = [], talk = null, hush = null }) {
     this.nav = nav;
     this.dwell = dwell;
     // Somebody to tell that a follow body is near the player (#696):
     // `cue('hound-near', { id, at, metres })`, every frame it holds. The
     // audio's cadence turns the frames into barks; nothing here keeps time.
     this.cue = cue;
+    /* AND SOMEBODY TO HAND A CONVERSATION TO (#728), the same way. `pairs` is
+     * data/populace.json's `talk` list. `talk(pair, names)` is told a pair is
+     * due where the player stands, with `room` set on it, and `hush(id)` that
+     * the player walked out of it. What plays the lines, once, on the caption
+     * band, is src/quest-manager.js's `overhear`; this file keeps no clock. */
+    this.pairs = Array.isArray(pairs) ? pairs : [];
+    this.talk = talk;
+    this.hush = hush;
+    this.watch = null;
+    this._talking = null; // the pair last handed to `talk`, until `hush`
+    this._handed = new Map(); // pair id -> the object handed over, built once
     const byId = new Map(npcs.map((n) => [n.id, n]));
     this.bodies = people
       .filter((p) => byId.has(p.id))
@@ -407,6 +488,7 @@ export class Populace {
         phase: (i * 0.37) % 1,
         settled: false,
       }));
+    this._byPerson = new Map(this.bodies.map((b) => [b.person.id, b]));
   }
 
   /**
@@ -416,6 +498,7 @@ export class Populace {
    * twelve for the same reason.
    */
   setWatch(watch, { walk = true } = {}) {
+    this.watch = watch;
     for (const body of this.bodies) {
       const stops = (body.person.routine?.[watch] ?? [])
         .map((s) => stopWorld(this.nav, s))
@@ -456,6 +539,67 @@ export class Populace {
       if (route && route.length > 1) { body.npc.walkTo(route); body.settled = false; }
       else this._arrive(body);
     }
+    if (player && (this.talk || this.hush)) this._overhear(player);
+  }
+
+  /**
+   * The talk pair the player can hear from where they stand, or null (#728).
+   *
+   * The first pair in file order at this watch whose two bodies are visible,
+   * settled and on their gossip stop, with the player's feet in the same room
+   * and on the same level as those stops, by the same `roomAt` `_follow`
+   * asks, and within `EARSHOT` of the midpoint between the two stops. No
+   * three.js and no clock: `player` is `{x, y, z}` at eye height.
+   */
+  talkDue(player) {
+    if (!player || !this.watch) return null;
+    let there = null;
+    for (const pair of this.pairs) {
+      if (pair?.watch !== this.watch || !Array.isArray(pair.npcs)) continue;
+      const two = pair.npcs.map((id) => this._byPerson.get(id));
+      if (two.length !== 2 || !two.every((b) => b && b.npc.group.visible && b.settled && !b.following && b.stops[b.index]?.activity === 'gossip')) continue;
+      const [a, b] = two.map((body) => body.stops[body.index]);
+      there ??= this.nav.roomAt(player.x, player.z, player.y - EYE_HEIGHT);
+      if (there.id !== a.room || there.level !== a.level) continue;
+      if (Math.hypot(player.x - (a.x + b.x) / 2, player.z - (a.z + b.z) / 2) > EARSHOT) continue;
+      return pair;
+    }
+    return null;
+  }
+
+  /**
+   * Hand a due pair to `talk`, and `hush` the one handed over once the player
+   * is out of its room or more than `EARSHOT + 2` m off, the two metres of
+   * hysteresis `_follow` uses. A due pair is handed over every frame it is
+   * due: `overhear` says it once per page and says nothing while the band is
+   * busy, so a pair that came due under a song is heard when the song ends.
+   */
+  _overhear(player) {
+    const held = this._talking;
+    if (held) {
+      const there = this.nav.roomAt(player.x, player.z, player.y - EYE_HEIGHT);
+      const off = Math.hypot(player.x - held.at.x, player.z - held.at.z);
+      if (there.id !== held.pair.room || there.level !== held.level || off > EARSHOT + 2) {
+        this._talking = null;
+        this.hush?.(held.pair.id);
+      }
+    }
+    const due = this.talkDue(player);
+    if (!due || !this.talk) return;
+    let handed = this._handed.get(due.id);
+    if (!handed) {
+      const [a, b] = due.npcs.map((id) => this._byPerson.get(id));
+      const sa = a.stops[a.index], sb = b.stops[b.index];
+      handed = {
+        pair: { ...due, room: sa.room },
+        names: [a.person.name, b.person.name],
+        level: sa.level,
+        at: { x: (sa.x + sb.x) / 2, z: (sa.z + sb.z) / 2 },
+      };
+      this._handed.set(due.id, handed);
+    }
+    this._talking = handed;
+    this.talk(handed.pair, handed.names);
   }
 
   /**

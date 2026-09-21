@@ -151,7 +151,13 @@ async function init() {
   await Promise.all(folk.map((n) => n.build()));
   // The hound's bark (#696): the populace says when a follow body is near,
   // and data/sounds.json's cadence says when that is a bark.
-  const populace = new Populace({ people: populaceData.people, npcs: folk, nav, cue: (name, ev) => audio.cue(name, ev) });
+  // And two of them talking where the player can hear (#728): the pair goes
+  // to the manager's caption band, which is declared below and is only
+  // called once the loop is running.
+  const populace = new Populace({
+    people: populaceData.people, npcs: folk, nav, cue: (name, ev) => audio.cue(name, ev),
+    pairs: populaceData.talk, talk: (pair, names) => quest.overhear(pair, names), hush: (id) => quest.stopTalk(id),
+  });
   populace.setWatch(engine.watch, { walk: false });
 
   // --- Player ---

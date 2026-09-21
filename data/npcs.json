@@ -541,7 +541,7 @@
       }
     }
   ],
-  "chatterComment": "WISHLIST.md theme 3 (#554, expanded #558): ambient talk, for the existing twelve only, no new bodies. Twenty-seven pairs. Two populace members within earshot at one bell get a line pair from the pool for their ward and that watch, played as a floating caption; this repo has no populace yet, so today the pool is unused by the game and exists for src/lore.js to validate and for a later populace row to spend. Keyed by ward (both npcs' own `ward` field, above) then watch. Each pair carries the two speakers by id (order is speaking order), the two lines, and an optional `cites`: the lore ids the exchange tells, which data/lore.json's `sources` point back at by this pair's own id.",
+  "chatterComment": "WISHLIST.md theme 3 (#554, expanded #558): ambient talk, for the existing twelve only, no new bodies. Twenty-seven pairs. The pool is unused by the game and exists for src/lore.js to validate. It is the twelve's and the populace does not spend it (#727): every line opens with one of their names, and not one pair has its two speakers within 3 m at its own watch, so data/populace.json carries a `talk` list of its own, and holding these pairs to the schedule is a later lore or dialogue increment's. Keyed by ward (both npcs' own `ward` field, above) then watch. Each pair carries the two speakers by id (order is speaking order), the two lines, and an optional `cites`: the lore ids the exchange tells, which data/lore.json's `sources` point back at by this pair's own id.",
   "chatter": {
     "outer": {
       "prime": [
