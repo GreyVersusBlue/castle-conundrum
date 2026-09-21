@@ -616,19 +616,29 @@ alive and speakable, no body, no lantern, no cloak, no summons, none of the
 twelve saying a word of their day-one testimony. The first increment the
 theme already specced to `SPECS.md`'s depth — a stage `explore`, the mode
 threaded through `src/mystery.js` and `src/quest-manager.js`, a second start
-button, and the four rails across `test/quest.mjs`, `test/mystery.mjs`,
-`test/overlays.mjs` and `test/plan-vs-scene.mjs` — no longer covers what was
-answered: a saved explore, its own increment 3, now ships with it, at
-version 7, lane A, and the day-before content is priced as its own row the
-size of Phases 6 and 7 together. `SPECS.md`'s "Explore: the day before"
-section is the next thing this row needs, written to what was answered
-rather than to either open question. **A soft order, not a gate**: rank 2's
+button, and four rails — did not cover what was answered, and the day-before
+content is priced as its own row the size of Phases 6 and 7 together.
+**`SPECS.md`'s section landed on 2026-09-21** (#754 to #756), four increments
+deep with ten open calls answered, so the next increment is class S: the
+engine, the save and a placeholder walking day, then the two doors, then the
+lines, then the day itself. Two things it settled against the theme's own
+pricing. **The save stays at version 6** (#754): the walking day is `day: 0`
+on the field that already says which day a save is on, so there is no `mode`
+field and nothing for `migrate` to do, and the row holds lane A for
+`repair`'s clamp rather than for a bump. And **the mystery's door is a
+method as well as a button** (#755): `plan-vs-scene` and `map` never click
+`#start-button` at all, so `QuestManager.enterMystery()` is what they call.
+The fourteenth body takes `test/budget.mjs`'s ceiling from 32 to 33 (#756,
+#611). **A soft order, not a gate**: rank 2's
 sight-at-height bug bites hardest in a day that is nothing but walking up to
 people, so this row's own GPU look wants rank 2 fixed first, though nothing
 here waits on it and the Gate cell stays "—". **Does not collide with rank
 4, the retro castle**: this row is lanes A and D, the retro castle is lane
 B, and #602 lets different lanes run at once, so both may be claimed
-together.
+together. The spec keeps it that way on purpose: the walking day's four
+bells borrow the four hours' skies through an alias in
+`data/mystery.json` rather than copying four blocks into
+`data/scene-config.json`, which would have put this row in lane B as well.
 
 ## Sight at the body's own height
 

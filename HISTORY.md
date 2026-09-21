@@ -8163,3 +8163,97 @@ carries the same order.
   (#522). The two rows do not collide either way: the walking day is lanes A
   and D, the retro castle is lane B, and #602 lets different lanes run at
   once.
+
+## Explore, the day before: the section, and three calls the code settled (2026-09-21)
+
+**Rank 1, on `claude/walking-day-before-death-8apcav`, lanes A and D.**
+`SPECS.md` gains "Explore: the day before," four increments deep, written
+against `src/mystery.js`, `src/save.js`, `src/quest-manager.js`,
+`src/stations.js`, `src/lore.js`, `src/ui.js`, `data/mystery.json`,
+`data/npcs.json`, `data/quest.json`, `tools/dialogue.mjs` and the entry beat of
+every browser suite. Ten open calls, each with a recommendation, so every
+increment after this one is class S. **No code, no data and no asset changed**
+and no suite ran: `npm test` is 15 of 15 on the baseline this branch started
+from and nothing in this commit can move it. Decisions #754 to #756, all three
+of them amendments to a number that is already locked.
+
+- **The walking day rides the `day` field and the save stays at version 6**
+  (#754, amending #751). #751 priced a saved explore as "a `mode` field,
+  version 7, lane A," which is theme 8's own pricing of its own increment 3,
+  and that theme's walking day was a second mode running the SAME day, where a
+  second field was the only thing that could tell the two apart. #752 made it
+  the day BEFORE, and the day is already a field: `repair` is
+  `out.day = s.day === 2 ? 2 : 1` (`src/save.js:188`), so a third value is a
+  clamp learning a better question and not a field arriving, which is the side
+  of the line #702 drew in this exact file for this exact reason. No version-6
+  save can be carrying `day: 0`, because nothing has ever written one, so
+  `migrate` has no drift to be honest about and is untouched. `SAVE_VERSION`
+  stays 6. **The row still holds lane A**, because a lane is a file (#602) and
+  this writes it: `buildCatalog` gains the walking day's bell list,
+  `clampWatch` a third list, and `repair` one incoherence rail beside line
+  218's, a `day: 0` carrying a clue or a recorded verdict reading as day one.
+  A `mode` field beside a `day` field would have been two names for one fact,
+  and #37's own argument is that a field arrives when it says something nothing
+  else can. `BACKLOG.md`'s rank 1 summary and `ROADMAP.md`'s lane A both said
+  version 7 and are corrected with this.
+
+- **Two of the six browser suites have no door to name, so the mystery door is
+  a method as well as a button** (#755, sharpening #751). #751 said the entry
+  beat of `plan-vs-scene`, `overlays`, `map`, `touch`, `built` and
+  `play-castle` has to pick the mystery door explicitly. Four of them click:
+  `overlays.mjs:121`, `touch.mjs:107`, `built.mjs:216` and `play-castle.mjs:362,
+  861, 1560`. **The other two never press it.**
+  `plan-vs-scene.mjs:90` and `map.mjs:117, 259, 283` wait for
+  `#start-overlay:not(.hidden)`, which is how both spell "the castle finished
+  building," and then drive `window.__quest` and `window.__castle` directly.
+  They are the two the flip breaks hardest, because with `data/quest.json`'s
+  `start` at `explore` the castle at load IS the walking day:
+  `plan-vs-scene`'s Prime beat reads `window.__cast` for `bodies.length === 13`
+  and `absent.join() === 'inspector,merchant'` (lines 514 and 537) and measures
+  every body against the four bells' own stations. So
+  `QuestManager.enterMystery()` dispatches `day:1`, the start panel's second
+  button calls it, and the two suites that never click call it through
+  `window.__quest` before they measure. `#start-button` keeps its id and reads
+  "Walk the castle", because it is the panel's primary button and the resume
+  path's button and has been since Phase 1; `#start-mystery` is the second, a
+  `link-button` like the touch toggle, and it is offered only when there is no
+  save to resume, so a resume panel cannot restart the day the player is
+  standing in.
+
+- **The body ceiling goes from 32 to 33, and Hywel is the body it is for**
+  (#756, #611). `test/budget.mjs`'s `MAX_SKINNED_TOTAL` is 32, and
+  `data/npcs.json`'s thirteen cast plus `data/populace.json`'s nineteen
+  household is exactly 32, so the fourteenth cast entry fails that suite with
+  `33 bodies built, over the ceiling of 32`. The file's own comment says what
+  to do about it: "The next body is an argument in `HISTORY.md`." The argument
+  is that the walking day adds one body and one only, the man the mystery is
+  about, and that he is the only cast member ever to be in the castle on one
+  day of the three. **32 to 33, not to 36**: a ceiling with room in it is a
+  ceiling nobody argues about, and the fifteenth body should cost whoever wants
+  it the same argument this one cost. `MAX_SKINNED_PER_WARD` stays 20, and the
+  measurement rather than the guess: the cast's own peak is outer 7 at Terce
+  and Vespers and inner 5, the household takes the outer ward to 18 of 20 at
+  its peak (#730), and Hywel's station on the walking day is in the outer ward,
+  the mason's lodge, so the walking day peaks at 19 of 20 once the household
+  has rings of its own there, with the inspector not yet arrived. Section 3
+  counts `mystery.watches` only, so the walking day's own bells stay uncounted
+  until the increment that writes its stations extends that loop, which the
+  section says out loud rather than leaving the suite quietly narrower than its
+  own title.
+
+**Five things the code said that the brief had wrong, all of them in the
+section.** Every one of #752's five hidden things (the body, the lantern, the
+pouch, the cloak, the tally stick) is an `evidence` row and the lantern IS the
+body row's prop, so `day0.castle` needs no `gone` verb and starts empty. Nine
+of the eleven evidence rows would hide themselves at a bell the walking day
+names, and five of those nine are furniture rather than evidence, the muniment
+LEAF among them (`data/scene-config.json:1364` carries `evidence: "lock"` and
+its collider goes with it), so the walking day names what IS on the ground.
+The walking day's lines are a `day0` dialogue state reached by a stage's
+`dialogueState`, so `tools/dialogue.mjs` learns no second write target and
+#690's bargain is unchanged. `arrives: 0` reads as present on day one at four
+call sites, not one. And `src/main.js`'s UI-flow region is smaller than the
+theme assumed: the engine, the nav and the whole castle are built before
+`ui.showStart` runs, so the door cannot be a second `createMystery`, it has to
+be a dispatch into the graph, which is what the morning after already is
+(#537).
