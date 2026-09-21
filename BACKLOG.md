@@ -573,14 +573,24 @@ back for the retro castle that same morning, became 4 the same day it
 arrived** — a rank moving twice in one day is the same rule as a number
 coming back four times, applied to the same 2026-09-21. The GPU run's own
 gate follows it down, from "after 1" to "after 2", and rank 11's from "after
-2" to "after 3". Ranks 6, 7, 9, 10 and 13 did not move.
+2" to "after 3". Ranks 6, 7, 9, 10 and 13 did not move. **A live claim on
+the shifted row is not a reason to leave its number alone**: the retro
+castle carried `claude/retro-castle-pixel-textures-kliakt` in its Claimed
+column, merged to `main` while this band was being written, and it moves to
+4 anyway. A rank is a priority and not an id (#619, #491), a shipped or
+claimed row's number is a pointer the next renumbering session updates, and
+#522 is the reason every row is named by title in `SPECS.md` and
+`ROADMAP.md` as well as by rank — which is exactly what makes a claimed
+row's renumbering survivable. The claiming session's own prose still says
+"rank 3" and stays true as a dated record, the same as every earlier rank-1
+reference in this file.
 
 | Rank | Item | Size | Model | Where | Gate | Lane | Claimed | Detail |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | Explore: the day before the death, the walking day as the main mode, Hywel alive and nobody waiting for a name (#750 to #753) | 2+ | Opus 5 | Container | — | A, D | claude/walking-day-before-death-8apcav | [Explore: the day before](SPECS.md#explore-the-day-before) |
 | 2 | Sight at the body's own height: nobody upstairs can be talked to from beside them, and the porter on the walk can be from 8 m below | ¼ | Opus 5 | Container | — | — | | [Sight at the body's own height](SPECS.md#sight-at-the-bodys-own-height) |
 | 3 | The GPU run: the looks are taken (#711 to #715); the walker holds on a GPU (#734, #736) and the third sitting reached the accusation with the wrong ending (#735 to #741) | 1 | Opus 5 | Local: GPU | **after 2** | — | | [The GPU run](SPECS.md#the-gpu-run) |
-| 4 | The retro castle: the stone in the castle's own pixel art, fifteen sets out and fifteen 128 px textures in, then variety per room (#742 to #744) | 2+ | Opus 5 | Container to the look, local: GPU past it | — | B | | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
+| 4 | The retro castle: the stone in the castle's own pixel art, fifteen sets out and fifteen 128 px textures in, then variety per room (#742 to #744) | 2+ | Opus 5 | Container to the look, local: GPU past it | — | B | `claude/retro-castle-pixel-textures-kliakt` | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
 | 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #729 to #733); the town, the four clips and the chatter pool are left | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: somebody listens to the seven beds, the four rings and the first two event sounds (a bed at a point and the rings, #680 to #683; the door and the hound, #696 to #698) | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
 | 9 | A castle to get lost in: the town, the rock and river | 2+ | Opus 5 | Container | — (4c opened it) | B | | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
@@ -615,7 +625,10 @@ section is the next thing this row needs, written to what was answered
 rather than to either open question. **A soft order, not a gate**: rank 2's
 sight-at-height bug bites hardest in a day that is nothing but walking up to
 people, so this row's own GPU look wants rank 2 fixed first, though nothing
-here waits on it and the Gate cell stays "—".
+here waits on it and the Gate cell stays "—". **Does not collide with rank
+4, the retro castle**: this row is lanes A and D, the retro castle is lane
+B, and #602 lets different lanes run at once, so both may be claimed
+together.
 
 ## Sight at the body's own height
 

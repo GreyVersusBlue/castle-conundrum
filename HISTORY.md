@@ -8154,4 +8154,12 @@ carries the same order.
   rank 2's bodies-at-height fix still wants to land before the walking day's
   GPU look, because a day that is nothing but walking up to people is where
   that bug bites hardest, and nothing here gates the walking day on it — the
-  order is soft, and `BACKLOG.md`'s Gate column for rank 1 stays "—".
+  order is soft, and `BACKLOG.md`'s Gate column for rank 1 stays "—". **A
+  live claim on the shifted row does not hold the number still**: the retro
+  castle carried `claude/retro-castle-pixel-textures-kliakt` and merged to
+  `main` (PR #66) while this band was being written, and it renumbers to 4
+  regardless, because a rank is a priority and not an id (#619, #491) and
+  every row is named by title as well as by rank for exactly this reason
+  (#522). The two rows do not collide either way: the walking day is lanes A
+  and D, the retro castle is lane B, and #602 lets different lanes run at
+  once.
