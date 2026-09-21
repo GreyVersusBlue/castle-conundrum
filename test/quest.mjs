@@ -1644,10 +1644,14 @@ console.log('\nthe walking day, through the manager');
   check(same(ui.dialogue.lines, npcDefs.find((n) => n.id === 'constable').dialogue.day0),
     'the Constable says his walking-day lines, off the stage\'s own dialogueState (open call 6)', JSON.stringify(ui.dialogue.lines[0]?.slice(0, 40)));
   check(ui.dialogue.onPresent === null, 'with no Present button, because there is nothing to present');
-  check(ui.accusation === null && qm.stage === 'explore',
-    'and no accusation panel and no stage change: `explore` has no `talked:constable` transition and his `day0` set has no {ACCUSE} in it');
   check(!/\{[A-Z_]+\}/.test(ui.dialogue.lines.join(' ')), 'and no token in the lines at all');
+  // Stepped out before the two below are asked, because `talked:constable` is
+  // dispatched on the last line and not on the first: the stage move and the
+  // panel are what that event would do, and this is where it has happened.
   ui.endDialogue();
+  check(ui.accusation === null && qm.stage === 'explore',
+    'and stepping it out opens no accusation panel and moves no stage: `explore` has no `talked:constable` transition and his `day0` set has no {ACCUSE} in it',
+    `${qm.stage} / ${ui.accusation ? 'panel up' : 'no panel'}`);
   qm.handleInteract(r.npc('hywel'));
   check(same(ui.dialogue.lines, npcDefs.find((n) => n.id === 'hywel').dialogue.day0) && qm.journal().length === 0,
     'and the master mason is alive and speakable, which is the whole reason to walk the day (#752)', JSON.stringify(ui.dialogue.lines[0]?.slice(0, 40)));
