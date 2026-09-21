@@ -12,9 +12,10 @@
 // grants — lives in mystery.json's `clues` under `source: {npc, state}`. Adding
 // one state to one person is four edits in three files, and nothing in any of
 // them shows you the fourth. There were 13 speakers, 62 states and 182 lines in
-// there when this was written and there are 14, 77 and 196 now, because the
+// there when this was written and there are 14, 77 and 240 now, because the
 // walking day gave every speaker a `day0` set and the cast a fourteenth member
-// (#752); the next content row triples that.
+// (#752), and then gave the fourteen sets their real words; the next content row
+// triples that.
 //
 // So: one text file, `dialogue/castle.dlg`, where a speaker's whole
 // conversation reads top to bottom — the state, what reaches it, what it is
@@ -22,11 +23,21 @@
 //
 //   @ id | name | role | ward     a speaker
 //   : state                       a state of that speaker
-//   ? press default on wax-matches | quest cooks-knife at hunting
+//   ? press default on wax-matches | quest cooks-knife at hunting | frame explore
 //   % the quest stage's objective  (only under a `? quest` line)
 //   ! says clerk-cloak            a clue this state grants
 //   | a line, verbatim            one line of dialogue
 //   # a comment, ignored
+//
+// THE THIRD `?` KIND IS THE DAY'S OWN FRAME. A stage of data/quest.json carries
+// a `dialogueState` and it switches every speaker at once: `explore` and `night`
+// both name `day0`, which is how the walking day gets its lines without a fifth
+// pool anywhere (#752, SPECS.md's open call 6). So a state the main graph reaches
+// that way gets one `? frame <stage>` per stage that reaches it, on every
+// speaker. It is rebuilt and compared like the other three and written back by
+// nothing, which is #690's bargain sharpened and not amended: the rebuild set
+// grew, the write set did not. `default` is excluded because every other stage
+// names it and 77 identical annotations say nothing.
 //
 // TWO OF THOSE ARE WRITTEN BACK AND THREE ARE ONLY CHECKED. `|` writes into
 // npcs.json and `%` writes into the quest file. `@`, `:` and `?` and `!` are
@@ -252,7 +263,7 @@ export function deleteKey(source, path, key) {
  * `extract`, and the stub is sitting in the .dlg waiting to be written. Compile
  * refuses a state with no lines, so the stub cannot be committed half-done.
  */
-export function buildModel({ npcs, mystery, quests }) {
+export function buildModel({ npcs, mystery, quests, graph = null }) {
   // Keyed `npc|state`. A `|` cannot collide: every id and state name in
   // npcs.json, mystery.json and the quests is lower-case letters, digits and
   // hyphens, and `problems` would refuse one that was not.
@@ -262,6 +273,12 @@ export function buildModel({ npcs, mystery, quests }) {
     if (!reach.has(key)) reach.set(key, []);
     reach.get(key).push(cond);
   };
+  // The frame first, because it is the floor `_syncStates` layers the other two
+  // over: a press beats an errand beats the day's own state.
+  for (const [stageId, stage] of Object.entries(graph?.stages || {}))
+    if (stage.dialogueState && stage.dialogueState !== 'default')
+      for (const person of npcs.cast)
+        push(person.id, stage.dialogueState, { kind: 'frame', text: `frame ${stageId}`, stage: stageId });
   for (const p of mystery.presses || [])
     push(p.npc, p.to, { kind: 'press', text: `press ${p.from.join(' ')} on ${p.on}` });
   for (const q of quests)
@@ -309,7 +326,7 @@ const PREAMBLE = [
   '',
   '  @ id | name | role | ward     a speaker, in data/npcs.json cast order',
   '  : state                       one of that speaker\'s dialogue states',
-  '  ? what moves them into it     a press, or a quest stage',
+  '  ? what moves them into it     a press, a quest stage, or the day\'s own frame',
   '  % the quest stage objective   only under a `? quest` line',
   '  ! what the state grants       a clue sourced on it',
   '  | one line of dialogue        verbatim, in order',
@@ -387,15 +404,18 @@ export function parse(text) {
         if (!state) where(i, 'a condition before any state');
         if (state.lines.length) where(i, 'a "?" after the lines it is about — conditions come first');
         const quest = /^quest (\S+) at (\S+)$/.exec(rest);
+        const frame = /^frame (\S+)$/.exec(rest);
         lastCondition = quest
           ? { kind: 'quest', text: rest, quest: quest[1], stage: quest[2], objective: null }
-          : { kind: 'press', text: rest };
+          : frame
+            ? { kind: 'frame', text: rest, stage: frame[1] }
+            : { kind: 'press', text: rest };
         state.conditions.push(lastCondition);
         break;
       }
       case '%':
         if (!lastCondition) where(i, 'a "%" objective with no "? quest" line above it');
-        if (lastCondition.kind !== 'quest') where(i, 'a "%" objective under a press — only a quest stage has one');
+        if (lastCondition.kind !== 'quest') where(i, `a "%" objective under a ${lastCondition.kind} — only a quest stage has one`);
         if (lastCondition.objective !== null) where(i, `${lastCondition.quest}/${lastCondition.stage} has already had a "%"`);
         lastCondition.objective = rest;
         break;
@@ -481,7 +501,7 @@ export function problems(model, parsed) {
  * `setValue` of that one array, a state only the .dlg has is an `addKey`, and a
  * state only the file has is a `deleteKey`. A state whose lines are identical
  * is not touched at all, which is what makes a compile with nothing to do a
- * zero-byte diff rather than a reformat of all 182 lines.
+ * zero-byte diff rather than a reformat of all 240 lines.
  */
 export function applyToNpcs(source, parsed) {
   const cast = JSON.parse(source).cast;
@@ -532,13 +552,16 @@ const read = (rel) => fs.readFileSync(path.join(ROOT, rel), 'utf8');
 export function load() {
   const npcsText = read('data/npcs.json');
   const mystery = JSON.parse(read('data/mystery.json'));
+  // The main graph, for the `? frame` lines only: a stage whose `dialogueState`
+  // is not `default` switches every speaker at once.
+  const graph = JSON.parse(read('data/quest.json'));
   // The index names files and not ids, because a browser cannot read a
   // directory; the id inside each file is what the .dlg's `? quest` lines use.
   const files = JSON.parse(read('data/quests/index.json')).quests;
   const quests = files.map((file) => JSON.parse(read(`data/quests/${file}`)));
   const questTexts = new Map(quests.map((q, i) => [q.id, read(`data/quests/${files[i]}`)]));
   const questFiles = new Map(quests.map((q, i) => [q.id, `data/quests/${files[i]}`]));
-  return { npcsText, mystery, questTexts, questFiles, npcs: JSON.parse(npcsText), quests };
+  return { npcsText, mystery, graph, questTexts, questFiles, npcs: JSON.parse(npcsText), quests };
 }
 
 function main(argv) {

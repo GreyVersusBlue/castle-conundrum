@@ -202,14 +202,14 @@ that row.
 
 ## Explore: the day before
 
-**Rank 1. Size 2+. Increments 1 and 2 shipped 2026-09-21** (#767 to #770,
-#771 to #774, against #754 to #756). Devon answered `WISHLIST.md` theme 8's
-four questions on 2026-09-21 and overturned the theme on two of them: the
-walking day is the main mode with the mystery behind it (#751), and it is
-the day BEFORE the death, Hywel alive and speakable (#752). That price is
-given and is not renegotiated here. What this section does is settle ten
-calls against the code rather than against the theme, so each of the four
-increments below is class S. **Increments 3 and 4 are open.**
+**Rank 1. Size 2+. Increments 1, 2 and 3 shipped 2026-09-21** (#767 to #770,
+#771 to #774, #775 to #777, against #754 to #756). Devon answered
+`WISHLIST.md` theme 8's four questions on 2026-09-21 and overturned the theme
+on two of them: the walking day is the main mode with the mystery behind it
+(#751), and it is the day BEFORE the death, Hywel alive and speakable (#752).
+That price is given and is not renegotiated here. What this section does is
+settle ten calls against the code rather than against the theme, so each of
+the four increments below is class S. **Increment 4 is open.**
 
 Theme 8's engine half still holds in shape: one stage, one branch per method in
 the engine, a bell, four rails. What does not hold is anything it wrote for a
@@ -415,7 +415,7 @@ FAIL line is quoted in `HISTORY.md` (#34, #13).
   above pass, but nobody has run it. That is rank 3's first act, not this
   row's.
 
-### Scope, increment 3: the lines
+### Scope, increment 3: the lines — shipped 2026-09-21 (#775 to #777)
 
 Fourteen real `day0` sets in place of increment 1's stubs, and #752's rule held
 by construction: not one of them is a word of day-one testimony. Hywel's is the
@@ -423,24 +423,33 @@ one that has to carry the day, because he is the reason to walk it.
 
 | File | What changes |
 | --- | --- |
-| `dialogue/castle.dlg`, `data/npcs.json` | The fourteen sets, three to five lines each, written in the .dlg and compiled. About 60 lines against the file's 182. |
-| `tools/dialogue.mjs` | One check-only `?` kind, `? frame <stage>`, rebuilt from `data/quest.json`'s stages whose `dialogueState` is not `default`, refused on drift and written back by nothing. That is #690's bargain unchanged (`\|` and `%` write; `@`, `:`, `?` and `!` are rebuilt and compared), and it adds no line to any existing block, because every frame stage today is `default`. |
+| `dialogue/castle.dlg`, `data/npcs.json` | The fourteen sets, written in the .dlg and compiled. Fifty-seven lines against the file's 182: Hywel's own five, four or five each for the twelve, and one for the inspector — his `day0` set is unreachable, the way his own `default` already is, so it does not carry the same three-to-five floor as the thirteen who can be walked up to (#775). |
+| `tools/dialogue.mjs` | One check-only `?` kind, `? frame <stage>`, rebuilt from `data/quest.json`'s stages whose `dialogueState` is not `default`, refused on drift and written back by nothing. That is #690's bargain unchanged (`\|` and `%` write; `@`, `:`, `?` and `!` are rebuilt and compared). It adds two lines to every block it reaches, not one: `explore` and `night` both name `day0`, so a `day0` block carries `? frame explore` and `? frame night` both (#776). |
 | `test/dialogue.mjs` | The new kind, and its break. |
+| `test/quest.mjs` | Section 4f: the leak rail, its own control, the token rail, station coverage and the no-line-repeats rail, all against `day0` (#775). |
 
-### Acceptance, increment 3
+### Acceptance, increment 3 — green, 15 of 15
 
-- **`test/dialogue.mjs`**: extract then compile is a fixed point; the `day0`
-  blocks carry `? frame explore`; drift is refused. **Break**: delete the
-  `? frame explore` line from one block and `npm run dialogue:check` exits
-  non-zero naming the speaker.
-- **`test/quest.mjs`**: no `day0` set contains a token
-  (`{ACCUSE}` in particular), and every speaker with a day-0 station has a
-  non-empty `day0` set. **Break**: put `{ACCUSE}` in the Constable's `day0`
-  set and `validateAgainstNpcs` demands a stage in that `dialogueState` that
-  runs `openAccusation`.
+- **`test/dialogue.mjs`**: extract then compile is a fixed point; every `day0`
+  block carries both `? frame explore` and `? frame night` (#776, corrected
+  from this section's earlier text, which named only the first); drift is
+  refused. **Break**: delete the `? frame explore` line from one block and
+  `npm run dialogue:check` exits non-zero naming the speaker.
+- **`test/quest.mjs`**: no `day0` set contains a token (`{ACCUSE}` in
+  particular); no `day0` line uses a word of the five things the walking day
+  takes off the ground or of a death (#752), with the same word list run over
+  the day-one `default` sets as a control so the list is proven to trip real
+  testimony; every speaker with a day-0 station has three lines or more of
+  their own, and the inspector, who has none, still carries the one line
+  `validateAgainstNpcs` demands of every speaker (#775, corrected from this
+  section's earlier "non-empty," which did not say how many); and no `day0`
+  line is a line any other state already says. **Break**: put `{ACCUSE}` in
+  the Constable's `day0` set and `validateAgainstNpcs` demands a stage in that
+  `dialogueState` that runs `openAccusation`.
 - A reading criterion no suite can hold, named here so it is not mistaken for
   one: none of the fourteen may say anything that only makes sense after the
-  death. The check is a person reading the .dlg's `day0` blocks top to bottom.
+  death, beyond the words the leak rail knows. The check is a person reading
+  the .dlg's `day0` blocks top to bottom.
 
 ### Scope, increment 4: the day itself
 

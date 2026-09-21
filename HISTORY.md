@@ -8750,3 +8750,107 @@ next suite that plants a save and then loads the game page: plant from
 static checks pass, but nobody has run `npm run play` past it: this container
 is software-rendered and the suite needs a real GPU (#53). Whether the day
 actually plays through its new door is rank 3's first act.
+
+---
+
+## Explore, the day before: increment 3 shipped, the fourteen day-0 line sets (2026-09-21)
+
+**Increment 3 of rank 1, the walking day, shipped** (#775 to #777, against
+`SPECS.md`'s own increment-3 scope). Commit `7152553`, merged from
+`origin/main` as `32a4e21`, worked under Claude Opus 5 as the builder on
+`claude/walking-day-before-death-8apcav`. `npm test` 15 of 15 before and after
+the merge, `npm run build` clean, `npm run dialogue:check` reports
+"dialogue/castle.dlg and data/ agree."
+
+**What shipped, five files** (#775). `dialogue/castle.dlg`, the authoring
+surface, and `data/npcs.json`, compiled from it and never hand-edited, carry
+fifty-seven lines over the fourteen `day0` sets in place of increment 1's
+stubs: Hywel's own five, four or five each for the twelve, and the
+inspector's one — his `day0` set is unreachable, the way his own `default`
+already is, and a set nobody can hear does not earn five lines, a departure
+from the spec's "three to five" for a good reason. `data/npcs.json`'s
+dialogue total goes from 196 lines to 240; states stay at 77. The lines are
+drawn off `data/lore.json`'s canon and matched to the register of the 27
+chatter pairs. `tools/dialogue.mjs` gains one check-only `?` kind, `? frame
+<stage>`, rebuilt from `data/quest.json`'s stages whose `dialogueState` is
+not `default` and written back by nothing — #690's bargain sharpened, not
+amended: the rebuild set grew, the write set did not. `test/dialogue.mjs` and
+`test/quest.mjs` carry the new rails below.
+
+**Six rails, each broken from green, FAIL lines verbatim** (#34, #13):
+
+1. The new `? frame <stage>` kind in `test/dialogue.mjs`. Break: delete
+   `? frame explore` from the cook's block on disk. `npm run dialogue:check`
+   exits 1 with `cook/day0: the "?" lines say "frame night" and the clue
+   graph says "frame explore / frame night"`, and the suite gives `FAIL all
+   14 speakers carry "? frame explore" on their \`day0\` block — cook` plus
+   three cascades.
+2. `test/quest.mjs` 4f, no token in a day-0 line. Break: compile `{ACCUSE}`
+   into the Constable's `day0`. `FAIL and no \`day0\` line carries a {TOKEN}
+   at all — constable: {ACCUSE}`, and `validateAgainstNpcs` adds `npc/state
+   constable/day0 poses {ACCUSE} but no stage in that dialogueState runs
+   openAccusation after that conversation`.
+3. **The leak rail**, which is the one #752 asked for. Break: a day-0 line
+   about a man who could fall down the stair. `FAIL none of the 14 \`day0\`
+   sets says a word of the morning after (#752), over 18 words — constable:
+   "fall" in ...`
+4. **That rail's own control**, which is what stops it being vacuous (#34,
+   #147): the same word list is asserted to catch 10 of the 14 day-one
+   `default` sets, so a list that has been gutted cannot pass. Break: gut the
+   list. `FAIL and the same 8 words catch 5 of the 14 day-one \`default\`
+   sets ... — only 5`
+5. Station coverage. Break: cut Hywel to two lines. `FAIL all 13 speakers
+   with a day-0 station have three lines or more of their own ... — hywel: 2`
+6. No day-0 line repeats a line another state says. **This one failed for
+   real on its first run, before any deliberate break**: `FAIL ... —
+   lady/day0 = lady/default`, because Lady Alys had been given her day-one
+   testimony verbatim. It was reworded. The rail caught the exact mistake the
+   increment exists to prevent, on its own, and that is the strongest
+   evidence the rail is worth having.
+
+**The death can now be asserted and not only proofread, three ways.** The
+five hidden rows are derived (`mystery.evidence` minus `day0.evidence`), and
+each must carry a word in `LEAK_WORDS` or the cover assertion fails on its
+own before the leak rail runs at all. The 18 words are hand-chosen, with the
+reason written in the suite: the discriminating word is not the row's id,
+because `cart` is a contract Wykes has held six years and `mason` is a man
+standing in the lodge, so `sacking` stands in for the cart and the id itself
+never appears in the list. And rail 4 proves the list trips real testimony
+rather than nothing. **What stays a reading criterion, not a suite's to
+hold**: phrasing that leaks the death without using a banned word. `SPECS.md`
+still names that in place, and this band does not claim otherwise.
+
+**Three findings, each its own numbered decision or a clause** (#34, #147).
+
+- **A `day0` block carries two frame lines, not the one the acceptance
+  named** (#776). Both `explore` and `night` name `day0` as their
+  `dialogueState`, so every speaker's `day0` block reads `? frame explore`
+  then `? frame night`. `SPECS.md`'s increment-3 acceptance said only the
+  first; it is corrected with this band.
+- `test/dialogue.mjs`'s `?`-count assertion had to learn frames: 91 lines is
+  9 presses plus 54 stages plus 28 frames, or it would have gone red by
+  construction the moment the fourteenth `day0` set carried real `?` lines.
+  This is #770's shape again, one band later: a count written as a literal
+  against a file that grows.
+- **Increment 1's own stub carried a canon error that shipped to `main`, and
+  this increment fixed it** (#777). The sentry's placeholder line said "I
+  have the walk again tonight. Do not whistle up at me; I will take you for
+  the Welsh," and there is no Wales in Vantry, whose history is invented
+  around a fictional cast (#549). It went through a green CI run and a
+  merged PR carrying that line, and what caught it was a person reading the
+  file during the increment that replaced it: no rail looks at whether a
+  line agrees with the canon. It now reads "...out of the dark; I will take
+  you for the wrong side of the river." **One further change is visible in
+  the same diff and is a tightening, not a fix of an error that shipped**:
+  the inspector's stub, "The King's inspector is a day's ride off, and does
+  not know your name yet," reads "...is two days off yet, and does not know
+  your name" now, matching the constable's own `day0` line that he arrives
+  two days after the walking day. **The rest of the day's rewording was made
+  while the lines were being authored and never reached a commit, so it is
+  not in this diff and cannot be.** Lady Alys is the clear case: rail 6 (#775
+  above) caught `lady/day0 = lady/default` on its first run, and the line
+  was reworded before anything was committed, so her `day0` block only grows
+  in the diff and the mistake she made leaves no trace in git at all. A
+  reader who goes looking for a removed line of hers, or for the other
+  authoring-time fixes the builder reported alongside her, will not find
+  one, and should not take the absence as evidence nothing was wrong.

@@ -1698,6 +1698,101 @@ console.log('\nthe walking day, through the manager');
   check(r.ui.dialogue.onPresent === null, 'still with no Present button: the walking day has nothing to present');
 }
 
+/* --------------------- 4f: the walking day's own words (increment 3) ----------
+ * #752'S RULE, AS FAR AS A SUITE CAN HOLD IT. Not one of the twelve may say a
+ * word of their day-one testimony on the walking day: there is no body, no
+ * lantern, no cloak in the laundry and no summons in anybody's pouch, and Hywel
+ * is alive. The whole of that is a reading criterion and `SPECS.md` says so, but
+ * three quarters of it is a word: the five things the walking day takes off the
+ * ground have names, and a death has a vocabulary. What is asserted below is
+ * that no `day0` line uses either, with the same predicate run over the
+ * day-one `default` sets as a control, because a word list nothing in this repo
+ * trips is a word list that proves nothing (#34, #147).
+ *
+ * This suite owns it because it already owns the graph against the cast (#529):
+ * the `dialogueState` the words hang off is `explore`'s, and test/mystery.mjs
+ * owns the stations and the engine's answers rather than what anybody says.
+ */
+console.log('\nthe walking day\'s own words');
+{
+  const DAY0 = 'day0';
+  /* ONE WORD PER THING THE WALKING DAY HAS TAKEN OFF THE GROUND, plus the
+   * vocabulary of a death. The ids are derived — day one's evidence rows minus
+   * day zero's are exactly #752's five — and the words are hand-chosen and have
+   * to be, because the discriminating word is not the row's id: `cart` is a
+   * contract Wykes has held six years and `mason` is a man who is standing in
+   * the lodge, while `sacking` and `pouch` are only ever the evidence. A row
+   * that moves between the two lists with no word here for it fails the cover
+   * assertion below rather than passing quietly. */
+  const LEAK_WORDS = {
+    body: ['body', 'corpse'],
+    pouch: ['pouch', 'summons'],
+    cloak: ['cloak'],
+    tally: ['tally'],
+    cart: ['sacking'],
+    'the death itself': ['dead', 'death', 'died', 'buried', 'burial', 'murder', 'drunk', 'fell', 'fall', 'lantern', 'grave'],
+  };
+  const hidden = mystery.evidence.map((e) => e.id).filter((id) => !mystery.day0.evidence.includes(id));
+  const uncovered = hidden.filter((id) => !(id in LEAK_WORDS));
+  check(uncovered.length === 0,
+    `every one of the ${hidden.length} rows the walking day takes off the ground has a word here: ${hidden.join(', ')}`,
+    uncovered.join(', '));
+  const words = Object.values(LEAK_WORDS).flat();
+  // Word boundaries, or `body` would match "nobody" and "somebody", which between
+  // them open four of the fourteen sets below.
+  const leakIn = (line) => words.find((w) => new RegExp(`\\b${w}\\b`, 'i').test(line));
+  const leaks = npcDefs.flatMap((p) => (p.dialogue[DAY0] || []).flatMap((l) => {
+    const w = leakIn(l);
+    return w ? [`${p.id}: "${w}" in ${JSON.stringify(l.slice(0, 64))}`] : [];
+  }));
+  check(leaks.length === 0,
+    `none of the ${npcDefs.length} \`${DAY0}\` sets says a word of the morning after (#752), over ${words.length} words`,
+    leaks.slice(0, 3).join(' / '));
+  // THE CONTROL. The same predicate over the day-one `default` sets, which are
+  // the testimony this rule exists to keep out. A floor and not a literal, for
+  // #770's reason: a content row that rewords a `default` line must not have to
+  // edit a number here to stay green.
+  const caught = npcDefs.filter((p) => (p.dialogue.default || []).some(leakIn)).map((p) => p.id);
+  check(caught.length >= 8,
+    `and the same ${words.length} words catch ${caught.length} of the ${npcDefs.length} day-one \`default\` sets, so the list is one a leak would trip: ${caught.join(', ')}`,
+    `only ${caught.length}`);
+
+  // No token of any kind, which is open call 9's consequence: the Constable's
+  // `{ACCUSE}` is in `default` and his `day0` set replaces the whole of it, so
+  // nothing on the walking day asks for a name. `validateAgainstNpcs` is what
+  // refuses one (its break puts {ACCUSE} back), and this says it in one place
+  // over all fourteen sets rather than over the one conversation part 4e drives.
+  const tokened = npcDefs.flatMap((p) => (p.dialogue[DAY0] || [])
+    .filter((l) => /\{[A-Z_]+\}/.test(l)).map((l) => `${p.id}: ${l.match(/\{[A-Z_]+\}/)[0]}`));
+  check(tokened.length === 0, `and no \`${DAY0}\` line carries a {TOKEN} at all`, tokened.join(', '));
+
+  // Everybody who can be walked up to has something to say, and it is his own.
+  // `validateAgainstNpcs` already refuses an empty set on any speaker; what it
+  // cannot see is that the twelve and Hywel are reachable on the walking day and
+  // the inspector is not, so his one unreachable line is the floor and theirs is
+  // not (the precedent is his `default`, one line for the same reason).
+  const stationed = npcDefs.filter((p) => mystery.day0.watches.some((w) => mystery.day0.schedule[p.id]?.[w]));
+  const thin = stationed.filter((p) => (p.dialogue[DAY0] || []).length < 3).map((p) => `${p.id}: ${(p.dialogue[DAY0] || []).length}`);
+  check(stationed.length === npcDefs.length - 1 && thin.length === 0,
+    `all ${stationed.length} speakers with a day-0 station have three lines or more of their own; the ${npcDefs.length - stationed.length} with none has one`,
+    thin.join(', '));
+  check(!stationed.some((p) => p.id === 'inspector') && (npcDefs.find((p) => p.id === 'inspector').dialogue[DAY0] || []).length > 0,
+    'and the inspector, who is two days off, still carries the set validateAgainstNpcs demands of every speaker');
+
+  // AND NOT ONE OF THEM IS A LINE SOMEBODY ALREADY SAYS. The failure this
+  // catches is the cheapest one to make: a `day0` block filled by copying the
+  // `default` block above it, which is testimony verbatim and which every rail
+  // above would pass if the words happened to miss it.
+  const elsewhere = new Map();
+  for (const p of npcDefs)
+    for (const [state, lines] of Object.entries(p.dialogue))
+      if (state !== DAY0) for (const l of lines) elsewhere.set(l, `${p.id}/${state}`);
+  const copied = npcDefs.flatMap((p) => (p.dialogue[DAY0] || [])
+    .filter((l) => elsewhere.has(l)).map((l) => `${p.id}/${DAY0} = ${elsewhere.get(l)}`));
+  check(copied.length === 0,
+    `and no \`${DAY0}\` line is a line any other state says, over ${elsewhere.size} of them`, copied.slice(0, 3).join(', '));
+}
+
 /* -------------------------------------------------------------- 5: the page --- */
 console.log('the page');
 {
