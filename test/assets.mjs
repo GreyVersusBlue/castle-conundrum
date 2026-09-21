@@ -326,7 +326,7 @@ console.log('\nevery pixel material is one 128 px map this repo drew');
     const head = fs.readFileSync(file);
     const isPNG = head.length > 24 && head.readUInt32BE(0) === 0x89504e47 && head.subarray(12, 16).toString('latin1') === 'IHDR';
     if (!isPNG) {
-      fail(`${rel} has no PNG IHDR — it is ${head.subarray(0, 4).toString('latin1').replace(/[^ -~]/g, '.')}..., and a pixel texture is a PNG (#742, open call 6)`);
+      fail(`${rel} has no PNG IHDR — it opens 0x${head.subarray(0, 4).toString('hex')}, and a pixel texture is a PNG (#742, open call 6)`);
     } else {
       const w = head.readUInt32BE(16), h = head.readUInt32BE(20);
       if (w !== PIXEL_PX || h !== PIXEL_PX)
