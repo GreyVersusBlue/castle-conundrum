@@ -385,6 +385,21 @@ from beside them on their own storey, and the porter's admission is a premise
 of the ending. Filed as the new rank 1, "Sight at the body's own height."
 **Rank 2 stays open, gated on it.**
 
+**The retro castle was specified and ranked on 2026-09-21** (#742 to #744),
+from Devon's brief of the same day: the castle reads as the same everywhere,
+and he wants pixel-art textures the repo draws itself, for variety room to
+room and for a retro look. That reverses #411, the choice that put
+photographic stone on the walls, and it is the third time this one question
+has been decided. Measured first: the fifteen Poly Haven material sets hold
+44.2 MB of the castle's 79.3 MB of texture memory by their own KTX2 headers
+(an estimate that lands on #506's measured number to the decimal), 22 of 46
+wall runs are one slate and 18 of 32 floors are two planks, and the Kenney
+kit beside them is 64 px unlit pixel art already. **Rank 3, lane B, a 2+**:
+the first increment is a generator, its rails, fifteen 128 px textures under
+`assets/pixel/` in place of the fifteen sets, and a fourth count in
+`test/budget.mjs` for texture memory, all of it a container's; then a look
+on a GPU (#53) before variety per room. Nothing has shipped.
+
 ## How this repo is worked
 
 The standing instruction is *"work the next batch of ranked items in
@@ -483,7 +498,7 @@ together.
 | Lane | The file that decides it | Rows |
 | --- | --- | --- |
 | A | `src/save.js` — the version number and `migrate` | nobody (4a, 4b and 8 are done) |
-| B | `data/scene-config.json` — and `test/tools.mjs`'s byte-exactness rail | 9 (4c, 5 and 12b are done) |
+| B | `data/scene-config.json` — and `test/tools.mjs`'s byte-exactness rail | 3, 9 (4c, 5 and 12b are done) |
 | C | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | 6, 10 (12c is done) |
 | D | `src/main.js`'s player rig and spawn | 6, 11 |
 | E | `src/audio.js` and `data/sounds.json` | 7 |
@@ -513,8 +528,9 @@ All three shipped and **the row is retired**.
 
 ## The ranked table
 
-**3, 5, 8 and 12 are numbers that have left the list rather than gaps in
-it, and 1 is a number that keeps coming back.** Before 2026-09-21 it had been
+**5, 8 and 12 are numbers that have left the list rather than gaps in it, 3
+left on 2026-09-17 and came back on 2026-09-21 for the retro castle (#744),
+and 1 is a number that keeps coming back.** Before 2026-09-21 it had been
 used three times and retired three times: the fourth body on 2026-09-17 (#619); the castle you
 cannot walk, which the GPU run opened the same day (#624 to #630) and which
 shipped on 2026-09-18 (#659 to #661); and the walker on the stair, which the
@@ -545,6 +561,7 @@ blocker of rank 2 ranks above it, and only one number does.
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | Sight at the body's own height: nobody upstairs can be talked to from beside them, and the porter on the walk can be from 8 m below | ¼ | Opus 5 | Container | — | — | | [Sight at the body's own height](SPECS.md#sight-at-the-bodys-own-height) |
 | 2 | The GPU run: the looks are taken (#711 to #715); the walker holds on a GPU (#734, #736) and the third sitting reached the accusation with the wrong ending (#735 to #741) | 1 | Opus 5 | Local: GPU | **after 1** | — | | [The GPU run](SPECS.md#the-gpu-run) |
+| 3 | The retro castle: the stone in the castle's own pixel art, fifteen sets out and fifteen 128 px textures in, then variety per room (#742 to #744) | 2+ | Opus 5 | Container to the look, local: GPU past it | — | B | | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
 | 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #729 to #733); the town, the four clips and the chatter pool are left | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: somebody listens to the seven beds, the four rings and the first two event sounds (a bed at a point and the rings, #680 to #683; the door and the hound, #696 to #698) | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
 | 9 | A castle to get lost in: the town, the rock and river | 2+ | Opus 5 | Container | — (4c opened it) | B | | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
@@ -693,6 +710,29 @@ it is not obviously the better card: the hall at Vespers is a dark room with
 two legible bodies in it and a black north wall, against a chapel frame with
 three people and the HUD. Revisit it if somebody wants to; nothing about where
 the images live or how they were built is specific to either frame.
+
+## The retro castle
+
+*Where: container to the look, local GPU past it. Gate: none. Lane: B.*
+
+**Rank 3, and a 2+. Nothing shipped.** Devon's brief of 2026-09-21, and the
+reversal of #411 (#742): the walls are built geometry carrying pixel-art
+textures this repo draws with a program of its own, not Poly Haven's
+photographs, and not an image model's output either (#743). The first
+increment is the whole swap for built geometry, so the castle is one look on
+one GPU sitting: a generator under `tools/pixel/` whose fifteen rows render
+to `assets/pixel/`, one 128 px PNG per material name the config already has,
+so not a run, a room or a `byMaterial` row moves; the fifteen Poly Haven set
+folders deleted, about 25 MB on disk and 44.2 of 79.3 MB of texture memory;
+`materials` becomes `pixelMaterials` and `loadPBRMaterial` becomes a
+diffuse-only lit material, which is the kit's own model with the sun put back
+on it; five rails in `test/assets.mjs` (size, palette, wrap, one map,
+pixel-identical to the generator) and a fourth count in `test/budget.mjs`,
+texture memory from headers, under a ceiling of 64 MB that today's 79.3
+fails on purpose (#744). No `ktx`, no network and no GPU are needed to close
+it. **Then somebody looks** (#53), with the checklist in `SPECS.md`, before
+the second increment puts a wall and a floor of its own in every named room.
+The ten Poly Haven prop packs stay until the look says otherwise.
 
 ## Life: a populace
 

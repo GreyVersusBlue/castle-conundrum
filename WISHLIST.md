@@ -6,7 +6,9 @@ arc after it, written 2026-09-16 from Devon's brief of the same day: depth,
 life, side quests, a castle big enough to get lost in, a deeper story and a
 lot of lore, a castle that is lived in. Kids running, dogs barking, cooks
 baking, knights training. Pie in the sky, on purpose. **All seven themes and
-the tooling section moved out on 2026-09-17** (#560 to #567): what is left
+the tooling section moved out on 2026-09-17** (#560 to #567), **and an eighth
+theme, Devon's brief of 2026-09-21, was written and moved out the same day**
+(#742 to #744): what is left
 below is the baseline they were measured against, Devon's own answers, and a
 pointer from each theme's old place to where it lives now, in `BACKLOG.md`
 and `SPECS.md`.
@@ -244,6 +246,24 @@ sitting are all that row's now; the first increment is the two cheapest
 presence cues named above, a shadow on the pavers and a hand that reaches
 for the door, and every item here is still gated on `npm run play` on a real
 machine (#53).
+
+### 8. The retro castle: the stone in the castle's own pixel art
+
+**Moved to `BACKLOG.md` rank 3, `SPECS.md`'s "The retro castle" section**
+(#742 to #744), on the day it was written, 2026-09-21. Devon's brief: the
+castle reads as the same everywhere, and he wants pixel-art textures
+produced by a model session rather than Poly Haven's photographs, for
+variety room to room and for a retro look, a style call before a cost one.
+It is the third decision on one question: round 1 left the kit's pixel art
+on the walls, #411 put photographic stone on them at Devon's choice of eight
+sets, and #742 takes it off again at his. What was measured before it moved:
+the fifteen sets are 44.2 of the castle's 79.3 MB of texture memory and 22
+of 46 wall runs are one slate, and the Kenney kit beside them is 64 px unlit
+pixel art already, which #630 saw as two games from a tower top. The
+generator, the rails, the fifteen textures in place of the fifteen sets, a
+fourth budget count, the look on a GPU, variety per room and the question of
+the props are all that row's now; the first increment is the whole swap for
+built geometry, so the castle is one look on one sitting.
 
 ## The tooling that makes the content rows possible
 
