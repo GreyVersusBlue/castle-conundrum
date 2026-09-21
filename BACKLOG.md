@@ -232,7 +232,10 @@ file and asserts over both rather than over whatever git handed the machine. Par
 1 went from 17 assertions to 47. **Nothing in the row is open**, and the two
 things found on the way that are not in it are in `HISTORY.md` under #633.
 
-**Seven ranked items left, numbered 1 to 11 with gaps. Nothing is claimed, and
+**Seven ranked rows, numbered 1 to 11 with gaps. There were six until
+2026-09-21, when Devon asked for a way to see the whole floor plan and rank 1
+was opened for it (#729 to #733); the count above this line said seven while
+the table held six, and it is corrected here. Nothing is claimed, and
 lanes B and C are free**: the byte-exactness rail merged as PR #40 (#631 to
 #633) and 12b's move-and-delete after it (#636 to #642), 4c built Wykes's yard
 on 2026-09-19 (#703 to #707) and left lane B free again with **rank 9's gate
@@ -498,7 +501,7 @@ together.
 | Lane | The file that decides it | Rows |
 | --- | --- | --- |
 | A | `src/save.js` — the version number and `migrate` | nobody (4a, 4b and 8 are done) |
-| B | `data/scene-config.json` — and `test/tools.mjs`'s byte-exactness rail | 3, 9 (4c, 5 and 12b are done) |
+| B | `data/scene-config.json` — and `test/tools.mjs`'s byte-exactness rail | 3, 13 (increments 2 and 3 only), 9 (4c, 5 and 12b are done) |
 | C | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | 6, 10 (12c is done) |
 | D | `src/main.js`'s player rig and spawn | 6, 11 |
 | E | `src/audio.js` and `data/sounds.json` | 7 |
@@ -567,6 +570,7 @@ blocker of rank 2 ranks above it, and only one number does.
 | 9 | A castle to get lost in: the town, the rock and river | 2+ | Opus 5 | Container | — (4c opened it) | B | | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
 | 10 | Bodies: a shared low-poly rig for the fifty (the child and the hound shipped, #643 to #645; two hens and the spear, #684 to #686) | 1 | Fable 5.1 | Local: net | — | C | | [Bodies](SPECS.md#bodies) |
 | 11 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 | Container to the Node line, local: GPU past it | **after 2** | D | shadow + hand shipped 2026-09-17 (#650 to #654) | [Feel](SPECS.md#feel) |
+| 13 | The floor plan you can see: a top-down view of the plan, then a way to redraw it | 2+ | Opus 5 | Container | — | B (increment 1: none) | | [The floor plan you can see](SPECS.md#the-floor-plan-you-can-see) |
 
 **`ROADMAP.md` is these three columns turned into an order**: which row to
 take first, what each one unblocks, and which ones two sessions may hold at
@@ -914,6 +918,36 @@ and are unanswered. Nothing else in the theme — weather and sky, fire and its
 point-light budget, examine, doors that open, wear, sitting — starts before that
 pair has been looked at, because they are the ones that say whether the budget
 has room for the rest at all.
+
+## The floor plan you can see
+
+*Where: container. Gate: none. Lane: B for increments 2 and 3, none for
+increment 1.*
+
+**Rank 13, and a 2+. Nothing is built; the decisions are #745 to #749,
+2026-09-21.** Devon's ask: the room layout was placed by an AI one room and
+one guess at a time with no way to see the whole floor plan, and he wants a
+GUI to lay it out himself, or at least to review and correct it visually.
+
+**The layout is not in `src/castle-plan.js`.** That file holds no coordinate:
+it is a pure compiler over `data/scene-config.json` and throws on a config
+that does not hang together. The floor plan is four arrays of that file:
+`walls` (46 runs, 25 of them interior partitions), `drums` (8), `gates` (3)
+and `rooms` (43, which are names over extents and own no geometry), plus the
+`doorways` on eleven runs that are how two spaces connect. So the tool writes
+the same 3113-line file the prop editor already writes, through the same
+splice, and there is no new format (#745).
+
+**The first increment writes nothing** (#748): a top-down orthographic view
+over the real scene, drawn from the plan's own boxes, with a storey filter and
+room labels. A flat 2D editor was refused because `makePlan` needs
+`boundsOf(modelPath)` and only a loaded model gives one, so a schematic would
+have to re-derive every box the plan computes (#746). It is `?edit=1`'s second
+module, `src/edit-layout.js`, with its own sentinel and its own line in
+`test/built.mjs`'s grep of `dist/` (#747, #586). Increment 2 makes `rooms` and
+`walls` draggable and increment 3 the openings; `drums` and `gates` are not in
+this row. Validation re-runs `makePlan` and `walkability` in the page and
+copies no assertion out of any suite (#749, #529).
 
 ## The tooling
 

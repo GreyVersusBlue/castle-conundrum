@@ -50,6 +50,8 @@ R4c Thomas Wykes's yard  --> unlocked R9's town, 2026-09-19 (#703 to #707)
 
 Never gated, take whenever the lane is free:
   R10 bodies (local: net, lane C)
+  R13 the floor plan you can see, new 2026-09-21 (#745 to #749)
+      increment 1 writes nothing and is in no lane; 2 and 3 are lane B
   R3  the retro castle: increment 1 in a container, lane B, then a look
       on a GPU before increment 2 (#742 to #744; not beside R9)
 
@@ -117,8 +119,10 @@ the one asset nothing else on this list would catch.**
 **R1** sight at the body's own height, filed 2026-09-21 and gating R2: a GPU
 found it, and a headless beat can hold it, because it is a camera placed and
 a prompt string read, not a walk. **R6** populace, **R8** side quests, **R9** the town, whose gate R4c opened,
-**R12a/b/c** the tooling, **R4a** the bells call (#699 to #702), and **R4b** the `since`
-field, which shipped from one on 2026-09-17. Six and a half rows of twelve. Every one is data, a validator, a Node suite or
+**R12a/b/c** the tooling, **R13** the floor plan you can see (#745 to #749),
+**R4a** the bells call (#699 to #702), and **R4b** the `since`
+field, which shipped from one on 2026-09-17. Seven and a half rows of thirteen.
+Every one is data, a validator, a Node suite or
 a headless DOM assertion, and every one has an acceptance criterion a container
 can actually meet.
 
@@ -133,11 +137,11 @@ the theme is not what conflicts.
 | Lane | The file that decides it | Rows in it |
 | --- | --- | --- |
 | **A** | `src/save.js` — the version number and `migrate` | nobody (R4a, R4b and R8 all shipped without bumping it) |
-| **B** | `data/scene-config.json`, and `test/tools.mjs`'s byte-exactness rail | R3, R9 (R4c, R5 and R12b are done) |
+| **B** | `data/scene-config.json`, and `test/tools.mjs`'s byte-exactness rail | R3, R13 (increments 2 and 3 only), R9 (R4c, R5 and R12b are done) |
 | **C** | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | R1, R6, R10 (R12c is done) |
 | **D** | `src/main.js`'s player rig and spawn | R6, R11 |
 | **E** | `src/audio.js` and `data/sounds.json` | R7 |
-| **none** | | R2, R3, R12a |
+| **none** | | R2, R12a |
 
 Lane A is the one the specs already warned about in words: *"do not run
 alongside anything else that touches `save.js`"* is written into R4's
@@ -412,6 +416,7 @@ to overturn rather than a street to place.
 
 | Row | Model | Where | Lane |
 | --- | --- | --- | --- |
+| **R13** The floor plan you can see | Opus 5 | Container | B, and none at all for its first increment |
 | **R9** A castle to get lost in: the town | Opus 5 | Container | B |
 | **R3** The retro castle: increment 1 | Opus 5 | Container | B |
 
@@ -422,6 +427,16 @@ repo draws itself, on the same fifteen names, with the rails and the memory
 count in front of it; it needs no `ktx`, no network and no GPU, which is the
 opposite of every asset row before it. What gates its second increment is a
 look on Devon's machine, in the table under "Local: a GPU" above.
+
+**R13 is new on 2026-09-21** (#745 to #749) and it is in this wave because
+nothing gates it. Devon asked for a way to see the whole floor plan; the
+layout turns out to be four arrays of `data/scene-config.json` and not a
+line of `src/castle-plan.js`, so the tool writes the file the prop editor
+already writes (#745). **Its first increment writes nothing** — a top-down
+orthographic view over the real scene, drawn from the plan's own boxes
+(#746, #748) — which is why that increment is in no lane and may be claimed
+beside R9. Increments 2 and 3 are lane B and may not.
+
 
 A walled town's street, church and quay on the ground the yard proved. The
 rooms go on the map the day they go in `config.rooms`, because the map is the
