@@ -7416,3 +7416,136 @@ them is a small row of its own, filed in `BACKLOG.md`.
 `ROADMAP.md`'s Gate 1 is back to rank 2, the GPU run** — the walk half of that
 row is answered on Node terms; what it is still owed is the run itself, on a
 GPU (#53).
+
+## The red suite: the prompt goes to what you are aimed at (2026-09-20)
+
+**Unranked, on `claude/r99-red-ci`, in a `git worktree`, no lane.** `main` had
+no green CI run and every PR inherited a red `plan-vs-scene`. `BACKLOG.md`
+framed it as an unasked `src/` question — should `InteractionSystem` prefer
+what the camera points at over what is nearest — and the answer is yes, with
+the castle-wide numbers to say so. Decisions #721 to #723. `npm test` is
+**15 of 15**.
+
+- **The cause is the Constable walking, not the beat's two
+  `requestAnimationFrame`s, and #633's reading of the flake is overturned**
+  (#721). The beat was instrumented to dump every candidate
+  `InteractionSystem.update()` sees at every one of its twelve cells. From the
+  nearest cell, 0.96 m from the candles and aimed dead at them (dot 1.00), the
+  prompt read **`Press E to talk to the Sir Roger Lestrange`** — 0.52 m away
+  and dot 0.47, which is 62 degrees off the aim. He was at waypoint 1 of a
+  **77-waypoint** route out of the chapel, having moved 0.24 m across the whole
+  twelve-cell sweep: the beat before this one rings the bell, `onWatch` sends
+  twelve bodies walking, and his Prime station is **0.92 m from the candles**
+  (measured off the plan in Node, against no Terce station within 2 m of them).
+  So how far he has got when the sweep starts is a count of frames between the
+  bell's E and the first cell, which is a property of the machine. That is the
+  axis rank 11 measured from both ends — ten runs green under five parallel
+  sessions, eight red alone — read correctly at last. #633 blamed a fast
+  machine for not giving the beat its frames; the frames were never the
+  question.
+- **`src/interaction.js` gets a second slot per list: the nearest thing inside
+  `AIM_DOT`, and only then the nearest thing at all** (#722). `FACING_DOT` is
+  0.35, a 69.5-degree half-cone, and until now it was a gate and nothing else —
+  past it, nearest won. `AIM_DOT` is 0.95, 18.2 degrees. Measured over the four
+  watches, the twelve's stations, every evidence piece, readable, bell and lock,
+  and every walkable cell 0.9 to 2.8 m from one of them: **12371 (cell, target)
+  pairs, of which nearest-wins offers what the player is aimed at 6667 and the
+  aim rule offers 11521**. It fixes 2834 pairs nearest got wrong and breaks 48
+  it got right; of nearest's 5704 misses, **1282 offer something more than 45
+  degrees off the aim, and the aim rule's misses do that 0 times**. The 48
+  breaks are all one shape — a body inside the same 18-degree cone and nearer
+  than the prop, 28 of them the Chaplain who stands 0.20 m from the gravestone —
+  and at that separation either answer is defensible. **Not one of them is a
+  lock**, which was the named risk: a door 1 m ahead still beats the NPC 3 m
+  past it, because both are inside the cone and inside the cone it is still
+  nearest-wins. A third rule was measured and rejected: ranking by lateral
+  offset from the aim ray scores 8211 of 12371, better than nearest and much
+  worse than the cone, for the same shape of change.
+- **And it fixes #714's body-and-pouch swap, which is the same bug in the same
+  room** (#722). Four GPU runs failed `E on the body: he is at the foot of the
+  stair` because `examine` aims at the body and the pouch is nearer. Over the
+  six chapel cells 1.0 to 1.8 m from the body at Prime, aimed at the body:
+  **nearest-wins offers the body 0 times out of 6, the aim rule offers it 6**.
+  The two beats that were failing on one behaviour are fixed by one change.
+- **The break, from a green baseline** (#722). `AIM_DOT = 0.35` is `FACING_DOT`
+  and therefore nearest-wins verbatim. `plan-vs-scene` went red on the first
+  run with `FAIL none of the 12 cells between 0.9 and 2.8 m of the chapel
+  candles offers them, nearest cell first — 0.96 m: "Press E to talk to the Sir
+  Roger Lestrange"; 1.08 m: "Press E to talk to the Sir Roger Lestrange"; ...
+  1.43 m: "Press E to ring the bell"; ... 1.58 m: "Press E to ring the bell"`,
+  exit 1. Restored, and the suite ran **six times green** where the same suite
+  on `origin/main` at `dc83147` was **red five times in six** on this machine.
+  That the fix is the cause rather than the load moving is structural and not
+  statistical: from the nearest cell the Constable is 62 degrees off the aim,
+  so he is outside `AIM_DOT` wherever on his 77-waypoint route he has got to.
+- **The beat's failure message was lying, and it is the assertion's comment
+  that was wrong** (#723, #147). `none of the 12 cells ... (the nearest offered
+  "Press E to ring the bell")` read `promptNow()` once the sweep was over, so
+  it printed the **twelfth** cell's answer under the **first** cell's name. The
+  twelfth is the far one, 1.58 m out with the bell at 1.17 m, where the bell
+  genuinely does win. Two sessions chased the bell on the strength of that
+  sentence. The beat now records what every cell offered and prints the lot,
+  nearest first, which is how the Constable's name appeared at all.
+
+### A finding on the way past: nothing keeps a station away from a prop
+
+`STATION_CLEARANCE` is 1.5 m and holds between two bodies — **0 of the
+twelve's station pairs are inside it at any watch**. There is no such rule
+between a station and something the player presses E at, and two stations are
+well inside where one would be: the **Chaplain stands 0.20 m from the
+gravestone at all four watches**, and the **Constable 0.92 m from the chapel
+candles at Prime**. #722 means neither now steals a prompt from a player aimed
+at the prop, but a man standing 20 cm in front of a gravestone is still a man
+standing on a grave. The rail is `validateMystery`'s, in `src/mystery.js`,
+beside the clearance check it is the second half of — plan arithmetic, provable
+in Node, so #529 keeps it out of `plan-vs-scene.mjs`. It is specified in
+`SPECS.md` with a recommended 1.0 m and is not done here.
+
+### The populace beat: written down, not changed
+
+`plan-vs-scene.mjs`'s `all N of them stand on the first stop of their Prime
+ring within 0.01 m` **does not reproduce on the dev machine**: run six times
+on 2026-09-20, green six times, `on 3 level(s)`, no body off by anything. It
+was red twice in CI (0.408 m on the merge of PR #47, run 35305787194; 0.055 m
+on rank 1's branch the same morning). **It is not a tolerance problem.**
+`DWELL` is 9 s and a body's opening timer is `dwell * (0.5 + phase)`, so the
+first ring leaves its first stop 4.5 s after `Populace.setWatch` places it and
+the last at 11.2 s; the beat is racing a wall clock from page load, and two
+distances from one stop are two points on a leg that can be the length of the
+room. `TOL` is 0.01 m because that is what this file diffs static geometry at
+and a walking body is owed a different number — but the number a walking body
+is owed is "stop walking", not a larger epsilon. The recommendation is in
+`SPECS.md`: park the rings with `setWatch(watch, { walk: false })` before the
+read and keep 0.01 m. Not taken blind on a beat nobody here has watched fail.
+
+### And then taken: the populace beat parks its rings (2026-09-20)
+
+- **`test/plan-vs-scene.mjs` calls `window.__populace.setWatch(mystery.watches[0],
+  {walk: false})` immediately before the `window.__folk` read, and `TOL` stays
+  0.01 m** (#724). That is `Populace.setWatch`'s own signature, the call
+  src/main.js:155 makes at load: it re-places every body on stop 0 of the
+  watch's ring with no route and no motion, so what the beat diffs against
+  Node's `stopWorld` is static geometry, which is what 0.01 m is the number
+  for. The tolerance was not widened and no assertion moved out of this file
+  (#13, #529).
+- **The failure was driven rather than waited for, and it is the same
+  mechanism** (#724, #34). The beat cannot be made to fail here by running it
+  — six green in six — so the wall clock CI supplies was supplied by hand:
+  with the park skipped, 15 s of dt at 0.05 s a step through `npc.update` and
+  `Populace.update` before the read, the same driver the ring-turn beat below
+  uses. `all 13 of them stand on the first stop of their Prime ring` went from
+  one ok to **7 FAILs**, `hound stands at (-14.75, 0.00, -4.75) and the first
+  stop of the Prime ring is (-25.75, 0.00, -3.75), 11.000 m off` the worst and
+  `hen-brown ... 3.197 m off` the least, with `hen-brown` at z 1.56 caught
+  mid-leg rather than at a stop; exit 1. Restored, **the same 15 s of supplied
+  time moves nobody**: 13 of 13 within 0.01 m on 3 levels, and again at 45 s.
+  CI's 0.055 m and 0.408 m are two early points on legs this long.
+- **What the beat gave up is that `init` called `setWatch` at all** (#724,
+  #147), and the comment says so: the park would place these thirteen even if
+  the page never had. Placement at load is the thirteen's own beat further up
+  the same file, which reads bodies the park does not touch. What survives
+  here is `Populace.setWatch` against `stopWorld` — the routine lookup, the
+  level, the floor height, the facing, and fourteen bodies built.
+- **`npm test` is 15 of 15 and `npm run build` is clean.** The drive is
+  supplied dt, not a measured frame, so #53 does not touch it; the run was
+  headless on the dev machine.
