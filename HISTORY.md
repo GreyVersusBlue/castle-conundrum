@@ -7780,9 +7780,9 @@ the death), and the tiles, which the validator picks between.
 
 **Rank 2, on Devon's machine, an RTX 3070 Ti.** `npm run play` ran twice,
 about twenty minutes each. Both runs still exit 1, but the second is the
-first to reach the accusation. Decisions #729 to #736.
+first to reach the accusation. Decisions #734 to #741.
 
-### Run one: past the second bell for the first time (#729)
+### Run one: past the second bell for the first time (#734)
 
 **The suite as merged ran first.** Exit 1, 164 ok, 19 failures, aborted at
 "cannot finish without reaching the Constable" at Vespers. This is the first
@@ -7803,7 +7803,7 @@ watched it hold.
 lines added and 42 removed, in six places, and each is a decision.
 
 - **`present()` left the Present list and the dialogue open on its failure
-  paths** (#730). The porter beat (`shots/play/34-aborted.png`) failed inside
+  paths** (#735). The porter beat (`shots/play/34-aborted.png`) failed inside
   the box: the pointer stayed released and the Constable walk that followed
   read `locked false` and gave up. #708 fixed this for the success path only.
   `shutPresent()` now runs on every path out of `present()`. Headless: the
@@ -7811,23 +7811,23 @@ lines added and 42 removed, in six places, and each is a decision.
   closes both, `locked` true. Mechanics only, not a render question (#53).
 - **A walk to another storey counted a waypoint reached by x and z alone**,
   so legs up the Kitchen Tower's flight were ticked off from the floor beside
-  it (#731). A Node repro with `moveBody` stopped at (-20.0, -15.5); run one
+  it (#736). A Node repro with `moveBody` stopped at (-20.0, -15.5); run one
   stopped at (-20.0, -15.3), the same bug on the machine it was built for.
   The walk now uses Phase 5's own stair legs instead of a flat distance
   check. Run two: "up the Kitchen Tower: every leg reached, now L2."
 - **`examine()` always passed level 0**, and the Stockhouse bar and the tally
-  stick are level 2 in `data/mystery.json` (#732). Run one put the player
+  stick are level 2 in `data/mystery.json` (#737). Run one put the player
   1.7 m across and about 8 m below the tally. Both beats pass in run two.
 - **`walkTo` read the prompt before turning to face the target**, and a short
   step walked the player through the Chaplain, so every read of him came
-  from behind the camera (#733). A headless probe with the walk stopped
+  from behind the camera (#738). A headless probe with the walk stopped
   short named Father Anselm from the give-up point, both rays clear. The
   turn now happens first. Passes in run two.
 - **The Constable-visible check cast its ray from wherever the porter beat
   had left the player**, 17 m away across the cross-wall, instead of walking
-  there first (#734). It now walks first. Passes in run two.
+  there first (#739). It now walks first. Passes in run two.
 - **`snap('twelve-at-vespers')` was a 54 m straight-line walk from the
-  chapel bell that ended against stone in the inner ward** (#735, #147).
+  chapel bell that ended against stone in the inner ward** (#740, #147).
   Shot 31 is a wall, and the HUD reads "Inner ward." The beat now routes to
   the hall first. Run one's "Great Hall floor at Vespers" luma of 40.1 was
   therefore a wall, not the hall; run two reads 72.7 of 255 from the floor
@@ -7836,7 +7836,7 @@ lines added and 42 removed, in six places, and each is a decision.
 
 `npm test` is 15 of 15 after the six fixes.
 
-### Run two: the accusation, and the ending it reaches is wrong (#736)
+### Run two: the accusation, and the ending it reaches is wrong (#741)
 
 **Exit 1, 179 ok, 17 failures. The day reached the accusation for the first
 time.** It aborted on `page.click('#restart-button')` not visible, after the
