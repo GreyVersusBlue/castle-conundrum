@@ -678,6 +678,43 @@ console.log('\nthe walking day');
   check(m.available('sentry') === null, 'the sentry is asleep the evening before as well, and cannot be spoken to');
   check(m.available('hywel')?.station?.room === 'lodge', 'and Hywel is in the mason\'s lodge, which is the whole reason to walk the day', JSON.stringify(m.available('hywel')?.station));
   check(m.available('inspector') === null, 'the inspector is two days off and is not in the castle');
+  /* WHERE THE DAY IS GOING, which is the one fact the schedule exists to arrange
+   * (SPECS.md's increment 4): the last bell of the walking day leaves the mason
+   * at the foot of the Chapel Tower stair, so the night pane comes up where the
+   * body is lying at Prime. The morning's own tile is the Constable's day-one
+   * Prime station, `note: "at the body"`, and this asks the two against each
+   * other rather than against a number written here twice. */
+  {
+    const last = nav.at('hywel', W0[W0.length - 1]);
+    const body = nav.at('constable', four[0]);
+    const gap = last && body && last.level === body.level ? Math.hypot(last.x - body.x, last.z - body.z) : Infinity;
+    check(last?.room === 'chapel' && body?.room === 'chapel' && gap <= 1.5,
+      `the walking day ends with Hywel ${gap.toFixed(2)} m from where the body lies at ${four[0]}, so the night pane comes up at the foot of the Chapel Tower stair (open call 4: the player is not moved)`,
+      `${last?.room} at ${W0[W0.length - 1]} / ${body?.room} at ${four[0]} / ${gap.toFixed(2)} m`);
+  }
+  /* AND THAT THE DAY IS A DAY RATHER THAN A COPY OF ONE. Increment 1 shipped
+   * `day0.schedule` as day one's own stations under the new ids so these rails
+   * could run against real geometry, and increment 4 replaced it. The honest
+   * version of "not a copy" is not a diff count: it is that the only two of the
+   * thirteen who stand in one room from the first bell to the last are the two
+   * whose own lines say they do, the porter at his gate and the smith behind his
+   * bars, and that each of them says so in a `note`. Copy day one back in and
+   * the chaplain joins that list, because his day-one self never leaves the
+   * chapel, and this names him. */
+  {
+    const rows = Object.entries(mystery.day0.schedule);
+    /* Two bells or more before anybody is called still: the merchant is in the
+     * castle at Terce and gone by Vespers on both days, and a man with one
+     * station has not stood anywhere long enough to be standing still. */
+    const still = rows.filter(([, row]) => {
+      const at = W0.filter((w) => row[w]);
+      return at.length > 1 && new Set(at.map((w) => row[w].room)).size === 1;
+    }).map(([id]) => id);
+    const why = still.filter((id) => W0.some((w) => mystery.day0.schedule[id][w]?.note));
+    check(still.join() === 'porter,prisoner' && why.length === still.length,
+      `${rows.length - still.length} of the ${rows.length} change room across the walking day; the ${still.length} who do not are the porter at his gate and the smith behind his bars, each with a \`note\` saying why`,
+      `still: ${still.join(', ') || 'nobody'} / with a note: ${why.join(', ') || 'none'}`);
+  }
 
   // A conversation grants nothing, a press shrugs, and the journal stays empty.
   const talked = m.talk('cook');
@@ -774,9 +811,18 @@ console.log('\nthe validator rejects, on the walking day');
   expect('a day-0 station the player cannot walk to',
     (m) => { m.day0.schedule.lady['sext-eve'] = { room: 'garden', tile: [7, -1.5] }; },
     /^lady: station at sext-eve is at tile \(7, -1.5\) in GD, which the player cannot walk to$/);
-  expect('two bodies inside the 1.5 m two bodies need, at a bell of the walking day',
-    (m) => { m.day0.schedule.cook['sext-eve'] = clone(m.day0.schedule.apprentice['sext-eve']); },
-    /^(cook and apprentice|apprentice and cook) stand 0\.00 m apart at sext-eve, inside the 1\.5 m two bodies need$/);
+  /* 1.4 m AND NOT 0, which is the break SPECS.md's increment 4 names. Two bodies
+   * on one tile is the case any comparison catches; two bodies a tenth of a metre
+   * inside the limit is the case a comparison written with the wrong constant or
+   * the wrong axis passes. The tile is the grid's 0.5 m: 0.35 of a 4 m tile is
+   * 1.40 m exactly, so the message's own number is the evidence. */
+  expect('two bodies 1.4 m apart at a bell of the walking day, a tenth of a metre inside the 1.5 m two bodies need',
+    (m) => {
+      const near = clone(m.day0.schedule.apprentice['sext-eve']);
+      near.tile = [near.tile[0] + 0.35, near.tile[1]];
+      m.day0.schedule.cook['sext-eve'] = near;
+    },
+    /^(cook and apprentice|apprentice and cook) stand 1\.40 m apart at sext-eve, inside the 1\.5 m two bodies need$/);
   expect('a day0.evidence id that is not an evidence row',
     (m) => { m.day0.evidence.push('crown'); },
     /^day0\.evidence: crown is not an evidence row/);
@@ -1113,6 +1159,24 @@ console.log('\nthe household in data/populace.json');
   check(problems.length === 0, 'validatePopulace finds nothing wrong, the castle included', problems.join('; '));
 
   const people = populace.people;
+  /* AND THE WALKING DAY IS NOT AN EMPTY CASTLE (SPECS.md's increment 4). The
+   * validator above now walks `day0.watches` as well as the four, so the line
+   * before this one covers every day-0 ring against the grid and against the
+   * fourteen. What it cannot say is that there are any: a file with no day-0
+   * ring in it validates perfectly and leaves the day a player opens the game
+   * on with thirteen bodies in it and nobody else. Every one of the nineteen is
+   * in the castle at some bell of the evening before, which is the floor
+   * SPECS.md set, and the count of bells each covers is printed rather than
+   * asserted, because a row that gives the household an evening of its own
+   * should not have to edit a number here. */
+  {
+    const W0 = mystery.day0?.watches ?? [];
+    const empty = people.filter((p) => !W0.some((w) => (p.routine?.[w] ?? []).length)).map((p) => p.id);
+    const stops = people.reduce((n, p) => n + W0.reduce((k, w) => k + (p.routine?.[w] ?? []).length, 0), 0);
+    check(W0.length === 4 && empty.length === 0,
+      `all ${people.length} of the household are in the castle on the walking day too, over ${stops} stops at its four bells`,
+      `nobody at any of ${W0.join(', ')}: ${empty.join(', ')}`);
+  }
   check(people.length === 19, `${people.length} of them: the first increment's ten (SPECS.md, "Life: a populace"), the child and the hound (#643, #644), two hens (#684), and the inner ward's five (#729)`);
   /* THE TALK LIST (#731), counted beside the people because a validator that
    * found nothing in an empty list would pass the same as one that found
@@ -1270,9 +1334,24 @@ console.log('\nthe household validator rejects');
   expect('a watch written as an empty list rather than left out',
     (f, people) => { of(people, 'carter').routine.prime = []; },
     /^carter: routine\.prime is an empty list/);
-  expect('a routine naming a bell that is not one of the four',
+  expect('a routine naming a bell of neither day',
     (f, people) => { of(people, 'carter').routine.matins = [{ room: 'outer-ward', tile: [-8.438, -1.188], activity: 'wait' }]; },
-    /^carter: routine names "matins", which is not one of the four bells$/);
+    /^carter: routine names "matins", which is not a bell of either day$/);
+  /* THE WALKING DAY'S OWN FOUR, THREE WAYS (SPECS.md's increment 4). Every rail
+   * above runs over `day0.watches` as well now, and each of these is the same
+   * break moved on to one of them: a stop off the floor, a ring that cannot get
+   * back to where the bell before it left the body, and one of the nineteen
+   * standing on the fourteenth. The last is the one only this day can fail,
+   * because Hywel is in the castle on no other. */
+  expect('a day-0 stop with no floor under it',
+    (f, people) => { of(people, 'baker').routine['terce-eve'][0].tile = [0.313, 6.5]; },
+    /^baker at terce-eve, stop 1: .*no floor to stand on$/);
+  expect('a day-0 bell that leaves a body somewhere it cannot walk out of',
+    (f, people) => { of(people, 'maid').routine['sext-eve'][0] = { room: 'cell', tile: [-5.063, 3.563], activity: 'wait' }; },
+    /^maid: no walk from where terce-eve left them /);
+  expect('one of the nineteen standing on the mason at the last bell of the walking day',
+    (f, people) => { of(people, 'sacristan').routine['vespers-eve'][0].tile = [5.75, 4.375]; },
+    /^sacristan's stop 1 at vespers-eve is 0\.00 m from the hywel's station, inside the 1\.5 m two bodies need$/);
   /* RANK 10's THREE FIELDS AND THE FOLLOW (#643, #644), each in the shape
    * that fails silently on screen rather than the shape that throws. */
   expect('a bone scaled to nothing',
