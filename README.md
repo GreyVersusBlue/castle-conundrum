@@ -1,8 +1,13 @@
 # Castle Conundrum
 
-A first-person medieval murder mystery, played in a browser. Hywel ap Gruffudd,
-master mason, is dead at the foot of the Chapel Tower stair. The Constable
-wants it written down as a fall before Vespers. You have four bells.
+A medieval castle you walk, in a browser, with a murder mystery in it. The
+first door is an ordinary evening: Hywel ap Gruffudd, master mason, is on his
+rounds, the twelve who live here are on theirs, and nothing is asked of you.
+Ring the four evening bells and the day ends.
+
+The second door is the next day, and the panel offers it outright. Hywel is
+dead at the foot of the Chapel Tower stair, the Constable wants it written
+down as a fall before Vespers, and you have four bells.
 
 Twelve suspects who move between rooms as the day turns, tell the truth about
 most things and lie about one each. Thirty-nine clues and three red herrings in

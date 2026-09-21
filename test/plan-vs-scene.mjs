@@ -495,6 +495,7 @@ try {
    */
   console.log('');
   const mystery = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/mystery.json'), 'utf8'));
+  const npcs = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/npcs.json'), 'utf8'));
   const nav = castleNav(plan, mystery);
   const due = Object.keys(mystery.schedule)
     .map((id) => ({ id, at: nav.at(id, mystery.watches[0]) }))
@@ -1239,6 +1240,17 @@ try {
       else if (!said.chosen) fail(`none of the ${said.tried} cells within 2.8 m of the Constable's ${mystery.watches[1]} station offers him`);
       else {
         check(said.lines.length >= 3, `E opens his dialogue and steps through ${said.lines.length} lines`, said.prompt);
+        /* THE PROMPT A BODY REALLY WEARS, AND A NAME TAKES NO ARTICLE (#715).
+         * `src/interaction.js` wrapped every named target in the article the
+         * props need, so for the whole of Phase 7 standing in front of the
+         * Constable read "Press E to talk to the Sir Roger Lestrange". The fix
+         * is one word and it is only ever visible from a live page — no Node
+         * suite holds a string the DOM composed (#529, #39) — so this is where
+         * it is asserted. The name is read off data/npcs.json rather than
+         * typed, so the rail cannot go stale against the file it is about.
+         */
+        const wantPrompt = `Press E to talk to ${npcs.cast.find((n) => n.id === 'constable').name}`;
+        check(said.prompt === wantPrompt, `the Constable's prompt is his name and no article: "${said.prompt}"`, `expected ${JSON.stringify(wantPrompt)}`);
         check(!said.lines.includes('{ACCUSE}'), 'the {ACCUSE} token is substituted, not shown raw', JSON.stringify(said.lines.at(-1)));
         check(said.stageAfterFirst === 'investigate', 'the first conversation moves the day to `investigate`', said.stageAfterFirst);
         check(!said.panelAfterFirst, 'and opens no accusation panel');
@@ -1248,6 +1260,62 @@ try {
         check(/0 of 3/.test(said.count), 'nothing presented yet, up to three allowed', said.count);
         check(said.sayDisabled, 'and the button is dead until somebody is named');
       }
+    }
+  }
+
+  /* -------------------------- the panel a resumed save gets (#755, #39) ---
+   * Two doors on a fresh save, one on a resumed one — and which it is cannot be
+   * read off index.html, because the markup ships both. `src/ui.js` hides the
+   * second button when `showStart` is handed no second callback, and
+   * `src/main.js` hands it one only when `slot.load()` came back null, so the
+   * only place the answer exists is a loaded page: this file's half of the line
+   * (#529). What it is guarding is a resumed mystery being offered its own
+   * start again, which throws away the day the player is standing in.
+   *
+   * The save is the one this page has been writing all along, a day-one
+   * mystery with clues in the journal, moved to Sext by hand the way
+   * test/map.mjs plants a room the plan does not build. Loading it again is the
+   * only way to get a page whose `saved` is not null.
+   *
+   * AND THE PLANT HAPPENS FROM blank.html, NOT FROM THE GAME PAGE (#39). The
+   * autosave flushes on `pagehide`, so a plant written into the live page's
+   * localStorage and then reloaded is overwritten by the state the leaving page
+   * flushes on its way out: the first run of this beat planted Sext and the
+   * panel came back at Terce, which is where the page actually was. Leaving for
+   * a cheap page on the same origin FIRST lets that flush happen, and then the
+   * plant is the last thing written. Same reason test/blank.html exists at all.
+   */
+  {
+    const at = mystery.watches.indexOf('sext');
+    await page.goto(`${BASE}/test/blank.html`, { waitUntil: 'domcontentloaded' });
+    const planted = await page.evaluate((watch) => {
+      const raw = JSON.parse(localStorage.getItem('castleConundrumSave_v1') || 'null');
+      if (!raw) return null;
+      raw.day = 1;
+      raw.watch = watch;
+      localStorage.setItem('castleConundrumSave_v1', JSON.stringify(raw));
+      return { clues: (raw.clues || []).length };
+    }, at);
+    if (!planted) fail('this page wrote no save, so there is nothing to resume from');
+    else {
+      check(planted.clues >= 3, `the save this page wrote carries ${planted.clues} clues, planted back at Sext`, 'a resume with an empty journal is not a resume');
+      await page.goto(GAME, { waitUntil: 'load' });
+      await page.waitForSelector('#start-overlay:not(.hidden)', { timeout: 120000 });
+      const resumed = await page.evaluate(() => {
+        const shown = (id) => { const el = document.getElementById(id); return !!el && !el.classList.contains('hidden'); };
+        return {
+          walk: shown('start-button'),
+          mystery: shown('start-mystery'),
+          day: window.__quest?.day,
+          watch: window.__mystery?.watch,
+          clues: window.__mystery?.state.clues.length,
+        };
+      });
+      check(resumed.walk && !resumed.mystery, 'a resumed save is offered one door and not two',
+        `Walk the castle shown ${resumed.walk}, the day of the death shown ${resumed.mystery}`);
+      check(resumed.day === 1 && resumed.watch === 'sext', 'and the castle behind the panel is the day it was left on, at Sext',
+        `day ${resumed.day}, watch ${resumed.watch}`);
+      check(resumed.clues === planted.clues, `with all ${planted.clues} clues still in the journal`, `${resumed.clues} came back`);
     }
   }
 

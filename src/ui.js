@@ -16,6 +16,7 @@ export class UI {
       loadingStatus: document.getElementById('loading-status'),
       start: document.getElementById('start-overlay'),
       startBtn: document.getElementById('start-button'),
+      startMystery: document.getElementById('start-mystery'),
       crosshair: document.getElementById('crosshair'),
       tracker: document.getElementById('quest-tracker'),
       objective: document.getElementById('quest-objective'),
@@ -215,17 +216,40 @@ export class UI {
   }
 
   // ---- Start / HUD ----
-  showStart(onStart) {
+  /**
+   * The panel's two doors (#751, #755). `onStart` is "Walk the castle", which
+   * is the game's front door and the day before the death. `onMystery` is
+   * "Straight to the day of the death", and it is the same callback plus one
+   * dispatch of `day:1` — so both buttons do everything the one button used to
+   * do, and the second does one thing more.
+   *
+   * A null `onMystery` HIDES the second button rather than wiring it to
+   * nothing. What that means is "there is nothing to skip past": a resumed save
+   * is already in a day, and offering to start another one from a panel the
+   * player Esc'd into would throw away the day they are standing in.
+   */
+  showStart(onStart, onMystery = null) {
     this.el.start.classList.remove('hidden');
-    this.el.startBtn.onclick = () => {
+    const enter = (then) => () => {
       this.el.start.classList.add('hidden');
       this.el.crosshair.classList.remove('hidden');
       this.el.tracker.classList.remove('hidden');
-      onStart();
+      then();
     };
+    this.el.startBtn.onclick = enter(onStart);
+    if (this.el.startMystery) {
+      this.el.startMystery.classList.toggle('hidden', !onMystery);
+      this.el.startMystery.onclick = onMystery ? enter(onMystery) : null;
+    }
   }
+  /**
+   * The panel put back over a castle the player is already in: pointer lock
+   * refused (#661), or Esc. Never the second door — by the time this is
+   * reachable the player is in a day, and the button reads as a way to lose it.
+   */
   showStartAgain() {
     this.el.start.classList.remove('hidden');
+    if (this.el.startMystery) this.el.startMystery.classList.add('hidden');
   }
 
   setObjective(text) { this.el.objective.textContent = text; }

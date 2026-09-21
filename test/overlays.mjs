@@ -117,16 +117,36 @@ try {
   await attachSceneProbe(page, THREE_URL);
   await waitForProbe(page);
 
-  /* ------------------------------------------------- 0: the start button --- */
-  await page.click('#start-button');
-  check(await holder(true), 'Enter the Castle takes pointer lock');
-  /* AND THE MYSTERY DOOR (#755). The page opens on the walking day since #751,
-   * where the muniment leaf answers with a line instead of a riddle (open call
-   * 7) and there is nothing in the journal to present. Every beat below is about
-   * the day of the death, so this file takes the same door the start panel's
-   * second button takes: one dispatch of `day:1`.
-   */
-  await page.evaluate(() => window.__quest.enterMystery());
+  /* ------------------------------------------------ 0: the two buttons --- */
+  /* THE MYSTERY DOOR IS A BUTTON NOW, AND THIS FILE PRESSES IT (#755). The page
+   * opens on the walking day since #751, where the muniment leaf answers with a
+   * line instead of a riddle (open call 7) and there is nothing in the journal
+   * to present. Every beat below is about the day of the death, so this file
+   * takes the panel's second door — which increment 1 had to take as
+   * `window.__quest.enterMystery()` because the button did not exist yet
+   * (#767).
+   *
+   * WHAT THIS SUITE IS FOR IS THE POINTER (#659 to #661), so the one thing
+   * asserted about the new button is the one thing asserted about the old one:
+   * it releases the panel and it takes the pointer. A second door wired to
+   * `enterMystery()` and not to `player.lock()` would open the day of the death
+   * onto a castle the player cannot walk. */
+  check(!(await hidden('#start-mystery')), 'a fresh save is offered the second door');
+  await page.click('#start-mystery');
+  check(await hidden('#start-overlay'), 'Straight to the day of the death takes the panel away');
+  check(await holder(true), 'and takes pointer lock, the way Walk the castle does');
+  check(await page.evaluate(() => window.__quest.day) === 1, 'and it is the day of the death');
+  /* AND THE PANEL PUT BACK IS A RESUME PANEL, NOT A RESTART ONE. `ui.showStart`
+   * is called once, at load; `ui.showStartAgain` is what the Esc and the
+   * refused-lock paths use, and it must never re-offer a door out of the day
+   * the player is standing in. The pointer is given up by hand here because
+   * that is what those two paths hand the page: no pointer, and a panel. */
+  await page.evaluate(() => document.exitPointerLock());
+  await page.waitForSelector('#start-overlay:not(.hidden)', { timeout: 4000 });
+  check(await hidden('#start-mystery'), 'the panel that comes back mid-day does not offer to restart the day');
+  check(await clickReal('#start-button'), 'and its first button is still clickable');
+  check(await holder(true), 'and puts the player back in the castle');
+  await breathe();
 
   /* ------------------------------------------------------- 1: the journal ---
    * The beat the row is named for, pressed with a real key rather than called.

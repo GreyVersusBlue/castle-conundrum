@@ -339,7 +339,7 @@ async function init() {
 
   // --- UI flow ---
   ui.hideLoading();
-  ui.showStart(async () => {
+  const enterCastle = async () => {
     // The click is the gesture the AudioContext has been waiting for.
     audio.resume();
     player.enabled = true;
@@ -347,6 +347,26 @@ async function init() {
     // button hides the panel before this runs, so a refused lock without this
     // line is a castle with nothing on screen and no way into it.
     if (!(await player.lock())) ui.showStartAgain();
+  };
+  /* THE SECOND DOOR, AND ONLY ON A FRESH SAVE (#755). "Walk the castle" is the
+   * first button and the walking day is what the page opens on (#751); this is
+   * the way straight past it, and it is the same callback plus `day:1`, which
+   * is the one dispatch the night pane's button and `enterMystery()` also make.
+   *
+   * `saved` and not `state`: `state` is always an object (`slot.fresh()` when
+   * there is nothing stored), and `saved` is null exactly when there is no save
+   * to resume. Passing this unconditionally would put "Straight to the day of
+   * the death" on the panel of a player who is mid-mystery and has just pressed
+   * Esc, where it reads as an offer to throw the day away. `player.lock()` is
+   * inside `enterCastle`, so the second button takes the pointer the way the
+   * first does (#660, #661) — test/overlays.mjs is what holds it to that. */
+  ui.showStart(enterCastle, saved ? null : () => {
+    // The dispatch first and the lock second, because the lock is a promise
+    // that is not settled when the click handler returns: a suite that clicks
+    // this button and reads `window.__quest.day` in the same turn (built.mjs
+    // does) has to see the day it just asked for.
+    quest.enterMystery();
+    return enterCastle();
   });
   // if the player Escs out of pointer lock (outside overlays), offer re-entry.
   // There is no pointer lock to lose on a phone, so there is nothing to offer:

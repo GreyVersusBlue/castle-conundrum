@@ -212,11 +212,28 @@ try {
   // a trusted gesture, so requestPointerLock is refused and three's
   // PointerLockControls says so at console.error. The assertions above have
   // already read page.__errs by then.
+  //
+  // AND IT IS THE SECOND DOOR THAT IS PRESSED (#755). The built page opens on
+  // the walking day like the source one (#751), so `#start-mystery` is the
+  // button that has to survive the bundler: it is wired in `src/ui.js` and
+  // handed its callback in `src/main.js`, and a build that dropped either would
+  // ship a panel with a dead second button and nothing else would notice.
+  // `quest.enterMystery()` runs before `player.lock()` in that callback, so the
+  // day is already 1 when this synchronous click returns.
   const started = await built.page.evaluate(() => {
-    document.getElementById('start-button').click();
-    return !document.getElementById('crosshair').classList.contains('hidden');
+    const btn = document.getElementById('start-mystery');
+    if (!btn) return { missing: true };
+    btn.click();
+    return {
+      crosshair: !document.getElementById('crosshair').classList.contains('hidden'),
+      panel: !document.getElementById('start-overlay').classList.contains('hidden'),
+      day: window.__quest?.day ?? null,
+    };
   });
-  check(started, 'and Enter the Castle puts the crosshair on the screen');
+  check(!started.missing && started.crosshair && !started.panel,
+    'and the built page\'s second start button puts the crosshair on the screen',
+    started.missing ? 'there is no #start-mystery in the built page at all' : `crosshair ${started.crosshair}, panel still up ${started.panel}`);
+  check(started.day === 1, 'and opens on the day of the death, not the day before it', `day ${started.day}`);
 
   await built.page.close();
   await source.page.close();
