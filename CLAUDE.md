@@ -84,7 +84,7 @@ The project lived in `GreyVersusBlue/tools-and-games` under
   argues for it in `HISTORY.md`.
 - **Never change a storage key** (#36, from the old repo, and it crosses).
   Changing a key silently abandons anyone mid-use. The key is
-  `castleConundrumSave_v1` (#413) and the version inside it is **5** (#590;
+  `castleConundrumSave_v1` (#413) and the version inside it is **6** (#612;
   2 was the second day, #533, 3 `read`, 4 `quests`, 5 `visited`).
   Unversioned saves read as version 0 and come through `repair`.
 - **`migrate` is for version drift; `repair` is for every load** (#37).
