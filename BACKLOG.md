@@ -303,10 +303,10 @@ floor, so a route can no longer take a flight for a short cut, and a cell a
 0.45 m body does not fit in costs five cells rather than one, so the same fix
 stops the route hugging the two walls a prop stands against
 (`foundation-stone` and `barrels-91`). `test/layout.mjs`'s new check 8b holds
-it over all 66 pairs of the 12 ground rooms: 153 ok, 0 fail. Nobody has
-watched the fixed route carry a real `npm run play` to the second bell yet;
-that proof is rank 2's alone. **Rank 1 is done, its section is gone from this
-file and from `SPECS.md`, and its number is retired.**
+it over all 66 pairs of the 12 ground rooms: 153 ok, 0 fail. **Watched carry a
+real `npm run play` past the second bell on 2026-09-21** (#734), the proof
+rank 2 owed. **Rank 1 is done, its section is gone from this file and from
+`SPECS.md`, and its number is retired.**
 
 **Both failures behind the red `plan-vs-scene` are found and fixed, unranked.
 The row shipped as PR #58, merged to `main`** (#721 to #724). The chapel-candles failure was never
@@ -373,7 +373,19 @@ the household. **Rank 6 is still open**: the rest of the fifty waits on rank
 9's town, the four activities without a clip wait on rank 10, and the
 twelve's 27-pair chatter pool is still unspent by proximity.
 
-**The retro castle was specified and ranked on 2026-09-21** (#734 to #736),
+**Rank 2's third sitting ran on 2026-09-21, twice** (#734 to #741). Run one,
+the suite as merged, confirmed the walker on a GPU and got past the second
+bell for the first time: 164 ok, 19 failures, aborted at the Constable at
+Vespers. Six fixes to `test/play-castle.mjs` (#735 to #740) then carried run
+two to the accusation for the first time: 179 ok, 17 failures, and it aborted
+on the wrong ending's `#restart-button`. **The day still does not run end to
+end**, and this time the cause is in `src/`: `interaction.js`'s sight rays
+are cast at fixed world heights, so the sentry and the porter go untalked-to
+from beside them on their own storey, and the porter's admission is a premise
+of the ending. Filed as the new rank 1, "Sight at the body's own height."
+**Rank 2 stays open, gated on it.**
+
+**The retro castle was specified and ranked on 2026-09-21** (#742 to #744),
 from Devon's brief of the same day: the castle reads as the same everywhere,
 and he wants pixel-art textures the repo draws itself, for variety room to
 room and for a retro look. That reverses #411, the choice that put
@@ -516,10 +528,10 @@ All three shipped and **the row is retired**.
 
 ## The ranked table
 
-**It starts at 2 now, and 1, 5, 8 and 12 are numbers that have left the
-list rather than gaps in it; 3 left on 2026-09-17 and came back on 2026-09-21
-for the retro castle (#736).** The number 1 has been used three times and
-retired three times: the fourth body on 2026-09-17 (#619); the castle you
+**5, 8 and 12 are numbers that have left the list rather than gaps in it, 3
+left on 2026-09-17 and came back on 2026-09-21 for the retro castle (#744),
+and 1 is a number that keeps coming back.** Before 2026-09-21 it had been
+used three times and retired three times: the fourth body on 2026-09-17 (#619); the castle you
 cannot walk, which the GPU run opened the same day (#624 to #630) and which
 shipped on 2026-09-18 (#659 to #661); and the walker on the stair, which the
 second GPU sitting reopened the same way on 2026-09-19 (#710) and which
@@ -540,10 +552,16 @@ the theme ran out of rows rather than out of interest (#691 to #695). Every row
 below is named by title in `SPECS.md` and `ROADMAP.md` as well as by rank,
 which is what makes that survivable (#522).
 
+**The number 1 is back a fourth time, on 2026-09-21, for the same reason as
+the other three**: the third GPU sitting found the next thing rank 2 cannot
+walk past, sight rays aimed at world heights instead of at the body. A
+blocker of rank 2 ranks above it, and only one number does.
+
 | Rank | Item | Size | Model | Where | Gate | Lane | Claimed | Detail |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 2 | The GPU run: the looks are taken (#711 to #715); rank 1 shipped (#716 to #720) and the run itself is owed | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
-| 3 | The retro castle: the stone in the castle's own pixel art, fifteen sets out and fifteen 128 px textures in, then variety per room (#734 to #736) | 2+ | Opus 5 | Container to the look, local: GPU past it | — | B | | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
+| 1 | Sight at the body's own height: nobody upstairs can be talked to from beside them, and the porter on the walk can be from 8 m below | ¼ | Opus 5 | Container | — | — | | [Sight at the body's own height](SPECS.md#sight-at-the-bodys-own-height) |
+| 2 | The GPU run: the looks are taken (#711 to #715); the walker holds on a GPU (#734, #736) and the third sitting reached the accusation with the wrong ending (#735 to #741) | 1 | Opus 5 | Local: GPU | **after 1** | — | | [The GPU run](SPECS.md#the-gpu-run) |
+| 3 | The retro castle: the stone in the castle's own pixel art, fifteen sets out and fifteen 128 px textures in, then variety per room (#742 to #744) | 2+ | Opus 5 | Container to the look, local: GPU past it | — | B | | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
 | 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #729 to #733); the town, the four clips and the chatter pool are left | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: somebody listens to the seven beds, the four rings and the first two event sounds (a bed at a point and the rings, #680 to #683; the door and the hound, #696 to #698) | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
 | 9 | A castle to get lost in: the town, the rock and river | 2+ | Opus 5 | Container | — (4c opened it) | B | | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
@@ -554,17 +572,52 @@ which is what makes that survivable (#522).
 take first, what each one unblocks, and which ones two sessions may hold at
 the same time. This table still ranks; that file sequences (#601).
 
+## Sight at the body's own height
+
+*Where: container. Gate: none. Lane: none.*
+
+**Rank 1, filed 2026-09-21 from the third GPU sitting's second run.**
+`src/interaction.js` casts its two sight rays at world y 1.55 and 1.15 (line
+34, used at line 210) instead of at heights on the body, and measures range
+with `to.y = 0` (line 151). So a body on an upper storey is aimed at through
+his own floor: the sentry on the north walk at Terce, 0.2 m from the player
+on the same walk, pointer locked, prompt null; the porter on the cross-wall
+walk at Vespers, 0.6 m, prompt null. And the porter was talkable from the
+ground 8 m under him, which is how run 1 passed his beat. His admission is a
+premise of the full ending, so the accusation selected 2 of 3 and the run
+aborted at the second-day button.
+
+**Props were never affected.** Every lock, bell, piece of evidence and
+readable carries a `focus` at its plan-box centre, and line 210 aims at that;
+the Stockhouse bar and the tally stick passed on the walk at 1.75 m and
+2.81 m in the same run. The Lady in the royal apartments at Prime, Terce and
+Vespers is the third person it bites, and the populace's archers, serjeant,
+man-at-arms and maid upstairs are labels that never show.
+
+**The fix is about fifteen lines**: aim at feet plus 1.55 and 1.15, gate NPC
+targets to within 2.0 m of the player's own feet, and make `nav.talkable`
+ask the station's own storey. The proof is a `plan-vs-scene.mjs` beat over
+the six upstairs station-watches (talked to from their own storey, not from
+the one below) and two `mystery.mjs` rails; `SPECS.md` has the breaks.
+**Rank 2 is gated on it.** Apart from #714's five stale checks and #659's
+journal number, it is what stands between `npm run play` and exit 0.
+
 ## The GPU run
 
-*Where: local, GPU. Gate: none. Lane: none.*
+*Where: local, GPU. Gate: rank 1, sight at the body's own height. Lane: none.*
 
-**Rank 2. It ran again on 2026-09-19, four times** (#708 to #715), and the
-judgement half of the row is done: the twelve at Vespers, the Lauds sky, the
-covered hall and eleven of the twelve bodies at interact range have all been
-looked at and written up in `HISTORY.md`, one sentence per body. **What is
-left is only the walk.** Rank 1, the walker on the stair, shipped 2026-09-19
-(#716 to #720) and is retired; the walk it fixed holds on Node terms and
-nobody has watched it hold on a GPU yet, which is this row's job alone now.
+**Rank 2. It ran again on 2026-09-21, twice** (#734 to #741), and this is the
+first sitting to get past the second bell. Run one, the suite as merged: 164
+ok, 19 failures, aborted at the Constable at Vespers, and it confirmed rank
+1's walker on a GPU for the first time, carrying the day through Sext, the
+reload, the riddle, the third ring and the cook's walk. Six fixes to
+`test/play-castle.mjs` (#735 to #740) then carried run two to the
+accusation for the first time: 179 ok, 17 failures, and it aborted on the
+wrong ending's `#restart-button`. **What stopped it is a new bug in
+`src/interaction.js`**, filed as rank 1, "Sight at the body's own height":
+the sentry and the porter were read from the wrong world height and went
+untalked-to, and the porter's admission is a premise of the ending. **This
+row is gated on that one now.**
 
 **The looks were taken the way rank 5 took its two** (#656 to #658):
 `applyWatch(watch, { walk: false })` puts the world at a bell with nobody
@@ -587,11 +640,14 @@ in `HISTORY.md` rather than here, because none of them is big enough to rank
 and all three are one-line fixes: `Press E to talk to the Sir Roger Lestrange`
 on every NPC in the game (#715), five checks in `test/play-castle.mjs` that are
 stale or vacuous including one that can only fail on a GPU (#714), and a
-journal walk assertion that read 0.69, 1.30, 0.51 and 0.69 m across four runs
-of the same beat, against 3.75 m for an unobstructed walk on the same machine.
-All three are still open. A fourth thing this same sitting turned up, the
-chapel's body-and-pouch swap named in "Where things stand" above, is not:
-#722 fixed it.
+journal walk assertion that read 0.69, 1.30, 0.51, 0.69 and 0.83 m across five
+runs of the same beat, against 3.75 m for an unobstructed walk on the same
+machine. **The five checks and the journal number are both still unchanged in
+the third sitting** (#734, #741): all five checks read the same, and the
+0.83 m is the third sitting's own reading. All three are still open. A fourth
+thing this same sitting turned up, the chapel's body-and-pouch swap named in
+"Where things stand" above, is not: #722 fixed it, and the third sitting
+confirmed the fix on a GPU (#734) by its absence from run one's 19 failures.
 
 **A fourth thing came out of rank 1 and is nobody's row either** (#718).
 Route pricing a tight cell found two props standing inside a 0.45 m body's
@@ -600,11 +656,11 @@ width of stone: `foundation-stone` leaves 0.60 m against the cross-wall at
 door. The router goes around both now and does not depend on either being
 moved; moving the props themselves is a small row nobody has taken.
 
-**Two of the four runs were stopped by this suite, not by the castle**
-(#708, #709), and both fixes are in `test/play-castle.mjs`: `present()` never
-shut the dialogue it opened, and nothing clicked the resume panel that #661
-puts up when the browser refuses a relock. Both had been read as `src/` bugs
-before.
+**Two of the four second-sitting runs were stopped by this suite, not by the
+castle** (#708, #709), and both fixes are in `test/play-castle.mjs`:
+`present()` never shut the dialogue it opened, and nothing clicked the resume
+panel that #661 puts up when the browser refuses a relock. Both had been read
+as `src/` bugs before.
 
 **And neither fix made a single assertion pass.** Run one and run four have
 byte-identical failure lists, 22 apiece. What changed is underneath them: in
@@ -613,6 +669,19 @@ giving up from one coordinate with `locked false`; in run four he walks to
 every one of them and comes up short, `locked true` throughout, the sentry at
 1.1 m instead of 18.9. The beats fail either way and they now fail for rank
 1's reason, which is the only one still open.
+
+**The third sitting's six fixes, unlike the second sitting's two, did move
+assertions** (#735 to #740): `shutPresent()` closes the Present list and the
+dialogue on every path out of `present()`, not only the success path; a walk
+to another storey now uses Phase 5's own stair legs instead of counting a
+waypoint reached by x and z alone; `examine()` passes the target's own level
+instead of always 0; `walkTo` turns to face a target before reading its
+prompt; the Constable-visible check walks to range before it casts; and
+`snap('twelve-at-vespers')` routes to the hall before it shoots, so run one's
+"Great Hall floor at Vespers" luma of 40.1 turns out to have been a wall
+(#147) and run two reads 72.7 of 255 from the hall itself. Run two, with all
+six in, reached the accusation for the first time and found the row's real
+blocker: `src/interaction.js`'s sight rays, filed as rank 1 (#741).
 
 **Rank 5 shipped the same day, without waiting for a second run** (#656 to
 #658). The gate below named this row's blocker as "the visual half" of rank
@@ -647,9 +716,9 @@ the images live or how they were built is specific to either frame.
 *Where: container to the look, local GPU past it. Gate: none. Lane: B.*
 
 **Rank 3, and a 2+. Nothing shipped.** Devon's brief of 2026-09-21, and the
-reversal of #411 (#734): the walls are built geometry carrying pixel-art
+reversal of #411 (#742): the walls are built geometry carrying pixel-art
 textures this repo draws with a program of its own, not Poly Haven's
-photographs, and not an image model's output either (#735). The first
+photographs, and not an image model's output either (#743). The first
 increment is the whole swap for built geometry, so the castle is one look on
 one GPU sitting: a generator under `tools/pixel/` whose fifteen rows render
 to `assets/pixel/`, one 128 px PNG per material name the config already has,
@@ -660,7 +729,7 @@ diffuse-only lit material, which is the kit's own model with the sun put back
 on it; five rails in `test/assets.mjs` (size, palette, wrap, one map,
 pixel-identical to the generator) and a fourth count in `test/budget.mjs`,
 texture memory from headers, under a ceiling of 64 MB that today's 79.3
-fails on purpose (#736). No `ktx`, no network and no GPU are needed to close
+fails on purpose (#744). No `ktx`, no network and no GPU are needed to close
 it. **Then somebody looks** (#53), with the checklist in `SPECS.md`, before
 the second increment puts a wall and a floor of its own in every named room.
 The ten Poly Haven prop packs stay until the look says otherwise.

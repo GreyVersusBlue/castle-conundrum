@@ -246,6 +246,88 @@ const playerAt = async () => {
  * worked before this existed and a pre-walk that cannot help should not stop a
  * beat that does not need it.
  */
+/* THE TWO STAIRS OF RECORD, AS WORLD METRES (Phase 5). These are the legs the
+ * wall-walk beat below climbs the Kitchen Tower and comes down the Bakehouse
+ * Tower by, square on to each flight, and on a GPU on 2026-09-21 every one of
+ * them was reached, 5.5 on the first floor, 9.7 on the walk, 1.7 back in the
+ * Steward's chamber. The beat and `changeStorey` share them so there is one
+ * copy of a route that is known to work. */
+const KITCHEN_UP_1 = [
+  [[-20, -11.6], 'the Kitchen Tower door'],
+  [[-20.6, -14.6], 'the larder, west of the lower flight'],
+  [[-20.6, -17.4], 'the north-west of the larder'],
+  [[-19.25, -17.5], 'the foot of the lower flight'],
+  [[-19.25, -14.3], 'the top of the lower flight'],
+  [[-19.75, -13.8], 'the first floor, south crescent'],
+];
+const KITCHEN_UP_2 = [
+  [[-21.6, -14.6], 'the west of the first floor'],
+  [[-21.75, -16.75], 'the foot of the upper flight'],
+  [[-18.2, -16.75], 'the top of the upper flight'],
+  [[-17.7, -15.0], 'the top room, at the walk'],
+];
+const BAKEHOUSE_DOWN = [
+  [[-0.5, 14.6], "the Bakehouse Tower's top room"],
+  [[-2.2, 15.0], 'west of the upper flight, on the level-2 floor'],
+  [[-2.2, 16.75], 'the head of the upper flight, square on to it'],
+  [[1.6, 16.75], 'down the upper flight, due east'],
+  [[1.9, 16.4], 'off it onto the first floor'],
+  [[1.6, 14.6], 'the first floor, north-east'],
+  [[-0.75, 14.2], 'the head of the lower flight, square on to it'],
+  [[-0.75, 17.9], 'down the lower flight, due south'],
+  [[0.4, 18.2], 'the bakehouse floor, south crescent'],
+  [[2.3, 16.2], 'the bakehouse, east of the flight'],
+  [[4.2, 12.6], "out of the bakehouse door, into the Steward's chamber"],
+];
+const CHAMBER_OUT = [
+  [[6, 9], "the Steward's chamber, under its door"],
+  [[6, 3.5], 'through that door, into the inner ward'],
+];
+
+/* A WALK TO ANOTHER STOREY TAKES THE STAIRS OF RECORD, BECAUSE THE ROUTE'S
+ * OWN MARKS CANNOT BE DRIVEN UP A FLIGHT. Measured on a GPU on 2026-09-21: the
+ * sentry at Terce is on the north walk at (-18, -15), level 2, and `hike` asked
+ * `routeThrough` for the way up, got the Kitchen Tower's two flights, and
+ * stopped at (-20.0, -15.3) with the player still on the ground. Walked again
+ * in Node over the controller's own `moveBody`, the same 20 marks end with the
+ * feet at 0.00 and 3 missed. Two reasons, both this file's. `driveTo`'s
+ * arrival is a distance in x and z, so a mark two metres up a flight is
+ * "reached" from the larder floor beside it; and the flight's cells are the
+ * 0.5 m lattice's, x -19.75, where the flight's own axis is -19.25, so a body
+ * aimed at them from the foot runs up its side, is refused, and stays on the
+ * floor. The Phase 5 legs square on to each flight for exactly this reason.
+ *
+ * GROUND AND WALK ONLY, the two storeys the day's path uses: the sentry, the
+ * Stockhouse bar and the tally are on level 2 and so is the porter at
+ * Vespers. Anything else is left to `hike` as before, with a note. */
+const changeStorey = async (from, to) => {
+  const legs = async (list) => {
+    for (const [t, label] of list) {
+      const r = await driveTo(page, t, async (d) => d < 0.7, { maxBursts: 70, nearAt: 2.5, longMs: 250, shortMs: 90 });
+      if (!r) {
+        const at = await playerAt();
+        console.log(`  note  the stair stopped short of ${label}, at (${at.x.toFixed(1)}, ${at.z.toFixed(1)}) L${at.level}`);
+        return false;
+      }
+    }
+    return true;
+  };
+  let done = false;
+  if (from === 0 && to === 2) {
+    await hike(KITCHEN_UP_1[0][0], 0);
+    done = (await legs(KITCHEN_UP_1)) && (await legs(KITCHEN_UP_2));
+  } else if (from === 2 && to === 0) {
+    await hike(BAKEHOUSE_DOWN[0][0], 2);
+    done = (await legs(BAKEHOUSE_DOWN)) && (await legs(CHAMBER_OUT));
+  } else {
+    console.log(`  note  no stair of record from L${from} to L${to}; hiking the route as it comes`);
+    return false;
+  }
+  const at = await playerAt();
+  console.log(`  note  ${to > from ? 'up the Kitchen Tower' : 'down the Bakehouse Tower'}: ${done ? 'every leg reached' : 'stopped'}, now L${at.level} at (${at.x.toFixed(1)}, ${at.z.toFixed(1)})`);
+  return done;
+};
+
 const hike = async (target, level = 0) => {
   /* A WALK NEEDS THE CASTLE BACK FIRST, AND ON A REAL BROWSER IT DOES NOT
    * ALWAYS COME BACK BY ITSELF (#661).
@@ -351,9 +433,27 @@ const hike = async (target, level = 0) => {
  * body's off the pouch, and then reported the cloak "reached" from 59.36 m away
  * and the gaol roll from 67.38 m, standing in the chapel the whole time.
  * A distance with it is what makes the word mean this one. */
+/* AND THE PROMPT IS READ FACING THE THING, which is what a player does before
+ * pressing E. `driveTo` asks `arrived` BEFORE it re-aims, so what it reads is
+ * the prompt along the heading of the burst just taken — and nothing in this
+ * castle stops a player walking through a person. Measured on a GPU on
+ * 2026-09-21: the hike left the player 1.0 m from the Chaplain, the first
+ * short burst carried him through the station, and from then on every burst
+ * walked through Father Anselm and every read had him behind the camera. It
+ * gave up 0.6 m from him with `prompt null`. Placed headless at that exact
+ * point at Sext and turned to face the station, the prompt reads "Press E to
+ * talk to the Father Anselm" and both sight rays are clear. */
 const walkTo = async (target, who, level = 0, within = Infinity) => {
-  const near = async (d = Infinity) => d <= within && !!(await state()).prompt?.includes(who);
-  if (!(await near(0))) await hike(target, level);
+  const near = async (d = Infinity) => {
+    if (d > within) return false;
+    if (d > 0.3 && Number.isFinite(d)) { await aimAt(page, target); await wait(80); }
+    return !!(await state()).prompt?.includes(who);
+  };
+  if (!(await near(0))) {
+    const here = await playerAt();
+    if (here.level !== level) await changeStorey(here.level, level);
+    await hike(target, level);
+  }
   const got = await driveTo(page, target, near, { maxBursts: 90 });
   if (!got) {
     const at = await playerAt();
@@ -826,24 +926,12 @@ try {
     assert(near(y0, 1.7), 'the camera starts at ground eye height', `y ${y0}`);
     // Into the Kitchen Tower by its door on the kitchen side, round the west of
     // the lower flight to its foot at the north end, and up it.
-    const legs = [
-      [[-20, -11.6], 'the Kitchen Tower door'],
-      [[-20.6, -14.6], 'the larder, west of the lower flight'],
-      [[-20.6, -17.4], 'the north-west of the larder'],
-      [[-19.25, -17.5], 'the foot of the lower flight'],
-      [[-19.25, -14.3], 'the top of the lower flight'],
-      [[-19.75, -13.8], 'the first floor, south crescent'],
-    ];
+    const legs = KITCHEN_UP_1;
     let ok = true;
     for (const [t, label] of legs) { if (!(ok = await goTo(t, label))) break; }
     if (ok) assert(near(await heightAt(), 5.7), 'the camera is one storey up on the Kitchen Tower\'s first floor', `y ${await heightAt()}`);
     await snap('kitchen-tower-first-floor');
-    const legs2 = [
-      [[-21.6, -14.6], 'the west of the first floor'],
-      [[-21.75, -16.75], 'the foot of the upper flight'],
-      [[-18.2, -16.75], 'the top of the upper flight'],
-      [[-17.7, -15.0], 'the top room, at the walk'],
-    ];
+    const legs2 = KITCHEN_UP_2;
     if (ok) for (const [t, label] of legs2) { if (!(ok = await goTo(t, label))) break; }
     if (ok) {
       const y = await heightAt();
@@ -978,19 +1066,7 @@ try {
      * above: over a flight's own footprint there is nothing to stand on at
      * floor height, so a body crossing that band diagonally is refused and
      * slides along it. Reach the flight's own axis first, then walk down it. */
-    const legs4 = [
-      [[-0.5, 14.6], "the Bakehouse Tower's top room"],
-      [[-2.2, 15.0], 'west of the upper flight, on the level-2 floor'],
-      [[-2.2, 16.75], 'the head of the upper flight, square on to it'],
-      [[1.6, 16.75], 'down the upper flight, due east'],
-      [[1.9, 16.4], 'off it onto the first floor'],
-      [[1.6, 14.6], 'the first floor, north-east'],
-      [[-0.75, 14.2], 'the head of the lower flight, square on to it'],
-      [[-0.75, 17.9], 'down the lower flight, due south'],
-      [[0.4, 18.2], 'the bakehouse floor, south crescent'],
-      [[2.3, 16.2], 'the bakehouse, east of the flight'],
-      [[4.2, 12.6], "out of the bakehouse door, into the Steward's chamber"],
-    ];
+    const legs4 = BAKEHOUSE_DOWN;
     if (ok) for (const [t, label] of legs4) { if (!(ok = await goTo(t, label))) break; }
     if (ok) assert(near(await heightAt(), 1.7), 'the camera is back at ground eye height, two flights down', `y ${await heightAt()}`);
     await snap('inner-ward-from-the-walk');
@@ -1012,8 +1088,7 @@ try {
      * walked here. */
     if (ok) {
       const toWard = [
-        [[6, 9], "the Steward's chamber, under its door"],
-        [[6, 3.5], 'through that door, into the inner ward'],
+        ...CHAMBER_OUT,
         [[18, 3.5], 'east across the inner ward'],
         [[19.3, 13.3], "outside the Chapel Tower's door"],
       ];
@@ -1058,7 +1133,14 @@ try {
     await arrives(npcId);
     const walked = await walkTo(due.at, nameRe.source.replace(/\W/g, ''), due.level ?? 0);
     assert(!!walked, `walked to the ${label} in ${due.room}`, walked ? `${walked.dist}m after ${walked.bursts} bursts` : 'never got in range');
-    if (!walked) return null;
+    if (!walked) {
+      // WHERE THE BODY IS, beside where it is due: a give-up note that only
+      // names the station cannot tell "not facing him" from "not there".
+      const b = await bodyAt(npcId);
+      console.log(`  note  ${label} is due at (${due.at[0].toFixed(1)}, ${due.at[1].toFixed(1)}) L${due.level ?? 0}; the body is ` +
+        (b ? `at (${b.x.toFixed(1)}, ${b.y.toFixed(1)}, ${b.z.toFixed(1)})` : 'hidden'));
+      return null;
+    }
     await page.keyboard.press('KeyE');
     await wait(400);
     let s2 = await state();
@@ -1092,7 +1174,13 @@ try {
   const examine = async (evidenceId, label = evidenceId) => {
     const at = await evidenceAt(evidenceId);
     if (!at) { bad(`${label}: not an interaction target — nothing in the plan carries that evidence, or it is hidden at this bell`); return null; }
-    const walked = await walkTo(at, 'examine', 0, 3.5);
+    /* ON ITS OWN STOREY. This passed 0 for every piece, and two of the ten are
+     * on the wall walk: the Stockhouse bar and the tally are `level: 2` in
+     * data/mystery.json. On a GPU on 2026-09-21 the tally beat hiked the
+     * ground under the south walk and gave up 1.7 m from the stick and eight
+     * metres below it. The storey is the data's, not a guess off the focus. */
+    const lv = (mystery.evidence ?? []).find((e) => e.id === evidenceId)?.level ?? 0;
+    const walked = await walkTo(at, 'examine', lv, 3.5);
     assert(!!walked, `walked to the ${label}`, walked ? `${walked.dist}m after ${walked.bursts} bursts` : 'never got in range');
     if (!walked) return null;
     // Face it before pressing. See `lookAtPoint`: E takes what the camera is
@@ -1112,16 +1200,37 @@ try {
    * row. The journal rows carry their clue id, so this names a clue rather than
    * counting rows.
    */
+  /* SHUT WHATEVER `present` OPENED, ON EVERY PATH OUT OF IT. #708 ran the box
+   * out on the success path and left both failure paths as they were, and
+   * measured on a GPU on 2026-09-21 that is the same bug a second time: the
+   * porter at Vespers had no `door-unbarred` to be shown, the beat returned
+   * with "Present what?" and Gwilym's dialogue both still on the screen, the
+   * pointer stayed released because both are on `ui.js`'s list, and the walk
+   * to the Constable reported `locked false` and the run aborted
+   * (shots/play/34-aborted.png). The list is shut with its own Close button,
+   * by a real mouse, which is what a player does — the pointer is free while
+   * it is up, so the click lands — and then the box is run out with E. */
+  const shutPresent = async () => {
+    if ((await state()).journalOpen) {
+      await page.click('#journal-close');
+      await wait(250);
+    }
+    for (let i = 0; i < 10 && (await state()).dialogueOpen; i++) {
+      await page.keyboard.press('KeyE');
+      await wait(320);
+    }
+  };
+
   const present = async (npcId, clueId, nameRe, label = npcId) => {
     const c = await converse(npcId, nameRe, label);
     if (!c) return null;
     // converse() ran the dialogue out. Re-open it and use the button instead.
     await page.keyboard.press('KeyE');
     await wait(350);
-    if (!(await state()).dialogueOpen) { bad(`${label}: could not re-open the dialogue to present ${clueId}`); return null; }
+    if (!(await state()).dialogueOpen) { bad(`${label}: could not re-open the dialogue to present ${clueId}`); await shutPresent(); return null; }
     const hasButton = await page.evaluate(() => !document.getElementById('dialogue-present').classList.contains('hidden'));
     assert(hasButton, `the ${label}'s dialogue offers Present`);
-    if (!hasButton) return null;
+    if (!hasButton) { await shutPresent(); return null; }
     /* AND IT IS CLICKED BY A REAL MOUSE, which it could not be until #660.
      * A dialogue did not release pointer lock — `ui.js` called
      * `document.exitPointerLock()` for the riddle, the journal, the accusation
@@ -1136,7 +1245,7 @@ try {
     await wait(300);
     const row = await page.evaluate((id) => !!document.querySelector(`#journal-list .journal-row[data-id="${id}"]`), clueId);
     assert(row, `${clueId} is in the list the Present button opens`);
-    if (!row) return null;
+    if (!row) { await shutPresent(); return null; }
     const before = await held();
     await page.evaluate((id) => document.querySelector(`#journal-list .journal-row[data-id="${id}"]`).click(), clueId);
     await wait(400);
@@ -1163,10 +1272,7 @@ try {
      * walk that misses here is a walk that missed" — is the assertion's
      * comment being the thing that is wrong (#147). It is true only once the
      * box is shut, and nothing shut it. */
-    for (let i = 0; i < 10 && (await state()).dialogueOpen; i++) {
-      await page.keyboard.press('KeyE');
-      await wait(320);
-    }
+    await shutPresent();
     return { state: stateAfter, gained: after.filter((x) => !before.includes(x)) };
   };
 
@@ -1502,6 +1608,13 @@ try {
   assert(late.length === 0, 'all six of the Great Hall are standing at their stations at Vespers',
     late.length ? `still walking: ${late.join(', ')}` : HALL_SIX.join(', '));
 
+  /* HIKED, NOT AIMED. This was a bare `driveTo` from wherever the third bell
+   * left the player, which is the chapel bell at x 23.5, and the hall's west
+   * end is 54 m west through the chapel, the cross-wall and the hall's own
+   * wall. On a GPU on 2026-09-21 it photographed stone at point-blank range
+   * with the HUD reading "Inner ward" (31-twelve-at-vespers.png), and the
+   * floor luma under it, 40.1, is a read of that stone, not of the hall. */
+  await hike([-30.5, 10], 0);
   await driveTo(page, [-30.5, 10], async (d) => d < 1.2, { maxBursts: 45, nearAt: 3 });
   // Bodies, not stations: where the twelve ACTUALLY are this frame, counted
   // inside the hall's own walls (x -33..-6.5, z 6.5..13.5). A station says
@@ -1543,6 +1656,13 @@ try {
   const constableDue = await stationOf('constable');
   assert(!!constableDue, 'the data has the Constable somewhere at Vespers', JSON.stringify(constableDue));
   await arrives('constable');
+  /* FROM INTERACT RANGE, WHICH MEANS WALKING THERE FIRST. The ray used to be
+   * cast from wherever the porter's beat left the player, and on a GPU on
+   * 2026-09-21 that was (2.3, 0.6), east of the cross-wall and 17 m from the
+   * high table: "blocked by wall-fortified-gate_3" was the cross-wall being
+   * between two points, not the Constable being inside anything. `converse`
+   * below then finds him already in range and walks nowhere. */
+  const toConstable = await walkTo(constableDue.at, 'Roger', constableDue.level ?? 0);
   const visible = await page.evaluate(async ({ gx, gz }) => {
     const THREE = window.__THREE;   // stashed by attachSceneProbe
     const sc = window.__scene, cam = window.__cam;
@@ -1561,8 +1681,9 @@ try {
     const blocker = ray.intersectObjects(world, true).find((h) => h.distance < dist - 0.05);
     return { dist: +dist.toFixed(2), blockedBy: blocker?.object.name || null };
   }, { gx: constableDue.at[0], gz: constableDue.at[1] });
-  assert(!visible.blockedBy, 'the Constable is actually visible from interact range',
-    visible.blockedBy ? `blocked by ${visible.blockedBy}` : `${visible.dist}m, clear`);
+  assert(!!toConstable && !visible.blockedBy, 'the Constable is actually visible from interact range',
+    !toConstable ? `never got in range; from ${visible.dist}m ${visible.blockedBy ? `blocked by ${visible.blockedBy}` : 'clear'}`
+      : visible.blockedBy ? `blocked by ${visible.blockedBy}` : `${visible.dist}m, clear`);
 
   const last = await converse('constable', /Roger/, 'Constable');
   if (!last) throw new Error('cannot finish without reaching the Constable');

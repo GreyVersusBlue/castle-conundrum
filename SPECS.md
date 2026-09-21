@@ -21,8 +21,8 @@ asset compression (#506 to #510), sound (#519 to #522), the tower tops
 touch (#530 to #532), the texture sets (#541 to #545), the town
 side (#546), the lore row (#551 to #555), what was left of that row,
 the sermon and the song, with #592 to #596, and the fourth body with #603 to
-#606.** **The ranks below start at 2, and 1 and 5 are retired numbers rather than
-gaps; 3 came back on 2026-09-21 for the retro castle (#736), the way 1 came
+#606.** **The ranks below start at 1 again, 5 is a retired number rather than a
+gap, and 3 came back on 2026-09-21 for the retro castle (#744), the way 1 came
 back three times, because a rank is a priority and not an id**: each shipped
 row's number was retired rather than shifted up, because
 renumbering eleven rows across three files while four wave A sessions were
@@ -191,24 +191,216 @@ that row.
 
 ---
 
+## Sight at the body's own height
+
+**Rank 1. Size ¼. Opus 5. Container. No gate, no lane. Filed 2026-09-21 from
+the third GPU sitting's second run** (log: `npm run play`, run 2, on the RTX
+3070 Ti). Nothing is decided in this section; the session that ships it
+claims the numbers.
+
+**The line-of-sight test aims at fixed world heights, so nobody above the
+ground floor can be talked to from beside them, and one of them can be talked
+to from 8 m below.** In `src/interaction.js` as it stands:
+
+- line 34, `const SIGHT_HEIGHTS = [1.55, 1.15];`, under a comment (lines 29
+  to 32) that calls them "two sample heights on the NPC's body". They are not
+  on the body. They are world y.
+- line 210, `_target.set(at.x, target.focus ? at.y : h, at.z);`. A target with
+  a `focus` is aimed at its own height; a target without one is aimed at
+  y 1.55 and 1.15 wherever its feet are.
+- line 47, `aimAt` returns `target.group.position` when there is no `focus`,
+  which for an NPC is his feet.
+- line 151, `to.y = 0;`. The range test is horizontal only, so a body 8 m
+  overhead is "0.3 m away".
+
+**What run 2 measured.** The sentry at Terce is due at (-18.0, -15.0) on
+level 2, the north walk, feet at y 8.0. The player stood 0.2 m from him on the
+walk at (-18.1, -14.8), pointer locked, and the prompt was null: both rays go
+from an eye at 9.7 down to y 1.55 and 1.15, through the walk's own floor.
+Headless, 0.3 m from him, both rays hit the walk. The porter at Vespers, body
+at (-0.8, 8.0, 0.3) on the cross-wall walk, player at (-1.2, 0.6) on level 2,
+0.6 m: prompt null. **And the other way round**: run 1, when the suite still
+walked the porter on the ground, passed his Vespers beat from under the walk,
+because from an eye at 1.7 the rays to y 1.55 run level and nothing is in the
+way. The porter's admission is a premise of the full ending, so run 2's
+accusation selected 2 of 3, the ending was wrong, and the run aborted at the
+second-day button. **Apart from #714's five checks and #659's journal number,
+this is what stands between `npm run play` and exit 0.**
+
+**Who it bites.** Seven station-watches: the Lady in the royal apartments
+(level 1, feet 4.0) at Prime, Terce and Vespers and at Lauds on day two; the
+sentry on the north walk (level 2) at Terce and Sext; the porter on the
+cross-wall walk (level 2) at Vespers. The populace's upper-storey stops ride
+the same line 210: the archers on both walks, the serjeant and the man-at-arms
+in the dormitory, the maid in the royal apartments. Their label never shows.
+
+**Why the Stockhouse bar and the tally stick passed on the walk** (1.75 m and
+2.81 m in run 2). Every prop target carries a `focus`: `locks()`, `bells()`,
+`evidence()` and `readables()` in `src/castle-builder.js` (lines 799, 820,
+858, 889) each set it to the plan box's centre in world coordinates, so line
+210 takes `at.y`. The bug is NPC-only for the rays. Line 151's y-blind range
+applies to props as well, and nothing has yet been seen offered from below.
+
+**The Node half has the same blindness.** `nav.talkable` in `src/stations.js`
+(lines 106 to 121) counts a station as reachable from a cell on any of
+`plan.levels`, so the validator's rail (`src/mystery.js` lines 539 and 623)
+would pass an upstairs station with only ground cells under it. Measured
+today over 115 station-watches: every one also has a cell on its own storey
+(the sentry 0.35 m on level 2, with a ground cell 0.79 m away; the Lady 0.25 m
+on level 1, a ground cell 0.25 m away), so tightening it turns nothing red on
+the data as it stands.
+
+### Scope
+
+| File | What changes |
+| --- | --- |
+| `src/interaction.js` | Line 210 aims a target with no `focus` at `at.y + h`, feet plus 1.55 and 1.15. `update()` gains a storey gate beside the range test at line 151, for targets with no `focus` only: skip when `Math.abs(at.y - (camPos.y - EYE_HEIGHT)) > STOREY_REACH`, with `STOREY_REACH = 2.0` named beside `INTERACT_RANGE` and `EYE_HEIGHT` imported from `src/castle-plan.js`. The comment over `SIGHT_HEIGHTS` is rewritten to say they are offsets from the feet and what they used to be. |
+| `src/stations.js` | `talkable(point)` asks `walk.fromSpawn(x, z, point.level ?? 0)` and stops looping `plan.levels`. The #523 comment there says why every storey was looped; it gets a line saying the loop was the same y-blindness as `interaction.js`'s. |
+| `test/mystery.mjs` | One rail on `nav.talkable` itself, and the counts the page beat leans on (acceptance below). |
+| `test/plan-vs-scene.mjs` | One beat: every upstairs station is talked to from its own storey and not from the storey below. |
+
+Not in scope: `test/play-castle.mjs` (rank 2's own file; its porter beat
+already walks him on level 2), `data/` (no station moves), `src/save.js`, the
+populace, and the props.
+
+### Acceptance
+
+**Which suite, per #529.** Whether the prompt appears is
+`InteractionSystem.update` casting rays against the built mesh tree, and
+whether a ray clears the walk's deck depends on geometry that only the page
+builds. None of that exists in Node, so the beat goes in `plan-vs-scene.mjs`
+and is not a violation of "nothing it asserts may be provable in Node". What
+Node can prove is the plan arithmetic the beat stands on, and `mystery.mjs`
+owns the stations, so that half goes there. The formula "feet plus 1.55" is
+asserted nowhere on its own: a Node test of it re-implements line 210, and a
+test that re-implements the thing it checks is not a check (#34), the same
+answer "The red suite" gave for `AIM_DOT`.
+
+**`test/plan-vs-scene.mjs`, the beat.** For each of day one's four watches,
+`window.__quest.applyWatch(watch, { walk: false })`, then park the rings with
+`window.__populace.setWatch(watch, { walk: false })` (#724). For every
+station in `mystery.schedule` at that watch with `level > 0` and not
+`asleep` (six today):
+
+1. **Its own storey.** Up to 12 cells from `grid.rooms()` on the station's
+   level, 0.9 to 2.8 m from it horizontally, nearest first; camera at
+   `cell.h + EYE_HEIGHT`, yawed at the body. Passes when any cell's prompt
+   names that NPC. The failure prints every cell and what it offered (#723's
+   shape).
+2. **The storey below.** Every cell on a lower level within 2.8 m
+   horizontally, aimed the same way. Passes when none names that NPC.
+
+**`test/mystery.mjs`, two rails.**
+
+- `nav.talkable({ ...the Lady's Prime station, level: 2 })` is false. The
+  royal apartments' tile has cells on levels 0 and 1 within 3.2 m and none on
+  2, so this is a station with ground under it and no floor of its own.
+- The upstairs list the page beat walks is non-empty at every watch that has
+  one, and each entry has at least one own-storey cell in 0.9 to 2.8 m and at
+  least one lower-storey cell within 2.8 m. Without the second half, half 2
+  of the page beat asserts nothing (#147). Today: the Lady's lowest cell is
+  on level 0 at 0.25 m, the sentry's at 0.79 m, the porter's at 0.35 m.
+
+**The breaks (#34), each from a green baseline, each with its message
+quoted in the report.**
+
+- Put back `target.focus ? at.y : h` at line 210. Half 1 goes red for all six.
+- Put back line 210 and remove the gate: that is `main` today. Half 2 goes
+  red for the porter at Vespers, which is run 1's pass from the ground.
+  Expected for the Lady from the King's Hall below as well; not measured.
+- Remove the gate alone, keeping the new rays. Report what half 2 does. If it
+  stays green, the walk's deck is what blocks at all six today and the gate is
+  kept anyway (open call 4); say so in the gate's comment rather than claim a
+  red it never showed.
+- Put back the `plan.levels` loop in `talkable`. The first Node rail goes red.
+
+`npm test mystery plan-vs-scene` first, then all fifteen. **Past that, the
+proof is rank 2's**: the sentry at Terce and the porter at Vespers passing on
+the GPU, and the accusation selecting 3 of 3.
+
+### Open calls
+
+1. **Where do the rays go: feet plus a constant, or the body's bounding
+   box?** *Feet plus 1.55 and 1.15.* `group.position.y` is the feet and
+   `plan-vs-scene.mjs` already holds it to the station's floor at 0.01 m,
+   while `Box3.setFromObject` over a skinned body is a tree walk per
+   candidate per frame and moves with the clip.
+2. **Does the player's end of the ray need changing?** *No.* It is
+   `camera.position`, which is world y already; `src/main.js` line 387 finds
+   the player's storey from the same `camera.position.y - EYE_HEIGHT`.
+3. **Do the props share the bug?** *Not the ray half, and leave the range
+   half alone in this row.* All four prop kinds aim at their plan-box centre,
+   which is why the bar and the tally passed on the walk; a prop lies 1.5 to
+   1.7 m under the eye, so gating them would need a second number, and
+   nothing has been seen offered from below.
+4. **Is a storey gate owed, or do the rays suffice?** *A gate, 2.0 m on the
+   feet, NPC targets only.* From an eye at 1.7 to a chest at 9.55 the ray
+   crosses the walk's floor 80 % of the way along, so a player within about
+   0.6 m horizontally of the deck's edge, at the 3.2 m range, can see past it;
+   2.0 m is half the 4.0 m storey, so any other storey is out by 2 m and a
+   body half a flight away stays in.
+5. **Should `nav.talkable` go storey-strict too?** *Yes.* It is the same
+   y-blindness in the validator, and 0 of 115 station-watches lose their
+   verdict today.
+6. **Should the page beat sweep the populace's upstairs stops?** *No.* They
+   go through line 210 and are fixed by construction, labels are not
+   something the player presses E at, and a walking ring is the timing trap
+   #724 had to park.
+7. **Should it sweep day two's Lady at Lauds?** *No.* It is the same station
+   as her day-one three, and putting the page at day two costs a verdict;
+   say so in the beat's comment.
+8. **Model and size.** *Opus 5, ¼, class S.* About fifteen lines of `src/`
+   and two beats, but the breaks above need judging, not only running.
+
+### Dependencies
+
+- **Rank 2, the GPU run, is gated on this row.** Its next sitting should
+  start from a `main` that has it.
+- No lane: `src/interaction.js`, `src/stations.js`, `test/mystery.mjs` and
+  `test/plan-vs-scene.mjs` are in none of A to E.
+- **Not beside "The red suite"'s increment 3**, which writes `validateMystery`
+  and `test/mystery.mjs` too. Not beside a rank 6 increment that edits
+  `src/interaction.js` for the populace's labels; check its branch first.
+- Its own `git worktree` (ROADMAP §3).
+
+### Constraints
+
+- **#529.** The prompt beat is page-only; the storey arithmetic is
+  `mystery.mjs`'s. Nothing moves across the line.
+- **#34.** Four breaks named above.
+- **#147.** The comment over `SIGHT_HEIGHTS` said "on the NPC's body" and
+  was wrong before any assertion was.
+- **#53.** The headless beat places a camera and reads a string; it is
+  geometry, not timing. What a hand on a mouse gets is rank 2's.
+- **#13.** No skip for the Lauds station or the populace: they are out of the
+  sweep by reason, written in the comment.
+- **CRLF here, LF in CI** (#632).
+
+---
+
 ## The GPU run
 
-**Rank 2. Size ¼. Its gate, rank 1, shipped 2026-09-19** (#716 to #720).
-`npm run play` is 102 assertions and a numbered screenshot per beat into
-`shots/play/`. It has now
-been run on a machine with real compositing four times over two sittings
-(#624 to #630 on 2026-09-17, #708 to #715 on 2026-09-19) and the day has never
-reached the end.
+**Rank 2. Size ¼. Its gate is the new rank 1, "Sight at the body's own
+height," filed 2026-09-21** (see SPECS.md above). `npm run play` is 102
+assertions and a numbered screenshot per beat into `shots/play/`. It has now
+been run on a machine with real compositing six times over three sittings
+(#624 to #630 on 2026-09-17, #708 to #715 on 2026-09-19, #734 to #741 on
+2026-09-21), and the sixth run reached the accusation for the first time. The
+ending it reached was wrong.
 
-**The judgement half of this row is done, and the walk half is not.** The
-second sitting answered every render question the list below carried — the
-twelve at Vespers, the Lauds sky, the covered hall, eleven bodies at interact
-range — by putting the world at a bell with `applyWatch(watch, { walk: false
-})` and photographing it, which is how rank 5 answered its two (#656 to #658).
-What is left is `npm run play` itself getting there. Rank 1, the walker on
-the stair, shipped on 2026-09-19 (#716 to #720): the Node check holds over
-every pair of ground rooms, and what is owed now is the run itself, on a GPU
-(#53).
+**The judgement half of this row is done. The walk half is most of the way
+there.** The second sitting answered every render question the list below
+carried, the twelve at Vespers, the Lauds sky, the covered hall, eleven
+bodies at interact range, by putting the world at a bell with
+`applyWatch(watch, { walk: false })` and photographing it, which is how rank
+5 answered its two (#656 to #658). The third sitting's first run confirmed
+rank 1's walker on a GPU for the first time: the day passed the second bell,
+the reload at Sext, the riddle, the third ring and the cook's walk (#734).
+Six fixes to `test/play-castle.mjs` then carried the second run to the
+accusation (#735 to #740), where the sentry and the porter went unread and
+the ending came out wrong (#741). What is left is `src/interaction.js`'s
+sight rays, which the new rank 1 above owns, and the run that confirms the
+fix once it ships (#53).
 
 **Rank 3, the preview and og card that used to sit under this same section,
 shipped on 2026-09-17** (#634, #635) from a fallback frame rather than the run
@@ -219,24 +411,32 @@ rank 2's alone.
 ### Scope, the run
 
 - **Nothing in `src/`.** The run is the deliverable. `test/play-castle.mjs` is
-  the only file this row may change, and on 2026-09-19 it changed by 67 lines
-  in two helpers: `present()` now runs the dialogue box out the way `converse`
-  does (#708), and `hike` clicks the resume panel when the browser has refused
-  a relock (#709). Both of those had been read as `src/` bugs before.
-- ~~The `snap('twelve-at-vespers')` beat~~ is written, standing at the hall's
-  west end rather than the north doorway the spec named, because the doorways
-  are at x -20 and -12 and the six stand from x -27.2 to -12, so the doorway
-  puts half the cast behind the camera. **Do twelve read as twelve? No: two of
-  them do not** (#711). The Constable and the Steward are one white-haired man
-  in a black tunic, told apart by a red collar and a green one, and past about
-  three metres there is nothing to tell. The three women are the clearest
-  bodies in the castle and the lesson is that silhouette works where tint does
-  not.
+  the only file this row may change. It changed by 67 lines in two helpers on
+  2026-09-19 (#708, #709: `present()` runs the dialogue box out the way
+  `converse` does, and `hike` clicks the resume panel when the browser has
+  refused a relock) and by 163 lines added, 42 removed, in six places on
+  2026-09-21 (#735 to #740): `shutPresent()` closes the Present list and the
+  dialogue on every path out of `present()`, not only the success path; a
+  walk to another storey uses Phase 5's own stair legs instead of counting a
+  waypoint reached by x and z alone; `examine()` passes the target's own
+  level instead of always 0; `walkTo` turns to face a target before reading
+  its prompt; the Constable-visible check walks to range before it casts its
+  ray; and `snap('twelve-at-vespers')` routes to the hall before it shoots.
+  All eight of those had been read as `src/` bugs before.
+- ~~The `snap('twelve-at-vespers')` beat~~ was routing straight across the
+  inner ward into a wall; **fixed 2026-09-21** (#740), it now walks to the
+  hall first and reads 72.7 of 255 from the floor there. **Do twelve read as
+  twelve? No: two of them do not** (#711). The Constable and the Steward are
+  one white-haired man in a black tunic, told apart by a red collar and a
+  green one, and past about three metres there is nothing to tell. The three
+  women are the clearest bodies in the castle and the lesson is that
+  silhouette works where tint does not.
 - **`HISTORY.md`** records what the run said, beat by beat, and what was seen:
   the walk on the Kitchen Tower flights (Phase 5's 5.7, 9.7, 1.7 readings), the
   cross-wall crossing, the cook's walk from kitchen to hall, the reload at
-  Sext, the epilogue. A beat that fails on a GPU is a bug; a beat that failed
-  under software rendering and passes here was never one.
+  Sext, and now the accusation itself and the ending it produced. A beat that
+  fails on a GPU is a bug; a beat that failed under software rendering and
+  passes here was never one.
 - ~~**`BACKLOG.md`**'s header line "Nothing here has been seen on a GPU since
   Phase 5" comes out.~~ **Done on 2026-09-17** by the first sitting (#624 to
   #630); the paragraph that replaced it says what has been looked at and what
@@ -270,37 +470,44 @@ rank 2's alone.
 ### Acceptance, the run
 
 - `npm run play` exits 0 on a machine with a GPU, or exits non-zero with the
-  failing beat named and filed as a new backlog row. **Met on 2026-09-19 in
-  the second form, four times**: exit 1, 22 failures, the failing beats named,
-  and the one cause that is not this suite's own filed as rank 1. **The two
-  suite bugs that were fixed changed no assertion's verdict** — run one and run
-  four have byte-identical failure lists — they changed only how far the player
-  got before each one, which is how the remaining cause was isolated.
+  failing beat named and filed as a new backlog row. **Met on 2026-09-19,
+  four times, and again on 2026-09-21, twice.** The third sitting's run one:
+  exit 1, 164 ok, 19 failures, aborted at the Constable at Vespers. Run two,
+  after the six suite fixes: exit 1, 179 ok, 17 failures, reached the
+  accusation and aborted on the wrong ending's `#restart-button`. The cause
+  left in front of exit 0 is filed as the new rank 1. **The six suite fixes
+  changed no `src/` behaviour and are not what stops exit 0**: what stops run
+  two is `src/interaction.js`'s fixed sight heights, which nothing in
+  `test/play-castle.mjs` can fix.
 - ~~`shots/play/` contains the numbered set, `twelve-at-vespers.png` among
   them~~, **and a human has looked at it and written one sentence per body:
-  told apart or not.** The second half is done (#711) and the first is not:
-  the numbered set stops where the walker stops, and the Vespers frame came
-  from a hand-run look into `shots/look/` instead. That is the shape of the
-  split this row keeps running into — the judgement does not need the walk,
-  and the walk is still owed.
+  told apart or not.** Both halves are done now: #711 wrote up the twelve
+  from a hand-run look before the walk ever reached that beat, and the
+  routing fix (#740) got the walked, numbered set past it on 2026-09-21.
 - No new guard-rail: the run is the check. The `snap` beat is a screenshot, not
   an assertion, and says so in its comment.
 
 ### Dependencies
 
+- **Gated on the new rank 1, "Sight at the body's own height"** (filed
+  2026-09-21). The third sitting's run 2 could not talk to the sentry at
+  Terce or the porter at Vespers from beside them on the walks, the ending
+  came out wrong, and the run aborted at the second-day button. Run again
+  once that row is on `main`.
 - The run needs a machine with a GPU, which is Devon's; a session can add a
   beat and cannot run it. If a session is asked to take the run without one,
   the honest output is the beat and a note, not a claim.
 - ~~The fourth body is still owed the run's photograph~~ (#606). **Taken**
   (#711): Marged, Nest and Lady Alys are in `shots/look2/`, and `Woman.glb`
   does the job the tint was being asked to do.
-- **Rank 1, the walker on the stair, shipped** (#716 to #720). `hike` no
-  longer drives the player up the Chapel Tower ramp; a same-storey route now
-  searches that storey's floor alone, over every pair of ground rooms the
-  fill reaches. That holds on Node terms; nobody has watched it hold on a GPU
-  yet, which is what this row still owes.
-- The journal beat's walk assertion (#659) has been run on a GPU now, three
-  times, and read 0.69, 1.30 and 0.51 m against its `> 1.0` threshold. It is
+- **Rank 1, the walker on the stair, shipped 2026-09-19 and is now confirmed
+  on a GPU** (#716 to #720, #734, #736). `hike` no longer drives the player up
+  the Chapel Tower ramp, and the third sitting's first run carried the day
+  through Sext on that fix without incident. A second, similar waypoint bug
+  in the suite's own storey-change check, not `hike`, was found and fixed the
+  same sitting (#736).
+- The journal beat's walk assertion (#659) has now run on a GPU five times:
+  0.69, 1.30, 0.51, 0.69 and 0.83 m against its `> 1.0` threshold. It is
   measuring the chapel's geometry more than it is measuring the pointer. What
   to do about that is a decision about what the beat is for, and it is left
   open rather than guessed at.
@@ -318,9 +525,9 @@ rank 2's alone.
 reads as the same everywhere, and he wants pixel-art textures produced by a
 model session rather than photographs, for variety room to room and for a
 retro look, a style call before a cost one. That reverses #411, which put
-photographic stone on the walls, and the reversal is locked as #734; the
-provenance rule for a texture this repo draws is #735; the row's rank, lane
-and the shape of its cost rail are #736. Every recommendation below is the
+photographic stone on the walls, and the reversal is locked as #742; the
+provenance rule for a texture this repo draws is #743; the row's rank, lane
+and the shape of its cost rail are #744. Every recommendation below is the
 builder's to take and number.
 
 **What is there today, measured on 2026-09-21.** Fifteen material sets under
@@ -376,7 +583,7 @@ Haven's 341.
 | `tools/encode-assets.mjs` | `encodeMaterialMaps` is deleted: there is nothing left for it to encode, and a step that loops over zero entries is #13's shape for a script. The header says the pixel textures are exempt by the rule the kit already is (#508), and names the rail in `test/assets.mjs` that holds the exemption to a size. |
 | `test/assets.mjs` | Check 3b, "every material is a complete set", retires with the section it asserted over. A new 3b over `pixelMaterials`: exactly one `map`, a `.png` under `assets/pixel/`, 128 x 128 by its IHDR, at most 32 distinct colours, wrapping at both edges, and pixel-identical to the generator's own output for that row. Check 4's sweep grows `assets/pixel/`. Check 3d's `known` set reads `pixelMaterials` where it read `materials`, one line, and still holds every built thing to a name that exists in either section. |
 | `test/budget.mjs` | A fourth count, texture memory, from headers: for a KTX2, the sum over its `levelCount` of width times height at 0.5 bytes when `supercompressionScheme` is 1 (ETC1S) and 1 byte when it is 2 (UASTC); for a PNG, width times height times 4 times 4/3 for the mip chain. Over every image any loaded file names, the kit's ten included. One ceiling, `MAX_TEXTURE_MB`, in the ceilings block with the others (#609). |
-| `CLAUDE.md`, `README.md` | The compression bullet gains one sentence (the exemption by size, and the rail that holds it); the credits gain one line for `assets/pixel/` (#735). |
+| `CLAUDE.md`, `README.md` | The compression bullet gains one sentence (the exemption by size, and the rail that holds it); the credits gain one line for `assets/pixel/` (#743). |
 
 Untouched: `src/castle-plan.js` (no transform moves, so `test/plan-vs-scene.mjs`
 sees nothing, #500), `src/save.js`, `test/layout.mjs`, `data/sounds.json` (the
@@ -456,7 +663,7 @@ checklist at the bottom is what to look for.
    looks at `shots/pixel/sheet.png`, and commits the PNG with the row. The
    suite's five rails are the automated review; the sheet is the human one;
    the GPU look is the judgement (#53). An image-generation model's output
-   fails the pixel-identity rail by construction, which is #735 as a check
+   fails the pixel-identity rail by construction, which is #743 as a check
    rather than a rule.
 5. **Size and palette.** Recommend **128 x 128 and at most 32 colours, both
    held as named constants in `test/assets.mjs`**. 128 keeps `tuneTexture`'s
@@ -513,7 +720,7 @@ checklist at the bottom is what to look for.
   history is the originals.
 - #493: committed, and nothing fetched off-origin. The generator runs in
   Node and never in the page.
-- #508, as #734 restates it: a texture at 128 px or under is left out of
+- #508, as #742 restates it: a texture at 128 px or under is left out of
   the encoder, and the rail that says which is `test/assets.mjs`'s.
 - #434: the repeat stays world-space at 3 m; a tiling texture is the case
   that rule was written for.
@@ -522,7 +729,7 @@ checklist at the bottom is what to look for.
   texture rails are `assets.mjs`'s; nothing crosses the four-suite line.
 - #584, #632: `data/scene-config.json` is spliced, in its own line ending.
 - #53: the look.
-- #734, #735, #736.
+- #742, #743, #744.
 
 ### Looking checklist
 
