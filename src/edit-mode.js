@@ -36,7 +36,16 @@
 // tools/place.mjs is a string in and a string out with no Node import in it,
 // so a browser reads it as happily as the suite does, and it only ever reaches
 // one because THIS file did — a build drops both.
+//
+// AND IT HOSTS THE FLOOR PLAN (SPECS.md "The floor plan you can see", #747).
+// `?edit=1` stays the one flag and the one DEV branch to audit; the top-down
+// review view is src/edit-layout.js, mounted from here, because a run is two
+// tiles and eight fields and a prop is one tile, and folding the two panels
+// into one file would double a file whose whole value is that a person can read
+// it in one sitting. It has its own sentinel and test/built.mjs greps dist/ for
+// both.
 import { PLACEABLE, noteComment } from '../tools/place.mjs';
+import { mountLayoutView } from './edit-layout.js';
 
 export const EDITOR_SENTINEL = 'castle-placement-editor-v1';
 
@@ -62,9 +71,14 @@ const ARMED_FOR = 4000;
  * @param nav        castleNav, for the room name the HUD already computes
  * @param config     data/scene-config.json, for tileSize and the model lists
  * @param eyeHeight  EYE_HEIGHT, to turn the camera's y into the feet's
- * @returns { update } — called from main.js's loop
+ * @param renderer   the WebGLRenderer, for the floor plan's frustum
+ * @param plan       what `makePlan` returned, for the floor plan (#500)
+ * @param castle     the CastleBuilder, for `objects` — planId to the live object
+ * @param mystery    data/mystery.json, for which rooms the floor plan marks
+ * @returns { update, camera } — `update` is called from main.js's loop and
+ *          `camera` is the floor plan's when it is open and null when it is not
  */
-export function mountEditor({ scene, THREE, camera, nav, config, eyeHeight }) {
+export function mountEditor({ scene, THREE, camera, nav, config, eyeHeight, renderer, plan, castle, mystery = null }) {
   const tileSize = config.tileSize || 4;
   const models = [...new Set((config.interiorProps || []).map((p) => p.model))].sort();
   const materials = Object.keys(config.plainMaterials || {}).concat(Object.keys(config.materials || {}));
@@ -312,8 +326,17 @@ export function mountEditor({ scene, THREE, camera, nav, config, eyeHeight }) {
 
   syncList(here(), true);
 
+  // The floor plan rides along. It is read-only, it owns its own panel and its
+  // own keys, and the only thing it gives back to main.js is the camera to
+  // render while it is open.
+  const layout = renderer && plan
+    ? mountLayoutView({ scene, THREE, renderer, plan, castle, config, mystery })
+    : null;
+
   return {
+    get camera() { return layout ? layout.camera : null; },
     update() {
+      layout?.update();
       const at = here();
       where.textContent = `tile ${at.tile[0]}, ${at.tile[1]}\n${at.room.name || at.room.id} — feet ${at.base.toFixed(2)} m`;
       // Not while the list has the keyboard: rebuilding a `<select>` somebody
