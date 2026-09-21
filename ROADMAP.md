@@ -27,8 +27,9 @@ NOW, in parallel, no gates:
 
   Devon's machine                    A container
   ---------------                    -----------
-                                     R1   sight at the body's height    no lane
-  R2  GPU run, after R1 (2026-09-21)
+                                     R1   explore: the day before, new 2026-09-21   lanes A D
+                                     R2   sight at the body's height    no lane
+  R3  GPU run, after R2 (2026-09-21)
                      --+             R8   quests: the seven errands      lane A
                        |             R6   populace: the next forty       lanes C D
                        |             R4a  the bells call   (lane A: not beside R8)
@@ -39,9 +40,10 @@ NOW, in parallel, no gates:
   R4b the since field shipped the same day, #646-649, in a worktree.
   R6 five more, to 32 of 32, and a talk rail, shipped 2026-09-20 (#729-733).
                        |
-R2 lands --------------+--> unlocks R11
-  (R3 and R5 both shipped 2026-09-17 ahead of R2 landing: R3 from a
-  fallback frame, R5 by rendering the hall directly, #656-658)
+R3 lands --------------+--> unlocks R11
+  (the images row and R5 both shipped 2026-09-17 ahead of this row landing,
+  when it was still R2: the images row from a fallback frame, R5 by
+  rendering the hall directly, #656-658)
 
   R11 feel: shadow + hand    lane D
 
@@ -52,7 +54,7 @@ Never gated, take whenever the lane is free:
   R10 bodies (local: net, lane C)
   R13 the floor plan you can see, new 2026-09-21 (#745 to #749)
       increment 1 shipped 2026-09-21, the review view; 2 and 3 are lane B
-  R3  the retro castle: increment 1 in a container, lane B, then a look
+  R4  the retro castle: increment 1 in a container, lane B, then a look
       on a GPU before increment 2 (#742 to #744; not beside R9)
 
   R12b move-and-delete shipped 2026-09-17 (#636 to #642) and lane B is free.
@@ -83,15 +85,15 @@ confirmed** — which means a container cannot trust a pass either.
 
 | Row | Model | Why the GPU |
 | --- | --- | --- |
-| **R2 The GPU run** | Opus 5 | ~~Six things nobody has looked at~~ — five are looked at now (#630, #711 to #715), and the answer to the standing question is **no, two of the twelve do not read as two**: the Constable and the Steward are one white-haired man in a red collar and a green one. What is left needs the machine for a different reason: `npm run play` has to reach the end. R1's walker shipped on Node terms (#716 to #720); nobody has watched it hold on a GPU yet. |
-| **R3 The images** | Opus 5 | The preview and og card come out of R2's screenshots. There is no other source. They land in `tools-and-games/assets/`, not here, and Devon relinks. |
+| **R3 The GPU run** | Opus 5 | ~~Six things nobody has looked at~~ — five are looked at now (#630, #711 to #715), and the answer to the standing question is **no, two of the twelve do not read as two**: the Constable and the Steward are one white-haired man in a red collar and a green one. What is left needs the machine for a different reason: `npm run play` has to reach the end. The walker on the stair shipped on Node terms (#716 to #720); nobody has watched it hold on a GPU yet. |
+| **R3 The images** | Opus 5 | The preview and og card come out of the GPU run's screenshots. There is no other source. They land in `tools-and-games/assets/`, not here, and Devon relinks. |
 | ~~**R5 The hall covering**~~ | Sonnet 5 | **Shipped** (#656 to #658). Both criteria were a render, and both were answered by rendering the hall directly rather than by waiting for this row's own run to reach Vespers: `roof.glb`'s vertices (not its bounding box) showed which way it slopes, and the floor read 69.8 to 89.8 of 255. |
 | **R11 Feel**, past its Node line | Sonnet 5 | ~~The Node half — a shadow decal and a hand node exist and do not regress `plan-vs-scene.mjs` — is a container's.~~ Shipped (#650 to #654). What is left is what a GPU decides: whether a blob shadow reads on stone versus on grass, what it does on a flight of stairs, and whether the hand reads as a hand. |
-| **R3 The retro castle**, past its first increment | Opus 5 | Increment 1 (the generator, the rails, fifteen textures in place of fifteen sets, the memory count) is a container's and needs no `ktx`, no network and no GPU. What is left before increment 2 is the look: one castle or two from the North-west Tower's roof (#630's vantage), the shadowed faces (#438, #713), the same wall at four bells (#474, #712), and `renderer.info.memory.textures` against the header estimate. The checklist is in `SPECS.md`. |
+| **R4 The retro castle**, past its first increment | Opus 5 | Increment 1 (the generator, the rails, fifteen textures in place of fifteen sets, the memory count) is a container's and needs no `ktx`, no network and no GPU. What is left before increment 2 is the look: one castle or two from the North-west Tower's roof (#630's vantage), the shadowed faces (#438, #713), the same wall at four bells (#474, #712), and `renderer.info.memory.textures` against the header estimate. The checklist is in `SPECS.md`. |
 | ~~**R4c The yard**~~ | Opus 5 | **Shipped** (#703 to #707). The look was the half that needed the machine and it is answered: a stone yard from inside it, a roof and a town wall from the North-west Tower's crown, and nothing at all from the west curtain's walk, because that tower's own drum stands in the line. `tools/shot-yard.mjs` is the camera, and it pins the camera rather than moving the spawn, which `validatePopulace` refuses. |
 
-**R2 is the single highest-value hour on this list.** It is a ¼ and it unblocks
-three rows outright.
+**R3, the GPU run, is the single highest-value hour on this list.** It is a
+¼ and it unblocks three rows outright.
 
 ### Local: a network that reaches the asset hosts
 
@@ -116,15 +118,18 @@ the one asset nothing else on this list would catch.**
 
 ### Container, start to finish
 
-**R1** sight at the body's own height, filed 2026-09-21 and gating R2: a GPU
-found it, and a headless beat can hold it, because it is a camera placed and
-a prompt string read, not a walk. **R6** populace, **R8** side quests, **R9** the town, whose gate R4c opened,
-**R12a/b/c** the tooling, **R13** the floor plan you can see (#745 to #749),
-**R4a** the bells call (#699 to #702), and **R4b** the `since`
-field, which shipped from one on 2026-09-17. Seven and a half rows of thirteen.
-Every one is data, a validator, a Node suite or
-a headless DOM assertion, and every one has an acceptance criterion a container
-can actually meet.
+**R1** explore: the day before, new 2026-09-21 (#750 to #753) and taking rank
+1 the same day: a stage, an engine branch and a button, all of it Node or
+headless, the way the theme it came out of specced it. **R2** sight at the
+body's own height, filed 2026-09-21 and gating R3: a GPU found it, and a
+headless beat can hold it, because it is a camera placed and a prompt string
+read, not a walk. **R6** populace, **R8** side quests, **R9** the town, whose
+gate R4c opened, **R12a/b/c** the tooling, **R13** the floor plan you can see
+(#745 to #749), **R4a** the bells call (#699 to #702), and **R4b** the
+`since` field, which shipped from one on 2026-09-17. Eight and a half rows
+of fourteen. Every one is data, a validator, a Node suite or a headless DOM
+assertion, and every one has an acceptance criterion a container can
+actually meet.
 
 ---
 
@@ -136,12 +141,12 @@ the theme is not what conflicts.
 
 | Lane | The file that decides it | Rows in it |
 | --- | --- | --- |
-| **A** | `src/save.js` — the version number and `migrate` | nobody (R4a, R4b and R8 all shipped without bumping it) |
-| **B** | `data/scene-config.json`, and `test/tools.mjs`'s byte-exactness rail | R3, R13 (increments 2 and 3 only), R9 (R4c, R5 and R12b are done) |
-| **C** | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | R1, R6, R10 (R12c is done) |
-| **D** | `src/main.js`'s player rig and spawn | R6, R11 |
+| **A** | `src/save.js` — the version number and `migrate` | R1 (R4a, R4b and R8 all shipped without bumping it) |
+| **B** | `data/scene-config.json`, and `test/tools.mjs`'s byte-exactness rail | R4, R13 (increments 2 and 3 only), R9 (R4c, R5 and R12b are done) |
+| **C** | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | R6, R10 (R12c is done) |
+| **D** | `src/main.js`'s player rig and spawn | R1, R6, R11 |
 | **E** | `src/audio.js` and `data/sounds.json` | R7 |
-| **none** | | R2, R12a |
+| **none** | | R3, R12a |
 
 Lane A is the one the specs already warned about in words: *"do not run
 alongside anything else that touches `save.js`"* is written into R4's
@@ -149,6 +154,9 @@ dependencies, and R8's next increment was a version bump to 6 with a clamp in
 `repair`. Two sessions bumping the same version number produce a merge that
 compiles and a save that does not migrate. **Version 6 landed on 2026-09-17**
 (#612), so the next session in this lane bumps to 7 and the same rule holds.
+**R1 is that session now**: a yes to question 12 (#751) wants a saved
+explore, its own increment 3, at once, a `mode` field at version 7, so R1
+holds this lane until that lands.
 
 Lane B is sharp for a different reason. `test/tools.mjs` holds
 `data/scene-config.json` to byte-exactness by cutting an added row back out and
@@ -210,7 +218,9 @@ With R1, R7, R12a and R8's reputation increment landed, lane A is free:
 version 6 is in and R8's remaining work is quest files and dialogue, not
 `save.js`. R4b took that free lane on 2026-09-17 and never wrote the lane's
 file at all (#646 to #649), so the rows safe together now are **R8, R6 and
-R4a**, three of them, plus **R2** on Devon's machine.
+R4a**, three of them, plus **R3, the GPU run,** on Devon's machine. **Lane A
+holds one row again as of 2026-09-21**: R1, the walking day, for the version
+7 bump #751 wants.
 
 ### What not to pair
 
@@ -228,58 +238,64 @@ R4a**, three of them, plus **R2** on Devon's machine.
   in `repair` and left the version at 6 (#702). **Three rows in a row sat in
   lane A for a file none of them bumped**, which is worth reading the next time
   a row is held out of this lane.
-- R3 beside R9. Both are lane B and both write `data/scene-config.json`: R3
+- R4 beside R9. Both are lane B and both write `data/scene-config.json`: R4
   rewrites its `materials` block and R9 splices rooms and runs into it, and
   two splices neither session tested against each other is what #602 drew
   the lane for. R9's next increment, the quay, has no `SPECS.md` section and
-  is not startable, so R3 takes the lane today. R4c, R5 and R12b were the
+  is not startable, so R4 takes the lane today. R4c, R5 and R12b were the
   lane's other three and all shipped (#703 to #707, #656 to #658, #636 to
   #642). R12c has left lane C as well (#687 to #690).
 - R6 beside R11. Lane D, both inside `src/main.js`'s rig.
+- R1 beside R6 or R11. Lane D again: R1's second start callback lives in
+  `src/main.js`'s UI-flow region, not the rig either of those two writes, but
+  one row per lane at a time is the rule regardless of region (#602). R1 is
+  also the row that bumps `save.js` to version 7 (#751), so nothing else runs
+  in lane A beside it either.
 
 ---
 
 ## 3. The order
 
-### R2 ran on 2026-09-17, and it needs a worktree, not a lane
+### R3, the GPU run, ran on 2026-09-17, and it needs a worktree, not a lane
 
 **The run happened** (#624 to #630) and did not reach the end of the day, so
 gate 1 is half open: the compressed textures, the tower roof at 12 m and the
 gaol roll are answered, and `twelve-at-vespers` and the trusses under a real
-run's own lighting are not. **R3 shipped anyway, from a fallback frame,
-2026-09-17** (#634, #635), and **R5 shipped without waiting for a second run
-either**, by rendering the hall directly rather than by playing to Vespers
-(#656 to #658) — the gate named the wrong half of rank 2 as the blocker; both
-rows needed a render, not specifically *this* render.
+run's own lighting are not. **The images row shipped anyway, from a fallback
+frame, 2026-09-17** (#634, #635), and **R5 shipped without waiting for a
+second run either**, by rendering the hall directly rather than by playing
+to Vespers (#656 to #658) — the gate named the wrong half of the GPU run as
+the blocker; both rows needed a render, not specifically *this* render.
 
-**R2 was gated for a day behind a new rank 1** — a castle the player could not
-walk in after opening the journal, which the run found and which nothing else
-could have — **and that shipped on 2026-09-18** (#659 to #661). `src/ui.js`
-owns the pointer now, `test/overlays.mjs` is the fourteenth suite and holds it
-headlessly, and `npm run play`'s journal beat asserts the walk as well as the
-pointer. **R2 has no gate in front of it.**
+**R3 was gated for a day behind a new rank 1** — a castle the player could
+not walk in after opening the journal, which the run found and which nothing
+else could have — **and that shipped on 2026-09-18** (#659 to #661).
+`src/ui.js` owns the pointer now, `test/overlays.mjs` is the fourteenth
+suite and holds it headlessly, and `npm run play`'s journal beat asserts the
+walk as well as the pointer. **R3 has no gate in front of it.**
 
-**And the lane table below is wrong about R2 in the one way that matters.** It
-gives R2 no lane because it writes no file anything else writes. It does not
-write the tree; it *reads* it for ten minutes at a stretch, with a browser
-holding the page open. Another session's `git checkout` in the same working
-tree wiped this row's uncommitted edits mid-run, and Vite full-reloaded the page
-whenever anything under `src/` changed. **A GPU run belongs in its own
-`git worktree`**, and then it genuinely has no lane.
+**And the lane table below is wrong about R3 in the one way that matters.**
+It gives R3 no lane because it writes no file anything else writes. It does
+not write the tree; it *reads* it for ten minutes at a stretch, with a
+browser holding the page open. Another session's `git checkout` in the same
+working tree wiped this row's uncommitted edits mid-run, and Vite
+full-reloaded the page whenever anything under `src/` changed. **A GPU run
+belongs in its own `git worktree`**, and then it genuinely has no lane.
 
 **R4b found the same thing without a GPU anywhere near it** (#646 to #649), so
-it is not a GPU rule. Running beside R3 in one tree, in different lanes and
-with no source file in common, it still got: three suites red on the other
-session's mid-edit `data/scene-config.json` and on `Port 8127 is already in
-use`, and `HEAD` moving under it twice. **A working tree is a resource two
-sessions cannot share**, whatever their lanes say, because `npm test`,
-`dist/`, the harness ports and `HEAD` are one copy each. A `git worktree add`
-plus a junction for `node_modules` is the whole cost. Take one.
+it is not a GPU rule. Running beside the images row in one tree, in different
+lanes and with no source file in common, it still got: three suites red on
+the other session's mid-edit `data/scene-config.json` and on `Port 8127 is
+already in use`, and `HEAD` moving under it twice. **A working tree is a
+resource two sessions cannot share**, whatever their lanes say, because
+`npm test`, `dist/`, the harness ports and `HEAD` are one copy each. A
+`git worktree add` plus a junction for `node_modules` is the whole cost.
+Take one.
 
-### Gate 1 — R2, the GPU run, once more.
+### Gate 1 — R3, the GPU run, once more.
 
 **This gate has now moved three times, and all three for the same reason: the
-thing in front of R2 was never the looking, it was the walking.** First it was
+thing in front of R3 was never the looking, it was the walking.** First it was
 the castle you cannot walk, which shipped on 2026-09-18 (#659 to #661). Then
 it was the walker on the stair (#710), which shipped on 2026-09-19 (#716 to
 #720): a walk between two points on one storey now searches that storey's own
@@ -289,41 +305,42 @@ rather than one, so it stops hugging the walls a prop stands against.
 `test/layout.mjs`'s new check 8b holds it over all 66 pairs of the 12 ground
 rooms the fill reaches: 153 ok, 0 fail.
 
-**What that buys is a Node proof, not a GPU one** (#53). R1 is done and its
-row is gone from this table and from `BACKLOG.md` and `SPECS.md`; what is
-left in front of R2 is the run itself, which nobody has watched carry a real
-`npm run play` to the second bell yet, and that needs Devon's machine.
+**What that buys is a Node proof, not a GPU one** (#53). The walker on the
+stair is done and its row is gone from this table and from `BACKLOG.md` and
+`SPECS.md`; what is left in front of R3 is the run itself, which nobody has
+watched carry a real `npm run play` to the second bell yet, and that needs
+Devon's machine.
 
 **And it moved a fourth time on 2026-09-21, for the same reason.** The third
 sitting's run 2 walked the sentry and the porter on the walks and could not
 talk to either from beside them: `src/interaction.js` aims its sight rays at
 world y 1.55 and 1.15, so a body 8 m up is aimed at through his own floor,
 and the porter, who is a premise of the full ending, was talkable from the
-ground under him instead. **R1 is now "Sight at the body's own height":
-container, Opus 5, size ¼, no gate, no lane.** Its proof is headless (a
-`plan-vs-scene.mjs` beat over the six upstairs station-watches and two
-`mystery.mjs` rails); R2 is gated on it being on `main`, and R2's next
-sitting is what confirms it on a GPU. Apart from #714's five checks and
-#659's journal number, it is the last thing between `npm run play` and
-exit 0.
+ground under him instead. **This is "Sight at the body's own height," rank 2
+as of the same day's later answers: container, Opus 5, size ¼, no gate, no
+lane.** Its proof is headless (a `plan-vs-scene.mjs` beat over the six
+upstairs station-watches and two `mystery.mjs` rails); R3 is gated on it
+being on `main`, and R3's next sitting is what confirms it on a GPU. Apart
+from #714's five checks and #659's journal number, it is the last thing
+between `npm run play` and exit 0.
 
-**R2 the GPU run: local, GPU, Opus 5, size ¼, no lane, after R1.** Its judgement half
-was finished on 2026-09-19 (#711 to #715) — the twelve, the Lauds sky, the
-covered hall and eleven bodies at interact range, the unlooked-at list down
-to one item, a phone (#530). Its walking half is the run reaching the end,
-and that is now entirely this row's own to close.
+**R3 the GPU run: local, GPU, Opus 5, size ¼, no lane, after R2.** Its
+judgement half was finished on 2026-09-19 (#711 to #715) — the twelve, the
+Lauds sky, the covered hall and eleven bodies at interact range, the
+unlooked-at list down to one item, a phone (#530). Its walking half is the
+run reaching the end, and that is now entirely this row's own to close.
 
 **The general lesson, now with three instances under it, one of them twice
 over.** Every row marked `Local: GPU` splits into a judgement that needs eyes
 and a proof that needs the machine to behave, and the two have failed
 independently every single time. R5 got its judgement without its run. R11
-shipped its Node half without its judgement. R2 has now got its judgement
+shipped its Node half without its judgement. R3 has now got its judgement
 twice over, and a walking fix proven on Node terms twice over, without the
 run that would confirm either. **Do not gate a looking on a walking**, and do
 not let a row claim the walking is done because the looking is, or because a
 Node check went green.
 
-Nothing is gated on R2 *starting*, so everything in wave A runs alongside it.
+Nothing is gated on R3 *starting*, so everything in wave A runs alongside it.
 
 ### Wave A — right now, no gate, in parallel
 
@@ -339,8 +356,9 @@ its row open with its text rewritten to say what is done.
 
 | Row | Model | Where | Lane | Next increment |
 | --- | --- | --- | --- | --- |
-| ~~**R1** The walker on the stair~~ | Opus 5 | Container | none | **Shipped** (#716 to #720). A same-storey walk now searches that storey's own floor, so `hike` can no longer take a flight for a stair or the wall walk for a corridor, and a tight cell costs five instead of one, so it stops hugging the walls a prop stands against. `test/layout.mjs` check 8b holds it over 66 room pairs, 153 ok. The row is closed; the run itself is Gate 1, above, and it is R2's. |
-| **R2** The GPU run | Opus 5 | **Local: GPU** | after R1 | **Gate 1, above.** Its looking is done (#711 to #715); the old R1 walker holds on a GPU now (#734, #736), and a third sitting reached the accusation for the first time before a new bug, fixed sight heights in `src/interaction.js`, produced the wrong ending (#735 to #741). Gated on the new R1, "Sight at the body's own height." |
+| **R1** Explore: the day before | Opus 5 | Container | A, D | **New 2026-09-21, claimed the same day** (#750 to #753). `WISHLIST.md` theme 8's four questions answered, both against the theme's own recommendation: the walking day is the main mode, not a second door, and it is the day before the death, Hywel alive, not the day of it. `SPECS.md`'s "Explore: the day before" section is the next thing this row needs. |
+| ~~**R1** The walker on the stair~~ | Opus 5 | Container | none | **Shipped** (#716 to #720). A same-storey walk now searches that storey's own floor, so `hike` can no longer take a flight for a stair or the wall walk for a corridor, and a tight cell costs five instead of one, so it stops hugging the walls a prop stands against. `test/layout.mjs` check 8b holds it over 66 room pairs, 153 ok. The row is closed; the run itself is Gate 1, above, and it is R3's. |
+| **R3** The GPU run | Opus 5 | **Local: GPU** | after R2 | **Gate 1, above.** Its looking is done (#711 to #715); the old R1 walker holds on a GPU now (#734, #736), and a third sitting reached the accusation for the first time before a new bug, fixed sight heights in `src/interaction.js`, produced the wrong ending (#735 to #741). Gated on the new R2, "Sight at the body's own height." |
 | ~~**R8** Side quests~~ | Opus 5 | Container | A | **Shipped, and the row is closed** (#691 to #695). The seven errands left of the dozen went in on 2026-09-18, one voice each on the seven people who had none, so `data/quests/` is twelve files and every person the day one schedule puts in the castle has an errand. A sixth set rule came with them: a terminal stage may not park a person whose `default` lines pose one of the frame's tokens. No `save.js` change and no version bump. |
 | **R6** Life: a populace | Opus 5 | Container | C, D | ~~The file, the validator and the first ten~~ shipped 2026-09-17 (#616 to #618): a routine is a ring per bell, nine activities on three clips the kit already had, no asset added. ~~Five more people, a `talk` rail~~ shipped 2026-09-20 (#729 to #733): the page now builds 32 of 32 bodies, exactly `MAX_SKINNED_TOTAL` (#609), outer ward peaking at 18 of 20 and inner at 15 of 20, plus a flat `talk` list of three pairs played through the `#caption` band. What is left is the rest of the fifty (R9's town), the four activities still without a clip (R10), and the twelve's 27-pair chatter pool, still unspent by proximity. |
 | ~~**R1** A fourth body~~ | Fable 5.1 | Local: net | C | **Shipped** (#603 to #606). Quaternius's Ultimate Modular Women Pack, meshopt to 1.02 MB, worn by the cook, the laundress and the lady. |
@@ -362,13 +380,15 @@ that sat in lane A without moving the version number: it overturned #533's
 second clause, put `day2.watches` in the data, and changed `repair`'s watch
 clamp to read the day's own list. That is a repair change, which runs on every
 load, rather than a field arriving, which is what a version number is for (#37,
-#702). The next row that wants version 7 takes the lane.
+#702). The next row that wants version 7 takes the lane. **R1 is that row, as
+of 2026-09-21** (#751): a saved explore, its own increment 3, wants version 7
+at once, so lane A holds R1 until it lands.
 
-### Wave B — the moment R2 lands
+### Wave B — the moment R3 lands
 
 | Row | Model | Where | Lane | Note |
 | --- | --- | --- | --- | --- |
-| ~~**R3** The images~~ | Opus 5 | Local: GPU | none | **Shipped** (#634, #635), from a fallback frame rather than R2's screenshots — the run never reached the shot this row wanted. |
+| ~~**R3** The images~~ | Opus 5 | Local: GPU | none | **Shipped** (#634, #635), from a fallback frame rather than the GPU run's screenshots — the run never reached the shot this row wanted. |
 | ~~**R5** The hall covering~~ | Sonnet 5 | Local: GPU | B | **Shipped** (#656 to #658). Seven `roof.glb` pieces, not fourteen — the piece is a whole ridge-and-both-slopes cross-section, found by reading its vertices rather than guessing from its bounding box. The Vespers floor read 69.8 to 89.8 of 255 across the hall's length, well clear of SPECS.md's ~25 line; no second brazier or window needed. |
 | **R11** Feel | Sonnet 5 | Local: GPU past its Node line | D | ~~The shadow decal and the reaching hand~~ — **the Node half shipped 2026-09-17** (#650 to #654), ahead of the gate, because it never needed one: two draw calls, a canvas-painted decal, a hand that reaches for whatever the prompt is offering, and nine assertions in `plan-vs-scene.mjs`. What is left is the three shots, and nothing else in the theme starts before somebody has looked at them. |
 
@@ -379,9 +399,9 @@ marked `Local: GPU` has a Node acceptance criterion on purpose — the closing
 section of this file says so — and R11's turned out to be the whole of its
 first increment's code: two objects in the scene, followed by the player, out
 of every ray, asserted nine ways in a suite CI runs. It shipped on 2026-09-17
-(#650 to #654) with R2 still half open. **What the gate was really protecting
+(#650 to #654) with R3 still half open. **What the gate was really protecting
 was the judgement, not the work**: whether a blob reads on stone and on grass,
-and whether a hand reads as a hand, are still unanswered and still R2's
+and whether a hand reads as a hand, are still unanswered and still R3's
 sitting to answer.
 
 The reading that generalises: for these three rows the gate is on *finishing*,
@@ -418,10 +438,10 @@ to overturn rather than a street to place.
 | --- | --- | --- | --- |
 | **R13** The floor plan you can see, past its first increment | Opus 5 | Container | B |
 | **R9** A castle to get lost in: the town | Opus 5 | Container | B |
-| **R3** The retro castle: increment 1 | Opus 5 | Container | B |
+| **R4** The retro castle: increment 1 | Opus 5 | Container | B |
 
-**R3 is startable now and R9 is not**, and the two share a lane, so the
-order inside lane B is R3 first (#742 to #744). Its first increment replaces
+**R4 is startable now and R9 is not**, and the two share a lane, so the
+order inside lane B is R4 first (#742 to #744). Its first increment replaces
 the fifteen Poly Haven material sets with fifteen 128 px pixel textures the
 repo draws itself, on the same fifteen names, with the rails and the memory
 count in front of it; it needs no `ktx`, no network and no GPU, which is the
@@ -467,7 +487,7 @@ river**, outside the west gate; it has no `SPECS.md` section yet, so it is an
 respects it everywhere a gate does not force otherwise. The one real inversion
 is that wave A puts R8, R6 and R12a ahead of R4 and R5, and that is because R4's
 remaining threads are a design call plus a local job while R5 sits behind gate
-1. When R2 lands, the ranks and the order agree again.
+1. When R3 lands, the ranks and the order agree again.
 
 **It does not claim a size it cannot see.** Five of the twelve are 2+ rows,
 which by this repo's own rule means they will not finish in one sitting and
