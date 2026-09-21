@@ -8097,3 +8097,210 @@ change; `npm test` and `npm run build` are green on `main` before and after
 this branch, which touches five markdown files. `npm run play` was not run
 and could not be (#53), and nothing here claims a look: the section's
 checklist is what the look will be.
+
+---
+
+## The retro castle: the stone is drawn here now (2026-09-21)
+
+**Increment 1 of rank 3, shipped.** The fifteen Poly Haven material sets are
+gone and the built castle wears fifteen 128 px textures this repo draws.
+Worked under Claude Opus 5 as the builder, on
+`claude/retro-castle-pixel-textures-kliakt`, against the `SPECS.md` section
+#742 to #744 wrote. Decisions **#754 to #763**, one per open call, allocated
+off a fresh `origin/main` at `3ee4364` whose highest number is #753 (#633's
+rule); a renumber at merge is expected, and the code cites these as "#742,
+open call N" rather than by these numbers, so a renumber costs nothing.
+
+**What shipped.** `tools/pixel/index.mjs` and `tools/pixel/textures.json`: five
+drawing families — `courses` seven rows, `planks` four, `ground` two,
+`plaster` one, `weave` one — each a pure function of a row's parameters and a
+seed to a 128 x 128 RGBA buffer. `npm run pixel:render` writes
+`assets/pixel/<name>.png` through sharp; a second run rewrites nothing.
+`tools/pixel/sheet.mjs` tiles every row 3 x 3 at 4x into `shots/pixel/sheet.png`
+and asserts nothing. Fifteen PNGs committed, 1.2 to 3.8 KB each, six to nine
+colours each. Fifteen `assets/poly-haven/` folders deleted in the commit their
+names stopped pointing at them: 45 files, 23.9 MB on disk, and that folder went
+from 45 MB to 21. `data/scene-config.json`'s `materials` became
+`pixelMaterials`, spliced rather than re-serialised (#584) in the file's own
+line ending (#632), with nothing else in the file moved. `src/assets.js`'s
+`loadPBRMaterial` became `loadPixelMaterial`, `src/castle-builder.js`'s
+`material()` reads the new section, `tools/encode-assets.mjs` lost
+`encodeMaterialMaps`, and `test/assets.mjs` and `test/budget.mjs` gained the
+rails below.
+
+- **Replace the fifteen sets; keep the ten prop packs** (#754, open call 1,
+  taken as written). Nothing was supplemented and nothing was kept "just in
+  case": a set beside a pixel texture is about 3 MB of video memory for no
+  variety, and `test/budget.mjs`'s fourth count now refuses it by arithmetic
+  rather than by rule. Measured: the supplement fails at **82.1 MB** against a
+  64 MB ceiling.
+
+- **Lit, diffuse only** (#755, open call 2). `loadPixelMaterial({ map,
+  roughness }, tint)` builds a `MeshStandardMaterial` with a `map`, `roughness`
+  from the row or 1, `metalness` 0 and the tint or white as its colour (#516),
+  through the same `loadTexture` and `tuneTexture` as before, so the map is
+  NEAREST-magnified at 128 px with no new branch and `PIXEL_ART_MAX_PX` did not
+  move. Six of the fifteen rows carry a `roughness`; the nine stone rows do
+  not and get 1. The fallback colour went with `loadPBRMaterial`: one file per
+  row means a missing file is a console line naming it, not a wall that looks
+  nearly right.
+
+- **The kit is relit, and the assumption behind that was checked first**
+  (#756, open call 3). Every Kenney GLB read — `battlement.glb`,
+  `wall-fortified-gate.glb`, `column.glb`, `column-damaged.glb`,
+  `detail-crate.glb` — declares `KHR_materials_unlit` on every material, so
+  GLTFLoader does hand back a `MeshBasicMaterial` and the recommendation stood
+  as written. `tuneMaterials` swaps it for a `MeshStandardMaterial` over the
+  same map, behind `RELIGHT_KIT` in `src/assets.js`. The texture object is
+  reused, so `KHR_texture_transform`'s offset and repeat come with it. Nobody
+  has seen a lit merlon (#53); `RELIGHT_KIT = false` is the one-line reversal
+  if one goes black the way the slate did (#438).
+
+- **A program in the repo generates, and the suite is the review** (#757, open
+  call 4). A row is parameters and a seed; `test/assets.mjs` re-renders every
+  row in Node and holds the committed PNG pixel-identical to it. An image
+  model's output fails that by construction, which is #743 as a check.
+
+- **128 px and at most 32 colours, held in `test/assets.mjs`** (#758, open call
+  5). `PIXEL_PX` and `PIXEL_MAX_COLOURS` are declared in the suite and NOT read
+  off the generator, and the suite fails if `tools/pixel/index.mjs`'s own
+  `SIZE` disagrees with it: a rail that reads its subject's constant is the
+  check that re-implements the thing it checks (#34). The fifteen use six to
+  nine colours of the 32.
+
+- **PNG, not KTX2, and the exemption is a size** (#759, open call 6). 85 KB in
+  video memory with its mip chain, and ETC1S's two base colours per 4 x 4 block
+  would mangle a hard pixel edge. `tools/encode-assets.mjs`'s header now states
+  the rule as a size — 128 px or under is a PNG — and names check 3b as what
+  holds it, so it cannot grow into a 1k PNG. `CLAUDE.md`'s compression bullet
+  says the same in one sentence.
+
+- **The fifteen names stay** (#760, open call 7). `data/sounds.json`'s
+  `byMaterial`, the drum beat and the config's sixty references did not move,
+  and `data/sounds.json` was not touched.
+
+- **No ceiling was renegotiated; there is a fourth count** (#761, open call 8,
+  and #611). None of the three existing counts moved: the outer ward still
+  draws 993 meshes, the inner 643, the outside bucket 131, three point lights,
+  32 bodies. `MAX_TEXTURE_MB = 64` joins them in the ceilings block, and the
+  castle reads 37.9.
+
+- **The props are untouched** (#762, open call 9). The ten packs are 35.1 MB of
+  the 37.9 and the look is what says whether a photographed cabinet in a pixel
+  room is the next wrong thing.
+
+- **Tone mapping and the fill are left for the GPU** (#763, open call 10).
+  `toneMappingExposure` and the hemisphere's 2.0 were not touched. They are two
+  numbers on the looking checklist and moving either from a container would be
+  guessing at a look nobody has had.
+
+**The two numbers this row exists to move.** By the new count's own arithmetic,
+the pre-swap tree is **80.8 MB** of texture memory and the post-swap tree is
+**37.9 MB**, over 70 images. Of the 80.8, **79.3 MB is the `.ktx2` on disk**,
+which is the 79.3 MB #506 measured off `renderer.info.memory` on the live page
+to the decimal: that agreement is the calibration, and it is why the number
+below it is worth printing. `SPECS.md` predicted 79.3 before and about 36.4
+after, and both are 1.5 MB under what the count reports, because the spec's
+arithmetic was over the `.ktx2` alone and the count as specified includes the
+kit's ten 64 px PNGs (0.2 MB) and the hen's 512 px atlas (1.33 MB). The
+difference is the two ends of the same 1.5 MB, not a disagreement about the
+swap: 44.2 MB of sets left and 1.25 MB of drawn stone arrived.
+
+**Every new rail was broken on purpose from a green baseline (#34), and here is
+what each said.** The baseline was fifteen of fifteen suites green before any
+of them.
+
+- `test/budget.mjs`, the ceiling to 30: `FAIL  70 textures come to 37.9 MB of
+  video memory, over the ceiling of 30. The three biggest: assets/NPCs/Hen.glb#0
+  (1.33 MB, 512x512 RGBA8 + mips),
+  assets/poly-haven/WoodenTable_01_1k.gltf/textures/WoodenTable_01_nor_gl_1k.ktx2
+  (1.33 MB, 1024x1024 UASTC, 11 levels),
+  assets/poly-haven/WoodenTable_01_1k.gltf/textures/WoodenTable_01_arm_1k.ktx2
+  (1.33 MB, 1024x1024 UASTC, 11 levels)`. The spec expected all three to be a
+  prop's; the biggest is the hen's atlas, which is a body's, and the two after
+  it are the table's.
+- `test/budget.mjs`, the supplement — the fifteen folders restored out of git
+  and their old `diffuse`, `normal` and `arm`/`rough` put back beside the new
+  `map`: `FAIL  115 textures come to 82.1 MB of video memory, over the ceiling
+  of 64.` Keeping only the normal and the arm, which is the cheaper version of
+  the same mistake, is 72.6 MB and fails too.
+- `test/assets.mjs` 3b, a PNG re-rendered at 256: `FAIL
+  assets/pixel/stone_pavers.png is 256 x 256 by its IHDR, not 128 x 128 — the
+  size is what keeps it out of tools/encode-assets.mjs (#508) and what keeps
+  tuneTexture on its NEAREST branch`, plus the identity rail refusing to
+  compare it.
+- 3b, a stripe painted down the last column of `castle_wall_slates.png`: `FAIL
+  assets/pixel/castle_wall_slates.png does not wrap left to right: its last
+  column differs from its first by 34.50 against a median interior column step
+  of 6.51, over 1.5 times it.` and `FAIL ... 384 of 65536 bytes differ, the
+  first at pixel (127, 0), 107 where the row says 96.`
+- 3b, `wood_floor_deck`'s seed changed in `textures.json` with no re-render:
+  `FAIL  assets/pixel/wood_floor_deck.png is not what tools/pixel/index.mjs
+  draws for row "wood_floor_deck": 29382 of 65536 bytes differ, the first at
+  pixel (31, 0), 51 where the row says 128.`
+- 3b, a 1k jpg copied out of commit `c4e0f7a` into `assets/pixel/` and named:
+  four rails, `FAIL ... is assets/pixel/castle_wall_slates_diff_1k.jpg — a pixel
+  material's map is a .png under assets/pixel/`, `FAIL ... has no PNG IHDR — it
+  opens 0xffd8ffe0`, `FAIL ... holds 32559 colours, over 32 — that is a
+  photograph, not a drawing`, and `FAIL ... is 1024 x 1024, so it cannot be
+  compared with the 128 x 128 its row draws`.
+- 3b, a `map` pointed back at `assets/poly-haven/.../wood_planks_diff_1k.ktx2`:
+  `FAIL  pixel material "wood_planks"'s map is
+  assets/poly-haven/wood_planks_1k.gltf/textures/wood_planks_diff_1k.ktx2 — a
+  pixel material's map is a .png under assets/pixel/`, and two more.
+- 3b, a `normal` beside `dirty_carpet`'s `map`: FAIL  pixel material
+  "dirty_carpet" declares \`normal\` beside its \`map\` — a pixel material is one
+  map, lit and diffuse only (#742, open call 2), and src/assets.js reads
+  nothing else.
+- `test/assets.mjs` check 4, `plastered_wall_04_1k.gltf` restored to disk with
+  nothing naming it: `FAIL  nothing references
+  assets/poly-haven/plastered_wall_04_1k.gltf/textures/plastered_wall_04_arm_1k.ktx2`
+  and two more, then `FAIL  3 unreferenced file(s) under assets/, 0.7 MB`.
+
+**Two breaks changed the code rather than just proving it.** The jpg break
+printed `it is .......` because the message rendered the file's magic bytes as
+latin1; it prints `0xffd8ffe0` now. The `assets/poly-haven` break threw out of
+sharp on a KTX2 and ended the run with a stack trace instead of a name — still
+non-zero (#13), but a crash is not a report — so the decode is guarded and an
+undecodable map is a failure with its path in it. Both are #147's question
+asked of a message rather than of a comment.
+
+**The seam rule has a blind spot, and the generator works around it rather than
+the rule being changed.** Check 3b compares the last column against the first
+at 1.5 times the MEDIAN interior column step, which is the rule the spec
+stated. A texture drawn on a torus can fail it while tiling perfectly: a mortar
+course landing on row 0 makes the wrap pair one of the loudest adjacencies in
+the image, exactly as rows 15 and 16 are inside the tile. Thirteen of the
+fifteen rows failed that way on the first render, `wood_floor_deck`'s rows at
+68.93 against a median of 1.41. So every family now phases its hard edges off
+the tile's own edge — a course half a course down, a board gap half a board
+across, a weave cell half a cell both ways, block and butt joints moved by
+`clearOffset` — and `plaster`'s damp patches darken what is under them by an
+amount falling to zero at their edge instead of replacing it, which was worth
+49 of 255 across one pair of pixels and was the whole of that row's 2.50
+against 2.31. All fifteen are at or under 4.47 now. **The rule's remaining
+sharp edge, for whoever writes increment 2**: a texture more than half of whose
+adjacent column pairs are identical has a median of 0.00, and then only a seam
+of exactly 0.00 passes. `old_planks_02` is at 0.20 and passes with a seam of
+0.00. A row that trips it is an argument for the architect, not a number to
+loosen here.
+
+**Not verified, and it could not be.** `npm run play` was not run: this is a
+container with no GPU, and a movement or physics assertion under a
+software-rendered Chromium is inconclusive rather than confirmed (#53).
+**Nothing here claims a look.** The castle has not been seen in pixel art by
+anybody, the kit has not been seen lit, and the section's looking checklist is
+what the look is for. No `ktx` was needed or used — nothing new goes through
+the encoder, by #759 — and nothing was fetched from any asset host or any
+network: the fifteen textures are arithmetic, and `npm install` was the only
+thing that touched the wire.
+
+**Green.** Fifteen of fifteen suites, `npm test` exit 0, and `npm run build`
+clean in 735 ms. `test/built.mjs` reports **dist/ at 28.9 MB against 52.8 MB
+before**, which is the 23.9 MB of deleted sets and nothing else, and both pages
+still fetch the same file set: the KTX2 count it compares fell from 91 to 46
+on both sides together, which is what it is there to catch. The three counts in
+`test/budget.mjs` are unmoved and the fourth reads 37.9 of 64.
+`test/plan-vs-scene.mjs`'s drum beat — one map per material, each drum's map
+its own plan piece's — passes over the new materials with no assertion added
+there and nothing crossing the four-suite line (#529, #611).
