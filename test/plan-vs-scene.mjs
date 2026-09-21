@@ -547,13 +547,39 @@ try {
    * settled. What is not is whether ten more NPC instances were built at all
    * and put where the first stop of the ring says — the body count comes out
    * of a Promise.all over ten `build()` calls and the placement out of
-   * `Populace.setWatch`, and neither of those exists in Node. */
+   * `Populace.setWatch`, which the read below calls for itself (see the park
+   * note), and neither of those exists in Node. */
   {
     const populace = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/populace.json'), 'utf8'));
     const dueNow = populace.people
       .map((p) => ({ id: p.id, stop: (p.routine?.[mystery.watches[0]] ?? [])[0] }))
       .filter((p) => p.stop)
       .map((p) => ({ ...p, at: stopWorld(nav, p.stop) }));
+    /* PARK THE RINGS BEFORE MEASURING, AND SAY WHAT THAT COSTS (#724, #147).
+     * `Populace.setWatch` places a body and starts its first dwell at
+     * `DWELL * (0.5 + phase)` seconds — 4.5 s for the first ring, 11.2 s for
+     * the last — so on a machine slow enough to spend that long between the
+     * page's own `setWatch` and this read, a body is already walking its ring
+     * and stands nowhere near stop 1. This beat was green six times in six
+     * here and red twice in CI, 0.055 m off on 2026-09-18 and 0.408 m off on
+     * the merge of PR #47: two distances from one stop are two points on a leg
+     * that can be the length of the room, which is a wall clock and not a
+     * jitter. Calling `setWatch(watch, {walk: false})` here re-places every
+     * body on stop 0 with no route and no motion — the call src/main.js makes
+     * at load, so a save resumed at Sext opens with the household already
+     * standing where Sext says — and what is measured below is static
+     * geometry again. `TOL` stays 0.01 m, which is what this file diffs static
+     * geometry at: the number a walking body is owed is `stop walking`, not a
+     * larger epsilon (#13).
+     *
+     * WHAT THE BEAT NO LONGER SAYS is that the page called `setWatch` at load
+     * at all — the line below would place these thirteen even if `init` never
+     * had. That the cast is placed at load is the thirteen's own beat further
+     * up, which reads bodies nothing here touches. What survives is
+     * `Populace.setWatch` against Node's own `stopWorld`: the routine lookup,
+     * the level, the floor height and the facing, none of which Node can
+     * place. */
+    await page.evaluate((watch) => window.__populace.setWatch(watch, { walk: false }), mystery.watches[0]);
     const folk = await page.evaluate(async () => (window.__folk || []).map((n) => ({
       id: n.id, name: n.name, label: n.label, prompt: n.prompt || null, visible: n.group.visible,
       x: n.group.position.x, y: n.group.position.y, z: n.group.position.z,
@@ -1039,15 +1065,23 @@ try {
         const hidden = (id) => document.getElementById(id).classList.contains('hidden');
         const promptNow = () => (hidden('interact-prompt') ? null : document.getElementById('interact-prompt').textContent.trim());
         let chosen = null, prompt = null, tried = 0;
+        // WHAT EVERY CELL OFFERED, AND NOT A PROMPT READ AFTER THE LOOP (#147).
+        // Until #721 the failure read `promptNow()` once the sweep was over and
+        // printed it as "the nearest offered", which is the twelfth cell's
+        // answer under the first cell's name — and the twelfth is the far one,
+        // 1.58 m out with the bell at 1.17 m, so the message blamed the bell for
+        // a beat the Constable was losing.
+        const offered = [];
         for (const spot of spots) {
           tried++;
           window.__cam.position.set(spot.x, spot.h + eye, spot.z);
           window.__cam.rotation.set(0, Math.atan2(-(at.x - spot.x), -(at.z - spot.z)), 0, 'YXZ');
           await frame();
           const p = promptNow();
+          offered.push(`${spot.d.toFixed(2)} m: ${p ? JSON.stringify(p) : 'nothing'}`);
           if (p && /examine/i.test(p)) { chosen = spot; prompt = p; break; }
         }
-        if (!chosen) return { chosen: null, tried, prompt: promptNow() };
+        if (!chosen) return { chosen: null, tried, offered };
         const before = [...window.__mystery.state.clues];
         document.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyE' }));
         await frame();
@@ -1074,7 +1108,7 @@ try {
         return { chosen, tried, prompt, toast, gained, journal, shut: hidden('journal-overlay'), held: window.__mystery.state.clues.length };
       }, { spots, at, eye: EYE_HEIGHT });
 
-      if (!looked.chosen) fail(`none of the ${looked.tried} cells between 0.9 and 2.8 m of the chapel candles offers them${looked.prompt ? ` (the nearest offered "${looked.prompt}")` : ' — no prompt at all'}`);
+      if (!looked.chosen) fail(`none of the ${looked.tried} cells between 0.9 and 2.8 m of the chapel candles offers them, nearest cell first — ${looked.offered.join('; ')}`);
       else {
         check(looked.prompt === `Press E to examine the ${wantName}`, `evidence prompts with mystery.json's own name: "${looked.prompt}"`, `mystery.json says ${JSON.stringify(wantName)}`);
         check(looked.gained.includes('chapel-candle'), 'E on it lands its clue in the engine', looked.gained.join(', ') || 'nothing landed');

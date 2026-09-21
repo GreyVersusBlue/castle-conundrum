@@ -79,6 +79,114 @@ Four facts every row below leans on, stated once:
   changes go through `migrate` with a version bump; `repair` runs on every load
   (#37).
 
+## The red suite: what the prompt is aimed at
+
+**Unranked, the row `BACKLOG.md` calls "nobody's row yet". Size ¼. The first
+increment shipped 2026-09-20** (#721 to #723). Two increments are left and both
+are class S. `BACKLOG.md`'s and `ROADMAP.md`'s prose is a scribe's job, not
+this section's.
+
+`main` had no green CI run and every PR inherited a red `plan-vs-scene`. Two
+beats were named, and they are two bugs, not one. The chapel-candles beat is
+fixed. The populace beat has never been seen to fail on the dev machine and is
+specified here rather than changed blind.
+
+### Scope
+
+| File | What changes | State |
+| --- | --- | --- |
+| `src/interaction.js` | `AIM_DOT = 0.95`, and two slots per list in `update()`: the nearest thing inside the aim cone, then the nearest thing at all | shipped (#722) |
+| `test/plan-vs-scene.mjs`, the chapel-candles beat | the failure prints every cell it tried, nearest first, instead of a prompt read after the loop had already moved on | shipped (#723) |
+| `test/plan-vs-scene.mjs`, the populace beat (`all N of them stand on the first stop of their Prime ring`) | park the rings before measuring; `TOL` stays 0.01 m | increment 2 |
+| `src/mystery.js` (`validateMystery`'s nav rails), `test/mystery.mjs` | a station-to-prop clearance beside `STATION_CLEARANCE`, and the two stations that fail it | increment 3 |
+
+Nothing here touches `src/save.js`, its version or `migrate`, and nothing moves
+an assertion across the `layout` / `plan-vs-scene` / `mystery` / `budget` line.
+
+### Acceptance
+
+**Increment 1, shipped.** `npm test` is 15 of 15. `plan-vs-scene` ran six
+times on the dev machine after the change and was green six times, against one
+green in six before it. The beat that holds it is `test/plan-vs-scene.mjs`'s
+`evidence prompts with mystery.json's own name`, and the break that proves it
+is not vacuous is `AIM_DOT = 0.35`, which is `FACING_DOT` and therefore
+nearest-wins verbatim: `FAIL none of the 12 cells between 0.9 and 2.8 m of the
+chapel candles offers them, nearest cell first — 0.96 m: "Press E to talk to
+the Sir Roger Lestrange"; 1.08 m: ... 1.58 m: "Press E to ring the bell"`,
+exit 1 (#722, #723).
+
+**Increment 2.** The populace beat passes with the ten bodies parked, and the
+`TOL` in its message still reads 0.01. The break: skip the park and hold the
+page at Prime for fifteen seconds before the beat, which puts every ring on its
+second or third stop and fails the beat by metres.
+
+**Increment 3.** `test/mystery.mjs` gains a rail saying no station stands
+within `PROP_CLEARANCE` of anything the player presses E at, at the watch that
+station is held. It is red on the data as it stands, so the increment carries
+the data fix with it. `npm test mystery layout plan-vs-scene` is the subset.
+
+### Open calls
+
+1. **Does the populace beat loosen `TOL`, or settle the bodies?** *Settle
+   them.* `window.__populace.setWatch(mystery.watches[0], { walk: false })`
+   immediately before the `window.__folk` read, then assert at 0.01 m as now.
+   `walk: false` routes nothing and calls `_arrive`, which is the same
+   placement `init` does, so the beat still checks `Populace.setWatch` against
+   Node's own `stopWorld`. There is no tolerance to pick: `DWELL` is 9 s and a
+   body's first timer is `dwell * (0.5 + phase)`, so the earliest ring leaves
+   its first stop 4.5 s after the page places it and the last at 11.2 s. The
+   beat is racing a wall clock, not measuring a jitter, and the two CI numbers
+   say so — 0.055 m and 0.408 m from one stop are two points on a leg that can
+   be as long as the room. What the beat loses is that `init` called `setWatch`
+   at all; say so in the comment, because that is #147's trap.
+2. **Where does the station-to-prop rail live?** *`src/mystery.js`'s
+   `validateMystery`, surfaced by `test/mystery.mjs`*, beside the
+   `STATION_CLEARANCE` check it is a second half of. It is plan arithmetic and
+   `nav.at`, provable in Node, so #529 forbids it in `plan-vs-scene.mjs`.
+3. **What number?** *1.0 m, named `PROP_CLEARANCE` in `src/stations.js` beside
+   `STATION_CLEARANCE`.* It catches the two that actually bit and nothing else:
+   the Chaplain 0.20 m from the gravestone at all four watches, and the
+   Constable 0.92 m from the chapel candles at Prime. Reusing
+   `STATION_CLEARANCE`'s 1.5 m instead would also flag the Constable against
+   the bell (1.15 m) and the body (1.41 m), the apprentice against the
+   obituary roll (1.44 m) and the sentry against the gaol roll (1.44 m) —
+   nine pairs instead of five, four of them a body standing a sensible arm's
+   length from the thing it is meant to be attending to.
+4. **Is a Node rail owed over the ranking rule itself?** *No.* The measurement
+   behind #722 is 60 lines that re-implement `InteractionSystem.update`'s
+   arithmetic, and a test that re-implements the thing it checks is not a check
+   (#34). The numbers live in `src/interaction.js`'s own comment. If a later
+   row wants one anyway it goes in `test/layout.mjs`, never in
+   `plan-vs-scene.mjs` (#529).
+5. **Is `AIM_DOT = 0.95` right, or should it be looser?** *0.95.* It is the
+   middle of the three measured and the curve is flat: 0.90 offers what the
+   player is aimed at 11411 times out of 12371, 0.95 does 11521 and 0.98 does
+   11707. Only a GPU run can say whether 18.2 degrees feels tight under a real
+   mouse, and 0.90 is the fallback if it does.
+
+### Dependencies
+
+Increments 2 and 3 are independent of each other and of everything else.
+Neither is in a named lane: `test/plan-vs-scene.mjs`, `src/mystery.js` and
+`src/stations.js` are in none of A to E. Increment 3 edits station coordinates
+in `data/mystery.json`, which "A second day" reads, so do not run it beside
+that row.
+
+### Constraints
+
+- **#529.** Nothing moves across the suite line. The chapel-candles beat stays
+  in `plan-vs-scene.mjs` because it reads a DOM prompt string off a live
+  `InteractionSystem` with a live raycast in it; the clearance rail is Node
+  arithmetic and goes to `test/mystery.mjs`.
+- **#34.** Both remaining increments name their break above, and a flake needs
+  the stronger version: show the cause moved, not the load.
+- **#13.** No skip list. Neither beat gets relaxed to pass.
+- **#53.** The suite is headless. #722's numbers are geometry and are not
+  timing, so they stand; whether the cone reads right to a hand on a mouse is
+  rank 2's.
+- **#147.** Both beats had a comment that was wrong before an assertion was.
+- **CRLF here, LF in CI** (#632).
+
 ---
 
 ## The GPU run
