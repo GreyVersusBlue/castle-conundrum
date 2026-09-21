@@ -8750,3 +8750,60 @@ next suite that plants a save and then loads the game page: plant from
 static checks pass, but nobody has run `npm run play` past it: this container
 is software-rendered and the suite needs a real GPU (#53). Whether the day
 actually plays through its new door is rank 3's first act.
+
+---
+
+## Sight at the body's own height: shipped (2026-09-21)
+
+**Rank 2 shipped** (#775 to #777). Commit `52c8579`, worked under Claude
+Opus 5 as the builder on `claude/r2-sight-at-body-height`. `npm test` 15 of
+15.
+
+**What shipped** (#775). `src/interaction.js` aims a target with no `focus`
+at its feet plus `SIGHT_HEIGHTS`, `[1.55, 1.15]` — world y before, under a
+comment that called them "two sample heights on the NPC's body" and was
+wrong (#147). A new `STOREY_REACH = 2.0` gates the same targets: skipped
+when the body's feet sit more than 2.0 m from the player's own feet
+(`camera.position.y - EYE_HEIGHT`), per open call 4. Props keep their
+`focus` and are untouched, per open call 3. `src/stations.js`'s `talkable`
+asks `walk.fromSpawn(x, z, point.level ?? 0)` instead of looping
+`plan.levels`, per open call 5; measured against today's data, 0 of 115
+station-watches changed verdict.
+
+**The tests, and a timing seam the spec did not name** (#776).
+`test/mystery.mjs` gains two assertions: the Lady's Prime station moved to
+level 2 is not talkable, and an awake upstairs station exists at all four of
+day one's watches, each with an own-storey cell 0.9 to 2.8 m away and a
+lower-storey cell within 2.8 m. `test/plan-vs-scene.mjs` gains twelve, two
+halves for each of six station-watches. The beat had to go after the
+hound's bark beat: the hound follows the camera and leaves its bark timer
+set, and the new beat running first turned the bark beat red — "26 frames
+had one early."
+
+**Four breaks, each from a green baseline** (#34):
+
+1. The old aim line back, `target.focus ? at.y : h`. Half 1 red for all six,
+   e.g. "sentry at terce, level 2, is offered from their own storey: no cell
+   of 12 ... (-18.75, -15.75) level 2 1.06 m: nothing".
+2. The old aim line with the gate also removed — `main` as it stood before
+   this row. Both halves red for all six, wider than the spec expected: the
+   porter offered from 36 of 42 cells below, e.g. "(-0.75, 0.25) level 0
+   0.35 m: \"Press E to talk to Gwilym\""; the Lady from 84 of 88; the
+   sentry from 5 of 56.
+3. The gate removed, the new rays kept. Stayed green: the walk's deck blocks
+   at all six today, and the gate is kept anyway (open call 4), which its
+   comment now says.
+4. The `plan.levels` loop put back in `talkable`. FAIL: "the Lady's Prime
+   station is talkable on its own storey and not when it is moved to level
+   2, where there is no floor under it — level 1 true, level 2 true".
+
+**Found, not fixed, out of scope for this row** (#777). `src/audio.js`
+clears the hound's bark timer only between 5 m and the follow radius (the
+follow starts at 6 m, holds to 8 m). A player who leaves past 8 m and
+returns gets an immediate first bark. Populace and audio, not this row.
+
+**What is unverified, and stays unverified here.** The proof past the
+suites — the sentry at Terce, the porter at Vespers, the accusation
+selecting 3 of 3 — is the GPU run's, on Devon's machine (#53). Rank 3's gate
+on this row is now open, and its next sitting should start from a `main`
+that carries it.
