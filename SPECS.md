@@ -29,9 +29,13 @@ renumbering eleven rows across three files while four wave A sessions were
 running is a conflict in every table line (#619). The number 1 was used twice,
 by the fourth body on 2026-09-17 and by the castle you cannot walk on
 2026-09-18 (#659 to #661), which is that rule working as intended: a rank is a
-priority and not an id. **It is in use a fourth time since 2026-09-21**, by "Sight at the body's own
+priority and not an id. **It was in use a fourth time on 2026-09-21**, by "Sight at the body's own
 height," for the same reason: a GPU run found it and it sits in front of
-`npm run play` reaching its end. **Rank 13 is new the same day**: the floor
+`npm run play` reaching its end. **It changed hands again later the same day**,
+to "Explore: the day before," because Devon's answers to `WISHLIST.md` theme 8
+(#750 to #753) made the walking day the first door into the game and a first
+door outranks what is behind it; the sight bug is rank 2 and 5 is still
+retired. **Rank 13 is new the same day**: the floor
 plan you can see (#745 to #749), a number the table has never held before,
 because Devon asked for it by name and it did not displace anything already
 in front of the castle's shape. What asset
@@ -196,9 +200,468 @@ that row.
 
 ---
 
+## Explore: the day before
+
+**Rank 1. Size 2+. Nothing shipped.** Devon answered `WISHLIST.md` theme 8's
+four questions on 2026-09-21 and overturned the theme on two of them: the
+walking day is the main mode with the mystery behind it (#751), and it is the
+day BEFORE the death, Hywel alive and speakable (#752). That price is given and
+is not renegotiated here. What this section does is settle ten calls against
+the code rather than against the theme, so each of the four increments below is
+class S.
+
+Theme 8's engine half still holds in shape: one stage, one branch per method in
+the engine, a bell, four rails. What does not hold is anything it wrote for a
+second door or a dead Hywel, and three of its eight open calls are answered
+against its own recommendation, with the reason each time (open calls 5, 6
+and 9).
+
+### What was measured, and what it changes
+
+Seven readings, because five of them make the theme's plan wrong.
+
+1. **There is no `mode`.** Which day the save is on is already a field, and the
+   day before the death is a day. `repair` is `out.day = s.day === 2 ? 2 : 1`
+   (`src/save.js:188`) and a third value is a clamp change, not a field
+   arriving, so the version stays 6 (#754 amends #751's "a `mode` field,
+   version 7"). Open call 2.
+2. **Two of the six browser suites have no door to press.**
+   `test/plan-vs-scene.mjs:90` and `test/map.mjs:117, 259, 283` wait for
+   `#start-overlay:not(.hidden)`, which is "the castle finished building", and
+   then drive `window.__quest` and `window.__castle` without ever clicking.
+   With `start` at `explore` the castle at load IS the walking day, so
+   `plan-vs-scene`'s `bodies.length === 13` and
+   `absent.join() === 'inspector,merchant'` (lines 514 and 537) measure a day
+   that is not the one they are about. The door is a method as well as a button
+   (#755). Open call 4.
+3. **All eleven evidence props hide themselves at a bell of the walking day,
+   and six of them must not.** `_showEvidence` asks whether the row lists the
+   current watch (`src/quest-manager.js:326`), and all eleven rows list only the
+   four. So a day-0 bell id hides the lantern at the stair, which is right, and
+   with it the chapel candleholders, the muniment table, the bakehouse barrel,
+   the guardroom barrel-head, the bar beside the Stockhouse door and, worst, the
+   muniment LEAF, which carries `evidence: "lock"` in
+   `data/scene-config.json:1364` and whose collider goes with it: a hole in the
+   King's Tower wall. So the walking day names what IS on the ground rather than
+   what is off it, six ids against five. Open call 1.
+4. **`day0.castle` starts empty.** Every one of #752's five things (the body,
+   the lantern, the pouch, the cloak, the tally stick) is an `evidence` row,
+   and the lantern IS the body row's prop
+   (`data/scene-config.json:2705`), so open call 1 hides all five and no
+   `DAY_SETS` verb is needed for any of them. The block exists for the stone
+   and is empty until something wants it.
+5. **Hywel's lines need no new file and no new compiler target.** A stage's
+   `dialogueState` already switches every speaker's line set, `_syncStates`
+   already layers press over errand over stage (`src/quest-manager.js:1017`),
+   and `dialogue/castle.dlg` already writes `|` lines into
+   `data/npcs.json`. So the walking day's lines are a `day0` dialogue state per
+   speaker, not a fifth pool in `data/mystery.json`, and `_linesFor` needs no
+   day-0 branch at all. Open call 6.
+6. **The fourteenth body breaks `test/budget.mjs`.** `MAX_SKINNED_TOTAL` is 32
+   and thirteen cast plus nineteen household is exactly 32. The ceiling goes to
+   33 with the argument in `HISTORY.md` (#756, #611).
+7. **`arrives: 0` reads as present on day one.** `arrivesLate` is
+   `(npc?.arrives ?? 1) > 1` (`src/mystery.js:215`) and `src/lore.js:86, 189`
+   each ask `> 1` on their own. Four call sites, one new predicate, and the
+   existing messages are left alone so `test/lore.mjs:208, 270` keep asserting
+   what they assert. Open call 8.
+
+### Scope, increment 1: the engine, the save, and a placeholder day
+
+The whole mechanism, with a day-0 schedule that is day one's copied under
+day-0 bell ids and Hywel standing in the lodge with one line. Everything the
+row is uncertain about is provable here, before a word of content is written.
+
+| File | What changes |
+| --- | --- |
+| `data/mystery.json` | A `day0` block, `day2`'s sibling: `watches` (four ids of its own, `prime-eve`, `terce-eve`, `sext-eve`, `vespers-eve`, none of them one of the four and none of them `lauds`), `schedule` (per-bell rows in day one's own shape, thirteen people, the twelve copied station for station off `schedule` plus `hywel`), `evidence` (the six rows that are on the ground: `candle`, `lock`, `ledger`, `knife`, `gaol-roll`, `walk-door`), `castle` (an empty list, with its `castleComment`), and `night` (`{title, text, button}`, the pane at the last bell). Top level beside `ui`: `watchLabels`, the HUD's name for a bell that is not its own id, and `watchLike`, the bell whose sky a bell of another day borrows, four entries each. `ui.quiet`, the line every examinable gives on the walking day. |
+| `data/npcs.json` | A fourteenth `cast` entry, `hywel`: `Farmer.glb`, tint `#7a6a52`, `role` "Master mason", `ward` "outer", `arrives: 0` with a comment saying what 0 means, a `default` set of one line (unreachable, the inspector's own `default` is the precedent) and a `day0` set. Every other cast entry gains a `day0` set, one line each, the inspector included: `validateAgainstNpcs` demands a stage's `dialogueState` on every speaker (`src/quest-graph.js:107`). Fourteen stub sets, written in the .dlg and compiled in. |
+| `dialogue/castle.dlg` | The same fourteen sets, written here and compiled with `npm run dialogue:compile`, plus the `@ hywel` speaker block. No grammar change in this increment: a state with no `?` line above it is already legal, and exactly one block in the file is one today. |
+| `data/quest.json` | `start` becomes `explore`. Three stages: `explore` (objective "Nobody is waiting for a name. Walk where you like; the bell is yours.", `dialogueState: "day0"`, `enter: ["applyDay0"]`, transitions `ask:journal` to `openJournal`, `bell:1` to `bell:3` to `ringBell`, `bell:4` to `ringBell` and to `night`, `day:1` to `arrive`), `night` (`dialogueState: "day0"`, `enter: ["showNight"]`, one transition, `day:1` to `arrive`), and `arrive`, which gains `enter: ["applyDay1"]` and nothing else. No `lock:muniment` and no `riddle:solved` on either new stage (open call 7). |
+| `src/mystery.js` | `dayWatchesOf(mystery, day)` picks by a literal 0 or 2 and falls back to the four for everything else. `onDayZero()` beside `onDayTwo()`, a third branch and not a generalisation of the second (open call 1). Day-0 clauses in `dayWatches`, `get day()`, `stationOf`, `available` (no statements, `asleep` still honoured), `press` (the day-2 clause's own shape), `examine` (one `quiet` effect, nothing granted), `enter` (`visited` still, no `L` clue), `ring` (a `night` effect beside `bell:<n>` at the last index, no wrap), `accuse` (refused). `beginDay0()` and `beginDay1()`, both `beginDay2`'s shape including its "only on the way in" guard (#699). `undoDay(rows)`, the `DAY_SETS` inverse, which is what `beginDay1` hands back so entering the mystery drops the walking day's overlay. `beforeDayOne(npc)` beside `arrivesLate`, and the `day0` validator rails below. |
+| `src/save.js` | `buildCatalog` gains the walking day's bell list; `clampWatch` takes a third list; `repair` is `s.day === 0 ? 0 : s.day === 2 ? 2 : 1`; one incoherence rail beside line 218's, in the same slot, re-clamping the watch. The version stays 6 and `migrate` is untouched (#754). The header gains the paragraph saying why, the way #702's already does. |
+| `src/stations.js` | The day-0 bells are indexed the way `day2.watches` is (lines 70 to 74), per bell, because `day0.schedule` is a station per bell and not one row for the day. |
+| `src/quest-manager.js` | `applyDay0`, `applyDay1` and `showNight` on `static actions` and `_actions`; `_applyDay0`, `_applyDay1`, `_showNight`; `enterMystery()`, which is `_event('day:1')` and is what the second button and the two non-clicking suites call. `_showEvidence` reads `day0.evidence` when the day is 0. `label()` reads `mystery.watchLabels`, and `applyWatch` hands `_onWatch` the bell's own sky id off `mystery.watchLike` beside the `walk` flag. `onPresent` is withheld on day 0 the way it already is on day 2. `get day()` returns 0, 1 or 2. |
+| `src/interaction.js` | One line, #715's: `Press E to talk to ${shown.name}` (line 169). |
+| `src/main.js` | One line: `onWatch` calls `setWatch` with the sky id the manager resolved rather than with the bell (open call 10). The engine reads the day off the state it already has, the graph's `enter` action does the rostering, and the panel is increment 2. |
+| `test/mystery.mjs`, `test/save.mjs`, `test/quest.mjs`, `test/layout.mjs`, `test/budget.mjs` | The rails below. `budget.mjs`'s `MAX_SKINNED_TOTAL` goes to 33 with its comment (#756). |
+
+Not touched: `data/scene-config.json` (open call 10 is what keeps this row out
+of lane B), `src/castle-plan.js`, `src/castle-builder.js` (`applyDay` already
+takes any row list), `data/sounds.json` (a day numbers its rings within its own
+list, so four day-0 bells ring `bell:1` to `bell:4` and the four characters
+already exist, #701), `data/populace.json`, `data/documents.json`,
+`data/lore.json`, `data/quests/`.
+
+### Acceptance, increment 1
+
+Every item is Node or headless. Each break is run from a green baseline and its
+FAIL line is quoted in `HISTORY.md` (#34, #13).
+
+- **`test/mystery.mjs`, the walking day end to end.** `dayWatchesOf(m, 0)` is
+  the four day-0 ids, `dayWatchesOf(m, 1)` is the four, `dayWatchesOf(m, 7)` is
+  the four. An engine on a day-0 state: `available` gives a station and no
+  statements, `talk` grants no clue, `press` shrugs, `examine` on each of the
+  six returns one `quiet` and nothing else, `enter` puts the room on `visited`
+  and grants no `L` clue, three rings walk the four bells, the fourth returns a
+  `night` effect and `bell:4` and moves no watch. `beginDay1()` from a day-0
+  state sets day 1 and the watch to 0; called again on a day-one state at Sext
+  it leaves the watch at Sext.
+  **Breaks**: make `dayWatchesOf` fall through to `day0.watches` for day 1 and
+  the day-one rails fail by name; let `enter` grant on day 0 and
+  `walk-crosses` is in a walking day's journal; drop `ring`'s day-0 clause and
+  the fourth ring returns a `demand` on a day with no Constable asking.
+- **`test/mystery.mjs`, the `day0` validator rails.** Nine, against clones of
+  the data, each naming the id it is about: a day-0 bell that is one of the four
+  or one of the morning's; an id listed twice; a cast member with no row in
+  `day0.schedule`; a `day0.schedule` id not in the cast; a station with no
+  floor, outside the room it names, unreachable, or inside another body's 1.5 m;
+  a `day0.evidence` id that is not an evidence row; and **the walk into the
+  night**: every body with a station at the last day-0 bell AND a day-one Prime
+  station has a route between them, in #475's message shape. That last is the
+  day-2 rail's "overnight is still a walk" pointed forward instead of back, and
+  it skips Hywel and the merchant for the reason the day-2 one skips a man with
+  no Vespers station: there is nothing to walk from or to.
+  **Break**: on a clone, move the cook's `vespers-eve` station into the cell and
+  the rail says `cook: no path from CE at vespers-eve to KI at prime`.
+- **`test/mystery.mjs`, Hywel.** `beforeDayOne` is true for him and false for
+  the twelve and the inspector; he has a `day0` station, no `schedule` row and
+  no `day2.schedule` row, and each of those three is a rail with its own
+  message. **Break**: give him a day-one station and the rail says `hywel: is
+  in the castle on the walking day only (arrives: 0) and still has a day-one
+  schedule`. **Second break**, in `test/lore.mjs`: name him in a chatter pair
+  and the message is the walking-day one and not the inspector's, which is
+  still asserted verbatim at `test/lore.mjs:208`.
+- **`test/save.mjs`.** A `day: 0` save comes back as day 0 with its watch
+  clamped to the day-0 list; a `day: 0` save carrying a clue or a recorded
+  verdict comes back as day 1 with the watch re-clamped to the four; a
+  version-6 save carrying day 1 or day 2 is untouched; `SAVE_VERSION` is 6 and
+  the fifteen fields are still in order, `fresh.day === 1` included (line 56 is
+  unchanged on purpose: the walking day is written by `beginDay0` and not by
+  `defaults`). **Break**: clamp with the four on day 0 and a save at
+  `vespers-eve` comes back at the wrong bell; drop the incoherence rail and a
+  hand-edited `day: 0` with a verdict opens the day before the death with the
+  mason already buried.
+- **`test/quest.mjs`.** `validateQuest` accepts the graph; `explore` is
+  reachable and reaches a terminal; a manager begun at `explore` is on day 0
+  with the six evidence props shown and the other five hidden, the errands and
+  the reputation asides running, the journal empty, no Present button offered,
+  no accusation panel; `bell:4` moves it to `night` and the pane's button moves
+  it to `arrive`, which puts the day at 1, the body back at the stair and the
+  cast at day-one Prime. And section 5's existing objective rail now holds
+  `explore`'s text, plus a sibling for `#quest-watch`'s initial label.
+  **Breaks**: leave `index.html`'s `#quest-objective` alone and section 5 fails
+  with the stale text quoted; drop `arrive`'s `applyDay1` and the body never
+  comes back; put `talked:constable` on `explore` and the no-overlay assertion
+  fails.
+- **`test/layout.mjs`.** The sky rail's `everyBell` grows to the walking day's
+  four and each is resolved through `watchLike` first, so a day-0 bell that
+  borrows no sky and has none of its own fails there and nowhere else; a
+  `watchLike` entry naming a bell that is not a bell, or one with no sky, fails
+  the same rail. And `undoDay` round-trips: `collidersWith(plan, undoDay(rows))`
+  is `plan.colliders` for a clone carrying one `gone` row, and
+  `undoDay(undoDay(rows))` is `rows`. **Breaks**: delete one `watchLike` entry
+  and the rail names the bell that would change the HUD and not the light; make
+  `undoDay` a no-op and the collider comparison fails.
+- **`test/budget.mjs`.** 33 bodies built, 0 under the ceiling of 33.
+  **Break**: leave the ceiling at 32 and the suite fails with `33 bodies
+  built, over the ceiling of 32`, which is the failure the fourteenth body
+  causes and the reason #756 exists.
+- `npm test` 15 of 15, `npm run dialogue:check` green, `npm run build` clean.
+
+### Scope, increment 2: the doors, and everything that says what the game is
+
+| File | What changes |
+| --- | --- |
+| `index.html` | `#start-button` reads "Walk the castle" and keeps its id: it is the panel's primary button and the resume path's, and has been since Phase 1. `#start-mystery`, a `link-button` under it, reads "Straight to the day of the death". The panel's paragraph is the walking day's; `#quest-objective` and `#quest-watch` carry `explore`'s objective and the first day-0 bell's label; the `<meta>` and og descriptions say what the first door is. Nothing about the og IMAGE changes: #634 and #635 are about the card, not the words, and `og:image:alt` ("Castle Conundrum, mid-play.") stays true. |
+| `src/ui.js` | `showStart(onStart, onMystery = null)`; a null second callback hides `#start-mystery`, which is what a resumed save gets. `showStartAgain` never shows it. |
+| `src/main.js` | The UI-flow region only. The second callback is the first one plus `quest.enterMystery()`, and it is passed only when `saved` is null. |
+| `README.md` | The opening says a castle you walk with a mystery in it. |
+| `test/overlays.mjs`, `test/touch.mjs`, `test/built.mjs`, `test/play-castle.mjs` | Each clicks `#start-mystery` where it wants the day of the death. |
+| `test/plan-vs-scene.mjs`, `test/map.mjs` | Each calls `window.__quest.enterMystery()` after the build and before it measures, because neither ever clicks (#755). `plan-vs-scene`'s counts become 14 bodies and `hywel,inspector,merchant` hidden at Prime. |
+
+### Acceptance, increment 2
+
+- **`test/overlays.mjs`**: the second button releases and takes the pointer the
+  way the first does, which is the one property that suite asserts (#659 to
+  #661), and it is not on the panel when a save is resumed. **Breaks**: the new
+  button without `player.lock()`; pass `onMystery` unconditionally and the
+  resume panel offers to restart the day the player is standing in.
+- **`test/quest.mjs`** section 5, unchanged in shape, now green against
+  `explore`'s objective, and the `#quest-watch` sibling with it.
+- **`test/plan-vs-scene.mjs`**: pressing E at a body reads `Press E to talk to
+  Sir Roger Lestrange` exactly, which is #715 and is a live DOM string no Node
+  suite can see (#529, #39). **Break**: put the article back and the assertion
+  quotes `Press E to talk to the Sir Roger Lestrange`.
+- **`test/plan-vs-scene.mjs`**: plant a day-one save at Sext with three clues,
+  load, and the panel offers one button and resumes at Sext. **Break**: hide
+  `#start-mystery` on the wrong condition and a resumed mystery is offered its
+  own start again.
+- `npm test` 15 of 15.
+
+### Scope, increment 3: the lines
+
+Fourteen real `day0` sets in place of increment 1's stubs, and #752's rule held
+by construction: not one of them is a word of day-one testimony. Hywel's is the
+one that has to carry the day, because he is the reason to walk it.
+
+| File | What changes |
+| --- | --- |
+| `dialogue/castle.dlg`, `data/npcs.json` | The fourteen sets, three to five lines each, written in the .dlg and compiled. About 60 lines against the file's 182. |
+| `tools/dialogue.mjs` | One check-only `?` kind, `? frame <stage>`, rebuilt from `data/quest.json`'s stages whose `dialogueState` is not `default`, refused on drift and written back by nothing. That is #690's bargain unchanged (`\|` and `%` write; `@`, `:`, `?` and `!` are rebuilt and compared), and it adds no line to any existing block, because every frame stage today is `default`. |
+| `test/dialogue.mjs` | The new kind, and its break. |
+
+### Acceptance, increment 3
+
+- **`test/dialogue.mjs`**: extract then compile is a fixed point; the `day0`
+  blocks carry `? frame explore`; drift is refused. **Break**: delete the
+  `? frame explore` line from one block and `npm run dialogue:check` exits
+  non-zero naming the speaker.
+- **`test/quest.mjs`**: no `day0` set contains a token
+  (`{ACCUSE}` in particular), and every speaker with a day-0 station has a
+  non-empty `day0` set. **Break**: put `{ACCUSE}` in the Constable's `day0`
+  set and `validateAgainstNpcs` demands a stage in that `dialogueState` that
+  runs `openAccusation`.
+- A reading criterion no suite can hold, named here so it is not mistaken for
+  one: none of the fourteen may say anything that only makes sense after the
+  death. The check is a person reading the .dlg's `day0` blocks top to bottom.
+
+### Scope, increment 4: the day itself
+
+The content, and the only increment that is large.
+
+| File | What changes |
+| --- | --- |
+| `data/mystery.json` | `day0.schedule` stops being a copy: the twelve moving through four bells on the castle's own business, and Hywel's own four, ending at the Chapel Tower stair at the last bell so the night pane lands where the morning's body will be. |
+| `data/populace.json` | Day-0 rings for the nineteen. The four watches' rings copied under the day-0 ids is the floor, because a walking day with no household in it is the emptiest the castle has ever been; the day-2 comment's own boundary ("nobody here has a Lauds stop") is the precedent for shipping without them and increment 1 takes it. |
+| `data/npcs.json`, `src/lore.js` | If a sermon, a song or a chatter pair is wanted on the walking day, `indexPerformances`'s watch rail grows the day-0 list the way it grew `d2Watches`, and its condition rail is unchanged: `when`/`unless`/`knew` stay day-2-only, because a verdict is still a thing only the morning after has (#648). |
+| `test/budget.mjs` | Section 3's loop covers the walking day's bells as well as the four, holding the per-ward peak to the same 20. Measured before the fact: the cast's own peak is outer 7 and inner 5, the household takes the outer ward to 18, and Hywel's lodge is outer, so the walking day peaks at 19 of 20 with the inspector not yet arrived. |
+| `test/mystery.mjs` | The nine rails of increment 1 now run against a schedule that is not a copy, which is where they earn their keep. |
+
+### Acceptance, increment 4
+
+- `validateMystery` green over the real day-0 schedule, `validatePopulace` green
+  over the day-0 rings, `test/budget.mjs` naming the walking day's own peak per
+  ward. **Break**: put two bodies 1.4 m apart at `sext-eve` and the clearance
+  rail names both. **Break**: give one of the nineteen a day-0 stop with no
+  floor under it and `validatePopulace` refuses the page.
+- What the walking day FEELS like is nobody in a container's to say (#53), and
+  rank 2's sight bug bites hardest here (`BACKLOG.md`'s soft order).
+
+### Open calls
+
+Ten, each with a recommendation. Nothing below is a locked decision except
+where it cites a number; #754, #755 and #756 are locked and are in
+`HISTORY.md`.
+
+1. **What the walking day is in data, and is day 0 a third branch or a
+   generalisation?** *A `day0` block in `day2`'s shape, and a third branch.*
+   `dayWatchesOf` is generalised because it is a list lookup keyed by a day
+   number and there is exactly one of it; every other day-2 site keeps
+   `onDayTwo()` untouched and gains an `onDayZero()` beside it. What stops the
+   generalisation reaching day one is four things said out loud: `watches` is
+   still asserted to be exactly four in `validateMystery`; `dayWatchesOf`'s
+   non-four branches are keyed on the literals 0 and 2 and everything else
+   falls back to the four; `repair` can only ever produce 0, 1 or 2; and
+   `test/mystery.mjs` asserts `dayWatchesOf(m, 1)` and `dayWatchesOf(m, 7)` are
+   both the four. A general `dayOf()` would have turned every existing
+   `if (onDayTwo())` into a silent three-way, which is how a branch gets a
+   meaning nobody wrote down.
+   **The bell ids are the walking day's own**, four of them, `prime-eve` to
+   `vespers-eve`, because `castleNav` keys its points `npc/watch` and
+   `stationOf` dispatches on the id: reusing `prime` would make one key mean
+   two stations and force a day argument through `nav.at` and every caller of
+   it. The HUD's name for them comes from `mystery.watchLabels` ("Prime, the
+   eve"), because "Prime-eve" on the tracker is a lie about a liturgical hour.
+   **And what is on the ground is a list of what IS there** (`day0.evidence`,
+   six ids), not a list of what is gone: reading 3 above is why.
+2. **How the mode is saved.** *The existing `day` field, a third value, no
+   version bump* (#754). #702's line points this way and no version-6 save can
+   carry `day: 0`, so `migrate` has no drift to be honest about. The row still
+   holds lane A, because the lane is the file and this writes it (#602). The
+   consequence is taken deliberately: with the walking day as the day BEFORE,
+   the day is what tells the two apart and a `mode` field would be a second
+   name for one fact. `BACKLOG.md`'s and `ROADMAP.md`'s "version 7" are
+   corrected with this.
+3. **What carries across the night, and what refuses to.** *Everything except
+   the mystery's own state, and there is none of it to carry.* One slot, one
+   key, one `state` object: `visited` (the map is filled in by walking),
+   `read`, `quests`, `reputation`, `riddleWrong` and `player` all survive,
+   because every one of them is a fact about the player rather than about the
+   case. `clues`, `pressed`, `taken`, `accusations` and `locks` are
+   empty on the walking day by construction, which is what makes the
+   incoherence rail in `repair` simple: a `day: 0` carrying a clue or a verdict
+   is a save that says the mystery happened before the day before it, and it
+   reads as day one.
+4. **How the player gets into the mystery, and is it offered from the start
+   panel?** *The last bell offers the night; the panel offers the day of the
+   death as a second button; and both are one dispatch, `day:1`* (#755). What
+   offers the night is the fourth ring, which is the mystery's own shape
+   (its fourth ring returns a `demand` and the frame moves): `ring()` returns a
+   `night` effect, `explore`'s `bell:4` moves to `night`, `showNight` puts up
+   the pane through `ui.showEpilogue` (which already frees the pointer and
+   already carries the errand line), and its button dispatches `day:1`.
+   **Yes to the second button, and it is not left out by accident.** The reason
+   is not taste: four browser suites click the panel and two drive the page
+   directly, and every one of them is about day one. If the only way in is four
+   rings and a pane, the mystery's own rails wait on the walking day's content
+   for the rest of the project. The button is the seam that keeps them
+   independent, and `enterMystery()` is that seam for the two that never click.
+   **The player is not moved by the night.** `state.player` is where he stood
+   at the last bell and he wakes there; the pane says so. Teleporting him would
+   be a new effect and a new spawn rule for one sentence of fiction.
+5. **Loop the day, or run it once into the night?** *Once.* The theme
+   recommended a loop so that the twelve could all be met; the lead's call is
+   once and it stands, because a day before a death is a day that ends and
+   because the loop's own reason is gone: on the walking day nobody is in the
+   castle at one bell only, since `day0.schedule` is written for it rather than
+   inherited. The last ring moves no watch, rings `bell:4`, and returns a
+   `night` effect, which is exactly what the last ring of the other two days
+   already does with `demand` and with nothing.
+6. **Where the twelve's day-0 lines live, and how the .dlg carries them.** *In
+   `data/npcs.json` as a `day0` dialogue state, reached by the `explore`
+   stage's `dialogueState`, with the .dlg carrying them as `|` lines it already
+   knows how to write.* The theme's `day0.lines` in `data/mystery.json` would
+   have made the compiler learn a second write target and made `_linesFor`
+   learn a second day; this makes both changes zero. It also gets the errands
+   for free, because `_syncStates` already layers a quest's state over the
+   stage's, so an errand in progress speaks on the walking day, which is right:
+   the errands are the castle's and not the mystery's (#550, question 6).
+   The .dlg grows one check-only kind, `? frame <stage>`, which sharpens #690
+   rather than amending it: the rebuild set grows, the write set does not.
+   **The talk-again pool comes later and is free**: a `day0-<bell>` state per
+   person, picked by `_linesFor` when the day is 0 and the bell has one, and
+   the .dlg carries those the same way.
+7. **The word-lock on the walking day.** *Not offered; the leaf answers with
+   `ui.quiet`.* The word over the muniment door guards the ledger that is the
+   motive for the full ending, and a day before the death that can open it
+   lets the mystery start with the room already unlocked and `word-lock`
+   permanently unholdable, because `locks()` stops offering an opened leaf. The
+   press is not dead, which is what `data/quest.json`'s `arrive` comment cares
+   about (a door that does nothing reads as a broken door, found by
+   `plan-vs-scene` pressing E at it before meeting anybody): it toasts a line.
+8. **Hywel's entry, and which rails have to learn him.** *A fourteenth `cast`
+   entry with `arrives: 0`, meaning the walking day and no other day, plus one
+   new predicate.* `beforeDayOne(npc)` is `(npc?.arrives ?? 1) < 1`, exported
+   from `src/mystery.js` beside `arrivesLate`, and the rails that have to learn
+   it are exactly four: `validateMystery`'s day-one schedule loop
+   (`src/mystery.js:490`), which refuses a day-one schedule for him and a
+   missing day-0 one; and three in `src/lore.js`, the chatter speaker rail
+   (line 86), the performance speaker rail (line 189) and the line-attribution
+   index, each of which asks "is this one of the existing twelve" and today
+   asks it as `> 1`. Each keeps its existing message for the inspector's case
+   and gains a second for his, so `test/lore.mjs:208` and `:270` are untouched.
+   Two rails that already do the right thing and need no change, said out loud
+   so nobody changes them: the accusation panel filters `arrives === 1`
+   (`src/quest-manager.js:708`), so a dead man is not accusable of his own
+   murder; and `npc.js`'s `get active()` hides a body with no station, so he is
+   not a prompt over an empty patch of chapel on day one (#538).
+   **Body and tint**: `Farmer.glb`, which two of the cast wear, tinted
+   `#7a6a52`. No asset is fetched and `npm run assets:encode` does not run.
+9. **What the HUD says on a day with no case.** *The objective is the theme's
+   own line and the four `ui` lines the walking day can reach are unchanged,
+   plus one new one.* `ui.quiet` is the answer to E at any of the six
+   examinables ("You are a clerk with nothing to look for. Not today."), and it
+   goes in `UI_LINES` so `validateMystery` refuses a walking day without it.
+   The theme recommended leaving the Constable's `{ACCUSE}` line alone; that is
+   overruled and costs nothing, because his `day0` set replaces the whole of
+   `default` and the token is in `default`.
+
+10. **What the walking day's light is.** *The same light, said once, as an
+   alias rather than as four copies.* `mystery.watchLike` maps each day-0 bell
+   to the hour it borrows a sky from, `applyWatch` hands the resolved id to
+   `onWatch`, and `src/main.js` calls `setWatch` with that. The alternative was
+   four `lighting.watches` blocks copied into `data/scene-config.json`, and it
+   is refused for two reasons: it duplicates five numbers per bell that nothing
+   would ever keep in step, and it would put this row in **lane B** beside
+   rank 4's retro castle, which #753 promised it would not collide with. A day
+   before that wants its own weather un-aliases one bell and writes one block,
+   which is the same edit in reverse. `src/scene-setup.js` is untouched: it
+   still returns false for a watch it has never heard of, and
+   `test/layout.mjs`'s rail is still the thing that catches a bell whose ring
+   would change the HUD and not the light.
+
+### Dependencies
+
+- **Lane A** for `src/save.js` (the clamp and the catalog, not the version) and
+  **lane D** for `src/main.js`: one line in increment 1, the UI-flow region in
+  increment 2. One row per lane at a time (#602), so nothing else in A or D
+  runs beside it. **Not lane B**, and that is a decision rather than a
+  coincidence: open call 10 keeps the walking day's light out of
+  `data/scene-config.json`, so this row and rank 4's retro castle can run at
+  once, which is what #753 already claimed and what would have stopped being
+  true if four `lighting.watches` blocks had been copied in.
+- Nothing is gated on this row and this row is gated on nothing. **Rank 2's
+  sight bug is a soft order, not a gate** (#753): it bites hardest in a day
+  that is nothing but walking up to people, so this row's GPU look wants it
+  fixed first, and no Node or headless criterion above waits on it.
+- **The texture-variety row is not a gate** (#750, question 14). If it lands it
+  goes before increment 3's lines and not before increment 1's engine.
+- `npm run dialogue:compile` runs in increments 1 and 3, and `npm run
+  dialogue:check` is what says the two halves agree (#687 to #690).
+- Not beside anything else that writes `data/mystery.json`, which today is
+  nobody, or `data/npcs.json`'s `cast` block, which is **lane C**: increment 1
+  adds the fourteenth entry, so rank 6 and rank 10 are out for that commit.
+
+### Constraints
+
+- **#36, #413.** The key is `castleConundrumSave_v1` and does not move.
+- **#37, #702, #754.** `migrate` is for drift and there is none; the version
+  stays 6 and `repair` learns a better question, which is the side of the line
+  #702 drew for exactly this.
+- **#39.** The day-0 save is asserted in `test/save.mjs` because a reload has
+  to survive it; the prompt string, the panel's two buttons and the night pane
+  are asserted against the DOM because they just happened.
+- **#529.** Nothing crosses the line. `test/mystery.mjs` owns the day-0
+  stations, the walk into the night and the engine's own answers;
+  `test/layout.mjs` owns the sky per bell and the `undoDay` round trip, both
+  derivable from the data and the plan in Node; `test/plan-vs-scene.mjs` owns
+  the live prompt string and the panel, neither provable in Node;
+  `test/quest.mjs` owns the graph and `index.html`; `test/save.mjs` owns the
+  clamp.
+- **#611, #756.** The body ceiling is renegotiated once, from 32 to 33, argued
+  in `HISTORY.md` with both numbers, and `budget.mjs` and `layout.mjs` share
+  no assertion.
+- **#533, #699, #701.** `watches` is still exactly four; a day reads whichever
+  list it names; a day numbers its rings within its own list, so the walking
+  day borrows the four ring characters and writes nothing into
+  `data/sounds.json`.
+- **#539, #540.** The overlay lives in `data/mystery.json` because what decides
+  it is which day it is, and it may only ever give the player castle. The
+  walking day's block is empty, so the property holds trivially and
+  `undoDay`'s round-trip rail is what keeps it honest when it stops being
+  empty.
+- **#534, #538.** The thirteenth's shape is the fourteenth's: `arrives`, a
+  station list that does not cover every day, and a hidden body that offers no
+  prompt.
+- **#550 question 6, #576.** The errands never touch the mystery, which is why
+  they run unchanged on a day that has none.
+- **#594.** A performance is heard once per page, and the walking day does not
+  change that.
+- **#660, #661.** The night pane goes through `ui.showEpilogue`, which frees
+  the pointer, and the second start button takes it the way the first does.
+- **#690.** The .dlg's bargain is unchanged: the write set is still `|` and
+  `%`, and `? frame <stage>` is rebuilt and compared like every other
+  annotation.
+- **#715.** The prompt fix ships in increment 1 and is asserted in increment 2.
+  The `read` verb has the same bug (`Press E to read the A gravestone in the
+  chapel floor`); the same one-word fix applies and the document titles are
+  what read badly after it, so that half is named here and left to whoever
+  gives the thirteen documents a prompt name.
+- **#34, #13.** Every rail above names its break, each run from green, each
+  FAIL line quoted in `HISTORY.md`. No skip list.
+- **#53.** Nothing above claims a look. Whether "Prime, the eve" fits the
+  tracker, whether the panel's two buttons read as a choice, and whether a day
+  with no case is worth walking are all the GPU run's and Devon's.
+- **#632.** CRLF here, LF in CI. `data/scene-config.json` and
+  `dialogue/castle.dlg` are both written by tools that take the newline from
+  the file.
+
+---
+
 ## Sight at the body's own height
 
-**Rank 1. Size ¼. Opus 5. Container. No gate, no lane. Filed 2026-09-21 from
+**Rank 2 since 2026-09-21, when the walking day took 1 (#753). Size ¼. Opus 5. Container. No gate, no lane. Filed 2026-09-21 from
 the third GPU sitting's second run** (log: `npm run play`, run 2, on the RTX
 3070 Ti). Nothing is decided in this section; the session that ships it
 claims the numbers.
