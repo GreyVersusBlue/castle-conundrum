@@ -364,6 +364,15 @@ the ranked table above, and its own scope is gone from `SPECS.md`**; what it
 shared with rank 2 stays in "The GPU run" section below, rewritten to say
 what shipped.
 
+**Rank 6's second increment shipped on 2026-09-20** (#725 to #729): five more
+people take `data/populace.json` to 19 and the page to 32 bodies built, 13
+cast plus 19 populace, exactly `MAX_SKINNED_TOTAL`, and a flat `talk` list of
+three pairs is played through the `#caption` band by a rail in
+`src/populace.js` and `src/quest-manager.js`. `test/budget.mjs` now counts
+the household. **Rank 6 is still open**: the rest of the fifty waits on rank
+9's town, the four activities without a clip wait on rank 10, and the
+twelve's 27-pair chatter pool is still unspent by proximity.
+
 ## How this repo is worked
 
 The standing instruction is *"work the next batch of ranked items in
@@ -518,7 +527,7 @@ which is what makes that survivable (#522).
 | Rank | Item | Size | Model | Where | Gate | Lane | Claimed | Detail |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 2 | The GPU run: the looks are taken (#711 to #715); rank 1 shipped (#716 to #720) and the run itself is owed | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
-| 6 | Life: a populace: the fifty, the activity clips and the ambient talk | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
+| 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #725 to #729); the town, the four clips and the chatter pool are left | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: somebody listens to the seven beds, the four rings and the first two event sounds (a bed at a point and the rings, #680 to #683; the door and the hound, #696 to #698) | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
 | 9 | A castle to get lost in: the town, the rock and river | 2+ | Opus 5 | Container | — (4c opened it) | B | | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
 | 10 | Bodies: a shared low-poly rig for the fifty (the child and the hound shipped, #643 to #645; two hens and the spear, #684 to #686) | 1 | Fable 5.1 | Local: net | — | C | | [Bodies](SPECS.md#bodies) |
@@ -631,14 +640,24 @@ bell — plus every leg of the ring and the wrap back to its first stop.
 `test/mystery.mjs` owns it (#529) and rejects thirteen breaks; the page runs
 the same validator and throws rather than warns.
 
-**What is left is the other forty and everything that needs a clip.** The
-ambient talk (`data/npcs.json`'s chatter pool, once two bodies are within 3 m
-at one bell), children and dogs, the knights actually training rather than
-standing with a sword, and the instanced-mesh and animation-LOD cost fifty
-bodies will have that ten do not — which rank 12a's budget suite is now
-there to price. `WISHLIST.md` theme 1 is the source for all of it. **Rank
-10's bodies is the row that unblocks the clips**: `sweep`, `stir`, `hammer`
-and `spar` are deferred until something ships a clip for them.
+**The second increment shipped on 2026-09-20** (#725 to #729): five more
+people, `page`, `sacristan`, `tiring-woman`, `watchman` and `writer`, take
+`data/populace.json` to 19 and the page to 32 bodies built, 13 cast plus 19
+populace, exactly `MAX_SKINNED_TOTAL`. Outer ward holds 17, 18, 17, 17 and
+inner ward 14, 15, 14, 13 across Prime, Terce, Sext and Vespers.
+`data/populace.json` also gains a flat `talk` list of three pairs, and
+`src/populace.js` and `src/quest-manager.js` carry the rail that plays one
+when the player stands near two settled, gossiping bodies, sharing the
+`#caption` band with a performance. `test/budget.mjs` counts the household
+now, not just the twelve's schedule.
+
+**What is left waits on three other rows and one argument.** The rest of the
+fifty, and whether `garden` becomes ground, is rank 9's town. The four
+activities still without a clip, `sweep`, `stir`, `hammer` and `spar`, wait
+on rank 10. The ceiling stays 32 until a row renegotiates it with rank 2's
+`renderer.info`. And the twelve's 27-pair chatter pool is still unspent by
+proximity; a later lore or dialogue increment is recommended to hold each
+pair to the schedule the way #592 holds a performance.
 
 ## Sound: a soundscape
 

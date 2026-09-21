@@ -7643,3 +7643,26 @@ time, so expect to renumber at merge** (#607's lesson).
 What was not decided here: the lines themselves, which are the builder's to
 write inside the rule `SPECS.md` gives them (household talk, nothing about
 the death), and the tiles, which the validator picks between.
+
+- **Rank 6's second increment shipped** (#729, building #725 to #728).
+  `data/populace.json` gains five people: `page`, `sacristan`,
+  `tiring-woman`, `watchman` and `writer`. The file holds 19 household plus
+  the cast's 13 is 32 bodies built, exactly `MAX_SKINNED_TOTAL`. Outer ward
+  holds 17, 18, 17, 17 and inner ward holds 14, 15, 14, 13 at Prime, Terce,
+  Sext and Vespers. `data/populace.json`'s `talk` gains three pairs, and the
+  maid's Sext stop in `inner-ward` becomes a `gossip` stop paired with the
+  tiring-woman's. **The writer's Prime, Terce and Vespers stops landed in
+  `inner-ward`, `tend`**, the fallback the spec allowed, because the
+  muniment has no walkable floor that counts as the room: all 8 floor cells
+  inside its disc read as `kings-hall`. `src/main.js` also passes `pairs:
+  populaceData.talk` to `Populace`, an argument the spec did not name.
+  **Breaks watched go red (#34)**: `talkDue` without the `settled` test;
+  `overhear` without the `_playing` guard; `test/budget.mjs` counting only a
+  ring's first stop; a twentieth household person, `33 bodies built, over
+  the ceiling of 32`; `page`, `sacristan` and `writer` moved to `outer-ward`
+  at Terce, `the outer ward holds 21 skinned bodies at terce, over the
+  ceiling of 20`; `src/main.js` constructed without `talk`, a dark band
+  after 20 steps. Three talk and hush wire checks were added beyond the
+  spec, because nothing else tested hush. One full-suite run went red on
+  `map`, `Port 8128 is already in use`, from another session on the same
+  machine sharing the port; the re-run was 15 of 15 green.
