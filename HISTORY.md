@@ -8097,3 +8097,69 @@ change; `npm test` and `npm run build` are green on `main` before and after
 this branch, which touches five markdown files. `npm run play` was not run
 and could not be (#53), and nothing here claims a look: the section's
 checklist is what the look will be.
+
+## Explore, the day before: Devon's answers to questions 11 to 14 (2026-09-21)
+
+`WISHLIST.md`'s theme 8 put four questions to Devon the day it was written
+and he answered all four the same day. Decisions #750 to #753. No code and
+no asset: `SPECS.md` is untouched and gets its section next; `WISHLIST.md`'s
+theme 8 becomes a pointer; `BACKLOG.md` gets a rank 1 row; `ROADMAP.md`
+carries the same order.
+
+- **Build the walking day. Recommendation taken** (#750). Question 11: yes.
+  One stage, one engine branch, one button and four rails, the way
+  `WISHLIST.md`'s theme 8 already specced the first increment. Question 14
+  answered the same way, no gate: the texture-variety idea, if it lands, goes
+  before increment 2's talk-again lines and not before increment 1's engine,
+  because the engine is also the thing that would first show whether the
+  castle holds a lingering eye at all.
+
+- **Main mode, now, and the theme's own recommendation is overturned**
+  (#751). Question 12: "Walk the castle" is the first door into the game and
+  the mystery sits behind it. The theme recommended a second door on the
+  start panel, thin, reversible, and revisited once the talk-again pool
+  existed; Devon took the harder answer directly. Priced at the theme's own
+  numbers, and none of it softened back toward the second-mode version: a
+  saved explore, the theme's own increment 3, ships at once rather than
+  waiting on an hour of somebody's walking, which is a `mode` field on the
+  save, version 7, lane A (#36, #37); the start panel's default button flips
+  from "Enter the Castle" to "Walk the castle"; and the entry beat of six
+  browser suites — `plan-vs-scene`, `overlays`, `map`, `touch`, `built`,
+  `play-castle` — has to pick the mystery door explicitly rather than take
+  the page's own default, because the page's own default is no longer the
+  mystery.
+
+- **Hywel is alive. The theme's own recommendation is overturned** (#752).
+  Question 13: the walking day is the day before the death, not the day of
+  it. No body at the stair, no lantern, no cloak in the laundry, no summons
+  in anybody's pouch, and none of the twelve saying a word of their day-one
+  testimony. The theme recommended the day of the death, because increments
+  1 and 2 already draw that day's four teeth — the fourth ring, the
+  Constable's `{ACCUSE}` line, the HUD's objective and the start panel's
+  four-bells paragraph — and a day before it is priced, in the theme's own
+  words, as "a thirteenth speaker, twelve new `default` sets, a second
+  schedule and a validator that knows which day it is reading, a content row
+  the size of Phases 6 and 7 together." That price is taken as given here,
+  not renegotiated, and it is the row `BACKLOG.md` now carries at rank 1.
+
+- **The rank shift #751 and #752 put on `BACKLOG.md`** (#753). The walking
+  day ranks above everything behind it: it is the first door into the game
+  and the first door outranks whatever is behind it. Rank 1 goes to the
+  walking day; "Sight at the body's own height" moves from 1 to 2; "The GPU
+  run" from 2 to 3, and its Gate cell "after 1" becomes "after 2"; "The retro
+  castle" from 3 to 4, a retired number coming back a second time the same
+  day the way 3 itself came back for the retro castle row (#744); rank 11's
+  Gate cell "after 2" becomes "after 3". Ranks 6, 7, 9, 10, 11 and 13 do not
+  move. This is a rank move, not a reversal of the sight bug's own priority:
+  rank 2's bodies-at-height fix still wants to land before the walking day's
+  GPU look, because a day that is nothing but walking up to people is where
+  that bug bites hardest, and nothing here gates the walking day on it — the
+  order is soft, and `BACKLOG.md`'s Gate column for rank 1 stays "—". **A
+  live claim on the shifted row does not hold the number still**: the retro
+  castle carried `claude/retro-castle-pixel-textures-kliakt` and merged to
+  `main` (PR #66) while this band was being written, and it renumbers to 4
+  regardless, because a rank is a priority and not an id (#619, #491) and
+  every row is named by title as well as by rank for exactly this reason
+  (#522). The two rows do not collide either way: the walking day is lanes A
+  and D, the retro castle is lane B, and #602 lets different lanes run at
+  once.

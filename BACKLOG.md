@@ -456,7 +456,7 @@ the row.
 - **Local: GPU.** Needs `npm run play` on a machine with real compositing, or
   needs somebody to look at a render. This is #53, and #53 cuts both ways: a
   real-time assertion that *fails* under software rendering is inconclusive,
-  not confirmed. Ranks 2, 3, 5, and rank 11 past its Node line.
+  not confirmed. Ranks 3, 4, 5, and rank 11 past its Node line.
 - **Local: net.** Needs a network that reaches the asset hosts. Not a GPU
   question and not the same block: #518's container could not reach Poly
   Haven and #541's could; #568's could not reach quaternius.com. Ranks 1 and
@@ -477,7 +477,7 @@ produce one.
    #635).
 2. ~~Rank 2 before rank 5.~~ Shipped by rendering the hall directly instead
    (#656 to #658).
-3. **Rank 2 before rank 11 ships past its Node acceptance.** The row's own
+3. **Rank 3 before rank 11 ships past its Node acceptance.** The row's own
    spec says nothing in it goes past a `snap` and a sentence until the run has
    happened.
 4. ~~Rank 4c before rank 9's town.~~ **Open since 2026-09-19** (#703 to
@@ -500,11 +500,17 @@ together.
 
 | Lane | The file that decides it | Rows |
 | --- | --- | --- |
-| A | `src/save.js` — the version number and `migrate` | nobody (4a, 4b and 8 are done) |
-| B | `data/scene-config.json` — and `test/tools.mjs`'s byte-exactness rail | 3, 13 (increments 2 and 3 only), 9 (4c, 5 and 12b are done) |
+| A | `src/save.js` — the version number and `migrate` | 1 (4a, 4b and 8 are done) |
+| B | `data/scene-config.json` — and `test/tools.mjs`'s byte-exactness rail | 4, 13 (increments 2 and 3 only), 9 (4c, 5 and 12b are done) |
 | C | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | 6, 10 (12c is done) |
-| D | `src/main.js`'s player rig and spawn | 6, 11 |
+| D | `src/main.js`'s player rig and spawn | 1, 6, 11 |
 | E | `src/audio.js` and `data/sounds.json` | 7 |
+
+Lane D is three rows deep now, all writing `src/main.js` in different
+regions: rank 1's second start callback and its UI-flow lines, rank 6's
+populace rig work, and rank 11's presence cues. Different regions of one
+file still merge, the way lane C's did for ranks 8 and 12c, but one row per
+lane at a time is the rule (#602) — rank 1 is not beside rank 6 or rank 11.
 
 Lane A is the one the specs already warned about in words: **"do not run
 alongside anything else that touches `save.js`"** is written into rank 4's
@@ -555,32 +561,80 @@ the theme ran out of rows rather than out of interest (#691 to #695). Every row
 below is named by title in `SPECS.md` and `ROADMAP.md` as well as by rank,
 which is what makes that survivable (#522).
 
-**The number 1 is back a fourth time, on 2026-09-21, for the same reason as
+**The number 1 was back a fourth time, on 2026-09-21, for the same reason as
 the other three**: the third GPU sitting found the next thing rank 2 cannot
 walk past, sight rays aimed at world heights instead of at the body. A
-blocker of rank 2 ranks above it, and only one number does.
+blocker of rank 2 ranks above it, and only one number does. That sentence is
+about the sight-bug row, which the same day's later answers moved to rank 2:
+Devon's answers to `WISHLIST.md`'s explore questions (#750 to #753) put the
+walking day above it, because a first door into the game ranks above
+everything behind it. **1 went to the walking day, and 3, which had come
+back for the retro castle that same morning, became 4 the same day it
+arrived** — a rank moving twice in one day is the same rule as a number
+coming back four times, applied to the same 2026-09-21. The GPU run's own
+gate follows it down, from "after 1" to "after 2", and rank 11's from "after
+2" to "after 3". Ranks 6, 7, 9, 10 and 13 did not move. **A live claim on
+the shifted row is not a reason to leave its number alone**: the retro
+castle carried `claude/retro-castle-pixel-textures-kliakt` in its Claimed
+column, merged to `main` while this band was being written, and it moves to
+4 anyway. A rank is a priority and not an id (#619, #491), a shipped or
+claimed row's number is a pointer the next renumbering session updates, and
+#522 is the reason every row is named by title in `SPECS.md` and
+`ROADMAP.md` as well as by rank — which is exactly what makes a claimed
+row's renumbering survivable. The claiming session's own prose still says
+"rank 3" and stays true as a dated record, the same as every earlier rank-1
+reference in this file.
 
 | Rank | Item | Size | Model | Where | Gate | Lane | Claimed | Detail |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Sight at the body's own height: nobody upstairs can be talked to from beside them, and the porter on the walk can be from 8 m below | ¼ | Opus 5 | Container | — | — | | [Sight at the body's own height](SPECS.md#sight-at-the-bodys-own-height) |
-| 2 | The GPU run: the looks are taken (#711 to #715); the walker holds on a GPU (#734, #736) and the third sitting reached the accusation with the wrong ending (#735 to #741) | 1 | Opus 5 | Local: GPU | **after 1** | — | | [The GPU run](SPECS.md#the-gpu-run) |
-| 3 | The retro castle: the stone in the castle's own pixel art, fifteen sets out and fifteen 128 px textures in, then variety per room (#742 to #744) | 2+ | Opus 5 | Container to the look, local: GPU past it | — | B | `claude/retro-castle-pixel-textures-kliakt` | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
+| 1 | Explore: the day before the death, the walking day as the main mode, Hywel alive and nobody waiting for a name (#750 to #753) | 2+ | Opus 5 | Container | — | A, D | claude/walking-day-before-death-8apcav | [Explore: the day before](SPECS.md#explore-the-day-before) |
+| 2 | Sight at the body's own height: nobody upstairs can be talked to from beside them, and the porter on the walk can be from 8 m below | ¼ | Opus 5 | Container | — | — | | [Sight at the body's own height](SPECS.md#sight-at-the-bodys-own-height) |
+| 3 | The GPU run: the looks are taken (#711 to #715); the walker holds on a GPU (#734, #736) and the third sitting reached the accusation with the wrong ending (#735 to #741) | 1 | Opus 5 | Local: GPU | **after 2** | — | | [The GPU run](SPECS.md#the-gpu-run) |
+| 4 | The retro castle: the stone in the castle's own pixel art, fifteen sets out and fifteen 128 px textures in, then variety per room (#742 to #744) | 2+ | Opus 5 | Container to the look, local: GPU past it | — | B | `claude/retro-castle-pixel-textures-kliakt` | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
 | 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #729 to #733); the town, the four clips and the chatter pool are left | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: somebody listens to the seven beds, the four rings and the first two event sounds (a bed at a point and the rings, #680 to #683; the door and the hound, #696 to #698) | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
 | 9 | A castle to get lost in: the town, the rock and river | 2+ | Opus 5 | Container | — (4c opened it) | B | | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
 | 10 | Bodies: a shared low-poly rig for the fifty (the child and the hound shipped, #643 to #645; two hens and the spear, #684 to #686) | 1 | Fable 5.1 | Local: net | — | C | | [Bodies](SPECS.md#bodies) |
-| 11 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 | Container to the Node line, local: GPU past it | **after 2** | D | shadow + hand shipped 2026-09-17 (#650 to #654) | [Feel](SPECS.md#feel) |
+| 11 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 | Container to the Node line, local: GPU past it | **after 3** | D | shadow + hand shipped 2026-09-17 (#650 to #654) | [Feel](SPECS.md#feel) |
 | 13 | The floor plan you can see: a top-down view of the plan, then a way to redraw it | 2+ | Opus 5 | Container | — | B (increment 1: none) | | [The floor plan you can see](SPECS.md#the-floor-plan-you-can-see) |
 
 **`ROADMAP.md` is these three columns turned into an order**: which row to
 take first, what each one unblocks, and which ones two sessions may hold at
 the same time. This table still ranks; that file sequences (#601).
 
+## Explore: the day before
+
+*Where: container. Gate: none. Lanes: A, D.*
+
+**Rank 1, and a 2+. Claimed on `claude/walking-day-before-death-8apcav`,
+2026-09-21. Nothing shipped.** `WISHLIST.md` theme 8 put four questions to
+Devon the day it was written and he answered all four the same day (#750 to
+#753), overturning the theme's own recommendation on two of them: the
+walking day is the main mode, "Walk the castle" the first door into the
+game with the mystery behind it, and it is the day before the death — Hywel
+alive and speakable, no body, no lantern, no cloak, no summons, none of the
+twelve saying a word of their day-one testimony. The first increment the
+theme already specced to `SPECS.md`'s depth — a stage `explore`, the mode
+threaded through `src/mystery.js` and `src/quest-manager.js`, a second start
+button, and the four rails across `test/quest.mjs`, `test/mystery.mjs`,
+`test/overlays.mjs` and `test/plan-vs-scene.mjs` — no longer covers what was
+answered: a saved explore, its own increment 3, now ships with it, at
+version 7, lane A, and the day-before content is priced as its own row the
+size of Phases 6 and 7 together. `SPECS.md`'s "Explore: the day before"
+section is the next thing this row needs, written to what was answered
+rather than to either open question. **A soft order, not a gate**: rank 2's
+sight-at-height bug bites hardest in a day that is nothing but walking up to
+people, so this row's own GPU look wants rank 2 fixed first, though nothing
+here waits on it and the Gate cell stays "—". **Does not collide with rank
+4, the retro castle**: this row is lanes A and D, the retro castle is lane
+B, and #602 lets different lanes run at once, so both may be claimed
+together.
+
 ## Sight at the body's own height
 
 *Where: container. Gate: none. Lane: none.*
 
-**Rank 1, filed 2026-09-21 from the third GPU sitting's second run.**
+**Rank 2, filed 2026-09-21 from the third GPU sitting's second run.**
 `src/interaction.js` casts its two sight rays at world y 1.55 and 1.15 (line
 34, used at line 210) instead of at heights on the body, and measures range
 with `to.y = 0` (line 151). So a body on an upper storey is aimed at through
@@ -603,14 +657,14 @@ targets to within 2.0 m of the player's own feet, and make `nav.talkable`
 ask the station's own storey. The proof is a `plan-vs-scene.mjs` beat over
 the six upstairs station-watches (talked to from their own storey, not from
 the one below) and two `mystery.mjs` rails; `SPECS.md` has the breaks.
-**Rank 2 is gated on it.** Apart from #714's five stale checks and #659's
+**Rank 3 is gated on it.** Apart from #714's five stale checks and #659's
 journal number, it is what stands between `npm run play` and exit 0.
 
 ## The GPU run
 
-*Where: local, GPU. Gate: rank 1, sight at the body's own height. Lane: none.*
+*Where: local, GPU. Gate: rank 2, sight at the body's own height. Lane: none.*
 
-**Rank 2. It ran again on 2026-09-21, twice** (#734 to #741), and this is the
+**Rank 3. It ran again on 2026-09-21, twice** (#734 to #741), and this is the
 first sitting to get past the second bell. Run one, the suite as merged: 164
 ok, 19 failures, aborted at the Constable at Vespers, and it confirmed rank
 1's walker on a GPU for the first time, carrying the day through Sext, the
@@ -719,7 +773,7 @@ the images live or how they were built is specific to either frame.
 
 *Where: container to the look, local GPU past it. Gate: none. Lane: B.*
 
-**Rank 3, and a 2+. Nothing shipped.** Devon's brief of 2026-09-21, and the
+**Rank 4, and a 2+. Nothing shipped.** Devon's brief of 2026-09-21, and the
 reversal of #411 (#742): the walls are built geometry carrying pixel-art
 textures this repo draws with a program of its own, not Poly Haven's
 photographs, and not an image model's output either (#743). The first
@@ -898,7 +952,7 @@ left of the row is the look at all of it on a GPU that `npm run play` owes
 
 ## Feel
 
-*Where: container to the Node line, local GPU past it. Gate: after rank 2. Lane: D.*
+*Where: container to the Node line, local GPU past it. Gate: after rank 3. Lane: D.*
 
 **Rank 11, and a 2+. The first increment's Node half shipped on 2026-09-17**
 (#650 to #654): `src/player-rig.js` puts a blob shadow on whatever the feet are
