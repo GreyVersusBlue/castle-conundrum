@@ -401,7 +401,19 @@ kit beside them is 64 px unlit pixel art already. **Rank 3, lane B, a 2+**:
 the first increment is a generator, its rails, fifteen 128 px textures under
 `assets/pixel/` in place of the fifteen sets, and a fourth count in
 `test/budget.mjs` for texture memory, all of it a container's; then a look
-on a GPU (#53) before variety per room. Nothing has shipped.
+on a GPU (#53) before variety per room.
+
+**The first increment shipped the same day** (#754 to #763): fifteen
+textures the repo draws replace the fifteen Poly Haven sets (45 files, 23.9
+MB gone), `data/scene-config.json`'s `materials` became `pixelMaterials`,
+the kit is relit behind `RELIGHT_KIT` now that every Kenney GLB was read and
+confirmed to declare `KHR_materials_unlit`, and `test/assets.mjs` and
+`test/budget.mjs` gained the five rails and the fourth count the spec asked
+for. Texture memory: **80.8 MB before, 37.9 MB after, over 70 images**; 79.3
+of the 80.8 is the `.ktx2` alone, matching #506's live measurement to the
+decimal. `npm test` fifteen of fifteen, `npm run build` clean, `dist/` 52.8
+to 28.9 MB. **Increment 2 waits on the look** (#53): nobody has seen the
+castle in pixel art or the kit relit yet.
 
 ## How this repo is worked
 
@@ -564,7 +576,7 @@ blocker of rank 2 ranks above it, and only one number does.
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | Sight at the body's own height: nobody upstairs can be talked to from beside them, and the porter on the walk can be from 8 m below | ¼ | Opus 5 | Container | — | — | | [Sight at the body's own height](SPECS.md#sight-at-the-bodys-own-height) |
 | 2 | The GPU run: the looks are taken (#711 to #715); the walker holds on a GPU (#734, #736) and the third sitting reached the accusation with the wrong ending (#735 to #741) | 1 | Opus 5 | Local: GPU | **after 1** | — | | [The GPU run](SPECS.md#the-gpu-run) |
-| 3 | The retro castle: the stone in the castle's own pixel art, fifteen sets out and fifteen 128 px textures in, then variety per room (#742 to #744) | 2+ | Opus 5 | Container to the look, local: GPU past it | — | B | `claude/retro-castle-pixel-textures-kliakt` | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
+| 3 | The retro castle: increment 1 shipped, fifteen sets out and fifteen 128 px textures in (#754 to #763); the look, then variety per room, are left | 2+ | Opus 5 | Container to the look, local: GPU past it | — | B | | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
 | 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #729 to #733); the town, the four clips and the chatter pool are left | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: somebody listens to the seven beds, the four rings and the first two event sounds (a bed at a point and the rings, #680 to #683; the door and the hound, #696 to #698) | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
 | 9 | A castle to get lost in: the town, the rock and river | 2+ | Opus 5 | Container | — (4c opened it) | B | | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
@@ -719,24 +731,31 @@ the images live or how they were built is specific to either frame.
 
 *Where: container to the look, local GPU past it. Gate: none. Lane: B.*
 
-**Rank 3, and a 2+. Nothing shipped.** Devon's brief of 2026-09-21, and the
-reversal of #411 (#742): the walls are built geometry carrying pixel-art
-textures this repo draws with a program of its own, not Poly Haven's
-photographs, and not an image model's output either (#743). The first
-increment is the whole swap for built geometry, so the castle is one look on
-one GPU sitting: a generator under `tools/pixel/` whose fifteen rows render
-to `assets/pixel/`, one 128 px PNG per material name the config already has,
-so not a run, a room or a `byMaterial` row moves; the fifteen Poly Haven set
-folders deleted, about 25 MB on disk and 44.2 of 79.3 MB of texture memory;
-`materials` becomes `pixelMaterials` and `loadPBRMaterial` becomes a
-diffuse-only lit material, which is the kit's own model with the sun put back
-on it; five rails in `test/assets.mjs` (size, palette, wrap, one map,
-pixel-identical to the generator) and a fourth count in `test/budget.mjs`,
-texture memory from headers, under a ceiling of 64 MB that today's 79.3
-fails on purpose (#744). No `ktx`, no network and no GPU are needed to close
-it. **Then somebody looks** (#53), with the checklist in `SPECS.md`, before
-the second increment puts a wall and a floor of its own in every named room.
-The ten Poly Haven prop packs stay until the look says otherwise.
+**Rank 3, and a 2+. The first increment shipped on 2026-09-21** (#754 to
+#763). Devon's brief of the same day, and the reversal of #411 (#742): the
+walls are built geometry carrying pixel-art textures this repo draws with a
+program of its own, not Poly Haven's photographs, and not an image model's
+output either (#743). The first increment was the whole swap for built
+geometry, so the castle is one look on one GPU sitting: a generator under
+`tools/pixel/` whose fifteen rows render to `assets/pixel/`, one 128 px PNG
+per material name the config already had, so not a run, a room or a
+`byMaterial` row moved; the fifteen Poly Haven set folders deleted, 45 files,
+23.9 MB on disk; `materials` became `pixelMaterials` and `loadPBRMaterial`
+became `loadPixelMaterial`, a diffuse-only lit material, which is the kit's
+own model with the sun put back on it — every Kenney GLB read does declare
+`KHR_materials_unlit`, so the relight behind `RELIGHT_KIT` was the right call
+rather than an assumption; five rails went into `test/assets.mjs` (size,
+palette, wrap, one map, pixel-identical to the generator) and a fourth count
+into `test/budget.mjs`, `MAX_TEXTURE_MB = 64`. Texture memory: **80.8 MB
+before, 37.9 MB after, over 70 images** — 79.3 of the 80.8 is the `.ktx2`
+alone, which is #506's live measurement to the decimal. `npm test` fifteen
+of fifteen, `npm run build` clean, `dist/` 52.8 to 28.9 MB. No `ktx`, no
+network and no GPU were needed to close it.
+
+**Then somebody looks** (#53), with the checklist in `SPECS.md`, before the
+second increment puts a wall and a floor of its own in every named room. The
+ten Poly Haven prop packs stay until the look says otherwise, and a third
+increment for them waits on the look saying so too.
 
 ## Life: a populace
 
