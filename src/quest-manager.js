@@ -547,7 +547,7 @@ export class QuestManager {
   _maybePerform() {
     const piece = this.performanceHere();
     if (!piece) return null;
-    // A PERFORMANCE OUT-RANKS TALK (#728): two of the household gossiping are
+    // A PERFORMANCE OUT-RANKS TALK (#732): two of the household gossiping are
     // cut off where they stand for a sermon, and never the other way round.
     if (this._playing?.talk) this._stopPerformance();
     this._heard.add(piece.id);
@@ -582,7 +582,7 @@ export class QuestManager {
   }
 
   /**
-   * TWO OF THE HOUSEHOLD, OVERHEARD (#727, #728). src/populace.js hands over a
+   * TWO OF THE HOUSEHOLD, OVERHEARD (#731, #732). src/populace.js hands over a
    * `talk` pair from data/populace.json when the player is in earshot of its
    * two speakers, with `room` set to where they stand, and `names` in
    * speaking order. The lines alternate between the two names, the first

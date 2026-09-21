@@ -101,7 +101,7 @@ export function heldPropPath(polyhavenBase, heldProp) {
 export const DWELL = 9;
 
 /**
- * TWO OF THE HOUSEHOLD TALKING, AND THE PLAYER OVERHEARING THEM (#727, #728).
+ * TWO OF THE HOUSEHOLD TALKING, AND THE PLAYER OVERHEARING THEM (#731, #732).
  *
  * `TALK_RADIUS` is how far apart the two speakers of a `talk` pair may stand,
  * at most, and still be two people talking to each other rather than two
@@ -111,7 +111,7 @@ export const DWELL = 9;
  *
  * THE POOL IS THE HOUSEHOLD'S OWN, and not data/npcs.json's `chatter`. That
  * pool is the twelve's: every line opens with one of their names and not one
- * of its 27 pairs has its speakers within 3 m at the pair's own watch (#727).
+ * of its 27 pairs has its speakers within 3 m at the pair's own watch (#731).
  */
 export const TALK_RADIUS = 3;
 export const EARSHOT = 6;
@@ -277,7 +277,7 @@ export function validatePopulace(populace, { nav = null, mystery = {}, cast = []
     }
   }
 
-  /* --- 2b: the talk pairs (#727, #728).
+  /* --- 2b: the talk pairs (#731, #732).
    *
    * A PAIR STANDS STILL FOR ITS WHOLE WATCH OR IT IS NOT A PAIR. Each speaker
    * has a ring of exactly one stop at the pair's watch, and that stop is a
@@ -463,7 +463,7 @@ export class Populace {
     // `cue('hound-near', { id, at, metres })`, every frame it holds. The
     // audio's cadence turns the frames into barks; nothing here keeps time.
     this.cue = cue;
-    /* AND SOMEBODY TO HAND A CONVERSATION TO (#728), the same way. `pairs` is
+    /* AND SOMEBODY TO HAND A CONVERSATION TO (#732), the same way. `pairs` is
      * data/populace.json's `talk` list. `talk(pair, names)` is told a pair is
      * due where the player stands, with `room` set on it, and `hush(id)` that
      * the player walked out of it. What plays the lines, once, on the caption
@@ -543,7 +543,7 @@ export class Populace {
   }
 
   /**
-   * The talk pair the player can hear from where they stand, or null (#728).
+   * The talk pair the player can hear from where they stand, or null (#732).
    *
    * The first pair in file order at this watch whose two bodies are visible,
    * settled and on their gossip stop, with the player's feet in the same room

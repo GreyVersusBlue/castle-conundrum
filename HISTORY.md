@@ -7550,6 +7550,115 @@ read and keep 0.01 m. Not taken blind on a beat nobody here has watched fail.
   supplied dt, not a measured frame, so #53 does not touch it; the run was
   headless on the dev machine.
 
+## Rank 9, the town: where it stands, how the map shows it, what it costs (2026-09-21)
+
+**Lane B, decided before anything is built, decisions #725 to #728.** Ranks 2
+and 6 were running at the same time and may take numbers from #725 too; this
+band is contiguous so it can be renumbered in one pass at merge. Nothing here
+touches `src/` or `test/` yet. `SPECS.md`'s "A castle to get lost in" carries
+the first increment these four decisions make buildable, and every number
+below is from a Node prototype that cloned `data/scene-config.json` in memory,
+added the town, and ran `makePlan`, `walkability`, `buildPiece` and a sight
+test over it. Three runs, six houses, a church, four ground props, two rooms.
+
+- **The town stands west of the `town-wall` run, inside it, and not in the
+  strip between it and the barbican** (#725). This amends #706, which said
+  "the 28 m between them is the barbican and the road, and it is exactly
+  where rank 9's town goes", and the three summaries that repeated it. The 28 m
+  is a distance on the map, from the north walk's west edge at x -34 to the
+  yard's at x -62, and most of it is not ground a room can use. x -46 to -34
+  is inside the curtain box, where check 4c refuses an outside room. What is
+  left is x -62.5 (the town wall's east face) to -48 (the base's edge), 14.5 m,
+  and the yard already takes z -17 to -5 of it. A walled town's street, church
+  and quay do not fit in a 14.5 m strip, and the lore does not put them there:
+  `west-road` runs "west through the barbican and down through Mereford to the
+  quay", `the-quay` is where the carts come up from, and `town-wall`'s own
+  comment has the gate on the road and the wall facing the castle. So the run
+  is Mereford's east wall, the town lies behind it, and **Wykes's yard stands
+  outside the east gate, under the wall**, which is what his quest says it is.
+  Three returns close the circuit at x -129.5 with a west gate on the road,
+  and the quay is outside that gate in a later increment. #703 is not touched:
+  the prototype's `walk.sealed()` is still `true`.
+
+- **Outside rooms go on the map in a drawing of their own, named from the
+  first and never counted** (#726). This amends #589's "every storey on the
+  same frame", #706's "nothing was done about it and nothing should be", and
+  the cost #703 accepted, "one room on the journal's map that can never be
+  filled in". One such room was a blank the player could read as a wart. The
+  town makes three, and under #725 it puts them 33 to 44 m further west than the yard: one
+  shared frame would have gone from 90.8 m wide to about 135, with the castle
+  about half of it. So the storey drawings frame the rooms that are not
+  outside and go back to 67.6 m, `#journal-map-count` reads out of 40 rather
+  than 43, and the three outside rooms get a fourth drawing, "Outside the
+  walls", on their own frame, with their names shown, because a name that can
+  only be earned by standing somewhere nobody can stand is never earned. The
+  map is still the plan's list and not a second one (#588): the split is on
+  the room's own `ward`.
+
+- **What is drawn outside both wards counts against each ward's ceiling**
+  (#727). This amends #611's three buckets and #707's "the ceiling is left
+  unset on purpose", which deferred the number to this row. An outside mesh is
+  in view from both wards: the one vantage that sees the town, the North-west
+  Tower's roof, is in the outer ward, and an inner-ward roof looks the same
+  way over the cross-wall. So the claim is `calls[w] + calls.outside <=
+  MAX_DRAW_CALLS_PER_WARD` for each ward, with no new constant. **Before**: the
+  outside bucket was 44 meshes with no ceiling. **After**: it is bounded by
+  1200 less the busier ward, 1200 - 993 = 207 today. The prototype town takes
+  it to 132, so the outer ward's sum is 1125, 75 under, and the inner's 775.
+  When it fails, the first answer is still #611's: merge a drum's sectors into
+  one geometry before deleting a house.
+
+- **Every room outside the curtain has to be seen from somewhere the player
+  can stand** (#728). #703 said the player sees the yard and never stands in
+  it, and check 4c asserts only the second half. The first half was a
+  photograph (#707). `test/layout.mjs` check 4d makes it geometry: from any
+  reachable cell at 8 m or higher, at eye height, a segment to the top of any
+  piece whose centre lies in the room meets no other piece's box. The
+  prototype, before a line of the suite exists: **the yard is seen from
+  `floor-nw-tower-roof` at (-37.75, 13.70, -16.75), by `wykes-shed-pitch-1`**,
+  the roof and the shed #707 photographed through a crenel, so the check agrees
+  with a picture and not with itself (#34). The street is seen by 14 of its 20
+  candidate pieces and the church by 8 of 9. With `town-wall` raised to 20 m
+  as the break, the street and the church are seen from nowhere and the yard,
+  east of that wall, is still seen. 1939 eyes, 0.2 s.
+
+**Built, and each guard-rail broke from green, verbatim** (#34). `f26cc70`,
+2026-09-21.
+
+- **Check 4d, with `town-wall` raised to 20 m** (#728): `FAIL  mereford-street
+  is seen from nowhere: none of its 20 pieces (mereford-house-n1, …) has a
+  clear line to any of the 1939 places 8 m up the player can stand. #703 says
+  the player looks at it`; the church fails the same way, 9 pieces. The yard
+  still passes, seen from `floor-nw-tower-roof` at (-37.75, 13.70, -16.75) via
+  `wykes-shed-pitch-1`. Restored, 4d checks 1939 eyes in 55 ms: the street is
+  seen by 14 of its 20 pieces, the church by 8 of 9.
+- **`test/budget.mjs`, with `MAX_DRAW_CALLS_PER_WARD` at 1100** (#727): the
+  outer ward alone (993) still passes the old assertion and only the new one
+  fails: `FAIL  the outer ward's 993 meshes and the 131 outside both wards
+  come to 1124, over the ceiling of 1100: … outside-ground (5),
+  wykes-shed-pitch-1 (4), wykes-shed-pitch-2 (4)`.
+- **The map, three ways** (#726): a frame built off every room again —
+  `FAIL  every storey is framed on the castle's own 67.6 m … — 134.8, 134.8,
+  134.8, 134.8`; outside rooms counted in the stood-in denominator —
+  `"0 of 43 rooms stood in"` / `"3 of 43"`; and `· · ·` where an outside name
+  belongs — `wykes-yard: "· · ·", mereford-street: "· · ·", mereford-church:
+  "· · ·"`.
+
+**What shipped counts one mesh under the prototype's, everywhere the
+prototype's count was carried forward.** The four ground props measure 6
+meshes, not the prototype's 7, so the outside bucket is **131**, the outer
+ward's sum is **1124** (76 under 1200) and the inner's is **774** (426
+under). `mereford-street-barrels` ships at `rotationY: 0`: at the prototype's
+30°, its box went 0.09 m into `mereford-house-s1`. `SPECS.md` carried the
+prototype's 132/1125/775 into the built spec by mistake and is corrected to
+match.
+
+**The prototype found one thing the spec had to say**: a run that starts and
+ends on one tile throws in `runAxis` without an `axis` field, so the church
+tower carries `axis: "x"`. `SPECS.md` has it. The prototype is not committed;
+the builder writes the check and the town from the spec and breaks each on
+purpose from green.
+
 ## Rank 6, the populace's second increment, decided: five more, a talk list of its own, and a budget that can see them (2026-09-20)
 
 **Rank 6, on `claude/backlog-rank-6-9678fa`, lanes C and D, no code.** The
@@ -7557,12 +7666,12 @@ read and keep 0.01 m. Not taken blind on a beat nobody here has watched fail.
 talk out of `data/npcs.json`'s chatter pool once two populace bodies stand
 within 3 m, read off the DOM "the way the performance captions are read"
 in `test/plan-vs-scene.mjs`. Each of those was measured against the code
-and each came out wrong. Decisions #725 to #728, and the section is
+and each came out wrong. Decisions #729 to #732, and the section is
 rewritten so the next increment is class S. **Numbers claimed against
 #724 as the highest in this file; ranks 2 and 9 are running at the same
 time, so expect to renumber at merge** (#607's lesson).
 
-- **"Twenty" was twenty more, and the budget allows five** (#725).
+- **"Twenty" was twenty more, and the budget allows five** (#729).
   `SPECS.md` wrote "room for perhaps twenty more" and "stopping at twenty" on
   2026-09-17, the same day #609 set the ceilings, and neither sentence was
   checked against the other. The page builds **27** skinned bodies today:
@@ -7582,7 +7691,7 @@ time, so expect to renumber at merge** (#607's lesson).
   these five, a town body, or a rank 10 child or dog, is that argument.
 
 - **`test/budget.mjs` has been counting 12 bodies while the page builds 27,
-  and section 3 is taught the populace** (#726). Section 3 iterates
+  and section 3 is taught the populace** (#730). Section 3 iterates
   `mystery.json`'s `schedule` and nothing else, so it printed `12 bodies in
   the castle` and `the outer ward peaks at 7` while the outer ward held 18;
   `ROADMAP.md`'s "17 after" was never read by any suite. The change: a
@@ -7601,7 +7710,7 @@ time, so expect to renumber at merge** (#607's lesson).
   way `cross-walk` is #608's.
 
 - **The chatter pool is the twelve's, and the populace gets a `talk` list of
-  its own** (#727, amending #554 and `SPECS.md`). #554 shipped 27 pairs "for
+  its own** (#731, amending #554 and `SPECS.md`). #554 shipped 27 pairs "for
   the existing twelve only", validated each speaker against the cast, and in
   the same sentence left them for a populace to spend. The two halves cannot
   both hold. `test/lore.mjs` refuses a speaker who is not in the cast, so a
@@ -7617,7 +7726,7 @@ time, so expect to renumber at merge** (#607's lesson).
   which is the pass #554 said it skipped. `chatterComment` and `WISHLIST.md`
   stop saying the populace spends it.
 
-- **How talk plays, and which suite holds each half** (#728). Two populace
+- **How talk plays, and which suite holds each half** (#732). Two populace
   bodies named by a pair, each on a one-stop `gossip` ring at the pair's
   watch, 1.5 to 3 m apart in one room, both settled, with the player in that
   room and within 6 m of their midpoint: the pair's lines go to the `#caption`
@@ -7644,7 +7753,7 @@ What was not decided here: the lines themselves, which are the builder's to
 write inside the rule `SPECS.md` gives them (household talk, nothing about
 the death), and the tiles, which the validator picks between.
 
-- **Rank 6's second increment shipped** (#729, building #725 to #728).
+- **Rank 6's second increment shipped** (#733, building #729 to #732).
   `data/populace.json` gains five people: `page`, `sacristan`,
   `tiring-woman`, `watchman` and `writer`. The file holds 19 household plus
   the cast's 13 is 32 bodies built, exactly `MAX_SKINNED_TOTAL`. Outer ward

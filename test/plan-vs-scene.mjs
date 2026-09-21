@@ -684,7 +684,7 @@ try {
         `rest key is ${turned.rest}`);
     }
   }
-  /* AND TWO OF THEM TALKING REACH THE BAND (#728). `Populace` decides a talk
+  /* AND TWO OF THEM TALKING REACH THE BAND (#732). `Populace` decides a talk
    * pair is due and QuestManager plays it; test/mystery.mjs holds the first
    * half and test/quest.mjs the second, both in Node. What neither can see is
    * whether src/main.js handed `Populace` a `talk` that reaches the manager

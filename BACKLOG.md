@@ -364,7 +364,7 @@ the ranked table above, and its own scope is gone from `SPECS.md`**; what it
 shared with rank 2 stays in "The GPU run" section below, rewritten to say
 what shipped.
 
-**Rank 6's second increment shipped on 2026-09-20** (#725 to #729): five more
+**Rank 6's second increment shipped on 2026-09-20** (#729 to #733): five more
 people take `data/populace.json` to 19 and the page to 32 bodies built, 13
 cast plus 19 populace, exactly `MAX_SKINNED_TOTAL`, and a flat `talk` list of
 three pairs is played through the `#caption` band by a rail in
@@ -527,7 +527,7 @@ which is what makes that survivable (#522).
 | Rank | Item | Size | Model | Where | Gate | Lane | Claimed | Detail |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 2 | The GPU run: the looks are taken (#711 to #715); rank 1 shipped (#716 to #720) and the run itself is owed | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
-| 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #725 to #729); the town, the four clips and the chatter pool are left | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
+| 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #729 to #733); the town, the four clips and the chatter pool are left | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: somebody listens to the seven beds, the four rings and the first two event sounds (a bed at a point and the rings, #680 to #683; the door and the hound, #696 to #698) | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
 | 9 | A castle to get lost in: the town, the rock and river | 2+ | Opus 5 | Container | — (4c opened it) | B | | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
 | 10 | Bodies: a shared low-poly rig for the fifty (the child and the hound shipped, #643 to #645; two hens and the spear, #684 to #686) | 1 | Fable 5.1 | Local: net | — | C | | [Bodies](SPECS.md#bodies) |
@@ -640,7 +640,7 @@ bell — plus every leg of the ring and the wrap back to its first stop.
 `test/mystery.mjs` owns it (#529) and rejects thirteen breaks; the page runs
 the same validator and throws rather than warns.
 
-**The second increment shipped on 2026-09-20** (#725 to #729): five more
+**The second increment shipped on 2026-09-20** (#729 to #733): five more
 people, `page`, `sacristan`, `tiring-woman`, `watchman` and `writer`, take
 `data/populace.json` to 19 and the page to 32 bodies built, 13 cast plus 19
 populace, exactly `MAX_SKINNED_TOTAL`. Outer ward holds 17, 18, 17, 17 and
@@ -736,8 +736,16 @@ west of the barbican on 2026-09-19 (#703 to #707), which is the proof this row
 was gated on. Three things it leaves for this row to build from: the
 `town-wall` run at x -64, 64 m of Mereford's wall with the town gate already
 in it; `ward: "outside"` as a room's third answer, with `test/layout.mjs`
-check 4c holding what that word costs; and 28 m of empty ground on the map
-between the castle and the yard, which is where this row's street goes.
+check 4c holding what that word costs; and a map frame that grew to fit the
+yard (#706). **The town's first increment shipped on 2026-09-21** (#725 to
+#728): the town lies west of that wall, not in the 14.5 m strip between it
+and the barbican; six houses and a church, seen from the North-west Tower's
+roof and entered by nobody; outside rooms on a map drawing of their own and
+out of the count, back to 67.6 m and 40 rooms; and what they draw held
+against both wards' ceiling, 131 meshes outside both, the outer ward's sum
+1124 of 1200 and the inner's 774. **What is next is the quay and the river**,
+outside the west gate, deferred because water is a surface kind the plan does
+not have yet; it has no `SPECS.md` section, so it is an `architect` job first.
 Filling the nineteen is rank 6's routines and whatever documents a later lore
 row adds, made cheap by rank 12's editor.
 

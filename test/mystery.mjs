@@ -911,8 +911,8 @@ console.log('\nthe household in data/populace.json');
   check(problems.length === 0, 'validatePopulace finds nothing wrong, the castle included', problems.join('; '));
 
   const people = populace.people;
-  check(people.length === 19, `${people.length} of them: the first increment's ten (SPECS.md, "Life: a populace"), the child and the hound (#643, #644), two hens (#684), and the inner ward's five (#725)`);
-  /* THE TALK LIST (#727), counted beside the people because a validator that
+  check(people.length === 19, `${people.length} of them: the first increment's ten (SPECS.md, "Life: a populace"), the child and the hound (#643, #644), two hens (#684), and the inner ward's five (#729)`);
+  /* THE TALK LIST (#731), counted beside the people because a validator that
    * found nothing in an empty list would pass the same as one that found
    * nothing in three. */
   const talk = populace.talk ?? [];
@@ -1102,7 +1102,7 @@ console.log('\nthe household validator rejects');
     (f, people) => { delete of(people, 'serjeant').heldProp; },
     /^serjeant: heldPropFit with no heldProp to fit$/);
 
-  /* THE TALK PAIRS (#728), each break in the shape SPECS.md names for it. A
+  /* THE TALK PAIRS (#732), each break in the shape SPECS.md names for it. A
    * pair is only a pair if both speakers stand still on one gossip stop,
    * in one room, 1.5 to TALK_RADIUS m apart, for the whole of its watch. */
   const pairOf = (f, id) => f.talk.find((t) => t.id === id);
@@ -1200,7 +1200,7 @@ console.log('\nthe hound follows the player, on the grid, and goes back');
   }
 }
 
-/* ------------------------------------ 8d: who the player overhears (#728) ---
+/* ------------------------------------ 8d: who the player overhears (#732) ---
  * `Populace.talkDue` is the selector: at this watch, which pair stands still
  * on its two gossip stops with the player in the room and within EARSHOT of
  * the pair's midpoint. Driven the way 8c drives the hound, over plain-object

@@ -146,7 +146,7 @@ in, every one of them a `belief` or a `rumour` the game never confirms.
   each speaker's own `ward` field, not the schedule's exact station, which is
   this row's own recommended-and-taken open call — a later pass could hold it
   to the schedule the way `mystery.js`'s nav rails do. The pool is unused by
-  the game today, and the populace does not spend it (#727): it is the
+  the game today, and the populace does not spend it (#731): it is the
   twelve's, every line opens with one of their names, and none of its pairs
   stands within 3 m at its own watch. `data/populace.json` carries a `talk`
   list of its own for two household bodies in earshot, and holding this pool

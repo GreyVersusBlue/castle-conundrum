@@ -1961,7 +1961,7 @@ function morningAfter(r, who, clues = []) {
 }
 
 /* --------------------------------------------- two of the household, overheard ---
- * data/populace.json's `talk` pairs (#727, #728). src/populace.js decides a
+ * data/populace.json's `talk` pairs (#731, #732). src/populace.js decides a
  * pair is due and hands it over with `room` set to where its two speakers
  * stand; that half, and which pairs stand close enough to talk, is
  * test/mystery.mjs's. What is here is the band's half: the order, the names,
