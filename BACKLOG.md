@@ -304,7 +304,7 @@ floor, so a route can no longer take a flight for a short cut, and a cell a
 stops the route hugging the two walls a prop stands against
 (`foundation-stone` and `barrels-91`). `test/layout.mjs`'s new check 8b holds
 it over all 66 pairs of the 12 ground rooms: 153 ok, 0 fail. **Watched carry a
-real `npm run play` past the second bell on 2026-09-21** (#725), the proof
+real `npm run play` past the second bell on 2026-09-21** (#729), the proof
 rank 2 owed. **Rank 1 is done, its section is gone from this file and from
 `SPECS.md`, and its number is retired.**
 
@@ -364,10 +364,10 @@ the ranked table above, and its own scope is gone from `SPECS.md`**; what it
 shared with rank 2 stays in "The GPU run" section below, rewritten to say
 what shipped.
 
-**Rank 2's third sitting ran on 2026-09-21, twice** (#725 to #732). Run one,
+**Rank 2's third sitting ran on 2026-09-21, twice** (#729 to #736). Run one,
 the suite as merged, confirmed the walker on a GPU and got past the second
 bell for the first time: 164 ok, 19 failures, aborted at the Constable at
-Vespers. Six fixes to `test/play-castle.mjs` (#726 to #731) then carried run
+Vespers. Six fixes to `test/play-castle.mjs` (#730 to #735) then carried run
 two to the accusation for the first time: 179 ok, 17 failures, and it aborted
 on the wrong ending's `#restart-button`. **The day still does not run end to
 end**, and this time the cause is in `src/`: `interaction.js`'s sight rays
@@ -535,7 +535,7 @@ blocker of rank 2 ranks above it, and only one number does.
 | Rank | Item | Size | Model | Where | Gate | Lane | Claimed | Detail |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | Sight at the body's own height: nobody upstairs can be talked to from beside them, and the porter on the walk can be from 8 m below | ¼ | Opus 5 | Container | — | — | | [Sight at the body's own height](SPECS.md#sight-at-the-bodys-own-height) |
-| 2 | The GPU run: the looks are taken (#711 to #715); the walker holds on a GPU (#725, #727) and the third sitting reached the accusation with the wrong ending (#726 to #732) | 1 | Opus 5 | Local: GPU | **after 1** | — | | [The GPU run](SPECS.md#the-gpu-run) |
+| 2 | The GPU run: the looks are taken (#711 to #715); the walker holds on a GPU (#729, #731) and the third sitting reached the accusation with the wrong ending (#730 to #736) | 1 | Opus 5 | Local: GPU | **after 1** | — | | [The GPU run](SPECS.md#the-gpu-run) |
 | 6 | Life: a populace: the fifty, the activity clips and the ambient talk | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: somebody listens to the seven beds, the four rings and the first two event sounds (a bed at a point and the rings, #680 to #683; the door and the hound, #696 to #698) | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
 | 9 | A castle to get lost in: the town, the rock and river | 2+ | Opus 5 | Container | — (4c opened it) | B | | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
@@ -580,12 +580,12 @@ journal number, it is what stands between `npm run play` and exit 0.
 
 *Where: local, GPU. Gate: rank 1, sight at the body's own height. Lane: none.*
 
-**Rank 2. It ran again on 2026-09-21, twice** (#725 to #732), and this is the
+**Rank 2. It ran again on 2026-09-21, twice** (#729 to #736), and this is the
 first sitting to get past the second bell. Run one, the suite as merged: 164
 ok, 19 failures, aborted at the Constable at Vespers, and it confirmed rank
 1's walker on a GPU for the first time, carrying the day through Sext, the
 reload, the riddle, the third ring and the cook's walk. Six fixes to
-`test/play-castle.mjs` (#726 to #731) then carried run two to the
+`test/play-castle.mjs` (#730 to #735) then carried run two to the
 accusation for the first time: 179 ok, 17 failures, and it aborted on the
 wrong ending's `#restart-button`. **What stopped it is a new bug in
 `src/interaction.js`**, filed as rank 1, "Sight at the body's own height":
@@ -617,11 +617,11 @@ stale or vacuous including one that can only fail on a GPU (#714), and a
 journal walk assertion that read 0.69, 1.30, 0.51, 0.69 and 0.83 m across five
 runs of the same beat, against 3.75 m for an unobstructed walk on the same
 machine. **The five checks and the journal number are both still unchanged in
-the third sitting** (#725, #732): all five checks read the same, and the
+the third sitting** (#729, #736): all five checks read the same, and the
 0.83 m is the third sitting's own reading. All three are still open. A fourth
 thing this same sitting turned up, the chapel's body-and-pouch swap named in
 "Where things stand" above, is not: #722 fixed it, and the third sitting
-confirmed the fix on a GPU (#725) by its absence from run one's 19 failures.
+confirmed the fix on a GPU (#729) by its absence from run one's 19 failures.
 
 **A fourth thing came out of rank 1 and is nobody's row either** (#718).
 Route pricing a tight cell found two props standing inside a 0.45 m body's
@@ -645,7 +645,7 @@ every one of them and comes up short, `locked true` throughout, the sentry at
 1's reason, which is the only one still open.
 
 **The third sitting's six fixes, unlike the second sitting's two, did move
-assertions** (#726 to #731): `shutPresent()` closes the Present list and the
+assertions** (#730 to #735): `shutPresent()` closes the Present list and the
 dialogue on every path out of `present()`, not only the success path; a walk
 to another storey now uses Phase 5's own stair legs instead of counting a
 waypoint reached by x and z alone; `examine()` passes the target's own level
@@ -655,7 +655,7 @@ prompt; the Constable-visible check walks to range before it casts; and
 "Great Hall floor at Vespers" luma of 40.1 turns out to have been a wall
 (#147) and run two reads 72.7 of 255 from the hall itself. Run two, with all
 six in, reached the accusation for the first time and found the row's real
-blocker: `src/interaction.js`'s sight rays, filed as rank 1 (#732).
+blocker: `src/interaction.js`'s sight rays, filed as rank 1 (#736).
 
 **Rank 5 shipped the same day, without waiting for a second run** (#656 to
 #658). The gate below named this row's blocker as "the visual half" of rank
@@ -786,8 +786,16 @@ west of the barbican on 2026-09-19 (#703 to #707), which is the proof this row
 was gated on. Three things it leaves for this row to build from: the
 `town-wall` run at x -64, 64 m of Mereford's wall with the town gate already
 in it; `ward: "outside"` as a room's third answer, with `test/layout.mjs`
-check 4c holding what that word costs; and 28 m of empty ground on the map
-between the castle and the yard, which is where this row's street goes.
+check 4c holding what that word costs; and a map frame that grew to fit the
+yard (#706). **The town's first increment shipped on 2026-09-21** (#725 to
+#728): the town lies west of that wall, not in the 14.5 m strip between it
+and the barbican; six houses and a church, seen from the North-west Tower's
+roof and entered by nobody; outside rooms on a map drawing of their own and
+out of the count, back to 67.6 m and 40 rooms; and what they draw held
+against both wards' ceiling, 131 meshes outside both, the outer ward's sum
+1124 of 1200 and the inner's 774. **What is next is the quay and the river**,
+outside the west gate, deferred because water is a surface kind the plan does
+not have yet; it has no `SPECS.md` section, so it is an `architect` job first.
 Filling the nineteen is rank 6's routines and whatever documents a later lore
 row adds, made cheap by rank 12's editor.
 

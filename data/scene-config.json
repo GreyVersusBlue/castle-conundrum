@@ -924,7 +924,7 @@
           "height": 5.5
         }
       ],
-      "comment": "Mereford's wall, 64 m of it, 18 m west of the castle's own ground and running off into the fog both ways, with the town gate the road passes through cut in it at z 0. Rank 4c (#546's ground, built on). `interior: true` is the field that says no battlements, and this run wants none for a reason worth writing down: a kit merlon stands 1.2 to 2.4 m outward of the run's centreline (#514), so at least half of its footprint is over stone only on a run 3.6 m thick or more, and a 4 m town wall beside a 4 m curtain reads as a second castle. It is plain, and 24 m from the nearest place the player can stand.",
+      "comment": "Mereford's wall, 64 m of it, 18 m west of the castle's own ground, its east wall: `town-wall-north`, `town-wall-south` and `town-wall-west` close it into a circuit round the town at x -129.5 (rank 9, #725), with the town gate the road passes through cut in it at z 0. Rank 4c (#546's ground, built on). `interior: true` is the field that says no battlements, and this run wants none for a reason worth writing down: a kit merlon stands 1.2 to 2.4 m outward of the run's centreline (#514), so at least half of its footprint is over stone only on a run 3.6 m thick or more, and a 4 m town wall beside a 4 m curtain reads as a second castle. It is plain, and 24 m from the nearest place the player can stand.",
       "doorwaysComment": "The town gate, 4 m wide and 5.5 m to the head, so `outside-road`'s own 4 m of cobble (z -2 to 2) runs through it with 2.5 m of lintel over. Nothing walks through it: the castle is sealed (test/layout.mjs check 4) and this gap is a hole in the colliders that the flood fill never reaches."
     },
     {
@@ -978,6 +978,201 @@
       "interior": true,
       "base": 3,
       "comment": "The shed's deck, the mason's lodge's own trick (`masons-lodge-roof`): a run lifted on `base` is a roof and four poles hold it up. 8.5 x 6 m with its underside at 3 m, its west end butted into the town wall's east face at x -62.5. The two roof.glb pitches sit on its top at 3.3, which is the Great Hall's arrangement one storey down (#527): the structure carries the covering rather than the covering standing on nothing."
+    },
+    {
+      "id": "town-wall-north",
+      "from": [
+        -31.875,
+        -8.125
+      ],
+      "to": [
+        -16.875,
+        -8.125
+      ],
+      "height": 8,
+      "thickness": 3,
+      "material": "medieval_blocks_02",
+      "repeatMetres": 3,
+      "interior": true,
+      "comment": "Mereford's north wall, rank 9 (#725): x -129.5..-65.5, z -34..-31. Its east end TOUCHES `town-wall`'s west face at x -65.5 and does not overlap it, because two 8 m runs that overlapped would share a top over the overlap, which check 10 refuses (#513). 3 m thick and no battlements, like `town-wall` (#705)."
+    },
+    {
+      "id": "town-wall-south",
+      "from": [
+        -31.875,
+        7.125
+      ],
+      "to": [
+        -16.875,
+        7.125
+      ],
+      "height": 8,
+      "thickness": 3,
+      "material": "medieval_blocks_02",
+      "repeatMetres": 3,
+      "interior": true,
+      "comment": "Mereford's south wall, rank 9 (#725): x -129.5..-65.5, z 27..30, touching `town-wall` at x -65.5 as the north one does."
+    },
+    {
+      "id": "town-wall-west",
+      "from": [
+        -32,
+        -7.25
+      ],
+      "to": [
+        -32,
+        6.25
+      ],
+      "height": 8,
+      "thickness": 3,
+      "material": "medieval_blocks_02",
+      "repeatMetres": 3,
+      "interior": true,
+      "doorways": [
+        {
+          "at": 0,
+          "width": 4,
+          "height": 5.5
+        }
+      ],
+      "comment": "Mereford's west wall, rank 9 (#725): x -129.5..-126.5, z -31..27, touching both returns end-on. The west gate is the east gate's own numbers, so `outside-road` runs out through it toward the quay, which is a later increment's and starts here."
+    },
+    {
+      "id": "mereford-house-n1",
+      "from": [
+        -18.5,
+        -1.5
+      ],
+      "to": [
+        -17.5,
+        -1.5
+      ],
+      "height": 5,
+      "thickness": 6,
+      "material": "plastered_wall_04",
+      "repeatMetres": 3,
+      "interior": true,
+      "comment": "Mereford's street, north row, the house nearest the east gate (#725): a solid 8 x 6 x 5 m block, x -76..-68, z -9..-3, under two roof.glb pitches. Nobody enters it (#703), so it has no door: a doorway in a 6 m solid block is a 6 m tunnel. A 1 m gap to its neighbour so no two houses share a top plane (check 10)."
+    },
+    {
+      "id": "mereford-house-n2",
+      "from": [
+        -20.75,
+        -1.5
+      ],
+      "to": [
+        -19.75,
+        -1.5
+      ],
+      "height": 5,
+      "thickness": 6,
+      "material": "plastered_wall_04",
+      "repeatMetres": 3,
+      "interior": true,
+      "comment": "North row, second house: x -85..-77, z -9..-3."
+    },
+    {
+      "id": "mereford-house-n3",
+      "from": [
+        -23,
+        -1.5
+      ],
+      "to": [
+        -22,
+        -1.5
+      ],
+      "height": 5,
+      "thickness": 6,
+      "material": "plastered_wall_04",
+      "repeatMetres": 3,
+      "interior": true,
+      "comment": "North row, third house: x -94..-86, z -9..-3."
+    },
+    {
+      "id": "mereford-house-s1",
+      "from": [
+        -18.5,
+        1.5
+      ],
+      "to": [
+        -17.5,
+        1.5
+      ],
+      "height": 5,
+      "thickness": 6,
+      "material": "plastered_wall_04",
+      "repeatMetres": 3,
+      "interior": true,
+      "comment": "South row, the house nearest the east gate: x -76..-68, z 3..9."
+    },
+    {
+      "id": "mereford-house-s2",
+      "from": [
+        -20.75,
+        1.5
+      ],
+      "to": [
+        -19.75,
+        1.5
+      ],
+      "height": 5,
+      "thickness": 6,
+      "material": "plastered_wall_04",
+      "repeatMetres": 3,
+      "interior": true,
+      "comment": "South row, second house: x -85..-77, z 3..9."
+    },
+    {
+      "id": "mereford-house-s3",
+      "from": [
+        -23,
+        1.5
+      ],
+      "to": [
+        -22,
+        1.5
+      ],
+      "height": 5,
+      "thickness": 6,
+      "material": "plastered_wall_04",
+      "repeatMetres": 3,
+      "interior": true,
+      "comment": "South row, third house: x -94..-86, z 3..9."
+    },
+    {
+      "id": "mereford-church-nave",
+      "from": [
+        -24.5,
+        -4.5
+      ],
+      "to": [
+        -21.5,
+        -4.5
+      ],
+      "height": 7,
+      "thickness": 8,
+      "material": "medieval_blocks_02",
+      "repeatMetres": 3,
+      "interior": true,
+      "comment": "Mereford church, the nave (#725): x -100..-84, z -22..-14, 7 m to the eaves and four roof.glb pitches to 10. No saint: a dedication is canon and canon is data/lore.json's to add."
+    },
+    {
+      "id": "mereford-church-tower",
+      "from": [
+        -25.5,
+        -4.5
+      ],
+      "to": [
+        -25.5,
+        -4.5
+      ],
+      "axis": "x",
+      "height": 15,
+      "thickness": 4,
+      "material": "medieval_blocks_02",
+      "repeatMetres": 3,
+      "interior": true,
+      "comment": "The church's west tower: x -104..-100, z -20..-16, 15 m, touching the nave's west face. A run that starts and ends on one tile needs `axis` or runAxis throws. One pitch on top makes it a saddleback tower, the one parish form the kit's pieces make without a new model."
     }
   ],
   "drumsComment": "Every drum is radius 4, 12 m high, 24 sectors, hollow to 2.8, and from the walk they were eight of one thing (#516) until rank 4 (#541) split them by ward: the four outer drums stay defense_wall, the four inner ones (Stockhouse, King's, Bakehouse, Chapel) are castle_brick_02_red, so a tower tells you which ward you are in before its tint does. `tint` multiplies the stone's diffuse for that drum only, kept over the new brick as over the old: the outer four cool (blue-grey, warm grey, green-grey, slate), the inner four warm (sand, gold, ochre, pale). Ten materials over two texture sets; src/assets.js caches the maps by URL. Runs and rooms take `tint` the same way.",
@@ -1879,6 +2074,40 @@
       },
       "floor": "stone_pavers",
       "comment": "Rank 4c: the first thing built on the ground rank 5 laid west of the barbican (#546). Thomas Wykes's stone yard, 12 x 12 m, under Mereford's wall and open to the road on its south side, which is where his cart goes in and out. `data/quests/wykes-mark.json` is what it has to match: \"a block in my yard under the town wall, mark struck in the bed face\". THE PLAYER NEVER STANDS HERE AND THAT IS THE DECISION, not an oversight: `ward` is \"outside\" rather than outer or inner, test/layout.mjs holds an outside room to being unreachable, and check 4's sealed castle is what makes it so. It is on the journal's map for the same reason the fog is out there at all."
+    },
+    {
+      "id": "mereford-street",
+      "level": 0,
+      "ward": "outside",
+      "name": "Mereford's street",
+      "bounds": {
+        "min": [
+          -95,
+          -9
+        ],
+        "max": [
+          -66,
+          9
+        ]
+      },
+      "comment": "Rank 9's town, first increment (#725): the road inside Mereford's east gate and the six houses either side of it. Two rooms and not eight, because a house nobody enters is a building rather than a place. `ward` \"outside\" and no `floor`, like the yard it is 4 m west of: nobody stands here (#703, check 4c), and test/layout.mjs check 4d holds it to being SEEN from somewhere the player can stand (#728). On the journal's map in a drawing of its own, named from the first (#726)."
+    },
+    {
+      "id": "mereford-church",
+      "level": 0,
+      "ward": "outside",
+      "name": "Mereford church",
+      "bounds": {
+        "min": [
+          -106,
+          -26
+        ],
+        "max": [
+          -80,
+          -10
+        ]
+      },
+      "comment": "The church and its yard, north of the street (#725). Seen from the North-west Tower's roof over the town wall, entered by nobody; check 4d is what says the first half."
     }
   ],
   "courtyard": {
@@ -2356,7 +2585,28 @@
         "rotationY": 120,
         "scale": 2,
         "comment": "The one thing growing in the yard, in the corner the carts do not turn in."
-      }
+      },
+      {"id": "mereford-house-n1-pitch-1", "model": "roof.glb", "tile": [-18.5, -1.5], "rotationY": 90, "scale": [6, 2, 4], "base": 5, "noCollide": true, "comment": "Mereford's houses (#725): two roof.glb pitches each, the Wykes shed's arrangement one storey up. Each covers 4 m of ridge and the house's 6 m depth, 5 to 7 m up. No `roofs`: that means over a floor a body stands on, and nobody stands in these."},
+      {"id": "mereford-house-n1-pitch-2", "model": "roof.glb", "tile": [-17.5, -1.5], "rotationY": 90, "scale": [6, 2, 4], "base": 5, "noCollide": true},
+      {"id": "mereford-house-n2-pitch-1", "model": "roof.glb", "tile": [-20.75, -1.5], "rotationY": 90, "scale": [6, 2, 4], "base": 5, "noCollide": true},
+      {"id": "mereford-house-n2-pitch-2", "model": "roof.glb", "tile": [-19.75, -1.5], "rotationY": 90, "scale": [6, 2, 4], "base": 5, "noCollide": true},
+      {"id": "mereford-house-n3-pitch-1", "model": "roof.glb", "tile": [-23, -1.5], "rotationY": 90, "scale": [6, 2, 4], "base": 5, "noCollide": true},
+      {"id": "mereford-house-n3-pitch-2", "model": "roof.glb", "tile": [-22, -1.5], "rotationY": 90, "scale": [6, 2, 4], "base": 5, "noCollide": true},
+      {"id": "mereford-house-s1-pitch-1", "model": "roof.glb", "tile": [-18.5, 1.5], "rotationY": 90, "scale": [6, 2, 4], "base": 5, "noCollide": true},
+      {"id": "mereford-house-s1-pitch-2", "model": "roof.glb", "tile": [-17.5, 1.5], "rotationY": 90, "scale": [6, 2, 4], "base": 5, "noCollide": true},
+      {"id": "mereford-house-s2-pitch-1", "model": "roof.glb", "tile": [-20.75, 1.5], "rotationY": 90, "scale": [6, 2, 4], "base": 5, "noCollide": true},
+      {"id": "mereford-house-s2-pitch-2", "model": "roof.glb", "tile": [-19.75, 1.5], "rotationY": 90, "scale": [6, 2, 4], "base": 5, "noCollide": true},
+      {"id": "mereford-house-s3-pitch-1", "model": "roof.glb", "tile": [-23, 1.5], "rotationY": 90, "scale": [6, 2, 4], "base": 5, "noCollide": true},
+      {"id": "mereford-house-s3-pitch-2", "model": "roof.glb", "tile": [-22, 1.5], "rotationY": 90, "scale": [6, 2, 4], "base": 5, "noCollide": true},
+      {"id": "mereford-church-nave-pitch-1", "model": "roof.glb", "tile": [-24.5, -4.5], "rotationY": 90, "scale": [8, 3, 4], "base": 7, "noCollide": true, "comment": "The nave's roof, four pitches across its 8 m width, eaves at 7 and ridge at 10. roof.glb, not castle_wall_slates: the one slate roof in Mereford is the toll-house at the quay's head (lore's `the-quay`), and that is the quay increment's."},
+      {"id": "mereford-church-nave-pitch-2", "model": "roof.glb", "tile": [-23.5, -4.5], "rotationY": 90, "scale": [8, 3, 4], "base": 7, "noCollide": true},
+      {"id": "mereford-church-nave-pitch-3", "model": "roof.glb", "tile": [-22.5, -4.5], "rotationY": 90, "scale": [8, 3, 4], "base": 7, "noCollide": true},
+      {"id": "mereford-church-nave-pitch-4", "model": "roof.glb", "tile": [-21.5, -4.5], "rotationY": 90, "scale": [8, 3, 4], "base": 7, "noCollide": true},
+      {"id": "mereford-church-tower-pitch", "model": "roof.glb", "tile": [-25.5, -4.5], "rotationY": 90, "scale": [4, 3, 4], "base": 15, "noCollide": true, "comment": "The saddleback on the church's west tower, 15 to 18 m."},
+      {"id": "mereford-street-barrels", "model": "barrels.glb", "tile": [-18, 0.6], "rotationY": 0, "scale": 2.5, "comment": "Something on the ground in Mereford's street, on the road's south verge, at the yard's own scale: check 11 wants something in every room, and a house is a wall and its pitches stand 5 m up."},
+      {"id": "mereford-street-crate", "model": "detail-crate.glb", "tile": [-22, -0.6], "rotationY": -20, "scale": 2.5, "comment": "and a crate on the north verge, further in."},
+      {"id": "mereford-churchyard-tree", "model": "tree-large.glb", "tile": [-20.5, -6], "rotationY": 140, "comment": "The churchyard's tree, east of the nave."},
+      {"id": "mereford-churchyard-cross", "model": "column-damaged.glb", "tile": [-23, -3], "rotationY": 0, "comment": "The churchyard cross, south of the nave: the kit has no cross, and a broken column is what a village cross is after a few hundred winters."}
     ]
   },
   "interiorProps": [

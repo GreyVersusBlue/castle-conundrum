@@ -7550,13 +7550,122 @@ read and keep 0.01 m. Not taken blind on a beat nobody here has watched fail.
   supplied dt, not a measured frame, so #53 does not touch it; the run was
   headless on the dev machine.
 
+## Rank 9, the town: where it stands, how the map shows it, what it costs (2026-09-21)
+
+**Lane B, decided before anything is built, decisions #725 to #728.** Ranks 2
+and 6 were running at the same time and may take numbers from #725 too; this
+band is contiguous so it can be renumbered in one pass at merge. Nothing here
+touches `src/` or `test/` yet. `SPECS.md`'s "A castle to get lost in" carries
+the first increment these four decisions make buildable, and every number
+below is from a Node prototype that cloned `data/scene-config.json` in memory,
+added the town, and ran `makePlan`, `walkability`, `buildPiece` and a sight
+test over it. Three runs, six houses, a church, four ground props, two rooms.
+
+- **The town stands west of the `town-wall` run, inside it, and not in the
+  strip between it and the barbican** (#725). This amends #706, which said
+  "the 28 m between them is the barbican and the road, and it is exactly
+  where rank 9's town goes", and the three summaries that repeated it. The 28 m
+  is a distance on the map, from the north walk's west edge at x -34 to the
+  yard's at x -62, and most of it is not ground a room can use. x -46 to -34
+  is inside the curtain box, where check 4c refuses an outside room. What is
+  left is x -62.5 (the town wall's east face) to -48 (the base's edge), 14.5 m,
+  and the yard already takes z -17 to -5 of it. A walled town's street, church
+  and quay do not fit in a 14.5 m strip, and the lore does not put them there:
+  `west-road` runs "west through the barbican and down through Mereford to the
+  quay", `the-quay` is where the carts come up from, and `town-wall`'s own
+  comment has the gate on the road and the wall facing the castle. So the run
+  is Mereford's east wall, the town lies behind it, and **Wykes's yard stands
+  outside the east gate, under the wall**, which is what his quest says it is.
+  Three returns close the circuit at x -129.5 with a west gate on the road,
+  and the quay is outside that gate in a later increment. #703 is not touched:
+  the prototype's `walk.sealed()` is still `true`.
+
+- **Outside rooms go on the map in a drawing of their own, named from the
+  first and never counted** (#726). This amends #589's "every storey on the
+  same frame", #706's "nothing was done about it and nothing should be", and
+  the cost #703 accepted, "one room on the journal's map that can never be
+  filled in". One such room was a blank the player could read as a wart. The
+  town makes three, and under #725 it puts them 33 to 44 m further west than the yard: one
+  shared frame would have gone from 90.8 m wide to about 135, with the castle
+  about half of it. So the storey drawings frame the rooms that are not
+  outside and go back to 67.6 m, `#journal-map-count` reads out of 40 rather
+  than 43, and the three outside rooms get a fourth drawing, "Outside the
+  walls", on their own frame, with their names shown, because a name that can
+  only be earned by standing somewhere nobody can stand is never earned. The
+  map is still the plan's list and not a second one (#588): the split is on
+  the room's own `ward`.
+
+- **What is drawn outside both wards counts against each ward's ceiling**
+  (#727). This amends #611's three buckets and #707's "the ceiling is left
+  unset on purpose", which deferred the number to this row. An outside mesh is
+  in view from both wards: the one vantage that sees the town, the North-west
+  Tower's roof, is in the outer ward, and an inner-ward roof looks the same
+  way over the cross-wall. So the claim is `calls[w] + calls.outside <=
+  MAX_DRAW_CALLS_PER_WARD` for each ward, with no new constant. **Before**: the
+  outside bucket was 44 meshes with no ceiling. **After**: it is bounded by
+  1200 less the busier ward, 1200 - 993 = 207 today. The prototype town takes
+  it to 132, so the outer ward's sum is 1125, 75 under, and the inner's 775.
+  When it fails, the first answer is still #611's: merge a drum's sectors into
+  one geometry before deleting a house.
+
+- **Every room outside the curtain has to be seen from somewhere the player
+  can stand** (#728). #703 said the player sees the yard and never stands in
+  it, and check 4c asserts only the second half. The first half was a
+  photograph (#707). `test/layout.mjs` check 4d makes it geometry: from any
+  reachable cell at 8 m or higher, at eye height, a segment to the top of any
+  piece whose centre lies in the room meets no other piece's box. The
+  prototype, before a line of the suite exists: **the yard is seen from
+  `floor-nw-tower-roof` at (-37.75, 13.70, -16.75), by `wykes-shed-pitch-1`**,
+  the roof and the shed #707 photographed through a crenel, so the check agrees
+  with a picture and not with itself (#34). The street is seen by 14 of its 20
+  candidate pieces and the church by 8 of 9. With `town-wall` raised to 20 m
+  as the break, the street and the church are seen from nowhere and the yard,
+  east of that wall, is still seen. 1939 eyes, 0.2 s.
+
+**Built, and each guard-rail broke from green, verbatim** (#34). `f26cc70`,
+2026-09-21.
+
+- **Check 4d, with `town-wall` raised to 20 m** (#728): `FAIL  mereford-street
+  is seen from nowhere: none of its 20 pieces (mereford-house-n1, …) has a
+  clear line to any of the 1939 places 8 m up the player can stand. #703 says
+  the player looks at it`; the church fails the same way, 9 pieces. The yard
+  still passes, seen from `floor-nw-tower-roof` at (-37.75, 13.70, -16.75) via
+  `wykes-shed-pitch-1`. Restored, 4d checks 1939 eyes in 55 ms: the street is
+  seen by 14 of its 20 pieces, the church by 8 of 9.
+- **`test/budget.mjs`, with `MAX_DRAW_CALLS_PER_WARD` at 1100** (#727): the
+  outer ward alone (993) still passes the old assertion and only the new one
+  fails: `FAIL  the outer ward's 993 meshes and the 131 outside both wards
+  come to 1124, over the ceiling of 1100: … outside-ground (5),
+  wykes-shed-pitch-1 (4), wykes-shed-pitch-2 (4)`.
+- **The map, three ways** (#726): a frame built off every room again —
+  `FAIL  every storey is framed on the castle's own 67.6 m … — 134.8, 134.8,
+  134.8, 134.8`; outside rooms counted in the stood-in denominator —
+  `"0 of 43 rooms stood in"` / `"3 of 43"`; and `· · ·` where an outside name
+  belongs — `wykes-yard: "· · ·", mereford-street: "· · ·", mereford-church:
+  "· · ·"`.
+
+**What shipped counts one mesh under the prototype's, everywhere the
+prototype's count was carried forward.** The four ground props measure 6
+meshes, not the prototype's 7, so the outside bucket is **131**, the outer
+ward's sum is **1124** (76 under 1200) and the inner's is **774** (426
+under). `mereford-street-barrels` ships at `rotationY: 0`: at the prototype's
+30°, its box went 0.09 m into `mereford-house-s1`. `SPECS.md` carried the
+prototype's 132/1125/775 into the built spec by mistake and is corrected to
+match.
+
+**The prototype found one thing the spec had to say**: a run that starts and
+ends on one tile throws in `runAxis` without an `axis` field, so the church
+tower carries `axis: "x"`. `SPECS.md` has it. The prototype is not committed;
+the builder writes the check and the town from the spec and breaks each on
+purpose from green.
+
 ## The GPU run, third sitting: the day reaches the accusation, and the rays are not on the body (2026-09-21)
 
 **Rank 2, on Devon's machine, an RTX 3070 Ti.** `npm run play` ran twice,
 about twenty minutes each. Both runs still exit 1, but the second is the
-first to reach the accusation. Decisions #725 to #732.
+first to reach the accusation. Decisions #729 to #736.
 
-### Run one: past the second bell for the first time (#725)
+### Run one: past the second bell for the first time (#729)
 
 **The suite as merged ran first.** Exit 1, 164 ok, 19 failures, aborted at
 "cannot finish without reaching the Constable" at Vespers. This is the first
@@ -7577,7 +7686,7 @@ watched it hold.
 lines added and 42 removed, in six places, and each is a decision.
 
 - **`present()` left the Present list and the dialogue open on its failure
-  paths** (#726). The porter beat (`shots/play/34-aborted.png`) failed inside
+  paths** (#730). The porter beat (`shots/play/34-aborted.png`) failed inside
   the box: the pointer stayed released and the Constable walk that followed
   read `locked false` and gave up. #708 fixed this for the success path only.
   `shutPresent()` now runs on every path out of `present()`. Headless: the
@@ -7585,23 +7694,23 @@ lines added and 42 removed, in six places, and each is a decision.
   closes both, `locked` true. Mechanics only, not a render question (#53).
 - **A walk to another storey counted a waypoint reached by x and z alone**,
   so legs up the Kitchen Tower's flight were ticked off from the floor beside
-  it (#727). A Node repro with `moveBody` stopped at (-20.0, -15.5); run one
+  it (#731). A Node repro with `moveBody` stopped at (-20.0, -15.5); run one
   stopped at (-20.0, -15.3), the same bug on the machine it was built for.
   The walk now uses Phase 5's own stair legs instead of a flat distance
   check. Run two: "up the Kitchen Tower: every leg reached, now L2."
 - **`examine()` always passed level 0**, and the Stockhouse bar and the tally
-  stick are level 2 in `data/mystery.json` (#728). Run one put the player
+  stick are level 2 in `data/mystery.json` (#732). Run one put the player
   1.7 m across and about 8 m below the tally. Both beats pass in run two.
 - **`walkTo` read the prompt before turning to face the target**, and a short
   step walked the player through the Chaplain, so every read of him came
-  from behind the camera (#729). A headless probe with the walk stopped
+  from behind the camera (#733). A headless probe with the walk stopped
   short named Father Anselm from the give-up point, both rays clear. The
   turn now happens first. Passes in run two.
 - **The Constable-visible check cast its ray from wherever the porter beat
   had left the player**, 17 m away across the cross-wall, instead of walking
-  there first (#730). It now walks first. Passes in run two.
+  there first (#734). It now walks first. Passes in run two.
 - **`snap('twelve-at-vespers')` was a 54 m straight-line walk from the
-  chapel bell that ended against stone in the inner ward** (#731, #147).
+  chapel bell that ended against stone in the inner ward** (#735, #147).
   Shot 31 is a wall, and the HUD reads "Inner ward." The beat now routes to
   the hall first. Run one's "Great Hall floor at Vespers" luma of 40.1 was
   therefore a wall, not the hall; run two reads 72.7 of 255 from the floor
@@ -7610,7 +7719,7 @@ lines added and 42 removed, in six places, and each is a decision.
 
 `npm test` is 15 of 15 after the six fixes.
 
-### Run two: the accusation, and the ending it reaches is wrong (#732)
+### Run two: the accusation, and the ending it reaches is wrong (#736)
 
 **Exit 1, 179 ok, 17 failures. The day reached the accusation for the first
 time.** It aborted on `page.click('#restart-button')` not visible, after the

@@ -632,6 +632,92 @@ console.log('\nthe rooms past the curtain');
   }
 }
 
+/* ------------- 4d (rank 9, #728): every room outside the curtain is seen ---
+ * #703 said the player sees Wykes's yard and never stands in it. Check 4c
+ * above holds the second half. The first half was a photograph (#707), and a
+ * photograph is not a rail: a taller town wall, a house moved one row east, a
+ * church put behind the barbican, and the town is a room on the map that
+ * nothing on the screen ever shows. So it is geometry here.
+ *
+ * THE TARGETS are every plan piece in the room that is not ground, by its
+ * box's centre in plan, and a target's point is the top centre of its box,
+ * 0.05 m down so the point is in the piece rather than on its skin. THE EYES
+ * are every reachable cell at 8 m or higher, the walks and the roofs, at eye
+ * height over the cell's centre: nothing lower sees over an 8 m curtain.
+ * THE OCCLUDERS are every other piece's `boxes || [box]`, ground excepted, as
+ * axis-aligned boxes, so a drum is the square round it and a merlon is its
+ * whole box. That only ever makes the check harder to pass, never easier. A
+ * room passes when one eye sees one target down a segment no occluder meets,
+ * and the line names both.
+ *
+ * THE YARD IS THE CONTROL (#34, #147). The prototype's answer for it is the
+ * North-west Tower's roof and `wykes-shed-pitch-1`, which is the vantage and
+ * the piece #707 photographed through a crenel. If the yard ever fails here,
+ * the check is wrong and not the yard. The break is `town-wall` raised to
+ * 20 m: the street and the church behind it go unseen and the yard, east of
+ * it, is still seen, so the check tells the rooms apart.
+ */
+console.log('\nthe rooms past the curtain, seen from the walls');
+{
+  const t0 = Date.now();
+  const outsideRooms = rooms.filter(isOutside);
+  const eyes = walk.cells.filter(c => c.h >= 8).map(c => ({
+    x: c.i * GRID + GRID / 2, y: c.h + EYE_HEIGHT, z: c.j * GRID + GRID / 2, surface: c.surface,
+  }));
+  if (!eyes.length) fail('no reachable cell stands 8 m up or higher, so nothing sees over the curtain and this check measured nothing');
+  const solid = plan.pieces.filter(p => p.kind !== 'ground');
+  const occluders = solid.flatMap(p => (p.boxes || [p.box]).map(b => ({ id: p.id, b })));
+  const EPS = 1e-9;
+  /** Does the segment from `a` to `b` pass through the inside of `box`? Slabs. */
+  const meets = (a, b, box) => {
+    let lo = 0, hi = 1;
+    for (const k of ['x', 'y', 'z']) {
+      const d = b[k] - a[k];
+      if (Math.abs(d) < EPS) {
+        if (a[k] <= box.min[k] || a[k] >= box.max[k]) return false;
+        continue;
+      }
+      let t1 = (box.min[k] - a[k]) / d, t2 = (box.max[k] - a[k]) / d;
+      if (t1 > t2) [t1, t2] = [t2, t1];
+      if (t1 > lo) lo = t1;
+      if (t2 < hi) hi = t2;
+      if (hi - lo <= 1e-6) return false;
+    }
+    return true;
+  };
+  let lastHit = null; // the occluder that blocked last, tried first: walls block in runs
+  const clear = (eye, pt, ownId) => {
+    if (lastHit && lastHit.id !== ownId && meets(eye, pt, lastHit.b)) return false;
+    for (const o of occluders) {
+      if (o.id === ownId || o === lastHit) continue;
+      if (meets(eye, pt, o.b)) { lastHit = o; return false; }
+    }
+    return true;
+  };
+  for (const r of outsideRooms) {
+    const targets = solid.filter(p => {
+      const x = (p.box.min.x + p.box.max.x) / 2, z = (p.box.min.z + p.box.max.z) / 2;
+      return x >= r.bounds.min.x && x <= r.bounds.max.x && z >= r.bounds.min.z && z <= r.bounds.max.z;
+    });
+    if (!targets.length) { fail(`${r.id} has no piece in it to be seen, so nothing says it can be`); continue; }
+    let first = null, seen = 0;
+    for (const t of targets) {
+      const pt = { x: (t.box.min.x + t.box.max.x) / 2, y: t.box.max.y - 0.05, z: (t.box.min.z + t.box.max.z) / 2 };
+      const eye = eyes.find(e => clear(e, pt, t.id));
+      if (!eye) continue;
+      seen++;
+      if (!first) first = { eye, t };
+    }
+    if (!first) {
+      fail(`${r.id} is seen from nowhere: none of its ${targets.length} pieces (${targets.slice(0, 4).map(t => t.id).join(', ')}${targets.length > 4 ? ', ...' : ''}) has a clear line to any of the ${eyes.length} places 8 m up the player can stand. #703 says the player looks at it`);
+      continue;
+    }
+    const e = first.eye;
+    pass(`${r.id} is seen from ${e.surface} at (${f2(e.x)}, ${f2(e.y)}, ${f2(e.z)}) by ${first.t.id}; ${seen} of its ${targets.length} pieces are seen from somewhere`);
+  }
+  console.log(`        ${eyes.length} eyes, ${outsideRooms.length} rooms, ${Date.now() - t0} ms`);
+}
+
 /* ---------------------------- 4b: two crossings, one logged and one not ---
  *
  * The fact the whole mystery turns on. "The porter's gate is the only crossing

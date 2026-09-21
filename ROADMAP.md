@@ -329,7 +329,7 @@ its row open with its text rewritten to say what is done.
 | Row | Model | Where | Lane | Next increment |
 | --- | --- | --- | --- | --- |
 | ~~**R1** The walker on the stair~~ | Opus 5 | Container | none | **Shipped** (#716 to #720). A same-storey walk now searches that storey's own floor, so `hike` can no longer take a flight for a stair or the wall walk for a corridor, and a tight cell costs five instead of one, so it stops hugging the walls a prop stands against. `test/layout.mjs` check 8b holds it over 66 room pairs, 153 ok. The row is closed; the run itself is Gate 1, above, and it is R2's. |
-| **R2** The GPU run | Opus 5 | **Local: GPU** | after R1 | **Gate 1, above.** Its looking is done (#711 to #715); the old R1 walker holds on a GPU now (#725, #727), and a third sitting reached the accusation for the first time before a new bug, fixed sight heights in `src/interaction.js`, produced the wrong ending (#726 to #732). Gated on the new R1, "Sight at the body's own height." |
+| **R2** The GPU run | Opus 5 | **Local: GPU** | after R1 | **Gate 1, above.** Its looking is done (#711 to #715); the old R1 walker holds on a GPU now (#729, #731), and a third sitting reached the accusation for the first time before a new bug, fixed sight heights in `src/interaction.js`, produced the wrong ending (#730 to #736). Gated on the new R1, "Sight at the body's own height." |
 | ~~**R8** Side quests~~ | Opus 5 | Container | A | **Shipped, and the row is closed** (#691 to #695). The seven errands left of the dozen went in on 2026-09-18, one voice each on the seven people who had none, so `data/quests/` is twelve files and every person the day one schedule puts in the castle has an errand. A sixth set rule came with them: a terminal stage may not park a person whose `default` lines pose one of the frame's tokens. No `save.js` change and no version bump. |
 | **R6** Life: a populace | Opus 5 | Container | C, D | ~~The file, the validator and the first ten~~ shipped 2026-09-17 (#616 to #618): a routine is a ring per bell, nine activities on three clips the kit already had, no asset added. What is left is the other forty, the ambient talk once two bodies are within 3 m, and the four activities that want a clip — which is the half that trades with R10. **It has a number to answer to**: 20 skinned bodies per ward against a peak of 7 before the ten, 17 after (#609). |
 | ~~**R1** A fourth body~~ | Fable 5.1 | Local: net | C | **Shipped** (#603 to #606). Quaternius's Ultimate Modular Women Pack, meshopt to 1.02 MB, worn by the cook, the laundress and the lady. |
@@ -391,8 +391,10 @@ x -64 is 64 m of wall with the gate already in it, to be extended rather than
 replaced. `ward: "outside"` is a room's third answer, with `test/layout.mjs`
 check 4c holding what that word costs: clear of the curtain, standing on a
 piece of `config.ground.outside`, reached by nobody. And the journal's map
-frame grew from 67.6 m wide to 90.8 (#706), with 28 m of empty ground between
-the castle and the yard that R9's street is what fills.
+frame grew from 67.6 m wide to 90.8 (#706). R9's town does not fill the gap
+that left on the map: it stands west of the town wall, and its rooms and the
+yard move to a map drawing of their own, which takes the castle's frame back
+to 67.6 (#725, #726).
 
 **The open call it settled: the player sees the yard and never stands in it**
 (#703). R9 inherits that too. A town the player can walk into is a way out of
@@ -407,7 +409,11 @@ to overturn rather than a street to place.
 
 A walled town's street, church and quay on the ground the yard proved. The
 rooms go on the map the day they go in `config.rooms`, because the map is the
-plan's list and not a second one (#588 to #591).
+plan's list and not a second one (#588 to #591). **~~The street and the
+church~~ shipped 2026-09-21** (#725 to #728): 131 meshes outside both wards,
+the map back to 67.6 m and 40 rooms. **What is left is the quay and the
+river**, outside the west gate; it has no `SPECS.md` section yet, so it is an
+`architect` job first.
 
 ### Anytime — never gated, take it when the lane is free
 
