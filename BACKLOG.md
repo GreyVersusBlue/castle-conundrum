@@ -308,26 +308,38 @@ watched the fixed route carry a real `npm run play` to the second bell yet;
 that proof is rank 2's alone. **Rank 1 is done, its section is gone from this
 file and from `SPECS.md`, and its number is retired.**
 
-**CI on `main` is red, and it is nobody's row yet — and on 2026-09-19 it is a
-different beat from the one below.** `npm test` at `f5d0c0e`, in a clean tree,
-fails `plan-vs-scene` on `none of the 12 cells between 0.9 and 2.8 m of the
-chapel candles offers them (the nearest offered "Press E to ring the bell")`.
-That is the same behaviour that swaps the body and the pouch in `npm run play`
-(#714's neighbour): a nearer interaction target out-ranks the one the beat is
-aimed at, in the chapel both times. Whether `InteractionSystem` should prefer
-what the camera points at over what is nearest is a `src/` question nobody has
-asked. The populace beat below is the older report and was not seen failing on
-2026-09-19; both are written down because neither has been chased.
+**Both failures behind the red `plan-vs-scene` are found and fixed, unranked,
+on `claude/r99-red-ci`** (#721 to #724). The chapel-candles failure was never
+the bell: ringing it sends twelve bodies walking, and the Constable's Prime
+station is 0.92 m from the candles, so from the nearest of the twelve measured
+cells he stands 0.52 m away and 62 degrees off the aim, and nearest-wins ranking
+hands the player his prompt instead (#721). `src/interaction.js` now takes a
+second slot per list — nearest inside an 18.2-degree aim cone, then nearest at
+all (#722). Measured over four watches and 12371 (cell, target) pairs,
+nearest-wins offered what the player was aimed at 6667 times against the aim
+rule's 11521: 2834 pairs fixed, 48 broken, none of the 48 a lock. The same
+change fixes the chapel's body-and-pouch swap (#722): `examine` aims at the
+body and the pouch is nearer, and the six cells that used to hand back the
+pouch now hand back the body, 6 of 6. The failure message itself was lying —
+it printed the sweep's twelfth cell under the first cell's name — and now
+prints every cell it tried, nearest first (#723).
 
-`plan-vs-scene.mjs`'s populace beat fails in CI on the baker's first Prime
-stop — 0.408 m off on the merge of PR #47 (2026-09-18, run 35305787194),
-0.055 m off on rank 1's branch the same morning. Two distances from one stop is a body already walking its ring
-when the page is read, and the beat measures it against `TOL`, which is 0.01 m
-because that is what `plan-vs-scene.mjs` diffs static geometry at. A moving body
-is owed a different number and picking it wants the ring's step size in hand,
-which is lane C's. It is written up under rank 1's section in `HISTORY.md` with
-both runs named. **Until somebody takes it, CI has no green run on `main` and
-every PR inherits the same red suite.**
+The populace beat's baker-at-Prime failure — 0.408 m off on the merge of PR
+#47, 0.055 m off on rank 1's branch — does not reproduce on the dev machine, 6
+of 6 green. It is a wall clock, not a tolerance: `DWELL` is 9 s and the first
+ring leaves its stop 4.5 s after placement, which a slow CI runner crosses and
+this machine does not. `test/plan-vs-scene.mjs` now parks the rings with
+`window.__populace.setWatch(watch, { walk: false })` before the read and keeps
+`TOL` at 0.01 m (#724). Driven by hand with 15 s of supplied time and the park
+skipped, 7 of 13 bodies failed, worst 11.000 m off; restored, the beat holds at
+0.01 m at 15 s and again at 45 s.
+
+**`npm test` is 15 of 15 on this branch and `npm run build` is clean. Nothing
+here has merged**, so what is confirmed is local; the PR's own CI run is what
+settles it for `main`. A finding and not a fix: nothing stops a station
+standing on top of a prop — the Chaplain 0.20 m from the gravestone at every
+watch, the Constable 0.92 m from the chapel candles at Prime — and `SPECS.md`
+carries a recommended `PROP_CLEARANCE = 1.0 m` for whoever takes that row.
 
 **And the run found the thing it exists to find**, which was a castle you
 could not walk in after opening the journal: a bug in `src/`, not in the suite,
@@ -549,6 +561,9 @@ on every NPC in the game (#715), five checks in `test/play-castle.mjs` that are
 stale or vacuous including one that can only fail on a GPU (#714), and a
 journal walk assertion that read 0.69, 1.30, 0.51 and 0.69 m across four runs
 of the same beat, against 3.75 m for an unobstructed walk on the same machine.
+All three are still open. A fourth thing this same sitting turned up, the
+chapel's body-and-pouch swap named in "Where things stand" above, is not:
+#722 fixed it.
 
 **A fourth thing came out of rank 1 and is nobody's row either** (#718).
 Route pricing a tight cell found two props standing inside a 0.45 m body's
