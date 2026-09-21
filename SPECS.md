@@ -989,8 +989,8 @@ rank 2's alone.
 
 ## The retro castle: the stone in the castle's own pixel art
 
-**Rank 3. Size 2+. The first increment shipped on 2026-09-21** (#754 to
-#763). Devon's brief of the same day: the castle reads as the same
+**Rank 3. Size 2+. The first increment shipped on 2026-09-21** (#757 to
+#766). Devon's brief of the same day: the castle reads as the same
 everywhere, and he wants pixel-art textures produced by a model session
 rather than photographs, for variety room to room and for a retro look, a
 style call before a cost one. That reverses #411, which put photographic
@@ -1028,7 +1028,7 @@ Haven's 341.
 
 **The shape of the row: three increments, and a look between the first two.**
 
-1. **Shipped** (#754 to #763): the pipeline, its rails, and fifteen
+1. **Shipped** (#757 to #766): the pipeline, its rails, and fifteen
    textures, one per existing material name, so the castle is whole in the
    new look on one GPU sitting and not one wall at a time. A container
    closed it: no `ktx`, no network, no GPU. **Then somebody looks** (#53),
@@ -1133,7 +1133,7 @@ where it is locked.
 
 1. **Replace the sets, supplement them, or replace Poly Haven's models
    outright? Shipped: replace the fifteen sets and keep the ten prop
-   packs** (#754). Built geometry carries planar world-space UVs at a 3 m
+   packs** (#757). Built geometry carries planar world-space UVs at a 3 m
    repeat (#434), so a tiling texture drops onto every run, drum, floor and
    ground with no UV work at all, which is the whole reason the swap was one
    sitting; a prop is a photoscanned model with authored UVs and its own
@@ -1146,7 +1146,7 @@ where it is locked.
    still expected in increment 2, one wall and one floor per named room, at
    85 KB each, against a ceiling with headroom to spare. The count was never
    going to hit the ceiling; the props are the 35.1 MB that could.
-2. **Flat and unlit, or lit? Shipped: lit, diffuse only** (#755).
+2. **Flat and unlit, or lit? Shipped: lit, diffuse only** (#758).
    `loadPixelMaterial({ map, roughness }, tint)` builds a
    `MeshStandardMaterial` with a `map`, `roughness` from the row or 1,
    `metalness` 0 and the tint or white as its colour (#516), not a
@@ -1157,7 +1157,7 @@ where it is locked.
    nine stone rows get the default of 1.
 3. **The kit is unlit today; leave it, or relight it? Shipped: relight it,
    and the assumption behind that was checked first rather than assumed**
-   (#756). Every Kenney GLB read — `battlement.glb`,
+   (#759). Every Kenney GLB read — `battlement.glb`,
    `wall-fortified-gate.glb`, `column.glb`, `column-damaged.glb`,
    `detail-crate.glb` — does declare `KHR_materials_unlit` on every
    material, so GLTFLoader does hand back a `MeshBasicMaterial` and the
@@ -1169,7 +1169,7 @@ where it is locked.
    `RELIGHT_KIT = false` is the one-line reversal if one goes black the way
    the slate did (#438).
 4. **Who generates, how, and what is reviewed before a texture is
-   committed? Shipped: a program in the repo, not an image model** (#757).
+   committed? Shipped: a program in the repo, not an image model** (#760).
    The session that authors a row writes its parameters into
    `textures.json` (and a family into `index.mjs` if none fits), runs
    `npm run pixel:render`, looks at `shots/pixel/sheet.png`, and commits the
@@ -1178,31 +1178,31 @@ where it is locked.
    rather than a rule: an image-generation model's output fails that rail
    by construction.
 5. **Size and palette. Shipped: 128 x 128 and at most 32 colours, both held
-   as named constants in `test/assets.mjs`** (#758), declared in the suite
+   as named constants in `test/assets.mjs`** (#761), declared in the suite
    and not read off the generator, so the suite fails if
    `tools/pixel/index.mjs`'s own `SIZE` disagrees with it — a rail that
    reads its subject's own constant is the check that re-implements the
    thing it checks (#34). The fifteen use six to nine colours of the 32.
-6. **KTX2 or PNG? Shipped: PNG, and the exemption is a size** (#759).
+6. **KTX2 or PNG? Shipped: PNG, and the exemption is a size** (#762).
    Pixel art at 128 px is 85 KB in video memory with its mip chain, and
    ETC1S carries two base colours per 4 x 4 block and would mangle a hard
    pixel edge. `tools/encode-assets.mjs`'s header states the rule as a
    size — 128 px or under is a PNG — and names check 3b as what holds it,
    so it cannot grow into a 1k PNG.
-7. **Names. Shipped: keep the fifteen names in this increment** (#760).
+7. **Names. Shipped: keep the fifteen names in this increment** (#763).
    `data/sounds.json`'s `byMaterial`, the drum beat and the config's sixty
    references did not move, and `data/sounds.json` was not touched.
    Increment 2's new names will each need a `byMaterial` row, and
    `test/layout.mjs` check 12 is what will say so.
 8. **Does this renegotiate a budget ceiling (#611)? Shipped: no, and there
-   is a fourth count** (#761). None of the three existing counts moved: the
+   is a fourth count** (#764). None of the three existing counts moved: the
    outer ward still draws 993 meshes, the inner 643, the outside bucket
    131, three point lights, 32 bodies. `MAX_TEXTURE_MB = 64` joined them in
    the ceilings block, and the castle reads **37.9**.
-9. **The props. Shipped: untouched** (#762). The ten packs are 35.1 MB of
+9. **The props. Shipped: untouched** (#765). The ten packs are 35.1 MB of
    the 37.9 and the look is what says whether a photographed cabinet in a
    pixel room is the next wrong thing — increment 3, if it is.
-10. **Tone mapping and the fill. Shipped: left for the GPU** (#763).
+10. **Tone mapping and the fill. Shipped: left for the GPU** (#766).
     `toneMappingExposure` and the hemisphere's 2.0 were not touched. They
     are two numbers on the looking checklist below and moving either from a
     container would be guessing at a look nobody has had.
@@ -1236,7 +1236,7 @@ where it is locked.
   texture rails are `assets.mjs`'s; nothing crosses the four-suite line.
 - #584, #632: `data/scene-config.json` is spliced, in its own line ending.
 - #53: the look.
-- #742, #743, #744, #754 to #763.
+- #742, #743, #744, #757 to #766.
 
 ### Looking checklist
 

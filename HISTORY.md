@@ -8266,10 +8266,12 @@ be a dispatch into the graph, which is what the morning after already is
 gone and the built castle wears fifteen 128 px textures this repo draws.
 Worked under Claude Opus 5 as the builder, on
 `claude/retro-castle-pixel-textures-kliakt`, against the `SPECS.md` section
-#742 to #744 wrote. Decisions **#754 to #763**, one per open call, allocated
-off a fresh `origin/main` at `3ee4364` whose highest number is #753 (#633's
-rule); a renumber at merge is expected, and the code cites these as "#742,
-open call N" rather than by these numbers, so a renumber costs nothing.
+#742 to #744 wrote. Decisions #757 to #766, written as #754 to #763 against
+a fresh `origin/main` at `3ee4364` whose highest number was #753 (#633's
+rule) and renumbered whole at merge, because PR #69 ("Explore, the day
+before: the section, and three calls the code settled") took #754 to #756
+first. The code cites these as "#742, open call N" rather than by these
+numbers, so the renumber cost nothing.
 
 **What shipped.** `tools/pixel/index.mjs` and `tools/pixel/textures.json`: five
 drawing families — `courses` seven rows, `planks` four, `ground` two,
@@ -8288,14 +8290,14 @@ line ending (#632), with nothing else in the file moved. `src/assets.js`'s
 `encodeMaterialMaps`, and `test/assets.mjs` and `test/budget.mjs` gained the
 rails below.
 
-- **Replace the fifteen sets; keep the ten prop packs** (#754, open call 1,
+- **Replace the fifteen sets; keep the ten prop packs** (#757, open call 1,
   taken as written). Nothing was supplemented and nothing was kept "just in
   case": a set beside a pixel texture is about 3 MB of video memory for no
   variety, and `test/budget.mjs`'s fourth count now refuses it by arithmetic
   rather than by rule. Measured: the supplement fails at **82.1 MB** against a
   64 MB ceiling.
 
-- **Lit, diffuse only** (#755, open call 2). `loadPixelMaterial({ map,
+- **Lit, diffuse only** (#758, open call 2). `loadPixelMaterial({ map,
   roughness }, tint)` builds a `MeshStandardMaterial` with a `map`, `roughness`
   from the row or 1, `metalness` 0 and the tint or white as its colour (#516),
   through the same `loadTexture` and `tuneTexture` as before, so the map is
@@ -8306,7 +8308,7 @@ rails below.
   nearly right.
 
 - **The kit is relit, and the assumption behind that was checked first**
-  (#756, open call 3). Every Kenney GLB read — `battlement.glb`,
+  (#759, open call 3). Every Kenney GLB read — `battlement.glb`,
   `wall-fortified-gate.glb`, `column.glb`, `column-damaged.glb`,
   `detail-crate.glb` — declares `KHR_materials_unlit` on every material, so
   GLTFLoader does hand back a `MeshBasicMaterial` and the recommendation stood
@@ -8316,40 +8318,40 @@ rails below.
   has seen a lit merlon (#53); `RELIGHT_KIT = false` is the one-line reversal
   if one goes black the way the slate did (#438).
 
-- **A program in the repo generates, and the suite is the review** (#757, open
+- **A program in the repo generates, and the suite is the review** (#760, open
   call 4). A row is parameters and a seed; `test/assets.mjs` re-renders every
   row in Node and holds the committed PNG pixel-identical to it. An image
   model's output fails that by construction, which is #743 as a check.
 
-- **128 px and at most 32 colours, held in `test/assets.mjs`** (#758, open call
+- **128 px and at most 32 colours, held in `test/assets.mjs`** (#761, open call
   5). `PIXEL_PX` and `PIXEL_MAX_COLOURS` are declared in the suite and NOT read
   off the generator, and the suite fails if `tools/pixel/index.mjs`'s own
   `SIZE` disagrees with it: a rail that reads its subject's constant is the
   check that re-implements the thing it checks (#34). The fifteen use six to
   nine colours of the 32.
 
-- **PNG, not KTX2, and the exemption is a size** (#759, open call 6). 85 KB in
+- **PNG, not KTX2, and the exemption is a size** (#762, open call 6). 85 KB in
   video memory with its mip chain, and ETC1S's two base colours per 4 x 4 block
   would mangle a hard pixel edge. `tools/encode-assets.mjs`'s header now states
   the rule as a size — 128 px or under is a PNG — and names check 3b as what
   holds it, so it cannot grow into a 1k PNG. `CLAUDE.md`'s compression bullet
   says the same in one sentence.
 
-- **The fifteen names stay** (#760, open call 7). `data/sounds.json`'s
+- **The fifteen names stay** (#763, open call 7). `data/sounds.json`'s
   `byMaterial`, the drum beat and the config's sixty references did not move,
   and `data/sounds.json` was not touched.
 
-- **No ceiling was renegotiated; there is a fourth count** (#761, open call 8,
+- **No ceiling was renegotiated; there is a fourth count** (#764, open call 8,
   and #611). None of the three existing counts moved: the outer ward still
   draws 993 meshes, the inner 643, the outside bucket 131, three point lights,
   32 bodies. `MAX_TEXTURE_MB = 64` joins them in the ceilings block, and the
   castle reads 37.9.
 
-- **The props are untouched** (#762, open call 9). The ten packs are 35.1 MB of
+- **The props are untouched** (#765, open call 9). The ten packs are 35.1 MB of
   the 37.9 and the look is what says whether a photographed cabinet in a pixel
   room is the next wrong thing.
 
-- **Tone mapping and the fill are left for the GPU** (#763, open call 10).
+- **Tone mapping and the fill are left for the GPU** (#766, open call 10).
   `toneMappingExposure` and the hemisphere's 2.0 were not touched. They are two
   numbers on the looking checklist and moving either from a container would be
   guessing at a look nobody has had.
@@ -8451,7 +8453,7 @@ software-rendered Chromium is inconclusive rather than confirmed (#53).
 **Nothing here claims a look.** The castle has not been seen in pixel art by
 anybody, the kit has not been seen lit, and the section's looking checklist is
 what the look is for. No `ktx` was needed or used — nothing new goes through
-the encoder, by #759 — and nothing was fetched from any asset host or any
+the encoder, by #762 — and nothing was fetched from any asset host or any
 network: the fifteen textures are arithmetic, and `npm install` was the only
 thing that touched the wire.
 

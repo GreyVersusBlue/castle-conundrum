@@ -54,7 +54,7 @@ Never gated, take whenever the lane is free:
   R10 bodies (local: net, lane C)
   R13 the floor plan you can see, new 2026-09-21 (#745 to #749)
       increment 1 writes nothing and is in no lane; 2 and 3 are lane B
-  R4  the retro castle: increment 1 shipped, in a container (#754-763)
+  R4  the retro castle: increment 1 shipped, in a container (#757-766)
       lane B free again; increment 2 waits on a GPU look (#53)
 
   R12b move-and-delete shipped 2026-09-17 (#636 to #642) and lane B is free.
@@ -89,7 +89,7 @@ confirmed** — which means a container cannot trust a pass either.
 | **R3 The images** | Opus 5 | The preview and og card come out of the GPU run's screenshots. There is no other source. They land in `tools-and-games/assets/`, not here, and Devon relinks. |
 | ~~**R5 The hall covering**~~ | Sonnet 5 | **Shipped** (#656 to #658). Both criteria were a render, and both were answered by rendering the hall directly rather than by waiting for this row's own run to reach Vespers: `roof.glb`'s vertices (not its bounding box) showed which way it slopes, and the floor read 69.8 to 89.8 of 255. |
 | **R11 Feel**, past its Node line | Sonnet 5 | ~~The Node half — a shadow decal and a hand node exist and do not regress `plan-vs-scene.mjs` — is a container's.~~ Shipped (#650 to #654). What is left is what a GPU decides: whether a blob shadow reads on stone versus on grass, what it does on a flight of stairs, and whether the hand reads as a hand. |
-| **R4 The retro castle**, past its first increment | Opus 5 | Increment 1 shipped on 2026-09-21 (#754 to #763): the generator, the rails, fifteen textures in place of fifteen sets, and the memory count (80.8 MB to 37.9) needed no `ktx`, no network and no GPU. What is left before increment 2 is the look: one castle or two from the North-west Tower's roof (#630's vantage), the shadowed faces (#438, #713), the same wall at four bells (#474, #712), and `renderer.info.memory.textures` against the header estimate. The checklist is in `SPECS.md`. |
+| **R4 The retro castle**, past its first increment | Opus 5 | Increment 1 shipped on 2026-09-21 (#757 to #766): the generator, the rails, fifteen textures in place of fifteen sets, and the memory count (80.8 MB to 37.9) needed no `ktx`, no network and no GPU. What is left before increment 2 is the look: one castle or two from the North-west Tower's roof (#630's vantage), the shadowed faces (#438, #713), the same wall at four bells (#474, #712), and `renderer.info.memory.textures` against the header estimate. The checklist is in `SPECS.md`. |
 | ~~**R4c The yard**~~ | Opus 5 | **Shipped** (#703 to #707). The look was the half that needed the machine and it is answered: a stone yard from inside it, a roof and a town wall from the North-west Tower's crown, and nothing at all from the west curtain's walk, because that tower's own drum stands in the line. `tools/shot-yard.mjs` is the camera, and it pins the camera rather than moving the spawn, which `validatePopulace` refuses. |
 
 **R3, the GPU run, is the single highest-value hour on this list.** It is a
@@ -449,7 +449,7 @@ to overturn rather than a street to place.
 | **R9** A castle to get lost in: the town | Opus 5 | Container | B |
 | ~~**R4** The retro castle: increment 1~~ | Opus 5 | Container | B |
 
-**R4's first increment shipped on 2026-09-21** (#754 to #763): the fifteen
+**R4's first increment shipped on 2026-09-21** (#757 to #766): the fifteen
 Poly Haven material sets are out and fifteen 128 px pixel textures the repo
 draws itself are in, on the same fifteen names, with the rails and the
 memory count that went with them (80.8 MB to 37.9, over 70 images). It

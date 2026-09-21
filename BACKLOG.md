@@ -403,7 +403,7 @@ the first increment is a generator, its rails, fifteen 128 px textures under
 `test/budget.mjs` for texture memory, all of it a container's; then a look
 on a GPU (#53) before variety per room.
 
-**The first increment shipped the same day** (#754 to #763): fifteen
+**The first increment shipped the same day** (#757 to #766): fifteen
 textures the repo draws replace the fifteen Poly Haven sets (45 files, 23.9
 MB gone), `data/scene-config.json`'s `materials` became `pixelMaterials`,
 the kit is relit behind `RELIGHT_KIT` now that every Kenney GLB was read and
@@ -602,7 +602,7 @@ reference in this file.
 | 1 | Explore: the day before the death, the walking day as the main mode, Hywel alive and nobody waiting for a name (#750 to #753) | 2+ | Opus 5 | Container | — | A, D | claude/walking-day-before-death-8apcav | [Explore: the day before](SPECS.md#explore-the-day-before) |
 | 2 | Sight at the body's own height: nobody upstairs can be talked to from beside them, and the porter on the walk can be from 8 m below | ¼ | Opus 5 | Container | — | — | | [Sight at the body's own height](SPECS.md#sight-at-the-bodys-own-height) |
 | 3 | The GPU run: the looks are taken (#711 to #715); the walker holds on a GPU (#734, #736) and the third sitting reached the accusation with the wrong ending (#735 to #741) | 1 | Opus 5 | Local: GPU | **after 2** | — | | [The GPU run](SPECS.md#the-gpu-run) |
-| 4 | The retro castle: increment 1 shipped, fifteen sets out and fifteen 128 px textures in (#754 to #763); the look, then variety per room, are left | 2+ | Opus 5 | Container to the look, local: GPU past it | — | B | | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
+| 4 | The retro castle: increment 1 shipped, fifteen sets out and fifteen 128 px textures in (#757 to #766); the look, then variety per room, are left | 2+ | Opus 5 | Container to the look, local: GPU past it | — | B | | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
 | 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #729 to #733); the town, the four clips and the chatter pool are left | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: somebody listens to the seven beds, the four rings and the first two event sounds (a bed at a point and the rings, #680 to #683; the door and the hound, #696 to #698) | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
 | 9 | A castle to get lost in: the town, the rock and river | 2+ | Opus 5 | Container | — (4c opened it) | B | | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
@@ -795,8 +795,8 @@ the images live or how they were built is specific to either frame.
 
 *Where: container to the look, local GPU past it. Gate: none. Lane: B.*
 
-**Rank 4, and a 2+. The first increment shipped on 2026-09-21** (#754 to
-#763). Devon's brief of the same day, and the reversal of #411 (#742): the
+**Rank 4, and a 2+. The first increment shipped on 2026-09-21** (#757 to
+#766). Devon's brief of the same day, and the reversal of #411 (#742): the
 walls are built geometry carrying pixel-art textures this repo draws with a
 program of its own, not Poly Haven's photographs, and not an image model's
 output either (#743). The first increment was the whole swap for built
