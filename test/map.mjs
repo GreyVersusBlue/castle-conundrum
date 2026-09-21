@@ -116,6 +116,17 @@ try {
   await page.goto(`${BASE}/`, { waitUntil: 'load' });
   await page.waitForSelector('#start-overlay:not(.hidden)', { timeout: 120000 });
   pass('the castle finished building');
+  /* AND THE MYSTERY DOOR, WHICH THIS SUITE NEVER CLICKS (#755, #767). The line
+   * above is how this file spells "the castle finished building" and it does
+   * not press the start panel at all, so since #751 every beat below would run
+   * on the walking day. Nothing here asserts a fact that day changes, which is
+   * why increment 1 left this file alone; the door goes in anyway, because a
+   * suite that measures a day by accident is a suite that measures a different
+   * day the first time somebody gives the walking day its own rooms.
+   * `enterMystery()` is `day:1`, the same event the panel's second button
+   * dispatches, and it is a no-op on any stage that is not listening for it —
+   * so the two reloads below, which come back on a day-one save, are free. */
+  await page.evaluate(() => window.__quest.enterMystery());
   await attachSceneProbe(page, THREE_URL);
   await waitForProbe(page);
   // The count and the storeys are the castle's rooms; the ones outside the
@@ -257,6 +268,7 @@ try {
   // the set.
   await page.reload({ waitUntil: 'load' });
   await page.waitForSelector('#start-overlay:not(.hidden)', { timeout: 120000 });
+  await page.evaluate(() => window.__quest.enterMystery());
   await attachSceneProbe(page, THREE_URL);
   await waitForProbe(page);
   await frames();
@@ -281,6 +293,7 @@ try {
   });
   await page.reload({ waitUntil: 'load' });
   await page.waitForSelector('#start-overlay:not(.hidden)', { timeout: 120000 });
+  await page.evaluate(() => window.__quest.enterMystery());
   await attachSceneProbe(page, THREE_URL);
   await waitForProbe(page);
   const cleaned = await where();

@@ -104,19 +104,22 @@ try {
   check(/on$/.test(detected.toggle.trim()), 'the toggle reads on', detected.toggle);
 
   /* ---------------------------------------------- 2: a tap starts the game --- */
-  await tap('#start-button');
-  check(await hidden('#start-overlay'), 'a tap on Enter the Castle takes the start panel away');
+  /* AND THE TAP IS ON THE SECOND DOOR (#755). The page opens on the walking day
+   * since #751, where the muniment leaf answers with a line instead of a riddle
+   * (open call 7) and there is nothing in the journal to present. Every beat
+   * below is about the day of the death, so this file taps the panel's second
+   * button — which increment 1 had to take as `window.__quest.enterMystery()`
+   * because the button did not exist yet (#767). A thumb has to be able to
+   * reach it: `tap` is a real touch at the element's own place on the screen,
+   * so a second door laid out off the panel or under the first one fails here
+   * and not in a mouse suite. */
+  check(!(await hidden('#start-mystery')), 'a fresh save is offered the second door');
+  await tap('#start-mystery');
+  check(await hidden('#start-overlay'), 'a tap on Straight to the day of the death takes the start panel away');
   check(!(await hidden('#crosshair')), 'and puts the crosshair up');
+  check(await page.evaluate(() => window.__quest.day) === 1, 'and it is the day of the death');
   const playing = await page.evaluate(() => !!window.__player?.enabled && window.__player.isLocked && window.__player.onTouch);
   check(playing, 'the player is enabled and on the touch scheme, with no pointer lock to take');
-
-  /* AND THE MYSTERY DOOR (#755). The page opens on the walking day since #751,
-   * where the muniment leaf answers with a line instead of a riddle (open call
-   * 7) and there is nothing in the journal to present. Every beat below is about
-   * the day of the death, so this file takes the same door the start panel's
-   * second button takes: one dispatch of `day:1`.
-   */
-  await page.evaluate(() => window.__quest.enterMystery());
 
   /* ------------------------------------ 3: one button, and it is the prompt --- */
   // The muniment room's word-lock, from the King's Hall, exactly where

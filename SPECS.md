@@ -202,14 +202,14 @@ that row.
 
 ## Explore: the day before
 
-**Rank 1. Size 2+. Increment 1 shipped 2026-09-21** (#767 to #770, against
-#754 to #756). Devon answered `WISHLIST.md` theme 8's four questions on
-2026-09-21 and overturned the theme on two of them: the walking day is the
-main mode with the mystery behind it (#751), and it is the day BEFORE the
-death, Hywel alive and speakable (#752). That price is given and is not
-renegotiated here. What this section does is settle ten calls against the
-code rather than against the theme, so each of the four increments below is
-class S. **Increments 2 to 4 are open.**
+**Rank 1. Size 2+. Increments 1 and 2 shipped 2026-09-21** (#767 to #770,
+#771 to #774, against #754 to #756). Devon answered `WISHLIST.md` theme 8's
+four questions on 2026-09-21 and overturned the theme on two of them: the
+walking day is the main mode with the mystery behind it (#751), and it is
+the day BEFORE the death, Hywel alive and speakable (#752). That price is
+given and is not renegotiated here. What this section does is settle ten
+calls against the code rather than against the theme, so each of the four
+increments below is class S. **Increments 3 and 4 are open.**
 
 Theme 8's engine half still holds in shape: one stage, one branch per method in
 the engine, a bell, four rails. What does not hold is anything it wrote for a
@@ -372,20 +372,21 @@ FAIL line is quoted in `HISTORY.md` (#34, #13).
   causes and the reason #756 exists.
 - `npm test` 15 of 15, `npm run dialogue:check` green, `npm run build` clean.
 
-### Scope, increment 2: the doors, and everything that says what the game is
+### Scope, increment 2: the doors, and everything that says what the game is — shipped 2026-09-21 (#771 to #774)
 
 | File | What changes |
 | --- | --- |
 | `index.html` | `#start-button` reads "Walk the castle" and keeps its id: it is the panel's primary button and the resume path's, and has been since Phase 1. `#start-mystery`, a `link-button` under it, reads "Straight to the day of the death". The panel's paragraph is the walking day's; `#quest-objective` and `#quest-watch` carry `explore`'s objective and the first day-0 bell's label; the `<meta>` and og descriptions say what the first door is. Nothing about the og IMAGE changes: #634 and #635 are about the card, not the words, and `og:image:alt` ("Castle Conundrum, mid-play.") stays true. |
 | `src/ui.js` | `showStart(onStart, onMystery = null)`; a null second callback hides `#start-mystery`, which is what a resumed save gets. `showStartAgain` never shows it. |
+| `src/ui.css` | Outside this increment's original scope table, added anyway (#773): `#start-overlay .panel button { display: block; margin: auto }`, because three inline buttons in a 460 px panel put the second door beside the first rather than under it. |
 | `src/main.js` | The UI-flow region only. The second callback is the first one plus `quest.enterMystery()`, and it is passed only when `saved` is null. |
 | `README.md` | The opening says a castle you walk with a mystery in it. |
 | `test/overlays.mjs`, `test/touch.mjs` | Each already calls `window.__quest.enterMystery()`, added in increment 1 because `start: explore` broke both suites the moment it shipped (#767). This increment replaces that call with a real click of `#start-mystery`, now that the button exists to click. |
-| `test/built.mjs`, `test/play-castle.mjs` | Neither was touched by increment 1. Each clicks `#start-mystery` where it wants the day of the death; `test/play-castle.mjs` is what un-breaks `npm run play`, blocked on the walking day since increment 1 shipped (#767). |
-| `test/plan-vs-scene.mjs` | Already calls `window.__quest.enterMystery()` after the build and before it measures, added in increment 1 for the same reason as `overlays`/`touch` (#755, #767); its counts are already 14 bodies and `hywel,inspector,merchant` hidden at Prime. Nothing further here. |
+| `test/built.mjs`, `test/play-castle.mjs` | Neither was touched by increment 1. Each clicks `#start-mystery` where it wants the day of the death; `test/play-castle.mjs` is what un-breaks `npm run play`, blocked on the walking day since increment 1 shipped (#767). It also gains the two day-one facts increment 1 left stale (#772): `rigs.count` is 14 for Hywel, and the Play Again beat expects a fresh walking day rather than `arrive`, then presses the second door to reach it. |
+| `test/plan-vs-scene.mjs` | Already calls `window.__quest.enterMystery()` after the build and before it measures, added in increment 1 for the same reason as `overlays`/`touch` (#755, #767); its counts are already 14 bodies and `hywel,inspector,merchant` hidden at Prime. This increment adds #715's live prompt string and the panel a resumed save gets, the latter planted from `test/blank.html` because the autosave flushes on `pagehide` and overwrote the first version of that plant (#774). |
 | `test/map.mjs` | Needed nothing in increment 1 — it asserts no fact the walking day changes (#767). Still needs `window.__quest.enterMystery()` after the build, because it never clicks either (#755). |
 
-### Acceptance, increment 2
+### Acceptance, increment 2 — green, 15 of 15
 
 - **`test/overlays.mjs`**: the second button releases and takes the pointer the
   way the first does, which is the one property that suite asserts (#659 to
@@ -402,7 +403,17 @@ FAIL line is quoted in `HISTORY.md` (#34, #13).
   load, and the panel offers one button and resumes at Sext. **Break**: hide
   `#start-mystery` on the wrong condition and a resumed mystery is offered its
   own start again.
-- `npm test` 15 of 15.
+- **`test/touch.mjs`**, **`test/built.mjs`**: a tap and a click on
+  `#start-mystery` each land the day of the death, `window.__quest.day === 1`.
+  **Breaks**: drop `quest.enterMystery()` from the touch callback and the tap
+  lands on the walking day instead; leave `onMystery` null in the built
+  page's wiring and the bundle's second button does nothing.
+- `npm test` 15 of 15, `npm run dialogue:check` green, `npm run build` clean.
+  **Unverified: whether the day plays through this door on a GPU.**
+  `npm run play` is not in `npm test` and needs a real GPU (#53); this
+  container is software-rendered, so the door is wired and the static checks
+  above pass, but nobody has run it. That is rank 3's first act, not this
+  row's.
 
 ### Scope, increment 3: the lines
 

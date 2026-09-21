@@ -86,6 +86,15 @@ button {
 }
 button:hover { background: #e6bb63; }
 
+/* THE START PANEL'S THREE CONTROLS, EACH ON ITS OWN LINE (#755). `SPECS.md`'s
+   word for where the second door goes is "under" the first, and a button is
+   inline by default: the panel is 460 px wide with 2.4em of padding a side, so
+   "Walk the castle", "Straight to the day of the death" and "Touch controls:
+   off" left to flow come out as two ragged lines with the second door beside
+   the first rather than below it. Scoped to this panel, because the riddle's
+   two buttons and the journal's one are laid out side by side on purpose. */
+#start-overlay .panel button { display: block; margin-left: auto; margin-right: auto; }
+
 /* ---------- HUD ---------- */
 #crosshair {
   position: fixed; top: 50%; left: 50%;

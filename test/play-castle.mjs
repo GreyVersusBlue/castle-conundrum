@@ -543,7 +543,7 @@ try {
       animating: before !== after,
     };
   });
-  assert(rigs.count === 13, "thirteen rigged NPC bodies in the scene: the twelve of the day and the King's inspector, who is hidden until the morning after (#534)", `found ${rigs.count}`);
+  assert(rigs.count === 14, "fourteen rigged NPC bodies in the scene: the twelve of the day, the King's inspector, who is hidden until the morning after (#534), and Hywel ap Gruffudd, who is hidden from the moment he is dead (#752)", `found ${rigs.count}`);
   assert(rigs.allRebound, 'every skeleton rebound into the scene tree (SkeletonUtils clone)');
   assert(rigs.animating, 'rigs are animating', `${rigs.handBones} hand bones tracked`);
 
@@ -844,6 +844,16 @@ try {
     'the hall table, statue, cabinet and commode all clear the wall behind them',
     JSON.stringify(wallCheck));
 
+  // AND THE DOOR IS THE SECOND BUTTON, NOT THE FIRST (#755, #767). The page
+  // opens on the walking day since #751, so `#start-button` — "Walk the castle"
+  // — is the day BEFORE the death: no body at the stair, no Constable asking
+  // for a name, nothing in the journal to present. Every beat below this line
+  // is the day OF the death, so this file takes the panel's second button,
+  // which is one dispatch of `day:1` on top of everything the first does.
+  // `npm run play` was stuck on the walking day from the moment increment 1
+  // shipped until this line (#767); it is not in `npm test`, so nothing went
+  // red to say so.
+  //
   // --- Start. A real trusted click is what pointer lock requires, AND A
   // FOCUSED WINDOW. Chrome refuses `requestPointerLock` on a document whose
   // window is not the foreground one, with `WrongDocumentError: The root
@@ -858,7 +868,7 @@ try {
   // One line, and it is the difference between this suite being runnable
   // unattended and not.
   await page.bringToFront();
-  await page.click('#start-button');
+  await page.click('#start-mystery');
   await wait(600);
   let s = await state();
   assert(s.locked, 'pointer lock engaged');
@@ -1803,7 +1813,11 @@ try {
   assert(signed.button === 'Play Again', 'and the button is the old one again', signed.button);
   await snap('the-sheet-is-signed');
 
-  // The button erases the save and starts the day again from nothing.
+  // The button erases the save and starts the game again from nothing — which
+  // since #751 is the WALKING day, not the day of the death: no key in storage
+  // means no save, and no save means the start stage, which is `explore` at the
+  // first day-0 bell. The bell id is read off data/mystery.json rather than
+  // typed, the way test/quest.mjs section 5 reads it.
   await page.click('#restart-button');
   await page.waitForSelector('#start-overlay:not(.hidden)', { timeout: 90000 });
   const wiped = await page.evaluate(() => ({
@@ -1811,9 +1825,17 @@ try {
     stage: window.__quest?.stage,
     watch: window.__mystery?.watch,
     clues: window.__mystery?.state.clues.length,
+    door: !document.getElementById('start-mystery').classList.contains('hidden'),
   }));
-  assert(wiped.stage === 'arrive' && wiped.watch === 'prime' && wiped.clues === 0 && !wiped.stored, 'Play Again starts a fresh day at Prime with an empty journal and no key in storage', JSON.stringify(wiped));
+  assert(wiped.stage === 'explore' && wiped.watch === mystery.day0.watches[0] && wiped.clues === 0 && !wiped.stored, 'Play Again starts a fresh walking day at the first evening bell with an empty journal and no key in storage', JSON.stringify(wiped));
+  assert(wiped.door, 'and the panel offers the second door again, because there is no save to resume');
   await snap('a-fresh-day');
+
+  // And the second door still opens on the day of the death from there.
+  await page.click('#start-mystery');
+  await wait(600);
+  const straight = await page.evaluate(() => ({ stage: window.__quest.stage, watch: window.__mystery.watch, day: window.__quest.day }));
+  assert(straight.stage === 'arrive' && straight.watch === 'prime' && straight.day === 1, 'and the second button is the day of the death at Prime', JSON.stringify(straight));
 
   // --- Nothing broke, and nothing reached for a CDN.
   assert(page.__errs.length === 0, 'no page/console errors', page.__errs.slice(0, 4).join(' | '));
