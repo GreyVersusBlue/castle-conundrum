@@ -7775,3 +7775,100 @@ the death), and the tiles, which the validator picks between.
   spec, because nothing else tested hush. One full-suite run went red on
   `map`, `Port 8128 is already in use`, from another session on the same
   machine sharing the port; the re-run was 15 of 15 green.
+
+## The GPU run, third sitting: the day reaches the accusation, and the rays are not on the body (2026-09-21)
+
+**Rank 2, on Devon's machine, an RTX 3070 Ti.** `npm run play` ran twice,
+about twenty minutes each. Both runs still exit 1, but the second is the
+first to reach the accusation. Decisions #734 to #741.
+
+### Run one: past the second bell for the first time (#734)
+
+**The suite as merged ran first.** Exit 1, 164 ok, 19 failures, aborted at
+"cannot finish without reaching the Constable" at Vespers. This is the first
+sitting ever to get past the second bell: rank 1's walker (#716 to #720)
+carried the day through Sext, the reload at Sext (all 26 clues survived it,
+the camera came back at 21.01, -11.81), the riddle, the third ring, and the
+cook's walk to her station, 0.38 m off after 20.2 s.
+
+**#714's body-and-pouch swap is gone, and that is #722 confirmed on a GPU.**
+The second sitting's 22 failures included "E on the body: he is at the foot
+of the stair," which handed back `summons-note, pouch-empty` instead. It does
+not appear in run one's 19. The aim rule shipped on Node terms; a run has now
+watched it hold.
+
+### The suite fixes, between run one and run two, six of them
+
+`test/play-castle.mjs` is the only file this row may touch. It changed by 163
+lines added and 42 removed, in six places, and each is a decision.
+
+- **`present()` left the Present list and the dialogue open on its failure
+  paths** (#735). The porter beat (`shots/play/34-aborted.png`) failed inside
+  the box: the pointer stayed released and the Constable walk that followed
+  read `locked false` and gave up. #708 fixed this for the success path only.
+  `shutPresent()` now runs on every path out of `present()`. Headless: the
+  old code left the list and the dialogue open, `locked` false; the new code
+  closes both, `locked` true. Mechanics only, not a render question (#53).
+- **A walk to another storey counted a waypoint reached by x and z alone**,
+  so legs up the Kitchen Tower's flight were ticked off from the floor beside
+  it (#736). A Node repro with `moveBody` stopped at (-20.0, -15.5); run one
+  stopped at (-20.0, -15.3), the same bug on the machine it was built for.
+  The walk now uses Phase 5's own stair legs instead of a flat distance
+  check. Run two: "up the Kitchen Tower: every leg reached, now L2."
+- **`examine()` always passed level 0**, and the Stockhouse bar and the tally
+  stick are level 2 in `data/mystery.json` (#737). Run one put the player
+  1.7 m across and about 8 m below the tally. Both beats pass in run two.
+- **`walkTo` read the prompt before turning to face the target**, and a short
+  step walked the player through the Chaplain, so every read of him came
+  from behind the camera (#738). A headless probe with the walk stopped
+  short named Father Anselm from the give-up point, both rays clear. The
+  turn now happens first. Passes in run two.
+- **The Constable-visible check cast its ray from wherever the porter beat
+  had left the player**, 17 m away across the cross-wall, instead of walking
+  there first (#739). It now walks first. Passes in run two.
+- **`snap('twelve-at-vespers')` was a 54 m straight-line walk from the
+  chapel bell that ended against stone in the inner ward** (#740, #147).
+  Shot 31 is a wall, and the HUD reads "Inner ward." The beat now routes to
+  the hall first. Run one's "Great Hall floor at Vespers" luma of 40.1 was
+  therefore a wall, not the hall; run two reads 72.7 of 255 from the floor
+  itself. The label on the first reading was wrong, not the render it
+  described.
+
+`npm test` is 15 of 15 after the six fixes.
+
+### Run two: the accusation, and the ending it reaches is wrong (#741)
+
+**Exit 1, 179 ok, 17 failures. The day reached the accusation for the first
+time.** It aborted on `page.click('#restart-button')` not visible, after the
+wrong ending: the pane offered "Play Again," not the second day.
+
+**Unchanged in both runs.** #714's five pre-walk checks (27 bodies, NEAREST
+on 38 textures, anisotropy cap 16 worst 1, the hall wall height reading
+"outer m, hall m," the braziers "IN Scene") and #659's journal walk: 0.69 m
+in run one, 0.83 m in run two, the series now 0.69, 1.30, 0.51, 0.69, 0.69,
+0.83 m across six runs of the same beat.
+
+**What stopped run two.** The sentry at Terce gave up 0.2 m from his mark at
+(-18.0, -15.0), stopping at (-18.1, -14.8) on level 2, prompt null, `locked`
+true. The porter at Vespers gave up 0.6 m from his, stopping at (-1.2, 0.6)
+on level 2 with the body at (-0.8, y 8.0, 0.3), prompt null. Both are read
+from beside the target, on the same walk the target stands on. The cause is
+`src/interaction.js`'s two sight rays, cast at fixed world heights of 1.55
+and 1.15 m rather than at a height on the body, filed in full as the new
+rank 1, "Sight at the body's own height," in `SPECS.md` and `BACKLOG.md`.
+
+**The cascade is the porter's, not the sentry's.** His admission is a
+premise of the full ending, so with his sighting missing the accusation
+selected 2 of 3 suspects, the stage read "accusing" rather than the correct
+ending, and the pane it produced offered "Play Again" rather than the second
+day's start. The run aborted trying to click a button that pane does not
+have. **The second day has therefore still never been walked by `npm run
+play`.**
+
+**Acceptance is met again, in its second form**: `npm run play` exits
+non-zero with the failing beat named, and the cause is filed as a new
+backlog row, rank 1. Exit 0 is still owed, to whoever ships that row and
+runs this one again.
+
+**What this cost.** Two runs of about twenty minutes each on the RTX 3070
+Ti, plus the headless probes for the fixes above. `npm test` is 15 of 15.
