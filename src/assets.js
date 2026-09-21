@@ -129,8 +129,16 @@ const RELIGHT_KIT = true;
 /** What a relit kit material gets. Matches loadPixelMaterial's: diffuse only. */
 const KIT_ROUGHNESS = 1;
 
+/* One replacement per original, because a kit GLB shares one material across
+ * several meshes: `column.glb` is two materials over more meshes than two. A
+ * per-mesh swap would hand each of them its own copy, which is a second
+ * shader program for the same surface and a `dispose()` on a material the next
+ * mesh in the traverse still points at. */
+const relit = new WeakMap();
+
 function relight(mat) {
   if (!RELIGHT_KIT || !mat?.isMeshBasicMaterial) return mat;
+  if (relit.has(mat)) return relit.get(mat);
   const lit = new THREE.MeshStandardMaterial({
     map: mat.map || null,
     color: mat.color,
@@ -142,6 +150,7 @@ function relight(mat) {
     side: mat.side,
   });
   lit.name = mat.name;
+  relit.set(mat, lit);
   mat.dispose();
   return lit;
 }
