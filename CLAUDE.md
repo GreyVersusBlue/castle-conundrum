@@ -1,9 +1,10 @@
 # Castle Conundrum — how this repo works
 
-A first-person medieval murder mystery in three.js. Twelve suspects, four
-bells, one accusation, and a morning after it. `index.html` at the repo root,
-source in `src/`, the mystery and the castle as data in `data/`, 39 MB of glTF
-and textures in `assets/`, fifteen suites in `test/`.
+A first-person medieval murder mystery in three.js. A day of walking before
+it, twelve suspects, four bells, one accusation, and a morning after it.
+`index.html` at the repo root, source in `src/`, the mystery and the castle as
+data in `data/`, 39 MB of glTF and textures in `assets/`, fifteen suites in
+`test/`.
 
 **`PLAN.md` is the most valuable file here.** It is 64 K of phase plans — what
 the castle is, why the order is what it is, and the seven phases that built it,
@@ -65,7 +66,11 @@ The project lived in `GreyVersusBlue/tools-and-games` under
   encode step in it, because a build-time pipeline would make `npm run dev`
   serve one format and `dist/` another, which is `test/built.mjs`'s file diff
   failing by construction. Disk barely moved; video memory went from 317.9 MB
-  to 79.9.
+  to 79.9. **The exemption is a size, not a kit**: a texture 128 px or under is
+  a PNG and does not come through the encoder, which is the Kenney kit and, since
+  #742, the fifteen textures this repo draws into `assets/pixel/`, and
+  `test/assets.mjs`'s check 3b is what holds it to 128 px so it cannot grow into
+  a 1k PNG.
 - **`src/castle-plan.js` is the single source the builder and every suite
   read** (#500). Neither side computes a transform the other cannot see:
   `castle-builder.js` places what the plan says and tags it with a `planId`,
@@ -214,6 +219,7 @@ file keeps a pointer saying which band left.
 | `npm run build` | `dist/`: the hashed bundle in `dist/bundle/`, `assets/` and `data/` copied in whole, the Basis transcoder into `dist/decoders/basis/`. |
 | `npm run preview` | Serves `dist/`. |
 | `npm run assets:encode` | Re-encodes `assets/` in place, KTX2 and meshopt. Hand-run, needs `ktx` (#506). |
+| `npm run pixel:render` | Draws `tools/pixel/textures.json`'s fifteen rows into `assets/pixel/*.png`. Hand-run, deterministic, a second run is a no-op (#742). |
 | `npm run dialogue:extract` | `data/` out to `dialogue/castle.dlg`. Hand-run (#687). |
 | `npm run dialogue:compile` | `dialogue/castle.dlg` back into `data/npcs.json` and `data/quests/`. Hand-run. |
 | `npm run dialogue:check` | Neither, and exits non-zero if the two have drifted. `test/dialogue.mjs` runs the same check. |

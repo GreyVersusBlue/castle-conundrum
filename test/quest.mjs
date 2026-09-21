@@ -83,6 +83,24 @@ console.log('quest.json validates');
   check(problems.length === 0, 'validateQuest finds nothing wrong', problems.join('; '));
   const ids = Object.keys(quest.stages);
   check(ids.length >= 3, `${ids.length} stages`, 'a quest with fewer than three stages is the two booleans again');
+  /* THE WALKING DAY IS THE START, AND IT IS NOT A DEAD END (#751, #755).
+   * `validateQuest` above walks both directions over every stage, so this names
+   * the two the walking day adds rather than repeating the walk: `explore` is
+   * where the page opens and `night` is where its last ring goes, and each of
+   * them has to reach the terminal the mystery ends on. */
+  check(quest.start === 'explore' && !!quest.stages.explore && !!quest.stages.night,
+    'the graph starts on the walking day, with a night at the end of it', `${quest.start}: ${ids.join(', ')}`);
+  const reaches = (from, to) => {
+    const seen = new Set([from]);
+    for (const q = [from]; q.length;) {
+      for (const tr of quest.stages[q.shift()].transitions ?? []) {
+        if (tr.to && !seen.has(tr.to)) { seen.add(tr.to); q.push(tr.to); }
+      }
+    }
+    return seen.has(to);
+  };
+  check(reaches('explore', 'end') && reaches('night', 'end') && reaches('explore', 'arrive'),
+    'and both of them reach `arrive` and, through it, the one terminal stage there is');
 
   // The validator has to actually reject things, or a green run above proves
   // nothing. Each broken copy should produce a problem that names the break.
@@ -305,7 +323,12 @@ console.log('the graph');
   }
 
   // The four verdict classes, each to its own ending, and no two the same.
+  // `begin()` lands on the walking day now (#751), so the walk starts with the
+  // door into the mystery: `day:1`, the event the night pane's button and
+  // `QuestManager.enterMystery()` both dispatch (#755).
   g.begin();
+  g.dispatch('day:1');
+  check(g.stage === 'arrive', 'the walking day\'s door opens on `arrive`, the morning of the death', g.stage);
   g.dispatch('talked:constable');
   check(g.stage === 'investigate', 'one conversation with the Constable and the day begins');
   const endings = {};
@@ -376,7 +399,16 @@ function stubUI() {
   };
 }
 
-function rig({ saved = null, withSideQuests = true, quests = null, cast = npcDefs, rooms = [], perform = null, schedule = null, reputes = reputation } = {}) {
+/**
+ * @param day0 stop on the walking day instead of taking the mystery's door. The
+ *   page opens on `explore` since #751, so every beat in this file that is about
+ *   the day of the death has to go through it, and it goes through the same seam
+ *   the start panel's second button and the two non-clicking browser suites use:
+ *   `enterMystery()`, one dispatch of `day:1` (#755). A resumed save inside the
+ *   mystery dispatches it too and nothing happens, because `day:1` is a
+ *   transition on `explore` and on `night` and on no other stage.
+ */
+function rig({ saved = null, withSideQuests = true, quests = null, cast = npcDefs, rooms = [], perform = null, schedule = null, reputes = reputation, day0 = false } = {}) {
   const ui = stubUI();
   const npcs = cast.map((def) => ({
     id: def.id, name: def.name, def, talking: false, dialogueState: 'default',
@@ -402,6 +434,10 @@ function rig({ saved = null, withSideQuests = true, quests = null, cast = npcDef
   const engine = createMystery({ mystery, npcs: cast, state });
   const restarts = { n: 0 };
   const watches = [];
+  // The sky each bell was applied with (open call 10): `applyWatch` resolves the
+  // bell through `mystery.watchLike` and hands it over beside the `walk` flag, so
+  // src/main.js calls `setWatch` with a watch data/scene-config.json has.
+  const skies = [];
   const changes = { n: 0 }; // how often the manager asked main.js to mark the autosave
   const qm = new QuestManager({
     // `withSideQuests: false` is the control arm. The knife walk below runs the
@@ -422,16 +458,17 @@ function rig({ saved = null, withSideQuests = true, quests = null, cast = npcDef
      * assertion in this file is a guard that it does not say it early, and
      * they are only guards if it is switched on while they run. */
     reputation: reputes,
-    onWatch: (w) => watches.push(w),
+    onWatch: (w, opts = {}) => { watches.push(w); skies.push(opts.sky ?? null); },
     // What main.js does with onChange, because the stage and the wrong-answer
     // count are the only two things in the save the engine does not own. Leave
     // it out and the reload below comes back in `arrive` with a Sext watch,
     // which is exactly the bug it is here to catch.
     onChange: ({ stage, riddleWrong, quests, reputation: rep }) => { changes.n++; state.stage = stage; state.riddleWrong = riddleWrong; state.quests = quests; state.reputation = rep; },
   });
+  if (!day0) qm.enterMystery();
   const npc = (id) => npcs.find((n) => n.id === id);
   return {
-    qm, ui, npcs, castle, engine, state, restarts, watches, changes, npc, audio,
+    qm, ui, npcs, castle, engine, state, restarts, watches, skies, changes, npc, audio,
     /** E on somebody, then step through to the end of what they say. */
     talk(id) { qm.handleInteract(npc(id)); ui.endDialogue(); return ui.toasts; },
     /** E on somebody, the Present button, then a clue in the list that opens. */
@@ -1550,12 +1587,133 @@ const repLine = (key, at) => reputation[key].find((e) => e.at === at).line;
   check(held.qm.reputation().outer === 1, 'and that conversation is what pays it', JSON.stringify(held.qm.reputation()));
 }
 
+/* ------------------------- 4e: the walking day, through the manager (#750) ----
+ * THE FIRST DOOR INTO THE GAME IS THE DAY BEFORE THE DEATH (#751, #752). The
+ * page opens on `explore` now, so this is the castle a player meets first, driven
+ * through the real manager the way part 4 drives day one: E on somebody, E on a
+ * thing, E on the word-lock, the J key, and the bell four times. What this file
+ * owns of it is the graph, the manager and index.html (#529); the engine's own
+ * answers and the day-0 stations are test/mystery.mjs's.
+ */
+console.log('\nthe walking day, through the manager');
+{
+  const W0 = mystery.day0.watches;
+  const r = rig({ day0: true });
+  const { qm, ui, engine, state, castle } = r;
+  check(qm.stage === 'explore' && qm.day === 0 && state.day === 0,
+    'a fresh page opens on the walking day, in `explore`, and the save says day 0', `${qm.stage} / day ${state.day}`);
+  check(ui.objective === quest.stages.explore.objective, 'with its own objective on the tracker', ui.objective);
+  check(ui.watch === mystery.watchLabels[W0[0]] && ui.watch !== W0[0],
+    `and the bell read out as ${JSON.stringify(mystery.watchLabels[W0[0]])} rather than as its id, which is a nav key and not an hour (open call 1)`, JSON.stringify(ui.watch));
+  check(r.watches.at(-1) === W0[0] && r.skies.at(-1) === mystery.watchLike[W0[0]],
+    `the world is put at ${W0[0]} with ${mystery.watchLike[W0[0]]}'s sky, which is the one data/scene-config.json has (open call 10)`,
+    `${r.watches.at(-1)} / sky ${r.skies.at(-1)}`);
+
+  // What is on the ground: the six that are furniture, and not the five that are
+  // the mystery's. The muniment leaf is the one that matters most — its collider
+  // is a wall of the King's Tower and hiding it is a hole in the castle.
+  const shown = Object.keys(castle.shown).filter((id) => castle.shown[id]).sort();
+  const gone = Object.keys(castle.shown).filter((id) => !castle.shown[id]).sort();
+  check(same(shown, [...mystery.day0.evidence].sort()),
+    `${shown.length} things are on the ground on the walking day: ${shown.join(', ')}`, `and ${gone.length} are not: ${gone.join(', ')}`);
+  check(gone.includes('body') && !shown.includes('body') && shown.includes('lock'),
+    'the body is not at the stair and the muniment leaf is still in the wall (open call 1)');
+
+  // E on any of them says so rather than nothing, and grants nothing.
+  ui.toasts.length = 0;
+  r.examine('candle');
+  check(same(ui.toasts, [mystery.ui.quiet]) && qm.journal().length === 0,
+    'E on the chapel candles says the walking day\'s one line and puts nothing in the journal', JSON.stringify(ui.toasts));
+  // And so does the word-lock, which is the press open call 7 would not kill.
+  ui.toasts.length = 0;
+  qm.handleLock('muniment', 'lock');
+  check(ui.riddleOpen === false && same(ui.toasts, [mystery.ui.quiet]) && !state.locks.includes('muniment'),
+    'E at the muniment door toasts and does not open the riddle: a word answered the day before would unlock the room for the mystery (open call 7)',
+    `riddle ${ui.riddleOpen} / ${JSON.stringify(ui.toasts)}`);
+
+  // The journal is empty and the map is not: walking is what the day is for.
+  qm.handleJournal();
+  check(ui.journal && ui.journal.entries.length === 0 && ui.journal.empty === mystery.ui.empty,
+    'the J key opens an empty journal', `${ui.journal?.entries.length} entries`);
+  qm.handleEnter('great-hall', 0);
+  check(state.visited.includes('great-hall'), 'and a room walked into is on the map, which is what carries across the night (open call 3)');
+
+  // A conversation: his own `day0` lines, no Present button, and no panel. Opened
+  // and read before it is stepped out, because `r.talk` closes the box behind it.
+  qm.handleInteract(r.npc('constable'));
+  check(same(ui.dialogue.lines, npcDefs.find((n) => n.id === 'constable').dialogue.day0),
+    'the Constable says his walking-day lines, off the stage\'s own dialogueState (open call 6)', JSON.stringify(ui.dialogue.lines[0]?.slice(0, 40)));
+  check(ui.dialogue.onPresent === null, 'with no Present button, because there is nothing to present');
+  check(!/\{[A-Z_]+\}/.test(ui.dialogue.lines.join(' ')), 'and no token in the lines at all');
+  // Stepped out before the two below are asked, because `talked:constable` is
+  // dispatched on the last line and not on the first: the stage move and the
+  // panel are what that event would do, and this is where it has happened.
+  ui.endDialogue();
+  check(ui.accusation === null && qm.stage === 'explore',
+    'and stepping it out opens no accusation panel and moves no stage: `explore` has no `talked:constable` transition and his `day0` set has no {ACCUSE} in it',
+    `${qm.stage} / ${ui.accusation ? 'panel up' : 'no panel'}`);
+  qm.handleInteract(r.npc('hywel'));
+  check(same(ui.dialogue.lines, npcDefs.find((n) => n.id === 'hywel').dialogue.day0) && qm.journal().length === 0,
+    'and the master mason is alive and speakable, which is the whole reason to walk the day (#752)', JSON.stringify(ui.dialogue.lines[0]?.slice(0, 40)));
+  ui.endDialogue();
+
+  // The bell, four times. Three move the watch; the fourth is the night.
+  for (let i = 1; i <= 3; i++) r.ring();
+  check(engine.watch === W0[3] && ui.watch === mystery.watchLabels[W0[3]] && r.skies.at(-1) === mystery.watchLike[W0[3]],
+    `three rings walk the walking day to ${W0[3]}, with ${mystery.watchLike[W0[3]]}'s sky`, `${engine.watch} / ${ui.watch} / ${r.skies.at(-1)}`);
+  check(same(r.audio.rung, [1, 2, 3]), 'and each ring has its own character out of data/sounds.json (#701)', JSON.stringify(r.audio.rung));
+  r.ring();
+  check(qm.stage === 'night' && ui.epilogue && ui.epilogue.convicted === mystery.day0.night.title && ui.epilogue.epilogue === mystery.day0.night.text,
+    'the fourth ring puts up the night pane, which is the epilogue\'s own pane and frees the pointer (#660)', JSON.stringify(ui.epilogue?.convicted?.slice(0, 40)));
+  check(ui.epilogueLabel === mystery.day0.night.button && same(r.audio.rung, [1, 2, 3, 4]),
+    `and its button reads ${JSON.stringify(mystery.day0.night.button)}, with the fourth ring rung`, JSON.stringify(ui.epilogueLabel));
+  check(engine.watch === W0[3] && state.watch === 3 && state.day === 0, 'and it moved no watch and no day: the walking day ends where it stood (open call 5)', `${engine.watch} / day ${state.day}`);
+
+  // The button. One dispatch of `day:1`, and the mystery is the castle.
+  ui.restart();
+  check(qm.stage === 'arrive' && qm.day === 1 && state.day === 1 && engine.watch === mystery.watches[0],
+    'the pane\'s button opens the day of the death, in `arrive` at Prime', `${qm.stage} / day ${state.day} at ${engine.watch}`);
+  check(castle.shown.body === true && castle.shown.pouch === true && castle.shown.cart === false,
+    'the body is back at the foot of the stair and the eleven rows are read at the four bells again', JSON.stringify(castle.shown));
+  check(engine.stationOf('constable')?.room === 'chapel' && engine.stationOf('hywel') === null,
+    'the Constable is standing over him and Hywel is not in the castle at all', JSON.stringify(engine.stationOf('hywel')));
+  check(ui.objective === quest.stages.arrive.objective && ui.watch === 'Prime',
+    'and the tracker is the mystery\'s: its objective, and a bell that is its own name', `${JSON.stringify(ui.objective?.slice(0, 32))} / ${ui.watch}`);
+  check(r.restarts.n === 0, 'and nothing reloaded the page or erased the save on the way through');
+}
+{
+  /* THE ERRANDS RUN ON A DAY WITH NO MYSTERY (#550 question 6, open call 6). They
+   * were never the mystery's: `_syncStates` layers a press over an errand over
+   * the stage, so an errand already in progress speaks on the walking day, and
+   * `_dispatchSide` freezes the side quests on day two and not on day zero. The
+   * ward's own aside runs with it, because it is a line about the player rather
+   * than about the case. */
+  const saved = { ...freshState(quest), reputation: { outer: 2, inner: 0 }, quests: { 'cooks-knife': 'hunting' } };
+  const r = rig({ saved, day0: true });
+  check(r.qm.day === 0 && r.npc('cook').dialogueState === 'knife-hunting',
+    'an errand in progress speaks on the walking day: the cook is on her knife lines and not on the stage\'s `day0` floor', r.npc('cook').dialogueState);
+  r.qm.handleInteract(r.npc('cook'));
+  check(r.ui.dialogue.lines.at(-1) === repLine('outer', 2),
+    'and the outer ward\'s aside is on the end of what she says, at two errands done', JSON.stringify(r.ui.dialogue.lines.at(-1)?.slice(0, 40)));
+  check(r.ui.dialogue.onPresent === null, 'still with no Present button: the walking day has nothing to present');
+}
+
 /* -------------------------------------------------------------- 5: the page --- */
 console.log('the page');
 {
   const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
   const m = /<div id="quest-objective">([^<]*)<\/div>/.exec(html);
   check(m && m[1].trim() === quest.stages[quest.start].objective, "index.html's initial objective is the start stage's, so the tracker never flashes stale text", m ? JSON.stringify(m[1]) : 'no #quest-objective in index.html');
+  /* AND THE BELL BESIDE IT, for the same reason and one more (#750 to #756). The
+   * page ships with a bell written into the tracker, and the start stage is the
+   * walking day now, whose first bell is not one of the four and is not called by
+   * its own id: the manager reads `mystery.watchLabels` and so does this, so the
+   * markup cannot say "Prime" while the first thing the player hears is
+   * "Prime, the eve". */
+  const firstBell = mystery.day0.watches[0];
+  const wantWatch = mystery.watchLabels?.[firstBell] ?? firstBell;
+  const w = /<div id="quest-watch"[^>]*>([^<]*)<\/div>/.exec(html);
+  check(w && w[1].trim() === wantWatch, `index.html's initial bell is the start stage's own, read out as ${JSON.stringify(wantWatch)}`, w ? JSON.stringify(w[1]) : 'no #quest-watch in index.html');
 
   // EVERY ID ui.js READS HAS TO BE IN THE PAGE. src/ui.js caches them all in its
   // constructor, and a missing one is `null` there and a TypeError on the first

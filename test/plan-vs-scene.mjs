@@ -89,6 +89,16 @@ try {
   // The start overlay only appears after CastleBuilder.build() has resolved.
   await page.waitForSelector('#start-overlay:not(.hidden)', { timeout: 120000 });
   pass('the castle finished building');
+  /* AND THEN THE MYSTERY DOOR, WHICH THIS SUITE NEVER CLICKS (#755). The page
+   * opens on the walking day since #751: the line above is how this file spells
+   * "the castle finished building" and it does not press the start panel at all,
+   * so without this every beat below would measure the day BEFORE the one it is
+   * about — thirteen bodies at their day-0 stations, no body at the stair, no
+   * clue to find and no accusation panel. `enterMystery()` is `day:1`, the same
+   * event the night pane's button and the start panel's second button dispatch,
+   * and it is why that door is a method as well as a button.
+   */
+  await page.evaluate(() => window.__quest.enterMystery());
 
   await attachSceneProbe(page, THREE_URL);
   await waitForProbe(page);
@@ -511,7 +521,7 @@ try {
     };
   }));
   const seen = new Map(bodies.map((b) => [b.id, b]));
-  check(bodies.length === 13, `the page spawns ${bodies.length} bodies`, "twelve for the day and the King's inspector for the morning after (#534)");
+  check(bodies.length === 14, `the page spawns ${bodies.length} bodies`, "twelve for the day, the King's inspector for the morning after (#534) and Hywel ap Gruffudd for the walking day before it (#752)");
   let offStation = 0;
   for (const { id, at } of due) {
     const b = seen.get(id);
@@ -535,7 +545,7 @@ try {
     `${upstairs.length} of them stand above the ground floor, on their own floor: ${upstairs.map((n) => `${n.id} at y ${(seen.get(n.id)?.y ?? 0).toFixed(1)}`).join(', ')}`,
     grounded.map((n) => n.id).join(', ') + ' on the ground');
   const absent = bodies.filter((b) => !b.visible).map((b) => b.id).sort();
-  check(absent.join() === 'inspector,merchant', 'the two who are not in the castle at Prime are hidden rather than standing at the origin', `hidden: ${absent.join(', ') || 'nobody'}`);
+  check(absent.join() === 'hywel,inspector,merchant', 'the three who are not in the castle at Prime are hidden rather than standing at the origin: the merchant rides in at Terce, the inspector the next morning, and Hywel is dead at the stair (#752)', `hidden: ${absent.join(', ') || 'nobody'}`);
   /* --- AND THE OTHER TEN (#616). The household spawns off data/populace.json
    * beside the thirteen and is a separate list on purpose: `window.__cast`
    * above is counted by id and by name, and folding the ten into it would
@@ -987,12 +997,13 @@ try {
     }
   }
 
-  // The tint (#419). Three bodies, thirteen people: the cloth has to differ
-  // thirteen ways and the skin must not differ at all, or the tint went onto
+  // The tint (#419). Four bodies, fourteen people: the cloth has to differ
+  // fourteen ways and the skin must not differ at all, or the tint went onto
   // faces. Reading the live materials is the only thing that can say so —
-  // npcs.json's thirteen hexes being distinct is a fact about the file.
+  // npcs.json's fourteen hexes being distinct is a fact about the file, and
+  // test/mystery.mjs holds it there (#529, #752).
   const cloth = new Set(bodies.map((b) => b.cloth));
-  check(cloth.size === 13, `the thirteen read as thirteen: ${cloth.size} distinct sets of cloth colours off three bodies`);
+  check(cloth.size === bodies.length, `the ${bodies.length} read as ${bodies.length}: ${cloth.size} distinct sets of cloth colours`);
   const skins = new Set(bodies.map((b) => b.skin).filter(Boolean));
   check(skins.size === 1, `and one skin colour across all of them`, [...skins].join(' | '));
 

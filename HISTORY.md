@@ -8224,3 +8224,454 @@ carries the same order.
   (#522). The two rows do not collide either way: the walking day is lanes A
   and D, the retro castle is lane B, and #602 lets different lanes run at
   once.
+
+## Explore, the day before: the section, and three calls the code settled (2026-09-21)
+
+**Rank 1, on `claude/walking-day-before-death-8apcav`, lanes A and D.**
+`SPECS.md` gains "Explore: the day before," four increments deep, written
+against `src/mystery.js`, `src/save.js`, `src/quest-manager.js`,
+`src/stations.js`, `src/lore.js`, `src/ui.js`, `data/mystery.json`,
+`data/npcs.json`, `data/quest.json`, `tools/dialogue.mjs` and the entry beat of
+every browser suite. Ten open calls, each with a recommendation, so every
+increment after this one is class S. **No code, no data and no asset changed**
+and no suite ran: `npm test` is 15 of 15 on the baseline this branch started
+from and nothing in this commit can move it. Decisions #754 to #756, all three
+of them amendments to a number that is already locked.
+
+- **The walking day rides the `day` field and the save stays at version 6**
+  (#754, amending #751). #751 priced a saved explore as "a `mode` field,
+  version 7, lane A," which is theme 8's own pricing of its own increment 3,
+  and that theme's walking day was a second mode running the SAME day, where a
+  second field was the only thing that could tell the two apart. #752 made it
+  the day BEFORE, and the day is already a field: `repair` is
+  `out.day = s.day === 2 ? 2 : 1` (`src/save.js:188`), so a third value is a
+  clamp learning a better question and not a field arriving, which is the side
+  of the line #702 drew in this exact file for this exact reason. No version-6
+  save can be carrying `day: 0`, because nothing has ever written one, so
+  `migrate` has no drift to be honest about and is untouched. `SAVE_VERSION`
+  stays 6. **The row still holds lane A**, because a lane is a file (#602) and
+  this writes it: `buildCatalog` gains the walking day's bell list,
+  `clampWatch` a third list, and `repair` one incoherence rail beside line
+  218's, a `day: 0` carrying a clue or a recorded verdict reading as day one.
+  A `mode` field beside a `day` field would have been two names for one fact,
+  and #37's own argument is that a field arrives when it says something nothing
+  else can. `BACKLOG.md`'s rank 1 summary and `ROADMAP.md`'s lane A both said
+  version 7 and are corrected with this.
+
+- **Two of the six browser suites have no door to name, so the mystery door is
+  a method as well as a button** (#755, sharpening #751). #751 said the entry
+  beat of `plan-vs-scene`, `overlays`, `map`, `touch`, `built` and
+  `play-castle` has to pick the mystery door explicitly. Four of them click:
+  `overlays.mjs:121`, `touch.mjs:107`, `built.mjs:216` and `play-castle.mjs:362,
+  861, 1560`. **The other two never press it.**
+  `plan-vs-scene.mjs:90` and `map.mjs:117, 259, 283` wait for
+  `#start-overlay:not(.hidden)`, which is how both spell "the castle finished
+  building," and then drive `window.__quest` and `window.__castle` directly.
+  They are the two the flip breaks hardest, because with `data/quest.json`'s
+  `start` at `explore` the castle at load IS the walking day:
+  `plan-vs-scene`'s Prime beat reads `window.__cast` for `bodies.length === 13`
+  and `absent.join() === 'inspector,merchant'` (lines 514 and 537) and measures
+  every body against the four bells' own stations. So
+  `QuestManager.enterMystery()` dispatches `day:1`, the start panel's second
+  button calls it, and the two suites that never click call it through
+  `window.__quest` before they measure. `#start-button` keeps its id and reads
+  "Walk the castle", because it is the panel's primary button and the resume
+  path's button and has been since Phase 1; `#start-mystery` is the second, a
+  `link-button` like the touch toggle, and it is offered only when there is no
+  save to resume, so a resume panel cannot restart the day the player is
+  standing in.
+
+- **The body ceiling goes from 32 to 33, and Hywel is the body it is for**
+  (#756, #611). `test/budget.mjs`'s `MAX_SKINNED_TOTAL` is 32, and
+  `data/npcs.json`'s thirteen cast plus `data/populace.json`'s nineteen
+  household is exactly 32, so the fourteenth cast entry fails that suite with
+  `33 bodies built, over the ceiling of 32`. The file's own comment says what
+  to do about it: "The next body is an argument in `HISTORY.md`." The argument
+  is that the walking day adds one body and one only, the man the mystery is
+  about, and that he is the only cast member ever to be in the castle on one
+  day of the three. **32 to 33, not to 36**: a ceiling with room in it is a
+  ceiling nobody argues about, and the fifteenth body should cost whoever wants
+  it the same argument this one cost. `MAX_SKINNED_PER_WARD` stays 20, and the
+  measurement rather than the guess: the cast's own peak is outer 7 at Terce
+  and Vespers and inner 5, the household takes the outer ward to 18 of 20 at
+  its peak (#730), and Hywel's station on the walking day is in the outer ward,
+  the mason's lodge, so the walking day peaks at 19 of 20 once the household
+  has rings of its own there, with the inspector not yet arrived. Section 3
+  counts `mystery.watches` only, so the walking day's own bells stay uncounted
+  until the increment that writes its stations extends that loop, which the
+  section says out loud rather than leaving the suite quietly narrower than its
+  own title.
+
+**Five things the code said that the brief had wrong, all of them in the
+section.** Every one of #752's five hidden things (the body, the lantern, the
+pouch, the cloak, the tally stick) is an `evidence` row and the lantern IS the
+body row's prop, so `day0.castle` needs no `gone` verb and starts empty. Nine
+of the eleven evidence rows would hide themselves at a bell the walking day
+names, and five of those nine are furniture rather than evidence, the muniment
+LEAF among them (`data/scene-config.json:1364` carries `evidence: "lock"` and
+its collider goes with it), so the walking day names what IS on the ground.
+The walking day's lines are a `day0` dialogue state reached by a stage's
+`dialogueState`, so `tools/dialogue.mjs` learns no second write target and
+#690's bargain is unchanged. `arrives: 0` reads as present on day one at four
+call sites, not one. And `src/main.js`'s UI-flow region is smaller than the
+theme assumed: the engine, the nav and the whole castle are built before
+`ui.showStart` runs, so the door cannot be a second `createMystery`, it has to
+be a dispatch into the graph, which is what the morning after already is
+(#537).
+
+---
+
+## The retro castle: the stone is drawn here now (2026-09-21)
+
+**Increment 1 of rank 3, shipped.** The fifteen Poly Haven material sets are
+gone and the built castle wears fifteen 128 px textures this repo draws.
+Worked under Claude Opus 5 as the builder, on
+`claude/retro-castle-pixel-textures-kliakt`, against the `SPECS.md` section
+#742 to #744 wrote. Decisions #757 to #766, written as #754 to #763 against
+a fresh `origin/main` at `3ee4364` whose highest number was #753 (#633's
+rule) and renumbered whole at merge, because PR #69 ("Explore, the day
+before: the section, and three calls the code settled") took #754 to #756
+first. The code cites these as "#742, open call N" rather than by these
+numbers, so the renumber cost nothing.
+
+**What shipped.** `tools/pixel/index.mjs` and `tools/pixel/textures.json`: five
+drawing families — `courses` seven rows, `planks` four, `ground` two,
+`plaster` one, `weave` one — each a pure function of a row's parameters and a
+seed to a 128 x 128 RGBA buffer. `npm run pixel:render` writes
+`assets/pixel/<name>.png` through sharp; a second run rewrites nothing.
+`tools/pixel/sheet.mjs` tiles every row 3 x 3 at 4x into `shots/pixel/sheet.png`
+and asserts nothing. Fifteen PNGs committed, 1.2 to 3.8 KB each, six to nine
+colours each. Fifteen `assets/poly-haven/` folders deleted in the commit their
+names stopped pointing at them: 45 files, 23.9 MB on disk, and that folder went
+from 45 MB to 21. `data/scene-config.json`'s `materials` became
+`pixelMaterials`, spliced rather than re-serialised (#584) in the file's own
+line ending (#632), with nothing else in the file moved. `src/assets.js`'s
+`loadPBRMaterial` became `loadPixelMaterial`, `src/castle-builder.js`'s
+`material()` reads the new section, `tools/encode-assets.mjs` lost
+`encodeMaterialMaps`, and `test/assets.mjs` and `test/budget.mjs` gained the
+rails below.
+
+- **Replace the fifteen sets; keep the ten prop packs** (#757, open call 1,
+  taken as written). Nothing was supplemented and nothing was kept "just in
+  case": a set beside a pixel texture is about 3 MB of video memory for no
+  variety, and `test/budget.mjs`'s fourth count now refuses it by arithmetic
+  rather than by rule. Measured: the supplement fails at **82.1 MB** against a
+  64 MB ceiling.
+
+- **Lit, diffuse only** (#758, open call 2). `loadPixelMaterial({ map,
+  roughness }, tint)` builds a `MeshStandardMaterial` with a `map`, `roughness`
+  from the row or 1, `metalness` 0 and the tint or white as its colour (#516),
+  through the same `loadTexture` and `tuneTexture` as before, so the map is
+  NEAREST-magnified at 128 px with no new branch and `PIXEL_ART_MAX_PX` did not
+  move. Six of the fifteen rows carry a `roughness`; the nine stone rows do
+  not and get 1. The fallback colour went with `loadPBRMaterial`: one file per
+  row means a missing file is a console line naming it, not a wall that looks
+  nearly right.
+
+- **The kit is relit, and the assumption behind that was checked first**
+  (#759, open call 3). Every Kenney GLB read — `battlement.glb`,
+  `wall-fortified-gate.glb`, `column.glb`, `column-damaged.glb`,
+  `detail-crate.glb` — declares `KHR_materials_unlit` on every material, so
+  GLTFLoader does hand back a `MeshBasicMaterial` and the recommendation stood
+  as written. `tuneMaterials` swaps it for a `MeshStandardMaterial` over the
+  same map, behind `RELIGHT_KIT` in `src/assets.js`. The texture object is
+  reused, so `KHR_texture_transform`'s offset and repeat come with it. Nobody
+  has seen a lit merlon (#53); `RELIGHT_KIT = false` is the one-line reversal
+  if one goes black the way the slate did (#438).
+
+- **A program in the repo generates, and the suite is the review** (#760, open
+  call 4). A row is parameters and a seed; `test/assets.mjs` re-renders every
+  row in Node and holds the committed PNG pixel-identical to it. An image
+  model's output fails that by construction, which is #743 as a check.
+
+- **128 px and at most 32 colours, held in `test/assets.mjs`** (#761, open call
+  5). `PIXEL_PX` and `PIXEL_MAX_COLOURS` are declared in the suite and NOT read
+  off the generator, and the suite fails if `tools/pixel/index.mjs`'s own
+  `SIZE` disagrees with it: a rail that reads its subject's constant is the
+  check that re-implements the thing it checks (#34). The fifteen use six to
+  nine colours of the 32.
+
+- **PNG, not KTX2, and the exemption is a size** (#762, open call 6). 85 KB in
+  video memory with its mip chain, and ETC1S's two base colours per 4 x 4 block
+  would mangle a hard pixel edge. `tools/encode-assets.mjs`'s header now states
+  the rule as a size — 128 px or under is a PNG — and names check 3b as what
+  holds it, so it cannot grow into a 1k PNG. `CLAUDE.md`'s compression bullet
+  says the same in one sentence.
+
+- **The fifteen names stay** (#763, open call 7). `data/sounds.json`'s
+  `byMaterial`, the drum beat and the config's sixty references did not move,
+  and `data/sounds.json` was not touched.
+
+- **No ceiling was renegotiated; there is a fourth count** (#764, open call 8,
+  and #611). None of the three existing counts moved: the outer ward still
+  draws 993 meshes, the inner 643, the outside bucket 131, three point lights,
+  32 bodies. `MAX_TEXTURE_MB = 64` joins them in the ceilings block, and the
+  castle reads 37.9.
+
+- **The props are untouched** (#765, open call 9). The ten packs are 35.1 MB of
+  the 37.9 and the look is what says whether a photographed cabinet in a pixel
+  room is the next wrong thing.
+
+- **Tone mapping and the fill are left for the GPU** (#766, open call 10).
+  `toneMappingExposure` and the hemisphere's 2.0 were not touched. They are two
+  numbers on the looking checklist and moving either from a container would be
+  guessing at a look nobody has had.
+
+**The two numbers this row exists to move.** By the new count's own arithmetic,
+the pre-swap tree is **80.8 MB** of texture memory and the post-swap tree is
+**37.9 MB**, over 70 images. Of the 80.8, **79.3 MB is the `.ktx2` on disk**,
+which is the 79.3 MB #506 measured off `renderer.info.memory` on the live page
+to the decimal: that agreement is the calibration, and it is why the number
+below it is worth printing. `SPECS.md` predicted 79.3 before and about 36.4
+after, and both are 1.5 MB under what the count reports, because the spec's
+arithmetic was over the `.ktx2` alone and the count as specified includes the
+kit's ten 64 px PNGs (0.2 MB) and the hen's 512 px atlas (1.33 MB). The
+difference is the two ends of the same 1.5 MB, not a disagreement about the
+swap: 44.2 MB of sets left and 1.25 MB of drawn stone arrived.
+
+**Every new rail was broken on purpose from a green baseline (#34), and here is
+what each said.** The baseline was fifteen of fifteen suites green before any
+of them.
+
+- `test/budget.mjs`, the ceiling to 30: `FAIL  70 textures come to 37.9 MB of
+  video memory, over the ceiling of 30. The three biggest: assets/NPCs/Hen.glb#0
+  (1.33 MB, 512x512 RGBA8 + mips),
+  assets/poly-haven/WoodenTable_01_1k.gltf/textures/WoodenTable_01_nor_gl_1k.ktx2
+  (1.33 MB, 1024x1024 UASTC, 11 levels),
+  assets/poly-haven/WoodenTable_01_1k.gltf/textures/WoodenTable_01_arm_1k.ktx2
+  (1.33 MB, 1024x1024 UASTC, 11 levels)`. The spec expected all three to be a
+  prop's; the biggest is the hen's atlas, which is a body's, and the two after
+  it are the table's.
+- `test/budget.mjs`, the supplement — the fifteen folders restored out of git
+  and their old `diffuse`, `normal` and `arm`/`rough` put back beside the new
+  `map`: `FAIL  115 textures come to 82.1 MB of video memory, over the ceiling
+  of 64.` Keeping only the normal and the arm, which is the cheaper version of
+  the same mistake, is 72.6 MB and fails too.
+- `test/assets.mjs` 3b, a PNG re-rendered at 256: `FAIL
+  assets/pixel/stone_pavers.png is 256 x 256 by its IHDR, not 128 x 128 — the
+  size is what keeps it out of tools/encode-assets.mjs (#508) and what keeps
+  tuneTexture on its NEAREST branch`, plus the identity rail refusing to
+  compare it.
+- 3b, a stripe painted down the last column of `castle_wall_slates.png`: `FAIL
+  assets/pixel/castle_wall_slates.png does not wrap left to right: its last
+  column differs from its first by 34.50 against a median interior column step
+  of 6.51, over 1.5 times it.` and `FAIL ... 384 of 65536 bytes differ, the
+  first at pixel (127, 0), 107 where the row says 96.`
+- 3b, `wood_floor_deck`'s seed changed in `textures.json` with no re-render:
+  `FAIL  assets/pixel/wood_floor_deck.png is not what tools/pixel/index.mjs
+  draws for row "wood_floor_deck": 29382 of 65536 bytes differ, the first at
+  pixel (31, 0), 51 where the row says 128.`
+- 3b, a 1k jpg copied out of commit `c4e0f7a` into `assets/pixel/` and named:
+  four rails, `FAIL ... is assets/pixel/castle_wall_slates_diff_1k.jpg — a pixel
+  material's map is a .png under assets/pixel/`, `FAIL ... has no PNG IHDR — it
+  opens 0xffd8ffe0`, `FAIL ... holds 32559 colours, over 32 — that is a
+  photograph, not a drawing`, and `FAIL ... is 1024 x 1024, so it cannot be
+  compared with the 128 x 128 its row draws`.
+- 3b, a `map` pointed back at `assets/poly-haven/.../wood_planks_diff_1k.ktx2`:
+  `FAIL  pixel material "wood_planks"'s map is
+  assets/poly-haven/wood_planks_1k.gltf/textures/wood_planks_diff_1k.ktx2 — a
+  pixel material's map is a .png under assets/pixel/`, and two more.
+- 3b, a `normal` beside `dirty_carpet`'s `map`: FAIL  pixel material
+  "dirty_carpet" declares \`normal\` beside its \`map\` — a pixel material is one
+  map, lit and diffuse only (#742, open call 2), and src/assets.js reads
+  nothing else.
+- `test/assets.mjs` check 4, `plastered_wall_04_1k.gltf` restored to disk with
+  nothing naming it: `FAIL  nothing references
+  assets/poly-haven/plastered_wall_04_1k.gltf/textures/plastered_wall_04_arm_1k.ktx2`
+  and two more, then `FAIL  3 unreferenced file(s) under assets/, 0.7 MB`.
+
+**Two breaks changed the code rather than just proving it.** The jpg break
+printed `it is .......` because the message rendered the file's magic bytes as
+latin1; it prints `0xffd8ffe0` now. The `assets/poly-haven` break threw out of
+sharp on a KTX2 and ended the run with a stack trace instead of a name — still
+non-zero (#13), but a crash is not a report — so the decode is guarded and an
+undecodable map is a failure with its path in it. Both are #147's question
+asked of a message rather than of a comment.
+
+**The seam rule has a blind spot, and the generator works around it rather than
+the rule being changed.** Check 3b compares the last column against the first
+at 1.5 times the MEDIAN interior column step, which is the rule the spec
+stated. A texture drawn on a torus can fail it while tiling perfectly: a mortar
+course landing on row 0 makes the wrap pair one of the loudest adjacencies in
+the image, exactly as rows 15 and 16 are inside the tile. Thirteen of the
+fifteen rows failed that way on the first render, `wood_floor_deck`'s rows at
+68.93 against a median of 1.41. So every family now phases its hard edges off
+the tile's own edge — a course half a course down, a board gap half a board
+across, a weave cell half a cell both ways, block and butt joints moved by
+`clearOffset` — and `plaster`'s damp patches darken what is under them by an
+amount falling to zero at their edge instead of replacing it, which was worth
+49 of 255 across one pair of pixels and was the whole of that row's 2.50
+against 2.31. All fifteen are at or under 4.47 now. **The rule's remaining
+sharp edge, for whoever writes increment 2**: a texture more than half of whose
+adjacent column pairs are identical has a median of 0.00, and then only a seam
+of exactly 0.00 passes. `old_planks_02` is at 0.20 and passes with a seam of
+0.00. A row that trips it is an argument for the architect, not a number to
+loosen here.
+
+**Not verified, and it could not be.** `npm run play` was not run: this is a
+container with no GPU, and a movement or physics assertion under a
+software-rendered Chromium is inconclusive rather than confirmed (#53).
+**Nothing here claims a look.** The castle has not been seen in pixel art by
+anybody, the kit has not been seen lit, and the section's looking checklist is
+what the look is for. No `ktx` was needed or used — nothing new goes through
+the encoder, by #762 — and nothing was fetched from any asset host or any
+network: the fifteen textures are arithmetic, and `npm install` was the only
+thing that touched the wire.
+
+**Green.** Fifteen of fifteen suites, `npm test` exit 0, and `npm run build`
+clean in 735 ms. `test/built.mjs` reports **dist/ at 28.9 MB against 52.8 MB
+before**, which is the 23.9 MB of deleted sets and nothing else, and both pages
+still fetch the same file set: the KTX2 count it compares fell from 91 to 46
+on both sides together, which is what it is there to catch. The three counts in
+`test/budget.mjs` are unmoved and the fourth reads 37.9 of 64.
+`test/plan-vs-scene.mjs`'s drum beat — one map per material, each drum's map
+its own plan piece's — passes over the new materials with no assertion added
+there and nothing crossing the four-suite line (#529, #611).
+
+---
+
+## Explore, the day before: increment 1 shipped (2026-09-21)
+
+**Increment 1 of rank 1, shipped.** The engine, the save and a placeholder
+walking day are in, against the `SPECS.md` section #754 to #756 wrote.
+Commits `8009a96` and `aa22098`, worked under Claude Opus 5 as the builder on
+`claude/walking-day-before-death-8apcav`, merged from `origin/main` at
+`f5fbe80` and again at `7ed041e` once the retro castle band landed. `npm test`
+15 of 15, `npm run build` clean, `npm run dialogue:check` green.
+
+**What shipped.** `data/mystery.json` gains a `day0` block, `day2`'s sibling:
+its own four bells `prime-eve` to `vespers-eve`, a per-bell thirteen-person
+schedule (day one's stations copied under the new ids, plus Hywel's), the six
+evidence rows that are on the ground (`candle`, `lock`, `ledger`, `knife`,
+`gaol-roll`, `walk-door`), an empty `castle` and a `night` pane. Top level
+beside `ui`: `watchLabels`, `watchLike` and `ui.quiet`. `data/quest.json`
+starts on `explore` (`enter: ["applyDay0"]`, rings four bells to `night`), adds
+`night` (`enter: ["showNight"]`, one transition, `day:1` to `arrive`), and
+`arrive` gains `enter: ["applyDay1"]`. `data/npcs.json` gains a fourteenth
+`cast` entry, `hywel` (`Farmer.glb`, tint `#7a6a52`, `role` "Master mason",
+`ward` "outer", `arrives: 0`), plus fourteen `day0` line sets, one per speaker,
+written through the .dlg and compiled in. `src/mystery.js`: `dayWatchesOf`
+keyed on the literals 0 and 2, `onDayZero()` beside `onDayTwo()`, day-0 clauses
+in `day`, `stationOf`, `available`, `press`, `examine`, `enter`, `ring` and
+`accuse`, `beginDay0`, `beginDay1`, `undoDay`, `beforeDayOne`, and the day-0
+validator rails. `src/save.js`: the `day: 0` clamp, a third bell list in
+`buildCatalog`, and the incoherence rail beside line 218's, at version 6.
+`src/quest-manager.js`: `applyDay0`, `applyDay1`, `showNight` and
+`enterMystery()`. `src/stations.js` indexes the walking day's bells the way
+`day2.watches` is indexed. `src/lore.js` learns `arrives: 0`. `src/main.js`
+sets the sky the manager resolves. `src/interaction.js` drops the article,
+#715's fix. `test/budget.mjs`'s `MAX_SKINNED_TOTAL` goes 32 to 33.
+
+**Every rail's break and its FAIL line, run from a green baseline (#34, #13).**
+
+- `dayWatchesOf` falling through for day 1: `FAIL the mystery entered from the
+  walking day starts at Prime, in \`arrive\`, on day one — prime-eve / arrive /
+  day 1`, plus 27 more day-one beats.
+- `enter` granting on day 0: `FAIL and grants no \`L\` clue: \`walk-crosses\` in
+  a walking day's journal would be the mystery starting the day before it`.
+- `ring`'s day-0 clause dropped: `FAIL it returns a \`night\` effect and
+  \`bell:4\`, and demands nothing … — ["demand","event"]`.
+- The day-0 validator section neutered: 16 FAILs headed `FAIL validateMystery
+  finds nothing wrong, the castle included — day0: no walking day, so the
+  castle opens on the morning the mason is already dead`.
+- The walk into the night: `FAIL rejects a body that cannot walk from its last
+  walking-day station to its day-one Prime one — said: cook: no path from KI at
+  sext-eve to PT at vespers-eve; …`.
+- Hywel's day-one clause: `FAIL rejects a day-one schedule for the man who is
+  dead by Prime — said: apprentice and hywel stand 0.00 m apart at prime …`;
+  his missing day-0 station: `FAIL rejects no station for him on the one day he
+  is alive — said: hywel: no row in day0.schedule …`; his day-two clause:
+  `FAIL rejects a station for him on the morning after his own funeral — said:
+  … hywel: no day-two lines after the verdict full (a full) …`.
+- Lore's chatter clause: `FAIL the fourteenth, Hywel, cannot chatter either —
+  he is dead by Prime — said nothing`.
+- The day-0 clamp list: `FAIL a walking day with two bells in it clamps to 1,
+  so the ceiling is the data and not a number written beside it — 3`.
+- The incoherence rail: `FAIL a day: 0 carrying a recorded verdict comes back
+  as day one — {"day":0,"watch":3}` and `FAIL and so does a day: 0 carrying a
+  clue — {"day":0,"watch":2}`.
+- `index.html` left alone: `FAIL index.html's initial objective is the start
+  stage's … — "The master mason is dead at the foot of the Chapel Tower stair.
+  Find the Constable."` and `FAIL index.html's initial bell is the start
+  stage's own, read out as "Prime, the eve" — "Prime"`.
+- `arrive`'s `applyDay1` dropped: 45 FAILs from `FAIL and at Prime` /
+  `FAIL E on the body: he is at the foot of the stair`, then a hard throw.
+- `_showEvidence`'s day-0 list: `FAIL 0 things are on the ground on the
+  walking day: — and 11 are not: body, candle, cart, …`.
+- `talked:constable` on `explore`: `FAIL and stepping it out opens no
+  accusation panel and moves no stage … — arrive / no panel`.
+- `_skyOf`: `FAIL the world is put at prime-eve with prime's sky … —
+  prime-eve / sky prime-eve`. `_label`: `FAIL and the bell read out as "Prime,
+  the eve" … — "Prime-eve"`.
+- A `watchLike` entry deleted: `FAIL prime-eve is a bell the engine can stand
+  at with no sky … would change the HUD and not the light`; a `watchLike` key
+  that is not a bell: `FAIL mystery.watchLike names matins, which is not a bell
+  of any day …`.
+- `undoDay` as a no-op: `FAIL undoDay of it leaves 701 colliders against the
+  plan's 702 …` and `FAIL undoDay maps open, shut, gone, shown to
+  open,shut,gone,shown`.
+- The ceiling left at 32: `FAIL 33 bodies built, over the ceiling of 32 (14
+  cast and 19 household)`.
+- One rail beyond the spec's nine, `day0.night.{title,text,button}`
+  non-empty: `FAIL rejects a walking day with no pane to end on — said:
+  day0.night.button: no text, so the walking day would end on a blank pane`.
+
+**Five places the spec did not fit the code, and each is its own numbered
+decision or a clause of one.**
+
+- **The door is increment 1's for three suites and increment 2's for the
+  rest** (#767). With `start: explore`, `test/plan-vs-scene.mjs`,
+  `test/overlays.mjs` and `test/touch.mjs` measure the walking day and go red
+  the moment increment 1 lands, 14 FAILs in `plan-vs-scene` alone including
+  `E at the word-lock opened no riddle (stage explore)`. #755's own line,
+  `await page.evaluate(() => window.__quest.enterMystery())`, went into those
+  three now, with a comment saying increment 2 replaces it with a
+  `#start-mystery` click for the two of them that click a panel at all.
+  `test/map.mjs` needed nothing, because it never asserted a fact the walking
+  day changes. So increment 1's own boundary moved off `SPECS.md`'s table: the
+  door is this increment's for three suites and increment 2's for the other
+  three named there. **`test/play-castle.mjs` is untouched and `npm run play`
+  is broken until increment 2 gives it the same door.** That is not in
+  `npm test` and CI does not run it (#53), so nothing went red, and it blocks
+  rank 3, the GPU run, until increment 2 lands. Recorded here as a known break
+  for whoever takes rank 3 next: read this before running `npm run play` and
+  finding it stuck on the walking day.
+- **The save break `SPECS.md` specified was vacuous, and it says so in place**
+  (#768, #147). Both `day1.watches` and `day0.watches` are four bells long on
+  the shipped data, so a clamp rail substituting one list for the other would
+  pass whatever the code did: the third clause of #754's own section names
+  this and the rail added, `test/save.mjs`, asserts the ceiling against a
+  clone whose `day0.watches` is cut to two instead, which is what actually
+  catches a clamp reading the wrong list. `test/save.mjs` carries the comment:
+  "WITHOUT THE THIRD LIST the clamp would use the four, and say so out loud
+  (#147)." This is #147's lesson landing a third time in this project.
+- **`SPECS.md`'s own worked example named the wrong cell** (#769). The walk-
+  into-the-night acceptance criterion in `SPECS.md`'s scope table read "move
+  the cook's `vespers-eve` station into the cell and the rail says `cook: no
+  path from CE at vespers-eve to KI at prime`"; the cook's actual `day0`
+  station is `PT`, not `CE`, so the message the rail gives is `cook: no path
+  from PT at vespers-eve to KI at prime`. `SPECS.md`'s example is corrected
+  with this band.
+- **`test/dialogue.mjs`'s two `62` literals, and a coverage guard with nowhere
+  left to land** (#770). The suite held two hard-coded counts of dialogue
+  states (`members === 62`, `same === 62`) and a rail that needs a speaker with
+  exactly one state (the inspector) to exercise its `{}` branch. Fourteen new
+  `day0` sets took the real count to 77 without moving either literal, and gave
+  every speaker at least two states, so neither literal nor the `{}` branch
+  could be reached honestly. The two literals are computed off the file now
+  (`stateCount`, a sum over `parsed.cast`), asserted with a `>= 62` floor
+  rather than replaced with a new literal, because a hard number is a number
+  every future content row has to edit by hand; the `{}` branch is reached by
+  emptying the shortest block in the fixture outright rather than relying on
+  the inspector's shape to still be the thinnest one in the file.
+
+**Two files outside increment 1's own scope table, touched and why.**
+`index.html`'s two tracker lines (`#quest-watch` to "Prime, the eve",
+`#quest-objective` to the `explore` stage's own text) are what increment 1's
+own acceptance criterion in `SPECS.md` demands — the section's `test/quest.mjs`
+break names the stale text by quoting it — even though the file is not in the
+increment's scope table. `tools/dialogue.mjs`'s speaker-and-state counts in its
+header comment (13/62/182 to 14/77/196) and its preamble ("every word the
+twelve say" to "every word the cast says") are prose the fourteenth speaker
+made false the moment it landed; both are corrected in the same commit that
+added him.

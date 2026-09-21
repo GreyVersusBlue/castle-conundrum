@@ -208,6 +208,25 @@ console.log('chatter: the existing twelve only, and their own ward');
   check(names(validateLore(lore, { ...args, chatter: badChatter }), 'arrives on day 2 and is not one of the existing twelve'), 'the thirteenth, the inspector, cannot chatter — he has not dismounted yet');
 }
 {
+  /* AND NEITHER CAN THE FOURTEENTH, FROM THE OTHER SIDE OF DAY ONE (#752, open
+   * call 8). The pool is keyed by the four bells and Hywel is dead by all of
+   * them, and `arrives: 0` reads as present to any rail that asks `> 1`. His
+   * message is the walking day's own and not the inspector's, which the two
+   * assertions either side of this one still hold verbatim. */
+  const badChatter = clone(chatter);
+  badChatter.outer.prime[0].npcs = ['hywel', 'cook'];
+  const said = validateLore(lore, { ...args, chatter: badChatter });
+  check(names(said, 'hywel is in the castle on the walking day only (arrives: 0) and is not one of the existing twelve'),
+    'the fourteenth, Hywel, cannot chatter either — he is dead by Prime', said.join('; ') || 'said nothing');
+  check(!names(said, 'arrives on day 0'), 'and he is not told he "arrives on day 0", which is a number a session would have to go and look up');
+}
+{
+  const bad = clone(performances);
+  bad.sermons.find((e) => e.id === 'sermon-vespers-osyth').npc = 'hywel';
+  check(names(validateLore(lore, { ...args, performances: bad }), 'hywel is in the castle on the walking day only (arrives: 0) and is not one of the existing twelve'),
+    'and he cannot preach at one of the four bells either, for the same reason and with the same message');
+}
+{
   const badChatter = clone(chatter);
   badChatter.outer.prime[0].npcs = ['constable', 'cook']; // constable's own ward is inner
   check(names(validateLore(lore, { ...args, chatter: badChatter }), "own ward is \"inner\", not outer"), 'an npc placed in a ward that is not their own');

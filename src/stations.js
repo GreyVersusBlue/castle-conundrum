@@ -1,4 +1,4 @@
-// stations.js — where the twelve stand at each of the four bells, and how they
+// stations.js — where the cast stands at each bell of each day, and how they
 // walk from one to the next. The bridge between data/mystery.json's `schedule`
 // and src/castle-plan.js's grid, and the only place the two meet.
 //
@@ -71,6 +71,21 @@ export function castleNav(plan, mystery) {
   for (const w2 of Array.isArray(day2?.watches) ? day2.watches : []) {
     if (typeof w2 !== 'string' || !w2.trim()) continue;
     for (const [npcId, station] of Object.entries(day2.schedule ?? {})) put(npcId, w2, station);
+  }
+  /* AND SO ARE THE WALKING DAY'S FOUR (#750 to #756), PER BELL. The morning
+   * after is one station per person for the whole of it and the loop above
+   * writes the same row under every bell it names; `day0.schedule` is a station
+   * per person PER BELL, the way day one's own is, because the walking day is a
+   * day and not a moment. So this walks the row and not the person, and the
+   * fourteenth body is indexed here the same way the thirteenth was: Hywel
+   * stands in the mason's lodge, where no day-one station is, so his point is a
+   * seed of its own. */
+  const day0 = mystery?.day0 ?? null;
+  for (const [npcId, byWatch] of Object.entries(day0?.schedule ?? {})) {
+    for (const w0 of Array.isArray(day0?.watches) ? day0.watches : []) {
+      if (typeof w0 !== 'string' || !w0.trim()) continue;
+      put(npcId, w0, byWatch?.[w0] ?? null);
+    }
   }
 
   const walk = walkability(plan, { seeds });

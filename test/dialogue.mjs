@@ -74,6 +74,13 @@ console.log('the walk, against the real data/npcs.json');
 {
   for (const [ending, source] of bothEndings(disk.npcsText)) {
     const parsed = JSON.parse(source);
+    /* THE COUNT IS THE FILE'S AND NOT A LITERAL. It was 62 while there were 13
+     * speakers; the walking day gave all of them a `day0` set and added a
+     * fourteenth speaker (#752), so a number typed here is a number that has to
+     * be edited by every content row. What this still holds is that the walk
+     * finds every state JSON.parse finds, and a floor under the total, which is
+     * the half a literal was there for. */
+    const stateCount = parsed.cast.reduce((n, p) => n + Object.keys(p.dialogue || {}).length, 0);
     let members = 0, wrong = 0;
     const cast = locate(source, ['cast']);
     const castMembers = membersOf(source, cast.valueStart).members;
@@ -95,7 +102,7 @@ console.log('the walk, against the real data/npcs.json');
         if (JSON.stringify(got) !== JSON.stringify(expect)) wrong++;
       }
     }
-    check(members === 62 && !wrong,
+    check(members === stateCount && stateCount >= 62 && !wrong,
       `${ending}: all ${members} dialogue spans parse to what JSON.parse gives for the same member`,
       `${wrong} wrong`);
   }
@@ -119,6 +126,7 @@ console.log('\nthe splice: a state rewritten, and nothing else');
     // the closing bracket's column. Nothing else in this suite would notice a
     // two-space drift, because every other part compares a splice with a
     // splice.
+    const stateCount = cast.reduce((n, p) => n + Object.keys(p.dialogue || {}).length, 0);
     let same = 0, differ = [];
     for (let i = 0; i < cast.length; i++)
       for (const [state, lines] of Object.entries(cast[i].dialogue || {})) {
@@ -126,7 +134,7 @@ console.log('\nthe splice: a state rewritten, and nothing else');
         if (out === source) same++;
         else differ.push(`${cast[i].id}/${state}`);
       }
-    check(same === 62 && !differ.length,
+    check(same === stateCount && stateCount >= 62 && !differ.length,
       `${ending}: all ${same} states rewritten with their own lines are the file byte for byte`,
       differ.slice(0, 3).join(', '));
 
@@ -198,19 +206,23 @@ console.log('\nadd and delete: the two run backwards give the file back');
       `${ending}: the last state deleted and added back is the file byte for byte, for all ${cast.length} speakers`,
       lost.slice(0, 3).join('; '));
 
-    // The one standing alone: the inspector has a single state, so deleting it
-    // is the `{}` case, which is the branch `addKey` has to be able to fill.
-    const only = cast.findIndex((p) => Object.keys(p.dialogue || {}).length === 1);
-    if (only === -1) fail('nobody in the cast has exactly one state any more — part 3 has stopped testing the empty-object branch');
-    else {
-      const emptied = deleteKey(source, ['cast', only, 'dialogue'], Object.keys(cast[only].dialogue)[0]);
-      let ok = false;
-      try { ok = Object.keys(JSON.parse(emptied).cast[only].dialogue).length === 0; } catch { /* ok stays false */ }
-      check(ok, `${ending}: ${cast[only].id}'s only state deleted leaves an empty dialogue object that parses`);
-      const refilled = addKey(emptied, ['cast', only, 'dialogue'], Object.keys(cast[only].dialogue)[0],
-        (indent, e) => formatLines(Object.values(cast[only].dialogue)[0], indent, e));
-      check(refilled === source, `${ending}: and filling it again is the file byte for byte`);
-    }
+    /* AND THE `{}` CASE, which is `deleteKey`'s last-one-standing branch and the
+     * one `addKey` has to be able to fill. It used to be the inspector, who had
+     * exactly one state; the walking day gave every speaker a `day0` set, so
+     * nobody has one any more (#752) and the branch is reached by emptying the
+     * shortest block outright instead of by finding a block of one. Every state
+     * out in order and every state back in order, which is the file byte for
+     * byte because `addKey` appends. */
+    const fewest = cast.reduce((best, p, i) => (Object.keys(p.dialogue || {}).length < Object.keys(cast[best].dialogue || {}).length ? i : best), 0);
+    const states = Object.keys(cast[fewest].dialogue || {});
+    let emptied = source;
+    for (const state of states) emptied = deleteKey(emptied, ['cast', fewest, 'dialogue'], state);
+    let ok = false;
+    try { ok = Object.keys(JSON.parse(emptied).cast[fewest].dialogue).length === 0; } catch { /* ok stays false */ }
+    check(ok, `${ending}: all ${states.length} of ${cast[fewest].id}'s states deleted leaves an empty dialogue object that parses`, JSON.stringify(states));
+    let refilled = emptied;
+    for (const state of states) refilled = addKey(refilled, ['cast', fewest, 'dialogue'], state, (indent, e) => formatLines(cast[fewest].dialogue[state], indent, e));
+    check(refilled === source, `${ending}: and filling it again, state by state, is the file byte for byte`);
   }
 }
 

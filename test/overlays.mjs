@@ -120,6 +120,13 @@ try {
   /* ------------------------------------------------- 0: the start button --- */
   await page.click('#start-button');
   check(await holder(true), 'Enter the Castle takes pointer lock');
+  /* AND THE MYSTERY DOOR (#755). The page opens on the walking day since #751,
+   * where the muniment leaf answers with a line instead of a riddle (open call
+   * 7) and there is nothing in the journal to present. Every beat below is about
+   * the day of the death, so this file takes the same door the start panel's
+   * second button takes: one dispatch of `day:1`.
+   */
+  await page.evaluate(() => window.__quest.enterMystery());
 
   /* ------------------------------------------------------- 1: the journal ---
    * The beat the row is named for, pressed with a real key rather than called.
