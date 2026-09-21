@@ -47,6 +47,8 @@ R4c Thomas Wykes's yard  --> unlocked R9's town, 2026-09-19 (#703 to #707)
 
 Never gated, take whenever the lane is free:
   R10 bodies (local: net, lane C)
+  R1  the floor plan you can see, new 2026-09-21 (#729 to #733)
+      increment 1 writes nothing and is in no lane; 2 and 3 are lane B
 
   R12b move-and-delete shipped 2026-09-17 (#636 to #642) and lane B is free.
   R12c the dialogue format shipped 2026-09-18 (#687 to #690) and rank 12 is
@@ -109,8 +111,10 @@ the one asset nothing else on this list would catch.**
 ### Container, start to finish
 
 **R6** populace, **R8** side quests, **R9** the town, whose gate R4c opened,
-**R12a/b/c** the tooling, **R4a** the bells call (#699 to #702), and **R4b** the `since`
-field, which shipped from one on 2026-09-17. Six and a half rows of twelve. Every one is data, a validator, a Node suite or
+**R12a/b/c** the tooling, **R1** the floor plan you can see (#729 to #733),
+**R4a** the bells call (#699 to #702), and **R4b** the `since`
+field, which shipped from one on 2026-09-17. Seven and a half rows of thirteen.
+Every one is data, a validator, a Node suite or
 a headless DOM assertion, and every one has an acceptance criterion a container
 can actually meet.
 
@@ -125,7 +129,7 @@ the theme is not what conflicts.
 | Lane | The file that decides it | Rows in it |
 | --- | --- | --- |
 | **A** | `src/save.js` — the version number and `migrate` | nobody (R4a, R4b and R8 all shipped without bumping it) |
-| **B** | `data/scene-config.json`, and `test/tools.mjs`'s byte-exactness rail | R9 (R4c, R5 and R12b are done) |
+| **B** | `data/scene-config.json`, and `test/tools.mjs`'s byte-exactness rail | R1 (increments 2 and 3 only), R9 (R4c, R5 and R12b are done) |
 | **C** | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | R1, R6, R10 (R12c is done) |
 | **D** | `src/main.js`'s player rig and spawn | R6, R11 |
 | **E** | `src/audio.js` and `data/sounds.json` | R7 |
@@ -388,7 +392,18 @@ to overturn rather than a street to place.
 
 | Row | Model | Where | Lane |
 | --- | --- | --- | --- |
+| **R1** The floor plan you can see | Opus 5 | Container | B, and none at all for its first increment |
 | **R9** A castle to get lost in: the town | Opus 5 | Container | B |
+
+**R1 is new on 2026-09-21** (#729 to #733) and it is in this wave because
+nothing gates it. Devon asked for a way to see the whole floor plan; the
+layout turns out to be four arrays of `data/scene-config.json` and not a
+line of `src/castle-plan.js`, so the tool writes the file the prop editor
+already writes (#729). **Its first increment writes nothing** — a top-down
+orthographic view over the real scene, drawn from the plan's own boxes
+(#730, #732) — which is why that increment is in no lane and may be claimed
+beside R9. Increments 2 and 3 are lane B and may not.
+
 
 A walled town's street, church and quay on the ground the yard proved. The
 rooms go on the map the day they go in `config.rooms`, because the map is the

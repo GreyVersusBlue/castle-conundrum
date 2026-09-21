@@ -7658,3 +7658,109 @@ ends on one tile throws in `runAxis` without an `axis` field, so the church
 tower carries `axis: "x"`. `SPECS.md` has it. The prototype is not committed;
 the builder writes the check and the town from the spec and breaks each on
 purpose from green.
+
+## The floor plan you can see: a top-down editor over the castle's own plan (2026-09-21)
+
+**Rank 1, decided before anything is built, decisions #729 to #733.** Nothing
+in `src/` or `test/` is touched. Devon's ask: the room layout was placed by an
+AI one room and one guess at a time with no way to see the whole floor plan,
+he is not happy with how it reads, and he wants a GUI to lay it out himself,
+or at least to review and correct it visually. `SPECS.md`'s "The floor plan
+you can see" is the row those five decisions make buildable. Every number
+below was measured on `data/scene-config.json` and the modules named, today.
+
+- **The editor writes `data/scene-config.json`, and there is no new format**
+  (#729). The obvious reading of the ask, "a GUI for `src/castle-plan.js`",
+  is wrong about where the layout is. `castle-plan.js` holds **no
+  coordinate**: `makePlan(config, boundsOf)` is a pure compiler over the
+  config, and it throws rather than warns when the config does not hang
+  together (`[castle-plan] drum "x" has an interior and no room in
+  config.rooms names it`, line 999). The floor plan is four arrays of a
+  3113-line JSON file: `walls` (46 runs: 18 curtain at level 0, 3 at level 1,
+  25 interior partitions with no `level`), `drums` (8), `gates` (3) and
+  `rooms` (43: 23 outer, 17 inner, 3 outside; 9 by `tiles`, 28 by `drum`, 6
+  by `bounds`). Eleven runs carry `doorways`, each `{ at, width, height,
+  base? }`. So the tool writes the same file the prop editor already writes,
+  through `tools/place.mjs`'s splice, and an intermediate JSON would be a
+  second source of truth for the castle, which is the thing #500 exists to
+  forbid. Re-serialising is still refused and the measurement is bigger than
+  it was: `JSON.stringify(JSON.parse(raw), null, 2)` over today's file is
+  **124924 bytes against 117131**, 7.8 KB of churn per edit, against #584's
+  94212 / 98330 when that was measured.
+
+- **The view is an orthographic camera over the real scene, not a flat
+  schematic** (#730). A 2D editor that never loads three cannot compute
+  anything here: `makePlan` takes `boundsOf(modelPath)`, and the only thing
+  that produces one is `CastleBuilder.measure()`, which loads every model the
+  config names and measures its parts (`castle-builder.js:630`). A DOM editor
+  would have to re-derive every box the plan computes, which is exactly
+  `test/layout.mjs`'s old sin, "it cannot catch a change to that math ... this
+  file scales off Z and agrees with itself", written into a tool instead of a
+  suite. A camera over the built castle also shows the 123
+  `courtyard.placements`, the ground patches and the drums' shells, which a
+  schematic would have drawn as nothing. **Devon's own school editor is the
+  evidence, not an argument**: after 42 phases `js/render.js:1522` is a
+  `THREE.OrthographicCamera` 200 ft over the real scene with the storey below
+  ghosted and the one above hidden, and its *flat* drawing (`js/blueprint.js`)
+  is a printed sheet, not the thing anybody edits in.
+
+- **One entry point, two modules** (#731). `?edit=1` stays the single flag and
+  the single `import.meta.env.DEV` branch to audit, and the layout tool is
+  `src/edit-layout.js`, mounted by `src/edit-mode.js`. The data has nothing in
+  common (a prop is a tile, a run is two tiles and eight fields), and
+  `edit-mode.js` is 327 lines whose value is that one person can read the
+  whole of it. The dev-only guarantee is #585's unchanged and the check is
+  #586's with a second target: `test/built.mjs`'s one sentinel regex becomes a
+  list of `{ file, re }` pairs, `castle-placement-editor-v1` in
+  `src/edit-mode.js` and **`castle-layout-editor-v1`** in
+  `src/edit-layout.js`, each asserted present in its own source and absent
+  from every `.js`, `.css`, `.html` and `.json` under `dist/`.
+
+- **The first increment writes nothing** (#732). "Or at least to review and
+  correct it visually" is two things and the first one is cheaper by an order
+  of magnitude: a top-down view drawn from `plan.pieces` and `plan.rooms`
+  touches no file, no `PLACEABLE`, no `/__place` and not one byte of the
+  byte-exactness rail, and it is what tells Devon whether the layout is worth
+  redrawing at all. Its pure half is `tools/plan-sheet.mjs`: no three, no
+  DOM, no `node:` import, which is `tools/place.mjs`'s own rule and the reason
+  a browser can import it, so `test/tools.mjs` can hold it, and the break
+  that proves the rail is recomputing one room's box from its `tiles` instead
+  of reading `plan.rooms` (#500 in miniature). That split is the one rule
+  Devon's school generator states in its README: add a pure module and its
+  suite together, and the geometry never touches three.
+
+- **Live validation re-runs the plan; it copies no assertion** (#733). Before
+  it posts, the panel calls `makePlan(edited, boundsOf)` and `walkability`,
+  the same two pure functions the page and the Node suites already call, and
+  refuses to write when `makePlan` throws. It prints the room count, the
+  walkable-cell count and whether the fill still seals, and **those are
+  numbers, not checks**: a second copy of `layout.mjs`'s check 4 living in a
+  dev panel is a rail nobody runs and nobody maintains, which is #13 read
+  forwards. Nothing moves or is duplicated across the
+  `layout` / `plan-vs-scene` / `mystery` / `budget` line (#529, #611). The
+  same reasoning settles the openings: a `doorways` entry is a field of the
+  run that owns it, so editing one is a `move` of that run's row through the
+  existing verb, and no nested-path splice is needed, which matters because
+  the one that exists (`locate` and `membersOf` in `tools/dialogue.mjs`,
+  #689) imports `node:fs` at line 61 and no browser module can reach it.
+
+**What came over from the school generator, and what did not.** Read at
+`/home/user/greyversusblue/tools-and-games/Projects/school-generator`, and it
+is 65277 lines of JS against this repo's castle. Carried as patterns, not
+code: the orthographic edit camera with ghosted storeys (`js/render.js:1522`),
+an opening as a point along a wall rather than an edge value
+(`js/shapes.js`'s `{ seg, t, w }`, which is this config's `doorways`
+`{ at, width }` in a different spelling), a grab tolerance and a snap pitch
+that follow the zoom rather than being constants (`js/editor.js`'s `SEG_GRAB`
+comment, `js/snapgrid.js`'s `PITCHES`), and the pure-module-plus-suite rule
+its README calls "the one rule". **Not carried**: its save format, which is a
+whole-state `JSON.stringify` at `SAVE_VERSION = 12` (`js/save-load.js:170`)
+and is the exact opposite of #584's splice; its rooms, which are polygon rings
+with holes and owned walls, against this castle's whole-tile rectangles, drum
+discs and independently placed runs; its 4 ft lattice in feet, against 4 m
+tiles and a 0.5 m walkability grid; its undo stack (`js/history.js`), because
+`git diff` is this tool's undo and the write does not commit; and its
+`libs/three.module.js`, which is REVISION 169, the same revision this repo
+pins from npm as `"three": "0.169.0"`, so its three code compiles here
+unchanged, but it arrives as source under `src/` or `tools/` and never as a
+vendored copy (#493, #494).

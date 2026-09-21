@@ -232,7 +232,10 @@ file and asserts over both rather than over whatever git handed the machine. Par
 1 went from 17 assertions to 47. **Nothing in the row is open**, and the two
 things found on the way that are not in it are in `HISTORY.md` under #633.
 
-**Seven ranked items left, numbered 1 to 11 with gaps. Nothing is claimed, and
+**Seven ranked rows, numbered 1 to 11 with gaps. There were six until
+2026-09-21, when Devon asked for a way to see the whole floor plan and rank 1
+was opened for it (#729 to #733); the count above this line said seven while
+the table held six, and it is corrected here. Nothing is claimed, and
 lanes B and C are free**: the byte-exactness rail merged as PR #40 (#631 to
 #633) and 12b's move-and-delete after it (#636 to #642), 4c built Wykes's yard
 on 2026-09-19 (#703 to #707) and left lane B free again with **rank 9's gate
@@ -462,7 +465,7 @@ together.
 | Lane | The file that decides it | Rows |
 | --- | --- | --- |
 | A | `src/save.js` — the version number and `migrate` | nobody (4a, 4b and 8 are done) |
-| B | `data/scene-config.json` — and `test/tools.mjs`'s byte-exactness rail | 9 (4c, 5 and 12b are done) |
+| B | `data/scene-config.json` — and `test/tools.mjs`'s byte-exactness rail | 1 (its increments 2 and 3 only), 9 (4c, 5 and 12b are done) |
 | C | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | 6, 10 (12c is done) |
 | D | `src/main.js`'s player rig and spawn | 6, 11 |
 | E | `src/audio.js` and `data/sounds.json` | 7 |
@@ -492,9 +495,11 @@ All three shipped and **the row is retired**.
 
 ## The ranked table
 
-**It starts at 2 now, and 1, 3, 5, 8 and 12 are numbers that have left the
-list rather than gaps in it.** The number 1 has been used three times and
-retired three times: the fourth body on 2026-09-17 (#619); the castle you
+**It starts at 1 again since 2026-09-21, and 3, 5, 8 and 12 are numbers that
+have left the list rather than gaps in it.** The number 1 has been used three
+times and retired three times, and is in use a fourth: the floor plan you can
+see (#729 to #733), which Devon asked for by name and which sits in front of
+every judgement about the castle's shape. The three before it: the fourth body on 2026-09-17 (#619); the castle you
 cannot walk, which the GPU run opened the same day (#624 to #630) and which
 shipped on 2026-09-18 (#659 to #661); and the walker on the stair, which the
 second GPU sitting reopened the same way on 2026-09-19 (#710) and which
@@ -517,6 +522,7 @@ which is what makes that survivable (#522).
 
 | Rank | Item | Size | Model | Where | Gate | Lane | Claimed | Detail |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | The floor plan you can see: a top-down view of the plan, then a way to redraw it | 2+ | Opus 5 | Container | — | B (increment 1: none) | | [The floor plan you can see](SPECS.md#the-floor-plan-you-can-see) |
 | 2 | The GPU run: the looks are taken (#711 to #715); rank 1 shipped (#716 to #720) and the run itself is owed | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
 | 6 | Life: a populace: the fifty, the activity clips and the ambient talk | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: somebody listens to the seven beds, the four rings and the first two event sounds (a bed at a point and the rings, #680 to #683; the door and the hound, #696 to #698) | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
@@ -527,6 +533,36 @@ which is what makes that survivable (#522).
 **`ROADMAP.md` is these three columns turned into an order**: which row to
 take first, what each one unblocks, and which ones two sessions may hold at
 the same time. This table still ranks; that file sequences (#601).
+
+## The floor plan you can see
+
+*Where: container. Gate: none. Lane: B for increments 2 and 3, none for
+increment 1.*
+
+**Rank 1, and a 2+. Nothing is built; the decisions are #729 to #733,
+2026-09-21.** Devon's ask: the room layout was placed by an AI one room and
+one guess at a time with no way to see the whole floor plan, and he wants a
+GUI to lay it out himself, or at least to review and correct it visually.
+
+**The layout is not in `src/castle-plan.js`.** That file holds no coordinate:
+it is a pure compiler over `data/scene-config.json` and throws on a config
+that does not hang together. The floor plan is four arrays of that file:
+`walls` (46 runs, 25 of them interior partitions), `drums` (8), `gates` (3)
+and `rooms` (43, which are names over extents and own no geometry), plus the
+`doorways` on eleven runs that are how two spaces connect. So the tool writes
+the same 3113-line file the prop editor already writes, through the same
+splice, and there is no new format (#729).
+
+**The first increment writes nothing** (#732): a top-down orthographic view
+over the real scene, drawn from the plan's own boxes, with a storey filter and
+room labels. A flat 2D editor was refused because `makePlan` needs
+`boundsOf(modelPath)` and only a loaded model gives one, so a schematic would
+have to re-derive every box the plan computes (#730). It is `?edit=1`'s second
+module, `src/edit-layout.js`, with its own sentinel and its own line in
+`test/built.mjs`'s grep of `dist/` (#731, #586). Increment 2 makes `rooms` and
+`walls` draggable and increment 3 the openings; `drums` and `gates` are not in
+this row. Validation re-runs `makePlan` and `walkability` in the page and
+copies no assertion out of any suite (#733, #529).
 
 ## The GPU run
 

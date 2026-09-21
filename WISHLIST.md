@@ -259,6 +259,23 @@ text: the `chatter` and `performances` pools, the `reputation` lines and
 `day2.lines` are not keyed by speaker-and-state, which is the only shape the
 format knows.
 
+### The floor plan you can see
+
+**Moved to `BACKLOG.md` rank 1, `SPECS.md`'s "The floor plan you can see"
+section** (#729 to #733), on the day it was asked for. This is the fifth
+tool and it was not on the list above, because the list above was about
+content and this one is about the castle itself: the room layout was placed
+by an AI one room and one guess at a time with no way to see the whole floor
+plan, and Devon wants a GUI to lay it out himself, or at least to review and
+correct it visually. What the row found before it was written down is that
+the layout is not in `src/castle-plan.js` at all — that file holds no
+coordinate — but in four arrays of `data/scene-config.json`: 46 wall runs, 8
+drums, 3 gates and 43 rooms, with the openings that connect them carried on
+eleven of the runs. So it is the same file and the same splice the placement
+editor already writes (#729), the view is an orthographic camera over the
+real scene rather than a flat schematic (#730), and the first increment
+writes nothing (#732).
+
 ## Devon's answers, 2026-09-16
 
 Ten questions were put on the day this file was written and Devon answered
