@@ -25,6 +25,9 @@
 //      three refusals ending as a fall; and what a reload has to survive
 //   5. the frame in quest.json validates with the manager's actions, and the
 //      engine's events drive it to the right terminal
+//   5b. the walking day (#750 to #756): the day BEFORE the death, end to end,
+//      its own validator rails against clones of the data, and Hywel, the
+//      fourteenth cast entry, who is in the castle on that day and no other
 //   6. the household in data/populace.json, on the same grid and by the same
 //      rails as the twelve's own stations (#529: this file owns the stations,
 //      and a routine's tile is a station question)
@@ -32,7 +35,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { validateMystery, createMystery, earliest, shortestPath, freshState, dayTwoOutcomes, dayTwoLines, dayTwoKnew } from '../src/mystery.js';
+import { validateMystery, createMystery, earliest, shortestPath, freshState, dayTwoOutcomes, dayTwoLines, dayTwoKnew, dayWatchesOf, beforeDayOne } from '../src/mystery.js';
 import { QuestGraph, validateQuest, validateAgainstNpcs } from '../src/quest-graph.js';
 import { QuestManager, MANAGER_PAIRS } from '../src/quest-manager.js';
 import { makePlan, EYE_HEIGHT } from '../src/castle-plan.js';
@@ -84,12 +87,13 @@ console.log('mystery.json validates');
   check(mystery.clues.length === 42 && herrings === 3, `${mystery.clues.length} clues, ${herrings} herrings (the plan's table lists 39 rows, 36 on a path and 3 herrings; the gaol roll adds three more on a path)`);
   const dayOne = cast.filter((n) => (n.arrives ?? 1) === 1);
   const dayTwo = cast.filter((n) => (n.arrives ?? 1) > 1);
-  check(cast.length === 13 && dayOne.length === 12 && dayTwo.length === 1,
-    `${cast.length} in the cast: the twelve of the day, and ${dayTwo.map((n) => n.name).join(', ')} who rides in the morning after`);
+  const dayZero = cast.filter((n) => (n.arrives ?? 1) < 1);
+  check(cast.length === 14 && dayOne.length === 12 && dayTwo.length === 1 && dayZero.length === 1,
+    `${cast.length} in the cast: the twelve of the day, ${dayTwo.map((n) => n.name).join(', ')} who rides in the morning after, and ${dayZero.map((n) => n.name).join(', ')} who is alive on the walking day and no other (#752)`);
   check(Object.keys(mystery.schedule).length === 12 && mystery.watches.length === 4, 'twelve schedules across four watches');
   check(mystery.presses.length === 9, `${mystery.presses.length} presses`);
   const bodies = new Set(cast.map((n) => n.modelPath));
-  check(bodies.size === 4 && cast.every((n) => /^#[0-9a-f]{6}$/i.test(n.tint)), 'four bodies, thirteen tints (#419, #603)', [...bodies].join(', '));
+  check(bodies.size === 4 && cast.every((n) => /^#[0-9a-f]{6}$/i.test(n.tint)), `four bodies, ${cast.length} tints (#419, #603)`, [...bodies].join(', '));
   // What the fourth is for (#603). Read off the data, so a woman put back on a
   // man's body is named, and so is a man put on hers.
   const WOMEN = ['cook', 'laundress', 'lady'];
@@ -99,7 +103,7 @@ console.log('mystery.json validates');
     ...cast.filter((n) => !WOMEN.includes(n.id) && hers.has(n.modelPath)).map((n) => `${n.id} wears ${n.modelPath} too`),
   ];
   check(strays.length === 0, "four bodies, and the three women share the one that is a woman's", strays.join('; '));
-  check(new Set(cast.map((n) => n.tint)).size === 13, 'no two of the thirteen share a tint');
+  check(new Set(cast.map((n) => n.tint)).size === cast.length, `no two of the ${cast.length} share a tint`);
   // Every evidence row names a prop that is already on disk (Phase 1 ships no
   // asset): a kit .glb, or a Poly Haven .gltf under the project's own folder.
   const missing = mystery.evidence.filter((e) => {
@@ -349,7 +353,7 @@ console.log('\nthe twelve, at their stations');
 {
   const barred = new Set(mystery.rooms.filter((r) => r.barred).map((r) => r.id));
   const absent = cast.filter((n) => !nav.at(n.id, 'prime')).map((n) => n.id);
-  check(absent.join() === 'merchant,inspector', `eleven of the twelve are in the castle at Prime; Thomas Wykes rides in at Terce and the King's inspector not until the next morning`, `absent: ${absent.join(', ') || 'nobody'}`);
+  check(absent.join() === 'merchant,inspector,hywel', `eleven of the twelve are in the castle at Prime; Thomas Wykes rides in at Terce, the King's inspector not until the next morning, and Hywel ap Gruffudd is dead at the stair (#752)`, `absent: ${absent.join(', ') || 'nobody'}`);
   const offTheFloor = cast.filter((n) => { const p = nav.at(n.id, 'prime'); return p && !nav.standable(p); });
   check(offTheFloor.length === 0, 'every Prime station is floor a body stands on', offTheFloor.map((n) => n.id).join(', '));
   // THE COVERAGE GUARD FOR A CHECK IN ANOTHER FILE (#529). plan-vs-scene.mjs
@@ -410,10 +414,22 @@ console.log('discoverability');
 console.log('the engine');
 const events = (fx) => fx.filter((e) => e.type === 'event').map((e) => e.name);
 const clueIds = (fx) => fx.filter((e) => e.type === 'clue').map((e) => e.id);
-function play(state = freshState(frame)) {
+/**
+ * THE DAY OF THE DEATH IS BEHIND THE WALKING DAY NOW (#751, #755). A fresh state
+ * is the day before it: `frame.start` is `explore` and that stage's own `enter`
+ * action is `applyDay0`. There is no manager in this file to run an action, so
+ * `play` does by hand exactly what `_applyDay0` and `_applyDay1` do — begin the
+ * walking day, then take the mystery's door, which is one dispatch of `day:1` —
+ * and every beat below it is day one's, reached the way a player reaches it.
+ * `play(state, { day: 0 })` stops on the walking day, which is what the walking
+ * day's own beats use.
+ */
+function play(state = freshState(frame), { day = 1 } = {}) {
   const m = createMystery({ mystery, npcs: cast, state });
   const g = new QuestGraph(frame, QuestManager.actions);
   g.begin();
+  m.beginDay0();
+  if (day !== 0) { g.dispatch('day:1'); m.beginDay1(); }
   const fed = [];
   const feed = (fx) => { for (const ev of events(fx)) { const out = g.dispatch(ev); if (out.length) fed.push(ev); } return fx; };
   return { m, g, fed, feed, state };
@@ -421,7 +437,7 @@ function play(state = freshState(frame)) {
 {
   // The intended path (PLAN.md, The intended path), watch by watch.
   const { m, g, feed, state } = play();
-  check(m.watch === 'prime' && g.stage === 'arrive', 'a fresh day starts at Prime, in `arrive`');
+  check(m.watch === 'prime' && g.stage === 'arrive' && m.day === 1 && state.day === 1, 'the mystery entered from the walking day starts at Prime, in `arrive`, on day one', `${m.watch} / ${g.stage} / day ${state.day}`);
 
   // Prime.
   let fx = feed(m.talk('constable'));
@@ -607,7 +623,8 @@ console.log('the frame');
   check(verdictStages.every((id) => frame.stages[id] && !frame.stages[id].terminal), 'one stage per verdict class, none of them terminal any more', verdictStages.join(', '));
   check(verdictStages.every((id) => (frame.stages[id].transitions ?? []).some((t) => t.on === 'day:2' && t.to === 'morning')), 'and every one of them has a morning after to go to');
   check(['ringBell', 'openJournal', 'openAccusation', 'showEpilogue', 'applyDay'].every((a) => QuestManager.actions.includes(a)), 'the manager lists the five actions the graph names');
-  check(frame.start === 'arrive' && frame.stages.investigate.transitions.some((t) => t.on === 'bell:4' && t.to === 'accusing'), 'arrive first; the fourth bell moves investigate to accusing');
+  check(frame.start === 'explore' && frame.stages.explore.transitions.some((t) => t.on === 'day:1' && t.to === 'arrive'), 'the walking day is the first stage, and `day:1` is the door into the mystery (#751, #755)');
+  check(frame.stages.investigate.transitions.some((t) => t.on === 'bell:4' && t.to === 'accusing'), 'and the fourth bell of day one moves investigate to accusing');
   // Phase 7 deleted the riddle quest. Nothing in this file should be able to
   // find a second graph in quest.json, and the three stages it had are gone.
   check(!quest.frame, 'there is no `frame` key left: the frame is the graph');
@@ -617,6 +634,191 @@ console.log('the frame');
   for (const dead of ['openGate', 'showVictory']) {
     check(!QuestManager.actions.includes(dead), `the manager no longer lists ${dead}, which only the riddle quest used`);
   }
+}
+
+/* ---------------------------------------- 5b: the walking day (#750 to #756) ---
+ * THE DAY BEFORE THE DEATH, END TO END. Devon took the walking day as the main
+ * mode (#751) and as the day before rather than the day of (#752), so the castle
+ * a fresh page opens on is this one: Hywel ap Gruffudd alive in his lodge, no
+ * body at the stair, nothing to find and nobody to name. Nothing on a screen can
+ * say whether a day with no case still holds together, and every way it can fail
+ * is silent — a bell with no station under it, a clue granted on a day before the
+ * crime, a body that teleports into the morning — so it is driven here the way
+ * day one and the morning after are.
+ *
+ * WHAT THIS FILE OWNS OF IT (#529): the day-0 stations, the walk into the night,
+ * and the engine's own answers. The sky per bell and `undoDay`'s round trip are
+ * test/layout.mjs's, the clamp is test/save.mjs's, and the graph, the manager and
+ * index.html are test/quest.mjs's.
+ */
+console.log('\nthe walking day');
+{
+  const W0 = mystery.day0.watches;
+  const four = mystery.watches;
+  check(JSON.stringify(dayWatchesOf(mystery, 0)) === JSON.stringify(W0),
+    `dayWatchesOf(m, 0) is the walking day's own four bells: ${W0.join(', ')}`, JSON.stringify(dayWatchesOf(mystery, 0)));
+  check(JSON.stringify(dayWatchesOf(mystery, 1)) === JSON.stringify(four)
+    && JSON.stringify(dayWatchesOf(mystery, 7)) === JSON.stringify(four)
+    && JSON.stringify(dayWatchesOf(mystery)) === JSON.stringify(four),
+    'and day 1, day 7 and no day at all are all the four: the non-four branches are keyed on the literals 0 and 2 (open call 1)',
+    JSON.stringify(dayWatchesOf(mystery, 7)));
+  check(!W0.some((w) => four.includes(w) || (mystery.day2?.watches ?? []).includes(w)),
+    "none of the walking day's bells is one of the four or one of the morning's, so a save's `watch` index means one bell");
+
+  // An engine on a day-0 state, which is what `explore`'s `applyDay0` makes.
+  const { m, g, feed, state } = play(freshState(frame), { day: 0 });
+  check(m.day === 0 && state.day === 0 && m.watch === W0[0] && g.stage === 'explore',
+    `the walking day begins at ${W0[0]}, in \`explore\`, and the save says day 0`, `${m.watch} / ${g.stage} / day ${state.day}`);
+  check(JSON.stringify(m.watches) === JSON.stringify(W0), 'and the engine reads whichever list the day names (#699)', m.watches.join(', '));
+
+  // `available`: a station and no statements. There are no clues on this day, so
+  // there is nothing for a conversation to grant.
+  const cook = m.available('cook');
+  check(!!cook?.station && cook.statements.length === 0, `the cook is available at ${W0[0]} with no statements to give`, JSON.stringify(cook?.station));
+  check(m.available('sentry') === null, 'the sentry is asleep the evening before as well, and cannot be spoken to');
+  check(m.available('hywel')?.station?.room === 'lodge', 'and Hywel is in the mason\'s lodge, which is the whole reason to walk the day', JSON.stringify(m.available('hywel')?.station));
+  check(m.available('inspector') === null, 'the inspector is two days off and is not in the castle');
+
+  // A conversation grants nothing, a press shrugs, and the journal stays empty.
+  const talked = m.talk('cook');
+  check(talked.some((e) => e.type === 'talked') && clueIds(talked).length === 0 && state.clues.length === 0,
+    'talking to her is a conversation and not a clue', `${clueIds(talked).join(', ') || 'no clues'} / journal ${state.clues.length}`);
+  check(m.press('cook', 'cook-lantern')[0].type === 'shrug' && state.clues.length === 0,
+    'a press with a clue nobody is holding on a day with no clues is a shrug');
+
+  // E on each of the six things still on the ground: one `quiet` effect, nothing
+  // granted, nothing taken.
+  const quiet = mystery.day0.evidence.filter((id) => {
+    const fx = m.examine(id);
+    return fx.length === 1 && fx[0].type === 'quiet' && fx[0].evidence === id;
+  });
+  check(quiet.length === mystery.day0.evidence.length && state.clues.length === 0 && state.taken.length === 0,
+    `all ${mystery.day0.evidence.length} things on the ground answer with one \`quiet\` and nothing else: ${mystery.day0.evidence.join(', ')}`,
+    `quiet for ${quiet.join(', ')}`);
+  check(m.examine('body')[0]?.type === 'quiet', 'and so does the body row, whose prop the walking day never shows');
+
+  // Walking into a room fills the map in and grants no `L` clue.
+  const walked = m.enter('cross-walk', 2);
+  check(state.visited.includes('cross-walk') && walked.some((e) => e.type === 'visited'),
+    'walking the cross-wall walk puts the room on `visited`, because the map is a fact about the player (open call 3)');
+  check(!m.holds('walk-crosses') && clueIds(walked).length === 0,
+    'and grants no `L` clue: `walk-crosses` in a walking day\'s journal would be the mystery starting the day before it');
+
+  // Three rings walk the four bells; the fourth is the night and moves nothing.
+  for (let i = 1; i <= 3; i++) {
+    const fx = feed(m.ring());
+    check(m.watch === W0[i] && events(fx).includes(`bell:${i}`) && fx.some((e) => e.type === 'stations'),
+      `ring ${i}: ${W0[i]}, and the stations move`, `${m.watch} / ${events(fx).join(', ')}`);
+  }
+  const last = feed(m.ring());
+  check(m.watch === W0[3] && state.watch === 3, 'the fourth ring moves no watch: a day before a death is a day that ends (open call 5)', `${m.watch} / ${state.watch}`);
+  check(last.some((e) => e.type === 'night') && !last.some((e) => e.type === 'demand') && events(last).includes('bell:4'),
+    'it returns a `night` effect and `bell:4`, and demands nothing: there is no Constable asking on a day with no body',
+    JSON.stringify(last.map((e) => e.type)));
+  check(g.stage === 'night', 'and the frame is in `night`, with the pane up', g.stage);
+  check(m.accuse('clerk', [])?.length === 0 && state.accusations.length === 0, 'and naming somebody is refused outright: nobody is dead yet');
+
+  // And the door into the mystery, which is what `arrive`'s `applyDay1` runs.
+  const day1 = m.beginDay1();
+  check(day1 && m.day === 1 && state.day === 1 && m.watch === four[0] && state.watch === 0,
+    `beginDay1 from a walking-day state is day one at ${four[0]}`, `day ${state.day} at ${m.watch}`);
+  check(day1.stations.hywel === null && !!day1.stations.constable,
+    'with Hywel gone from the castle and the twelve at their Prime stations', JSON.stringify(day1.stations.hywel));
+
+  // The guard (#699): it must not rewind a day one that has rung on.
+  const { m: m2, state: st2 } = play();
+  m2.ring(); m2.ring();
+  const again = m2.beginDay1();
+  check(again && st2.day === 1 && m2.watch === 'sext' && st2.watch === 2,
+    'and called again on a day-one state at Sext it leaves the watch at Sext, the way beginDay2 does', `day ${st2.day} at ${m2.watch}`);
+}
+
+/* --------------------------- 5c: the walking day's validator rails (#750) --- */
+console.log('\nthe validator rejects, on the walking day');
+{
+  const broken = (mutate) => {
+    const m = clone(mystery); const n = clone(cast); const f = clone(frame);
+    mutate(m, n, f);
+    return validateMystery(m, n, f, castleNav(plan, m), sideQuests);
+  };
+  const expect = (label, mutate, re) => {
+    const p = broken(mutate);
+    const hit = p.find((x) => re.test(x));
+    check(!!hit, `rejects ${label}`, p.length ? `said: ${p.join('; ')}` : 'said nothing');
+    if (hit) console.log(`          said: ${hit}`);
+  };
+  expect('a bell of the walking day that is one of the four',
+    (m) => { m.day0.watches[0] = 'prime'; },
+    /^day0\.watches: prime is one of the four bells/);
+  expect("a bell of the walking day that is one of the morning's",
+    (m) => { m.day0.watches[0] = mystery.day2.watches[0]; },
+    /^day0\.watches: lauds is one of the morning's bells/);
+  expect('a bell of the walking day listed twice',
+    (m) => { m.day0.watches[1] = m.day0.watches[0]; },
+    /^day0\.watches: prime-eve is listed twice/);
+  expect('a cast member with no row in day0.schedule',
+    (m) => { delete m.day0.schedule.cook; },
+    /^cook: no row in day0\.schedule/);
+  expect('a day0.schedule id who is not in the cast',
+    (m) => { m.day0.schedule.scullion = clone(m.day0.schedule.cook); },
+    /^day0\.schedule: scullion is not in the cast/);
+  expect('a day-0 station with no floor under it',
+    (m) => { m.day0.schedule.cook['prime-eve'].tile = [-40, -40]; },
+    /^cook: station at prime-eve is at tile \(-40, -40\) on level 0, where there is no floor to stand on/);
+  expect('a day-0 station outside the room it names',
+    (m) => { m.day0.schedule.cook['prime-eve'] = { room: 'cell', tile: [-5, 3] }; },
+    /^cook: station at prime-eve is at tile \(-5, 3\), which is not inside cell/);
+  /* The garden is scenery: the east gate is shut and never opens, so a station in
+   * it is somewhere nobody can walk to, which is the break day one's own rail was
+   * written against (PLAN.md's answered question 5). */
+  expect('a day-0 station the player cannot walk to',
+    (m) => { m.day0.schedule.lady['sext-eve'] = { room: 'garden', tile: [7, -1.5] }; },
+    /^lady: station at sext-eve is at tile \(7, -1.5\) in GD, which the player cannot walk to$/);
+  expect('two bodies inside the 1.5 m two bodies need, at a bell of the walking day',
+    (m) => { m.day0.schedule.cook['sext-eve'] = clone(m.day0.schedule.apprentice['sext-eve']); },
+    /^(cook and apprentice|apprentice and cook) stand 0\.00 m apart at sext-eve, inside the 1\.5 m two bodies need$/);
+  expect('a day0.evidence id that is not an evidence row',
+    (m) => { m.day0.evidence.push('crown'); },
+    /^day0\.evidence: crown is not an evidence row/);
+  expect('a walking day with no pane to end on',
+    (m) => { delete m.day0.night.button; },
+    /^day0\.night\.button: no text, so the walking day would end on a blank pane$/);
+  /* AND THE WALK INTO THE NIGHT, which is the day-two rail's "overnight is still
+   * a walk" pointed forward: the cell is standable floor that no walk from the
+   * kitchen reaches, so a cook who ends the walking day in it wakes up at her
+   * own Prime station having been carried there. */
+  expect('a body that cannot walk from its last walking-day station to its day-one Prime one',
+    (m) => { m.day0.schedule.cook['vespers-eve'] = clone(m.schedule.prisoner.prime); },
+    /^cook: no path from PT at vespers-eve to KI at prime$/);
+}
+
+/* ------------------------------------------- 5d: Hywel, the fourteenth (#752) --- */
+console.log('\nHywel ap Gruffudd, in the castle on one day of the three');
+{
+  const hywel = cast.find((n) => n.id === 'hywel');
+  check(!!hywel && hywel.arrives === 0 && hywel.modelPath === 'assets/NPCs/Farmer.glb',
+    'the fourteenth cast entry is the master mason, on a body two of the cast already wear', JSON.stringify(hywel?.arrives));
+  check(beforeDayOne(hywel) && !cast.filter((n) => n.id !== 'hywel').some(beforeDayOne),
+    '`beforeDayOne` is true for him and false for the twelve and for the inspector, whose own `arrives` is 2 (open call 8)',
+    cast.filter(beforeDayOne).map((n) => n.id).join(', '));
+  check(!!mystery.day0.schedule.hywel && !mystery.schedule.hywel && !mystery.day2.schedule.hywel,
+    'he has a station on the walking day, no day-one schedule and no station on the morning after');
+  const broken = (mutate) => { const m = clone(mystery); mutate(m); return validateMystery(m, cast, frame, castleNav(plan, m), sideQuests); };
+  const expect = (label, mutate, re) => {
+    const p = broken(mutate);
+    const hit = p.find((x) => re.test(x));
+    check(!!hit, `rejects ${label}`, p.length ? `said: ${p.join('; ')}` : 'said nothing');
+    if (hit) console.log(`          said: ${hit}`);
+  };
+  expect('a day-one schedule for the man who is dead by Prime',
+    (m) => { m.schedule.hywel = clone(m.schedule.apprentice); },
+    /^hywel: is in the castle on the walking day only \(arrives: 0\) and still has a day-one schedule$/);
+  expect('no station for him on the one day he is alive',
+    (m) => { delete m.day0.schedule.hywel; },
+    /^hywel: is in the castle on the walking day only \(arrives: 0\) and has no station in day0\.schedule/);
+  expect('a station for him on the morning after his own funeral',
+    (m) => { m.day2.schedule.hywel = clone(m.day2.schedule.apprentice); },
+    /^hywel: is in the castle on the walking day only \(arrives: 0\) and still has a station at lauds$/);
 }
 
 /* --------------------------------------------- 6: the morning after (#533) ---

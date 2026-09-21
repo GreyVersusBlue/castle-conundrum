@@ -15,8 +15,9 @@
 // the honest record of a field arriving is a version number, not a `repair`
 // default that pretends the field was always there (#37 draws exactly that
 // line). So `day` comes in through `migrate`, which runs only on the drift, and
-// `repair` then holds it to the two values it can have on every load, including
-// the ones `migrate` never touched.
+// `repair` then holds it to the values it can have on every load, including
+// the ones `migrate` never touched — two of them then, three since the walking
+// day (#754, at the bottom of this comment).
 //
 // VERSION 3 IS `read` (#551, the six readable documents). Unlike `day`,
 // nothing about an old save's `read` can be incoherent the way a version-1
@@ -63,6 +64,23 @@
 // version-6 save carrying `day: 2, watch: 3` is not a save from another
 // schema, it is a save carrying a number that never meant anything, and 0 is
 // what it has always been worth.
+//
+// AND WHY THERE IS NO VERSION 7 FOR THE WALKING DAY EITHER (#754, amending
+// #751). The day before the death is the same `day` field with a third value,
+// 0, and not a `mode` field beside it. #751 priced a saved explore as "a `mode`
+// field, version 7", which was `WISHLIST.md` theme 8's own pricing of a second
+// mode running the SAME day, where a second field was the only thing that could
+// tell the two apart; #752 made it the day BEFORE, and the day is already the
+// thing that tells them apart. So this is #702's line a second time: no field
+// arrived, no field changed shape, and no version-6 save on any machine can be
+// carrying `day: 0` because nothing has ever written one, so `migrate` has no
+// drift to be honest about and is untouched. What moved is `repair` again:
+// `day` is 0, 1 or 2; `watch` clamps against the day's own list, which for the
+// walking day is `day0.watches`; and a `day: 0` carrying a clue or a recorded
+// verdict is a save that says the mystery happened before the day before it,
+// which reads as day one with the watch re-clamped to the four. A `mode` field
+// beside a `day` field would have been two names for one fact, and #37's own
+// argument is that a field arrives when it says something nothing else can.
 //
 // `validate` refuses a non-object and a non-string stage and nothing else;
 // everything past that is `repair`'s, which runs on every load (#37) and
@@ -112,9 +130,11 @@ export function buildCatalog(mystery, quest, documents = [], sideQuests = [], ro
     if (q.ward in wards) wards[q.ward] += 1;
   }
   const watches = dayWatchesOf(mystery, 1);
-  // The morning's own bells (#699). `watch` is an index into whichever list the
-  // day names, so the clamp has to know which day it is repairing.
+  // The morning's own bells (#699) and the walking day's (#754). `watch` is an
+  // index into whichever list the day names, so the clamp has to know which of
+  // the three days it is repairing.
   const morningWatches = dayWatchesOf(mystery, 2);
+  const walkingWatches = dayWatchesOf(mystery, 0);
   const clues = new Set((mystery?.clues ?? []).map((c) => c.id));
   const evidence = new Set((mystery?.evidence ?? []).map((e) => e.id));
   const locks = new Set((mystery?.locks ?? []).map((l) => l.id));
@@ -125,7 +145,7 @@ export function buildCatalog(mystery, quest, documents = [], sideQuests = [], ro
   for (const p of mystery?.presses ?? []) { if (npcs.has(p.npc)) npcs.get(p.npc).add(p.to); }
   const accusables = new Set([...npcs.keys(), 'nobody']);
   const verdicts = new Set(['full', 'right', 'wrong', 'fall']);
-  return { start: quest?.start ?? 'start', stages, quests, wards, watches, morningWatches, clues, evidence, locks, documents: documentIds, rooms: roomIds, npcs, accusables, verdicts };
+  return { start: quest?.start ?? 'start', stages, quests, wards, watches, morningWatches, walkingWatches, clues, evidence, locks, documents: documentIds, rooms: roomIds, npcs, accusables, verdicts };
 }
 
 /**
@@ -144,9 +164,9 @@ export function reputationIn(quests, catalog) {
 }
 
 const nonNegInt = (v) => (Number.isInteger(v) && v >= 0 ? v : 0);
-/** A save's `watch`, held to the bells of the day it says it is on (#699). */
+/** A save's `watch`, held to the bells of the day it says it is on (#699, #754). */
 const clampWatch = (v, day, catalog) => {
-  const list = day === 2 ? (catalog.morningWatches ?? []) : (catalog.watches ?? []);
+  const list = day === 0 ? (catalog.walkingWatches ?? []) : day === 2 ? (catalog.morningWatches ?? []) : (catalog.watches ?? []);
   const top = Math.max(0, list.length - 1);
   return Number.isInteger(v) ? Math.min(Math.max(v, 0), top) : 0;
 };
@@ -176,7 +196,7 @@ export function repairState(state, catalog) {
    * this field is to refuse the impossible, not to re-derive the possible. */
   out.reputation = {};
   for (const w of WARDS) out.reputation[w] = Math.min(nonNegInt(s.reputation?.[w]), catalog.wards?.[w] ?? 0);
-  /* THE DAY, AND THE ONE THING THAT MAKES IT INCOHERENT. `day` is 1 or 2 and
+  /* THE DAY, AND THE TWO THINGS THAT MAKE IT INCOHERENT. `day` is 0, 1 or 2 and
    * nothing else; a hand-edited 7, a "2", a NaN all read as day one. And a
    * `day: 2` with no verdict in `accusations` is a save that says the morning
    * after happened without the day before it: the engine would look up a
@@ -185,10 +205,10 @@ export function repairState(state, catalog) {
    * is not version drift, so it is here and not in `migrate` (#37). The
    * accusations are repaired above this line, so what is tested is the list
    * that survives repair rather than the one that came in. */
-  out.day = s.day === 2 ? 2 : 1;
-  /* THE WATCH IS AN INDEX INTO THE DAY'S OWN LIST (#699), so what it clamps to
-   * depends on `out.day` above: 0..3 on day one, 0..(the morning's bells minus
-   * one) on day two. It stays in this slot because test/save.mjs asserts the
+  out.day = s.day === 0 ? 0 : s.day === 2 ? 2 : 1;
+  /* THE WATCH IS AN INDEX INTO THE DAY'S OWN LIST (#699, #754), so what it
+   * clamps to depends on `out.day` above: 0..3 on the walking day and on day
+   * one, 0..(the morning's bells minus one) on day two. It stays in this slot because test/save.mjs asserts the
    * fifteen fields in order; the demotion below re-clamps when it moves the
    * day, which is the only thing that can change the answer after this line. */
   out.watch = clampWatch(s.watch, out.day, catalog);
@@ -216,6 +236,16 @@ export function repairState(state, catalog) {
     });
   }
   if (out.day === 2 && !out.accusations.some((a) => a.verdict)) { out.day = 1; out.watch = clampWatch(s.watch, 1, catalog); }
+  /* AND THE WALKING DAY'S OWN INCOHERENCE, IN THE SAME SLOT (#754, open call 3).
+   * A `day: 0` carrying a clue or a recorded verdict is a save that says the
+   * mystery happened before the day before it. Nothing can write one: there are
+   * no clues on the walking day, `accuse` is refused on it, and the only thing
+   * that ever sets day 0 is `beginDay0`. So this is the hand-edited file and the
+   * save from a future schema, and the honest answer for both is the day the
+   * journal it is carrying belongs to. Without it a `day: 0` with a verdict in it
+   * opens the day before the death with the mason already buried, and every rail
+   * in this file and in the engine would pass. */
+  if (out.day === 0 && (out.clues.length || out.accusations.some((a) => a.verdict))) { out.day = 1; out.watch = clampWatch(s.watch, 1, catalog); }
   out.refusals = nonNegInt(s.refusals);
   out.riddleWrong = nonNegInt(s.riddleWrong);
   const p = s.player;

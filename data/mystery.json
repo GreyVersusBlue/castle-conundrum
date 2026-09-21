@@ -1,6 +1,6 @@
 {
   "comment": "The mystery as data (WISHLIST.md, Phase 1). src/mystery.js validates this file against npcs.json's `cast` and quest.json's `frame` before it runs, and runs it in Node without a room or a body existing yet. `watches` are the four bells in order. `rooms` carry id, ward and level only; positions come in Phase 3 from the plan. A clue is S (a statement: `source.npc` in `source.state`, granted when that conversation ends; `source.watches` narrows it), E (evidence: `source.evidence`), D (a deduction: `source.premises`, granted the instant both are held) or L (a location: `source.room` and `source.level`, granted on entering). `contradicts` names the earlier statement a clue gives the lie to. `herring` marks a clue that leads nowhere on purpose, and the validator makes a session say so. Evidence carries the `watches` it can be examined in, `clue` (one id or a list), `requires` (clues that have to be held first), `lock` (a lock in `locks` that has to be open) and `prop` (a model already on disk, for Phase 4). `schedule` is npc -> watch -> a station or null (not in the castle); `asleep` is a station the player cannot talk to. A station carries `tile`, a fractional tile coordinate in scene-config.json's own units: six people stand in the Great Hall at Vespers and each has to be somewhere the player can walk up to alone. src/stations.js turns it into a world point and src/mystery.js's validator holds it to the castle — standable floor, inside the room it names, 1.5 m clear of everyone else at that bell, within talking range of somewhere the player can stand, and a walk from the station before it. A press is `{npc, from, on, to}`: showing `on` to `npc` while in one of the `from` states moves them to `to`. `accusation.from` is the first watch the Constable will hear an accusation at; at Prime he is standing over the body and sends the clerk away without counting it as a refusal.",
-  "uiComment": "The lines the HUD says when the engine returns something other than a clue (Phase 7). They are here and not in src/ because they are content: what the castle says when a body is asleep, when evidence has already been taken, when a door is still shut. validateMystery requires all seven.",
+  "uiComment": "The lines the HUD says when the engine returns something other than a clue (Phase 7). They are here and not in src/ because they are content: what the castle says when a body is asleep, when evidence has already been taken, when a door is still shut. validateMystery requires all eight. `quiet` is the walking day's own (#750 to #756): on the day before the death there is nothing to find, so E at any of the six things still on the ground says so rather than opening a journal entry.",
   "ui": {
     "asleep": "Asleep, and not to be woken.",
     "absent": "Nothing there now.",
@@ -8,7 +8,22 @@
     "locked": "Shut fast. There is no reading it yet.",
     "known": "Nothing here you have not already read.",
     "empty": "Nothing written down yet.",
-    "fall": "No one. He fell."
+    "fall": "No one. He fell.",
+    "quiet": "You are a clerk with nothing to look for. Not today."
+  },
+  "watchLabelsComment": "WHAT THE HUD CALLS A BELL THAT IS NOT ITS OWN ID. The walking day's bells carry their own ids because src/stations.js keys its points `npc/watch` (open call 1), and \"Prime-eve\" on the tracker would be a lie about a liturgical hour. src/quest-manager.js's `label()` reads this first and falls back to capitalising the id, so the four bells of day one and the morning's Lauds need no entry here.",
+  "watchLabels": {
+    "prime-eve": "Prime, the eve",
+    "terce-eve": "Terce, the eve",
+    "sext-eve": "Sext, the eve",
+    "vespers-eve": "Vespers, the eve"
+  },
+  "watchLikeComment": "WHICH HOUR A BELL BORROWS ITS SKY FROM (open call 10). data/scene-config.json's `lighting.watches` has one block per bell of the four and one for Lauds; the walking day is the same four hours of the day before, so it borrows all four rather than copying five numbers a bell that nothing would ever keep in step. `applyWatch` resolves the bell through this and hands src/main.js the sky to set, and test/layout.mjs refuses a bell that borrows no sky and has none of its own. A walking day that wants its own weather deletes one entry here and writes one block there, which is the same edit in reverse.",
+  "watchLike": {
+    "prime-eve": "prime",
+    "terce-eve": "terce",
+    "sext-eve": "sext",
+    "vespers-eve": "vespers"
   },
   "watches": [
     "prime",
@@ -1363,6 +1378,413 @@
         "convicted": "A fall. Sir Roger is relieved, and says so. The inspector signs the sheet in the morning and is gone by noon.",
         "epilogue": "Hywel ap Gruffudd is buried as a drunk who fell. The lead goes on leaving by daylight, a cartload at a time, and the tallies that would have counted it are ash in the Clerk's hearth. The carts keep to the west road, past the barbican, same as they always have."
       }
+    }
+  },
+  "day0": {
+    "comment": "THE DAY BEFORE THE DEATH (#750 to #756, BACKLOG.md rank 1). The walking day: Hywel ap Gruffudd alive in his lodge, no body at the stair, no case to answer, and the bell yours to ring. It is a `day` field like the morning after and not a mode (#754), and it names its own four bells here the way `day2` names its one (#699): none of them is one of the four, because src/stations.js keys its points `npc/watch` and reusing `prime` would make one key mean two stations. `schedule` is a station per person per bell, thirteen people: the twelve, and Hywel, who is in the castle on this day and no other (`arrives: 0` in npcs.json). `evidence` is what IS on the ground, six rows, and not a list of what is gone: nine of the eleven evidence rows would hide themselves at a bell this day names and five of those nine are furniture rather than evidence, the muniment leaf among them, whose collider is a wall of the King's Tower. `night` is the pane the last ring puts up, and its button is the day of the death. The lines the thirteen speak here are a `day0` dialogue state in npcs.json, reached by the `explore` stage's `dialogueState`, and are not in this file (open call 6).",
+    "watches": [
+      "prime-eve",
+      "terce-eve",
+      "sext-eve",
+      "vespers-eve"
+    ],
+    "scheduleComment": "A COPY, ON PURPOSE, AND ONLY UNTIL INCREMENT 4. Every row below but Hywel's is day one's own station at the matching bell, so the nine `day0` rails in src/mystery.js run against real geometry before a word of the walking day's content is written. What is NOT copied is the day-one `note` on a station — \"at the body\", \"at the cart\" — because every one of them describes a morning that has not happened yet, and a placeholder that lies about the day it is placeholding is worse than a bare tile (#147). `asleep` IS copied: the sentry keeps the night watch the evening before as well. Hywel's own station is the mason's lodge, 2.0 m off his apprentice's, which is where the man the mystery is about should be found the day before he falls.",
+    "schedule": {
+      "constable": {
+        "prime-eve": {
+          "room": "chapel",
+          "tile": [
+            5.9,
+            4.2
+          ]
+        },
+        "terce-eve": {
+          "room": "kings-hall",
+          "tile": [
+            3.0,
+            -2.5
+          ]
+        },
+        "sext-eve": {
+          "room": "kings-hall",
+          "tile": [
+            3.0,
+            -2.5
+          ]
+        },
+        "vespers-eve": {
+          "room": "great-hall",
+          "tile": [
+            -3.0,
+            2.5
+          ]
+        }
+      },
+      "steward": {
+        "prime-eve": {
+          "room": "kings-hall",
+          "tile": [
+            2.0,
+            -2.5
+          ]
+        },
+        "terce-eve": {
+          "room": "steward-chamber",
+          "tile": [
+            1.5,
+            2.5
+          ]
+        },
+        "sext-eve": {
+          "room": "kings-hall",
+          "tile": [
+            2.0,
+            -2.5
+          ]
+        },
+        "vespers-eve": {
+          "room": "great-hall",
+          "tile": [
+            -3.6,
+            2.9
+          ]
+        }
+      },
+      "clerk": {
+        "prime-eve": {
+          "room": "clerk-office",
+          "tile": [
+            -7.5,
+            -2.5
+          ]
+        },
+        "terce-eve": {
+          "room": "outer-ward",
+          "tile": [
+            -7.0,
+            -0.55
+          ]
+        },
+        "sext-eve": {
+          "room": "clerk-office",
+          "tile": [
+            -7.5,
+            -2.5
+          ]
+        },
+        "vespers-eve": {
+          "room": "great-hall",
+          "tile": [
+            -4.4,
+            2.3
+          ]
+        }
+      },
+      "porter": {
+        "prime-eve": {
+          "room": "porter-lodge",
+          "tile": [
+            0.1,
+            -4.0
+          ]
+        },
+        "terce-eve": {
+          "room": "porter-lodge",
+          "tile": [
+            0.1,
+            -4.0
+          ]
+        },
+        "sext-eve": {
+          "room": "porter-lodge",
+          "tile": [
+            0.1,
+            -4.0
+          ]
+        },
+        "vespers-eve": {
+          "room": "cross-walk",
+          "level": 2,
+          "tile": [
+            -0.25,
+            0.0
+          ]
+        }
+      },
+      "cook": {
+        "prime-eve": {
+          "room": "kitchen",
+          "tile": [
+            -5.0,
+            -2.5
+          ]
+        },
+        "terce-eve": {
+          "room": "kitchen",
+          "tile": [
+            -5.0,
+            -2.5
+          ]
+        },
+        "sext-eve": {
+          "room": "kitchen",
+          "tile": [
+            -5.0,
+            -2.5
+          ]
+        },
+        "vespers-eve": {
+          "room": "great-hall",
+          "tile": [
+            -5.2,
+            2.9
+          ]
+        }
+      },
+      "chaplain": {
+        "prime-eve": {
+          "room": "chapel",
+          "tile": [
+            5.4,
+            3.8
+          ]
+        },
+        "terce-eve": {
+          "room": "chapel",
+          "tile": [
+            5.4,
+            3.8
+          ]
+        },
+        "sext-eve": {
+          "room": "chapel",
+          "tile": [
+            5.4,
+            3.8
+          ]
+        },
+        "vespers-eve": {
+          "room": "chapel",
+          "tile": [
+            5.4,
+            3.8
+          ]
+        }
+      },
+      "sentry": {
+        "prime-eve": {
+          "room": "guardroom",
+          "tile": [
+            -8.9,
+            -4.0
+          ],
+          "asleep": true
+        },
+        "terce-eve": {
+          "room": "north-walk",
+          "level": 2,
+          "tile": [
+            -4.5,
+            -3.75
+          ]
+        },
+        "sext-eve": {
+          "room": "north-walk",
+          "level": 2,
+          "tile": [
+            -4.5,
+            -3.75
+          ]
+        },
+        "vespers-eve": {
+          "room": "great-hall",
+          "tile": [
+            -6.0,
+            2.3
+          ]
+        }
+      },
+      "apprentice": {
+        "prime-eve": {
+          "room": "lodge",
+          "tile": [
+            -1.5,
+            -2.5
+          ]
+        },
+        "terce-eve": {
+          "room": "lodge",
+          "tile": [
+            -1.5,
+            -2.5
+          ]
+        },
+        "sext-eve": {
+          "room": "lodge",
+          "tile": [
+            -1.5,
+            -2.5
+          ]
+        },
+        "vespers-eve": {
+          "room": "chapel",
+          "tile": [
+            5.9,
+            3.7
+          ]
+        }
+      },
+      "laundress": {
+        "prime-eve": {
+          "room": "laundry",
+          "tile": [
+            -8.9,
+            4.06
+          ]
+        },
+        "terce-eve": {
+          "room": "laundry",
+          "tile": [
+            -8.9,
+            4.06
+          ]
+        },
+        "sext-eve": {
+          "room": "outer-ward",
+          "tile": [
+            -7.0,
+            1.0
+          ]
+        },
+        "vespers-eve": {
+          "room": "great-hall",
+          "tile": [
+            -6.8,
+            2.9
+          ]
+        }
+      },
+      "prisoner": {
+        "prime-eve": {
+          "room": "cell",
+          "tile": [
+            -5.0,
+            3.5
+          ]
+        },
+        "terce-eve": {
+          "room": "cell",
+          "tile": [
+            -5.0,
+            3.5
+          ]
+        },
+        "sext-eve": {
+          "room": "cell",
+          "tile": [
+            -5.0,
+            3.5
+          ]
+        },
+        "vespers-eve": {
+          "room": "cell",
+          "tile": [
+            -5.0,
+            3.5
+          ]
+        }
+      },
+      "merchant": {
+        "prime-eve": null,
+        "terce-eve": {
+          "room": "outer-ward",
+          "tile": [
+            -7.6,
+            0.15
+          ]
+        },
+        "sext-eve": null,
+        "vespers-eve": null
+      },
+      "lady": {
+        "prime-eve": {
+          "room": "royal-apartments",
+          "level": 1,
+          "tile": [
+            3.0,
+            -1.8
+          ]
+        },
+        "terce-eve": {
+          "room": "royal-apartments",
+          "level": 1,
+          "tile": [
+            3.0,
+            -1.8
+          ]
+        },
+        "sext-eve": {
+          "room": "inner-ward",
+          "tile": [
+            3.0,
+            0.5
+          ]
+        },
+        "vespers-eve": {
+          "room": "royal-apartments",
+          "level": 1,
+          "tile": [
+            3.0,
+            -1.8
+          ]
+        }
+      },
+      "hywel": {
+        "prime-eve": {
+          "room": "lodge",
+          "tile": [
+            -1,
+            -2.5
+          ]
+        },
+        "terce-eve": {
+          "room": "lodge",
+          "tile": [
+            -1,
+            -2.5
+          ]
+        },
+        "sext-eve": {
+          "room": "lodge",
+          "tile": [
+            -1,
+            -2.5
+          ]
+        },
+        "vespers-eve": {
+          "room": "lodge",
+          "tile": [
+            -1,
+            -2.5
+          ]
+        }
+      }
+    },
+    "evidenceComment": "WHAT IS ON THE GROUND, not what is off it. `_showEvidence` reads this list on the walking day and hides everything else, so the five things #752 takes out of the castle (the body, the lantern that is the body row's own prop, the pouch, the cloak, the tally stick) are gone by not being named, and the six that are furniture or fabric of the castle stay: the chapel candleholders, the muniment leaf, the ledger on the muniment table, the knife in the bakehouse barrel, the gaol roll on the guardroom barrel-head, and the bar beside the Stockhouse walk door. E at any of them gives `ui.quiet` and grants nothing.",
+    "evidence": [
+      "candle",
+      "lock",
+      "ledger",
+      "knife",
+      "gaol-roll",
+      "walk-door"
+    ],
+    "castleComment": "WHAT THE WALKING DAY DOES TO THE STONE: nothing, yet. The block is `day2.castle`'s shape and the same four verbs (#539), and it is empty because every one of #752's five hidden things is an `evidence` row rather than a piece of the plan. It exists for the stone: a lodge door open the day before and shut the morning after is one row here. `undoDay` in src/mystery.js is what takes a row off again on the way into the mystery, and test/layout.mjs holds that round trip.",
+    "castle": [],
+    "night": {
+      "title": "The last bell. The castle goes to its beds, and so do you.",
+      "text": "You sleep where you stopped: nobody carries a clerk to a bed he has not been given. In the morning Hywel ap Gruffudd is dead at the foot of the Chapel Tower stair, the Constable is standing over him, and the sheet has your name on it.",
+      "button": "The morning he is found"
     }
   },
   "day2": {

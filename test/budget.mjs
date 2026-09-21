@@ -108,14 +108,24 @@ const MAX_POINT_LIGHTS_TOTAL = 8;
 
 /** Skinned bodies standing in one ward at one watch, and in the whole cast. */
 const MAX_SKINNED_PER_WARD = 20;
-const MAX_SKINNED_TOTAL = 32;
+const MAX_SKINNED_TOTAL = 33;
 /* Anchored on rank 6 rather than on hardware, because rank 6 is what is about
  * to spend it: twelve cast plus its first ten populace is 22, which fits 32
  * with room left for somebody to be standing in rank 4c's yard. The "7 today"
  * this comment once gave the outer ward was the schedule alone; section 3 has
  * counted the household since #730, and with rank 6's last five (#729) the
- * page builds 32, exactly this ceiling, and the outer ward peaks at 18 of 20.
- * The next body is an argument in HISTORY.md. Rank 10's "the fifty" fits neither number
+ * page built 32, exactly the 32 this used to be, and the outer ward peaks at 18
+ * of 20. THE NEXT BODY WAS AN ARGUMENT IN HISTORY.md AND HAS BEEN MADE (#756,
+ * #611): 32 to 33, for Hywel ap Gruffudd, the fourteenth cast entry and the man
+ * the mystery is about, who is in the castle on the walking day and no other day
+ * of the three. 33 and not 36, because a ceiling with room in it is a ceiling
+ * nobody argues about and the fifteenth body should cost whoever wants it the
+ * same argument this one cost. `MAX_SKINNED_PER_WARD` stays 20: Hywel's station
+ * is the mason's lodge, in the outer ward, and the walking day peaks at 19 of 20
+ * there once the household has rings of its own at its bells, with the inspector
+ * not yet arrived. Section 3 counts `mystery.watches` only, so the walking day's
+ * own bells stay uncounted until the increment that writes its stations extends
+ * that loop. Rank 10's "the fifty" fits neither number
  * and is not meant to: fifty bodies is fifty AnimationMixers and fifty skinned
  * draw calls, and this is the file that says so out loud. */
 

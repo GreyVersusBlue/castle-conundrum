@@ -166,7 +166,11 @@ export class InteractionSystem {
 
     const shown = press.aim || press.near || named.aim || named.near;
     this.currentTarget = shown;
-    this.ui.setInteractPrompt(!!shown, shown ? (shown.prompt || `Press E to talk to the ${shown.name}`) : '');
+    // A NAME TAKES NO ARTICLE (#715). Every `named` target without a prompt of
+    // its own is one of the cast, and `shown.name` is "Sir Roger Lestrange", so
+    // this read "Press E to talk to the Sir Roger Lestrange" for the whole of
+    // Phase 7. test/plan-vs-scene.mjs asserts the string a body really wears.
+    this.ui.setInteractPrompt(!!shown, shown ? (shown.prompt || `Press E to talk to ${shown.name}`) : '');
   }
 
   /** Scene contents minus the targets, cached until the child count changes. */

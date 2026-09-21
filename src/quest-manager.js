@@ -31,6 +31,22 @@
 // `validateQuestSet` (src/quest-graph.js) and is checked before any of them
 // runs.
 //
+// AND THE DAY BEFORE (#750 to #756). The page opens on the walking day now, so
+// the first stage this file runs is `explore` and the first action it takes is
+// `applyDay0`: the day before the death, Hywel alive in his lodge, no body at
+// the stair, no clue to hold and no name to give. Four things below know about
+// it and nothing else does. `_showEvidence` reads `day0.evidence`, which is a
+// list of what IS on the ground rather than of what is gone. `applyWatch` reads
+// `watchLabels` for what the tracker calls a bell whose id is not its name and
+// `watchLike` for the hour its sky comes from. `handleInteract` withholds the
+// Present button, the way it already does on the morning after. And
+// `enterMystery` is the door out of it, one dispatch of `day:1`, which the night
+// pane's button, the start panel's second button and two browser suites call
+// (#755). Everything else is untouched on purpose: the walking day's lines are
+// each speaker's own `day0` set reached by the stage's `dialogueState`, so
+// `_linesFor` has no day-0 branch, and the errands run on a day with no mystery
+// because they were never the mystery's (#550, question 6).
+//
 // AND THE MORNING AFTER (#533 to #537). The four verdict stages are not the end
 // any more: their pane's button dispatches `day:2`, the graph moves to
 // `morning`, and `applyDay` is one call into the engine whose answer is the
@@ -87,7 +103,7 @@ export class QuestManager {
    * list, so an action here that nothing implements is caught at load and a
    * stage naming one that is missing refuses to construct.
    */
-  static actions = ['openRiddle', 'openLock', 'ringBell', 'openJournal', 'openAccusation', 'showEpilogue', 'applyDay'];
+  static actions = ['openRiddle', 'openLock', 'ringBell', 'openJournal', 'openAccusation', 'showEpilogue', 'applyDay', 'applyDay0', 'applyDay1', 'showNight'];
 
   /**
    * The actions a file in data/quests/ may name, which is none of them. A side
@@ -216,6 +232,14 @@ export class QuestManager {
       openAccusation: () => this._openAccusation(),
       showEpilogue: () => this._showEpilogue(),
       applyDay: () => this._applyDay(),
+      // The walking day's three (#750 to #756). `applyDay0` is `explore`'s
+      // `enter` and `applyDay1` is `arrive`'s, which is the same arrangement
+      // `morning` and `end` already have with `applyDay`: the castle a stage
+      // means is built by entering it, so a save resumed in either stage comes
+      // back to the right day rather than to the one the page loaded with.
+      applyDay0: () => this._applyDay0(),
+      applyDay1: () => this._applyDay1(),
+      showNight: () => this._showNight(),
     };
 
     /* REPUTATION BY WARD (BACKLOG.md rank 8). Two counters, `outer` and
@@ -285,14 +309,47 @@ export class QuestManager {
   /** True once a verdict is recorded: the first day is over, whatever comes after. */
   get judged() { return (this.engine?.state?.accusations ?? []).some((a) => a.verdict); }
 
-  /** 1 or 2. The second day begins when the epilogue's button is pressed. */
+  /**
+   * 0, 1 or 2 (#750 to #756, #533). 0 is the walking day, the day before the
+   * death, which is where a fresh page starts; 1 begins on `day:1`, from the
+   * night pane's button or from `enterMystery` below; 2 on the epilogue's.
+   */
   get day() { return this.engine?.day ?? 1; }
+
+  /**
+   * THE MYSTERY DOOR, AS A METHOD (#755). `day:1` is the one event that starts
+   * the day of the death, and three things dispatch it: the night pane's button
+   * at the end of the walking day, the start panel's second button, and this,
+   * for the two browser suites that never click a button — test/plan-vs-scene.mjs
+   * and test/map.mjs both wait for `#start-overlay:not(.hidden)`, which is how
+   * they spell "the castle finished building", and then drive `window.__quest`
+   * directly. Without a method they would have had to wait on the walking day's
+   * content before they could measure the day they are about.
+   *
+   * It is idempotent by the graph rather than by a guard: `day:1` is a
+   * transition on `explore` and on `night` and on nothing else, so calling this
+   * twice, or from inside the mystery, dispatches an event no stage is listening
+   * for and nothing happens.
+   */
+  enterMystery() { this._event('day:1'); }
 
   /** The watch the engine is on, or null when this manager has none (a stand-in suite). */
   get watch() { return this.engine ? this.engine.watch : null; }
 
   /** One of mystery.json's `ui` lines, or '' when there is no mystery to read. */
   line(key) { return this.mystery?.ui?.[key] ?? ''; }
+
+  /**
+   * What the tracker calls a bell. `mystery.watchLabels` first, for a bell whose
+   * id is not its name: the walking day's are `prime-eve` to `vespers-eve`
+   * because src/stations.js keys its points `npc/watch`, and "Prime-eve" on the
+   * tracker would be a lie about a liturgical hour (open call 1). Everything
+   * else capitalises its own id, which is the four bells and Lauds.
+   */
+  _label(id) { return this.mystery?.watchLabels?.[id] ?? label(id); }
+
+  /** Which hour's sky a bell borrows, or its own id (`mystery.watchLike`, open call 10). */
+  _skyOf(id) { return this.mystery?.watchLike?.[id] ?? id; }
 
   /* ------------------------------------------------------------ the world --- */
 
@@ -302,9 +359,16 @@ export class QuestManager {
    * main.js calls this once at load, so a save resumed at Sext opens at Sext.
    */
   applyWatch(watch, opts = {}) {
-    this.ui.setWatch?.(label(watch));
+    this.ui.setWatch?.(this._label(watch));
     this._showEvidence(watch);
-    this._onWatch?.(watch, opts);
+    /* THE SKY A BELL BORROWS GOES WITH IT (open call 10). The walking day's four
+     * bells are its own ids, so `lighting.watches` in data/scene-config.json has
+     * never heard of them; `mystery.watchLike` says which hour each one takes its
+     * light from and this is where that is resolved, once, rather than in
+     * src/main.js or in src/scene-setup.js. A bell with no alias hands its own
+     * id over and the sky is the one it names itself, which is every bell of day
+     * one and the morning's Lauds. */
+    this._onWatch?.(watch, { ...opts, sky: this._skyOf(watch) });
     // The bell is the end of whatever was being said and the start of whatever
     // is said at the next one. Stopping first matters: without it, a sermon
     // begun at Sext would go on being captioned over a Vespers castle.
@@ -323,9 +387,23 @@ export class QuestManager {
    * `taken`, so the manager owns the answer, and test/quest.mjs can see it.
    */
   _showEvidence(watch) {
+    /* AND ON THE WALKING DAY IT IS A LIST OF WHAT IS THERE (open call 1). Every
+     * one of the eleven rows lists only the four bells, so at a day-0 bell the
+     * line below hides all eleven — which is right for the body, the lantern
+     * that is the body row's own prop, the pouch, the cloak and the tally stick,
+     * and wrong for the six that are furniture: the chapel candleholders, the
+     * muniment table's ledger, the bakehouse barrel, the guardroom barrel-head,
+     * the bar beside the Stockhouse door, and the muniment LEAF, which carries
+     * `evidence: "lock"` in data/scene-config.json and whose collider is a wall
+     * of the King's Tower. So `day0.evidence` names what IS on the ground and
+     * this reads that list instead. `taken` cannot be carrying anything on a
+     * walking day (`repair` refuses a `day: 0` with a journal), and it is still
+     * subtracted here rather than assumed empty. */
     const taken = this.engine?.state?.taken ?? [];
+    const day0 = this.engine?.day === 0 ? (this.mystery?.day0?.evidence ?? []) : null;
     for (const e of this.mystery?.evidence ?? []) {
-      this.castle.setEvidenceVisible?.(e.id, (e.watches ?? []).includes(watch) && !taken.includes(e.id));
+      const there = day0 ? day0.includes(e.id) : (e.watches ?? []).includes(watch);
+      this.castle.setEvidenceVisible?.(e.id, there && !taken.includes(e.id));
     }
   }
 
@@ -421,7 +499,10 @@ export class QuestManager {
       if (this.engine) this._surface(this.engine.talk(npc.id));
       else this._event(`talked:${npc.id}`);
       this._onChange?.(this._snapshot());
-    }, { onPresent: this.engine && !this._dayLines ? () => this._present(npc) : null });
+      // The Present button is withheld on the walking day the way it already is
+      // on the morning after: there is nothing in the journal to present, and a
+      // button that opens an empty picker reads as a broken button.
+    }, { onPresent: this.engine && !this._dayLines && this.day !== 0 ? () => this._present(npc) : null });
   }
 
   /**
@@ -766,6 +847,63 @@ export class QuestManager {
    * entering `end`, so a save resumed in either stage comes back to a castle at
    * Lauds rather than to one still standing at Vespers behind the pane.
    */
+  /**
+   * THE WALKING DAY, APPLIED (#750 to #756). `explore`'s `enter` action, so it
+   * runs on a fresh page and again on every load of a walking-day save: the save
+   * says day 0, the HUD says the first day-0 bell by the name `watchLabels` gives
+   * it, the sky is the hour that bell borrows, the six things still on the ground
+   * are shown and the other five are not, and the thirteen who are in the castle
+   * that day stand at their own stations — Hywel among them, in the mason's lodge.
+   *
+   * Idempotent for `_applyDay`'s reason: `beginDay0` moves the watch only on the
+   * way in (#699), so a walking day rung on to Sext comes back at Sext.
+   *
+   * `_dayLines` is deliberately NOT set. The walking day's lines are each
+   * speaker's own `day0` set, reached by the stage's `dialogueState`, so
+   * `_linesFor` takes the same road it takes on day one and the errands and the
+   * ward asides go on speaking over it (open call 6, #550 question 6).
+   */
+  _applyDay0() {
+    const day = this.engine?.beginDay0?.();
+    if (!day) return;
+    this.castle?.applyDay?.(day.castle ?? []);
+    this.applyWatch(day.watch, { walk: false });
+    this._syncStates();
+    this._onChange?.(this._snapshot());
+  }
+
+  /**
+   * AND THE MYSTERY BEGINNING (#755). `arrive`'s `enter` action, and the only
+   * thing that puts the save on day one: the body is back at the stair because
+   * `_showEvidence` is reading the four bells again, the eleven rows with it, the
+   * cast stands at its day-one Prime stations, and `undoDay` takes the walking
+   * day's overlay off the stone. The player is not moved: `state.player` is where
+   * he stood at the last bell and he wakes there (open call 4).
+   */
+  _applyDay1() {
+    const day = this.engine?.beginDay1?.();
+    if (!day) return;
+    this.castle?.applyDay?.(day.castle ?? []);
+    this.applyWatch(day.watch, { walk: false });
+    this._syncStates();
+    this._onChange?.(this._snapshot());
+  }
+
+  /**
+   * THE NIGHT AT THE END OF THE WALKING DAY (#755, open call 4). `night`'s
+   * `enter` action. The pane is the epilogue's, because it is the same pane: one
+   * heading, one paragraph, one button, and `ui.showEpilogue` already frees the
+   * pointer (#660) and already carries the errand line, which is about the day
+   * the errands were run on and so belongs here as much as on the morning after.
+   * The button dispatches `day:1`, which is the one way into the mystery.
+   */
+  _showNight() {
+    const night = this.mystery?.day0?.night;
+    if (!night) return;
+    this.ui.showEpilogue({ convicted: night.title, epilogue: night.text, reputation: this._reputationClosing() },
+      () => this.enterMystery(), { label: night.button });
+  }
+
   _applyDay() {
     const day = this.engine?.beginDay2?.();
     if (!day) return;
@@ -815,12 +953,16 @@ export class QuestManager {
         case 'absent': this.ui.toast(this.line('absent')); break;
         case 'gone': this.ui.toast(this.line('gone')); break;
         case 'locked': this.ui.toast(this.line('locked')); break;
+        // The walking day's one answer to E at anything examinable, the word-lock
+        // included (open call 7, open call 9): there is nothing to look for yet,
+        // and saying so beats an unchanged screen, which reads as a dead prompt.
+        case 'quiet': this.ui.toast(this.line('quiet')); break;
         case 'examined': examined = true; break;
         case 'early': this.ui.setAccusationNote?.(e.text); break;
         case 'refused': this.ui.setAccusationNote?.(e.text); break;
         case 'verdict': this._verdict = e; break;
         case 'event': this._event(e.name); break;
-        default: break; // talked, state, shrug, watch, stations, entered, unlocked, demand: read by the caller
+        default: break; // talked, state, shrug, watch, stations, entered, unlocked, demand, night: read by the caller
       }
     } } finally { this._inBatch = outer; }
     if (!this._inBatch) this._settleSide();

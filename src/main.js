@@ -238,8 +238,14 @@ async function init() {
     // are due next. The engine has already moved the watch on; this puts the
     // castle where the watch says it is. `applyDay` calls it once more for
     // Lauds, with `walk: false`, which is how the morning after opens.
-    onWatch: (watch, { walk = true } = {}) => {
-      setWatch(watch);
+    onWatch: (watch, { walk = true, sky = null } = {}) => {
+      // THE SKY IS THE BELL'S OWN OR THE ONE IT BORROWS (open call 10). The
+      // walking day's four bells carry their own ids, which `lighting.watches`
+      // in data/scene-config.json has never heard of, and `setWatch` returns
+      // false for a watch it does not know and leaves the light exactly as it
+      // was. The manager has already resolved the alias through
+      // `mystery.watchLike`, so what arrives here is a bell the config has.
+      setWatch(sky ?? watch);
       // What is on the ground at this bell is the manager's: it owns `taken`,
       // and a thing taken does not come back at the next one. What is left here
       // is the sky and twelve people walking.
