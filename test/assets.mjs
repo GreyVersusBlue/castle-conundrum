@@ -26,22 +26,33 @@
 //   2. no `model` resolves to a Poly Haven preview ball
 //   3. every gate leaf's built dimensions match the archway's own opening,
 //      measured out of wall-fortified-gate.glb rather than restated from the
-//      config — the point is to catch the two drifting apart — and every
-//      material names a complete texture set
-//   4. every byte under assets/poly-haven and assets/NPCs is reachable from one
-//      of those references, and everything a reference needs is there
+//      config — the point is to catch the two drifting apart — and every pixel
+//      material is one 128 px map, at most 32 colours, wrapping at both edges
+//      and pixel-identical to the row tools/pixel/ draws it from (#742, #743)
+//   4. every byte under assets/poly-haven, assets/NPCs and assets/pixel is
+//      reachable from one of those references, and everything a reference needs
+//      is there
 //
 // Everything it reads is compressed as of 2026-09-15 (#506 to #508): KTX2/Basis
 // textures and EXT_meshopt_compression geometry. `triangles()` decodes meshopt
 // now (test/gltf.mjs) and `partsOf` dequantises, so the two measurements below
-// are unchanged in kind. Nothing here decodes a KTX2 — what is asserted about
-// the textures is their paths.
+// are unchanged in kind. Nothing here decodes a KTX2 — what is asserted about a
+// prop's textures is their paths.
+//
+// THE FIFTEEN 128 px PNGs ARE THE EXCEPTION, and they are decoded (#742). They
+// are exempt from the encoder by size (#508), they are the only images in this
+// project that a program in this project drew, and check 3b holds each one to
+// its row's own output byte for byte — which is a claim about pixels and cannot
+// be made about a path. sharp does the decoding; it is already a devDependency,
+// because tools/encode-assets.mjs uses it.
 
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import sharp from 'sharp';
 import { readGLTF, triangles } from './gltf.mjs';
 import { heldPropPath } from '../src/populace.js';
+import { rows as pixelRows, render as renderPixel, SIZE as GENERATOR_PX, OUT_DIR as PIXEL_DIR } from '../tools/pixel/index.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, '..');
@@ -54,6 +65,30 @@ let failures = 0;
 const fail = (msg) => { console.log(`  FAIL  ${msg}`); failures++; };
 const pass = (msg) => console.log(`  ok    ${msg}`);
 const near = (a, b, tol) => Math.abs(a - b) <= tol;
+
+/* ==================================== what a texture this repo draws is =====
+ * #742's two numbers, held here and not in the generator, because a rail that
+ * reads its own subject's constant is the check that re-implements the thing it
+ * checks (#34). tools/pixel/index.mjs changing SIZE to 256 has to fail here.
+ *
+ * 128 px: `tuneTexture` magnifies NEAREST at 128 and under, which is the branch
+ * the Kenney kit already takes, and 128 over the 3 m world repeat (#434) is 43
+ * texels a metre. It is also what keeps the textures out of the encoder by
+ * size (#508, as #742 restates it): this is the rail that exemption rests on.
+ *
+ * 32 colours: what tells a drawn texture from a photograph in Node. A 1k jpg
+ * of stone has tens of thousands; the fifteen rows have six to nine. A row that
+ * needs more argues for it in HISTORY.md.
+ */
+const PIXEL_PX = 128;
+const PIXEL_MAX_COLOURS = 32;
+/* The seam rule. A tile drawn on a torus joins its own last column to its first
+ * the way it joins any two adjacent columns, so the difference across that pair
+ * should be unremarkable: at most 1.5 times the MEDIAN difference between
+ * adjacent interior columns. The median rather than the mean because a coursed
+ * stone's mortar lines are a handful of very loud adjacencies and a mean would
+ * hide a real seam behind them. */
+const SEAM_RATIO = 1.5;
 
 /* -------------------------------------------------- 1 & 2: model references ---
  * A Poly Haven preview ball is recognised by its node name, which is
@@ -219,50 +254,152 @@ for (const gate of config.gates) {
   else pass(`${gate.id}: opened to ${gate.openDegrees} degrees the leaf stands at ${reach.toFixed(2)} m against a jamb at ${jamb.toFixed(2)} m`);
 
   if (gate.model) fail(`${gate.id} still carries a \`model\` — the leaf is built from \`leaf\` and \`material\` now`);
-  if (!config.materials[gate.material]) fail(`${gate.id} names material "${gate.material}", which config.materials does not define`);
+  if (!config.pixelMaterials[gate.material]) fail(`${gate.id} names material "${gate.material}", which config.pixelMaterials does not define`);
 }
 
-/* ------------------------------------------- 3b: every material is a set ---
- * The three sets Phase 3 restored ship `diff`, `nor_gl` and `rough`; the two
- * already here ship `diff`, `nor_gl` and `arm`. src/assets.js reads whichever of
- * `arm` and `rough` is present, and they are not the same image: `arm` carries
- * AO, roughness and metalness in three channels and drives `metalness` off the
- * blue one, `rough` is roughness alone. A set that declared both would render
- * with whichever call happened to resolve last; one that declared neither is a
- * matte plastic wall and nothing says so.
+/* ------------------------- 3b: every pixel material is one map we drew ---
+ * WHAT THIS REPLACED. Until 2026-09-21 this check read "every material is a
+ * complete set": a diffuse, a normal, and exactly one of `arm` and `rough`,
+ * over fifteen Poly Haven packs. #742 replaced the fifteen with fifteen 128 px
+ * PNGs this repo draws, one map each, so there is no set left to be complete
+ * and the old rail retired with the section it asserted over.
+ *
+ * WHAT IT ASSERTS NOW. Six things per entry, and the last is the one that makes
+ * the other five worth having:
+ *
+ *   1. one `map` and nothing else but an optional `roughness`. A normal beside
+ *      it means somebody re-introduced a PBR set one slot at a time.
+ *   2. a .png under assets/pixel/, which is where the generator writes and
+ *      where check 4 sweeps. A map under assets/poly-haven/ is the swap being
+ *      quietly undone.
+ *   3. 128 x 128, read off the IHDR rather than off a decoder, because this is
+ *      the rail the encoder exemption rests on (#508, #742).
+ *   4. at most 32 colours, which is what tells a drawing from a photograph.
+ *   5. it wraps at both edges, by SEAM_RATIO above.
+ *   6. IT IS PIXEL-IDENTICAL TO WHAT tools/pixel/index.mjs DRAWS FOR ITS ROW.
+ *      That is #743 as a check rather than a sentence: the provenance of every
+ *      byte under assets/pixel/ is a program in this repo, and a texture from
+ *      an image model, from a texture site, or from an edit in a paint program
+ *      fails here by construction. It is also what says a PNG is STALE — a row
+ *      whose seed or palette moved without a re-render is this line, naming the
+ *      row.
  */
-console.log('\nevery material is a complete set');
-for (const [name, spec] of Object.entries(config.materials)) {
-  const has = ['diffuse', 'normal'].filter(k => spec[k]);
-  if (has.length !== 2) fail(`material "${name}" is missing ${['diffuse', 'normal'].filter(k => !spec[k]).join(' and ')}`);
-  const third = ['arm', 'rough'].filter(k => spec[k]);
-  if (third.length !== 1) fail(`material "${name}" declares ${third.length ? 'both `arm` and `rough`' : 'neither `arm` nor `rough`'} — src/assets.js reads exactly one`);
-  else pass(`material "${name}": diffuse, normal and ${third[0]}`);
-  // AND IT IS KTX2, EVERY SLOT. tools/encode-assets.mjs wrote over the jpgs
-  // (#506), so a slot still naming one names a file that is not there — but
-  // nothing in Node would say so, because check 1 sweeps `model` references and
-  // check 4 sweeps the disk, and a path that points at nothing is in neither
-  // list. The browser would log MISSING TEXTURE and render that surface as the
-  // fallback colour, which is a wall that looks wrong rather than a wall that
-  // fails. This is the line that names the material and the slot instead.
-  const jpg = Object.entries(spec).filter(([, rel]) => !rel.endsWith('.ktx2'));
-  for (const [slot, rel] of jpg)
-    fail(`material "${name}"'s ${slot} is ${path.extname(rel) || 'extensionless'}, not .ktx2 — ${rel}`);
+console.log('\nevery pixel material is one 128 px map this repo drew');
+{
+  if (GENERATOR_PX !== PIXEL_PX)
+    fail(`tools/pixel/index.mjs draws at ${GENERATOR_PX} px and this suite holds the castle's textures to ${PIXEL_PX} — one of the two moved without the other, and the encoder exemption (#508) rests on the size`);
+
+  const table = new Map(pixelRows().map((r) => [r.name, r]));
+  const named = new Set();
+
+  /** Mean absolute difference between two equal-length pixel runs, per channel. */
+  const mad = (a, b) => {
+    let sum = 0;
+    for (let i = 0; i < a.length; i++) sum += Math.abs(a[i] - b[i]);
+    return sum / a.length;
+  };
+  const median = (xs) => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)];
+  /** The seam against the interior, down both edges. RGB only: alpha is 255. */
+  const seams = (data, w, h) => {
+    const col = (x) => { const o = []; for (let y = 0; y < h; y++) for (let c = 0; c < 3; c++) o.push(data[(y * w + x) * 4 + c]); return o; };
+    const row = (y) => { const o = []; for (let x = 0; x < w; x++) for (let c = 0; c < 3; c++) o.push(data[(y * w + x) * 4 + c]); return o; };
+    const cols = []; for (let x = 0; x < w - 1; x++) cols.push(mad(col(x), col(x + 1)));
+    const rowsd = []; for (let y = 0; y < h - 1; y++) rowsd.push(mad(row(y), row(y + 1)));
+    return {
+      col: mad(col(w - 1), col(0)), colMid: median(cols),
+      row: mad(row(h - 1), row(0)), rowMid: median(rowsd),
+    };
+  };
+
+  for (const [name, spec] of Object.entries(config.pixelMaterials)) {
+    const extra = Object.keys(spec).filter((k) => k !== 'map' && k !== 'roughness');
+    if (extra.length)
+      fail(`pixel material "${name}" declares ${extra.map((k) => `\`${k}\``).join(' and ')} beside its \`map\` — a pixel material is one map, lit and diffuse only (#742, open call 2), and src/assets.js reads nothing else`);
+    const rel = spec.map;
+    if (!rel) { fail(`pixel material "${name}" has no \`map\``); continue; }
+    if (!rel.startsWith(`${PIXEL_DIR}/`) || !rel.endsWith('.png'))
+      fail(`pixel material "${name}"'s map is ${rel} — a pixel material's map is a .png under ${PIXEL_DIR}/, which is what tools/pixel/ writes and what check 4 sweeps`);
+    const file = path.join(ROOT, rel);
+    if (!fs.existsSync(file)) { fail(`pixel material "${name}" names ${rel}, which is not there — run \`npm run pixel:render\``); continue; }
+
+    // 128 x 128 by the IHDR: the first chunk of a PNG, 13 bytes at offset 16.
+    const head = fs.readFileSync(file);
+    const isPNG = head.length > 24 && head.readUInt32BE(0) === 0x89504e47 && head.subarray(12, 16).toString('latin1') === 'IHDR';
+    if (!isPNG) {
+      fail(`${rel} has no PNG IHDR — it opens 0x${head.subarray(0, 4).toString('hex')}, and a pixel texture is a PNG (#742, open call 6)`);
+    } else {
+      const w = head.readUInt32BE(16), h = head.readUInt32BE(20);
+      if (w !== PIXEL_PX || h !== PIXEL_PX)
+        fail(`${rel} is ${w} x ${h} by its IHDR, not ${PIXEL_PX} x ${PIXEL_PX} — the size is what keeps it out of tools/encode-assets.mjs (#508) and what keeps tuneTexture on its NEAREST branch`);
+    }
+
+    /* DECODED, NOT JUST READ. The rails below are about pixels, and a file this
+     * cannot decode is one the page cannot use either: a KTX2 named here — the
+     * swap being quietly undone one slot at a time — throws in sharp rather
+     * than returning anything, and an uncaught throw would take the rest of
+     * this suite with it and report a crash instead of a name. */
+    let data, info;
+    try {
+      ({ data, info } = await sharp(file).ensureAlpha().raw().toBuffer({ resolveWithObject: true }));
+    } catch (err) {
+      fail(`${rel} cannot be decoded as an image at all (${err.message}) — a pixel material's map is a PNG this repo drew, and nothing in Node can read what is at that path`);
+      continue;
+    }
+
+    const colours = new Set();
+    for (let i = 0; i < data.length; i += 4) colours.add((data[i] << 16) | (data[i + 1] << 8) | data[i + 2]);
+    if (colours.size > PIXEL_MAX_COLOURS)
+      fail(`${rel} holds ${colours.size} colours, over ${PIXEL_MAX_COLOURS} — that is a photograph, not a drawing (#742, open call 5)`);
+
+    const s2 = seams(data, info.width, info.height);
+    if (s2.col > SEAM_RATIO * s2.colMid)
+      fail(`${rel} does not wrap left to right: its last column differs from its first by ${s2.col.toFixed(2)} against a median interior column step of ${s2.colMid.toFixed(2)}, over ${SEAM_RATIO} times it. Every coordinate in tools/pixel/ is taken modulo ${PIXEL_PX}, so a seam here means something was drawn off the torus`);
+    if (s2.row > SEAM_RATIO * s2.rowMid)
+      fail(`${rel} does not wrap top to bottom: its last row differs from its first by ${s2.row.toFixed(2)} against a median interior row step of ${s2.rowMid.toFixed(2)}, over ${SEAM_RATIO} times it`);
+
+    const row = table.get(name);
+    if (!row) {
+      fail(`pixel material "${name}" has no row in tools/pixel/textures.json — nothing in this repo can say where ${rel} came from (#743)`);
+    } else {
+      named.add(name);
+      const want = renderPixel(row);
+      if (info.width !== PIXEL_PX || info.height !== PIXEL_PX) {
+        fail(`${rel} is ${info.width} x ${info.height}, so it cannot be compared with the ${PIXEL_PX} x ${PIXEL_PX} its row draws`);
+      } else {
+        let differ = 0, firstAt = -1;
+        for (let i = 0; i < want.length; i++) if (want[i] !== data[i]) { differ++; if (firstAt < 0) firstAt = i; }
+        if (differ) {
+          const px = Math.floor(firstAt / 4);
+          fail(`${rel} is not what tools/pixel/index.mjs draws for row "${name}": ${differ} of ${want.length} bytes differ, the first at pixel (${px % PIXEL_PX}, ${Math.floor(px / PIXEL_PX)}), ${data[firstAt]} where the row says ${want[firstAt]}. Either the row moved and the PNG is stale — \`npm run pixel:render\` — or those bytes did not come from this repo (#743)`);
+        } else {
+          pass(`pixel material "${name}": ${colours.size} colours, wraps at ${s2.col.toFixed(2)}/${s2.row.toFixed(2)} against ${s2.colMid.toFixed(2)}/${s2.rowMid.toFixed(2)}, and every one of its ${want.length / 4} pixels is its row's`);
+        }
+      }
+    }
+  }
+
+  // And the table has no row the castle does not wear. An orphan row renders a
+  // PNG that check 4 then reports as dead weight, which is the same finding two
+  // checks later and with the wrong name on it.
+  const orphans = [...table.keys()].filter((n) => !(n in config.pixelMaterials));
+  for (const n of orphans) fail(`tools/pixel/textures.json has a row "${n}" that data/scene-config.json's pixelMaterials does not name`);
+  if (!orphans.length && named.size === table.size)
+    pass(`${table.size} rows in tools/pixel/textures.json, ${Object.keys(config.pixelMaterials).length} materials in scene-config.json, the same names`);
 }
 
 /* --------------------------------- 3c: every plain material is a colour ---
  * The opposite shape, and the reason `plainMaterials` is a second section rather
  * than two loose entries in the first. Phase 4 needed two surfaces the stone list
  * has no map for — the cell's iron bars and the wool cloak over the laundry crate
- * — and putting a colour-only entry in `materials` would have meant weakening the
- * rail above to "a complete set, unless it is not". So these live apart and carry
- * the opposite assertion: a colour, and no path to anything.
+ * — and putting a colour-only entry in `pixelMaterials` would have meant weakening
+ * the rail above to "one map we drew, unless there is none". So these live apart
+ * and carry the opposite assertion: a colour, and no path to anything.
  */
 console.log('\nevery plain material is a colour and nothing else');
 for (const [name, spec] of Object.entries(config.plainMaterials || {})) {
   if (!/^#[0-9a-fA-F]{6}$/.test(spec.color || '')) fail(`plain material "${name}" has no six-digit hex \`color\``);
   const maps = Object.entries(spec).filter(([, v]) => typeof v === 'string' && v.includes('/'));
-  if (maps.length) fail(`plain material "${name}" names ${maps.map(([k]) => k).join(' and ')} — anything with a map belongs in \`materials\`, where the complete-set rail can see it`);
+  if (maps.length) fail(`plain material "${name}" names ${maps.map(([k]) => k).join(' and ')} — anything with a map belongs in \`pixelMaterials\`, where check 3b can see it`);
   else pass(`plain material "${name}": ${spec.color}`);
 }
 
@@ -274,7 +411,7 @@ for (const [name, spec] of Object.entries(config.plainMaterials || {})) {
  */
 console.log('\nevery built thing names a material that exists');
 {
-  const known = new Set([...Object.keys(config.materials), ...Object.keys(config.plainMaterials || {})]);
+  const known = new Set([...Object.keys(config.pixelMaterials), ...Object.keys(config.plainMaterials || {})]);
   const named = [];
   for (const w of config.walls) named.push([w.material, `wall run ${w.id}`]);
   for (const d of config.drums) {
@@ -305,9 +442,12 @@ console.log('\nevery built thing names a material that exists');
  * including the two that ARE used, where only the `textures/` beside the ball
  * were ever loaded.
  *
- * The rule, for `assets/poly-haven` and `assets/NPCs`: a file may be there if
- * some entry in data/ names it, or if a .gltf that some entry in data/ names
- * declares it as a buffer or an image. Nothing else.
+ * The rule, for `assets/poly-haven`, `assets/NPCs` and `assets/pixel`: a file
+ * may be there if some entry in data/ names it, or if a .gltf that some entry
+ * in data/ names declares it as a buffer or an image. Nothing else. A rendered
+ * texture no material wears is in that rule too: tools/pixel/ writes whatever
+ * its table says, so a row deleted from scene-config.json and left in
+ * textures.json leaves a PNG here, and this is where it is found.
  *
  * `assets/kenney_retro-fantasy-kit` is deliberately NOT swept that way. It is a
  * kit, vendored whole: 106 GLBs of which the config places 14, and adding a
@@ -337,11 +477,14 @@ console.log('\nnothing on disk that nothing asks for');
     for (const uri of [...(json.buffers || []), ...(json.images || [])].map(x => x.uri).filter(Boolean))
       need(path.posix.join(dir, decodeURIComponent(uri)), `${why}'s glTF declares it`);
   }
-  // Every map under config.materials, whether a wall, a drum, a ground or a gate
-  // leaf is the thing naming it. This is the list that made restoring a set
-  // without referencing it produce three unreferenced-file failures (#390).
-  for (const [name, spec] of Object.entries(config.materials))
-    for (const [slot, rel] of Object.entries(spec)) need(rel, `material ${name}'s ${slot}`);
+  // Every map under config.pixelMaterials, whether a wall, a drum, a ground or a
+  // gate leaf is the thing naming it. This is the list that made restoring a set
+  // without referencing it produce three unreferenced-file failures (#390), and
+  // on 2026-09-21 it is what holds the other half of that: the fifteen Poly
+  // Haven set folders left in the commit their names stopped pointing at them,
+  // and one left on disk is reported here as dead weight in megabytes.
+  for (const [name, spec] of Object.entries(config.pixelMaterials))
+    if (spec.map) need(spec.map, `pixel material ${name}'s map`);
   for (const n of npcData.cast) need(n.modelPath, `${n.id || n.name}'s body`);
   for (const p of populace.people ?? []) need(p.modelPath, `${p.id || p.name}'s body`);
 
@@ -353,7 +496,7 @@ console.log('\nnothing on disk that nothing asks for');
   };
 
   let dead = 0, deadBytes = 0;
-  for (const rel of [...walk('assets/poly-haven'), ...walk('assets/NPCs')]) {
+  for (const rel of [...walk('assets/poly-haven'), ...walk('assets/NPCs'), ...walk('assets/pixel')]) {
     if (needed.has(rel)) continue;
     dead++;
     deadBytes += fs.statSync(path.join(ROOT, rel)).size;
@@ -361,7 +504,7 @@ console.log('\nnothing on disk that nothing asks for');
   }
   if (dead > 8) fail(`...and ${dead - 8} more unreferenced files`);
   if (dead) fail(`${dead} unreferenced file(s) under assets/, ${(deadBytes / 1048576).toFixed(1)} MB`);
-  else pass(`${needed.size} files under assets/poly-haven and assets/NPCs, every one of them asked for`);
+  else pass(`${needed.size} files under assets/poly-haven, assets/NPCs and assets/pixel, every one of them asked for`);
 
   for (const [rel, why] of needed) {
     if (!fs.existsSync(path.join(ROOT, rel))) fail(`${why} needs ${rel}, which is not there`);

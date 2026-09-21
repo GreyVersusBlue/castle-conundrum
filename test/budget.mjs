@@ -9,8 +9,8 @@
 // Nothing asked what it costs. Rank 6 is about to put ten more bodies in it and
 // rank 10 calls its own row "a shared low-poly rig for the fifty", and neither
 // spec could say what the ceiling was, because nobody had counted. This counts:
-// draw calls, point lights and skinned bodies, per ward, against three ceilings
-// held as named constants below.
+// draw calls, point lights and skinned bodies, per ward, and texture memory for
+// the whole castle, against ceilings held as named constants below.
 //
 // WHY IT IS NOT IN layout.mjs (#529, #611). #529 says layout.mjs is every fact
 // derivable from the plan in Node, and by the letter of that this file's
@@ -58,7 +58,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as THREE from 'three';
-import { partsOf } from './gltf.mjs';
+import { partsOf, readGLTF } from './gltf.mjs';
 import { makePlan, tileToWorld } from '../src/castle-plan.js';
 import { buildPiece, carriesOwnWorldPosition } from '../src/castle-builder.js';
 
@@ -68,8 +68,10 @@ const config = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/scene-config.jso
 const mystery = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/mystery.json'), 'utf8'));
 const npcs = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/npcs.json'), 'utf8'));
 const populace = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/populace.json'), 'utf8'));
+const { heldPropPath } = await import('../src/populace.js');
 
 let failures = 0;
+let textureMB = 0;
 const fail = (msg) => { console.log(`  FAIL  ${msg}`); failures++; };
 const pass = (msg) => console.log(`  ok    ${msg}`);
 
@@ -118,6 +120,29 @@ const MAX_SKINNED_TOTAL = 32;
  * The next body is an argument in HISTORY.md. Rank 10's "the fifty" fits neither number
  * and is not meant to: fifty bodies is fifty AnimationMixers and fifty skinned
  * draw calls, and this is the file that says so out loud. */
+
+/** Every image the page can load, decoded, in megabytes of video memory. */
+const MAX_TEXTURE_MB = 64;
+/* THE ONE CEILING IN THIS BLOCK THAT WAS MEASURED BEFORE IT WAS GUESSED (#742,
+ * #744). #506 read 79.3 MB off `renderer.info.memory` on the live page, and the
+ * arithmetic in section 4 over every .ktx2 on disk gave 79.3 MB to the decimal,
+ * which is why this count is trusted at all: it is the one number here with a
+ * live measurement behind it. Of that 79.3, 44.2 was fifteen 1k Poly Haven
+ * material sets on the built stone; #742 replaced them with fifteen 128 px PNGs
+ * this repo draws, at 0.085 MB each with their mip chains.
+ *
+ * 64 is anchored on what is left: the ten prop packs at 35.1, the kit and the
+ * hen's atlas at 1.5, the fifteen at 1.3, and room for about three hundred more
+ * pixel textures after that — increment 2's forty, a wall and a floor per named
+ * room, costs 3.4. It is DELIBERATELY BELOW the 79.3 the castle carried on
+ * 2026-09-20, so the swap had to land for this suite to go green: a ceiling a
+ * row can meet by doing nothing is not a ceiling. What will hit it first is not
+ * a count of textures, it is one more photoscanned prop at 3.3 MB a pack.
+ *
+ * NOT PER WARD. Every texture in the scene is resident whichever ward the
+ * player is in — three.js uploads on first use and keeps it — so unlike draw
+ * calls this is one number for the castle. There is no per-ward form of this
+ * question to ask. */
 
 /* ============================================== the plan and the two wards === */
 
@@ -383,10 +408,140 @@ console.log('\nskinned bodies per ward, at each watch, the cast and the househol
   else pass(`${built} bodies built, ${npcs.cast.length} cast and ${populace.people.length} household, ${MAX_SKINNED_TOTAL - built} under the ceiling of ${MAX_SKINNED_TOTAL}`);
 }
 
+/* ================================================= 4: texture memory =========
+ *
+ * WHAT IT COUNTS. Every image any file the page loads names: the ten Poly Haven
+ * prop packs' three maps each, the Kenney kit's ten 64 px PNGs, the hen's atlas
+ * (#684), and the fifteen 128 px PNGs the built stone wears (#742). Deduplicated
+ * by path, because src/assets.js deduplicates by URL — eight tinted drums over
+ * one map is one texture on the GPU, not eight (#516) — and because the kit's
+ * 106 GLBs name the same ten images over and over.
+ *
+ * HOW IT COUNTS, AND WHY THE ARITHMETIC IS NOT A GUESS. A KTX2 header carries
+ * `pixelWidth`, `pixelHeight`, `levelCount` and `supercompressionScheme`, and
+ * this repo's encoder pairs scheme 1 with ETC1S and scheme 2 with UASTC (#507),
+ * which are 0.5 and 1 byte a pixel on the GPU. So a texture is the sum over its
+ * mip levels of width times height at its own rate. A PNG is decoded to RGBA8,
+ * 4 bytes a pixel, and three builds its mip chain at upload, which is the
+ * familiar 4/3. Over every .ktx2 on disk on 2026-09-20 that came to 79.3 MB,
+ * and 79.3 MB is what #506 measured off `renderer.info.memory` on the live
+ * page. THAT AGREEMENT IS THE CALIBRATION: it is what says this section counts
+ * something real rather than agreeing with itself (#34). Re-check it against
+ * `renderer.info` on the next GPU sitting and write the pair down.
+ *
+ * WHAT IT IS NOT. Render targets — the sun's shadow map is a depth texture and
+ * costs megabytes on its own — and anything three allocates internally. It is
+ * the content's bill, which is the half a content row can move.
+ */
+console.log('\ntexture memory, from the image headers');
+{
+  const images = new Map(); // repo-relative path or glb#i -> { bytes, why, what }
+
+  /** A KTX2 header: a 12-byte identifier, then 4-byte little-endian fields. */
+  const fromKTX2 = (buf) => {
+    const w = buf.readUInt32LE(20), h = buf.readUInt32LE(24);
+    const levels = Math.max(1, buf.readUInt32LE(40));
+    const scheme = buf.readUInt32LE(44);
+    // 1 is basis-lz/ETC1S and 2 is zstd, which this encoder only ever writes
+    // over UASTC (#507). Anything else is a format nobody here produces, and
+    // the honest answer is to refuse to price it rather than to pick a number.
+    if (scheme !== 1 && scheme !== 2) return null;
+    const perPixel = scheme === 1 ? 0.5 : 1;
+    let bytes = 0;
+    for (let i = 0; i < levels; i++) bytes += Math.max(1, w >> i) * Math.max(1, h >> i) * perPixel;
+    return { bytes, what: `${w}x${h} ${scheme === 1 ? 'ETC1S' : 'UASTC'}, ${levels} levels` };
+  };
+  /** A PNG IHDR, plus the mip chain three builds for it: RGBA8 times 4/3. */
+  const fromPNG = (buf) => {
+    const w = buf.readUInt32BE(16), h = buf.readUInt32BE(20);
+    return { bytes: w * h * 4 * 4 / 3, what: `${w}x${h} RGBA8 + mips` };
+  };
+  const measure = (buf) => {
+    if (buf.length > 48 && buf[0] === 0xab && buf[1] === 0x4b && buf[2] === 0x54) return fromKTX2(buf);
+    if (buf.length > 24 && buf.readUInt32BE(0) === 0x89504e47) return fromPNG(buf);
+    return null;
+  };
+  const add = (key, buf, why) => {
+    if (images.has(key)) return;
+    const m = measure(buf);
+    if (!m) { fail(`${key} (${why}) is neither a KTX2 this encoder wrote nor a PNG — the texture bill cannot price it, so the total below is not the whole bill`); return; }
+    images.set(key, { ...m, why });
+  };
+
+  /* EVERY FILE THE PAGE LOADS, not every file on disk. The kit is 106 GLBs and
+   * src/castle-plan.js places fourteen of them; test/assets.mjs check 4 is what
+   * holds the rest to being a vendored kit rather than dead weight, and a budget
+   * that priced all 106 would be pricing a download. */
+  const loaded = [
+    [config.kenneyBase + config.battlements.model, 'the battlements'],
+    ...(config.stairs ? [[config.kenneyBase + config.stairs.model, 'the tower stairs']] : []),
+    ...config.gates.map((g) => [config.kenneyBase + g.archModel, `${g.id}'s archway`]),
+    ...config.courtyard.placements.map((p) => [config.kenneyBase + p.model, p.id || p.model]),
+    ...config.interiorProps.map((p) => [config.polyhavenBase + p.model, p.model.split('/')[0]]),
+    ...npcs.cast.map((n) => [n.modelPath, `${n.id || n.name}'s body`]),
+    ...npcs.cast.filter((n) => n.heldProp).map((n) => [config.polyhavenBase + n.heldProp, `${n.id || n.name}'s heldProp`]),
+    ...(populace.people ?? []).map((p) => [p.modelPath, `${p.id || p.name}'s body`]),
+    ...(populace.people ?? []).filter((p) => p.heldProp).map((p) => [heldPropPath(config.polyhavenBase, p.heldProp), `${p.id || p.name}'s heldProp`]),
+  ];
+  const seenFiles = new Set();
+  for (const [rel, why] of loaded) {
+    if (seenFiles.has(rel)) continue;
+    seenFiles.add(rel);
+    const abs = path.join(ROOT, rel);
+    if (!fs.existsSync(abs)) continue; // test/assets.mjs check 1 is what says so
+    const { json, buffers } = readGLTF(abs);
+    const dir = path.posix.dirname(rel);
+    for (const [i, img] of (json.images || []).entries()) {
+      if (img.uri) {
+        const key = path.posix.join(dir, decodeURIComponent(img.uri));
+        if (images.has(key) || !fs.existsSync(path.join(ROOT, key))) continue;
+        add(key, fs.readFileSync(path.join(ROOT, key)), why);
+      } else {
+        // Embedded in the GLB's own BIN chunk, which is the kit and the hen.
+        const bv = json.bufferViews[img.bufferView];
+        const buf = buffers[bv.buffer];
+        if (!buf) continue;
+        const from = bv.byteOffset || 0;
+        add(`${rel}#${i}`, buf.subarray(from, from + bv.byteLength), why);
+      }
+    }
+  }
+  /* EVERY PATH IN A MATERIAL ROW, not just `map`. src/assets.js reads `map` and
+   * nothing else, so by the letter only `map` is loaded — but this is the count
+   * that has to refuse "supplement" (#742, open call 1). A row that kept its old
+   * 1k normal and arm beside its new PNG would be 3 MB of video memory for no
+   * variety, and pricing only `map` would let fifteen of those through green
+   * while test/assets.mjs alone objected. So every slot in the row is priced,
+   * and the two suites refuse a supplement for their own reasons. */
+  for (const [name, spec] of Object.entries(config.pixelMaterials || {})) {
+    for (const [slot, rel] of Object.entries(spec)) {
+      if (typeof rel !== 'string' || !rel.includes('/')) continue;
+      const abs = path.join(ROOT, rel);
+      if (!fs.existsSync(abs)) continue;
+      add(rel, fs.readFileSync(abs), `${name}'s ${slot}`);
+    }
+  }
+
+  let bytes = 0;
+  for (const v of images.values()) bytes += v.bytes;
+  const mb = bytes / 1048576;
+  const biggest = [...images].sort((a, b) => b[1].bytes - a[1].bytes).slice(0, 3);
+  if (mb > MAX_TEXTURE_MB) {
+    fail(`${images.size} textures come to ${mb.toFixed(1)} MB of video memory, over the ceiling of ${MAX_TEXTURE_MB}. The three biggest: ${biggest.map(([k, v]) => `${k} (${(v.bytes / 1048576).toFixed(2)} MB, ${v.what})`).join(', ')}`);
+  } else {
+    pass(`${images.size} textures come to ${mb.toFixed(1)} MB of video memory, ${(MAX_TEXTURE_MB - mb).toFixed(1)} under the ceiling of ${MAX_TEXTURE_MB}`);
+  }
+  const pixel = [...images].filter(([k]) => k.startsWith('assets/pixel/'));
+  const pixelMB = pixel.reduce((a, [, v]) => a + v.bytes, 0) / 1048576;
+  pass(`${pixel.length} of them are the stone this repo drew, at ${pixelMB.toFixed(2)} MB in total (#742); the biggest single image is ${biggest[0][0]} at ${(biggest[0][1].bytes / 1048576).toFixed(2)} MB`);
+  textureMB = mb;
+}
+
 /* -------------------------------------------------------------- the sheet --- */
 console.log('\nwhere the castle stands, against ceilings that are guesses:');
 for (const w of WARDS) console.log(`  ${w.padEnd(7)} ${String(calls[w]).padStart(5)} / ${MAX_DRAW_CALLS_PER_WARD} draw calls`);
 console.log(`  ${'outside'.padEnd(7)} ${String(calls.outside).padStart(5)}   counted in each ward (#727): ${WARDS.map((w) => `${w} ${calls[w] + calls.outside} / ${MAX_DRAW_CALLS_PER_WARD}`).join(', ')}`);
+console.log(`  ${'texture'.padEnd(7)} ${textureMB.toFixed(1).padStart(5)} / ${MAX_TEXTURE_MB} MB of video memory, the whole castle`);
 
 console.log(failures ? `\n${failures} failure(s)` : '\nall good');
 process.exit(failures ? 1 : 0);

@@ -104,10 +104,65 @@ export function tuneTexture(tex) {
   return tex;
 }
 
-/** Tune every texture on every material under `root`. Idempotent per texture. */
+/* ------------------------------------------------------- relighting the kit ---
+ * THE KENNEY KIT IS DECLARED UNLIT AND THE CASTLE IS NOT (#742, open call 3).
+ * Every GLB in the kit declares KHR_materials_unlit on every material, so
+ * GLTFLoader hands back a MeshBasicMaterial: the merlons, the columns, the
+ * crates and the gate archways are drawn at their texture's own brightness
+ * whatever the sun is doing. That was two games in one frame from the
+ * North-west Tower's roof (#630) while the walls beside them were photographic
+ * stone, and it stays two games now the walls are the kit's own kind of pixel
+ * art unless the kit is put under the same sun.
+ *
+ * So the basic material is swapped for a MeshStandardMaterial over the same
+ * map, which is exactly what loadPixelMaterial builds for a wall: one material
+ * model, one sun, one castle. Nothing else about the kit moves — the texture
+ * object is reused, so KHR_texture_transform's offset and repeat come with it,
+ * and tuneTexture still magnifies it NEAREST at 64 px.
+ *
+ * RELIGHT_KIT IS THE REVERSAL. The fill at 2.0 and the sun were tuned against
+ * photographic slate (#438) and nobody has seen a lit merlon yet (#53). If one
+ * goes black the way the slate did, this constant is the one line that puts
+ * the kit back the way it was, without touching a GLB or an encoder.
+ */
+const RELIGHT_KIT = true;
+/** What a relit kit material gets. Matches loadPixelMaterial's: diffuse only. */
+const KIT_ROUGHNESS = 1;
+
+/* One replacement per original, because a kit GLB shares one material across
+ * several meshes: `column.glb` is two materials over more meshes than two. A
+ * per-mesh swap would hand each of them its own copy, which is a second
+ * shader program for the same surface and a `dispose()` on a material the next
+ * mesh in the traverse still points at. */
+const relit = new WeakMap();
+
+function relight(mat) {
+  if (!RELIGHT_KIT || !mat?.isMeshBasicMaterial) return mat;
+  if (relit.has(mat)) return relit.get(mat);
+  const lit = new THREE.MeshStandardMaterial({
+    map: mat.map || null,
+    color: mat.color,
+    roughness: KIT_ROUGHNESS,
+    metalness: 0,
+    transparent: mat.transparent,
+    opacity: mat.opacity,
+    alphaTest: mat.alphaTest,
+    side: mat.side,
+  });
+  lit.name = mat.name;
+  relit.set(mat, lit);
+  mat.dispose();
+  return lit;
+}
+
+/** Tune every texture on every material under `root`, and relight the kit's.
+ *  Idempotent per texture, and per material: a MeshStandardMaterial is not a
+ *  MeshBasicMaterial, so a second pass over the same scene changes nothing. */
 function tuneMaterials(root) {
   root.traverse((obj) => {
     if (!obj.isMesh) return;
+    if (Array.isArray(obj.material)) obj.material = obj.material.map(relight);
+    else obj.material = relight(obj.material);
     for (const mat of Array.isArray(obj.material) ? obj.material : [obj.material]) {
       if (!mat) continue;
       for (const slot of TEXTURE_SLOTS) tuneTexture(mat[slot]);
@@ -173,19 +228,12 @@ function makePlaceholder(path) {
 }
 
 /**
- * Load a diffuse/normal/arm texture set into a MeshStandardMaterial.
- * Any texture that 404s logs an error; the material falls back to fallbackColor.
- *
- * `rough` is the other shape Poly Haven ship a pack in, and it is not
- * interchangeable with `arm`. stone_pavers and wooden_gate carry an `arm_1k.jpg`
- * — one image with ambient occlusion in red, roughness in green, metalness in
- * blue. The three sets Phase 3 restored carry `rough_1k.jpg` instead: a single
- * channel, roughness only, no AO and no metalness. Feeding one to the `arm`
- * slot sets `metalness = 1` and drives it off a greyscale roughness map, which
- * renders 8 m of castle wall as sheet metal. Feeding nothing leaves
- * `roughnessMap` null and the wall reads as uniform matte plastic. So both
- * slots exist and each pack declares the one it actually ships;
- * `test/assets.mjs` fails a material that declares both or neither.
+ * ONE MATERIAL, ONE MAP (#742). The fifteen material sets this function used to
+ * read — a 1k diffuse, a normal and an arm or rough each, 44.2 MB of video
+ * memory — are gone, and what a built surface wears now is one 128 px PNG out
+ * of tools/pixel/ (`loadPixelMaterial` below). What is left here is the loader
+ * that deduplicates by URL, which matters more than it did: eight tinted drums
+ * over one defense_wall map is one 85 KB texture on the GPU, not eight.
  */
 /**
  * ONE TEXTURE PER URL, however many materials read it (#516). A tinted variant
@@ -218,36 +266,41 @@ function loadTexture(url, repeat, onOk) {
   );
 }
 
-export function loadPBRMaterial({ diffuse, normal, arm, rough }, repeat = 1, fallbackColor = '#888888', tint = null) {
-  const mat = new THREE.MeshStandardMaterial({ color: fallbackColor, roughness: 1 });
-
-  const tryTex = (url, onOk) => {
-    if (!url) return;
-    loadTexture(url, repeat, (tex) => { onOk(tex); mat.needsUpdate = true; });
-  };
-
-  tryTex(diffuse, (t) => {
-    t.colorSpace = THREE.SRGBColorSpace;
-    mat.map = t;
-    // The tint multiplies the diffuse: white is the stone as shot, and a
-    // tower's own hue is what tells it from the seven others (#516).
-    mat.color.set(tint || '#ffffff');
+/**
+ * A pixel-art material: `map` and nothing else.
+ *
+ * LIT, NOT UNLIT (#742, open call 2). This is a MeshStandardMaterial and not a
+ * MeshBasicMaterial, because the sun moves per watch (#474), the walls cast
+ * shadows, the hemisphere fill was measured against them (#438), the braziers
+ * are point lights (#610) and the morning after is told partly by its light
+ * (#712). An unlit castle loses all five in one move. What a pixel texture has
+ * no use for is the rest of the PBR set: there is no normal pass worth having
+ * in a 128 px drawing and no roughness pass at all, so roughness is the row's
+ * one number and metalness is 0.
+ *
+ * NO FALLBACK COLOUR. loadPBRMaterial took one because a 404 on one of three
+ * maps left a surface with nothing on it; the row here names one file, and if
+ * that file is missing the console says so by name and the wall is the tint or
+ * white. A grey-brown default would have been a wall that looks nearly right.
+ *
+ * `repeat` is 1: the repeat is in the geometry's own world-space UVs at 3 m
+ * (#434), which is why a tiling texture drops onto every run, drum, floor and
+ * ground here with no UV work at all.
+ */
+export function loadPixelMaterial({ map, roughness }, tint = null) {
+  const mat = new THREE.MeshStandardMaterial({
+    // The tint multiplies the map: white is the stone as drawn, and a tower's
+    // own hue is what tells it from the seven others (#516).
+    color: tint || '#ffffff',
+    roughness: roughness ?? 1,
+    metalness: 0,
   });
-  tryTex(normal, (t) => { mat.normalMap = t; });
-  tryTex(arm, (t) => {
-    // Poly Haven ARM = AO (r), Roughness (g), Metalness (b)
-    mat.aoMap = t;
-    mat.roughnessMap = t;
-    mat.metalnessMap = t;
-    mat.metalness = 1; // let the map drive it
+  if (!map) return mat;
+  loadTexture(map, 1, (tex) => {
+    tex.colorSpace = THREE.SRGBColorSpace;
+    mat.map = tex;
+    mat.needsUpdate = true;
   });
-  tryTex(rough, (t) => {
-    // Roughness only. No AO channel to read and nothing metal in a castle wall,
-    // so metalness stays at the MeshStandardMaterial default of 0 rather than
-    // being handed a map that does not mean what `arm`'s blue channel means.
-    mat.roughnessMap = t;
-  });
-
   return mat;
 }
 

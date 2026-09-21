@@ -116,84 +116,60 @@
     ],
     "comment": "Two flights per tower, three where the drum has a roof room at its own height (#523), all this piece, placed by src/castle-plan.js from the drum's `stairs` side. stairs-stone.glb is authored 0.5 x 1 x 1 and rises toward its own +z; at a uniform 4 it is 2 m wide and 4 m long, and two of those side by side are a 4 m square whose corners sit 2.83 m from a tower's centre, 0.03 m into a ring whose inner face is at 2.8 (#452). So the scale is per axis: 1.5 m wide, 3.9 m of rise over 3.3 m of run, and the last 0.1 m onto the slab is a step. The run was 3.9 until #512: a curtain run reaches 2 m into every tower it meets, so a 3.9 m flight centred on the tower ends 0.05 m from a pier at each end, and a 0.45 m body is held 0.40 m short of the foot, where the floor is a 0.40 m drop and STEP_UP is 0.35. At 3.3 each end has 0.35 m of clear floor, the body reaches within 0.1 m of either end, and at the head its feet are already at 7.78, over the 7.7 at which the pier's top stops being a wall. The lower flight runs along z in the tower's east half, rising toward the outer wall; the upper flight runs along x in the outer half, rising east, and its well in the level-2 floor sits where the walk does not cross. Their overlap is the lower flight's low half under the upper flight's high half, 2.05 m of headroom at the worst point. The third flight stands directly on the second, same tile and same bearing one storey up, so its well in the roof IS the second's well in the level-2 floor and it takes no walkable metre of that floor, which is the walk's junction and has none to spare."
   },
-  "materials": {
+  "pixelMaterials": {
     "castle_wall_slates": {
-      "diffuse": "assets/poly-haven/castle_wall_slates_1k.gltf/textures/castle_wall_slates_diff_1k.ktx2",
-      "normal": "assets/poly-haven/castle_wall_slates_1k.gltf/textures/castle_wall_slates_nor_gl_1k.ktx2",
-      "rough": "assets/poly-haven/castle_wall_slates_1k.gltf/textures/castle_wall_slates_rough_1k.ktx2"
+      "map": "assets/pixel/castle_wall_slates.png"
     },
     "defense_wall": {
-      "diffuse": "assets/poly-haven/defense_wall_1k.gltf/textures/defense_wall_diff_1k.ktx2",
-      "normal": "assets/poly-haven/defense_wall_1k.gltf/textures/defense_wall_nor_gl_1k.ktx2",
-      "rough": "assets/poly-haven/defense_wall_1k.gltf/textures/defense_wall_rough_1k.ktx2"
+      "map": "assets/pixel/defense_wall.png"
     },
     "grassy_cobblestone": {
-      "diffuse": "assets/poly-haven/grassy_cobblestone_1k.gltf/textures/grassy_cobblestone_diff_1k.ktx2",
-      "normal": "assets/poly-haven/grassy_cobblestone_1k.gltf/textures/grassy_cobblestone_nor_gl_1k.ktx2",
-      "rough": "assets/poly-haven/grassy_cobblestone_1k.gltf/textures/grassy_cobblestone_rough_1k.ktx2"
+      "map": "assets/pixel/grassy_cobblestone.png"
     },
     "stone_pavers": {
-      "diffuse": "assets/poly-haven/stone_pavers_1k.gltf/textures/stone_pavers_diff_1k.ktx2",
-      "normal": "assets/poly-haven/stone_pavers_1k.gltf/textures/stone_pavers_nor_gl_1k.ktx2",
-      "arm": "assets/poly-haven/stone_pavers_1k.gltf/textures/stone_pavers_arm_1k.ktx2"
+      "map": "assets/pixel/stone_pavers.png"
     },
     "wooden_gate": {
-      "diffuse": "assets/poly-haven/wooden_gate_1k.gltf/textures/wooden_gate_diff_1k.ktx2",
-      "normal": "assets/poly-haven/wooden_gate_1k.gltf/textures/wooden_gate_nor_gl_1k.ktx2",
-      "arm": "assets/poly-haven/wooden_gate_1k.gltf/textures/wooden_gate_arm_1k.ktx2"
+      "map": "assets/pixel/wooden_gate.png",
+      "roughness": 0.8
     },
     "rock_tile_floor": {
-      "diffuse": "assets/poly-haven/rock_tile_floor_1k.gltf/textures/rock_tile_floor_diff_1k.ktx2",
-      "normal": "assets/poly-haven/rock_tile_floor_1k.gltf/textures/rock_tile_floor_nor_gl_1k.ktx2",
-      "arm": "assets/poly-haven/rock_tile_floor_1k.gltf/textures/rock_tile_floor_arm_1k.ktx2"
+      "map": "assets/pixel/rock_tile_floor.png"
     },
     "floor_tiles_02": {
-      "diffuse": "assets/poly-haven/floor_tiles_02_1k.gltf/textures/floor_tiles_02_diff_1k.ktx2",
-      "normal": "assets/poly-haven/floor_tiles_02_1k.gltf/textures/floor_tiles_02_nor_gl_1k.ktx2",
-      "rough": "assets/poly-haven/floor_tiles_02_1k.gltf/textures/floor_tiles_02_rough_1k.ktx2"
+      "map": "assets/pixel/floor_tiles_02.png"
     },
     "old_planks_02": {
-      "diffuse": "assets/poly-haven/old_planks_02_1k.gltf/textures/old_planks_02_diff_1k.ktx2",
-      "normal": "assets/poly-haven/old_planks_02_1k.gltf/textures/old_planks_02_nor_gl_1k.ktx2",
-      "rough": "assets/poly-haven/old_planks_02_1k.gltf/textures/old_planks_02_rough_1k.ktx2"
+      "map": "assets/pixel/old_planks_02.png",
+      "roughness": 0.9
     },
     "wood_planks": {
-      "diffuse": "assets/poly-haven/wood_planks_1k.gltf/textures/wood_planks_diff_1k.ktx2",
-      "normal": "assets/poly-haven/wood_planks_1k.gltf/textures/wood_planks_nor_gl_1k.ktx2",
-      "arm": "assets/poly-haven/wood_planks_1k.gltf/textures/wood_planks_arm_1k.ktx2"
+      "map": "assets/pixel/wood_planks.png",
+      "roughness": 0.85
     },
     "dirty_carpet": {
-      "diffuse": "assets/poly-haven/dirty_carpet_1k.gltf/textures/dirty_carpet_diff_1k.ktx2",
-      "normal": "assets/poly-haven/dirty_carpet_1k.gltf/textures/dirty_carpet_nor_gl_1k.ktx2",
-      "arm": "assets/poly-haven/dirty_carpet_1k.gltf/textures/dirty_carpet_arm_1k.ktx2"
+      "map": "assets/pixel/dirty_carpet.png",
+      "roughness": 0.95
     },
     "medieval_blocks_02": {
-      "diffuse": "assets/poly-haven/medieval_blocks_02_1k.gltf/textures/medieval_blocks_02_diff_1k.ktx2",
-      "normal": "assets/poly-haven/medieval_blocks_02_1k.gltf/textures/medieval_blocks_02_nor_gl_1k.ktx2",
-      "arm": "assets/poly-haven/medieval_blocks_02_1k.gltf/textures/medieval_blocks_02_arm_1k.ktx2"
+      "map": "assets/pixel/medieval_blocks_02.png"
     },
     "castle_brick_02_red": {
-      "diffuse": "assets/poly-haven/castle_brick_02_red_1k.gltf/textures/castle_brick_02_red_diff_1k.ktx2",
-      "normal": "assets/poly-haven/castle_brick_02_red_1k.gltf/textures/castle_brick_02_red_nor_gl_1k.ktx2",
-      "arm": "assets/poly-haven/castle_brick_02_red_1k.gltf/textures/castle_brick_02_red_arm_1k.ktx2"
+      "map": "assets/pixel/castle_brick_02_red.png"
     },
     "plastered_wall_04": {
-      "diffuse": "assets/poly-haven/plastered_wall_04_1k.gltf/textures/plastered_wall_04_diff_1k.ktx2",
-      "normal": "assets/poly-haven/plastered_wall_04_1k.gltf/textures/plastered_wall_04_nor_gl_1k.ktx2",
-      "arm": "assets/poly-haven/plastered_wall_04_1k.gltf/textures/plastered_wall_04_arm_1k.ktx2"
+      "map": "assets/pixel/plastered_wall_04.png",
+      "roughness": 0.95
     },
     "wood_floor_deck": {
-      "diffuse": "assets/poly-haven/wood_floor_deck_1k.gltf/textures/wood_floor_deck_diff_1k.ktx2",
-      "normal": "assets/poly-haven/wood_floor_deck_1k.gltf/textures/wood_floor_deck_nor_gl_1k.ktx2",
-      "arm": "assets/poly-haven/wood_floor_deck_1k.gltf/textures/wood_floor_deck_arm_1k.ktx2"
+      "map": "assets/pixel/wood_floor_deck.png",
+      "roughness": 0.85
     },
     "forest_ground_06": {
-      "diffuse": "assets/poly-haven/forest_ground_06_1k.gltf/textures/forest_ground_06_diff_1k.ktx2",
-      "normal": "assets/poly-haven/forest_ground_06_1k.gltf/textures/forest_ground_06_nor_gl_1k.ktx2",
-      "arm": "assets/poly-haven/forest_ground_06_1k.gltf/textures/forest_ground_06_arm_1k.ktx2"
+      "map": "assets/pixel/forest_ground_06.png"
     }
   },
-  "materialsComment": "Every built surface names one of these. rock_tile_floor, wood_planks, dirty_carpet, the four rank-4 sets (medieval_blocks_02, castle_brick_02_red, plastered_wall_04, wood_floor_deck), forest_ground_06 and the two that were always here (stone_pavers, wooden_gate) ship a three-channel `arm`; the five original stone sets ship a single-channel `rough`. src/assets.js reads whichever key is present and test/assets.mjs fails a material declaring both or neither. `repeatMetres` is the world-space texture repeat: one repeat per 3 m on the curtain, so a 4 m tile shows 1.33 repeats of the 1k map and reads as coursed stone. A wall run or a floor may override it with its own `repeatMetres`; the interior partitions do, at 1.5 m, because a 1 m thick room wall wants a smaller course than a 4 m curtain.",
+  "pixelMaterialsComment": "Every built surface names one of these, and every one of them is a 128 x 128 PNG this repo drew (#742, #743): one `map`, an optional `roughness`, no normal and no ARM map. src/assets.js's loadPixelMaterial makes a lit MeshStandardMaterial over the map alone, metalness 0, colour the tint (#516) or white, and `tuneTexture` magnifies it NEAREST because it is 128 px and under. The maps come out of tools/pixel/, are rendered by `npm run pixel:render`, and test/assets.mjs holds each one to 128 px, at most 32 colours, wrapping at both edges and pixel-identical to its row in tools/pixel/textures.json. They are exempt from tools/encode-assets.mjs by size, the rule the Kenney kit is already exempt by (#508). This section was fifteen Poly Haven sets of three 1k KTX2 maps until 2026-09-21, which was 44.2 MB of the castle's 79.3 MB of video memory; test/budget.mjs counts what it is now. `repeatMetres` is unchanged: the world-space texture repeat, one repeat per 3 m on the curtain (#434), which is 43 texels a metre at this size. A wall run or a floor may override it with its own `repeatMetres`; the interior partitions do, at 1.5 m.",
   "ground": {
     "base": {
       "material": "stone_pavers",
