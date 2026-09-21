@@ -1,5 +1,5 @@
 // populace.js — the other people in the castle: who they are, where they stand
-// at each of the four bells, and what they are doing while they stand there.
+// at each bell of either day, and what they are doing while they stand there.
 //
 // The twelve in data/npcs.json are the mystery's. Every one of them holds a
 // statement, a lie or a clue, and src/mystery.js refuses a schedule that puts
@@ -16,7 +16,8 @@
 // is `validatePopulace` below against the plan's own walk grid.
 //
 // A ROUTINE IS A LOOP INSIDE A WATCH (#547, answer 3). The game's clock is the
-// four bells the player rings and it does not move between them, so a populace
+// bells the player rings — the mystery's four, and the walking day's own four
+// (#750 to #756) — and it does not move between them, so a populace
 // body is not on a timetable: it is on a ring of stops it walks round and
 // round until the next bell. `routine.prime` is a LIST, and a list of one is a
 // body that stands still for the whole watch. That is what lets a boy fetch
@@ -167,12 +168,28 @@ export function stopWorld(nav, stop) {
 }
 
 /**
- * Every routine in data/populace.json against the castle, the four bells and
- * the twelve. Returns a list of problems, empty when the file is good.
+ * Every routine in data/populace.json against the castle, every bell a day of
+ * it names, and the cast. Returns a list of problems, empty when the file is
+ * good.
  *
  * `nav` is src/stations.js's castleNav over the same plan the builder uses.
  * Without it only the shape is checked, which is what a caller with no plan in
  * hand gets; src/main.js and test/mystery.mjs both pass one.
+ *
+ * THE WALKING DAY'S FOUR BELLS ARE IN HERE TOO (#750 to #756, SPECS.md's
+ * increment 4). A household with no ring at a day-0 bell is the emptiest this
+ * castle has ever been, so every person below has one, and a ring under a bell
+ * nothing validated would be a body walking into a wall the evening before the
+ * death with no rail to say so. `Populace.setWatch` already reads
+ * `routine[watch]` by name and hides a body with no ring at it, so nothing in
+ * the engine had to learn a third day; this is the rail catching up with what
+ * the engine could already do. The day-0 bells come off `mystery.day0.watches`
+ * the way src/stations.js takes them, rather than through `dayWatchesOf`, so
+ * this file still imports nothing from src/mystery.js.
+ *
+ * WHAT IS DELIBERATELY STILL THE FOUR is a talk pair's `watch` (2b below).
+ * `overhear` plays a pair once per page and the walking day has no pair of its
+ * own; a row that wants one widens that one line and nothing else.
  */
 export function validatePopulace(populace, { nav = null, mystery = {}, cast = [] } = {}) {
   const problems = [];
@@ -183,6 +200,11 @@ export function validatePopulace(populace, { nav = null, mystery = {}, cast = []
   if (!Array.isArray(people) || !people.length) return ['populace.people: no people in it'];
 
   const watches = mystery.watches ?? [];
+  const day0Watches = Array.isArray(mystery.day0?.watches) ? mystery.day0.watches : [];
+  /** Every bell a routine may be written under: the four, then the walking day's own four. */
+  const everyBell = [...watches, ...day0Watches];
+  /** The two days, each as its own chain of bells, because there is no walk from one day into the next here. */
+  const days = [{ of: 'the day of the death', watches }, { of: 'the walking day', watches: day0Watches }];
   const rooms = new Map((mystery.rooms ?? []).map((r) => [`${r.id}/${r.level ?? 0}`, r]));
   const roomIds = new Set((mystery.rooms ?? []).map((r) => r.id));
   const castIds = new Set(cast.map((n) => n.id));
@@ -252,9 +274,9 @@ export function validatePopulace(populace, { nav = null, mystery = {}, cast = []
     const routine = p?.routine;
     if (!routine || typeof routine !== 'object') { say(`${who}: no routine`); continue; }
     for (const extra of Object.keys(routine)) {
-      if (!watches.includes(extra)) say(`${who}: routine names ${JSON.stringify(extra)}, which is not one of the four bells`);
+      if (!everyBell.includes(extra)) say(`${who}: routine names ${JSON.stringify(extra)}, which is not a bell of either day`);
     }
-    for (const w of watches) {
+    for (const w of everyBell) {
       const stops = routine[w];
       /* AN ABSENT WATCH IS A BODY THAT IS NOT IN THE CASTLE, and that is
        * allowed and is said out loud here rather than left to be inferred:
@@ -353,7 +375,7 @@ export function validatePopulace(populace, { nav = null, mystery = {}, cast = []
   const worlds = new Map(); // "id/watch" -> [{x, z, level, h, ...}]
   for (const p of people) {
     const who = p?.id ?? '?';
-    for (const w of watches) {
+    for (const w of everyBell) {
       const stops = p?.routine?.[w];
       if (!Array.isArray(stops) || !stops.length) continue;
       const points = [];
@@ -386,15 +408,23 @@ export function validatePopulace(populace, { nav = null, mystery = {}, cast = []
      * body is standing when the player rings; the first stop of the next is
      * where it is due. src/main.js routes between exactly those two points,
      * and a pair with no walk between them is a body that slides through a
-     * wall in front of whoever rang the bell. */
-    let previous = null, previousWatch = null;
-    for (const w of watches) {
-      const points = worlds.get(`${p?.id}/${w}`) ?? [];
-      if (!points.length) { previous = null; previousWatch = null; continue; }
-      if (previous && !nav.route(previous, points[0])) {
-        say(`${p?.id}: no walk from where ${previousWatch} left them in ${previous.room} to their first stop at ${w} in ${points[0].room}`);
+     * wall in front of whoever rang the bell.
+     *
+     * ONE CHAIN PER DAY, and that is why `days` exists. The walking day's last
+     * bell is not followed by the day of the death's first one in anybody's
+     * legs: the castle sleeps in between, the page reloads the whole household
+     * at whatever bell the day it enters begins on, and a rail that walked
+     * Vespers-the-eve into Prime would be asserting a walk nothing makes. */
+    for (const { watches: bells } of days) {
+      let previous = null, previousWatch = null;
+      for (const w of bells) {
+        const points = worlds.get(`${p?.id}/${w}`) ?? [];
+        if (!points.length) { previous = null; previousWatch = null; continue; }
+        if (previous && !nav.route(previous, points[0])) {
+          say(`${p?.id}: no walk from where ${previousWatch} left them in ${previous.room} to their first stop at ${w} in ${points[0].room}`);
+        }
+        previous = points[points.length - 1]; previousWatch = w;
       }
-      previous = points[points.length - 1]; previousWatch = w;
     }
   }
 
@@ -412,8 +442,11 @@ export function validatePopulace(populace, { nav = null, mystery = {}, cast = []
    *
    * The twelve are in here too, and they are compared as the single station
    * they are: a populace stop 1.2 m from where the cook is due at Sext is a
-   * body wearing the cook at the bell the player came to find her. */
-  for (const w of watches) {
+   * body wearing the cook at the bell the player came to find her. On a bell of
+   * the walking day that is the fourteenth body as well: `nav.at` answers for
+   * whichever day names the bell, so Hywel at the foot of the Chapel Tower
+   * stair is checked against the sacristan standing in the same chapel. */
+  for (const w of everyBell) {
     const mine = [];
     for (const p of people) for (const point of worlds.get(`${p?.id}/${w}`) ?? []) mine.push({ who: p?.id, label: `stop ${point.index + 1}`, point });
     const theirs = [];

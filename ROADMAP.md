@@ -27,7 +27,6 @@ NOW, in parallel, no gates:
 
   Devon's machine                    A container
   ---------------                    -----------
-                                     R1   explore: the day before, new 2026-09-21   lanes A D
                                      R2   sight at the body's height    no lane
   R3  GPU run, after R2 (2026-09-21)
                      --+             R8   quests: the seven errands      lane A
@@ -39,6 +38,8 @@ NOW, in parallel, no gates:
     R12a budget suite  #607-611      R6  the first ten  #616-619
   R4b the since field shipped the same day, #646-649, in a worktree.
   R6 five more, to 32 of 32, and a talk rail, shipped 2026-09-20 (#729-733).
+  R1 explore: the day before shipped whole, all four increments, 2026-09-21
+  (#767-779). Lanes A and D are free; what is left is the GPU look, R3's.
                        |
 R3 lands --------------+--> unlocks R11
   (the images row and R5 both shipped 2026-09-17 ahead of this row landing,
@@ -118,10 +119,10 @@ the one asset nothing else on this list would catch.**
 
 ### Container, start to finish
 
-**R1** explore: the day before, new 2026-09-21 (#750 to #756) and taking rank
-1 the same day: a `day0` block, a third branch per method in the engine, two
-doors and a night, all of it Node or headless, four increments, and only the
-last of them large. **R2** sight at the
+**R1** explore: the day before, specced 2026-09-21 (#750 to #756) and shipped
+whole the same day (#767 to #779): a `day0` block, a third branch per method
+in the engine, two doors and a night, all of it Node or headless, four
+increments, and only the last of them large. **R2** sight at the
 body's own height, filed 2026-09-21 and gating R3: a GPU found it, and a
 headless beat can hold it, because it is a camera placed and a prompt string
 read, not a walk. **R6** populace, **R8** side quests, **R9** the town, whose
@@ -142,10 +143,10 @@ the theme is not what conflicts.
 
 | Lane | The file that decides it | Rows in it |
 | --- | --- | --- |
-| **A** | `src/save.js` — the version number and `migrate` | R1 (which does not bump it either, #754; R4a, R4b and R8 all shipped without bumping it) |
+| **A** | `src/save.js` — the version number and `migrate` | none (R1, which never bumped it either, #754, is done; R4a, R4b and R8 all shipped without bumping it) |
 | **B** | `data/scene-config.json`, and `test/tools.mjs`'s byte-exactness rail | R4, R13 (increments 2 and 3 only), R9 (R4c, R5 and R12b are done) |
-| **C** | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | R6, R10 (R12c is done) |
-| **D** | `src/main.js`'s player rig and spawn | R1, R6, R11 |
+| **C** | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | R6, R10 (R12c and R1's two commits in it are done) |
+| **D** | `src/main.js`'s player rig and spawn | R6, R11 (R1 is done) |
 | **E** | `src/audio.js` and `data/sounds.json` | R7 |
 | **none** | | R3, R12a |
 
@@ -155,13 +156,14 @@ dependencies, and R8's next increment was a version bump to 6 with a clamp in
 `repair`. Two sessions bumping the same version number produce a merge that
 compiles and a save that does not migrate. **Version 6 landed on 2026-09-17**
 (#612), so the next session in this lane bumps to 7 and the same rule holds.
-**R1 is in this lane and does not bump it** (#754). #751 priced a saved
-explore as a `mode` field at version 7; the spec settled it as a third value
-on the `day` field that already says which day a save is on, so `migrate` has
-no drift to be honest about and `SAVE_VERSION` stays 6. R1 still holds the
-lane, because a lane is a file and it writes one: `buildCatalog`'s third bell
-list, `clampWatch` and one incoherence rail in `repair`. **The next session
-that does bump it bumps to 7**, and R4a is the reminder that sitting in this
+**R1 held this lane and never bumped it** (#754). #751 priced a saved explore
+as a `mode` field at version 7; the spec settled it as a third value on the
+`day` field that already says which day a save is on, so `migrate` had no
+drift to be honest about and `SAVE_VERSION` stayed 6. What R1 wrote in that
+file was `buildCatalog`'s third bell list, `clampWatch` and one incoherence
+rail in `repair`, none of which is a version bump. R1 shipped whole on
+2026-09-21 (#778, #779) and **lane A is free**. **The next session that does
+bump the version bumps to 7**, and R4a is the reminder that sitting in this
 lane and bumping nothing is the normal case (#702).
 
 Lane B is sharp for a different reason. `test/tools.mjs` holds
@@ -225,8 +227,9 @@ version 6 is in and R8's remaining work is quest files and dialogue, not
 `save.js`. R4b took that free lane on 2026-09-17 and never wrote the lane's
 file at all (#646 to #649), so the rows safe together now are **R8, R6 and
 R4a**, three of them, plus **R3, the GPU run,** on Devon's machine. **Lane A
-holds one row again as of 2026-09-21**: R1, the walking day, for a clamp in
-`repair` rather than for a bump (#754).
+held one row again as of 2026-09-21**: R1, the walking day, for a clamp in
+`repair` rather than for a bump (#754). **R1 shipped whole the same day
+(#767 to #779) and lane A is free again.**
 
 ### What not to pair
 
@@ -252,11 +255,12 @@ holds one row again as of 2026-09-21**: R1, the walking day, for a clamp in
   lane's other three and all shipped (#703 to #707, #656 to #658, #636 to
   #642). R12c has left lane C as well (#687 to #690).
 - R6 beside R11. Lane D, both inside `src/main.js`'s rig.
-- R1 beside R6 or R11. Lane D again: R1's second start callback lives in
-  `src/main.js`'s UI-flow region, not the rig either of those two writes, but
-  one row per lane at a time is the rule regardless of region (#602). R1 is
-  also in lane A, for `repair`'s day clamp and not for a version bump (#754),
-  so nothing else runs in lane A beside it either.
+- R1 beside R6 or R11, while it was open. Lane D: R1's second start callback
+  lived in `src/main.js`'s UI-flow region, not the rig either of those two
+  writes, but one row per lane at a time is the rule regardless of region
+  (#602). R1 also held lane A, for `repair`'s day clamp and not for a version
+  bump (#754). **R1 shipped whole on 2026-09-21 (#767 to #779) and is out of
+  both lanes.**
 
 ---
 
@@ -362,9 +366,9 @@ its row open with its text rewritten to say what is done.
 
 | Row | Model | Where | Lane | Next increment |
 | --- | --- | --- | --- | --- |
-| **R1** Explore: the day before | Opus 5 | Container | A, D | **Claimed and specced 2026-09-21** (#750 to #756). `WISHLIST.md` theme 8's four questions answered, both against the theme's own recommendation: the walking day is the main mode, not a second door, and it is the day before the death, Hywel alive, not the day of it. `SPECS.md`'s section is four increments deep with ten open calls answered. **Increment 1 shipped the same day** (#767 to #770): the engine, the save and a placeholder walking day, all Node, 15 of 15. **Increment 2 shipped the same day** (#771 to #774): the panel's two doors, `#start-mystery` offered on a fresh save only, and the door reaches the six suites that needed it, `test/play-castle.mjs` included. `npm test` 15 of 15, `npm run build` clean. **The door is wired and every static check passes; whether `npm run play` actually carries the day through it is unverified** — this container is software-rendered and the run needs a real GPU (#53); that is R3's first act, not this row's. **Increment 3 shipped the same day** (#775 to #777): the fourteen real `day0` line sets, fifty-seven lines drawn off `data/lore.json`'s canon, and a leak rail in `test/quest.mjs` proven against a control that no `day0` line says a word of the morning after (#752). `npm test` 15 of 15, `npm run build` clean, `npm run dialogue:check` green. **Next: increment 4**, the day itself. |
+| ~~**R1** Explore: the day before~~ | Opus 5 | Container | none | **Shipped whole, all four increments, 2026-09-21** (#767 to #770, #771 to #774, #775 to #777, #778 to #779, against #750 to #756). `WISHLIST.md` theme 8's four questions answered, both against the theme's own recommendation: the walking day is the main mode, not a second door, and it is the day before the death, Hywel alive, not the day of it. Increment 4 gave `data/mystery.json`'s `day0.schedule` its own thirteen-person day instead of day one's copy, and `#775`'s walk-into-the-night rail its first two pairs day one's own chain does not already imply. `npm test` 15 of 15, `npm run build` clean, `npm run dialogue:check` green. **Lanes A and D are free.** What is left is the look: whether the two doors read as a choice, whether the day reads as a day and not a rota, and whether `npm run play` actually carries a save through its new door on a real GPU (#53), which nobody has run. It belongs to R3. |
 | ~~**R1** The walker on the stair~~ | Opus 5 | Container | none | **Shipped** (#716 to #720). A same-storey walk now searches that storey's own floor, so `hike` can no longer take a flight for a stair or the wall walk for a corridor, and a tight cell costs five instead of one, so it stops hugging the walls a prop stands against. `test/layout.mjs` check 8b holds it over 66 room pairs, 153 ok. The row is closed; the run itself is Gate 1, above, and it is R3's. |
-| **R3** The GPU run | Opus 5 | **Local: GPU** | after R2 | **Gate 1, above.** Its looking is done (#711 to #715); the old R1 walker holds on a GPU now (#734, #736), and a third sitting reached the accusation for the first time before a new bug, fixed sight heights in `src/interaction.js`, produced the wrong ending (#735 to #741). Gated on the new R2, "Sight at the body's own height." **R1's own known break on this row is lifted on paper, not confirmed**: increment 2 gave `test/play-castle.mjs` the same `#start-mystery` door the other suites got (#771 to #774), and the file parses and the button and its wiring are in `dist/`, but nobody in a container can run `npm run play` to say the day actually carries through it (#53). Read R1's row, and treat that as this row's first act, not a settled fact. |
+| **R3** The GPU run | Opus 5 | **Local: GPU** | after R2 | **Gate 1, above.** Its looking is done (#711 to #715); the old R1 walker holds on a GPU now (#734, #736), and a third sitting reached the accusation for the first time before a new bug, fixed sight heights in `src/interaction.js`, produced the wrong ending (#735 to #741). Gated on the new R2, "Sight at the body's own height." **The walking day (R1, shipped whole 2026-09-21, #767 to #779) put a whole day in front of the day of the death, and its own break is lifted on paper, not confirmed**: `test/play-castle.mjs` has the same `#start-mystery` door the other suites got (#771 to #774), the file parses and the button and its wiring are in `dist/`, but nobody in a container can run `npm run play` to say the day actually carries through it (#53). Treat that as this row's first act, not a settled fact, and the checklist R1's own section left behind (whether the two doors read as a choice, whether the fourteen read as a castle on an ordinary day, whether the day reads as a day and not a rota) is now this row's to answer too. |
 | ~~**R8** Side quests~~ | Opus 5 | Container | A | **Shipped, and the row is closed** (#691 to #695). The seven errands left of the dozen went in on 2026-09-18, one voice each on the seven people who had none, so `data/quests/` is twelve files and every person the day one schedule puts in the castle has an errand. A sixth set rule came with them: a terminal stage may not park a person whose `default` lines pose one of the frame's tokens. No `save.js` change and no version bump. |
 | **R6** Life: a populace | Opus 5 | Container | C, D | ~~The file, the validator and the first ten~~ shipped 2026-09-17 (#616 to #618): a routine is a ring per bell, nine activities on three clips the kit already had, no asset added. ~~Five more people, a `talk` rail~~ shipped 2026-09-20 (#729 to #733): the page now builds 32 of 32 bodies, exactly `MAX_SKINNED_TOTAL` (#609), outer ward peaking at 18 of 20 and inner at 15 of 20, plus a flat `talk` list of three pairs played through the `#caption` band. What is left is the rest of the fifty (R9's town), the four activities still without a clip (R10), and the twelve's 27-pair chatter pool, still unspent by proximity. |
 | ~~**R1** A fourth body~~ | Fable 5.1 | Local: net | C | **Shipped** (#603 to #606). Quaternius's Ultimate Modular Women Pack, meshopt to 1.02 MB, worn by the cook, the laundress and the lady. |
@@ -386,12 +390,13 @@ that sat in lane A without moving the version number: it overturned #533's
 second clause, put `day2.watches` in the data, and changed `repair`'s watch
 clamp to read the day's own list. That is a repair change, which runs on every
 load, rather than a field arriving, which is what a version number is for (#37,
-#702). The next row that wants version 7 takes the lane. **R1 holds the lane
-as of 2026-09-21 and makes it five in a row** (#754): #751 priced a saved
+#702). The next row that wants version 7 takes the lane. **R1 held the lane
+on 2026-09-21 and made it five in a row** (#754): #751 priced a saved
 explore at version 7, and the spec settled it as a third value on the `day`
-field, so `migrate` is untouched and `SAVE_VERSION` stays 6. What R1 writes in
-that file is `buildCatalog`'s third bell list, `clampWatch` and one
-incoherence rail in `repair`, which is #702's side of the same line.
+field, so `migrate` was untouched and `SAVE_VERSION` stayed 6. What R1 wrote
+in that file was `buildCatalog`'s third bell list, `clampWatch` and one
+incoherence rail in `repair`, which is #702's side of the same line. **R1
+shipped whole the same day (#767 to #779) and lane A is empty again.**
 
 ### Wave B — the moment R3 lands
 

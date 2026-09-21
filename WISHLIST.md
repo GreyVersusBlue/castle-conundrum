@@ -316,7 +316,11 @@ day of it. What the theme found stands as the well the row now draws from —
 the four teeth of the mystery's clock that the walking day has to refuse, the
 27 chatter pairs and 54 lines already keyed by ward and watch, the 182 lines
 `dialogue/castle.dlg` holds today, and the ~144-line cost of a talk-again
-pool — and `SPECS.md` is where the first increment now lives.
+pool. **It shipped whole on 2026-09-21, four increments** (#767 to #770,
+#771 to #774, #775 to #777, #778 to #779): the engine and the save, the two
+doors, the fourteen real `day0` line sets, and the day itself, thirteen
+people over their own four bells with Hywel ending where the body will be
+found. What is left is the look, and it belongs to The GPU run (#53).
 
 ## Devon's answers, 2026-09-16
 

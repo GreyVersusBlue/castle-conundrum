@@ -125,9 +125,11 @@ const MAX_SKINNED_TOTAL = 33;
  * same argument this one cost. `MAX_SKINNED_PER_WARD` stays 20: Hywel's station
  * is the mason's lodge, in the outer ward, and the walking day peaks at 19 of 20
  * there once the household has rings of its own at its bells, with the inspector
- * not yet arrived. Section 3 counts `mystery.watches` only, so the walking day's
- * own bells stay uncounted until the increment that writes its stations extends
- * that loop. Rank 10's "the fifty" fits neither number
+ * not yet arrived. THAT PREDICTION IS NOW COUNTED RATHER THAN PROMISED: the
+ * increment that wrote the walking day's own stations extended section 3's loop
+ * over `day0.watches` as well (SPECS.md's increment 4), and the walking day
+ * measures outer 19 at terce-eve and inner 15, against the day of the death's
+ * own outer 18 and inner 15. Rank 10's "the fifty" fits neither number
  * and is not meant to: fifty bodies is fifty AnimationMixers and fifty skinned
  * draw calls, and this is the file that says so out loud. */
 
@@ -361,45 +363,67 @@ console.log('\npoint lights');
  * with an AnimationMixer of its own, which is the cost that does not come off
  * the plan and does not frustum-cull away: three.js updates a skeleton
  * whether or not the mesh is on screen.
+ *
+ * AND TWO DAYS, BECAUSE THE PAGE OPENS ON THE OTHER ONE (SPECS.md's increment
+ * 4, #756). The castle a fresh page builds is the walking day, whose four bells
+ * are `day0.watches` and whose stations are `day0.schedule`, so a section that
+ * counted `mystery.watches` alone was narrower than its own title: the bell the
+ * player rings first was uncounted. Each day is peaked separately and each peak
+ * is asserted against the same `MAX_SKINNED_PER_WARD`, because the ceiling is a
+ * ward's and not a day's — one number, said twice, rather than a second
+ * constant nobody would keep in step. The morning after is still not counted:
+ * nobody in data/populace.json has a Lauds ring, so its cast-only load is
+ * strictly under either day's.
  */
 console.log('\nskinned bodies per ward, at each watch, the cast and the household');
 {
   const wardOfRoom = new Map(mystery.rooms.map((r) => [r.id, r.ward]));
-  const peak = { outer: 0, inner: 0 };
-  const peakAt = { outer: null, inner: null };
   const wardsAt = new Map(); // "person/watch" -> Set of wards, for the named case
-  for (const watch of mystery.watches) {
-    const cast = { outer: 0, inner: 0 };
-    const folk = { outer: 0, inner: 0 };
-    for (const [who, schedule] of Object.entries(mystery.schedule)) {
-      const station = schedule[watch];
-      if (!station) continue;
-      const ward = wardOfRoom.get(station.room);
-      if (ward !== 'outer' && ward !== 'inner') {
-        fail(`${who} stands in "${station.room}" at ${watch} and mystery.json gives that room ward ${JSON.stringify(ward)} — the body cannot be budgeted`);
-        continue;
-      }
-      cast[ward]++;
-    }
-    for (const p of populace.people) {
-      const ring = p.routine?.[watch] ?? [];
-      if (!ring.length) continue;
-      const wards = new Set();
-      for (const stop of ring) {
-        const ward = wardOfRoom.get(stop.room);
+  const days = [
+    { of: 'the day of the death', watches: mystery.watches, schedule: mystery.schedule },
+    { of: 'the walking day', watches: mystery.day0?.watches ?? [], schedule: mystery.day0?.schedule ?? {} },
+  ];
+  if (!days[1].watches.length) fail('the walking day names no bells, so this section counts one day and says it counts two');
+  for (const day of days) {
+    const peak = { outer: 0, inner: 0 };
+    const peakAt = { outer: null, inner: null };
+    for (const watch of day.watches) {
+      const cast = { outer: 0, inner: 0 };
+      const folk = { outer: 0, inner: 0 };
+      for (const [who, schedule] of Object.entries(day.schedule)) {
+        const station = schedule[watch];
+        if (!station) continue;
+        const ward = wardOfRoom.get(station.room);
         if (ward !== 'outer' && ward !== 'inner') {
-          fail(`${p.id} has a stop in "${stop.room}" at ${watch} and mystery.json gives that room ward ${JSON.stringify(ward)} — the body cannot be budgeted`);
+          fail(`${who} stands in "${station.room}" at ${watch} and mystery.json gives that room ward ${JSON.stringify(ward)} — the body cannot be budgeted`);
           continue;
         }
-        wards.add(ward);
+        cast[ward]++;
       }
-      if (p.follow) for (const w of WARDS) wards.add(w);
-      wardsAt.set(`${p.id}/${watch}`, wards);
-      for (const w of wards) folk[w]++;
+      for (const p of populace.people) {
+        const ring = p.routine?.[watch] ?? [];
+        if (!ring.length) continue;
+        const wards = new Set();
+        for (const stop of ring) {
+          const ward = wardOfRoom.get(stop.room);
+          if (ward !== 'outer' && ward !== 'inner') {
+            fail(`${p.id} has a stop in "${stop.room}" at ${watch} and mystery.json gives that room ward ${JSON.stringify(ward)} — the body cannot be budgeted`);
+            continue;
+          }
+          wards.add(ward);
+        }
+        if (p.follow) for (const w of WARDS) wards.add(w);
+        wardsAt.set(`${p.id}/${watch}`, wards);
+        for (const w of wards) folk[w]++;
+      }
+      const here = { outer: cast.outer + folk.outer, inner: cast.inner + folk.inner };
+      for (const w of WARDS) if (here[w] > peak[w]) { peak[w] = here[w]; peakAt[w] = watch; }
+      console.log(`        ${watch}: ${WARDS.map((w) => `${w} ${here[w]} (${cast[w]} + ${folk[w]})`).join(', ')}`);
     }
-    const here = { outer: cast.outer + folk.outer, inner: cast.inner + folk.inner };
-    for (const w of WARDS) if (here[w] > peak[w]) { peak[w] = here[w]; peakAt[w] = watch; }
-    console.log(`        ${watch}: ${WARDS.map((w) => `${w} ${here[w]} (${cast[w]} + ${folk[w]})`).join(', ')}`);
+    for (const w of WARDS) {
+      if (peak[w] > MAX_SKINNED_PER_WARD) fail(`on ${day.of} the ${w} ward holds ${peak[w]} skinned bodies at ${peakAt[w]}, over the ceiling of ${MAX_SKINNED_PER_WARD}`);
+      else pass(`on ${day.of} the ${w} ward peaks at ${peak[w]} skinned bodies (${peakAt[w]}), ${MAX_SKINNED_PER_WARD - peak[w]} under the ceiling of ${MAX_SKINNED_PER_WARD}`);
+    }
   }
   /* THE NAMED CASE, the way `cross-walk` is #608's: a ring that crosses the
    * porter gate is counted on both sides of it. Count only a ring's first
@@ -409,10 +433,14 @@ console.log('\nskinned bodies per ward, at each watch, the cast and the househol
   if (!lad) fail('the baker\'s lad has no ring at Terce, so the named case for a ring across two wards names nobody');
   else if (lad.has('outer') && lad.has('inner')) pass('the baker\'s lad at Terce, hauling from the outer ward to the bakehouse, is counted in both wards');
   else fail(`the baker's lad at Terce hauls from the outer ward to the bakehouse and is counted in ${[...lad].join(' and ')} only`);
-  for (const w of WARDS) {
-    if (peak[w] > MAX_SKINNED_PER_WARD) fail(`the ${w} ward holds ${peak[w]} skinned bodies at ${peakAt[w]}, over the ceiling of ${MAX_SKINNED_PER_WARD}`);
-    else pass(`the ${w} ward peaks at ${peak[w]} skinned bodies (${peakAt[w]}), ${MAX_SKINNED_PER_WARD - peak[w]} under the ceiling of ${MAX_SKINNED_PER_WARD}`);
-  }
+  /* AND THE SAME LAD AT THE SAME BELL OF THE WALKING DAY, which is the one
+   * assertion that says this section really counted the second day: the ring is
+   * the same ring under `terce-eve`, so a loop that never looked at
+   * `day0.watches` leaves this entry unset and this line fails. */
+  const ladEve = wardsAt.get(`baker-lad/${days[1].watches[1] ?? '?'}`);
+  if (!ladEve) fail(`the baker's lad has no ring at ${days[1].watches[1]}, so the walking day's own bells were never counted`);
+  else if (ladEve.has('outer') && ladEve.has('inner')) pass(`and at ${days[1].watches[1]} he hauls the same ring and is counted in both wards on the walking day too`);
+  else fail(`the baker's lad at ${days[1].watches[1]} is counted in ${[...ladEve].join(' and ')} only`);
   const built = npcs.cast.length + populace.people.length;
   if (built > MAX_SKINNED_TOTAL) fail(`${built} bodies built, over the ceiling of ${MAX_SKINNED_TOTAL} (${npcs.cast.length} cast and ${populace.people.length} household)`);
   else pass(`${built} bodies built, ${npcs.cast.length} cast and ${populace.people.length} household, ${MAX_SKINNED_TOTAL - built} under the ceiling of ${MAX_SKINNED_TOTAL}`);
