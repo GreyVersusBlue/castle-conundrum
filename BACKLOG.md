@@ -308,8 +308,8 @@ watched the fixed route carry a real `npm run play` to the second bell yet;
 that proof is rank 2's alone. **Rank 1 is done, its section is gone from this
 file and from `SPECS.md`, and its number is retired.**
 
-**Both failures behind the red `plan-vs-scene` are found and fixed, unranked,
-on `claude/r99-red-ci`** (#721 to #724). The chapel-candles failure was never
+**Both failures behind the red `plan-vs-scene` are found and fixed, unranked.
+The row shipped as PR #58, merged to `main`** (#721 to #724). The chapel-candles failure was never
 the bell: ringing it sends twelve bodies walking, and the Constable's Prime
 station is 0.92 m from the candles, so from the nearest of the twelve measured
 cells he stands 0.52 m away and 62 degrees off the aim, and nearest-wins ranking
@@ -334,9 +334,11 @@ this machine does not. `test/plan-vs-scene.mjs` now parks the rings with
 skipped, 7 of 13 bodies failed, worst 11.000 m off; restored, the beat holds at
 0.01 m at 15 s and again at 45 s.
 
-**`npm test` is 15 of 15 on this branch and `npm run build` is clean. Nothing
-here has merged**, so what is confirmed is local; the PR's own CI run is what
-settles it for `main`. A finding and not a fix: nothing stops a station
+**`npm test` is 15 of 15 locally and `npm run build` is clean. CI on the PR is
+green** — build and the fifteen suites pass, 12m50s, run 35547097670 — and the
+populace half of this fix was confirmed only there: the baker-at-Prime
+failure never reproduced on the dev machine, so that CI run is the only place
+it has ever been exercised. A finding and not a fix: nothing stops a station
 standing on top of a prop — the Chaplain 0.20 m from the gravestone at every
 watch, the Constable 0.92 m from the chapel candles at Prime — and `SPECS.md`
 carries a recommended `PROP_CLEARANCE = 1.0 m` for whoever takes that row.
