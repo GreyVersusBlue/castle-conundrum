@@ -50,7 +50,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { partsOf } from './gltf.mjs';
 import { makePlan, walkability, collidersWith, moveBody, GRID, HEAD_LOW, HEAD_HIGH, BODY_RADIUS, DAY_SETS, EYE_HEIGHT } from '../src/castle-plan.js';
-import { dayTwoOutcomes, dayTwoCastle } from '../src/mystery.js';
+import { dayTwoOutcomes, dayTwoCastle, undoDay } from '../src/mystery.js';
 import { stepClassOf, bedOf, bedSources, sourcePoint, audibleFrom, ringOf, CUES, eventOf, cueSound } from '../src/audio.js';
 import { castleNav } from '../src/stations.js';
 import { routeThrough, marksAlong, onStorey } from './route.mjs';
@@ -431,6 +431,34 @@ console.log('\nthe morning after, against the plan');
       else pass(`"${ch.piece} ${ch.set}" takes no stone out, which is what the plan already has`);
     }
   }
+}
+
+/* ------------------- the walking day's overlay comes off again (#539, #750) ---
+ * `day0.castle` is `day2.castle`'s shape and the same four verbs, and it is empty
+ * today, so nothing above can say whether the day before's stone is put back on
+ * the way into the mystery. `undoDay` is what `beginDay1` hands the builder, and
+ * this is the round trip: the inverse of a row takes no stone out of the castle,
+ * and the inverse of the inverse is the row itself. Derivable from the plan and
+ * the data in Node, which is what puts it here and not in plan-vs-scene (#529).
+ */
+console.log('\nthe day overlay, undone');
+{
+  const rows = [{ piece: 'cell-bars', set: 'gone' }];
+  const off = collidersWith(plan, rows);
+  const back = collidersWith(plan, undoDay(rows));
+  if (off.length >= plan.colliders.length) fail(`"cell-bars gone" takes no collider out of the castle, so the round trip below is asserting nothing (#147)`);
+  else pass(`"cell-bars gone" takes ${plan.colliders.length - off.length} collider(s) out of the castle`);
+  const ids = (list) => list.map(c => c.id).sort().join(',');
+  if (back.length !== plan.colliders.length || ids(back) !== ids(plan.colliders)) {
+    fail(`undoDay of it leaves ${back.length} colliders against the plan's ${plan.colliders.length}: the walking day's overlay would not come off on the way into the mystery`);
+  } else pass(`and undoDay of it puts all ${plan.colliders.length} of them back`);
+  const twice = undoDay(undoDay(rows));
+  if (JSON.stringify(twice) !== JSON.stringify(rows)) fail(`undoDay twice is ${JSON.stringify(twice)} and not ${JSON.stringify(rows)}: the verbs are not each other's inverse`);
+  else pass('and undoDay twice is the row it started as, for all four verbs');
+  const every = ['open', 'shut', 'gone', 'shown'].map(set => ({ piece: 'cell-bars', set }));
+  const flipped = undoDay(every).map(r => r.set).join(',');
+  if (flipped !== 'shut,open,shown,gone') fail(`undoDay maps open, shut, gone, shown to ${flipped}`);
+  else pass(`open and shut are each other's undo, and so are gone and shown: ${flipped}`);
 }
 
 /* ------------------------- 3d: the castle's rooms and the mystery's are one ---
@@ -1498,10 +1526,23 @@ console.log('\nevery zone has an ambient bed');
    * morning bell has a Lauds sky; a second one written into `day2.watches`
    * without a sky beside it would be that silent failure, and this is what
    * says so. */
-  const everyBell = [...mystery.watches, ...(mystery.day2?.watches ?? [])];
-  const skyless = everyBell.filter(w => !config.lighting?.watches?.[w]);
-  if (skyless.length) fail(`${skyless.join(', ')} ${skyless.length === 1 ? 'is a bell' : 'are bells'} the engine can stand at with no sky in data/scene-config.json's lighting.watches: ringing ${skyless.length === 1 ? 'it' : 'one of them'} would change the HUD and not the light`);
-  else pass(`all ${everyBell.length} bells of the two days have a sky: ${everyBell.join(', ')}`);
+  /* AND THE WALKING DAY'S FOUR BORROW THEIRS (#750 to #756, open call 10). Its
+   * bells are its own ids, so `lighting.watches` has never heard of them and
+   * never will: `mystery.watchLike` maps each one to the hour it takes its light
+   * from, `applyWatch` resolves it and src/main.js calls `setWatch` with what
+   * comes out. So a bell passes here if the config has its own id or the one it
+   * borrows, and an alias is held to the same standard as a bell: a `watchLike`
+   * key that is not a bell of any day is an alias for nothing, and a value with
+   * no sky behind it is the silent failure this rail exists for. */
+  const everyBell = [...mystery.watches, ...(mystery.day2?.watches ?? []), ...(mystery.day0?.watches ?? [])];
+  const like = mystery.watchLike ?? {};
+  const skyOf = (w) => like[w] ?? w;
+  const bells = new Set(everyBell);
+  const skyless = everyBell.filter(w => !config.lighting?.watches?.[skyOf(w)]);
+  const strayLike = Object.keys(like).filter(w => !bells.has(w));
+  if (skyless.length) fail(`${skyless.join(', ')} ${skyless.length === 1 ? 'is a bell' : 'are bells'} the engine can stand at with no sky in data/scene-config.json's lighting.watches and none in mystery.watchLike: ringing ${skyless.length === 1 ? 'it' : 'one of them'} would change the HUD and not the light`);
+  else if (strayLike.length) fail(`mystery.watchLike names ${strayLike.join(', ')}, which ${strayLike.length === 1 ? 'is not a bell' : 'are not bells'} of any day, so the alias is for a sky nothing will ever ask for`);
+  else pass(`all ${everyBell.length} bells of the three days have a sky, ${Object.keys(like).length} of them borrowed: ${everyBell.map(w => (like[w] ? `${w} as ${like[w]}` : w)).join(', ')}`);
   const stray = ringOf(sounds, emitted.length + 1);
   if (stray.strokes !== 1 || stray.gain !== 1) fail(`ringOf a ring the file has nothing for is ${JSON.stringify(stray)} and not one plain stroke`);
 }

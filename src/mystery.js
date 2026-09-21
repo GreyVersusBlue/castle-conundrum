@@ -22,8 +22,8 @@ import { STATION_CLEARANCE, TALK_RANGE } from './stations.js';
 import { DAY_SETS } from './castle-plan.js';
 
 const KINDS = new Set(['S', 'E', 'D', 'L']);
-/** The seven `ui` lines the HUD reads out of mystery.json. */
-const UI_LINES = ['asleep', 'absent', 'gone', 'locked', 'known', 'empty', 'fall'];
+/** The eight `ui` lines the HUD reads out of mystery.json. `quiet` is the walking day's (open call 9). */
+const UI_LINES = ['asleep', 'absent', 'gone', 'locked', 'known', 'empty', 'fall', 'quiet'];
 
 const asList = (v) => (v == null ? [] : Array.isArray(v) ? v : [v]);
 
@@ -55,21 +55,47 @@ const asList = (v) => (v == null ? [] : Array.isArray(v) ? v : [v]);
  * `key` (one of `accusation.verdicts`' own seven), the `class` (one of the four
  * the engine emits as `verdict:<class>`), and `who` hangs. */
 
-/**
- * The bells of a day, in order: `watches` for day one, `day2.watches` for the
- * morning after (#699). Every reader of a watch id goes through this rather
- * than through `mystery.watches` plus a special case, because the special case
- * is what made `day2.watch` a single id in four files at once.
+/* ------------------------------------------------------------ the day before ---
+ * THE WALKING DAY IS THE SAME `day` FIELD, A THIRD VALUE (#750 to #756). Devon
+ * took the walking day as the main mode (#751) and as the day BEFORE the death
+ * (#752), so which of the three days a save is on is what tells them apart and
+ * a `mode` field would be a second name for one fact (#754). `day0` is
+ * `day2`'s sibling in data/mystery.json and names its own four bells for
+ * `day2.watches`' reason: src/stations.js keys its points `npc/watch`, so
+ * reusing `prime` would make one key mean two stations.
  *
- * A day two with no list of its own falls back to the four instead of to
- * nothing: `validateMystery` refuses that data, and a morning with no bell to
- * stand at would put the engine on `undefined` rather than on a wrong bell.
+ * A THIRD BRANCH AND NOT A GENERALISATION (open call 1). `dayWatchesOf` is
+ * generalised because it is one list lookup keyed by a day number; every other
+ * site gains an `onDayZero()` beside `onDayTwo()` rather than turning
+ * `if (onDayTwo())` into a silent three-way. Four things hold that line: this
+ * function keys on the literals 0 and 2 and everything else is the four;
+ * `watches` is still asserted to be exactly four; `repair` can only produce 0,
+ * 1 or 2 (src/save.js); and test/mystery.mjs asserts `dayWatchesOf(m, 1)` and
+ * `dayWatchesOf(m, 7)` are both the four.
+ *
+ * WHAT THE WALKING DAY HAS NONE OF: clues, presses, locks, an accusation, a
+ * verdict. `examine` answers `ui.quiet` and grants nothing, `press` shrugs,
+ * `accuse` is refused, and `enter` still fills the map in but grants no `L`
+ * clue. So the incoherence rail in `repair` is one line: a `day: 0` carrying a
+ * clue or a recorded verdict is a save saying the mystery happened before the
+ * day before it. */
+
+/**
+ * The bells of a day, in order: `day0.watches` for the walking day (#750),
+ * `watches` for day one, `day2.watches` for the morning after (#699). Every
+ * reader of a watch id goes through this rather than through `mystery.watches`
+ * plus a special case, because the special case is what made `day2.watch` a
+ * single id in four files at once.
+ *
+ * A day with no list of its own falls back to the four instead of to nothing:
+ * `validateMystery` refuses that data, and a day with no bell to stand at
+ * would put the engine on `undefined` rather than on a wrong bell.
  */
 export function dayWatchesOf(mystery, day = 1) {
   const four = Array.isArray(mystery?.watches) ? mystery.watches : [];
-  if (day !== 2) return four;
-  const morning = asList(mystery?.day2?.watches).filter((w) => typeof w === 'string' && w.trim());
-  return morning.length ? morning : four;
+  if (day !== 0 && day !== 2) return four;
+  const own = asList(day === 0 ? mystery?.day0?.watches : mystery?.day2?.watches).filter((w) => typeof w === 'string' && w.trim());
+  return own.length ? own : four;
 }
 
 /** The outcome of a finished day, or null while it is still running. */
@@ -213,6 +239,35 @@ export function dayTwoCastle(mystery, outcome) {
 
 /** True for a cast member who is not in the castle until the second day. */
 const arrivesLate = (npc) => (npc?.arrives ?? 1) > 1;
+
+/**
+ * True for a cast member who is in the castle on the walking day and no other
+ * (open call 8). `arrives: 0` is Hywel and is the one thing that reads as
+ * present on day one if nobody asks: every existing rail asks `> 1`, which is
+ * false for 0, so a fourteenth body with no day-one schedule would have been a
+ * missing-schedule failure in this file and a prompt over an empty patch of
+ * floor in the castle. Exported beside `arrivesLate` because src/lore.js asks
+ * the same question of a chatter pair and of a performance.
+ */
+export const beforeDayOne = (npc) => (npc?.arrives ?? 1) < 1;
+
+/**
+ * The inverse of a day overlay: what takes it off the castle again (#539).
+ * `open` and `shut` are each other's undo and so are `gone` and `shown`, so
+ * this is the row list with every verb flipped and nothing else — the order is
+ * kept, because two rows on one piece are refused by `validateMystery` and a
+ * reordering here would be the one thing that could make them matter.
+ *
+ * `beginDay1` hands this back for `day0.castle`, which is how the walking day's
+ * overlay comes off the stone on the way into the mystery. The block is empty
+ * today, so the round trip is what keeps it honest until it is not:
+ * test/layout.mjs asserts `collidersWith(plan, undoDay(rows))` is
+ * `plan.colliders` and `undoDay(undoDay(rows))` is `rows`.
+ */
+export function undoDay(rows = []) {
+  const back = { open: 'shut', shut: 'open', gone: 'shown', shown: 'gone' };
+  return asList(rows).filter((r) => r && typeof r.piece === 'string').map((r) => ({ piece: r.piece, set: back[r.set] ?? r.set }));
+}
 
 /** Index the data once. Every validator rail and the engine read from this. */
 function index(mystery, npcs) {
@@ -491,6 +546,17 @@ export function validateMystery(mystery, npcs, quest, nav = null, sideQuests = [
       if (ix.schedule[npcId]) say(`${npcId}: arrives on day ${npc.arrives} and still has a day-one schedule`);
       continue;
     }
+    /* AND THE ONE WHO IS ONLY IN THE CASTLE THE DAY BEFORE (#752, open call 8).
+     * `arrives: 0` is the walking day and no other, so a day-one schedule for
+     * him is a dead man standing at a station, and no `day0` schedule at all is
+     * a fourteenth body the walking day cannot place. Both directions, because
+     * each of them is silent on the screen: `npc.js`'s `get active()` hides a
+     * body with no station, so the second failure is an empty lodge. */
+    if (beforeDayOne(npc)) {
+      if (ix.schedule[npcId]) say(`${npcId}: is in the castle on the walking day only (arrives: 0) and still has a day-one schedule`);
+      if (!mystery.day0?.schedule?.[npcId]) say(`${npcId}: is in the castle on the walking day only (arrives: 0) and has no station in day0.schedule, so nothing can place him on it`);
+      continue;
+    }
     if (!ix.schedule[npcId]) { say(`${npcId}: no schedule`); continue; }
     for (const w of watches) {
       if (!(w in ix.schedule[npcId])) say(`${npcId}: no station at ${w} (use null for not in the castle)`);
@@ -563,6 +629,116 @@ export function validateMystery(mystery, npcs, quest, nav = null, sideQuests = [
     }
   }
 
+  /* --- The walking day (#750 to #756). The day BEFORE the death, and the five
+   * nav rails it reuses are day one's five: floor under the station, inside the
+   * room it names, 1.5 m clear of everybody else at that bell, somewhere the
+   * player can reach, and a walk from where the body stood at the bell before.
+   * What is new is the walk at the END of it: whoever is at a station at the
+   * last bell of the walking day has to be able to get from there to his
+   * day-one Prime station on his own feet, which is the day-two rail's
+   * "overnight is still a walk" pointed forward instead of back. It skips the
+   * man who is only here the day before and the man who is not here until
+   * Terce, for the reason the day-two one skips a man with no Vespers station:
+   * there is nothing to walk from or to. */
+  const d0 = mystery.day0;
+  if (!d0 || typeof d0 !== 'object') {
+    say('day0: no walking day, so the castle opens on the morning the mason is already dead');
+  } else {
+    const w0list = asList(d0.watches);
+    if (!Array.isArray(d0.watches) || w0list.length !== 4) say(`day0.watches: ${JSON.stringify(d0.watches)} is not a list of four bell ids`);
+    const morningSet = new Set(asList(mystery.day2?.watches));
+    const seen0 = new Set();
+    for (const w of w0list) {
+      if (typeof w !== 'string' || !w.trim()) say(`day0.watches: ${JSON.stringify(w)} is not a watch id`);
+      else if (ix.watchIdx.has(w)) say(`day0.watches: ${w} is one of the four bells, and a bell of the walking day is the walking day's own`);
+      else if (morningSet.has(w)) say(`day0.watches: ${w} is one of the morning's bells, and a bell of the walking day is the walking day's own`);
+      else if (seen0.has(w)) say(`day0.watches: ${w} is listed twice, so two bells of the walking day are one bell`);
+      else seen0.add(w);
+    }
+    // Everybody who is in the castle that day is somewhere at every bell of it,
+    // or nowhere on purpose. The one who does not arrive until the morning after
+    // is the one exception, and he is the only `arrives: 2` there is.
+    for (const [npcId, npc] of cast) {
+      if (arrivesLate(npc)) {
+        if (d0.schedule?.[npcId]) say(`${npcId}: arrives on day ${npc.arrives} and still has a station on the walking day`);
+        continue;
+      }
+      if (!d0.schedule?.[npcId]) { say(`${npcId}: no row in day0.schedule, so the walking day cannot place him`); continue; }
+      for (const w of w0list) {
+        if (!(w in d0.schedule[npcId])) say(`${npcId}: no station at ${w} (use null for not in the castle)`);
+        const s = d0.schedule[npcId][w];
+        if (s && !rooms.has(s.room)) say(`${npcId}: station at ${w} is in no room (${JSON.stringify(s.room)})`);
+        else if (s && s.level != null && rooms.get(s.room).level !== s.level) say(`${npcId}: station at ${w} says level ${s.level} but ${s.room} is on ${rooms.get(s.room).level}`);
+      }
+    }
+    for (const npcId of Object.keys(d0.schedule ?? {})) if (!cast.has(npcId)) say(`day0.schedule: ${npcId} is not in the cast`);
+
+    // What is on the ground that day: six ids, each an evidence row the castle
+    // really builds a prop for. A name with no row is a prop that never comes
+    // back, and for the muniment leaf that is a hole in the King's Tower wall.
+    for (const id of asList(d0.evidence)) {
+      if (!evidence.has(id)) say(`day0.evidence: ${id} is not an evidence row, so nothing in the castle answers to it`);
+    }
+    // The pane the last ring puts up. A missing half of it is a blank pane, the
+    // same failure `day2.endings` has its own rail for.
+    for (const k of ['title', 'text', 'button']) {
+      if (typeof d0.night?.[k] !== 'string' || !d0.night[k].trim()) say(`day0.night.${k}: no text, so the walking day would end on a blank pane`);
+    }
+
+    // The stations themselves, against the castle, exactly as day one is.
+    if (nav) {
+      const code = (id) => rooms.get(id)?.code ?? id;
+      for (const npcId of cast.keys()) {
+        if (!d0.schedule?.[npcId]) continue;
+        let previous = null, previousWatch = null;
+        for (const w of w0list) {
+          const point = nav.at(npcId, w);
+          const s = d0.schedule[npcId][w];
+          if (s && !point) { say(`${npcId}: station at ${w} has no tile`); continue; }
+          if (!point) continue;
+          if (!nav.standable(point)) {
+            say(`${npcId}: station at ${w} is at tile (${s.tile.join(', ')}) on level ${point.level}, where there is no floor to stand on`);
+          } else {
+            if (nav.inNamedRoom(point) === false) say(`${npcId}: station at ${w} is at tile (${s.tile.join(', ')}), which is not inside ${s.room}`);
+            if (rooms.get(s.room)?.barred) {
+              if (!nav.talkable(point)) say(`${npcId}: station at ${w} is in ${code(s.room)}, behind bars with nowhere within ${TALK_RANGE} m of them to stand`);
+            } else if (!nav.walkable(point)) {
+              say(`${npcId}: station at ${w} is at tile (${s.tile.join(', ')}) in ${code(s.room)}, which the player cannot walk to`);
+            }
+            if (previous && !nav.route(previous, point)) {
+              say(`${npcId}: no path from ${code(previous.room)} at ${previousWatch} to ${code(point.room)} at ${w}`);
+            }
+          }
+          previous = point; previousWatch = w;
+        }
+        /* AND THE WALK INTO THE NIGHT. The last bell of the walking day to the
+         * first bell of the day of the death: the castle sleeps in between and
+         * nobody is carried anywhere (open call 4), so a body that cannot walk
+         * it wakes up somewhere it teleported to. */
+        const lastW = w0list[w0list.length - 1];
+        const from = nav.at(npcId, lastW);
+        const to = watches.length ? nav.at(npcId, watches[0]) : null;
+        if (from && to && !nav.route(from, to)) {
+          say(`${npcId}: no path from ${code(from.room)} at ${lastW} to ${code(to.room)} at ${watches[0]}`);
+        }
+      }
+      // Two bodies in one place at one bell is one body the player can never talk to.
+      for (const w of w0list) {
+        const here = [...cast.keys()].map((id) => [id, nav.at(id, w)]).filter(([, p]) => p);
+        for (let a = 0; a < here.length; a++) {
+          for (let b = a + 1; b < here.length; b++) {
+            const [idA, pA] = here[a], [idB, pB] = here[b];
+            if (pA.level !== pB.level) continue;
+            const gap = Math.hypot(pA.x - pB.x, pA.z - pB.z);
+            if (gap < STATION_CLEARANCE) {
+              say(`${idA} and ${idB} stand ${gap.toFixed(2)} m apart at ${w}, inside the ${STATION_CLEARANCE} m two bodies need`);
+            }
+          }
+        }
+      }
+    }
+  }
+
   /* --- The second day (#533 to #537). Everything below is about `day2`, and
    * the five nav rails it reuses are the five above: floor under the station,
    * inside the room it names, 1.5 m clear of everybody else at that bell,
@@ -597,7 +773,13 @@ export function validateMystery(mystery, npcs, quest, nav = null, sideQuests = [
     if (!outcomes.length) say('day2: the accusation table has no verdicts, so no morning has a shape');
 
     // Everybody in the cast is somewhere on the morning after, or nowhere on purpose.
-    for (const npcId of cast.keys()) {
+    for (const [npcId, npc] of cast) {
+      // The walking day's own man is not here at all, and a row for him would be
+      // a station for somebody who is dead by this bell (#752, open call 8).
+      if (beforeDayOne(npc)) {
+        if (npcId in (d2.schedule ?? {})) say(`${npcId}: is in the castle on the walking day only (arrives: 0) and still has a station at ${w2}`);
+        continue;
+      }
       if (!(npcId in (d2.schedule ?? {}))) say(`${npcId}: no station at ${w2} (use null for not in the castle)`);
     }
     for (const npcId of Object.keys(d2.schedule ?? {})) if (!cast.has(npcId)) say(`day2.schedule: ${npcId} is not in the cast`);
@@ -947,12 +1129,20 @@ export function createMystery({ mystery, npcs, state }) {
 
   const day2 = mystery?.day2 ?? null;
   const onDayTwo = () => st.day === 2 && !!day2;
+  /* AND THE DAY BEFORE, A THIRD BRANCH BESIDE IT (#750 to #756, open call 1).
+   * `onDayZero()` is deliberately its own predicate and every clause below that
+   * needs it says so out loud, rather than `onDayTwo()` becoming a three-way
+   * that means "not day one". The two days have almost nothing in common: the
+   * morning after has a verdict and no clues, and the walking day has neither. */
+  const day0 = mystery?.day0 ?? null;
+  const onDayZero = () => st.day === 0 && !!day0;
   // The day names its bells and `st.watch` indexes that list, not the four
-  // (#699). Both lists are read once here; `dayWatchesOf` is the only place
-  // that picks between them.
+  // (#699). All three lists are read once here; `dayWatchesOf` is the only
+  // place that picks between them.
   const dayOneWatches = dayWatchesOf(mystery, 1);
   const morningWatches = dayWatchesOf(mystery, 2);
-  const dayWatches = () => (onDayTwo() ? morningWatches : dayOneWatches);
+  const walkingWatches = dayWatchesOf(mystery, 0);
+  const dayWatches = () => (onDayZero() ? walkingWatches : onDayTwo() ? morningWatches : dayOneWatches);
   const watchId = () => { const list = dayWatches(); return list[Math.min(Math.max(st.watch, 0), list.length - 1)]; };
   const holds = (id) => st.clues.includes(id);
   const npcState = (npcId) => st.pressed[npcId]?.at(-1) ?? 'default';
@@ -998,8 +1188,11 @@ export function createMystery({ mystery, npcs, state }) {
     holds,
     npcState,
 
-    /** Which day the save is on: 1 until the epilogue's button, 2 after it. */
-    get day() { return onDayTwo() ? 2 : 1; },
+    /**
+     * Which day the save is on: 0 on the walking day, 1 from the mystery's own
+     * first bell, 2 after the epilogue's button (#750 to #756, #533).
+     */
+    get day() { return onDayZero() ? 0 : onDayTwo() ? 2 : 1; },
 
     /** The ending the recorded accusation is, or null while the day is running. */
     outcome() { return outcomeOf(mystery, st); },
@@ -1020,6 +1213,14 @@ export function createMystery({ mystery, npcs, state }) {
         if (dayTwoAbsent(mystery, outcomeOf(mystery, st)).has(npcId)) return null;
         return day2.schedule?.[npcId] ?? null;
       }
+      // A bell of the walking day is any id in `day0.watches`, and the schedule
+      // is a station per person per bell, so it is read per bell the way day
+      // one's is. Nobody is absent on it: the walking day has no verdict to take
+      // anybody out of the castle.
+      if (day0 && asList(day0.watches).includes(watch)) {
+        if (!onDayZero()) return null;
+        return day0.schedule?.[npcId]?.[watch] ?? null;
+      }
       return ix.station(npcId, watch);
     },
 
@@ -1029,6 +1230,17 @@ export function createMystery({ mystery, npcs, state }) {
     /** Null when the NPC is not in the castle or asleep; else their state, station and the statements a talk would grant. */
     available(npcId) {
       if (!ix.cast.has(npcId)) return null;
+      /* THE WALKING DAY HAS STATIONS AND NO STATEMENTS. There are no clues on it,
+       * so there is nothing for a conversation to grant; what the player gets is
+       * the `day0` line set, which is the stage's `dialogueState` and is
+       * npcs.json's (open call 6). `asleep` IS honoured, unlike the morning
+       * after's: the sentry keeps the night watch the evening before as well, and
+       * a body the player cannot talk to is the same body either day. */
+      if (onDayZero()) {
+        const station = api.stationOf(npcId);
+        if (!station || station.asleep) return null;
+        return { npc: npcId, state: npcState(npcId), station, statements: [] };
+      }
       if (onDayTwo()) {
         const station = api.stationOf(npcId);
         // NOBODY IS ASLEEP ON THE MORNING AFTER. `asleep` is a day-one station
@@ -1059,7 +1271,10 @@ export function createMystery({ mystery, npcs, state }) {
       // presses are still in the data. Nobody is moved by any of them: the day
       // they belonged to is over, and a Steward pressed into `admits` at Lauds
       // would be granting a clue against a verdict already written down.
-      if (onDayTwo() || !a || !holds(clueId)) return [{ type: 'shrug', npc: npcId, clue: clueId }];
+      // And on the walking day for the same reason from the other end: the
+      // journal is empty, there are no clues to hold and nothing anybody says
+      // yet is a thing to be pushed back at them.
+      if (onDayZero() || onDayTwo() || !a || !holds(clueId)) return [{ type: 'shrug', npc: npcId, clue: clueId }];
       const p = presses.find((x) => x.npc === npcId && x.on === clueId && asList(x.from).includes(a.state));
       if (!p) return [{ type: 'shrug', npc: npcId, clue: clueId }];
       (st.pressed[npcId] ??= []).push(p.to);
@@ -1093,6 +1308,17 @@ export function createMystery({ mystery, npcs, state }) {
         effects.push({ type: 'watch', watch: list[n], index: n });
         effects.push({ type: 'stations', stations: Object.fromEntries([...ix.cast.keys()].map((id) => [id, api.stationOf(id, list[n])])) });
         effects.push({ type: 'event', name: `bell:${n}` });
+      } else if (onDayZero()) {
+        /* THE LAST RING OF THE WALKING DAY IS THE NIGHT (#755, open call 5). It
+         * moves no watch and does not wrap: a day before a death is a day that
+         * ends. `night` is the effect the manager puts the pane up on, exactly
+         * as `demand` is the one it opens the accusation on, and `bell:4` goes
+         * with it so the graph moves and data/sounds.json's fourth character
+         * rings (#701). The day is numbered within its own list, so the walking
+         * day's four rings are `bell:1` to `bell:4` and nothing was written
+         * into that file. */
+        effects.push({ type: 'night', watch: list[st.watch] });
+        effects.push({ type: 'event', name: `bell:${list.length}` });
       } else if (onDayTwo()) {
         effects.push({ type: 'event', name: `bell:${list.length}` });
       } else {
@@ -1120,6 +1346,12 @@ export function createMystery({ mystery, npcs, state }) {
         st.visited.push(room);
         effects.push({ type: 'visited', room, level });
       }
+      /* THE MAP IS FILLED IN BY WALKING, ON EVERY DAY THERE IS (open call 3);
+       * THE CLUE IS NOT. `visited` is a fact about the player and carries across
+       * the night, so the walking day is worth walking for the map alone. An `L`
+       * clue is a fact about the case, and `walk-crosses` in a walking day's
+       * journal would be the mystery started the day before it happened. */
+      if (onDayZero()) return effects;
       for (const c of clues.values()) {
         if (c.kind === 'L' && c.source?.room === room && (c.source.level == null || level == null || c.source.level === level)) grant(c.id, effects);
       }
@@ -1133,6 +1365,14 @@ export function createMystery({ mystery, npcs, state }) {
       // does not have to hold a second copy of mystery.json to say what was
       // examined. validateMystery makes the name compulsory.
       const of = (type, extra = {}) => ({ type, evidence: evidenceId, name: e.name, ...extra });
+      /* AND ON THE WALKING DAY THERE IS NOTHING TO LOOK FOR (open call 9). One
+       * effect, `ui.quiet`'s, and nothing granted, nothing taken and nothing
+       * refused: the six things `day0.evidence` leaves on the ground are
+       * furniture the day before, and the other five are not in the castle at
+       * all because the manager never shows them. This is above `taken` on
+       * purpose — a thing pocketed in the mystery is not pocketed the day
+       * before it, and a day-0 save cannot be carrying `taken` anyway. */
+      if (onDayZero()) return [of('quiet')];
       if (st.taken.includes(evidenceId)) return [of('gone')];
       if (!asList(e.watches).includes(watchId())) return [of('absent', { watch: watchId() })];
       if (!asList(e.requires).every(holds)) return [of('locked', { requires: asList(e.requires).filter((r) => !holds(r)) })];
@@ -1154,7 +1394,12 @@ export function createMystery({ mystery, npcs, state }) {
      * `accusation.present` held clues. The Constable judges what is presented.
      */
     accuse(who, clueIds = []) {
-      if (ended()) return [];
+      // Nobody is dead yet, so there is nobody to name (#752). Nothing reaches
+      // this on the walking day — `explore` runs no `openAccusation` and the
+      // Constable's `day0` lines carry no `{ACCUSE}` — and it is refused here as
+      // well, because an accusation recorded on a day 0 is the one thing
+      // `repair`'s incoherence rail cannot tell from a hand-edited save.
+      if (onDayZero() || ended()) return [];
       const presented = [...new Set(clueIds)].filter(holds).slice(0, accusation.present ?? 3);
       const fromIdx = ix.watchIdx.get(accusation.from) ?? 0;
       if (st.watch < fromIdx) return [{ type: 'early', judge: accusation.judge, text: accusation.early ?? '' }];
@@ -1215,6 +1460,58 @@ export function createMystery({ mystery, npcs, state }) {
      * day-two stage, and a morning that has rung on would be rewound by being
      * re-entered.
      */
+    /**
+     * THE WALKING DAY, APPLIED (#750 to #756). Sets `day` to 0 on the save and
+     * hands back the shape of the castle that makes: which bell, who is standing
+     * where — the twelve and Hywel, nobody absent, because there is no verdict to
+     * take anybody out — what is on the ground, what the overlay does to the
+     * stone, and the pane the last ring ends on.
+     *
+     * `beginDay2`'s shape, including its guard (#699): `st.watch` is an index
+     * into the day's own list, so it comes back to 0 on the way in and MUST NOT
+     * on the second call. This runs on entering `explore`, which is every load
+     * of a walking-day save, and a walking day that has rung on would be
+     * rewound by being re-entered.
+     *
+     * There are no `lines` in what comes back, unlike the morning after's: what
+     * the thirteen say on the walking day is their own `day0` set in npcs.json,
+     * reached by the stage's `dialogueState`, so `_linesFor` needs no day-0
+     * branch and the errands go on speaking over it (open call 6).
+     */
+    beginDay0() {
+      if (!day0) return null;
+      if (st.day !== 0) { st.day = 0; st.watch = 0; }
+      const stations = {};
+      for (const npcId of ix.cast.keys()) stations[npcId] = api.stationOf(npcId, watchId());
+      return {
+        day: 0, watch: watchId(), watches: [...walkingWatches], stations,
+        evidence: asList(day0.evidence), night: day0.night ?? null,
+        castle: asList(day0.castle).map((c) => ({ piece: c.piece, set: c.set })),
+      };
+    },
+
+    /**
+     * AND THE MYSTERY BEGINNING (#755). The other half of `beginDay0`: sets
+     * `day` to 1, puts the watch back to the first of the four, and hands back
+     * the day-one castle — everybody at their Prime station, and `undoDay` of
+     * the walking day's overlay, which is what takes the day before's stone off
+     * again. It is what `day:1` runs, from the night pane's button or from
+     * `QuestManager.enterMystery()`, and it is the only thing that writes day 1.
+     *
+     * The same guard, for the same reason: on a day-one state at Sext it leaves
+     * the watch at Sext, because `arrive` carries this on `enter` and a save
+     * resumed there must not be rewound to Prime.
+     */
+    beginDay1() {
+      if (st.day !== 1) { st.day = 1; st.watch = 0; }
+      const stations = {};
+      for (const npcId of ix.cast.keys()) stations[npcId] = api.stationOf(npcId, watchId());
+      return {
+        day: 1, watch: watchId(), watches: [...dayOneWatches], stations,
+        castle: undoDay(asList(day0?.castle)),
+      };
+    },
+
     beginDay2() {
       const outcome = outcomeOf(mystery, st);
       if (!day2 || !outcome) return null;

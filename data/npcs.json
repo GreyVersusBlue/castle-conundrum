@@ -34,6 +34,9 @@
           "He gave you the tune and not one word of it. Of course he did.",
           "His grandfather stood against my King's father for nine years on the far bank of that river, was sworn at the end of it, and kept his word and his opinions both. I have read the file. He stands on my north walk because he is the best I have.",
           "So. The mason. A name, or do I write the stair?"
+        ],
+        "day0": [
+          "You are the new clerk, then. Keep out of the guardroom after dark and we shall get on well enough."
         ]
       },
       "dialogueComment": "The accusation's token is the last line of `default` and stays the last line of `default` (Phase 7). quest.json substitutes it, and `talked:constable` in `investigate` and `accusing` opens the accusation overlay after the conversation. validateAgainstNpcs holds the token and the action to each other in both directions.",
@@ -78,6 +81,9 @@
         "slate-ruled": [
           "It is in the roll, under her name, in a hand Caernarfon will read. Whatever else this day writes down, that is in it.",
           "Do not tell her that either."
+        ],
+        "day0": [
+          "The accounts are where they always are, and you are not to touch them."
         ]
       }
     },
@@ -123,6 +129,9 @@
         "cornered": [
           "Wastage. Yes. Wastage is a mason's word, clerk, not a thief's. Sheets crack. Sheets are cut short. Sheets are lost off a roof in a wind.",
           "You have a ledger and an apprentice's memory. The Constable has a stair and a drunk. Ask yourself which he will write down."
+        ],
+        "day0": [
+          "Mind the ink. I have been three days on this one page and I will not have it blotted."
         ]
       }
     },
@@ -164,6 +173,9 @@
           "It is in the book. In my hand, under the day, the way everything through this gate goes in the book.",
           "Twenty years of mine and twenty of his before it, and that is the first thing either of us has ever taken out through it.",
           "You will be gone tomorrow and you will not think of it again. I will."
+        ],
+        "day0": [
+          "The gate is barred at Vespers. Ask me at Vespers and it will still be barred."
         ]
       }
     },
@@ -206,6 +218,9 @@
           "The knife is on its hook and the boy has had what I had for him.",
           "My lantern is still out there, and the man who carried it off is laid out in the chapel.",
           "Ask me about that one as often as you like."
+        ],
+        "day0": [
+          "If you are hungry you are early. If you are early you can carry something."
         ]
       },
       "dialogueComment": "The three knife states are the cook's-knife side quest's (data/quests/cooks-knife.json), not the mystery's. mystery.json grants `cook-lantern` and `knife-missing` off `default` and off nothing else, and the engine reads its own `st.pressed` rather than the line set on screen, so none of these three can grant a clue however the quest walks. test/quest.mjs holds every dialogue key on every npc to a stage or a press that can reach it, the side quests now included.",
@@ -248,6 +263,9 @@
           "The Steward said that? Then God forgive me, I will say what I heard.",
           "Two men on the stair at the second bell. Voices, low, then not low. Then one man, going up. Only one.",
           "I lay and listened to one man go up my stair and I did not get out of my bed. That is what I heard nothing means."
+        ],
+        "day0": [
+          "The chapel is open. It is always open. Nobody comes."
         ]
       }
     },
@@ -291,6 +309,9 @@
           "Saturday, and civil, and four pence he will have, and then I keep to my own walk and he keeps to his lodge.",
           "North walk, Compline to Lauds, from the Kitchen Tower door. That is my post and I was at it.",
           "Second bell, a man in a fur-trimmed cloak went east along it past me. I have said that to you already and I will say it to whoever asks."
+        ],
+        "day0": [
+          "I have the walk again tonight. Do not whistle up at me; I will take you for the Welsh."
         ]
       },
       "heldPropComment": "Dafydd is the only one of the twelve carrying anything. The mace came into the project on the Guard of v1 and stays referenced through him; it is also what reads as a soldier from across the ward, where a tint alone does not."
@@ -340,6 +361,9 @@
           "Prime tomorrow, at the forge, and I will have it off him. I have his mark on the tang and the custom on my side, and now the roll, which is the King's.",
           "I will finish the head he was on with his own iron. That is how it should be done, and I had given it up.",
           "He told me mind the fire. I have minded it."
+        ],
+        "day0": [
+          "Hywel has me squaring stone until the light goes. He says the eye learns before the hand does."
         ]
       }
     },
@@ -389,6 +413,9 @@
           "Madoc is my husband. Yes. Since you ask what nobody else has.",
           "They put him in the tower for the lead because somebody had to go in the tower. I have no reason on this earth to lie for the Clerk of Works, and one very good one to lie against him.",
           "So weigh what I say however you like. The cloak is still the Clerk's."
+        ],
+        "day0": [
+          "Everything in this castle comes to me filthy and goes back to it wet."
         ]
       }
     },
@@ -431,6 +458,9 @@
           "You have had the roll off the barrel-head. Somebody in this castle can read, then.",
           "Eight days at the forge and I watched that cart both ways. It came in empty and it went out with the axle riding low, and I have shod that horse eleven years. It was not stone.",
           "And the dates are in that roll and they have been in it for eleven days. Show it to the Constable. He will tell you a smith is a smith and a roll is a roll."
+        ],
+        "day0": [
+          "A day is a day in here. You are a new face, at least."
         ]
       }
     },
@@ -468,6 +498,9 @@
         "admits": [
           "You have been under the sacking. Well.",
           "The Clerk sells. The Steward signs the pass. I only buy, clerk, and a man who only buys has hanged for less, so I will be in the town by Sext and you may tell them I said so."
+        ],
+        "day0": [
+          "Thomas Wykes, of the town. I buy stone and I sell lead, and both of them honestly."
         ]
       }
     },
@@ -515,6 +548,9 @@
           "You have been up on the walk. Then you know what I know, that the wards are one ward up there.",
           "Last night: one lantern going up the Chapel Tower stair, late. And after, a shadow along the south walk, going westward, with no lantern at all.",
           "I did not think it my business. I have been married to a Constable eleven years."
+        ],
+        "day0": [
+          "You may walk where you like. I do, and nobody has stopped me yet."
         ]
       }
     },
@@ -537,6 +573,31 @@
       "dialogue": {
         "default": [
           "The King's inspector has not dismounted yet."
+        ],
+        "day0": [
+          "The King's inspector is a day's ride off, and does not know your name yet."
+        ]
+      }
+    },
+    {
+      "id": "hywel",
+      "name": "Hywel ap Gruffudd",
+      "role": "Master mason",
+      "ward": "outer",
+      "arrives": 0,
+      "arrivesComment": "THE FOURTEENTH, AND HE IS IN THE CASTLE ON ONE DAY OF THE THREE (#752, #756). `arrives: 0` means the walking day and no other: `beforeDayOne` in src/mystery.js reads it, refuses him a day-one and a day-two schedule and demands a `day0` one, and `src/npc.js`'s `get active()` hides a body with no station, so on the day of the death he is not a prompt over an empty patch of chapel floor. He is the man the mystery is about, alive, and the reason to walk the day before it. The accusation panel filters `arrives === 1` and never offers him, which is right twice over: a dead man is not accusable of his own murder. His lines for the walking day are the `day0` set below; the one `default` line is the fallback the inspector's own entry set the precedent for, and it is only reachable on a day he is not in the castle for.",
+      "modelPath": "assets/NPCs/Farmer.glb",
+      "tint": "#7a6a52",
+      "placeholder": {
+        "color": "#7a6a52"
+      },
+      "heldProp": null,
+      "dialogue": {
+        "default": [
+          "Hywel ap Gruffudd is dead at the foot of the Chapel Tower stair."
+        ],
+        "day0": [
+          "Hywel ap Gruffudd. Master mason, and the man who has to make this roof stand up."
         ]
       }
     }

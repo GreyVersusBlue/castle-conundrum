@@ -456,6 +456,66 @@ console.log('the second day, through the save');
     'a morning with two bells in it clamps to 1, so the ceiling is the data and not a number written beside it', String(onTwo.watch));
 }
 {
+  /* THE WALKING DAY, ON THE SAME FIELD AND AT THE SAME VERSION (#754, amending
+   * #751). `day` is 0, 1 or 2; nothing else about the schema moved, `migrate` is
+   * untouched and `SAVE_VERSION` is still 6, because no version-6 save on any
+   * machine can be carrying `day: 0` — nothing has ever written one. What repair
+   * has to do is hold the third value and clamp the watch against the walking
+   * day's own bells, and refuse the one save that cannot be true. */
+  const w0 = mystery.day0.watches;
+  check(SAVE_VERSION === 6 && slotWith().slot.version === 6,
+    'the walking day is a third value on `day` and not a version 7 (#754)', String(SAVE_VERSION));
+  const zero = repaired({ stage: 'explore', day: 0, watch: 3 });
+  check(zero.day === 0 && zero.watch === 3,
+    `a day: 0 save comes back on day 0 with its watch clamped to the ${w0.length} bells of the walking day`, JSON.stringify({ day: zero.day, watch: zero.watch }));
+  check(repaired({ day: 0, watch: 9 }).watch === w0.length - 1 && repaired({ day: 0, watch: -2 }).watch === 0,
+    'a 9 and a -2 on the walking day clamp to its own last bell and to its first', JSON.stringify([repaired({ day: 0, watch: 9 }).watch, repaired({ day: 0, watch: -2 }).watch]));
+  // And the engine agrees with the save about which day and which bell.
+  const onZero = createMystery({ mystery, npcs: cast, state: repaired({ stage: 'explore', day: 0, watch: 3 }) });
+  check(onZero.day === 0 && onZero.watch === w0[3],
+    `the engine on that save is on the walking day at ${w0[3]}`, `day ${onZero.day} at ${onZero.watch}`);
+  /* WITHOUT THE THIRD LIST the clamp would use the four, and say so out loud
+   * (#147): both lists are four long today, so substituting one for the other
+   * changes no answer and an assertion about it would pass whatever the code did.
+   * What is asserted instead is the ceiling, against a clone whose walking day is
+   * two bells long, which is the same shape the morning's own rail uses. */
+  const narrow = JSON.parse(JSON.stringify(mystery));
+  narrow.day0.watches = [w0[0], w0[1]];
+  const short = buildCatalog(narrow, quest, documents, sideQuests, rooms);
+  check(short.walkingWatches.length === 2 && repairState({ stage: 'explore', day: 0, watch: 3 }, short).watch === 1,
+    'a walking day with two bells in it clamps to 1, so the ceiling is the data and not a number written beside it',
+    String(repairState({ stage: 'explore', day: 0, watch: 3 }, short).watch));
+
+  /* AND THE ONE WALKING-DAY SAVE THAT CANNOT BE TRUE (open call 3). There are no
+   * clues on the day before the death and `accuse` is refused on it, so a `day: 0`
+   * carrying either is a hand-edited file or a save from a schema nobody has
+   * written: it says the mystery happened before the day before it. It reads as
+   * day one, with the watch re-clamped to the four, which is the demotion the
+   * `day: 2` rail above already does in the same slot. */
+  const verdict = [{ who: 'nobody', clues: [], verdict: 'fall', watch: 'vespers' }];
+  const buried = repaired({ stage: 'explore', day: 0, watch: 3, accusations: verdict });
+  check(buried.day === 1 && buried.watch === 3, 'a day: 0 carrying a recorded verdict comes back as day one', JSON.stringify({ day: buried.day, watch: buried.watch }));
+  const held = repaired({ stage: 'explore', day: 0, watch: 2, clues: ['body-stair'] });
+  check(held.day === 1 && held.watch === 2, 'and so does a day: 0 carrying a clue', JSON.stringify({ day: held.day, watch: held.watch }));
+  check(repaired({ day: 0, clues: ['the-butler'] }).day === 0,
+    'a clue the catalog has never heard of is stripped first, so the walking day survives it', JSON.stringify(repaired({ day: 0, clues: ['the-butler'] }).day));
+  check(repaired({ day: 0, accusations: [{ who: 'porter', clues: [], verdict: null, watch: 'terce' }] }).day === 0,
+    'and a refusal is not a verdict, so it does not demote the day either');
+  // WITHOUT THE RAIL: the engine reads the day it is given, and a walking day
+  // with a verdict in it opens the day before the death with the mason buried.
+  const asGiven = { ...repaired({ stage: 'explore', day: 0, watch: 0 }), accusations: verdict, day: 0 };
+  const ghost = createMystery({ mystery, npcs: cast, state: asGiven });
+  check(ghost.day === 0 && !!ghost.outcome() && ghost.stationOf('hywel')?.room === 'lodge',
+    'without it: the engine is on the walking day, Hywel is alive in his lodge, and the save says the Constable has already written his sheet',
+    `day ${ghost.day}, outcome ${ghost.outcome()?.key}, hywel in ${ghost.stationOf('hywel')?.room}`);
+  // A version-6 save on either of the other two days is untouched by all of it.
+  const { slot, storage } = slotWith();
+  storage.setItem(SAVE_KEY, JSON.stringify({ __v: 6, stage: 'investigate', day: 1, watch: 2 }));
+  check(slot.load()?.day === 1 && slot.load()?.watch === 2, 'a version-6 save on day one is untouched by the third value');
+  storage.setItem(SAVE_KEY, JSON.stringify({ __v: 6, stage: 'morning', day: 2, watch: 0, accusations: verdict }));
+  check(slot.load()?.day === 2 && slot.load()?.watch === 0, 'and so is one on day two');
+}
+{
   // A reload in `morning`: `applyDay` is on that stage's `enter`, so the cast
   // is placed and everybody's day-two lines are in hand before the player has
   // moved. Without it the morning opens with nobody moved.

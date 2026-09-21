@@ -1,9 +1,10 @@
 # Castle Conundrum — how this repo works
 
-A first-person medieval murder mystery in three.js. Twelve suspects, four
-bells, one accusation, and a morning after it. `index.html` at the repo root,
-source in `src/`, the mystery and the castle as data in `data/`, 39 MB of glTF
-and textures in `assets/`, fifteen suites in `test/`.
+A first-person medieval murder mystery in three.js. A day of walking before
+it, twelve suspects, four bells, one accusation, and a morning after it.
+`index.html` at the repo root, source in `src/`, the mystery and the castle as
+data in `data/`, 39 MB of glTF and textures in `assets/`, fifteen suites in
+`test/`.
 
 **`PLAN.md` is the most valuable file here.** It is 64 K of phase plans — what
 the castle is, why the order is what it is, and the seven phases that built it,

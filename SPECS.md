@@ -202,13 +202,14 @@ that row.
 
 ## Explore: the day before
 
-**Rank 1. Size 2+. Nothing shipped.** Devon answered `WISHLIST.md` theme 8's
-four questions on 2026-09-21 and overturned the theme on two of them: the
-walking day is the main mode with the mystery behind it (#751), and it is the
-day BEFORE the death, Hywel alive and speakable (#752). That price is given and
-is not renegotiated here. What this section does is settle ten calls against
-the code rather than against the theme, so each of the four increments below is
-class S.
+**Rank 1. Size 2+. Increment 1 shipped 2026-09-21** (#767 to #770, against
+#754 to #756). Devon answered `WISHLIST.md` theme 8's four questions on
+2026-09-21 and overturned the theme on two of them: the walking day is the
+main mode with the mystery behind it (#751), and it is the day BEFORE the
+death, Hywel alive and speakable (#752). That price is given and is not
+renegotiated here. What this section does is settle ten calls against the
+code rather than against the theme, so each of the four increments below is
+class S. **Increments 2 to 4 are open.**
 
 Theme 8's engine half still holds in shape: one stage, one branch per method in
 the engine, a bell, four rails. What does not hold is anything it wrote for a
@@ -266,7 +267,7 @@ Seven readings, because five of them make the theme's plan wrong.
    existing messages are left alone so `test/lore.mjs:208, 270` keep asserting
    what they assert. Open call 8.
 
-### Scope, increment 1: the engine, the save, and a placeholder day
+### Scope, increment 1: the engine, the save, and a placeholder day — shipped 2026-09-21 (#767 to #770)
 
 The whole mechanism, with a day-0 schedule that is day one's copied under
 day-0 bell ids and Hywel standing in the lodge with one line. Everything the
@@ -293,7 +294,7 @@ list, so four day-0 bells ring `bell:1` to `bell:4` and the four characters
 already exist, #701), `data/populace.json`, `data/documents.json`,
 `data/lore.json`, `data/quests/`.
 
-### Acceptance, increment 1
+### Acceptance, increment 1 — green, 15 of 15
 
 Every item is Node or headless. Each break is run from a green baseline and its
 FAIL line is quoted in `HISTORY.md` (#34, #13).
@@ -323,7 +324,9 @@ FAIL line is quoted in `HISTORY.md` (#34, #13).
   it skips Hywel and the merchant for the reason the day-2 one skips a man with
   no Vespers station: there is nothing to walk from or to.
   **Break**: on a clone, move the cook's `vespers-eve` station into the cell and
-  the rail says `cook: no path from CE at vespers-eve to KI at prime`.
+  the rail says `cook: no path from PT at vespers-eve to KI at prime` (the
+  cook's real `day0` station is `PT`, not `CE` as an earlier draft of this
+  example had it; corrected once the increment shipped, #767).
 - **`test/mystery.mjs`, Hywel.** `beforeDayOne` is true for him and false for
   the twelve and the inspector; he has a `day0` station, no `schedule` row and
   no `day2.schedule` row, and each of those three is a rail with its own
@@ -377,8 +380,10 @@ FAIL line is quoted in `HISTORY.md` (#34, #13).
 | `src/ui.js` | `showStart(onStart, onMystery = null)`; a null second callback hides `#start-mystery`, which is what a resumed save gets. `showStartAgain` never shows it. |
 | `src/main.js` | The UI-flow region only. The second callback is the first one plus `quest.enterMystery()`, and it is passed only when `saved` is null. |
 | `README.md` | The opening says a castle you walk with a mystery in it. |
-| `test/overlays.mjs`, `test/touch.mjs`, `test/built.mjs`, `test/play-castle.mjs` | Each clicks `#start-mystery` where it wants the day of the death. |
-| `test/plan-vs-scene.mjs`, `test/map.mjs` | Each calls `window.__quest.enterMystery()` after the build and before it measures, because neither ever clicks (#755). `plan-vs-scene`'s counts become 14 bodies and `hywel,inspector,merchant` hidden at Prime. |
+| `test/overlays.mjs`, `test/touch.mjs` | Each already calls `window.__quest.enterMystery()`, added in increment 1 because `start: explore` broke both suites the moment it shipped (#767). This increment replaces that call with a real click of `#start-mystery`, now that the button exists to click. |
+| `test/built.mjs`, `test/play-castle.mjs` | Neither was touched by increment 1. Each clicks `#start-mystery` where it wants the day of the death; `test/play-castle.mjs` is what un-breaks `npm run play`, blocked on the walking day since increment 1 shipped (#767). |
+| `test/plan-vs-scene.mjs` | Already calls `window.__quest.enterMystery()` after the build and before it measures, added in increment 1 for the same reason as `overlays`/`touch` (#755, #767); its counts are already 14 bodies and `hywel,inspector,merchant` hidden at Prime. Nothing further here. |
+| `test/map.mjs` | Needed nothing in increment 1 — it asserts no fact the walking day changes (#767). Still needs `window.__quest.enterMystery()` after the build, because it never clicks either (#755). |
 
 ### Acceptance, increment 2
 

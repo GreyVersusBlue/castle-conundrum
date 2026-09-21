@@ -110,6 +110,14 @@ try {
   const playing = await page.evaluate(() => !!window.__player?.enabled && window.__player.isLocked && window.__player.onTouch);
   check(playing, 'the player is enabled and on the touch scheme, with no pointer lock to take');
 
+  /* AND THE MYSTERY DOOR (#755). The page opens on the walking day since #751,
+   * where the muniment leaf answers with a line instead of a riddle (open call
+   * 7) and there is nothing in the journal to present. Every beat below is about
+   * the day of the death, so this file takes the same door the start panel's
+   * second button takes: one dispatch of `day:1`.
+   */
+  await page.evaluate(() => window.__quest.enterMystery());
+
   /* ------------------------------------ 3: one button, and it is the prompt --- */
   // The muniment room's word-lock, from the King's Hall, exactly where
   // plan-vs-scene.mjs stands to press E at it. Placed, not walked (#53).

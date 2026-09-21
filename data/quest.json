@@ -1,15 +1,77 @@
 {
   "comment": "The quest as a graph. `start` names the first stage. Each stage carries the objective the tracker shows, the dialogue state every NPC switches to on entering it (a key into each npc's `dialogue` in npcs.json), the transitions that leave it, and optionally `enter` actions run on arrival. A transition fires `on` an event and may `do` actions, move `to` another stage, or both. Actions are the names src/quest-manager.js implements (QuestManager.actions); an `after` is a delay in ms. `tokens` are substituted into dialogue lines before they are shown. test/quest.mjs checks all of this against npcs.json, riddle.json, mystery.json, scene-config.json and index.html.",
   "frameComment": "PHASE 7 PROMOTED THE FRAME AND DELETED THE RIDDLE QUEST. Phase 1 wrote this graph under a `frame` key beside the three stages the page played (seek-keystone, present-keystone, gate-open) and the Keystone those stages talked about; both are gone, and what is left is the graph the mystery actually runs in. The riddle survived (#416) as the word-lock on the muniment room: `lock:muniment` opens it and `riddle:solved` does `openLock`, which unlocks the room in the engine and swings the leaf. `openGate` and `showVictory` went with the three stages, and so did `frame` itself: there is one graph in this file now.",
-  "events": "talked:<npc> (an id in npcs.json's `cast`) when that conversation is stepped through to its end; lock:<id> when the player presses E at a word-locked door; riddle:solved when the overlay accepts the word; bell:<n> on the nth ring; clue:<id> when a clue lands; press:<npc>:<clue> when a press moves someone; ask:journal and ask:accuse when the player asks for the journal or for the Constable's judgement; accused:<who> and verdict:<class> when he gives it.",
-  "start": "arrive",
+  "events": "talked:<npc> (an id in npcs.json's `cast`) when that conversation is stepped through to its end; lock:<id> when the player presses E at a word-locked door; riddle:solved when the overlay accepts the word; bell:<n> on the nth ring of whichever day the save is on; day:1 when the walking day ends, from the night pane's button or from QuestManager.enterMystery(); clue:<id> when a clue lands; press:<npc>:<clue> when a press moves someone; ask:journal and ask:accuse when the player asks for the journal or for the Constable's judgement; accused:<who> and verdict:<class> when he gives it.",
+  "start": "explore",
   "tokens": {
     "{ACCUSE}": "Well. Have you a name for me, or do I write that he fell?"
   },
   "stages": {
+    "explore": {
+      "objective": "Nobody is waiting for a name. Walk where you like; the bell is yours.",
+      "dialogueState": "day0",
+      "enter": [
+        "applyDay0"
+      ],
+      "transitions": [
+        {
+          "on": "ask:journal",
+          "do": [
+            "openJournal"
+          ]
+        },
+        {
+          "on": "bell:1",
+          "do": [
+            "ringBell"
+          ]
+        },
+        {
+          "on": "bell:2",
+          "do": [
+            "ringBell"
+          ]
+        },
+        {
+          "on": "bell:3",
+          "do": [
+            "ringBell"
+          ]
+        },
+        {
+          "on": "bell:4",
+          "do": [
+            "ringBell"
+          ],
+          "to": "night"
+        },
+        {
+          "on": "day:1",
+          "to": "arrive"
+        }
+      ],
+      "comment": "THE WALKING DAY, AND THE FIRST DOOR INTO THE GAME (#750 to #752, #755). `start` is here and not `arrive`: the castle at load is the day before the death, Hywel alive in his lodge, and the mystery is behind it. `applyDay0` is on `enter` rather than on a transition for the reason `accusing` carries `openAccusation` and `morning` carries `applyDay`: a save resumed in this stage has to come back to the walking day rather than to a day-one castle with a body in it. Three rings move the watch through the day's own four bells; the fourth moves here to `night`, which is the mystery's own shape (the fourth ring of day one is the Constable's demand and the frame moves with it). `day:1` is the way into the mystery and is dispatched by two things and no others: the night pane's button, and `QuestManager.enterMystery()`, which is what the start panel's second button and the two browser suites that never click a button call (#755). NO `lock:muniment` AND NO `riddle:solved`, on purpose (open call 7): a word-lock answered the day before would open the muniment room for the mystery and make `word-lock` permanently unholdable, so the leaf answers with `ui.quiet` instead and the press is not dead."
+    },
+    "night": {
+      "objective": "Night. Sleep where you stopped, and let the morning find him.",
+      "dialogueState": "day0",
+      "enter": [
+        "showNight"
+      ],
+      "transitions": [
+        {
+          "on": "day:1",
+          "to": "arrive"
+        }
+      ],
+      "comment": "THE END OF THE WALKING DAY. `showNight` puts up `data/mystery.json`'s `day0.night` through the same pane the epilogue uses, which frees the pointer and carries the errand line already, and its button dispatches `day:1`. The player is not moved by the night (open call 4): `state.player` is where he stood at the last bell and he wakes there, and the pane says so. There is nothing else in here — no journal, no bell, no lock — because the pane is up and the only thing on it is the button."
+    },
     "arrive": {
       "objective": "The master mason is dead at the foot of the Chapel Tower stair. Find the Constable.",
       "dialogueState": "default",
+      "enter": [
+        "applyDay1"
+      ],
       "transitions": [
         {
           "on": "lock:muniment",
@@ -34,7 +96,7 @@
           "to": "investigate"
         }
       ],
-      "comment": "The Constable stands over the body at Prime, which is where the player spawns, so this stage is one conversation long. His lines end in {ACCUSE} and nothing opens here: the first time he asks for a name the answer is the objective below, not the overlay. The word-lock is repeated in all three non-terminal stages because a door that is inert until the player has had a conversation on the other side of the castle reads as a broken door; test/plan-vs-scene.mjs pressed E at it before meeting anybody and found exactly that. The J key is here for the same reason."
+      "comment": "The Constable stands over the body at Prime, which is where the player spawns, so this stage is one conversation long. His lines end in {ACCUSE} and nothing opens here: the first time he asks for a name the answer is the objective below, not the overlay. The word-lock is repeated in all three non-terminal stages because a door that is inert until the player has had a conversation on the other side of the castle reads as a broken door; test/plan-vs-scene.mjs pressed E at it before meeting anybody and found exactly that. The J key is here for the same reason. AND `applyDay1` SINCE THE WALKING DAY (#750 to #756). Arriving here is the mystery beginning, from the walking day's night pane or from the start panel's second button, and it is the only thing that puts the save on day one: the body comes back to the stair, the eleven evidence rows come back to the bells they are listed at, the thirteen stand at their day-one Prime stations and the walking day's overlay comes off the stone. It is on `enter` and idempotent for `morning`'s reason: a save resumed in this stage has to come back to a day-one castle, and `beginDay1` moves the watch only on the way in (#699)."
     },
     "investigate": {
       "objective": "Learn what happened to Hywel ap Gruffudd before Vespers.",

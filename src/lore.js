@@ -17,7 +17,7 @@
 // tell is the same failure as a clue whose evidence does not list it (src/mystery.js's
 // `evidence ${id} does not list it as its clue`).
 
-import { dayTwoApplies, dayTwoOutcomes, dayTwoAbsent } from './mystery.js';
+import { dayTwoApplies, dayTwoOutcomes, dayTwoAbsent, beforeDayOne } from './mystery.js';
 
 /**
  * A FACT THAT CHANGES WITH WHAT THE PLAYER DID (#646, #596). `text` is what
@@ -83,7 +83,14 @@ function indexChatter(chatter, { npcs, mystery, problems }) {
         for (const npcId of speakers) {
           const n = cast.get(npcId);
           if (!n) { say(`${where}: ${npcId} is not in the cast`); continue; }
-          if ((n.arrives ?? 1) > 1) say(`${where}: ${npcId} arrives on day ${n.arrives} and is not one of the existing twelve`);
+          // TWO WAYS OF NOT BEING ONE OF THE EXISTING TWELVE (open call 8). The
+          // inspector has not dismounted yet; Hywel is dead by every one of the
+          // four bells this pool is keyed by. Each gets its own message, because
+          // the two men are on opposite sides of day one and because a session
+          // reading "arrives on day 0" would have to go and look up what that
+          // meant.
+          if (beforeDayOne(n)) say(`${where}: ${npcId} is in the castle on the walking day only (arrives: 0) and is not one of the existing twelve`);
+          else if ((n.arrives ?? 1) > 1) say(`${where}: ${npcId} arrives on day ${n.arrives} and is not one of the existing twelve`);
           else if (n.ward !== ward) say(`${where}: ${npcId}'s own ward is ${JSON.stringify(n.ward)}, not ${ward}`);
         }
         if (speakers[0] && speakers[1] && speakers[0] === speakers[1]) say(`${where}: both lines given to ${speakers[0]}`);
@@ -186,7 +193,10 @@ function indexPerformances(performances, { npcs, mystery, problems }) {
         if (dead.length) say(`${where}: ${e.npc} is gone from the castle at ${e.watch} in at least one ending this piece applies to (${dead.map((o) => o.key).join(", ")}), so this would be said in some plays and not others`);
         if (!outcomes.some((o) => dayTwoApplies({ when: e.when, unless: e.unless }, o))) say(`${where}: applies to no ending, so it is never said`);
       } else if (watches.has(e.watch)) {
-        if ((n.arrives ?? 1) > 1) say(`${where}: ${e.npc} arrives on day ${n.arrives} and is not one of the existing twelve`);
+        // The same two, and the same reason (open call 8): a piece at one of the
+        // four bells is day one's, and the man it is about is dead by all four.
+        if (beforeDayOne(n)) say(`${where}: ${e.npc} is in the castle on the walking day only (arrives: 0) and is not one of the existing twelve`);
+        else if ((n.arrives ?? 1) > 1) say(`${where}: ${e.npc} arrives on day ${n.arrives} and is not one of the existing twelve`);
         const st = mystery?.schedule?.[e.npc]?.[e.watch];
         if (!st) say(`${where}: ${e.npc} is not in the castle at ${e.watch}`);
         else if (st.room !== e.room) say(`${where}: ${e.npc} stands in ${st.room} at ${e.watch}, not in ${e.room}`);
