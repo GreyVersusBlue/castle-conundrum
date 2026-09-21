@@ -7622,6 +7622,37 @@ test over it. Three runs, six houses, a church, four ground props, two rooms.
   as the break, the street and the church are seen from nowhere and the yard,
   east of that wall, is still seen. 1939 eyes, 0.2 s.
 
+**Built, and each guard-rail broke from green, verbatim** (#34). `f26cc70`,
+2026-09-21.
+
+- **Check 4d, with `town-wall` raised to 20 m** (#728): `FAIL  mereford-street
+  is seen from nowhere: none of its 20 pieces (mereford-house-n1, …) has a
+  clear line to any of the 1939 places 8 m up the player can stand. #703 says
+  the player looks at it`; the church fails the same way, 9 pieces. The yard
+  still passes, seen from `floor-nw-tower-roof` at (-37.75, 13.70, -16.75) via
+  `wykes-shed-pitch-1`. Restored, 4d checks 1939 eyes in 55 ms: the street is
+  seen by 14 of its 20 pieces, the church by 8 of 9.
+- **`test/budget.mjs`, with `MAX_DRAW_CALLS_PER_WARD` at 1100** (#727): the
+  outer ward alone (993) still passes the old assertion and only the new one
+  fails: `FAIL  the outer ward's 993 meshes and the 131 outside both wards
+  come to 1124, over the ceiling of 1100: … outside-ground (5),
+  wykes-shed-pitch-1 (4), wykes-shed-pitch-2 (4)`.
+- **The map, three ways** (#726): a frame built off every room again —
+  `FAIL  every storey is framed on the castle's own 67.6 m … — 134.8, 134.8,
+  134.8, 134.8`; outside rooms counted in the stood-in denominator —
+  `"0 of 43 rooms stood in"` / `"3 of 43"`; and `· · ·` where an outside name
+  belongs — `wykes-yard: "· · ·", mereford-street: "· · ·", mereford-church:
+  "· · ·"`.
+
+**What shipped counts one mesh under the prototype's, everywhere the
+prototype's count was carried forward.** The four ground props measure 6
+meshes, not the prototype's 7, so the outside bucket is **131**, the outer
+ward's sum is **1124** (76 under 1200) and the inner's is **774** (426
+under). `mereford-street-barrels` ships at `rotationY: 0`: at the prototype's
+30°, its box went 0.09 m into `mereford-house-s1`. `SPECS.md` carried the
+prototype's 132/1125/775 into the built spec by mistake and is corrected to
+match.
+
 **The prototype found one thing the spec had to say**: a run that starts and
 ends on one tile throws in `runAxis` without an `axis` field, so the church
 tower carries `axis: "x"`. `SPECS.md` has it. The prototype is not committed;

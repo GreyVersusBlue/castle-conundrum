@@ -790,9 +790,10 @@ watch, from the chapel and then from the far ward):
 **Rank 9. Size 2+. The first increment as this section first specced it was
 already built, and the row's premise was corrected on 2026-09-17** (#582).
 **The map shipped the same day** (#588 to #591). `WISHLIST.md` theme 5.
-**The town's first increment is specced below and decided before it is built
-(#725 to #728)**: a street of six houses and a church inside Mereford's wall,
-west of the town gate, seen from the walls and entered by nobody.
+**The town's first increment shipped on 2026-09-21** (#725 to #728): a street
+of six houses and a church inside Mereford's wall, west of the town gate, seen
+from the walls and entered by nobody. **What is next is the quay and the
+river**, outside the west gate: see Open calls below.
 
 ### What was measured, and what it changed
 
@@ -833,14 +834,15 @@ What the tab looks like on a screen is unseen (#53).
 
 ### Scope, the town's first increment: Mereford inside its wall
 
-**Decided before it is built, #725 to #728.** The town is west of the
-`town-wall` run, not in the strip between it and the barbican (#725). Its
-rooms go on the map in a drawing of their own and out of the stood-in count
-(#726). What it draws is held against both wards' ceiling (#727). And every
-room outside the curtain is held to being seen from somewhere the player can
-stand, which is #703's other half written as an assertion (#728). Everything
-below was prototyped in Node against a clone of `data/scene-config.json` on
-2026-09-21 and the numbers are that prototype's, not estimates.
+**Shipped, #725 to #728.** The town is west of the `town-wall` run, not in
+the strip between it and the barbican (#725). Its rooms go on the map in a
+drawing of their own and out of the stood-in count (#726). What it draws is
+held against both wards' ceiling (#727). And every room outside the curtain
+is held to being seen from somewhere the player can stand, which is #703's
+other half written as an assertion (#728). Everything below was prototyped in
+Node against a clone of `data/scene-config.json` on 2026-09-21 before the
+build; where the built numbers differ from the prototype's, the built number
+is given and the difference is noted.
 
 Nothing in it is enterable. #703 stands: the castle is sealed, check 4 asserts
 it, and the town is a thing seen from the walls. Every piece is a Kenney kit
@@ -899,7 +901,9 @@ is `from.z * 4`.
   `(-72, 2.4)` and `detail-crate.glb` at about `(-88, -2.4)`, on the road's
   verges, at the yard's own scale of 2.5 rather than the prototype's 1. In the
   churchyard: `tree-large.glb` at about `(-82, -24)` and `column-damaged.glb`
-  at about `(-92, -12)` as its cross. Each clear of every run's box.
+  at about `(-92, -12)` as its cross. Each clear of every run's box. The
+  street's barrels ship at `rotationY: 0`, not the yard's arrangement's 30°:
+  at 30° their box went 0.09 m into `mereford-house-s1`.
 - **Two rooms, `ward: "outside"`, `level: 0`, `bounds` in world metres, no
   `floor`**:
   - `mereford-street`, name `"Mereford's street"`, bounds x -95..-66,
@@ -908,9 +912,10 @@ is `from.z * 4`.
     z -26..-10: the church and its yard.
   - `town-tree-3` (-80, 12) and `town-tree-4` (-108, -8) stay where rank 5 put
     them and are now inside the wall. Neither is in either room.
-- **Cost, measured**: the outside bucket goes from 44 meshes to 132. A solid
-  house is one mesh and its two pitches eight; the church is 22; the three
-  runs are 5, the west gate's cut making three boxes of one.
+- **Cost, measured**: the outside bucket goes from 44 meshes to 131 (the
+  prototype's count was 132; its four ground props measured 7, the shipped
+  ones 6). A solid house is one mesh and its two pitches eight; the church is
+  22; the three runs are 5, the west gate's cut making three boxes of one.
 
 **`src/ui.js` and `src/ui.css`** (no lane): the map, per #726.
 `_renderJournalMap` splits `rooms` on `ward === 'outside'`. The storey
@@ -965,20 +970,21 @@ church is a one-line change a dev-machine session can make.
   -16.75) by `wykes-shed-pitch-1`, which is the exact vantage and piece #707
   photographed through a crenel, so that line is the check agreeing with a
   picture rather than with itself (#34). **If the yard ever fails 4d, the
-  check is wrong and not the yard** (#147). In the prototype the street was seen by 14
-  of its 20 candidates and the church by 8 of its 9. **Break**: `town-wall` to 20 m high.
-  The prototype says the street and the church are then seen from nowhere and
-  the yard, which stands east of that wall, is still seen: the check tells
-  the rooms apart. Write the FAIL lines into `HISTORY.md` under #728.
+  check is wrong and not the yard** (#147). The built street is seen by 14
+  of its 20 pieces and the church by 8 of its 9, the same split the prototype
+  found. **Break**: `town-wall` to 20 m high. The street and the church are
+  then seen from nowhere and the yard, which stands east of that wall, is
+  still seen: the check tells the rooms apart. FAIL lines recorded under
+  #728 in `HISTORY.md`.
 - **The existing `layout.mjs` checks hold unchanged**: 3 (fourteen ground
   rooms), 3d (the mystery's rooms), "a name for every room" (43 names, all
   different, all drawable), 10 (no shared top plane), 11 (something in every
   room), 12 (every surface has a step sound: both materials already map), 13
   (ambient beds: outside rooms are exempt).
-- **`test/budget.mjs`**: outer 993 + outside 132 = 1125 of 1200 and inner
-  643 + 132 = 775. **Break**: `MAX_DRAW_CALLS_PER_WARD` to 1100. The outer
+- **`test/budget.mjs`**: outer 993 + outside 131 = 1124 of 1200 and inner
+  643 + 131 = 774. **Break**: `MAX_DRAW_CALLS_PER_WARD` to 1100. The outer
   ward alone (993) still passes the old assertion and only the new one fails,
-  on 1125. Record the FAIL line under #727.
+  on 1124. FAIL line recorded under #727 in `HISTORY.md`.
 - **`test/map.mjs`**, headless, reading the DOM:
   - the count reads `0 of 40 rooms stood in` on a fresh page and
     `3 of 40` after the tour;

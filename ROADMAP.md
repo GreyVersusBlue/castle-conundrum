@@ -392,9 +392,11 @@ to overturn rather than a street to place.
 
 A walled town's street, church and quay on the ground the yard proved. The
 rooms go on the map the day they go in `config.rooms`, because the map is the
-plan's list and not a second one (#588 to #591). **The first increment is
-specced and decided (#725 to #728)** and is a `builder` job: the street and
-the church, no quay yet.
+plan's list and not a second one (#588 to #591). **~~The street and the
+church~~ shipped 2026-09-21** (#725 to #728): 131 meshes outside both wards,
+the map back to 67.6 m and 40 rooms. **What is left is the quay and the
+river**, outside the west gate; it has no `SPECS.md` section yet, so it is an
+`architect` job first.
 
 ### Anytime — never gated, take it when the lane is free
 
