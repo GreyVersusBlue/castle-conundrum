@@ -7658,3 +7658,120 @@ ends on one tile throws in `runAxis` without an `axis` field, so the church
 tower carries `axis: "x"`. `SPECS.md` has it. The prototype is not committed;
 the builder writes the check and the town from the spec and breaks each on
 purpose from green.
+
+## Rank 6, the populace's second increment, decided: five more, a talk list of its own, and a budget that can see them (2026-09-20)
+
+**Rank 6, on `claude/backlog-rank-6-9678fa`, lanes C and D, no code.** The
+`SPECS.md` section said "the other forty", "stopping at twenty", and ambient
+talk out of `data/npcs.json`'s chatter pool once two populace bodies stand
+within 3 m, read off the DOM "the way the performance captions are read"
+in `test/plan-vs-scene.mjs`. Each of those was measured against the code
+and each came out wrong. Decisions #729 to #732, and the section is
+rewritten so the next increment is class S. **Numbers claimed against
+#724 as the highest in this file; ranks 2 and 9 are running at the same
+time, so expect to renumber at merge** (#607's lesson).
+
+- **"Twenty" was twenty more, and the budget allows five** (#729).
+  `SPECS.md` wrote "room for perhaps twenty more" and "stopping at twenty" on
+  2026-09-17, the same day #609 set the ceilings, and neither sentence was
+  checked against the other. The page builds **27** skinned bodies today:
+  all 13 of `npcs.json`'s `cast`, the inspector included because `main.js`
+  builds him on day one and hides him, and all 14 of `populace.json`, whose
+  ten from #616 became fourteen with rank 10's girl, hound and two hens.
+  `src/npc.js`'s `update` runs every mixer each frame before anything reads
+  `visible`, so all 27 are paid for. Against `MAX_SKINNED_TOTAL` of 32 that
+  is **5 more**; twenty more would be 47. Per ward, counting a ring in every
+  ward its stops are in and the hound in both, the outer ward is at **18 of
+  20** at Terce and the inner at 10. So the five go in the inner ward at
+  every bell, which takes it to 15 and leaves the outer at 18. Neither
+  ceiling moves. **Why not argue 32 up**: the ceiling is a guess (#609), the
+  only thing that could replace it with a number is rank 2's
+  `renderer.info` on a GPU, and a row that merely wants room is exactly what
+  `budget.mjs`'s header says has to bring evidence. The next body after
+  these five, a town body, or a rank 10 child or dog, is that argument.
+
+- **`test/budget.mjs` has been counting 12 bodies while the page builds 27,
+  and section 3 is taught the populace** (#730). Section 3 iterates
+  `mystery.json`'s `schedule` and nothing else, so it printed `12 bodies in
+  the castle` and `the outer ward peaks at 7` while the outer ward held 18;
+  `ROADMAP.md`'s "17 after" was never read by any suite. The change: a
+  populace body counts, at each watch, in every ward that `mystery.json`'s
+  `rooms` gives any stop of its ring at that watch; a body with `follow`
+  counts in both wards, because the hound leaves its ring for the player and
+  the porter gate does not stop it; the total is `cast.length +
+  people.length`, every body `main.js` builds. The ring rule is #608's
+  reaching rule applied to a body: a mixer is paid for wherever the body can
+  be when the player is standing there, and `validatePopulace` already asks
+  the clearance question every-stop-against-every-stop for the same reason
+  (#616). **Inside #611's carve-out**: it is the same suite and the same two
+  assertions, fed a second source, and no assertion crosses the
+  `layout` / `plan-vs-scene` / `mystery` / `budget` line. The named case is
+  `baker-lad` at Terce, whose ring runs `outer-ward` to `bakehouse`, in the
+  way `cross-walk` is #608's.
+
+- **The chatter pool is the twelve's, and the populace gets a `talk` list of
+  its own** (#731, amending #554 and `SPECS.md`). #554 shipped 27 pairs "for
+  the existing twelve only", validated each speaker against the cast, and in
+  the same sentence left them for a populace to spend. The two halves cannot
+  both hold. `test/lore.mjs` refuses a speaker who is not in the cast, so a
+  populace id cannot name a pair; every line starts with one of the twelve's
+  names (`"Marged: That cousin of yours..."`), so a populace body cannot
+  voice one either; and the twelve cannot spend it by proximity, because
+  **0 of the 27 pairs have their speakers within 3 m at the pair's watch**,
+  3 within 4.0 m (clerk and merchant 3.69 m, sentry and cook 4.00, constable
+  and steward 4.00), and 5 in the same room, measured off `castleNav`'s
+  stations. So `data/populace.json` gains a flat `talk` list, three pairs of
+  populace ids at one watch each, with no name prefix in the lines, and the
+  chatter pool stays as it is for a later increment to hold to the schedule,
+  which is the pass #554 said it skipped. `chatterComment` and `WISHLIST.md`
+  stop saying the populace spends it.
+
+- **How talk plays, and which suite holds each half** (#732). Two populace
+  bodies named by a pair, each on a one-stop `gossip` ring at the pair's
+  watch, 1.5 to 3 m apart in one room, both settled, with the player in that
+  room and within 6 m of their midpoint: the pair's lines go to the `#caption`
+  band #594 built, through `QuestManager`, sharing its one run slot, its
+  `_heard` set and its clock. Once per page and never saved, as #594 decided
+  for a sermon (#39), and `SAVE_VERSION` stays 6. A performance out-ranks
+  talk and talk never cuts one. The one-stop ring is the rule that makes the
+  pair still for the watch and lets a headless beat read it without racing
+  the clock #724 was about.
+
+  **The suite split, against #529.** The `SPECS.md` sentence said the
+  headless check reads the DOM "the way the performance captions are read
+  (#592)" in `test/plan-vs-scene.mjs`, and no caption is read there: #592's
+  are held by `test/quest.mjs`, in Node, with a stub UI and a queued
+  `_schedule`. So: the validator and the selector `talkDue`, both provable
+  from the data and the grid, go in `test/mystery.mjs`, which owns the
+  populace; the band's order, once-only and precedence go in
+  `test/quest.mjs`; and `test/plan-vs-scene.mjs` gets one beat that asserts
+  only that `main.js` handed `Populace` a `talk` callback that reaches the
+  DOM, the same shape as the hound's bark wire (#696). Which pairs stand
+  within 3 m is never asserted there.
+
+What was not decided here: the lines themselves, which are the builder's to
+write inside the rule `SPECS.md` gives them (household talk, nothing about
+the death), and the tiles, which the validator picks between.
+
+- **Rank 6's second increment shipped** (#733, building #729 to #732).
+  `data/populace.json` gains five people: `page`, `sacristan`,
+  `tiring-woman`, `watchman` and `writer`. The file holds 19 household plus
+  the cast's 13 is 32 bodies built, exactly `MAX_SKINNED_TOTAL`. Outer ward
+  holds 17, 18, 17, 17 and inner ward holds 14, 15, 14, 13 at Prime, Terce,
+  Sext and Vespers. `data/populace.json`'s `talk` gains three pairs, and the
+  maid's Sext stop in `inner-ward` becomes a `gossip` stop paired with the
+  tiring-woman's. **The writer's Prime, Terce and Vespers stops landed in
+  `inner-ward`, `tend`**, the fallback the spec allowed, because the
+  muniment has no walkable floor that counts as the room: all 8 floor cells
+  inside its disc read as `kings-hall`. `src/main.js` also passes `pairs:
+  populaceData.talk` to `Populace`, an argument the spec did not name.
+  **Breaks watched go red (#34)**: `talkDue` without the `settled` test;
+  `overhear` without the `_playing` guard; `test/budget.mjs` counting only a
+  ring's first stop; a twentieth household person, `33 bodies built, over
+  the ceiling of 32`; `page`, `sacristan` and `writer` moved to `outer-ward`
+  at Terce, `the outer ward holds 21 skinned bodies at terce, over the
+  ceiling of 20`; `src/main.js` constructed without `talk`, a dark band
+  after 20 steps. Three talk and hush wire checks were added beyond the
+  spec, because nothing else tested hush. One full-suite run went red on
+  `map`, `Port 8128 is already in use`, from another session on the same
+  machine sharing the port; the re-run was 15 of 15 green.
