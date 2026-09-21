@@ -599,7 +599,7 @@ reference in this file.
 
 | Rank | Item | Size | Model | Where | Gate | Lane | Claimed | Detail |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Explore: the day before the death, the walking day as the main mode, Hywel alive and nobody waiting for a name: increments 1 and 2 shipped, the engine, the save, a placeholder walking day and the two doors (#750 to #756, #767 to #774); the real lines and the day itself are left | 2+ | Opus 5 | Container | — | A, D | claude/walking-day-before-death-8apcav | [Explore: the day before](SPECS.md#explore-the-day-before) |
+| 1 | Explore: the day before the death, the walking day as the main mode, Hywel alive and nobody waiting for a name: increments 1 to 3 shipped, the engine, the save, the two doors and the fourteen real `day0` line sets (#750 to #756, #767 to #777); the day itself is left | 2+ | Opus 5 | Container | — | A, D | claude/walking-day-before-death-8apcav | [Explore: the day before](SPECS.md#explore-the-day-before) |
 | 2 | Sight at the body's own height: nobody upstairs can be talked to from beside them, and the porter on the walk can be from 8 m below | ¼ | Opus 5 | Container | — | — | | [Sight at the body's own height](SPECS.md#sight-at-the-bodys-own-height) |
 | 3 | The GPU run: the looks are taken (#711 to #715); the walker holds on a GPU (#734, #736) and the third sitting reached the accusation with the wrong ending (#735 to #741) | 1 | Opus 5 | Local: GPU | **after 2** | — | | [The GPU run](SPECS.md#the-gpu-run) |
 | 4 | The retro castle: increment 1 shipped, fifteen sets out and fifteen 128 px textures in (#757 to #766); the look, then variety per room, are left | 2+ | Opus 5 | Container to the look, local: GPU past it | — | B | | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
@@ -619,7 +619,7 @@ the same time. This table still ranks; that file sequences (#601).
 *Where: container. Gate: none. Lanes: A, D.*
 
 **Rank 1, and a 2+. Claimed on `claude/walking-day-before-death-8apcav`,
-2026-09-21. Increments 1 and 2 shipped the same day.** `WISHLIST.md` theme 8 put four
+2026-09-21. Increments 1 to 3 shipped the same day.** `WISHLIST.md` theme 8 put four
 questions to Devon the day it was written and he answered all four the same
 day (#750 to #753), overturning the theme's own recommendation on two of them:
 the walking day is the main mode, "Walk the castle" the first door into the
@@ -676,9 +676,22 @@ run `npm run play` past it**: this container is software-rendered and the
 suite needs a real GPU (#53), so the door is wired and every static check
 passes, but whether the day plays through it is unverified and is rank 3's
 first act, not this row's. `npm test` 15 of 15, `npm run build` clean,
-`npm run dialogue:check` green. **Increments 3 and 4 are open**: the fourteen
-real `day0` line sets, and the day-before content itself, the size of
-Phases 6 and 7 together.
+`npm run dialogue:check` green.
+
+**Increment 3 shipped 2026-09-21** (#775 to #777): the fourteen real `day0`
+line sets, fifty-seven lines in place of increment 1's stubs — Hywel's own
+five, four or five each for the twelve, and the inspector's unreachable one.
+`test/quest.mjs` holds #752's rule as far as a suite can: no `day0` line uses
+a word of the five things the walking day takes off the ground or of a death,
+proven against a control that catches ten of the fourteen day-one sets, so
+the word list is one a leak would trip. That rail caught a real mistake on
+its first run, before any deliberate break: Lady Alys's `day0` set had her
+day-one testimony pasted in verbatim, and it was reworded. Increment 1's own
+stub also carried a canon error that shipped — the sentry's placeholder had
+him take a listener "for the Welsh," and there is no Wales in Vantry (#549) —
+fixed here along with three other reworded lines. `npm test` 15 of 15,
+`npm run build` clean, `npm run dialogue:check` green. **Increment 4 is
+open**: the day-before content itself, the size of Phases 6 and 7 together.
 
 ## Sight at the body's own height
 
