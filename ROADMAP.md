@@ -27,7 +27,9 @@ NOW, in parallel, no gates:
 
   Devon's machine                    A container
   ---------------                    -----------
-  R2  GPU run        --+             R8   quests: the seven errands      lane A
+                                     R1   sight at the body's height    no lane
+  R2  GPU run, after R1 (2026-09-21)
+                     --+             R8   quests: the seven errands      lane A
                        |             R6   populace: the next forty       lanes C D
                        |             R4a  the bells call   (lane A: not beside R8)
 
@@ -108,7 +110,9 @@ the one asset nothing else on this list would catch.**
 
 ### Container, start to finish
 
-**R6** populace, **R8** side quests, **R9** the town, whose gate R4c opened,
+**R1** sight at the body's own height, filed 2026-09-21 and gating R2: a GPU
+found it, and a headless beat can hold it, because it is a camera placed and
+a prompt string read, not a walk. **R6** populace, **R8** side quests, **R9** the town, whose gate R4c opened,
 **R12a/b/c** the tooling, **R4a** the bells call (#699 to #702), and **R4b** the `since`
 field, which shipped from one on 2026-09-17. Six and a half rows of twelve. Every one is data, a validator, a Node suite or
 a headless DOM assertion, and every one has an acceptance criterion a container
@@ -279,7 +283,20 @@ row is gone from this table and from `BACKLOG.md` and `SPECS.md`; what is
 left in front of R2 is the run itself, which nobody has watched carry a real
 `npm run play` to the second bell yet, and that needs Devon's machine.
 
-**R2 the GPU run: local, GPU, Opus 5, size ¼, no lane.** Its judgement half
+**And it moved a fourth time on 2026-09-21, for the same reason.** The third
+sitting's run 2 walked the sentry and the porter on the walks and could not
+talk to either from beside them: `src/interaction.js` aims its sight rays at
+world y 1.55 and 1.15, so a body 8 m up is aimed at through his own floor,
+and the porter, who is a premise of the full ending, was talkable from the
+ground under him instead. **R1 is now "Sight at the body's own height":
+container, Opus 5, size ¼, no gate, no lane.** Its proof is headless (a
+`plan-vs-scene.mjs` beat over the six upstairs station-watches and two
+`mystery.mjs` rails); R2 is gated on it being on `main`, and R2's next
+sitting is what confirms it on a GPU. Apart from #714's five checks and
+#659's journal number, it is the last thing between `npm run play` and
+exit 0.
+
+**R2 the GPU run: local, GPU, Opus 5, size ¼, no lane, after R1.** Its judgement half
 was finished on 2026-09-19 (#711 to #715) — the twelve, the Lauds sky, the
 covered hall and eleven bodies at interact range, the unlooked-at list down
 to one item, a phone (#530). Its walking half is the run reaching the end,
@@ -312,7 +329,7 @@ its row open with its text rewritten to say what is done.
 | Row | Model | Where | Lane | Next increment |
 | --- | --- | --- | --- | --- |
 | ~~**R1** The walker on the stair~~ | Opus 5 | Container | none | **Shipped** (#716 to #720). A same-storey walk now searches that storey's own floor, so `hike` can no longer take a flight for a stair or the wall walk for a corridor, and a tight cell costs five instead of one, so it stops hugging the walls a prop stands against. `test/layout.mjs` check 8b holds it over 66 room pairs, 153 ok. The row is closed; the run itself is Gate 1, above, and it is R2's. |
-| **R2** The GPU run | Opus 5 | **Local: GPU** | none | **Gate 1, above.** Its looking is done (#711 to #715); R1 shipped (#716 to #720) and its walking fix holds on Node terms. What is left is the run itself reaching the end, on a GPU (#53). |
+| **R2** The GPU run | Opus 5 | **Local: GPU** | after R1 | **Gate 1, above.** Its looking is done (#711 to #715); the old R1 walker holds on a GPU now (#725, #727), and a third sitting reached the accusation for the first time before a new bug, fixed sight heights in `src/interaction.js`, produced the wrong ending (#726 to #732). Gated on the new R1, "Sight at the body's own height." |
 | ~~**R8** Side quests~~ | Opus 5 | Container | A | **Shipped, and the row is closed** (#691 to #695). The seven errands left of the dozen went in on 2026-09-18, one voice each on the seven people who had none, so `data/quests/` is twelve files and every person the day one schedule puts in the castle has an errand. A sixth set rule came with them: a terminal stage may not park a person whose `default` lines pose one of the frame's tokens. No `save.js` change and no version bump. |
 | **R6** Life: a populace | Opus 5 | Container | C, D | ~~The file, the validator and the first ten~~ shipped 2026-09-17 (#616 to #618): a routine is a ring per bell, nine activities on three clips the kit already had, no asset added. What is left is the other forty, the ambient talk once two bodies are within 3 m, and the four activities that want a clip — which is the half that trades with R10. **It has a number to answer to**: 20 skinned bodies per ward against a peak of 7 before the ten, 17 after (#609). |
 | ~~**R1** A fourth body~~ | Fable 5.1 | Local: net | C | **Shipped** (#603 to #606). Quaternius's Ultimate Modular Women Pack, meshopt to 1.02 MB, worn by the cook, the laundress and the lady. |
