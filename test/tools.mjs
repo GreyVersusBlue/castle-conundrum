@@ -24,7 +24,7 @@
 // of what is on disk and both are asserted, so neither machine can be the only
 // one that runs the half that breaks.
 //
-// Four parts:
+// Five parts:
 //   1. the splice: it parses, it adds exactly one element, and cutting the new
 //      row back out gives back the original file byte for byte
 //   2. the move and the delete: a row is found by walking the text rather than
@@ -32,6 +32,10 @@
 //      inserting a row and deleting it again is the file it started as
 //   3. the shape rules: every rule in `checkRow` is broken on purpose once
 //   4. the formatting: a written row reads like the rows already in the file
+//   5. tools/plan-sheet.mjs, the other pure half of a dev tool: the overlay the
+//      top-down review view draws, against a plan built out of the real
+//      scene-config.json. Its one rail is #500 — every box it hands back is the
+//      object `makePlan` computed and not a second derivation of the same room.
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -40,6 +44,9 @@ import {
   insertRow, replaceRow, deleteRow, rowSpans, noteComment,
   formatRow, checkRow, eolOf, PLACEABLE,
 } from '../tools/place.mjs';
+import { planSheet, storeyOf, storeySpan } from '../tools/plan-sheet.mjs';
+import { makePlan } from '../src/castle-plan.js';
+import { partsOf } from './gltf.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, '..');
@@ -352,6 +359,198 @@ console.log('the formatting');
   check(strayEndings(crlf, '\r\n') === 0, 'with no bare LF left inside the tile it broke over three lines',
     `${strayEndings(crlf, '\r\n')} bare LF`);
   check(!/undefined/.test(formatRow({ tile: [0, 0], base: undefined })), 'a key with no value is left out rather than written as undefined');
+}
+
+/* ----------------------------------------------------- 5: the plan sheet --- */
+//
+// WHAT THIS PART IS FOR. `tools/plan-sheet.mjs` is what the top-down review view
+// draws over the real castle (SPECS.md "The floor plan you can see"), and the
+// one way a review tool can lie is by working the castle out for itself. A
+// schematic that re-derived a room's rectangle from its `tiles` would draw a
+// floor plan that is not the floor plan the builder builds, agree with itself
+// perfectly, and send somebody off to correct a wall that was never wrong. So
+// the rail here is identity, not arithmetic: every box the sheet hands back has
+// to be the OBJECT `makePlan` put in the plan. A copy passes a value check and
+// fails this one, and a re-derivation fails both.
+//
+// Nothing below restates plan-sheet.mjs's own storey test. The containment
+// checks are strictly weaker than it (a box wholly inside one storey must be on
+// that storey; a box on a storey must at least touch its y span), so a rule
+// copied out of the module could not satisfy them by construction.
+console.log('the plan sheet');
+{
+  const config = JSON.parse(raw);
+  const mystery = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/mystery.json'), 'utf8'));
+  const measured = new Map();
+  const boundsOf = (rel) => {
+    if (!measured.has(rel)) measured.set(rel, partsOf(path.join(ROOT, rel)));
+    return measured.get(rel);
+  };
+  const plan = makePlan(config, boundsOf);
+  const sheets = plan.levels.map((l) => planSheet(plan, l, { config, mystery }));
+  const pieceOf = new Map(plan.pieces.map((p) => [p.id, p]));
+  const roomOf = new Map(plan.rooms.map((r) => [r.id, r]));
+  const f3 = (n) => n.toFixed(3);
+
+  check(sheets.length === plan.levels.length && sheets.every((s, i) => s.level === plan.levels[i]),
+    `a sheet per storey the plan has (${plan.levels.join(', ')})`);
+
+  /* --- the pieces --- */
+  for (const sheet of sheets) {
+    const { floor, ceiling } = storeySpan(plan, sheet.level);
+    const ids = sheet.pieces.map((p) => p.id);
+    const dupes = ids.filter((id, i) => ids.indexOf(id) !== i);
+    check(dupes.length === 0, `level ${sheet.level}: every piece on the sheet is on it exactly once (${ids.length} pieces)`,
+      `${dupes.length} repeated: ${[...new Set(dupes)].slice(0, 3).join(', ')}`);
+    const invented = ids.filter((id) => !pieceOf.has(id));
+    check(invented.length === 0, `level ${sheet.level}: and every one of them is a piece the plan has`, invented.slice(0, 3).join(', '));
+
+    /* THE #500 RAIL, ON THE PIECES. Not `deepEqual` — the same object. A sheet
+     * that built its own box out of a run's tiles and thickness would agree
+     * with the plan to the metre for every wall in the castle and still be a
+     * second source of truth for it. */
+    const notPlans = sheet.pieces.filter((p) => pieceOf.has(p.id) && p.box !== pieceOf.get(p.id).box);
+    check(notPlans.length === 0, `level ${sheet.level}: and carries the plan's own box object, not a copy of its numbers`,
+      notPlans.slice(0, 3).map((p) => p.id).join(', '));
+
+    // Weaker than the module's own rule on purpose: a box it lists has at least
+    // to touch the storey's y span.
+    const offStorey = sheet.pieces.filter((p) => p.box.min.y > ceiling + 1e-6 || p.box.max.y < floor - 1e-6);
+    check(offStorey.length === 0, `level ${sheet.level}: and no piece on it is wholly above ${ceiling} m or below ${floor} m`,
+      offStorey.slice(0, 3).map((p) => `${p.id} [${f3(p.box.min.y)}, ${f3(p.box.max.y)}]`).join('; '));
+  }
+
+  // Nothing falls between two storeys: every piece the plan has is drawn on at
+  // least one sheet, and a piece that fits wholly inside one storey is drawn on
+  // that one.
+  {
+    const drawn = new Set(sheets.flatMap((s) => s.pieces.map((p) => p.id)));
+    const lost = plan.pieces.filter((p) => !drawn.has(p.id));
+    check(lost.length === 0, `every one of the plan's ${plan.pieces.length} pieces is on some storey's sheet`,
+      `${lost.length} on none: ${lost.slice(0, 3).map((p) => p.id).join(', ')}`);
+
+    const missed = [];
+    for (const p of plan.pieces) {
+      const fits = plan.levels.filter((l) => {
+        const { floor, ceiling } = storeySpan(plan, l);
+        return p.box.min.y >= floor - 1e-6 && p.box.max.y <= ceiling + 1e-6;
+      });
+      if (fits.length !== 1) continue; // straddles two storeys, or sits on a seam
+      const sheet = sheets[plan.levels.indexOf(fits[0])];
+      if (!sheet.pieces.some((q) => q.id === p.id)) missed.push(`${p.id} fits inside level ${fits[0]} and is not on it`);
+    }
+    check(missed.length === 0, 'and a piece that fits inside one storey is on that storey', missed.slice(0, 3).join('; '));
+    check(storeyOf(plan, { min: { y: 0 }, max: { y: 8 } }, 0) === 'on'
+      && storeyOf(plan, { min: { y: 0 }, max: { y: 8 } }, 1) === 'on'
+      && storeyOf(plan, { min: { y: 0 }, max: { y: 8 } }, 2) === 'below'
+      && storeyOf(plan, { min: { y: 8 }, max: { y: 12 } }, 0) === 'above',
+      'an 8 m curtain is on levels 0 and 1, below level 2, and a 8-to-12 m turret is above level 0');
+  }
+
+  /* --- the rooms --- */
+  {
+    const listed = sheets.flatMap((s) => s.rooms.map((r) => r.id));
+    check(listed.length === plan.rooms.length && new Set(listed).size === plan.rooms.length,
+      `every one of the plan's ${plan.rooms.length} rooms is on exactly one storey's sheet`,
+      `${listed.length} entries, ${new Set(listed).size} distinct`);
+    const wrongLevel = sheets.flatMap((s) => s.rooms.filter((r) => r.level !== s.level).map((r) => `${r.id} says ${r.level}, on sheet ${s.level}`));
+    check(wrongLevel.length === 0, 'and each is on the storey it declares', wrongLevel.slice(0, 3).join('; '));
+
+    /* THE BREAK SPECS.md NAMES, AND THE LINE THAT CATCHES IT. Have plan-sheet
+     * recompute one room's box from its `tiles` — the mistake is forgetting the
+     * half tile castle-plan.js's `rooms` pass adds — and this says which room
+     * and by how much. The identity check under it says the same thing in the
+     * other language. */
+    const drift = [];
+    for (const sheet of sheets) {
+      for (const r of sheet.rooms) {
+        const p = roomOf.get(r.id);
+        if (!p) { drift.push(`${r.id} is on no plan room`); continue; }
+        for (const end of ['min', 'max']) {
+          for (const k of ['x', 'z']) {
+            const got = r.bounds[end][k], want = p.bounds[end][k];
+            if (Math.abs(got - want) > 1e-9) {
+              drift.push(`${r.id}: bounds.${end}.${k} is ${f3(got)} and the plan says ${f3(want)} (${f3(Math.abs(got - want))} m out)`);
+            }
+          }
+        }
+      }
+    }
+    check(drift.length === 0, `every room on a sheet carries the plan's own bounds`, drift.slice(0, 4).join('; '));
+
+    const copied = sheets.flatMap((s) => s.rooms.filter((r) => roomOf.has(r.id) && r.bounds !== roomOf.get(r.id).bounds).map((r) => r.id));
+    check(copied.length === 0, 'and it is the plan\'s own bounds object, so no second derivation can drift from it',
+      copied.slice(0, 3).join(', '));
+
+    // The mystery flag is read off mystery.json and is not guessed: every room
+    // the mystery names that the plan also has comes back true, and no room the
+    // mystery has never heard of does.
+    const named = new Set(mystery.rooms.map((r) => r.id));
+    const flagged = sheets.flatMap((s) => s.rooms);
+    const wrong = flagged.filter((r) => r.inMystery !== named.has(r.id));
+    check(wrong.length === 0 && flagged.some((r) => r.inMystery),
+      `${flagged.filter((r) => r.inMystery).length} of ${flagged.length} rooms are named by mystery.json, and the sheet says so`,
+      wrong.slice(0, 3).map((r) => `${r.id} says ${r.inMystery}`).join(', '));
+    // With no mystery handed in the answer is `null`, which is "not asked".
+    check(planSheet(plan, 0).rooms.every((r) => r.inMystery === null),
+      'and with no mystery handed in the answer is null rather than false');
+  }
+
+  /* --- the openings --- */
+  {
+    const all = sheets.flatMap((s) => s.openings);
+    const runs = new Map(config.walls.filter((r) => r.doorways).map((r) => [r.id, r.doorways]));
+    check(all.length > 0 && runs.size > 0, `${all.length} openings drawn over ${runs.size} runs that carry doorways`);
+
+    const stray = all.filter((o) => !runs.has(o.run)
+      || !runs.get(o.run).some((d) => d.at === o.at && d.width === o.width && d.height === o.height && (d.base || 0) === o.base));
+    check(stray.length === 0, 'every opening is a `doorways` row of the run it names', stray.slice(0, 3).map((o) => o.id).join(', '));
+
+    const seen = new Set(all.map((o) => `${o.run}@${o.at}+${o.base}`));
+    const unseen = [];
+    for (const [id, doors] of runs) for (const d of doors) {
+      if (!seen.has(`${id}@${d.at}+${d.base || 0}`)) unseen.push(`${id} at ${d.at}`);
+    }
+    check(unseen.length === 0, 'and every doorway in the config is drawn on some storey', unseen.slice(0, 3).join(', '));
+
+    /* AN OPENING IS A HOLE, and this is the line that says so against the
+     * plan's own stone. A point half a metre up inside the opening must stand
+     * in none of the run's boxes: `runBoxes` cut them around it. An opening
+     * placed on the wrong run, or half a run out, lands in stone and fails
+     * here. */
+    const inStone = all.filter((o) => {
+      const piece = pieceOf.get(o.run);
+      const y = o.point.y + 0.5;
+      return (piece.boxes || [piece.box]).some((b) => b.min.x - 1e-9 <= o.point.x && o.point.x <= b.max.x + 1e-9
+        && b.min.z - 1e-9 <= o.point.z && o.point.z <= b.max.z + 1e-9
+        && b.min.y - 1e-9 <= y && y <= b.max.y + 1e-9);
+    });
+    check(inStone.length === 0, 'and every opening stands in a gap in its run\'s stone rather than in the stone',
+      inStone.slice(0, 3).map((o) => o.id).join(', '));
+
+    // The opening's cross coordinate and its floor come off the run piece's own
+    // box, so the point is inside the box the plan drew for that run.
+    const outside = all.filter((o) => {
+      const b = pieceOf.get(o.run).box;
+      return o.point.x < b.min.x - 1e-9 || o.point.x > b.max.x + 1e-9
+        || o.point.z < b.min.z - 1e-9 || o.point.z > b.max.z + 1e-9
+        || o.point.y < b.min.y - 1e-9 || o.point.y > b.max.y + 1e-9;
+    });
+    check(outside.length === 0, 'and sits inside the run\'s own box', outside.slice(0, 3).map((o) => o.id).join(', '));
+
+    check(planSheet(plan, 0).openings.length === 0, 'with no config handed in there are no openings, and nothing else changes');
+  }
+
+  /* --- the frame --- */
+  {
+    const e = planSheet(plan, 0).extent;
+    const every = plan.rooms.every((r) => r.bounds.min.x >= e.min.x && r.bounds.max.x <= e.max.x
+      && r.bounds.min.z >= e.min.z && r.bounds.max.z <= e.max.z);
+    check(every, `the frame is the union of all ${plan.rooms.length} rooms: x ${f3(e.min.x)}..${f3(e.max.x)}, z ${f3(e.min.z)}..${f3(e.max.z)}`);
+    // The same rectangle on every storey, or the camera jumps when `[` is
+    // pressed and the plan is a different shape on each floor.
+    check(sheets.every((s) => JSON.stringify(s.extent) === JSON.stringify(e)), 'and it is the same rectangle on every storey');
+  }
 }
 
 console.log(failures ? `\n${failures} failure(s)` : '\nall good');

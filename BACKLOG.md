@@ -570,7 +570,7 @@ blocker of rank 2 ranks above it, and only one number does.
 | 9 | A castle to get lost in: the town, the rock and river | 2+ | Opus 5 | Container | — (4c opened it) | B | | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
 | 10 | Bodies: a shared low-poly rig for the fifty (the child and the hound shipped, #643 to #645; two hens and the spear, #684 to #686) | 1 | Fable 5.1 | Local: net | — | C | | [Bodies](SPECS.md#bodies) |
 | 11 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 | Container to the Node line, local: GPU past it | **after 2** | D | shadow + hand shipped 2026-09-17 (#650 to #654) | [Feel](SPECS.md#feel) |
-| 13 | The floor plan you can see: a top-down view of the plan, then a way to redraw it | 2+ | Opus 5 | Container | — | B (increment 1: none) | | [The floor plan you can see](SPECS.md#the-floor-plan-you-can-see) |
+| 13 | The floor plan you can see: the review view shipped (#745 to #749); a way to redraw it is left | 2+ | Opus 5 | Container | — | B | increment 1 shipped 2026-09-21 (#745 to #749) | [The floor plan you can see](SPECS.md#the-floor-plan-you-can-see) |
 
 **`ROADMAP.md` is these three columns turned into an order**: which row to
 take first, what each one unblocks, and which ones two sessions may hold at
@@ -921,13 +921,13 @@ has room for the rest at all.
 
 ## The floor plan you can see
 
-*Where: container. Gate: none. Lane: B for increments 2 and 3, none for
-increment 1.*
+*Where: container. Gate: none. Lane: B, for what is left — increment 1 needed
+none.*
 
-**Rank 13, and a 2+. Nothing is built; the decisions are #745 to #749,
-2026-09-21.** Devon's ask: the room layout was placed by an AI one room and
-one guess at a time with no way to see the whole floor plan, and he wants a
-GUI to lay it out himself, or at least to review and correct it visually.
+**Rank 13, and a 2+. Decided before anything was built, decisions #745 to
+#749, 2026-09-21.** Devon's ask: the room layout was placed by an AI one room
+and one guess at a time with no way to see the whole floor plan, and he wants
+a GUI to lay it out himself, or at least to review and correct it visually.
 
 **The layout is not in `src/castle-plan.js`.** That file holds no coordinate:
 it is a pure compiler over `data/scene-config.json` and throws on a config
@@ -938,16 +938,22 @@ and `rooms` (43, which are names over extents and own no geometry), plus the
 the same 3113-line file the prop editor already writes, through the same
 splice, and there is no new format (#745).
 
-**The first increment writes nothing** (#748): a top-down orthographic view
-over the real scene, drawn from the plan's own boxes, with a storey filter and
-room labels. A flat 2D editor was refused because `makePlan` needs
+**The first increment shipped the same day** (#748): a top-down orthographic
+view over the real scene, drawn from the plan's own boxes, with a storey
+filter and room labels. A flat 2D editor was refused because `makePlan` needs
 `boundsOf(modelPath)` and only a loaded model gives one, so a schematic would
 have to re-derive every box the plan computes (#746). It is `?edit=1`'s second
 module, `src/edit-layout.js`, with its own sentinel and its own line in
-`test/built.mjs`'s grep of `dist/` (#747, #586). Increment 2 makes `rooms` and
-`walls` draggable and increment 3 the openings; `drums` and `gates` are not in
-this row. Validation re-runs `makePlan` and `walkability` in the page and
-copies no assertion out of any suite (#749, #529).
+`test/built.mjs`'s grep of `dist/` (#747, #586); the pure half is
+`tools/plan-sheet.mjs`, held by 29 new assertions in `test/tools.mjs`.
+`npm test` is 15 of 15, 1772 assertions.
+
+**What is left.** Increment 2 makes `rooms` and `walls` draggable and
+increment 3 the openings; `drums` and `gates` are not in this row. Neither
+increment has started. Validation re-runs `makePlan` and `walkability` in the
+page and copies no assertion out of any suite (#749, #529). Both remaining
+increments are lane B, which rank 3 and rank 9's town also hold, so only one
+of the three runs at a time (#602).
 
 ## The tooling
 
