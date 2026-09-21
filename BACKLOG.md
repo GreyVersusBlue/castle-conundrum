@@ -686,10 +686,15 @@ a word of the five things the walking day takes off the ground or of a death,
 proven against a control that catches ten of the fourteen day-one sets, so
 the word list is one a leak would trip. That rail caught a real mistake on
 its first run, before any deliberate break: Lady Alys's `day0` set had her
-day-one testimony pasted in verbatim, and it was reworded. Increment 1's own
-stub also carried a canon error that shipped — the sentry's placeholder had
-him take a listener "for the Welsh," and there is no Wales in Vantry (#549) —
-fixed here along with three other reworded lines. `npm test` 15 of 15,
+day-one testimony pasted in verbatim, and it was reworded before anything was
+committed, so the mistake leaves no trace in git. Increment 1's own stub
+carried a canon error that did ship to `main` and stayed there through a
+green CI run and a merged PR — the sentry's placeholder had him take a
+listener "for the Welsh," and there is no Wales in Vantry (#549) — caught only
+by a person reading the file during this increment, since no rail checks a
+line against the canon; it now reads "the wrong side of the river." The
+inspector's stub is tightened the same way, "a day's ride off" to "two days
+off," to match the constable's own count. `npm test` 15 of 15,
 `npm run build` clean, `npm run dialogue:check` green. **Increment 4 is
 open**: the day-before content itself, the size of Phases 6 and 7 together.
 

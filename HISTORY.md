@@ -8832,12 +8832,25 @@ still names that in place, and this band does not claim otherwise.
   construction the moment the fourteenth `day0` set carried real `?` lines.
   This is #770's shape again, one band later: a count written as a literal
   against a file that grows.
-- **Increment 1's own stub carried a canon error that shipped** (#777). The
-  sentry's placeholder line said "I will take you for the Welsh," and there
-  is no Wales in Vantry, whose history is invented around a fictional cast
-  (#549). It now says "the wrong side of the river." Three other lines were
-  reworded for the same kind of reason: the porter's "this morning," the
-  merchant's near-copy of his own errand line, and Lady Alys's testimony in
-  finding 6 above. A placeholder written to satisfy a validator got into
-  `main` saying something the canon forbids, and what caught it was a person
-  reading the file during the increment that replaced it, not a rail.
+- **Increment 1's own stub carried a canon error that shipped to `main`, and
+  this increment fixed it** (#777). The sentry's placeholder line said "I
+  have the walk again tonight. Do not whistle up at me; I will take you for
+  the Welsh," and there is no Wales in Vantry, whose history is invented
+  around a fictional cast (#549). It went through a green CI run and a
+  merged PR carrying that line, and what caught it was a person reading the
+  file during the increment that replaced it: no rail looks at whether a
+  line agrees with the canon. It now reads "...out of the dark; I will take
+  you for the wrong side of the river." **One further change is visible in
+  the same diff and is a tightening, not a fix of an error that shipped**:
+  the inspector's stub, "The King's inspector is a day's ride off, and does
+  not know your name yet," reads "...is two days off yet, and does not know
+  your name" now, matching the constable's own `day0` line that he arrives
+  two days after the walking day. **The rest of the day's rewording was made
+  while the lines were being authored and never reached a commit, so it is
+  not in this diff and cannot be.** Lady Alys is the clear case: rail 6 (#775
+  above) caught `lady/day0 = lady/default` on its first run, and the line
+  was reworded before anything was committed, so her `day0` block only grows
+  in the diff and the mistake she made leaves no trace in git at all. A
+  reader who goes looking for a removed line of hers, or for the other
+  authoring-time fixes the builder reported alongside her, will not find
+  one, and should not take the absence as evidence nothing was wrong.
