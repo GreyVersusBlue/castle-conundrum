@@ -21,8 +21,10 @@ asset compression (#506 to #510), sound (#519 to #522), the tower tops
 touch (#530 to #532), the texture sets (#541 to #545), the town
 side (#546), the lore row (#551 to #555), what was left of that row,
 the sermon and the song, with #592 to #596, and the fourth body with #603 to
-#606.** **The ranks below start at 2, and 1, 3 and 5 are retired numbers rather than
-gaps**: each shipped and its number was retired rather than shifted up, because
+#606.** **The ranks below start at 1 again, 5 is a retired number rather than a
+gap, and 3 came back on 2026-09-21 for the retro castle (#744), the way 1 came
+back three times, because a rank is a priority and not an id**: each shipped
+row's number was retired rather than shifted up, because
 renumbering eleven rows across three files while four wave A sessions were
 running is a conflict in every table line (#619). The number 1 was used twice,
 by the fourth body on 2026-09-17 and by the castle you cannot walk on
@@ -30,7 +32,7 @@ by the fourth body on 2026-09-17 and by the castle you cannot walk on
 priority and not an id. **It is in use a fourth time since 2026-09-21**, by "Sight at the body's own
 height," for the same reason: a GPU run found it and it sits in front of
 `npm run play` reaching its end. **Rank 13 is new the same day**: the floor
-plan you can see (#742 to #746), a number the table has never held before,
+plan you can see (#745 to #749), a number the table has never held before,
 because Devon asked for it by name and it did not displace anything already
 in front of the castle's shape. What asset
 compression left behind for the rows that touch assets is named in their
@@ -519,6 +521,246 @@ rank 2's alone.
 
 - #53 (the whole point of the row).
 - #34 does not apply: no rail is added.
+
+---
+
+## The retro castle: the stone in the castle's own pixel art
+
+**Rank 3. Size 2+. Nothing shipped.** Devon's brief of 2026-09-21: the castle
+reads as the same everywhere, and he wants pixel-art textures produced by a
+model session rather than photographs, for variety room to room and for a
+retro look, a style call before a cost one. That reverses #411, which put
+photographic stone on the walls, and the reversal is locked as #742; the
+provenance rule for a texture this repo draws is #743; the row's rank, lane
+and the shape of its cost rail are #744. Every recommendation below is the
+builder's to take and number.
+
+**What is there today, measured on 2026-09-21.** Fifteen material sets under
+`assets/poly-haven/`, 1024 px, three maps each, KTX2 since #506, about 25 MB
+on disk. By their own KTX2 headers (pixels per mip level times 0.5 bytes for
+ETC1S and 1 byte for UASTC) they hold **44.2 MB of the 79.3 MB** of texture
+memory the castle carries, and that estimate is exact: the same arithmetic
+over every `.ktx2` on disk gives 79.3 MB, which is the number #506 measured
+off `renderer.info` on the live page. The ten prop packs are the other
+35.1 MB. The fifteen dress 46 wall runs (five names: `castle_wall_slates` 22,
+`medieval_blocks_02` 13, `plastered_wall_04` 8, `old_planks_02` 2,
+`defense_wall` 1), the eight drums (two names and eight tints, #516), 32 room
+floors (seven names: `wood_planks` 10, `wood_floor_deck` 8, `old_planks_02`
+5, `stone_pavers` 5, `rock_tile_floor` 2, `floor_tiles_02` 1, `dirty_carpet`
+1), four grounds, the walk's decking and the gate leaves. That is the "same
+everywhere" in numbers: 22 of 46 runs are one slate and 18 of 32 floors are
+two planks, and a set costs about 3 MB of video memory, which is why there
+are fifteen and not forty.
+
+The Kenney kit beside them is the other look already: ten 64 px PNGs, drawn
+as pixel art, declared `KHR_materials_unlit` in every GLB so GLTFLoader gives
+them `MeshBasicMaterial`, magnified NEAREST by `tuneTexture` (128 px and
+under), and left out of the encoder by size (#508). #630 saw the two as two
+games from a tower top. This row makes the built stone the kit's kind of
+surface, at a little more than twice the kit's texel density: 128 px over
+the 3 m repeat #434 set is 43 texels a metre against the kit's 16 and Poly
+Haven's 341.
+
+**The shape of the row: three increments, and a look between the first two.**
+
+1. **The pipeline, its rails, and fifteen textures, one per existing
+   material name**, so the castle is whole in the new look on one GPU
+   sitting and not one wall at a time. A container finishes it: no `ktx`, no
+   network, no GPU. Then somebody looks (#53), with the checklist at the end
+   of this section.
+2. **Variety**: a wall and a floor per named room, about forty textures,
+   against the texture ceiling below. Gated on the look, the way rank 11's
+   second increment is.
+3. **The props**, if the look says a photographed cabinet in a pixel room is
+   the next wrong thing. Not specified here; see the open calls.
+
+### Scope, increment 1
+
+| File | What changes |
+| --- | --- |
+| `tools/pixel/index.mjs`, `tools/pixel/textures.json` (new) | The generator. Four or five families, each a pure function of its row's parameters and a seed to a 128 x 128 RGBA buffer, drawn on a torus (every coordinate modulo 128) so it tiles by construction: `courses` (slate, defense wall, brick, blocks, pavers, rock tile, floor tiles), `planks` (old planks, planks, deck, the gate), `ground` (grassy cobbles, forest ground), `plaster`, `weave` (the carpet). The table is fifteen rows, one per name in `data/scene-config.json` today. `npm run pixel:render` writes every row to `assets/pixel/<name>.png` through `sharp`; deterministic, hand-run, re-runnable, and a second run is a no-op at the pixel level. It lives under `tools/` and not `data/` for #688's reason: `vite.config.js` copies `data/` into `dist/` whole and the page never fetches a parameter table. |
+| `tools/pixel/sheet.mjs` (new) | The human half of the review. Tiles every texture 3 x 3 at 4x into `shots/pixel/sheet.png` (gitignored, like every shot), so a seam and a read are one glance before the GPU look. Asserts nothing (#13 does not apply to a picture). |
+| `assets/pixel/*.png` (new, fifteen files) | The output, committed (#493). A 128 px PNG at 32 colours is 2 to 8 KB on disk and 85 KB in video memory with its mip chain. |
+| `assets/poly-haven/` | Fifteen folders deleted, the commit their names stop pointing at them (#390; git history is the originals, #506): `castle_wall_slates_1k.gltf`, `defense_wall_1k.gltf`, `grassy_cobblestone_1k.gltf`, `stone_pavers_1k.gltf`, `wooden_gate_1k.gltf`, `rock_tile_floor_1k.gltf`, `floor_tiles_02_1k.gltf`, `old_planks_02_1k.gltf`, `wood_planks_1k.gltf`, `dirty_carpet_1k.gltf`, `medieval_blocks_02_1k.gltf`, `castle_brick_02_red_1k.gltf`, `plastered_wall_04_1k.gltf`, `wood_floor_deck_1k.gltf`, `forest_ground_06_1k.gltf`. `test/assets.mjs` check 4 refuses a folder that stays. The ten prop packs stay. |
+| `data/scene-config.json` (lane B) | `materials` (fifteen entries, three maps each) becomes `pixelMaterials` (the same fifteen names, one `map` each, an optional `roughness`), and nothing else in the file moves: not a run, not a room, not a tint. Spliced, never re-serialised (#584), with the file's own line ending (#632). |
+| `src/assets.js` | `loadPBRMaterial` becomes `loadPixelMaterial({ map, roughness }, tint)`: a `MeshStandardMaterial` with `map` only, `roughness` from the row or 1, `metalness` 0, colour the tint or white (#516), through `loadTexture` and `tuneTexture` as now, so the map is NEAREST-magnified and trilinear-minified at 128 px with no new branch. `PIXEL_ART_MAX_PX` stays 128. `tuneMaterials` gains the kit override in open call 3. |
+| `src/castle-builder.js` | `material()` reads `pixelMaterials` and `plainMaterials`. The `materials` branch goes with the section. |
+| `tools/encode-assets.mjs` | `encodeMaterialMaps` is deleted: there is nothing left for it to encode, and a step that loops over zero entries is #13's shape for a script. The header says the pixel textures are exempt by the rule the kit already is (#508), and names the rail in `test/assets.mjs` that holds the exemption to a size. |
+| `test/assets.mjs` | Check 3b, "every material is a complete set", retires with the section it asserted over. A new 3b over `pixelMaterials`: exactly one `map`, a `.png` under `assets/pixel/`, 128 x 128 by its IHDR, at most 32 distinct colours, wrapping at both edges, and pixel-identical to the generator's own output for that row. Check 4's sweep grows `assets/pixel/`. Check 3d's `known` set reads `pixelMaterials` where it read `materials`, one line, and still holds every built thing to a name that exists in either section. |
+| `test/budget.mjs` | A fourth count, texture memory, from headers: for a KTX2, the sum over its `levelCount` of width times height at 0.5 bytes when `supercompressionScheme` is 1 (ETC1S) and 1 byte when it is 2 (UASTC); for a PNG, width times height times 4 times 4/3 for the mip chain. Over every image any loaded file names, the kit's ten included. One ceiling, `MAX_TEXTURE_MB`, in the ceilings block with the others (#609). |
+| `CLAUDE.md`, `README.md` | The compression bullet gains one sentence (the exemption by size, and the rail that holds it); the credits gain one line for `assets/pixel/` (#743). |
+
+Untouched: `src/castle-plan.js` (no transform moves, so `test/plan-vs-scene.mjs`
+sees nothing, #500), `src/save.js`, `test/layout.mjs`, `data/sounds.json` (the
+fifteen names do not change, so check 12's `byMaterial` holds as it is),
+`test/built.mjs` (the served-set diff already covers a PNG under `assets/`, and
+its `.ktx2` count stays above zero on the props), `test/play-castle.mjs`.
+
+### Acceptance, increment 1
+
+Every item is Node. What the castle looks like is the GPU's (#53) and the
+checklist at the bottom is what to look for.
+
+- `npm test` fifteen of fifteen, `npm run build` clean, `dist/` about 25 MB
+  smaller.
+- **`test/budget.mjs`**: the texture count under `MAX_TEXTURE_MB`. The row
+  records the before and after in `HISTORY.md`: 79.3 MB estimated against
+  #506's 79.3 measured is the calibration that says the estimator counts
+  something real (#34), and the after is about 36.4 (79.3 less 44.2, plus
+  fifteen at 0.085). **Breaks**: the ceiling to 30, which fails naming the
+  three biggest images, all of them a prop's; and the count run over a tree
+  with the fifteen PNGs added and the fifteen sets still on disk and still
+  named, which is 80.6 MB over 64 and is the rail that refuses "supplement"
+  (open call 1).
+- **`test/assets.mjs`** new 3b, six breaks from green, each named by the
+  file: a PNG rendered at 256 px (the size); a stripe painted down a texture's
+  last column (the wrap rule: the mean absolute difference between the last
+  column and the first, and the last row and the first, may not exceed 1.5
+  times the median difference between adjacent interior columns and rows); a
+  row's seed changed in `textures.json` without a re-render (pixel identity,
+  naming the row); a jpg copied out of git history into `assets/pixel/` and
+  named (size and colour count both); a `map` under `assets/poly-haven/`
+  (location); and a `pixelMaterials` entry with a `normal` beside its `map`
+  (one map).
+- **`test/assets.mjs` check 4**: one of the fifteen folders left on disk with
+  nothing naming it, which is the existing rail firing on this row's deletion
+  (#390).
+- **`test/plan-vs-scene.mjs`'s drum beat still holds**: one map per material,
+  each drum's map its own plan piece's. No new browser assertion, because
+  nothing here is a seam Node cannot see except the look.
+
+### Open calls
+
+1. **Replace the sets, supplement them, or replace Poly Haven's models
+   outright?** Recommend **replace the fifteen sets and keep the ten prop
+   packs**, this increment. Built geometry carries planar world-space UVs at
+   a 3 m repeat (#434), so a tiling texture drops onto every run, drum,
+   floor and ground with no UV work at all, which is the whole reason the
+   swap is one sitting; a prop is a photoscanned model with authored UVs and
+   its own three maps, and retexturing one is a modelling job this repo has
+   no tool for. Supplementing keeps 44 MB of video memory for no variety at
+   all, and the texture ceiling refuses it by construction. **How many**:
+   fifteen in this increment, because the names stay; then about forty in
+   increment 2, one wall and one floor per named room, at 85 KB each, which
+   is 3.4 MB against a ceiling with 27 MB of headroom. The count is never
+   what hits the ceiling; the props are.
+2. **Flat and unlit, or lit?** Recommend **lit, diffuse only**: a
+   `MeshStandardMaterial` with a `map`, a constant roughness and no normal or
+   ARM map, not a `MeshBasicMaterial`. Unlit would lose the sun per watch
+   (#474), the shadows, the hemisphere fill #438 measured, the braziers
+   (#610) and the Lauds question (#712) in one move, and this is a game
+   whose clock is told partly by light. A pixel-art image has no normal or
+   roughness pass worth having and the material model does not ask for one.
+3. **The kit is unlit today; leave it, or relight it?** Recommend **relight
+   it in this increment**: `tuneMaterials` in `src/assets.js` swaps a
+   `MeshBasicMaterial` GLTFLoader built from `KHR_materials_unlit` for a
+   `MeshStandardMaterial` over the same map, behind one named constant, so
+   every surface in the castle is one material model under one sun and the
+   look after this increment answers "one castle or two" and not "two
+   castles, differently". The fill at 2.0 and the sun were tuned for
+   photographic slate (#438) and a pixel palette is brighter, so the numbers
+   are the look's to move; the constant is the reversal if a lit merlon goes
+   black the way the slate did.
+4. **Who generates, how, and what is reviewed before a texture is
+   committed?** Recommend **a program in the repo, not an image model**: the
+   session that authors a row writes its parameters into `textures.json`
+   (and a family into `index.mjs` if none fits), runs `npm run pixel:render`,
+   looks at `shots/pixel/sheet.png`, and commits the PNG with the row. The
+   suite's five rails are the automated review; the sheet is the human one;
+   the GPU look is the judgement (#53). An image-generation model's output
+   fails the pixel-identity rail by construction, which is #743 as a check
+   rather than a rule.
+5. **Size and palette.** Recommend **128 x 128 and at most 32 colours, both
+   held as named constants in `test/assets.mjs`**. 128 keeps `tuneTexture`'s
+   NEAREST branch as it is and reads as pixel art at 43 texels a metre; 256
+   is "no, until a floor reads wrong at 128 on a GPU", because it is four
+   times the memory and half the point. 32 colours is what tells a drawn
+   texture from a photograph in Node, and a row that needs more argues for
+   it in `HISTORY.md`.
+6. **KTX2 or PNG?** Recommend **PNG, by #508's own rule**: pixel art at
+   128 px is 85 KB in video memory, ETC1S carries two base colours per 4 x 4
+   block and mangles hard edges, and the whole saving on fifteen textures is
+   under a megabyte. The exemption is held by the size rail so it cannot
+   grow into a 1k PNG.
+7. **Names.** Recommend **keep the fifteen names in this increment**, so
+   `data/sounds.json`'s `byMaterial`, the drum beat and the config's sixty
+   references do not move. Increment 2's new names each need a `byMaterial`
+   row, and `test/layout.mjs` check 12 is what will say so.
+8. **Does this renegotiate a budget ceiling (#611)?** No. None of the three
+   counts moves: a run is one mesh whatever its material. What the row
+   spends and saves is a cost no suite counts, which is #609's shape, so it
+   is a **fourth count in `test/budget.mjs`** with a ceiling of its own.
+   Recommend **`MAX_TEXTURE_MB = 64`**, anchored on the props' 35 MB plus
+   this increment's 1.3 plus room for three hundred more pixel textures,
+   and below today's 79.3 on purpose: the swap has to land for the suite to
+   go green.
+9. **The props.** Recommend **untouched in increments 1 and 2**, and a
+   third increment only if the look asks for it: the kit already has
+   barrels, crates and columns, and the ten packs with no kit shape (the
+   cabinet, the commode, the table, the chair, the stool, the candleholders,
+   the statue, the shield, the lantern, the mace) would need a model nobody
+   here can draw. Say so in the look rather than guess.
+10. **Tone mapping and the fill.** A GPU question. ACES over a pixel palette
+    may desaturate it; the fill was measured for slate. Both are one number
+    each in `src/scene-setup.js` and `data/scene-config.json`, and the
+    checklist names them.
+
+### Dependencies
+
+- **Lane B.** Rank 9's next increment, the quay, has no section yet and is
+  not startable, so nothing else is in the lane today; when it is, the two
+  do not run together.
+- **No `ktx`, no network, no GPU for increment 1**, which is the opposite of
+  #518 and #541: a container closes it. The look is Devon's machine (#53).
+- **Increment 2 waits on the look**, the way rank 11 waits past its Node
+  line. Increment 3 waits on the look saying so.
+- Ranks 6 and 10 are untouched: the bodies carry no images but the hen's
+  atlas, which the count counts and the row leaves.
+
+### Constraints
+
+- #34, #13, #147: every rail above has a named break, and a rail that
+  cannot be broken is not shipped.
+- #390 and #506: the fifteen folders leave in the commit their names do; git
+  history is the originals.
+- #493: committed, and nothing fetched off-origin. The generator runs in
+  Node and never in the page.
+- #508, as #742 restates it: a texture at 128 px or under is left out of
+  the encoder, and the rail that says which is `test/assets.mjs`'s.
+- #434: the repeat stays world-space at 3 m; a tiling texture is the case
+  that rule was written for.
+- #500: no transform changes. #516: a tint still multiplies the map.
+- #529 and #611: the memory count is cost and goes to `budget.mjs`; the
+  texture rails are `assets.mjs`'s; nothing crosses the four-suite line.
+- #584, #632: `data/scene-config.json` is spliced, in its own line ending.
+- #53: the look.
+- #742, #743, #744.
+
+### Looking checklist
+
+Nobody has seen any of this (#53). `npm run play`, or the `applyWatch` look
+#711 used, on the dev machine, and write what was wrong rather than that it
+was wrong, in `HISTORY.md` against this row.
+
+- [ ] **One castle or two.** From the North-west Tower's roof, #630's own
+      vantage: the crown's merlons (the kit) against the drum's stone and
+      the curtain (this row). Does the seam between kit and stone still show?
+- [ ] **The shadowed faces.** The cross-wall's west face and the Great
+      Hall's north wall, which #438 and #713 measured near-black under
+      photographic slate. A darker palette, or a hole?
+- [ ] **A metre from a wall at a grazing angle.** 43 texels a metre, NEAREST:
+      blocks, or a smear? Anisotropy is on; is the minified far wall a moire?
+- [ ] **The four skies and Lauds.** The same wall at Prime, Terce, Sext,
+      Vespers (#474) and on the morning after (#712): four bells, or one?
+- [ ] **The eight tints** (#516) over pixel stone: still eight towers?
+- [ ] **Under foot.** The ward's cobbles, the hall's tiles, the walk's
+      decking, a tower's boards: does a floor read as its room's?
+- [ ] **The props.** A photographed cabinet in a pixel room: the next
+      increment, or fine?
+- [ ] **The number.** `renderer.info.memory.textures` off the live page
+      against `test/budget.mjs`'s estimate, written down beside it.
+- [ ] **The two knobs.** `toneMappingExposure` and the hemisphere's 2.0: what
+      the palette needs, if anything.
 
 ---
 
@@ -1494,7 +1736,7 @@ ray that was never going to hit anything.
 
 ## The floor plan you can see
 
-**Rank 13. Size 2+. Nothing is built; decisions #742 to #746, 2026-09-21.**
+**Rank 13. Size 2+. Nothing is built; decisions #745 to #749, 2026-09-21.**
 Devon's ask, in his words: the room layout was placed by an AI one room and
 one guess at a time with no way to see the whole floor plan, he is not happy
 with how it reads, and he wants a GUI to lay it out himself, **or at least to
@@ -1544,7 +1786,7 @@ Class S. No lane: it writes no file the repo carries.
   `data-editor` attribute, the way `edit-mode.js` carries its own.
   `V` toggles the view; `?edit=1&view=plan` opens into it; `[` and `]` change
   storey; Escape returns to the castle.
-- **The view is an orthographic camera over the real scene** (#743), not a
+- **The view is an orthographic camera over the real scene** (#746), not a
   second drawing: a `THREE.OrthographicCamera` with `up` set to `(0, 0, -1)`,
   framed on `plan.rooms`' union, the player's own scene underneath it. The
   storey filter hides every piece whose box is wholly above the storey's
@@ -1585,7 +1827,7 @@ byte-exactness rail).
 
 Class S, lane B. A `doorways` entry is a field of the run that owns it, so
 editing one is a `move` of that run's row and needs no nested-path splice
-anywhere (#746). Drag an opening along its run, type a width, `Delete` twice
+anywhere (#749). Drag an opening along its run, type a width, `Delete` twice
 to cut it, the way the prop editor already arms a delete.
 
 ### Acceptance
@@ -1627,7 +1869,7 @@ to cut it, the way the prop editor already arms a delete.
 
 1. **Does the GUI edit `castle-plan.js`, or an intermediate JSON?**
    **Neither: it edits `data/scene-config.json` directly, through
-   `tools/place.mjs`'s splice** (#742). `castle-plan.js` is a compiler with no
+   `tools/place.mjs`'s splice** (#745). `castle-plan.js` is a compiler with no
    coordinate in it, so there is nothing there to round-trip; and the four
    layout arrays sit in the same file, under the same 3113-line splice rail,
    as the three the editor already writes. An intermediate format would be a
@@ -1640,7 +1882,7 @@ to cut it, the way the prop editor already arms a delete.
    churn a `move` makes inside the one row it rewrites stays the accepted
    bargain (#639).
 3. **Top-down camera in the engine, or a flat 2D editor that never loads
-   three?** **The camera** (#743). A flat schematic cannot compute anything
+   three?** **The camera** (#746). A flat schematic cannot compute anything
    here: `makePlan` takes `boundsOf(modelPath)`, and the only place that
    exists is `CastleBuilder.measure()`, which loads every model and measures
    its parts (castle-builder.js:630). A DOM editor would have to re-derive
@@ -1651,14 +1893,14 @@ to cut it, the way the prop editor already arms a delete.
    editor landed here after 42 phases: `js/render.js:1522` is an
    `OrthographicCamera` 200 ft over the real scene with storeys ghosted, not a
    second canvas.
-4. **Same tool or a new one?** **Same entry point, second module** (#744).
+4. **Same tool or a new one?** **Same entry point, second module** (#747).
    `?edit=1` stays the one flag and the one DEV branch to audit;
    `src/edit-layout.js` is its own file because the data has nothing in
    common (a prop is a tile, a run is two tiles and eight fields) and
    because folding it into `edit-mode.js` would double a file whose whole
    value is that a person can read it in one sitting.
 5. **Live validation, or write and let `npm test` catch it?** **Both, and the
-   live half copies no assertion** (#746). Before it posts, the panel calls
+   live half copies no assertion** (#749). Before it posts, the panel calls
    `makePlan(edited, boundsOf)` and `walkability`, the same two pure
    functions the page and every Node suite already call, and refuses to write
    when `makePlan` throws, showing the throw. It prints the room count, the
@@ -1686,7 +1928,7 @@ to cut it, the way the prop editor already arms a delete.
    an extent and the builder works out what is in it; a second answer written
    beside the builder's is a second answer to drift, which is #583's rule for
    the prop editor's comment and holds here unchanged.
-10. **Read-only first, as its own increment?** **Yes** (#745), and it is the
+10. **Read-only first, as its own increment?** **Yes** (#748), and it is the
     answer to the half of Devon's sentence that says "or at least to review".
     It ships without touching `tools/place.mjs`, `PLACEABLE`, `/__place` or
     the byte-exactness rail, so the first thing anybody looks at costs nothing
