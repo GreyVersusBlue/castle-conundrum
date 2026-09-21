@@ -7549,3 +7549,81 @@ read and keep 0.01 m. Not taken blind on a beat nobody here has watched fail.
 - **`npm test` is 15 of 15 and `npm run build` is clean.** The drive is
   supplied dt, not a measured frame, so #53 does not touch it; the run was
   headless on the dev machine.
+
+## Rank 9, the town: where it stands, how the map shows it, what it costs (2026-09-21)
+
+**Lane B, decided before anything is built, decisions #725 to #728.** Ranks 2
+and 6 were running at the same time and may take numbers from #725 too; this
+band is contiguous so it can be renumbered in one pass at merge. Nothing here
+touches `src/` or `test/` yet. `SPECS.md`'s "A castle to get lost in" carries
+the first increment these four decisions make buildable, and every number
+below is from a Node prototype that cloned `data/scene-config.json` in memory,
+added the town, and ran `makePlan`, `walkability`, `buildPiece` and a sight
+test over it. Three runs, six houses, a church, four ground props, two rooms.
+
+- **The town stands west of the `town-wall` run, inside it, and not in the
+  strip between it and the barbican** (#725). This amends #706, which said
+  "the 28 m between them is the barbican and the road, and it is exactly
+  where rank 9's town goes", and the three summaries that repeated it. The 28 m
+  is a distance on the map, from the north walk's west edge at x -34 to the
+  yard's at x -62, and most of it is not ground a room can use. x -46 to -34
+  is inside the curtain box, where check 4c refuses an outside room. What is
+  left is x -62.5 (the town wall's east face) to -48 (the base's edge), 14.5 m,
+  and the yard already takes z -17 to -5 of it. A walled town's street, church
+  and quay do not fit in a 14.5 m strip, and the lore does not put them there:
+  `west-road` runs "west through the barbican and down through Mereford to the
+  quay", `the-quay` is where the carts come up from, and `town-wall`'s own
+  comment has the gate on the road and the wall facing the castle. So the run
+  is Mereford's east wall, the town lies behind it, and **Wykes's yard stands
+  outside the east gate, under the wall**, which is what his quest says it is.
+  Three returns close the circuit at x -129.5 with a west gate on the road,
+  and the quay is outside that gate in a later increment. #703 is not touched:
+  the prototype's `walk.sealed()` is still `true`.
+
+- **Outside rooms go on the map in a drawing of their own, named from the
+  first and never counted** (#726). This amends #589's "every storey on the
+  same frame", #706's "nothing was done about it and nothing should be", and
+  the cost #703 accepted, "one room on the journal's map that can never be
+  filled in". One such room was a blank the player could read as a wart. The
+  town makes three, and under #725 it puts them 33 to 44 m further west than the yard: one
+  shared frame would have gone from 90.8 m wide to about 135, with the castle
+  about half of it. So the storey drawings frame the rooms that are not
+  outside and go back to 67.6 m, `#journal-map-count` reads out of 40 rather
+  than 43, and the three outside rooms get a fourth drawing, "Outside the
+  walls", on their own frame, with their names shown, because a name that can
+  only be earned by standing somewhere nobody can stand is never earned. The
+  map is still the plan's list and not a second one (#588): the split is on
+  the room's own `ward`.
+
+- **What is drawn outside both wards counts against each ward's ceiling**
+  (#727). This amends #611's three buckets and #707's "the ceiling is left
+  unset on purpose", which deferred the number to this row. An outside mesh is
+  in view from both wards: the one vantage that sees the town, the North-west
+  Tower's roof, is in the outer ward, and an inner-ward roof looks the same
+  way over the cross-wall. So the claim is `calls[w] + calls.outside <=
+  MAX_DRAW_CALLS_PER_WARD` for each ward, with no new constant. **Before**: the
+  outside bucket was 44 meshes with no ceiling. **After**: it is bounded by
+  1200 less the busier ward, 1200 - 993 = 207 today. The prototype town takes
+  it to 132, so the outer ward's sum is 1125, 75 under, and the inner's 775.
+  When it fails, the first answer is still #611's: merge a drum's sectors into
+  one geometry before deleting a house.
+
+- **Every room outside the curtain has to be seen from somewhere the player
+  can stand** (#728). #703 said the player sees the yard and never stands in
+  it, and check 4c asserts only the second half. The first half was a
+  photograph (#707). `test/layout.mjs` check 4d makes it geometry: from any
+  reachable cell at 8 m or higher, at eye height, a segment to the top of any
+  piece whose centre lies in the room meets no other piece's box. The
+  prototype, before a line of the suite exists: **the yard is seen from
+  `floor-nw-tower-roof` at (-37.75, 13.70, -16.75), by `wykes-shed-pitch-1`**,
+  the roof and the shed #707 photographed through a crenel, so the check agrees
+  with a picture and not with itself (#34). The street is seen by 14 of its 20
+  candidate pieces and the church by 8 of 9. With `town-wall` raised to 20 m
+  as the break, the street and the church are seen from nowhere and the yard,
+  east of that wall, is still seen. 1939 eyes, 0.2 s.
+
+**The prototype found one thing the spec had to say**: a run that starts and
+ends on one tile throws in `runAxis` without an `axis` field, so the church
+tower carries `axis: "x"`. `SPECS.md` has it. The prototype is not committed;
+the builder writes the check and the town from the spec and breaks each on
+purpose from green.

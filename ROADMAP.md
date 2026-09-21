@@ -374,8 +374,10 @@ x -64 is 64 m of wall with the gate already in it, to be extended rather than
 replaced. `ward: "outside"` is a room's third answer, with `test/layout.mjs`
 check 4c holding what that word costs: clear of the curtain, standing on a
 piece of `config.ground.outside`, reached by nobody. And the journal's map
-frame grew from 67.6 m wide to 90.8 (#706), with 28 m of empty ground between
-the castle and the yard that R9's street is what fills.
+frame grew from 67.6 m wide to 90.8 (#706). R9's town does not fill the gap
+that left on the map: it stands west of the town wall, and its rooms and the
+yard move to a map drawing of their own, which takes the castle's frame back
+to 67.6 (#725, #726).
 
 **The open call it settled: the player sees the yard and never stands in it**
 (#703). R9 inherits that too. A town the player can walk into is a way out of
@@ -390,7 +392,9 @@ to overturn rather than a street to place.
 
 A walled town's street, church and quay on the ground the yard proved. The
 rooms go on the map the day they go in `config.rooms`, because the map is the
-plan's list and not a second one (#588 to #591).
+plan's list and not a second one (#588 to #591). **The first increment is
+specced and decided (#725 to #728)** and is a `builder` job: the street and
+the church, no quay yet.
 
 ### Anytime — never gated, take it when the lane is free
 

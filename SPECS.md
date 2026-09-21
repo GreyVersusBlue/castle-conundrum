@@ -790,6 +790,9 @@ watch, from the chapel and then from the far ward):
 **Rank 9. Size 2+. The first increment as this section first specced it was
 already built, and the row's premise was corrected on 2026-09-17** (#582).
 **The map shipped the same day** (#588 to #591). `WISHLIST.md` theme 5.
+**The town's first increment is specced below and decided before it is built
+(#725 to #728)**: a street of six houses and a church inside Mereford's wall,
+west of the town gate, seen from the walls and entered by nobody.
 
 ### What was measured, and what it changed
 
@@ -813,79 +816,263 @@ risk to it, and more volume makes it worse — which is why the latrine turret
 and the well chamber this section also named were considered and refused
 (#582): they would have made the count 22, not filled any of the 19.
 
-### Scope, next increment
+### What the map shipped (#588 to #591)
 
-The order inside this row is unchanged — volume, then area, then a second
-castle — and the volume step is done, so what is next is area.
+The journal's third tab, "The castle", is `src/stations.js`'s `nav.rooms()`
+drawn by `src/ui.js`: one inline SVG per storey in world metres, a `<circle>`
+for a tower room and a `<rect>` for everything else, off the plan's own bounds
+and discs (#500). `src/mystery.js`'s `enter(room, level)` puts the room on
+`visited` once and says so with a `visited` effect; `src/main.js`'s room line
+is the one call that enters a room, for every room, and the cross-wall walk's
+own clue rides it (#588). The save carries `visited` since version 5 (#590)
+and `repair` holds the set to `data/scene-config.json`'s `rooms`.
+`test/map.mjs` is the suite (#591): the map lists every room the plan builds,
+marks the ones entered and survives a reload (#39), and a room the plan stops
+building is dropped from a save's visited set by `repair` (`test/save.mjs`).
+What the tab looks like on a screen is unseen (#53).
 
-- **The town, and the gate in front of it is open.** Ground west of the
-  barbican exists (#541 to #546) and Thomas Wykes's yard now stands on it
-  (#703 to #707), which is the proof this row was waiting for: a building out
-  there passes every plan check, costs 34 meshes in a bucket with no ceiling
-  on it, and reads as a building from the one vantage the castle gives. This
-  row's town half is the rest of a walled town's street, church and quay, and
-  **it starts from three things the yard leaves behind**. The `town-wall` run
-  at x -64 is 64 m of Mereford's wall with the town gate already cut in it, to
-  be extended rather than replaced. A room outside the curtain declares
-  `ward: "outside"` and `test/layout.mjs` check 4c is what that word costs
-  (#704). And the journal's map frame grew from 67.6 m wide to 90.8 to fit the
-  yard (#706), with 28 m of empty ground between the castle and it that this
-  row's street is what fills.
-- **The map: shipped** (#588 to #591). The journal's third tab, "The
-  castle", is `src/stations.js`'s `nav.rooms()` drawn by `src/ui.js`: one
-  inline SVG per storey in world metres, a `<circle>` for a tower room and a
-  `<rect>` for everything else, off the plan's own bounds and discs (#500).
-  `src/mystery.js`'s `enter(room, level)` puts the room on `visited` once and
-  says so with a `visited` effect; `src/main.js`'s room line is the one call
-  that enters a room, for every room, and the cross-wall walk's own clue
-  rides it (#588). The save is version 5 (#590) and `repair` holds the set
-  to `data/scene-config.json`'s `rooms`. `test/map.mjs` is the suite (#591).
-  What the tab looks like on a screen is unseen (#53): the SVG has been read
-  as a DOM and photographed by nothing.
+### Scope, the town's first increment: Mereford inside its wall
 
-### Acceptance, the map (met)
+**Decided before it is built, #725 to #728.** The town is west of the
+`town-wall` run, not in the strip between it and the barbican (#725). Its
+rooms go on the map in a drawing of their own and out of the stood-in count
+(#726). What it draws is held against both wards' ceiling (#727). And every
+room outside the curtain is held to being seen from somewhere the player can
+stand, which is #703's other half written as an assertion (#728). Everything
+below was prototyped in Node against a clone of `data/scene-config.json` on
+2026-09-21 and the numbers are that prototype's, not estimates.
 
-- The map lists every room the plan builds, marks the ones entered, and
-  survives a reload (#39: the DOM for what just happened, the save for what a
-  reload has to survive). `test/map.mjs`.
-- A room the plan stops building is dropped from a save's visited set by
-  `repair`, the same rail `read` and `quests` already go through.
-  `test/save.mjs`, and seen once from the page in `test/map.mjs`.
+Nothing in it is enterable. #703 stands: the castle is sealed, check 4 asserts
+it, and the town is a thing seen from the walls. Every piece is a Kenney kit
+model or a Poly Haven set already in `assets/`, so the increment needs no
+network, no `ktx` and no GPU.
 
-### Scope, the town
+**`data/scene-config.json`** (lane B). World boxes first, then the tile values
+that produce them, because `runBox` reads `from`/`to` as tile centres and
+widens the run by half a tile at each end: an along-x run's box is
+`min(from.x, to.x) * 4 - 2` to `max(from.x, to.x) * 4 + 2`, and its centreline
+is `from.z * 4`.
 
-The town half is what is left of this row, and it starts only once rank 4's
-yard has proven the ground west of the barbican can carry a building. When
-it does, the town's rooms go on the map the day they go in `config.rooms`,
-because the map is the plan's list and not a second one.
+- **Three runs close Mereford's wall into a circuit**, each 8 m high, 3 m
+  thick, `medieval_blocks_02`, `repeatMetres: 3`, `interior: true` like
+  `town-wall` itself (#705: a 3 m run cannot carry a kit merlon).
+  - `town-wall-north`: x -129.5..-65.5, z -34..-31. `from [-31.875, -8.125]`,
+    `to [-16.875, -8.125]`.
+  - `town-wall-south`: x -129.5..-65.5, z 27..30. `from [-31.875, 7.125]`,
+    `to [-16.875, 7.125]`.
+  - `town-wall-west`: x -129.5..-126.5, z -31..27, with the west gate as a
+    `doorways` entry `{ at: 0, width: 4, height: 5.5 }`, the east gate's own
+    numbers, so `outside-road` runs out through it. `from [-32, -7.25]`,
+    `to [-32, 6.25]`.
+  - Each return **touches** `town-wall`'s west face at x -65.5 and the west
+    wall **touches** both returns, with zero overlap. Two 8 m runs that
+    overlapped would share a top over the overlap, which check 10 refuses
+    (#513, and #705's yard walls hit the same rule). `town-wall`'s own
+    comment loses "running off into the fog both ways" and says what closes
+    it.
+- **Six houses, three each side of the road**, each a solid run 8 m long,
+  6 m deep and 5 m high in `plastered_wall_04`, `interior: true`. North row at
+  z -9..-3 (`from.z` / `to.z` -1.5), south row at z 3..9 (1.5), and along x
+  -76..-68 (`-18.5` to `-17.5`), -85..-77 (`-20.75` to `-19.75`) and -94..-86
+  (`-23` to `-22`). Ids `mereford-house-n1` to `n3` and `s1` to `s3`. A 1 m
+  gap between neighbours, so no two share a top plane.
+- **Two `roof.glb` pitches on each house**, in `courtyard.placements`, the
+  Wykes shed's arrangement one storey up: `rotationY: 90`, `scale [6, 2, 4]`,
+  `base: 5`, `noCollide: true`, at the tile x of each end of the run and the
+  row's tile z. Each covers 4 m of the ridge and the house's 6 m depth, 5 to
+  7 m up. Ids `mereford-house-<row><n>-pitch-1` and `-2`.
+- **The church, nave and west tower**, both `medieval_blocks_02`,
+  `interior: true`:
+  - `mereford-church-nave`: x -100..-84, z -22..-14, 7 m high, thickness 8.
+    `from [-24.5, -4.5]`, `to [-21.5, -4.5]`. Four pitches at tile x -24.5,
+    -23.5, -22.5 and -21.5, tile z -4.5, `scale [8, 3, 4]`, `base: 7`, top at
+    10.
+  - `mereford-church-tower`: x -104..-100, z -20..-16, 15 m high, thickness 4.
+    `from` and `to` both `[-25.5, -4.5]`, **and it needs `axis: "x"`**:
+    `runAxis` throws on a run that starts and ends on one tile without one,
+    which is how the prototype found out. One pitch on it, `scale [4, 3, 4]`,
+    `base: 15`, top at 18: a saddleback tower, which is a real parish form and
+    the only one the kit's pieces make without a new model.
+- **Four things on the ground, so check 11 ("something in every room") has
+  something to find** in each of the two new rooms, since a run is a `wall`
+  and the pitches stand 5 m up. In the street: `barrels.glb` at about
+  `(-72, 2.4)` and `detail-crate.glb` at about `(-88, -2.4)`, on the road's
+  verges, at the yard's own scale of 2.5 rather than the prototype's 1. In the
+  churchyard: `tree-large.glb` at about `(-82, -24)` and `column-damaged.glb`
+  at about `(-92, -12)` as its cross. Each clear of every run's box.
+- **Two rooms, `ward: "outside"`, `level: 0`, `bounds` in world metres, no
+  `floor`**:
+  - `mereford-street`, name `"Mereford's street"`, bounds x -95..-66,
+    z -9..9: the road inside the east gate and both rows of houses.
+  - `mereford-church`, name `"Mereford church"`, bounds x -106..-80,
+    z -26..-10: the church and its yard.
+  - `town-tree-3` (-80, 12) and `town-tree-4` (-108, -8) stay where rank 5 put
+    them and are now inside the wall. Neither is in either room.
+- **Cost, measured**: the outside bucket goes from 44 meshes to 132. A solid
+  house is one mesh and its two pitches eight; the church is 22; the three
+  runs are 5, the west gate's cut making three boxes of one.
+
+**`src/ui.js` and `src/ui.css`** (no lane): the map, per #726.
+`_renderJournalMap` splits `rooms` on `ward === 'outside'`. The storey
+drawings, their shared frame, the headings' "n of m" and `#journal-map-count`
+all read the rooms that are not outside, so the frame goes back to the
+castle's own 67.6 m and the count is out of 40. After the storeys, one more
+`section.map-storey.map-outside` with `data-level="outside"`, a heading
+"Outside the walls", and its own SVG framed on the outside rooms plus a
+metre. Its shapes and names carry `map-room seen`, `data-outside="1"` and
+`data-visited="0"`, and **every name is shown from the first**, because there
+is no standing in them to earn it by. One CSS rule for `.map-room.seen`: a
+dashed stroke, no fill.
+
+**`test/layout.mjs`**, one new check after 4c, **4d: every room outside the
+curtain is seen** (#728). For each `ward: "outside"` room, the candidate
+targets are every plan piece that is not `ground` and whose box centre lies
+in the room's bounds; a target's point is its box's top centre, 0.05 m down.
+The eyes are every cell of `walk.cells` with `h >= 8` (the walks and the
+roofs; nothing lower sees over a curtain), at `h + EYE_HEIGHT`. The
+occluders are every other plan piece's `boxes || [box]`, ground excepted, as
+axis-aligned boxes: square round a drum and all, which only ever makes the
+check harder to pass. A room passes when one eye sees one target with a
+segment that meets no occluder, and the pass line names both. In the
+prototype, 1939 eyes, all three rooms, 0.2 s.
+
+**`test/budget.mjs`**, per #727: one assertion per ward,
+`calls[w] + calls.outside <= MAX_DRAW_CALLS_PER_WARD`, the fail naming the
+outside bucket's three biggest pieces. No new constant. The summary's
+`outside` line prints both sums in place of "no ceiling yet". The file's
+header paragraph WHAT A WARD IS says why.
+
+**`test/map.mjs`**: `total` becomes the rooms that are not outside. What it
+adds is in Acceptance.
+
+Not touched: `data/mystery.json`, `data/populace.json`, `data/sounds.json`,
+`data/lore.json`, `src/save.js` (no field, no bump: a room nobody can enter
+never reaches `visited`), `src/castle-plan.js`, `src/castle-builder.js`,
+`src/stations.js`. If the builder finds one of those has to change, the
+increment has left this spec and comes back here.
+
+### Acceptance, the town's first increment
+
+Every item is Node or headless. What the town looks like from the North-west
+Tower's roof is **The GPU run**'s (#53): `tools/shot-yard.mjs` pointed at the
+church is a one-line change a dev-machine session can make.
+
+- **`test/layout.mjs` 4c** passes for three rooms instead of one: each clear
+  of the curtain, on `outside-ground`, reached by nobody. Check 4 still says
+  the castle is sealed; the prototype's `walk.sealed()` is `true`.
+- **`test/layout.mjs` 4d** passes for all three. The prototype's result is the
+  acceptance: the yard is seen from `floor-nw-tower-roof` at (-37.75, 13.70,
+  -16.75) by `wykes-shed-pitch-1`, which is the exact vantage and piece #707
+  photographed through a crenel, so that line is the check agreeing with a
+  picture rather than with itself (#34). **If the yard ever fails 4d, the
+  check is wrong and not the yard** (#147). In the prototype the street was seen by 14
+  of its 20 candidates and the church by 8 of its 9. **Break**: `town-wall` to 20 m high.
+  The prototype says the street and the church are then seen from nowhere and
+  the yard, which stands east of that wall, is still seen: the check tells
+  the rooms apart. Write the FAIL lines into `HISTORY.md` under #728.
+- **The existing `layout.mjs` checks hold unchanged**: 3 (fourteen ground
+  rooms), 3d (the mystery's rooms), "a name for every room" (43 names, all
+  different, all drawable), 10 (no shared top plane), 11 (something in every
+  room), 12 (every surface has a step sound: both materials already map), 13
+  (ambient beds: outside rooms are exempt).
+- **`test/budget.mjs`**: outer 993 + outside 132 = 1125 of 1200 and inner
+  643 + 132 = 775. **Break**: `MAX_DRAW_CALLS_PER_WARD` to 1100. The outer
+  ward alone (993) still passes the old assertion and only the new one fails,
+  on 1125. Record the FAIL line under #727.
+- **`test/map.mjs`**, headless, reading the DOM:
+  - the count reads `0 of 40 rooms stood in` on a fresh page and
+    `3 of 40` after the tour;
+  - storeys read `0,1,2,3,outside`;
+  - every storey SVG's `viewBox` width is the castle's extent plus 2 m, read
+    off `window.__castle.plan.rooms` in the page, and no outside room's id is
+    drawn in any storey;
+  - the outside drawing holds exactly the plan's three outside rooms, by id,
+    each named with its real name, none `data-visited="1"`;
+  - "no unvisited room gives its name away" reads only `:not([data-outside])`.
+  - **Breaks**, each against one of those: build the frame off every room
+    again; count outside rooms in the denominator; show `· · ·` for an
+    outside name.
+- **`test/plan-vs-scene.mjs` gets no new assertion.** Every new piece carries
+  a `planId` and the existing diff covers it at 0.01 m (#500). Nothing this
+  increment claims needs a browser to prove except the map, and the map is
+  `test/map.mjs`'s (#529).
+- `npm test` fifteen of fifteen, `npm run build` clean, `test/built.mjs`'s
+  served-set diff unchanged in kind (no new file is fetched: every model is
+  one the yard or the castle already loads).
 
 ### Open calls
 
-- **Whether the map is this row's or the journal's.** Recommend this row's:
-  it is the answer to "a castle to get lost in" and it is worth nothing to a
-  castle with six rooms.
-- **The nineteen empty rooms are not this row's to fill** — they are rank 6's
-  routines and whatever documents a later lore row adds, and rank 12's
-  placement editor (shipped,
-  #583) is what makes filling them cost a key press rather than an afternoon.
-  Recommend those three run before this row's town half, whatever the ranks
-  say, because area on top of nineteen empty rooms is the bet `PLAN.md`
-  already warned against.
+- **Each house a room?** Recommend **no, two rooms: the street with its six
+  houses inside its bounds, and the church with its yard**, because a house
+  nobody enters is a building rather than a place, and six more rectangles
+  that can never be stood in would be six more blanks on a drawing that is
+  already all blanks.
+- **What the two are called.** Recommend `"Mereford's street"` and
+  `"Mereford church"`, with no saint, because a dedication is canon and canon
+  is `data/lore.json`'s to add (#559's discipline pointed at the town).
+- **The quay and the river.** Recommend **not in this increment; the west
+  gate is where the next one starts**, because water is a surface kind the
+  plan does not have (the walkability fill would call it floor, check 12 would
+  want a step sound for it, and "down through Mereford to the quay" wants
+  ground lower than y 0). The kit has `water.glb`, `dock-side.glb` and
+  `dock-corner.glb` for when it does.
+- **Slate.** Recommend **`roof.glb` on every roof in the town and
+  `castle_wall_slates` on none**, because lore's `the-quay` says the toll-house
+  at the quay's head is the one building in Mereford with a slate roof, and
+  that building belongs to the quay increment.
+- **Doors and windows on the house fronts.** Recommend **none this
+  increment**, because a doorway cut in a 6 m solid block is a 6 m tunnel, and
+  the nearest eye is 30 m off at a grazing angle. If the GPU run says the rows
+  read as blocks, the kit's `wall-pane-wood-door.glb` and
+  `wall-pane-wood-window.glb` go on as facades and 4d still holds.
+- **`roofs` on the town's pitches.** Recommend **no**, because `roofs` means
+  "over a floor a body stands on", and the roof check (`a roof over its room`)
+  would then want each house to be a room.
+- **Bodies in the town.** Recommend **none, and rank 6's "the rest go in rank
+  9's town" is answered no while #703 stands**, because `validatePopulace`
+  refuses a stop the player cannot walk to, which is what #707 hit moving the
+  spawn. A figure standing in a street nobody enters is a different system from
+  a populace, and a later increment's call.
+- **The nineteen empty rooms first?** This section recommended, on
+  2026-09-17, that rank 6 and the lore fill them before the town. Recommend
+  **building the town now anyway**, because it adds no room anyone can stand
+  in, so it does not deepen the empty-room problem that recommendation was
+  about.
+- **Whether the map is this row's or the journal's.** This row's, and it
+  shipped (#588 to #591).
 
 ### Dependencies
 
-- **The town half waits on rank 4's yard.** The map waited on nothing and
-  shipped.
+- **Lane B** (`data/scene-config.json`), which is free: R4c, R5 and R12b are
+  done. `src/ui.js`, `src/ui.css` and the three test files are in no lane.
+- **Rank 6**, if it runs alongside, may touch `test/budget.mjs`'s ceilings
+  block for its skinned bodies. The two changes are different lines of one
+  block; merge by hand, and the draw-call sum from #727 is this row's.
+- **Ranks 2 and 6 may also claim decision numbers from #725.** This row's
+  band is #725 to #728, contiguous, and is renumbered at merge if either
+  landed first.
 
 ### Constraints
 
-- #500 (`castle-plan.js` computes; the builder places; `plan-vs-scene.mjs`
-  is the net).
-- #499 (200 MB ceiling).
-- #529 (`layout.mjs` for everything derivable from the plan; the diff suite
-  for the seams only).
-- #36, #37 (the map's visited set is a new save field: a version bump through
-  `migrate` and a rail in `repair`).
+- #500: every new piece is a plan piece with a `planId`, and
+  `test/plan-vs-scene.mjs` is the net that already covers it.
+- #529: 4d is provable in Node and goes in `test/layout.mjs`, never in
+  `test/plan-vs-scene.mjs`.
+- #611, #727: `test/budget.mjs` holds cost and `test/layout.mjs` holds
+  whether the castle works. The sight check is not a cost.
+- #703: nothing in the town is enterable. 4c's "no foot reaches it" is not
+  touched.
+- #704: `ward: "outside"` is the only way a room lies past the curtain.
+- #705: town runs carry no battlements; they are 3 m thick.
+- #513: check 10. Runs meet by touching, never by overlapping.
+- #584, #632: `data/scene-config.json` is spliced, never re-serialised
+  (`JSON.stringify` over it is 4 KB longer than it), and every line written
+  into it takes the file's own ending.
+- #493, #506: no new asset. Every model named is already in `assets/`.
+- #36, #37: the key does not move and the version stays 6.
+- #34: every break above, from a green baseline, with the FAIL line quoted in
+  `HISTORY.md`.
+- #53: the look is the GPU run's.
 
 ---
 
