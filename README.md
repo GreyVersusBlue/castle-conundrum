@@ -129,3 +129,9 @@ Models from [Kenney](https://kenney.nl/)'s Retro Fantasy Kit (CC0) and
 [Poly Haven](https://polyhaven.com/) (CC0), the four NPC bodies from
 [Quaternius](https://quaternius.com/) (CC0), re-encoded in place; git history is
 the originals.
+
+The fifteen textures under `assets/pixel/` are this project's own (#743): drawn
+by `tools/pixel/`, which is in this repo, from the parameters in
+`tools/pixel/textures.json`. There is nobody else to credit. `npm run
+pixel:render` reproduces every byte of them, and `test/assets.mjs` fails if it
+does not.

@@ -34,6 +34,24 @@
 // Re-running is safe. A texture already in KTX2 and a file already carrying
 // EXT_meshopt_compression are both skipped, so adding one asset and re-running
 // encodes that asset and nothing else.
+//
+// WHAT IT DOES NOT ENCODE, AND THE RULE IS A SIZE (#508, as #742 restates it).
+// A texture 128 px or under is a PNG and does not come through here: the
+// Kenney kit's ten 64 px maps never did, and as of 2026-09-21 neither do the
+// fifteen 128 px textures this repo draws into assets/pixel/. One of those is
+// 85 KB in video memory with its whole mip chain, ETC1S carries two base
+// colours per 4 x 4 block and would mangle a hard pixel edge, and the saving
+// across all fifteen is under a megabyte. THE EXEMPTION IS HELD TO ITS SIZE BY
+// test/assets.mjs's check 3b, which fails a `pixelMaterials` map that is not
+// exactly 128 x 128 — so it cannot quietly grow into a 1k PNG that should have
+// been encoded.
+//
+// A THIRD STAGE LEFT ON 2026-09-21. `encodeMaterialMaps` walked
+// data/scene-config.json's `materials`, encoded the fifteen sets' 45 maps and
+// rewrote the paths it had changed. There is no `materials` section any more
+// and nothing under assets/pixel/ is its business, so a stage looping over
+// zero entries and printing a zero is #13's shape for a script: it is deleted
+// rather than left to report success. git history is the code.
 
 import fs from 'node:fs';
 import os from 'node:os';
@@ -57,22 +75,20 @@ const TMP = fs.mkdtempSync(path.join(os.tmpdir(), 'castle-encode-'));
  * different things (#507).
  *
  * ETC1S quantises RGB jointly against a shared palette, which is right for a
- * photograph of stone and wrong for a normal map, whose three channels are the
- * x, y and z of a direction, and equally wrong for an ARM map, whose three
- * channels are ambient occlusion, roughness and metalness. src/assets.js feeds
- * an ARM map's blue channel straight into `metalness`, so colour bleed between
- * its channels is not a soft artefact: it is 8 m of castle wall rendering as
- * sheet metal, which is the failure loadPBRMaterial's own comment describes.
- *
- * A `rough` map is one channel of the same number repeated and takes ETC1S
- * without complaint.
+ * photograph of a cabinet and wrong for a normal map, whose three channels are
+ * the x, y and z of a direction, and equally wrong for an ARM map, whose three
+ * channels are ambient occlusion, roughness and metalness. GLTFLoader feeds an
+ * ARM map's blue channel straight into `metalness`, so colour bleed between its
+ * channels is not a soft artefact: it is a prop rendering as sheet metal. The
+ * walls used to be the case that mattered here, at 8 m a run; they are drawn
+ * pixel art now (#742) and carry no ARM map at all, and what is left with one
+ * is the ten prop packs.
  *
  * UASTC at 1k is about 1 MB before supercompression, which is LARGER than the
  * jpg it replaces. That is allowed and expected: the 200 MB ceiling (#499) has
  * 158 MB of headroom and the number this row exists to move is video memory,
  * where UASTC is 1 byte per pixel against RGBA8's 4.
  */
-const UASTC = ['normal', 'arm'];
 const UASTC_GLTF_SLOTS = ['normalTexture', 'occlusionTexture', 'metallicRoughnessTexture'];
 const SRGB_GLTF_SLOTS = ['baseColorTexture', 'emissiveTexture'];
 
@@ -108,43 +124,7 @@ const MB = (n) => `${(n / 1048576).toFixed(2)} MB`;
 const sizeOf = (f) => fs.statSync(f).size;
 const totals = { texturesBefore: 0, texturesAfter: 0, meshBefore: 0, meshAfter: 0 };
 
-/* ------------------------------------------- 1: the standalone map sets ---
- * Ten Poly Haven texture packs that carry no model at all: their maps are
- * named one by one by data/scene-config.json's `materials`, loaded by
- * src/assets.js's loadPBRMaterial, and applied to the walls, the grounds, the
- * floors and the gate leaves. Nothing about them is glTF, so they are encoded
- * straight and the config's paths are rewritten from .jpg to .ktx2.
- */
-async function encodeMaterialMaps() {
-  const configFile = path.join(ROOT, 'data/scene-config.json');
-  let text = fs.readFileSync(configFile, 'utf8');
-  const config = JSON.parse(text);
-  let done = 0;
-
-  for (const [name, spec] of Object.entries(config.materials)) {
-    for (const [slot, rel] of Object.entries(spec)) {
-      if (rel.endsWith('.ktx2')) continue;
-      const src = path.join(ROOT, rel);
-      const outRel = rel.replace(/\.(jpe?g|png)$/i, '.ktx2');
-      const out = path.join(ROOT, outRel);
-      const codec = UASTC.includes(slot) ? 'uastc' : 'basis-lz';
-      process.stdout.write(`  ${name}.${slot} ${codec} `);
-      totals.texturesBefore += sizeOf(src);
-      await toKTX2(src, out, { srgb: slot === 'diffuse', codec });
-      totals.texturesAfter += sizeOf(out);
-      console.log(`${MB(sizeOf(src))} -> ${MB(sizeOf(out))}`);
-      fs.rmSync(src);
-      // The path, not the whole file: data/scene-config.json is 67 KB of hand
-      // formatting and a JSON.stringify round-trip would rewrite all of it.
-      text = text.split(JSON.stringify(rel)).join(JSON.stringify(outRel));
-      done++;
-    }
-  }
-  fs.writeFileSync(configFile, text);
-  console.log(`  ${done} map(s) re-encoded, data/scene-config.json rewritten\n`);
-}
-
-/* ------------------------------------------------- 2 & 3: the glTF files ---
+/* ----------------------------------------------- 1 & 2: the glTF files ---
  * The ten Poly Haven prop packs (.gltf + .bin + textures/) and the
  * Quaternius NPC bodies (.glb, zero images, 24 animation clips each).
  *
@@ -262,9 +242,6 @@ https://github.com/KhronosGroup/KTX-Software, or install a release.`);
 await MeshoptEncoder.ready;
 await MeshoptDecoder.ready;
 
-console.log('the ten material map sets, named one by one by data/scene-config.json');
-await encodeMaterialMaps();
-
 console.log('the ten Poly Haven prop packs');
 const config = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/scene-config.json'), 'utf8'));
 const npcs = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/npcs.json'), 'utf8'));
@@ -289,7 +266,7 @@ for (const rel of [...bodies].sort())
 fs.rmSync(TMP, { recursive: true, force: true });
 
 console.log(`
-textures  ${MB(totals.texturesBefore)} -> ${MB(totals.texturesAfter)} on disk
+textures  ${MB(totals.texturesBefore)} -> ${MB(totals.texturesAfter)} on disk (the props' own, inside their glTFs)
 geometry  ${MB(totals.meshBefore)} -> ${MB(totals.meshAfter)} on disk
 
 Disk is not the point and may go up: UASTC is bigger than the jpg it replaces.
