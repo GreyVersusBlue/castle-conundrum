@@ -7659,9 +7659,223 @@ tower carries `axis: "x"`. `SPECS.md` has it. The prototype is not committed;
 the builder writes the check and the town from the spec and breaks each on
 purpose from green.
 
+## Rank 6, the populace's second increment, decided: five more, a talk list of its own, and a budget that can see them (2026-09-20)
+
+**Rank 6, on `claude/backlog-rank-6-9678fa`, lanes C and D, no code.** The
+`SPECS.md` section said "the other forty", "stopping at twenty", and ambient
+talk out of `data/npcs.json`'s chatter pool once two populace bodies stand
+within 3 m, read off the DOM "the way the performance captions are read"
+in `test/plan-vs-scene.mjs`. Each of those was measured against the code
+and each came out wrong. Decisions #729 to #732, and the section is
+rewritten so the next increment is class S. **Numbers claimed against
+#724 as the highest in this file; ranks 2 and 9 are running at the same
+time, so expect to renumber at merge** (#607's lesson).
+
+- **"Twenty" was twenty more, and the budget allows five** (#729).
+  `SPECS.md` wrote "room for perhaps twenty more" and "stopping at twenty" on
+  2026-09-17, the same day #609 set the ceilings, and neither sentence was
+  checked against the other. The page builds **27** skinned bodies today:
+  all 13 of `npcs.json`'s `cast`, the inspector included because `main.js`
+  builds him on day one and hides him, and all 14 of `populace.json`, whose
+  ten from #616 became fourteen with rank 10's girl, hound and two hens.
+  `src/npc.js`'s `update` runs every mixer each frame before anything reads
+  `visible`, so all 27 are paid for. Against `MAX_SKINNED_TOTAL` of 32 that
+  is **5 more**; twenty more would be 47. Per ward, counting a ring in every
+  ward its stops are in and the hound in both, the outer ward is at **18 of
+  20** at Terce and the inner at 10. So the five go in the inner ward at
+  every bell, which takes it to 15 and leaves the outer at 18. Neither
+  ceiling moves. **Why not argue 32 up**: the ceiling is a guess (#609), the
+  only thing that could replace it with a number is rank 2's
+  `renderer.info` on a GPU, and a row that merely wants room is exactly what
+  `budget.mjs`'s header says has to bring evidence. The next body after
+  these five, a town body, or a rank 10 child or dog, is that argument.
+
+- **`test/budget.mjs` has been counting 12 bodies while the page builds 27,
+  and section 3 is taught the populace** (#730). Section 3 iterates
+  `mystery.json`'s `schedule` and nothing else, so it printed `12 bodies in
+  the castle` and `the outer ward peaks at 7` while the outer ward held 18;
+  `ROADMAP.md`'s "17 after" was never read by any suite. The change: a
+  populace body counts, at each watch, in every ward that `mystery.json`'s
+  `rooms` gives any stop of its ring at that watch; a body with `follow`
+  counts in both wards, because the hound leaves its ring for the player and
+  the porter gate does not stop it; the total is `cast.length +
+  people.length`, every body `main.js` builds. The ring rule is #608's
+  reaching rule applied to a body: a mixer is paid for wherever the body can
+  be when the player is standing there, and `validatePopulace` already asks
+  the clearance question every-stop-against-every-stop for the same reason
+  (#616). **Inside #611's carve-out**: it is the same suite and the same two
+  assertions, fed a second source, and no assertion crosses the
+  `layout` / `plan-vs-scene` / `mystery` / `budget` line. The named case is
+  `baker-lad` at Terce, whose ring runs `outer-ward` to `bakehouse`, in the
+  way `cross-walk` is #608's.
+
+- **The chatter pool is the twelve's, and the populace gets a `talk` list of
+  its own** (#731, amending #554 and `SPECS.md`). #554 shipped 27 pairs "for
+  the existing twelve only", validated each speaker against the cast, and in
+  the same sentence left them for a populace to spend. The two halves cannot
+  both hold. `test/lore.mjs` refuses a speaker who is not in the cast, so a
+  populace id cannot name a pair; every line starts with one of the twelve's
+  names (`"Marged: That cousin of yours..."`), so a populace body cannot
+  voice one either; and the twelve cannot spend it by proximity, because
+  **0 of the 27 pairs have their speakers within 3 m at the pair's watch**,
+  3 within 4.0 m (clerk and merchant 3.69 m, sentry and cook 4.00, constable
+  and steward 4.00), and 5 in the same room, measured off `castleNav`'s
+  stations. So `data/populace.json` gains a flat `talk` list, three pairs of
+  populace ids at one watch each, with no name prefix in the lines, and the
+  chatter pool stays as it is for a later increment to hold to the schedule,
+  which is the pass #554 said it skipped. `chatterComment` and `WISHLIST.md`
+  stop saying the populace spends it.
+
+- **How talk plays, and which suite holds each half** (#732). Two populace
+  bodies named by a pair, each on a one-stop `gossip` ring at the pair's
+  watch, 1.5 to 3 m apart in one room, both settled, with the player in that
+  room and within 6 m of their midpoint: the pair's lines go to the `#caption`
+  band #594 built, through `QuestManager`, sharing its one run slot, its
+  `_heard` set and its clock. Once per page and never saved, as #594 decided
+  for a sermon (#39), and `SAVE_VERSION` stays 6. A performance out-ranks
+  talk and talk never cuts one. The one-stop ring is the rule that makes the
+  pair still for the watch and lets a headless beat read it without racing
+  the clock #724 was about.
+
+  **The suite split, against #529.** The `SPECS.md` sentence said the
+  headless check reads the DOM "the way the performance captions are read
+  (#592)" in `test/plan-vs-scene.mjs`, and no caption is read there: #592's
+  are held by `test/quest.mjs`, in Node, with a stub UI and a queued
+  `_schedule`. So: the validator and the selector `talkDue`, both provable
+  from the data and the grid, go in `test/mystery.mjs`, which owns the
+  populace; the band's order, once-only and precedence go in
+  `test/quest.mjs`; and `test/plan-vs-scene.mjs` gets one beat that asserts
+  only that `main.js` handed `Populace` a `talk` callback that reaches the
+  DOM, the same shape as the hound's bark wire (#696). Which pairs stand
+  within 3 m is never asserted there.
+
+What was not decided here: the lines themselves, which are the builder's to
+write inside the rule `SPECS.md` gives them (household talk, nothing about
+the death), and the tiles, which the validator picks between.
+
+- **Rank 6's second increment shipped** (#733, building #729 to #732).
+  `data/populace.json` gains five people: `page`, `sacristan`,
+  `tiring-woman`, `watchman` and `writer`. The file holds 19 household plus
+  the cast's 13 is 32 bodies built, exactly `MAX_SKINNED_TOTAL`. Outer ward
+  holds 17, 18, 17, 17 and inner ward holds 14, 15, 14, 13 at Prime, Terce,
+  Sext and Vespers. `data/populace.json`'s `talk` gains three pairs, and the
+  maid's Sext stop in `inner-ward` becomes a `gossip` stop paired with the
+  tiring-woman's. **The writer's Prime, Terce and Vespers stops landed in
+  `inner-ward`, `tend`**, the fallback the spec allowed, because the
+  muniment has no walkable floor that counts as the room: all 8 floor cells
+  inside its disc read as `kings-hall`. `src/main.js` also passes `pairs:
+  populaceData.talk` to `Populace`, an argument the spec did not name.
+  **Breaks watched go red (#34)**: `talkDue` without the `settled` test;
+  `overhear` without the `_playing` guard; `test/budget.mjs` counting only a
+  ring's first stop; a twentieth household person, `33 bodies built, over
+  the ceiling of 32`; `page`, `sacristan` and `writer` moved to `outer-ward`
+  at Terce, `the outer ward holds 21 skinned bodies at terce, over the
+  ceiling of 20`; `src/main.js` constructed without `talk`, a dark band
+  after 20 steps. Three talk and hush wire checks were added beyond the
+  spec, because nothing else tested hush. One full-suite run went red on
+  `map`, `Port 8128 is already in use`, from another session on the same
+  machine sharing the port; the re-run was 15 of 15 green.
+
+## The GPU run, third sitting: the day reaches the accusation, and the rays are not on the body (2026-09-21)
+
+**Rank 2, on Devon's machine, an RTX 3070 Ti.** `npm run play` ran twice,
+about twenty minutes each. Both runs still exit 1, but the second is the
+first to reach the accusation. Decisions #734 to #741.
+
+### Run one: past the second bell for the first time (#734)
+
+**The suite as merged ran first.** Exit 1, 164 ok, 19 failures, aborted at
+"cannot finish without reaching the Constable" at Vespers. This is the first
+sitting ever to get past the second bell: rank 1's walker (#716 to #720)
+carried the day through Sext, the reload at Sext (all 26 clues survived it,
+the camera came back at 21.01, -11.81), the riddle, the third ring, and the
+cook's walk to her station, 0.38 m off after 20.2 s.
+
+**#714's body-and-pouch swap is gone, and that is #722 confirmed on a GPU.**
+The second sitting's 22 failures included "E on the body: he is at the foot
+of the stair," which handed back `summons-note, pouch-empty` instead. It does
+not appear in run one's 19. The aim rule shipped on Node terms; a run has now
+watched it hold.
+
+### The suite fixes, between run one and run two, six of them
+
+`test/play-castle.mjs` is the only file this row may touch. It changed by 163
+lines added and 42 removed, in six places, and each is a decision.
+
+- **`present()` left the Present list and the dialogue open on its failure
+  paths** (#735). The porter beat (`shots/play/34-aborted.png`) failed inside
+  the box: the pointer stayed released and the Constable walk that followed
+  read `locked false` and gave up. #708 fixed this for the success path only.
+  `shutPresent()` now runs on every path out of `present()`. Headless: the
+  old code left the list and the dialogue open, `locked` false; the new code
+  closes both, `locked` true. Mechanics only, not a render question (#53).
+- **A walk to another storey counted a waypoint reached by x and z alone**,
+  so legs up the Kitchen Tower's flight were ticked off from the floor beside
+  it (#736). A Node repro with `moveBody` stopped at (-20.0, -15.5); run one
+  stopped at (-20.0, -15.3), the same bug on the machine it was built for.
+  The walk now uses Phase 5's own stair legs instead of a flat distance
+  check. Run two: "up the Kitchen Tower: every leg reached, now L2."
+- **`examine()` always passed level 0**, and the Stockhouse bar and the tally
+  stick are level 2 in `data/mystery.json` (#737). Run one put the player
+  1.7 m across and about 8 m below the tally. Both beats pass in run two.
+- **`walkTo` read the prompt before turning to face the target**, and a short
+  step walked the player through the Chaplain, so every read of him came
+  from behind the camera (#738). A headless probe with the walk stopped
+  short named Father Anselm from the give-up point, both rays clear. The
+  turn now happens first. Passes in run two.
+- **The Constable-visible check cast its ray from wherever the porter beat
+  had left the player**, 17 m away across the cross-wall, instead of walking
+  there first (#739). It now walks first. Passes in run two.
+- **`snap('twelve-at-vespers')` was a 54 m straight-line walk from the
+  chapel bell that ended against stone in the inner ward** (#740, #147).
+  Shot 31 is a wall, and the HUD reads "Inner ward." The beat now routes to
+  the hall first. Run one's "Great Hall floor at Vespers" luma of 40.1 was
+  therefore a wall, not the hall; run two reads 72.7 of 255 from the floor
+  itself. The label on the first reading was wrong, not the render it
+  described.
+
+`npm test` is 15 of 15 after the six fixes.
+
+### Run two: the accusation, and the ending it reaches is wrong (#741)
+
+**Exit 1, 179 ok, 17 failures. The day reached the accusation for the first
+time.** It aborted on `page.click('#restart-button')` not visible, after the
+wrong ending: the pane offered "Play Again," not the second day.
+
+**Unchanged in both runs.** #714's five pre-walk checks (27 bodies, NEAREST
+on 38 textures, anisotropy cap 16 worst 1, the hall wall height reading
+"outer m, hall m," the braziers "IN Scene") and #659's journal walk: 0.69 m
+in run one, 0.83 m in run two, the series now 0.69, 1.30, 0.51, 0.69, 0.69,
+0.83 m across six runs of the same beat.
+
+**What stopped run two.** The sentry at Terce gave up 0.2 m from his mark at
+(-18.0, -15.0), stopping at (-18.1, -14.8) on level 2, prompt null, `locked`
+true. The porter at Vespers gave up 0.6 m from his, stopping at (-1.2, 0.6)
+on level 2 with the body at (-0.8, y 8.0, 0.3), prompt null. Both are read
+from beside the target, on the same walk the target stands on. The cause is
+`src/interaction.js`'s two sight rays, cast at fixed world heights of 1.55
+and 1.15 m rather than at a height on the body, filed in full as the new
+rank 1, "Sight at the body's own height," in `SPECS.md` and `BACKLOG.md`.
+
+**The cascade is the porter's, not the sentry's.** His admission is a
+premise of the full ending, so with his sighting missing the accusation
+selected 2 of 3 suspects, the stage read "accusing" rather than the correct
+ending, and the pane it produced offered "Play Again" rather than the second
+day's start. The run aborted trying to click a button that pane does not
+have. **The second day has therefore still never been walked by `npm run
+play`.**
+
+**Acceptance is met again, in its second form**: `npm run play` exits
+non-zero with the failing beat named, and the cause is filed as a new
+backlog row, rank 1. Exit 0 is still owed, to whoever ships that row and
+runs this one again.
+
+**What this cost.** Two runs of about twenty minutes each on the RTX 3070
+Ti, plus the headless probes for the fixes above. `npm test` is 15 of 15.
+
 ## The floor plan you can see: a top-down editor over the castle's own plan (2026-09-21)
 
-**Rank 1, decided before anything is built, decisions #729 to #733.** Nothing
+**Rank 13, decided before anything is built, decisions #742 to #746.** Nothing
 in `src/` or `test/` is touched. Devon's ask: the room layout was placed by an
 AI one room and one guess at a time with no way to see the whole floor plan,
 he is not happy with how it reads, and he wants a GUI to lay it out himself,
@@ -7670,7 +7884,7 @@ you can see" is the row those five decisions make buildable. Every number
 below was measured on `data/scene-config.json` and the modules named, today.
 
 - **The editor writes `data/scene-config.json`, and there is no new format**
-  (#729). The obvious reading of the ask, "a GUI for `src/castle-plan.js`",
+  (#742). The obvious reading of the ask, "a GUI for `src/castle-plan.js`",
   is wrong about where the layout is. `castle-plan.js` holds **no
   coordinate**: `makePlan(config, boundsOf)` is a pure compiler over the
   config, and it throws rather than warns when the config does not hang
@@ -7689,7 +7903,7 @@ below was measured on `data/scene-config.json` and the modules named, today.
   94212 / 98330 when that was measured.
 
 - **The view is an orthographic camera over the real scene, not a flat
-  schematic** (#730). A 2D editor that never loads three cannot compute
+  schematic** (#743). A 2D editor that never loads three cannot compute
   anything here: `makePlan` takes `boundsOf(modelPath)`, and the only thing
   that produces one is `CastleBuilder.measure()`, which loads every model the
   config names and measures its parts (`castle-builder.js:630`). A DOM editor
@@ -7704,7 +7918,7 @@ below was measured on `data/scene-config.json` and the modules named, today.
   ghosted and the one above hidden, and its *flat* drawing (`js/blueprint.js`)
   is a printed sheet, not the thing anybody edits in.
 
-- **One entry point, two modules** (#731). `?edit=1` stays the single flag and
+- **One entry point, two modules** (#744). `?edit=1` stays the single flag and
   the single `import.meta.env.DEV` branch to audit, and the layout tool is
   `src/edit-layout.js`, mounted by `src/edit-mode.js`. The data has nothing in
   common (a prop is a tile, a run is two tiles and eight fields), and
@@ -7716,7 +7930,7 @@ below was measured on `data/scene-config.json` and the modules named, today.
   `src/edit-layout.js`, each asserted present in its own source and absent
   from every `.js`, `.css`, `.html` and `.json` under `dist/`.
 
-- **The first increment writes nothing** (#732). "Or at least to review and
+- **The first increment writes nothing** (#745). "Or at least to review and
   correct it visually" is two things and the first one is cheaper by an order
   of magnitude: a top-down view drawn from `plan.pieces` and `plan.rooms`
   touches no file, no `PLACEABLE`, no `/__place` and not one byte of the
@@ -7729,7 +7943,7 @@ below was measured on `data/scene-config.json` and the modules named, today.
   Devon's school generator states in its README: add a pure module and its
   suite together, and the geometry never touches three.
 
-- **Live validation re-runs the plan; it copies no assertion** (#733). Before
+- **Live validation re-runs the plan; it copies no assertion** (#746). Before
   it posts, the panel calls `makePlan(edited, boundsOf)` and `walkability`,
   the same two pure functions the page and the Node suites already call, and
   refuses to write when `makePlan` throws. It prints the room count, the

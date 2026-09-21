@@ -27,10 +27,12 @@ renumbering eleven rows across three files while four wave A sessions were
 running is a conflict in every table line (#619). The number 1 was used twice,
 by the fourth body on 2026-09-17 and by the castle you cannot walk on
 2026-09-18 (#659 to #661), which is that rule working as intended: a rank is a
-priority and not an id. **It is in use a fourth time since 2026-09-21**, by
-the floor plan you can see (#729 to #733), for the same reason: Devon asked
-for it by name and it sits in front of everything about the castle's shape.
-What asset
+priority and not an id. **It is in use a fourth time since 2026-09-21**, by "Sight at the body's own
+height," for the same reason: a GPU run found it and it sits in front of
+`npm run play` reaching its end. **Rank 13 is new the same day**: the floor
+plan you can see (#742 to #746), a number the table has never held before,
+because Devon asked for it by name and it did not displace anything already
+in front of the castle's shape. What asset
 compression left behind for the rows that touch assets is named in their
 Dependencies; what sound left behind is `data/sounds.json`, a `material` and a
 `kind` on every `plan.surfaces` entry, and `layout.mjs` check 12. Where a brief and the code disagree, the code is
@@ -192,261 +194,216 @@ that row.
 
 ---
 
-## The floor plan you can see
+## Sight at the body's own height
 
-**Rank 1. Size 2+. Nothing is built; decisions #729 to #733, 2026-09-21.**
-Devon's ask, in his words: the room layout was placed by an AI one room and
-one guess at a time with no way to see the whole floor plan, he is not happy
-with how it reads, and he wants a GUI to lay it out himself, **or at least to
-review and correct it visually**. That last clause is why increment 1 below
-writes nothing.
+**Rank 1. Size ¼. Opus 5. Container. No gate, no lane. Filed 2026-09-21 from
+the third GPU sitting's second run** (log: `npm run play`, run 2, on the RTX
+3070 Ti). Nothing is decided in this section; the session that ships it
+claims the numbers.
 
-### What the layout is today, measured
+**The line-of-sight test aims at fixed world heights, so nobody above the
+ground floor can be talked to from beside them, and one of them can be talked
+to from 8 m below.** In `src/interaction.js` as it stands:
 
-**`src/castle-plan.js` holds no coordinate.** It is a pure compiler:
-`makePlan(config, boundsOf)` reads `data/scene-config.json` and returns
-`{tile, pieces, colliders, surfaces, rooms, curtain, spawn}`, and it throws
-rather than warns on a config that does not hang together: `[castle-plan]
-drum "x" has an interior and no room in config.rooms names it`
-(castle-plan.js:999). So the floor plan is **data**: four arrays of
-`data/scene-config.json`, and a fifth that holds what stands on it.
+- line 34, `const SIGHT_HEIGHTS = [1.55, 1.15];`, under a comment (lines 29
+  to 32) that calls them "two sample heights on the NPC's body". They are not
+  on the body. They are world y.
+- line 210, `_target.set(at.x, target.focus ? at.y : h, at.z);`. A target with
+  a `focus` is aimed at its own height; a target without one is aimed at
+  y 1.55 and 1.15 wherever its feet are.
+- line 47, `aimAt` returns `target.group.position` when there is no `focus`,
+  which for an NPC is his feet.
+- line 151, `to.y = 0;`. The range test is horizontal only, so a body 8 m
+  overhead is "0.3 m away".
 
-| Array | Rows | What one row is |
-| --- | --- | --- |
-| `walls` | 46: 18 curtain at level 0, 3 at level 1, 25 interior partitions with no `level` at all | a run between two tile centres, carrying `from`, `to`, `material`, `height`, `thickness`, and optionally `axis`, `base`, `walk`, `repeatMetres`, `interior`, `doorways` |
-| `drums` | 8 | a tower, carrying `tile`, `radius`, `height`, `segments`, `turret`, `stairs`, and an `interior` carrying its own `doors` |
-| `gates` | 3 | an arch on a tile with a `leaf` |
-| `rooms` | 43: 23 outer, 17 inner, 3 outside; 9 by `tiles`, 28 by `drum`, 6 by `bounds` | **a name over an extent, with no geometry of its own** |
-| `courtyard.placements` | 123 | a kit model at a tile, which is where the roofs, sheds and trees are |
+**What run 2 measured.** The sentry at Terce is due at (-18.0, -15.0) on
+level 2, the north walk, feet at y 8.0. The player stood 0.2 m from him on the
+walk at (-18.1, -14.8), pointer locked, and the prompt was null: both rays go
+from an eye at 9.7 down to y 1.55 and 1.15, through the walk's own floor.
+Headless, 0.3 m from him, both rays hit the walk. The porter at Vespers, body
+at (-0.8, 8.0, 0.3) on the cross-wall walk, player at (-1.2, 0.6) on level 2,
+0.6 m: prompt null. **And the other way round**: run 1, when the suite still
+walked the porter on the ground, passed his Vespers beat from under the walk,
+because from an eye at 1.7 the rays to y 1.55 run level and nothing is in the
+way. The porter's admission is a premise of the full ending, so run 2's
+accusation selected 2 of 3, the ending was wrong, and the run aborted at the
+second-day button. **Apart from #714's five checks and #659's journal number,
+this is what stands between `npm run play` and exit 0.**
 
-**Eleven runs carry `doorways`**, each `{ at, width, height, base? }`: an
-opening at a point along a run, which is how two spaces connect. Nothing is
-derived from anything else. A wall is not a room's edge, a room is an
-annotation over ground that runs happen to enclose, a door is a hole in a run,
-a stair is two flags on a drum. An editor here edits four independent lists,
-not one building.
+**Who it bites.** Seven station-watches: the Lady in the royal apartments
+(level 1, feet 4.0) at Prime, Terce and Vespers and at Lauds on day two; the
+sentry on the north walk (level 2) at Terce and Sext; the porter on the
+cross-wall walk (level 2) at Vespers. The populace's upper-storey stops ride
+the same line 210: the archers on both walks, the serjeant and the man-at-arms
+in the dormitory, the maid in the royal apartments. Their label never shows.
 
-The file is **3113 lines** and every one was hand-typed. `?edit=1`
-(`src/edit-mode.js`, 327 lines; #583 to #587, move-and-delete #636 to #642)
-writes three *other* arrays of the same file (`interiorProps` (12),
-`builtProps` (21), `braziers` (3)) through `tools/place.mjs`'s splice and a
-Vite middleware, and touches none of the four above. It is walked in first
-person, so **the whole plan has never been on a screen at once.**
+**Why the Stockhouse bar and the tally stick passed on the walk** (1.75 m and
+2.81 m in run 2). Every prop target carries a `focus`: `locks()`, `bells()`,
+`evidence()` and `readables()` in `src/castle-builder.js` (lines 799, 820,
+858, 889) each set it to the plan box's centre in world coordinates, so line
+210 takes `at.y`. The bug is NPC-only for the rays. Line 151's y-blind range
+applies to props as well, and nothing has yet been seen offered from below.
 
-### Scope, increment 1: the review view, no writing
+**The Node half has the same blindness.** `nav.talkable` in `src/stations.js`
+(lines 106 to 121) counts a station as reachable from a cell on any of
+`plan.levels`, so the validator's rail (`src/mystery.js` lines 539 and 623)
+would pass an upstairs station with only ground cells under it. Measured
+today over 115 station-watches: every one also has a cell on its own storey
+(the sentry 0.35 m on level 2, with a ground cell 0.79 m away; the Lady 0.25 m
+on level 1, a ground cell 0.25 m away), so tightening it turns nothing red on
+the data as it stands.
 
-Class S. No lane: it writes no file the repo carries.
+### Scope
 
-- **`src/edit-layout.js`, new.** Mounted by `src/edit-mode.js`, which is
-  already inside `main.js`'s `import.meta.env.DEV` branch, so the whole thing
-  leaves a build with its host (#585). It carries
-  `export const LAYOUT_SENTINEL = 'castle-layout-editor-v1'` on its panel's
-  `data-editor` attribute, the way `edit-mode.js` carries its own.
-  `V` toggles the view; `?edit=1&view=plan` opens into it; `[` and `]` change
-  storey; Escape returns to the castle.
-- **The view is an orthographic camera over the real scene** (#730), not a
-  second drawing: a `THREE.OrthographicCamera` with `up` set to `(0, 0, -1)`,
-  framed on `plan.rooms`' union, the player's own scene underneath it. The
-  storey filter hides every piece whose box is wholly above the storey's
-  ceiling and ghosts (opacity 0.25) everything below it.
-- **`tools/plan-sheet.mjs`, new, pure.** No three, no DOM, no `node:` import,
-  which is `tools/place.mjs`'s own rule and the reason a browser can import it.
-  `planSheet(plan, level)` returns the overlay to draw: one entry per plan
-  piece on that storey with the plan's own box (never recomputed, #500), one
-  per room with its extent, id, name, ward and whether the mystery names it,
-  and one per `doorways` opening as a point on its run. The camera draws the
-  castle; this module draws the labels, the room outlines and the openings.
-- **Nothing else changes.** Not `src/castle-plan.js`, not
-  `src/castle-builder.js`, not `data/scene-config.json`, not
-  `tools/place.mjs`, not `vite.config.js`.
+| File | What changes |
+| --- | --- |
+| `src/interaction.js` | Line 210 aims a target with no `focus` at `at.y + h`, feet plus 1.55 and 1.15. `update()` gains a storey gate beside the range test at line 151, for targets with no `focus` only: skip when `Math.abs(at.y - (camPos.y - EYE_HEIGHT)) > STOREY_REACH`, with `STOREY_REACH = 2.0` named beside `INTERACT_RANGE` and `EYE_HEIGHT` imported from `src/castle-plan.js`. The comment over `SIGHT_HEIGHTS` is rewritten to say they are offsets from the feet and what they used to be. |
+| `src/stations.js` | `talkable(point)` asks `walk.fromSpawn(x, z, point.level ?? 0)` and stops looping `plan.levels`. The #523 comment there says why every storey was looped; it gets a line saying the loop was the same y-blindness as `interaction.js`'s. |
+| `test/mystery.mjs` | One rail on `nav.talkable` itself, and the counts the page beat leans on (acceptance below). |
+| `test/plan-vs-scene.mjs` | One beat: every upstairs station is talked to from its own storey and not from the storey below. |
 
-### Scope, increment 2: rooms and runs become editable
-
-Class S. **Lane B** (`data/scene-config.json` and `test/tools.mjs`'s
-byte-exactness rail).
-
-- **`tools/place.mjs`.** `PLACEABLE` gains `walls` and `rooms` with their key
-  lists. `checkRow` becomes per-key shape rules rather than one shape:
-  today every branch of it demands a `tile`, and a wall row has `from` and
-  `to`. `formatRow` learns two shapes the four arrays have and the three
-  placeable ones do not: an object value (`tiles: { min, max }`) and an array
-  of objects (`doorways`). It writes both on one line today.
-- **`src/edit-layout.js`.** Drag a room's rectangle or a run's end on the
-  sheet; the sheet snaps to whole tiles, `Alt` to a quarter tile. The selected
-  row's whole record is posted through the existing `/__place` `move` verb.
-  No new verb and no change to `vite.config.js`.
-- **`test/tools.mjs`.** Parts 1 and 2 run the two new arrays: insert, then cut
-  the row back out, and the file is the file byte for byte, on an LF copy and
-  a CRLF copy (#632). Part 3's `'an array that is not placeable'` case moves
-  off `rooms`, which is placeable now, onto `materials`, which is an object
-  and never will be. Part 4 covers the nested formatting.
-
-### Scope, increment 3: the openings, which is how rooms connect
-
-Class S, lane B. A `doorways` entry is a field of the run that owns it, so
-editing one is a `move` of that run's row and needs no nested-path splice
-anywhere (#733). Drag an opening along its run, type a width, `Delete` twice
-to cut it, the way the prop editor already arms a delete.
+Not in scope: `test/play-castle.mjs` (rank 2's own file; its porter beat
+already walks him on level 2), `data/` (no station moves), `src/save.js`, the
+populace, and the props.
 
 ### Acceptance
 
-- **Increment 1.** `test/built.mjs`'s dev-only block greps `dist/` for
-  **both** sentinels: its one `sentinel` regex becomes a list of
-  `{ file, re }` pairs, `src/edit-mode.js` with
-  `/castle-placement-editor-v1/` and `src/edit-layout.js` with
-  `/castle-layout-editor-v1/`, each asserted present in its own source so a
-  rename cannot make the check go quiet, and each asserted absent from every
-  `.js`, `.css`, `.html` and `.json` under `dist/`. **Break**: delete
-  `import.meta.env.DEV &&` from `main.js`'s branch, build, and the grep names
-  the bundle file both sentinels leaked into while the served-set diff stays
-  green. That is #586's own evidence, re-run with a second target.
-- **Increment 1, in Node.** `test/tools.mjs` gains a part over
-  `tools/plan-sheet.mjs`: every plan piece whose box meets the storey appears
-  in `planSheet(plan, level)` exactly once, every room the plan lists appears
-  with the plan's own bounds, and no entry's box is a number `makePlan` did
-  not compute. **Break**: have `planSheet` recompute one room's box from its
-  `tiles` instead of reading `plan.rooms`, which is #500's failure in
-  miniature, and the assertion that fails says which room and by how much.
-- **Increments 2 and 3.** `test/tools.mjs`'s headline rail, extended: an
-  insert and a delete of the same `walls` row, and of the same `rooms` row,
-  give back the file byte for byte on both endings, and every byte outside a
-  rewritten row's span is the byte it was. **Break**: hardcode `\n` in
-  `formatRow`'s nested-object branch; the CRLF copy fails by one byte per
-  nested line, which is exactly #631's failure with a new surface under it.
-- **Every increment.** `npm test` is 15 of 15 and `npm run build` is clean.
-  No suite gains or loses an assertion in `layout.mjs`, `plan-vs-scene.mjs`,
-  `mystery.mjs` or `budget.mjs` (#529, #611): a dev tool's rails are
-  `test/tools.mjs`'s and `test/built.mjs`'s.
-- **What no suite can say** is whether the plan reads better afterwards. That
-  is Devon's, on the dev server, with `?edit=1&view=plan`. It is not a GPU
-  question (#53), because an orthographic top-down of a static scene is not a
-  real-time movement assertion, so a container can build and drive it, and
-  only a person can judge the result.
+**Which suite, per #529.** Whether the prompt appears is
+`InteractionSystem.update` casting rays against the built mesh tree, and
+whether a ray clears the walk's deck depends on geometry that only the page
+builds. None of that exists in Node, so the beat goes in `plan-vs-scene.mjs`
+and is not a violation of "nothing it asserts may be provable in Node". What
+Node can prove is the plan arithmetic the beat stands on, and `mystery.mjs`
+owns the stations, so that half goes there. The formula "feet plus 1.55" is
+asserted nowhere on its own: a Node test of it re-implements line 210, and a
+test that re-implements the thing it checks is not a check (#34), the same
+answer "The red suite" gave for `AIM_DOT`.
+
+**`test/plan-vs-scene.mjs`, the beat.** For each of day one's four watches,
+`window.__quest.applyWatch(watch, { walk: false })`, then park the rings with
+`window.__populace.setWatch(watch, { walk: false })` (#724). For every
+station in `mystery.schedule` at that watch with `level > 0` and not
+`asleep` (six today):
+
+1. **Its own storey.** Up to 12 cells from `grid.rooms()` on the station's
+   level, 0.9 to 2.8 m from it horizontally, nearest first; camera at
+   `cell.h + EYE_HEIGHT`, yawed at the body. Passes when any cell's prompt
+   names that NPC. The failure prints every cell and what it offered (#723's
+   shape).
+2. **The storey below.** Every cell on a lower level within 2.8 m
+   horizontally, aimed the same way. Passes when none names that NPC.
+
+**`test/mystery.mjs`, two rails.**
+
+- `nav.talkable({ ...the Lady's Prime station, level: 2 })` is false. The
+  royal apartments' tile has cells on levels 0 and 1 within 3.2 m and none on
+  2, so this is a station with ground under it and no floor of its own.
+- The upstairs list the page beat walks is non-empty at every watch that has
+  one, and each entry has at least one own-storey cell in 0.9 to 2.8 m and at
+  least one lower-storey cell within 2.8 m. Without the second half, half 2
+  of the page beat asserts nothing (#147). Today: the Lady's lowest cell is
+  on level 0 at 0.25 m, the sentry's at 0.79 m, the porter's at 0.35 m.
+
+**The breaks (#34), each from a green baseline, each with its message
+quoted in the report.**
+
+- Put back `target.focus ? at.y : h` at line 210. Half 1 goes red for all six.
+- Put back line 210 and remove the gate: that is `main` today. Half 2 goes
+  red for the porter at Vespers, which is run 1's pass from the ground.
+  Expected for the Lady from the King's Hall below as well; not measured.
+- Remove the gate alone, keeping the new rays. Report what half 2 does. If it
+  stays green, the walk's deck is what blocks at all six today and the gate is
+  kept anyway (open call 4); say so in the gate's comment rather than claim a
+  red it never showed.
+- Put back the `plan.levels` loop in `talkable`. The first Node rail goes red.
+
+`npm test mystery plan-vs-scene` first, then all fifteen. **Past that, the
+proof is rank 2's**: the sentry at Terce and the porter at Vespers passing on
+the GPU, and the accusation selecting 3 of 3.
 
 ### Open calls
 
-1. **Does the GUI edit `castle-plan.js`, or an intermediate JSON?**
-   **Neither: it edits `data/scene-config.json` directly, through
-   `tools/place.mjs`'s splice** (#729). `castle-plan.js` is a compiler with no
-   coordinate in it, so there is nothing there to round-trip; and the four
-   layout arrays sit in the same file, under the same 3113-line splice rail,
-   as the three the editor already writes. An intermediate format would be a
-   second source of truth for the castle, which is exactly the thing #500
-   exists to forbid. `eolOf` already gives it #632 for free.
-2. **A re-serialise, now that whole rows are being rewritten?** **No** (#584,
-   measured again today): `JSON.stringify(JSON.parse(raw), null, 2)` over the
-   current file is 124924 bytes against 117131, so a round-trip writer puts
-   7.8 KB of churn into every edit's diff, and the diff is the product. The
-   churn a `move` makes inside the one row it rewrites stays the accepted
-   bargain (#639).
-3. **Top-down camera in the engine, or a flat 2D editor that never loads
-   three?** **The camera** (#730). A flat schematic cannot compute anything
-   here: `makePlan` takes `boundsOf(modelPath)`, and the only place that
-   exists is `CastleBuilder.measure()`, which loads every model and measures
-   its parts (castle-builder.js:630). A DOM editor would have to re-derive
-   every box the plan computes, which is `test/layout.mjs`'s old sin written
-   into a tool (castle-plan.js's header, #500). The camera also shows the 123
-   `courtyard.placements`, the ground patches and the drums' own shells, which
-   are the things a schematic would have drawn as nothing. Devon's own school
-   editor landed here after 42 phases: `js/render.js:1522` is an
-   `OrthographicCamera` 200 ft over the real scene with storeys ghosted, not a
-   second canvas.
-4. **Same tool or a new one?** **Same entry point, second module** (#731).
-   `?edit=1` stays the one flag and the one DEV branch to audit;
-   `src/edit-layout.js` is its own file because the data has nothing in
-   common (a prop is a tile, a run is two tiles and eight fields) and
-   because folding it into `edit-mode.js` would double a file whose whole
-   value is that a person can read it in one sitting.
-5. **Live validation, or write and let `npm test` catch it?** **Both, and the
-   live half copies no assertion** (#733). Before it posts, the panel calls
-   `makePlan(edited, boundsOf)` and `walkability`, the same two pure
-   functions the page and every Node suite already call, and refuses to write
-   when `makePlan` throws, showing the throw. It prints the room count, the
-   walkable-cell count and whether the fill still seals, and **those are
-   numbers, not checks**: #13's rule is why they are not allowed to be
-   checks, because a second copy of check 4 living in a panel is a rail nobody
-   runs and nobody maintains. No check from `layout.mjs`, `plan-vs-scene.mjs`
-   or `budget.mjs` is copied, moved or re-implemented (#529, #611).
-6. **A new row or an amendment to the placement editor's?** **New row.** Rank
-   12 retired whole on 2026-09-18 (#687 to #690) and a retired row does not
-   reopen; the scope is different besides: that row was props on a castle
-   that already exists, this one is the castle.
-7. **Which arrays does the write path take, and in what order?** **`rooms`
-   and `walls` first, `doorways` second, `drums` and `gates` not in this row.**
-   A drum is 970 of the castle's 1539 meshes (#609) and eight fields that the
-   crown, the stairs and the turret all read; a gate carries a `leaf` spec
-   with a springline in it. Both are a later increment's, and both stay
-   readable in the review view from increment 1.
-8. **Undo?** **No.** `git diff` is the undo, the write does not commit, and
-   the one module in Devon's school editor most worth lifting (`js/history.js`,
-   a JSON structural diff behind a 100-deep stack) is the one this repo does
-   not need, because that tool's design lives in memory and this one's lives
-   in a file git is already watching.
-9. **Does the room's own record grow anything?** **No.** A room is a name over
-   an extent and the builder works out what is in it; a second answer written
-   beside the builder's is a second answer to drift, which is #583's rule for
-   the prop editor's comment and holds here unchanged.
-10. **Read-only first, as its own increment?** **Yes** (#732), and it is the
-    answer to the half of Devon's sentence that says "or at least to review".
-    It ships without touching `tools/place.mjs`, `PLACEABLE`, `/__place` or
-    the byte-exactness rail, so the first thing anybody looks at costs nothing
-    that could break a file ten suites read.
+1. **Where do the rays go: feet plus a constant, or the body's bounding
+   box?** *Feet plus 1.55 and 1.15.* `group.position.y` is the feet and
+   `plan-vs-scene.mjs` already holds it to the station's floor at 0.01 m,
+   while `Box3.setFromObject` over a skinned body is a tree walk per
+   candidate per frame and moves with the clip.
+2. **Does the player's end of the ray need changing?** *No.* It is
+   `camera.position`, which is world y already; `src/main.js` line 387 finds
+   the player's storey from the same `camera.position.y - EYE_HEIGHT`.
+3. **Do the props share the bug?** *Not the ray half, and leave the range
+   half alone in this row.* All four prop kinds aim at their plan-box centre,
+   which is why the bar and the tally passed on the walk; a prop lies 1.5 to
+   1.7 m under the eye, so gating them would need a second number, and
+   nothing has been seen offered from below.
+4. **Is a storey gate owed, or do the rays suffice?** *A gate, 2.0 m on the
+   feet, NPC targets only.* From an eye at 1.7 to a chest at 9.55 the ray
+   crosses the walk's floor 80 % of the way along, so a player within about
+   0.6 m horizontally of the deck's edge, at the 3.2 m range, can see past it;
+   2.0 m is half the 4.0 m storey, so any other storey is out by 2 m and a
+   body half a flight away stays in.
+5. **Should `nav.talkable` go storey-strict too?** *Yes.* It is the same
+   y-blindness in the validator, and 0 of 115 station-watches lose their
+   verdict today.
+6. **Should the page beat sweep the populace's upstairs stops?** *No.* They
+   go through line 210 and are fixed by construction, labels are not
+   something the player presses E at, and a walking ring is the timing trap
+   #724 had to park.
+7. **Should it sweep day two's Lady at Lauds?** *No.* It is the same station
+   as her day-one three, and putting the page at day two costs a verdict;
+   say so in the beat's comment.
+8. **Model and size.** *Opus 5, ¼, class S.* About fifteen lines of `src/`
+   and two beats, but the breaks above need judging, not only running.
 
 ### Dependencies
 
-- **Increment 1 is in no lane** and may be claimed beside anything, including
-  rank 9. **Increments 2 and 3 are lane B**, which rank 9's town also holds:
-  one row per lane at a time (#602), so they do not run beside it.
-- Nothing gates this row and it gates nothing. It makes rank 9's remaining
-  work and the nineteen empty rooms cheaper, the way the prop editor did for
-  the content rows (#583).
-- `src/edit-mode.js` is the host; a session in this row and a session
-  extending the prop editor would collide on that file.
+- **Rank 2, the GPU run, is gated on this row.** Its next sitting should
+  start from a `main` that has it.
+- No lane: `src/interaction.js`, `src/stations.js`, `test/mystery.mjs` and
+  `test/plan-vs-scene.mjs` are in none of A to E.
+- **Not beside "The red suite"'s increment 3**, which writes `validateMystery`
+  and `test/mystery.mjs` too. Not beside a rank 6 increment that edits
+  `src/interaction.js` for the populace's labels; check its branch first.
+- Its own `git worktree` (ROADMAP §3).
 
 ### Constraints
 
-- **#500.** The sheet reads `plan.pieces` and `plan.rooms` and recomputes no
-  box. A tool that re-derives the castle is the failure `castle-plan.js` was
-  written to end.
-- **#529, #611.** No assertion moves. A dev tool's rails live in
-  `test/tools.mjs` and `test/built.mjs`.
-- **#585, #586.** Two independent halves, neither trusted: the module is
-  reached only from inside `import.meta.env.DEV`, the writer is still a plugin
-  with `apply: 'serve'`, and the check is the grep of `dist/`, now for two
-  sentinels.
-- **#584, #632, #639.** Splice, never re-serialise; every newline from
-  `eolOf(source)`; every byte outside the edited row's span unchanged, on both
-  endings.
-- **#13, #34.** The panel's numbers are not checks. Every rail named above is
-  broken on purpose once, from green, with the FAIL line quoted in
-  `HISTORY.md`.
-- **#493, #494, #506.** No asset, no vendored library. Anything carried over
-  from the school editor arrives as source under `src/` or `tools/`, never as
-  a `libs/` copy.
-- **#53.** An orthographic still of a static scene is not a real-time
-  assertion, so the suite half of this row is a container's. Whether the plan
-  reads better is Devon's.
+- **#529.** The prompt beat is page-only; the storey arithmetic is
+  `mystery.mjs`'s. Nothing moves across the line.
+- **#34.** Four breaks named above.
+- **#147.** The comment over `SIGHT_HEIGHTS` said "on the NPC's body" and
+  was wrong before any assertion was.
+- **#53.** The headless beat places a camera and reads a string; it is
+  geometry, not timing. What a hand on a mouse gets is rank 2's.
+- **#13.** No skip for the Lauds station or the populace: they are out of the
+  sweep by reason, written in the comment.
+- **CRLF here, LF in CI** (#632).
 
 ---
 
 ## The GPU run
 
-**Rank 2. Size ¼. Its gate, rank 1, shipped 2026-09-19** (#716 to #720).
-`npm run play` is 102 assertions and a numbered screenshot per beat into
-`shots/play/`. It has now
-been run on a machine with real compositing four times over two sittings
-(#624 to #630 on 2026-09-17, #708 to #715 on 2026-09-19) and the day has never
-reached the end.
+**Rank 2. Size ¼. Its gate is the new rank 1, "Sight at the body's own
+height," filed 2026-09-21** (see SPECS.md above). `npm run play` is 102
+assertions and a numbered screenshot per beat into `shots/play/`. It has now
+been run on a machine with real compositing six times over three sittings
+(#624 to #630 on 2026-09-17, #708 to #715 on 2026-09-19, #734 to #741 on
+2026-09-21), and the sixth run reached the accusation for the first time. The
+ending it reached was wrong.
 
-**The judgement half of this row is done, and the walk half is not.** The
-second sitting answered every render question the list below carried — the
-twelve at Vespers, the Lauds sky, the covered hall, eleven bodies at interact
-range — by putting the world at a bell with `applyWatch(watch, { walk: false
-})` and photographing it, which is how rank 5 answered its two (#656 to #658).
-What is left is `npm run play` itself getting there. Rank 1, the walker on
-the stair, shipped on 2026-09-19 (#716 to #720): the Node check holds over
-every pair of ground rooms, and what is owed now is the run itself, on a GPU
-(#53).
+**The judgement half of this row is done. The walk half is most of the way
+there.** The second sitting answered every render question the list below
+carried, the twelve at Vespers, the Lauds sky, the covered hall, eleven
+bodies at interact range, by putting the world at a bell with
+`applyWatch(watch, { walk: false })` and photographing it, which is how rank
+5 answered its two (#656 to #658). The third sitting's first run confirmed
+rank 1's walker on a GPU for the first time: the day passed the second bell,
+the reload at Sext, the riddle, the third ring and the cook's walk (#734).
+Six fixes to `test/play-castle.mjs` then carried the second run to the
+accusation (#735 to #740), where the sentry and the porter went unread and
+the ending came out wrong (#741). What is left is `src/interaction.js`'s
+sight rays, which the new rank 1 above owns, and the run that confirms the
+fix once it ships (#53).
 
 **Rank 3, the preview and og card that used to sit under this same section,
 shipped on 2026-09-17** (#634, #635) from a fallback frame rather than the run
@@ -457,24 +414,32 @@ rank 2's alone.
 ### Scope, the run
 
 - **Nothing in `src/`.** The run is the deliverable. `test/play-castle.mjs` is
-  the only file this row may change, and on 2026-09-19 it changed by 67 lines
-  in two helpers: `present()` now runs the dialogue box out the way `converse`
-  does (#708), and `hike` clicks the resume panel when the browser has refused
-  a relock (#709). Both of those had been read as `src/` bugs before.
-- ~~The `snap('twelve-at-vespers')` beat~~ is written, standing at the hall's
-  west end rather than the north doorway the spec named, because the doorways
-  are at x -20 and -12 and the six stand from x -27.2 to -12, so the doorway
-  puts half the cast behind the camera. **Do twelve read as twelve? No: two of
-  them do not** (#711). The Constable and the Steward are one white-haired man
-  in a black tunic, told apart by a red collar and a green one, and past about
-  three metres there is nothing to tell. The three women are the clearest
-  bodies in the castle and the lesson is that silhouette works where tint does
-  not.
+  the only file this row may change. It changed by 67 lines in two helpers on
+  2026-09-19 (#708, #709: `present()` runs the dialogue box out the way
+  `converse` does, and `hike` clicks the resume panel when the browser has
+  refused a relock) and by 163 lines added, 42 removed, in six places on
+  2026-09-21 (#735 to #740): `shutPresent()` closes the Present list and the
+  dialogue on every path out of `present()`, not only the success path; a
+  walk to another storey uses Phase 5's own stair legs instead of counting a
+  waypoint reached by x and z alone; `examine()` passes the target's own
+  level instead of always 0; `walkTo` turns to face a target before reading
+  its prompt; the Constable-visible check walks to range before it casts its
+  ray; and `snap('twelve-at-vespers')` routes to the hall before it shoots.
+  All eight of those had been read as `src/` bugs before.
+- ~~The `snap('twelve-at-vespers')` beat~~ was routing straight across the
+  inner ward into a wall; **fixed 2026-09-21** (#740), it now walks to the
+  hall first and reads 72.7 of 255 from the floor there. **Do twelve read as
+  twelve? No: two of them do not** (#711). The Constable and the Steward are
+  one white-haired man in a black tunic, told apart by a red collar and a
+  green one, and past about three metres there is nothing to tell. The three
+  women are the clearest bodies in the castle and the lesson is that
+  silhouette works where tint does not.
 - **`HISTORY.md`** records what the run said, beat by beat, and what was seen:
   the walk on the Kitchen Tower flights (Phase 5's 5.7, 9.7, 1.7 readings), the
   cross-wall crossing, the cook's walk from kitchen to hall, the reload at
-  Sext, the epilogue. A beat that fails on a GPU is a bug; a beat that failed
-  under software rendering and passes here was never one.
+  Sext, and now the accusation itself and the ending it produced. A beat that
+  fails on a GPU is a bug; a beat that failed under software rendering and
+  passes here was never one.
 - ~~**`BACKLOG.md`**'s header line "Nothing here has been seen on a GPU since
   Phase 5" comes out.~~ **Done on 2026-09-17** by the first sitting (#624 to
   #630); the paragraph that replaced it says what has been looked at and what
@@ -508,37 +473,44 @@ rank 2's alone.
 ### Acceptance, the run
 
 - `npm run play` exits 0 on a machine with a GPU, or exits non-zero with the
-  failing beat named and filed as a new backlog row. **Met on 2026-09-19 in
-  the second form, four times**: exit 1, 22 failures, the failing beats named,
-  and the one cause that is not this suite's own filed as rank 1. **The two
-  suite bugs that were fixed changed no assertion's verdict** — run one and run
-  four have byte-identical failure lists — they changed only how far the player
-  got before each one, which is how the remaining cause was isolated.
+  failing beat named and filed as a new backlog row. **Met on 2026-09-19,
+  four times, and again on 2026-09-21, twice.** The third sitting's run one:
+  exit 1, 164 ok, 19 failures, aborted at the Constable at Vespers. Run two,
+  after the six suite fixes: exit 1, 179 ok, 17 failures, reached the
+  accusation and aborted on the wrong ending's `#restart-button`. The cause
+  left in front of exit 0 is filed as the new rank 1. **The six suite fixes
+  changed no `src/` behaviour and are not what stops exit 0**: what stops run
+  two is `src/interaction.js`'s fixed sight heights, which nothing in
+  `test/play-castle.mjs` can fix.
 - ~~`shots/play/` contains the numbered set, `twelve-at-vespers.png` among
   them~~, **and a human has looked at it and written one sentence per body:
-  told apart or not.** The second half is done (#711) and the first is not:
-  the numbered set stops where the walker stops, and the Vespers frame came
-  from a hand-run look into `shots/look/` instead. That is the shape of the
-  split this row keeps running into — the judgement does not need the walk,
-  and the walk is still owed.
+  told apart or not.** Both halves are done now: #711 wrote up the twelve
+  from a hand-run look before the walk ever reached that beat, and the
+  routing fix (#740) got the walked, numbered set past it on 2026-09-21.
 - No new guard-rail: the run is the check. The `snap` beat is a screenshot, not
   an assertion, and says so in its comment.
 
 ### Dependencies
 
+- **Gated on the new rank 1, "Sight at the body's own height"** (filed
+  2026-09-21). The third sitting's run 2 could not talk to the sentry at
+  Terce or the porter at Vespers from beside them on the walks, the ending
+  came out wrong, and the run aborted at the second-day button. Run again
+  once that row is on `main`.
 - The run needs a machine with a GPU, which is Devon's; a session can add a
   beat and cannot run it. If a session is asked to take the run without one,
   the honest output is the beat and a note, not a claim.
 - ~~The fourth body is still owed the run's photograph~~ (#606). **Taken**
   (#711): Marged, Nest and Lady Alys are in `shots/look2/`, and `Woman.glb`
   does the job the tint was being asked to do.
-- **Rank 1, the walker on the stair, shipped** (#716 to #720). `hike` no
-  longer drives the player up the Chapel Tower ramp; a same-storey route now
-  searches that storey's floor alone, over every pair of ground rooms the
-  fill reaches. That holds on Node terms; nobody has watched it hold on a GPU
-  yet, which is what this row still owes.
-- The journal beat's walk assertion (#659) has been run on a GPU now, three
-  times, and read 0.69, 1.30 and 0.51 m against its `> 1.0` threshold. It is
+- **Rank 1, the walker on the stair, shipped 2026-09-19 and is now confirmed
+  on a GPU** (#716 to #720, #734, #736). `hike` no longer drives the player up
+  the Chapel Tower ramp, and the third sitting's first run carried the day
+  through Sext on that fix without incident. A second, similar waypoint bug
+  in the suite's own storey-change check, not `hike`, was found and fixed the
+  same sitting (#736).
+- The journal beat's walk assertion (#659) has now run on a GPU five times:
+  0.69, 1.30, 0.51, 0.69 and 0.83 m against its `> 1.0` threshold. It is
   measuring the chapel's geometry more than it is measuring the pointer. What
   to do about that is a decision about what the beat is for, and it is left
   open rather than guessed at.
@@ -780,93 +752,109 @@ two lines and left the version at 6.
 ## Life: a populace
 
 **Rank 6. Size 2+.** `WISHLIST.md` theme 1. **The first increment shipped on
-2026-09-17** (#616 to #618) and this section is what is left of the row.
+2026-09-17** (#616 to #618), rank 10 added a child, a hound and two hens to
+the same file (#643, #684). **The second increment was specified on
+2026-09-20** (#729 to #732) **and shipped the same day** (#733): five more
+people, a `talk` list of three pairs, the talk rail wired to
+`QuestManager`, and a budget that counts the household. What is left of
+this row is below.
 
 ### What shipped
 
-- **`data/populace.json`, ten people, and `src/populace.js`.** A routine is a
-  ring per bell — one LIST of `{room, tile, activity, facing?}` per watch,
-  walked round until the next bell — rather than one station per bell, because
-  the clock does not move between bells (#547, answer 3). `validatePopulace`
-  asks the twelve's own five nav questions plus every leg of the ring and the
-  wrap back to its first stop, and it checks the room with `roomAt` rather
-  than `inNamedRoom`, which is the one place it is stronger than the
-  schedule's: six of the ten stand in open ground, where `inNamedRoom` answers
-  null. `test/mystery.mjs` owns it (#529) and rejects thirteen breaks.
-- **Nine activities onto three clips**, all of them idle variants every body
-  already ships, so no asset and no clip was added. `ACTIVITY_CLIPS` in
-  `src/populace.js` is the table and `npc.js`'s `playActivity` reads it.
+- **`data/populace.json`, fourteen bodies, and `src/populace.js`.** Ten people
+  from #616, then the well-wife's girl, the Constable's hound (with `follow`)
+  and two hens from rank 10. A routine is a ring per bell, one LIST of
+  `{room, tile, activity, facing?}` per watch, walked round until the next
+  bell, because the clock does not move between bells (#547, answer 3).
+  `validatePopulace` asks the twelve's own five nav questions plus every leg
+  of the ring and the wrap back to its first stop, and it checks the room
+  with `roomAt` rather than `inNamedRoom`. `test/mystery.mjs` owns it (#529).
+- **Twelve activities onto six clips**: the nine human jobs on three idle
+  variants every human body ships, `sniff` and `eat` on the hound's rig and
+  `peck` on the hen's. `ACTIVITY_CLIPS` in `src/populace.js` is the table,
+  and `test/mystery.mjs` checks each person's jobs against the clips in that
+  person's own `.glb`.
 - **`label` on an interaction target** (#617): a populace body shows a name
   and a role on the HUD, E at one does nothing, and a label never takes the
   prompt off a suspect standing behind it.
+- **Five more people, to 19 in `data/populace.json`, 32 bodies built,
+  exactly `MAX_SKINNED_TOTAL`** (#729, #733): `page`, `sacristan`,
+  `tiring-woman`, `watchman` and `writer`, placed per the table #729 set.
+  Outer ward holds 17, 18, 17, 17 across Prime, Terce, Sext, Vespers; inner
+  ward holds 14, 15, 14, 13. The maid's Sext stop in `inner-ward` is now a
+  `gossip` stop, paired with the tiring-woman's. **The writer's Prime, Terce
+  and Vespers stops fell back to `inner-ward`, `tend`** — the fallback
+  #729 allowed — because all 8 floor cells inside the muniment's disc read
+  as `kings-hall` under `roomAt`: that room has no walkable floor that
+  counts as itself.
+- **A `talk` list of three pairs, and the wire that plays them** (#731,
+  #732, #733): `talk-prime-inner-ward` (`page`, `sacristan`),
+  `talk-sext-outer-ward` (`baker-lad`, `well-wife`), `talk-sext-inner-ward`
+  (`tiring-woman`, `maid`). `Populace.talkDue`, and `overhear`/`stopTalk` in
+  `src/quest-manager.js`, share the `#caption` band, `_heard` and
+  `_playing` with a performance, so there is one band and one clock; a
+  performance always outranks talk. `src/main.js` constructs `Populace`
+  with `talk` and `hush` callbacks and also passes `pairs:
+  populaceData.talk`, an argument #729 to #732 did not name; `Populace`
+  reads its talk pairs from it.
+- **`test/budget.mjs` section 3** (#730, #733): counts a populace body in
+  every ward any stop of its ring gives it, per watch, beside the cast's,
+  and the total as every body `main.js` builds. It prints 32, not 12.
+- **`data/npcs.json`'s `chatterComment`** no longer says the pool is for "a
+  later populace row to spend", and `WISHLIST.md`'s matching line is
+  corrected the same way, both pointing at #731. The pool itself is
+  untouched and still unspent by the twelve.
 
-### Scope, the next increment
+### What the numbers are, now
 
-- **The other forty.** `data/populace.json` takes them with no schema change;
-  what it needs is places for them to stand, and `roomAt` plus the walk grid
-  will refuse any tile that is not one. The two wards, the three upper floors
-  and the two wall walks carry more than ten, and rank 9's town is where the
-  rest go.
-- **Ambient talk.** `data/npcs.json`'s 27-pair chatter pool, spent once two
-  populace bodies are within 3 m at one bell. The `gossip` activity already
-  marks the stops that are for it: the baker's lad and the well-wife stand
-  2 m apart in the outer ward at Sext and say nothing.
-- **Clips.** `sweep`, `stir`, `hammer` and `spar` are the four `SPECS.md`
-  deferred and they are still deferred: the Quaternius kit has none of them.
-  This is the half of the row that trades with **Bodies** (rank 10) in both
-  directions, and neither strictly gates the other.
-- **Cost.** Instanced meshes and animation LOD. Ten skinned bodies needed
-  none of it; fifty will, and **The tooling**'s budget suite (rank 12a) is
-  what will say when.
+- **Bodies built: 32.** 13 cast plus 19 populace, exactly
+  `MAX_SKINNED_TOTAL`. `test/budget.mjs` prints this.
+- **Bodies per ward, cast plus populace, a ring counted in every ward any of
+  its stops is in and the hound in both:** outer 17, 18, 17, 17 and inner
+  14, 15, 14, 13 at Prime, Terce, Sext and Vespers. The outer ward's peak is
+  unchanged at 18 of 20; the inner ward's peak moved from 10 to 15 of 20.
+- **The twelve's chatter pool still cannot be spent by proximity** (#731,
+  unresolved): of `data/npcs.json`'s 27 `chatter` pairs, 0 have their two
+  speakers within 3 m at the pair's own watch. The populace's own `talk`
+  list is the three pairs above, a separate mechanism.
 
-### Acceptance, the next increment
+### Scope, what is left
 
-- Whatever the populace grows to, `validatePopulace` still finds nothing and
-  `test/mystery.mjs` still rejects every break in its list. A new activity is
-  a new row in `ACTIVITY_CLIPS` and the clip check against the `.glb` files
-  is what says the clip is real.
-- Ambient talk: a pair of populace bodies within 3 m at one bell says a line,
-  and a headless assertion in `test/plan-vs-scene.mjs` reads it off the DOM
-  the way the performance captions are read (#592).
-
-### Open calls
-
-- **Where the forty stand, before rank 9.** The castle as built has room for
-  perhaps twenty more without crowding. Recommend **stopping at twenty until
-  the town exists**, rather than packing bodies into the wards to hit a
-  number; the row is about whether the castle reads as lived in, and a
-  courtyard of people standing 1.5 m apart reads as a queue.
-- **Whether `garden` should be made real** (#618). `mystery.json` lists it and
-  nothing in the castle resolves to it: the 93 walkable cells east of the east
-  gate are all inside the Chapel Tower's or the King's Tower's disc. It is
-  either ground somebody builds or a room id that should come out of the file.
-  **Rank 4c's yard is now a real precedent rather than a nearer one** (#703 to
-  #707): a room outside the walls, on the map, named, with things standing in
-  it, that nobody ever walks into. The garden is behind a gate that never
-  opens, which is the same shape. Not this row's call, but this row is where
-  it was found.
+- **The rest of the fifty waits on the town** (rank 9): more bodies, and
+  whether `garden` becomes ground, is that row's call (#618, #703 to #707).
+- **The ceiling stays 32 until a row renegotiates it, and the evidence it
+  brings should be rank 2's `renderer.info`, not a second guess** (#609,
+  #729). Instancing and animation LOD are the tools for that argument, not
+  needed yet.
+- **Four clips**, `sweep`, `stir`, `hammer` and `spar`, wait on rank 10
+  shipping a clip for them.
+- **The twelve's 27-pair chatter pool stays unspent.** Recommend a later
+  lore or dialogue increment hold each pair to the schedule the way #592
+  holds a performance, which is the pass #554 named and skipped: 5 of the
+  27 survive a same-room rule as written, and the other 22 need a room and
+  a bell somebody authors (#731).
 
 ### Dependencies
 
-- **Two of the side quests row's errands were specced as wanting somebody
-  from this file and in the end did not.** That row closed on 2026-09-18
-  (#691 to #695) by keeping both ideas and dropping the body each wanted: the
-  porter's boy is an errand on the porter with the boy never on screen, and
-  the child's dog was let go rather than replaced, on the ground that a dog is
-  the one of the two that is not a conversation and belongs to rank 10's
-  hound. Nothing in this row is owed to that one any more.
-- **Rank 10** is what unblocks the four deferred activities.
-- **Lanes C and D still**: `data/npcs.json`'s `cast` is read to check ids and
-  tints against, and `src/main.js` spawns the ten beside the twelve.
+- **Nothing gates it.** Rank 10 unblocks the four deferred activities and
+  this increment waits on none of them.
+- **Lanes C and D**: `data/populace.json`, `data/npcs.json`'s comment and
+  `src/main.js`'s one constructor. `src/quest-manager.js` is in no other
+  open row's scope today.
+- **Not `data/scene-config.json`**, which rank 9 holds in lane B.
+- **Rank 2's GPU run** is what a later ceiling argument cites; this
+  increment does not wait on it.
 
 ### Constraints
 
-- #500 (a populace stop is not a plan piece and has no `planId`; `populace.js`
-  says so in its own header).
-- #13, #34 (the validator exits non-zero, and every rail it adds has been
-  broken on purpose — including one that had to be rewritten because the
-  first version passed with the bug back in, #616).
-- #529 (the check belongs with `mystery.mjs`).
+- #500: a populace stop is not a plan piece and has no `planId`.
+- #529 and #611: the validator and `talkDue` in `mystery.mjs`, the band in
+  `quest.mjs`, the cost in `budget.mjs`, and `plan-vs-scene.mjs` for the
+  wire and nothing Node can prove.
+- #13, #34: every rail above is broken from green and the failure quoted.
+- #36, #39: talk is not saved and `SAVE_VERSION` stays 6.
+- #724: the beat parks rather than waits, and `TOL` is not touched.
+- #632: any new assertion over a data file's text reads both line endings.
 
 ---
 
@@ -1501,6 +1489,243 @@ ray that was never going to hit anything.
 - #499, #510 (video memory is the number to watch, not disk; a shadow or a
   point light is exactly the kind of thing that moves it).
 - #500 (anything built as a plan piece gets a `planId`).
+
+---
+
+## The floor plan you can see
+
+**Rank 13. Size 2+. Nothing is built; decisions #742 to #746, 2026-09-21.**
+Devon's ask, in his words: the room layout was placed by an AI one room and
+one guess at a time with no way to see the whole floor plan, he is not happy
+with how it reads, and he wants a GUI to lay it out himself, **or at least to
+review and correct it visually**. That last clause is why increment 1 below
+writes nothing.
+
+### What the layout is today, measured
+
+**`src/castle-plan.js` holds no coordinate.** It is a pure compiler:
+`makePlan(config, boundsOf)` reads `data/scene-config.json` and returns
+`{tile, pieces, colliders, surfaces, rooms, curtain, spawn}`, and it throws
+rather than warns on a config that does not hang together: `[castle-plan]
+drum "x" has an interior and no room in config.rooms names it`
+(castle-plan.js:999). So the floor plan is **data**: four arrays of
+`data/scene-config.json`, and a fifth that holds what stands on it.
+
+| Array | Rows | What one row is |
+| --- | --- | --- |
+| `walls` | 46: 18 curtain at level 0, 3 at level 1, 25 interior partitions with no `level` at all | a run between two tile centres, carrying `from`, `to`, `material`, `height`, `thickness`, and optionally `axis`, `base`, `walk`, `repeatMetres`, `interior`, `doorways` |
+| `drums` | 8 | a tower, carrying `tile`, `radius`, `height`, `segments`, `turret`, `stairs`, and an `interior` carrying its own `doors` |
+| `gates` | 3 | an arch on a tile with a `leaf` |
+| `rooms` | 43: 23 outer, 17 inner, 3 outside; 9 by `tiles`, 28 by `drum`, 6 by `bounds` | **a name over an extent, with no geometry of its own** |
+| `courtyard.placements` | 123 | a kit model at a tile, which is where the roofs, sheds and trees are |
+
+**Eleven runs carry `doorways`**, each `{ at, width, height, base? }`: an
+opening at a point along a run, which is how two spaces connect. Nothing is
+derived from anything else. A wall is not a room's edge, a room is an
+annotation over ground that runs happen to enclose, a door is a hole in a run,
+a stair is two flags on a drum. An editor here edits four independent lists,
+not one building.
+
+The file is **3113 lines** and every one was hand-typed. `?edit=1`
+(`src/edit-mode.js`, 327 lines; #583 to #587, move-and-delete #636 to #642)
+writes three *other* arrays of the same file (`interiorProps` (12),
+`builtProps` (21), `braziers` (3)) through `tools/place.mjs`'s splice and a
+Vite middleware, and touches none of the four above. It is walked in first
+person, so **the whole plan has never been on a screen at once.**
+
+### Scope, increment 1: the review view, no writing
+
+Class S. No lane: it writes no file the repo carries.
+
+- **`src/edit-layout.js`, new.** Mounted by `src/edit-mode.js`, which is
+  already inside `main.js`'s `import.meta.env.DEV` branch, so the whole thing
+  leaves a build with its host (#585). It carries
+  `export const LAYOUT_SENTINEL = 'castle-layout-editor-v1'` on its panel's
+  `data-editor` attribute, the way `edit-mode.js` carries its own.
+  `V` toggles the view; `?edit=1&view=plan` opens into it; `[` and `]` change
+  storey; Escape returns to the castle.
+- **The view is an orthographic camera over the real scene** (#743), not a
+  second drawing: a `THREE.OrthographicCamera` with `up` set to `(0, 0, -1)`,
+  framed on `plan.rooms`' union, the player's own scene underneath it. The
+  storey filter hides every piece whose box is wholly above the storey's
+  ceiling and ghosts (opacity 0.25) everything below it.
+- **`tools/plan-sheet.mjs`, new, pure.** No three, no DOM, no `node:` import,
+  which is `tools/place.mjs`'s own rule and the reason a browser can import it.
+  `planSheet(plan, level)` returns the overlay to draw: one entry per plan
+  piece on that storey with the plan's own box (never recomputed, #500), one
+  per room with its extent, id, name, ward and whether the mystery names it,
+  and one per `doorways` opening as a point on its run. The camera draws the
+  castle; this module draws the labels, the room outlines and the openings.
+- **Nothing else changes.** Not `src/castle-plan.js`, not
+  `src/castle-builder.js`, not `data/scene-config.json`, not
+  `tools/place.mjs`, not `vite.config.js`.
+
+### Scope, increment 2: rooms and runs become editable
+
+Class S. **Lane B** (`data/scene-config.json` and `test/tools.mjs`'s
+byte-exactness rail).
+
+- **`tools/place.mjs`.** `PLACEABLE` gains `walls` and `rooms` with their key
+  lists. `checkRow` becomes per-key shape rules rather than one shape:
+  today every branch of it demands a `tile`, and a wall row has `from` and
+  `to`. `formatRow` learns two shapes the four arrays have and the three
+  placeable ones do not: an object value (`tiles: { min, max }`) and an array
+  of objects (`doorways`). It writes both on one line today.
+- **`src/edit-layout.js`.** Drag a room's rectangle or a run's end on the
+  sheet; the sheet snaps to whole tiles, `Alt` to a quarter tile. The selected
+  row's whole record is posted through the existing `/__place` `move` verb.
+  No new verb and no change to `vite.config.js`.
+- **`test/tools.mjs`.** Parts 1 and 2 run the two new arrays: insert, then cut
+  the row back out, and the file is the file byte for byte, on an LF copy and
+  a CRLF copy (#632). Part 3's `'an array that is not placeable'` case moves
+  off `rooms`, which is placeable now, onto `materials`, which is an object
+  and never will be. Part 4 covers the nested formatting.
+
+### Scope, increment 3: the openings, which is how rooms connect
+
+Class S, lane B. A `doorways` entry is a field of the run that owns it, so
+editing one is a `move` of that run's row and needs no nested-path splice
+anywhere (#746). Drag an opening along its run, type a width, `Delete` twice
+to cut it, the way the prop editor already arms a delete.
+
+### Acceptance
+
+- **Increment 1.** `test/built.mjs`'s dev-only block greps `dist/` for
+  **both** sentinels: its one `sentinel` regex becomes a list of
+  `{ file, re }` pairs, `src/edit-mode.js` with
+  `/castle-placement-editor-v1/` and `src/edit-layout.js` with
+  `/castle-layout-editor-v1/`, each asserted present in its own source so a
+  rename cannot make the check go quiet, and each asserted absent from every
+  `.js`, `.css`, `.html` and `.json` under `dist/`. **Break**: delete
+  `import.meta.env.DEV &&` from `main.js`'s branch, build, and the grep names
+  the bundle file both sentinels leaked into while the served-set diff stays
+  green. That is #586's own evidence, re-run with a second target.
+- **Increment 1, in Node.** `test/tools.mjs` gains a part over
+  `tools/plan-sheet.mjs`: every plan piece whose box meets the storey appears
+  in `planSheet(plan, level)` exactly once, every room the plan lists appears
+  with the plan's own bounds, and no entry's box is a number `makePlan` did
+  not compute. **Break**: have `planSheet` recompute one room's box from its
+  `tiles` instead of reading `plan.rooms`, which is #500's failure in
+  miniature, and the assertion that fails says which room and by how much.
+- **Increments 2 and 3.** `test/tools.mjs`'s headline rail, extended: an
+  insert and a delete of the same `walls` row, and of the same `rooms` row,
+  give back the file byte for byte on both endings, and every byte outside a
+  rewritten row's span is the byte it was. **Break**: hardcode `\n` in
+  `formatRow`'s nested-object branch; the CRLF copy fails by one byte per
+  nested line, which is exactly #631's failure with a new surface under it.
+- **Every increment.** `npm test` is 15 of 15 and `npm run build` is clean.
+  No suite gains or loses an assertion in `layout.mjs`, `plan-vs-scene.mjs`,
+  `mystery.mjs` or `budget.mjs` (#529, #611): a dev tool's rails are
+  `test/tools.mjs`'s and `test/built.mjs`'s.
+- **What no suite can say** is whether the plan reads better afterwards. That
+  is Devon's, on the dev server, with `?edit=1&view=plan`. It is not a GPU
+  question (#53), because an orthographic top-down of a static scene is not a
+  real-time movement assertion, so a container can build and drive it, and
+  only a person can judge the result.
+
+### Open calls
+
+1. **Does the GUI edit `castle-plan.js`, or an intermediate JSON?**
+   **Neither: it edits `data/scene-config.json` directly, through
+   `tools/place.mjs`'s splice** (#742). `castle-plan.js` is a compiler with no
+   coordinate in it, so there is nothing there to round-trip; and the four
+   layout arrays sit in the same file, under the same 3113-line splice rail,
+   as the three the editor already writes. An intermediate format would be a
+   second source of truth for the castle, which is exactly the thing #500
+   exists to forbid. `eolOf` already gives it #632 for free.
+2. **A re-serialise, now that whole rows are being rewritten?** **No** (#584,
+   measured again today): `JSON.stringify(JSON.parse(raw), null, 2)` over the
+   current file is 124924 bytes against 117131, so a round-trip writer puts
+   7.8 KB of churn into every edit's diff, and the diff is the product. The
+   churn a `move` makes inside the one row it rewrites stays the accepted
+   bargain (#639).
+3. **Top-down camera in the engine, or a flat 2D editor that never loads
+   three?** **The camera** (#743). A flat schematic cannot compute anything
+   here: `makePlan` takes `boundsOf(modelPath)`, and the only place that
+   exists is `CastleBuilder.measure()`, which loads every model and measures
+   its parts (castle-builder.js:630). A DOM editor would have to re-derive
+   every box the plan computes, which is `test/layout.mjs`'s old sin written
+   into a tool (castle-plan.js's header, #500). The camera also shows the 123
+   `courtyard.placements`, the ground patches and the drums' own shells, which
+   are the things a schematic would have drawn as nothing. Devon's own school
+   editor landed here after 42 phases: `js/render.js:1522` is an
+   `OrthographicCamera` 200 ft over the real scene with storeys ghosted, not a
+   second canvas.
+4. **Same tool or a new one?** **Same entry point, second module** (#744).
+   `?edit=1` stays the one flag and the one DEV branch to audit;
+   `src/edit-layout.js` is its own file because the data has nothing in
+   common (a prop is a tile, a run is two tiles and eight fields) and
+   because folding it into `edit-mode.js` would double a file whose whole
+   value is that a person can read it in one sitting.
+5. **Live validation, or write and let `npm test` catch it?** **Both, and the
+   live half copies no assertion** (#746). Before it posts, the panel calls
+   `makePlan(edited, boundsOf)` and `walkability`, the same two pure
+   functions the page and every Node suite already call, and refuses to write
+   when `makePlan` throws, showing the throw. It prints the room count, the
+   walkable-cell count and whether the fill still seals, and **those are
+   numbers, not checks**: #13's rule is why they are not allowed to be
+   checks, because a second copy of check 4 living in a panel is a rail nobody
+   runs and nobody maintains. No check from `layout.mjs`, `plan-vs-scene.mjs`
+   or `budget.mjs` is copied, moved or re-implemented (#529, #611).
+6. **A new row or an amendment to the placement editor's?** **New row.** Rank
+   12 retired whole on 2026-09-18 (#687 to #690) and a retired row does not
+   reopen; the scope is different besides: that row was props on a castle
+   that already exists, this one is the castle.
+7. **Which arrays does the write path take, and in what order?** **`rooms`
+   and `walls` first, `doorways` second, `drums` and `gates` not in this row.**
+   A drum is 970 of the castle's 1539 meshes (#609) and eight fields that the
+   crown, the stairs and the turret all read; a gate carries a `leaf` spec
+   with a springline in it. Both are a later increment's, and both stay
+   readable in the review view from increment 1.
+8. **Undo?** **No.** `git diff` is the undo, the write does not commit, and
+   the one module in Devon's school editor most worth lifting (`js/history.js`,
+   a JSON structural diff behind a 100-deep stack) is the one this repo does
+   not need, because that tool's design lives in memory and this one's lives
+   in a file git is already watching.
+9. **Does the room's own record grow anything?** **No.** A room is a name over
+   an extent and the builder works out what is in it; a second answer written
+   beside the builder's is a second answer to drift, which is #583's rule for
+   the prop editor's comment and holds here unchanged.
+10. **Read-only first, as its own increment?** **Yes** (#745), and it is the
+    answer to the half of Devon's sentence that says "or at least to review".
+    It ships without touching `tools/place.mjs`, `PLACEABLE`, `/__place` or
+    the byte-exactness rail, so the first thing anybody looks at costs nothing
+    that could break a file ten suites read.
+
+### Dependencies
+
+- **Increment 1 is in no lane** and may be claimed beside anything, including
+  rank 9. **Increments 2 and 3 are lane B**, which rank 9's town also holds:
+  one row per lane at a time (#602), so they do not run beside it.
+- Nothing gates this row and it gates nothing. It makes rank 9's remaining
+  work and the nineteen empty rooms cheaper, the way the prop editor did for
+  the content rows (#583).
+- `src/edit-mode.js` is the host; a session in this row and a session
+  extending the prop editor would collide on that file.
+
+### Constraints
+
+- **#500.** The sheet reads `plan.pieces` and `plan.rooms` and recomputes no
+  box. A tool that re-derives the castle is the failure `castle-plan.js` was
+  written to end.
+- **#529, #611.** No assertion moves. A dev tool's rails live in
+  `test/tools.mjs` and `test/built.mjs`.
+- **#585, #586.** Two independent halves, neither trusted: the module is
+  reached only from inside `import.meta.env.DEV`, the writer is still a plugin
+  with `apply: 'serve'`, and the check is the grep of `dist/`, now for two
+  sentinels.
+- **#584, #632, #639.** Splice, never re-serialise; every newline from
+  `eolOf(source)`; every byte outside the edited row's span unchanged, on both
+  endings.
+- **#13, #34.** The panel's numbers are not checks. Every rail named above is
+  broken on purpose once, from green, with the FAIL line quoted in
+  `HISTORY.md`.
+- **#493, #494, #506.** No asset, no vendored library. Anything carried over
+  from the school editor arrives as source under `src/` or `tools/`, never as
+  a `libs/` copy.
+- **#53.** An orthographic still of a static scene is not a real-time
+  assertion, so the suite half of this row is a container's. Whether the plan
+  reads better is Devon's.
 
 ---
 

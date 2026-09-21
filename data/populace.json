@@ -8,6 +8,8 @@
   "activityComment": "`activity` is the job, and src/populace.js's ACTIVITY_CLIPS maps it to a clip the body doing it ships. The nine human jobs resolve to one of three idle variants, because the first increment added no asset and no clip and the kit has no sweep, stir, hammer or spar in it; that is why every human job below is one a body does standing still. `sniff` and `eat` are the hound's (#643) and exist in its body only, and test/mystery.mjs checks each person's jobs against the clips in that person's own file.",
   "day2Comment": "Nobody here has a Lauds stop, so the morning after has the cast and nothing else. That is the increment's boundary and not a claim about the fiction; a later one gives the household a second day.",
   "gardenComment": "There is no gardener, and there was one until the grid was asked. `garden` is a room id in mystery.json that no point in this castle resolves to: there are 93 walkable cells east of the east gate and every one of them is inside the Chapel Tower's or the King's Tower's own disc, so `roomAt` names a tower and never the garden. A stop written there would be a stop in a room that does not exist on the ground. The hen-wife keeps the outer ward instead.",
+  "rank6bComment": "The last five (#729): a page, the sacristan, the Lady's tiring-woman, a watchman and a writer, every stop of every watch in an inner-ward room, which takes what src/main.js builds to 32 bodies, exactly test/budget.mjs's MAX_SKINNED_TOTAL, and the inner ward's peak to 15 of 20 while the outer stays at 18. A sixth body is a ceiling argument in HISTORY.md, not a row here. The writer was to keep the muniment room and nothing in it is floor the validator accepts: the room is behind the riddle's lock, and the eight grid cells inside its disc all resolve to the King's Hall, so his three muniment stops stand in the inner ward outside the King's Tower instead, doing the same job.",
+  "talkComment": "Two of the household talking where the player can overhear (#731, #732). The twelve's `chatter` pool in data/npcs.json is theirs and not this file's: every line in it starts with one of their names. A pair here is two ids from `people` in speaking order, one watch, and two to four lines alternating between them with no name in front, because the caption band carries the name. Each speaker has a ring of exactly ONE `gossip` stop at that watch, the two stops in one room from 1.5 to 3 m apart (src/populace.js's TALK_RADIUS), which is what keeps a pair standing still for the whole watch. The player hears it once per page, within 6 m (EARSHOT) and in the same room, on the band a sermon uses; a sermon out-ranks it. The lines are household talk, nothing about the mason, the death or the twelve's movements, because nothing reads a populace line against the timeline.",
   "people": [
     {
       "id": "baker",
@@ -240,7 +242,7 @@
           { "room": "royal-apartments", "level": 1, "tile": [4.438, -2.563], "activity": "wait", "facing": 225 }
         ],
         "sext": [
-          { "room": "inner-ward", "tile": [4.438, 0.563], "activity": "wait", "facing": 250 }
+          { "room": "inner-ward", "tile": [4.438, 0.563], "activity": "gossip", "facing": 90 }
         ],
         "vespers": [
           { "room": "royal-apartments", "level": 1, "tile": [4.438, -2.563], "activity": "wait", "facing": 225 }
@@ -357,6 +359,152 @@
           { "room": "outer-ward", "tile": [-4.563, 0.938], "activity": "peck" }
         ]
       }
+    },
+    {
+      "id": "page",
+      "name": "Hywel",
+      "role": "a page of the hall",
+      "modelPath": "assets/NPCs/Adventurer.glb",
+      "tint": "#8c3b5e",
+      "routine": {
+        "prime": [
+          { "room": "inner-ward", "tile": [2.938, 0.938], "activity": "gossip", "facing": 90 }
+        ],
+        "terce": [
+          { "room": "kings-hall", "tile": [4.438, -2.063], "activity": "serve", "facing": 270 }
+        ],
+        "sext": [
+          { "room": "kings-hall", "tile": [4.438, -2.063], "activity": "serve", "facing": 270 }
+        ],
+        "vespers": [
+          { "room": "steward-chamber", "tile": [1.063, 3.063], "activity": "wait", "facing": 90 }
+        ]
+      }
+    },
+    {
+      "id": "sacristan",
+      "name": "Einion",
+      "role": "the sacristan",
+      "modelPath": "assets/NPCs/Farmer.glb",
+      "tint": "#5e5a48",
+      "routine": {
+        "prime": [
+          { "room": "inner-ward", "tile": [3.438, 0.938], "activity": "gossip", "facing": 270 }
+        ],
+        "terce": [
+          { "room": "chapel", "tile": [6.188, 4.313], "activity": "tend", "facing": 0 }
+        ],
+        "sext": [
+          { "room": "chaplain-chamber", "level": 1, "tile": [5.938, 3.938], "activity": "tend" }
+        ],
+        "vespers": [
+          { "room": "chapel", "tile": [6.188, 4.313], "activity": "tend", "facing": 0 }
+        ]
+      }
+    },
+    {
+      "id": "tiring-woman",
+      "name": "Mallt",
+      "role": "the Lady's tiring-woman",
+      "modelPath": "assets/NPCs/Woman.glb",
+      "modelHeight": 1.65,
+      "hideNodes": ["Sword"],
+      "hideMaterials": ["Metal", "Gold"],
+      "tint": "#b4a2cf",
+      "routine": {
+        "prime": [
+          { "room": "royal-apartments", "level": 1, "tile": [1.563, -2.938], "activity": "wait", "facing": 90 }
+        ],
+        "terce": [
+          { "room": "royal-apartments", "level": 1, "tile": [1.563, -2.938], "activity": "wait", "facing": 90 }
+        ],
+        "sext": [
+          { "room": "inner-ward", "tile": [4.938, 0.563], "activity": "gossip", "facing": 270 }
+        ],
+        "vespers": [
+          { "room": "royal-apartments", "level": 1, "tile": [1.563, -2.938], "activity": "wait", "facing": 90 }
+        ]
+      }
+    },
+    {
+      "id": "watchman",
+      "name": "Goronwy",
+      "role": "a watchman of the walls",
+      "modelPath": "assets/NPCs/King.glb",
+      "hideMaterials": ["Gold"],
+      "heldProp": "assets/NPCs/Spear.glb",
+      "heldPropFit": { "length": 2.1, "grip": 0.4, "tipUp": true },
+      "tint": "#46556b",
+      "routine": {
+        "prime": [
+          { "room": "south-walk", "level": 2, "tile": [2.063, 3.688], "activity": "guard", "facing": 180 },
+          { "room": "south-walk", "level": 2, "tile": [4.063, 3.688], "activity": "guard", "facing": 180 }
+        ],
+        "terce": [
+          { "room": "south-walk", "level": 2, "tile": [3.313, 3.688], "activity": "guard", "facing": 180 },
+          { "room": "cross-walk", "level": 2, "tile": [-0.188, 2.063], "activity": "guard", "facing": 270 }
+        ],
+        "sext": [
+          { "room": "south-walk", "level": 2, "tile": [3.313, 3.688], "activity": "guard", "facing": 180 }
+        ],
+        "vespers": [
+          { "room": "south-walk", "level": 2, "tile": [2.063, 3.688], "activity": "guard", "facing": 180 },
+          { "room": "south-walk", "level": 2, "tile": [4.063, 3.688], "activity": "guard", "facing": 180 }
+        ]
+      }
+    },
+    {
+      "id": "writer",
+      "name": "Llywarch",
+      "role": "who writes the castle's rolls",
+      "modelPath": "assets/NPCs/Adventurer.glb",
+      "tint": "#7d6b4f",
+      "routine": {
+        "prime": [
+          { "room": "inner-ward", "tile": [5.313, -0.938], "activity": "tend", "facing": 0 }
+        ],
+        "terce": [
+          { "room": "inner-ward", "tile": [5.313, -0.938], "activity": "tend", "facing": 0 }
+        ],
+        "sext": [
+          { "room": "steward-chamber", "tile": [2.063, 2.063], "activity": "tend", "facing": 180 }
+        ],
+        "vespers": [
+          { "room": "inner-ward", "tile": [5.313, -0.938], "activity": "tend", "facing": 0 }
+        ]
+      }
+    }
+  ],
+  "talk": [
+    {
+      "id": "talk-prime-inner-ward",
+      "npcs": ["page", "sacristan"],
+      "watch": "prime",
+      "lines": [
+        "Is there wax to spare? The hall burned three candles down to the dish last night, and I am to fetch more before anybody sits.",
+        "There is wax for the altar and there is wax for the hall, and they are not the same wax. Ask me properly and I will think about it.",
+        "Then I am asking properly. Slowly, and with my cap off."
+      ]
+    },
+    {
+      "id": "talk-sext-outer-ward",
+      "npcs": ["baker-lad", "well-wife"],
+      "watch": "sext",
+      "lines": [
+        "Two buckets for the trough and one for the dough, she says, and not off the bottom of the well this time. She says it tastes of the bottom.",
+        "The bottom of the well is where the water is, boy. Tell her the rope is as long as it was yesterday and so is my patience.",
+        "I will tell her you said so. I will not tell her how you said it."
+      ]
+    },
+    {
+      "id": "talk-sext-inner-ward",
+      "npcs": ["tiring-woman", "maid"],
+      "watch": "sext",
+      "lines": [
+        "The blue linen came back from the wash with a scorch on the hem. A hand's width, right where it shows when she sits.",
+        "Then the blue goes to the bottom of the chest and the green comes out. She will not look at a hem if the sleeves are right.",
+        "She looks at everything. That is the whole trouble with her, and the whole reason we still have our places."
+      ]
     }
   ]
 }

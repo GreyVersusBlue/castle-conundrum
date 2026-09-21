@@ -146,8 +146,11 @@ in, every one of them a `belief` or a `rumour` the game never confirms.
   each speaker's own `ward` field, not the schedule's exact station, which is
   this row's own recommended-and-taken open call — a later pass could hold it
   to the schedule the way `mystery.js`'s nav rails do. The pool is unused by
-  the game today: this repo has no populace yet (theme 1), and ambient talk
-  between two populace bodies in earshot is that row's to spend it on.
+  the game today, and the populace does not spend it (#731): it is the
+  twelve's, every line opens with one of their names, and none of its pairs
+  stands within 3 m at its own watch. `data/populace.json` carries a `talk`
+  list of its own for two household bodies in earshot, and holding this pool
+  to the schedule is a later lore or dialogue increment's.
 - **A castle that says where it is in its own history.** Shipped in the
   canon and the documents: built after a conquest (the March War), by a
   King who is not there (Osric) and whose money is late (the Sunder War),
@@ -261,8 +264,8 @@ format knows.
 
 ### The floor plan you can see
 
-**Moved to `BACKLOG.md` rank 1, `SPECS.md`'s "The floor plan you can see"
-section** (#729 to #733), on the day it was asked for. This is the fifth
+**Moved to `BACKLOG.md` rank 13, `SPECS.md`'s "The floor plan you can see"
+section** (#742 to #746), on the day it was asked for. This is the fifth
 tool and it was not on the list above, because the list above was about
 content and this one is about the castle itself: the room layout was placed
 by an AI one room and one guess at a time with no way to see the whole floor
@@ -272,9 +275,9 @@ the layout is not in `src/castle-plan.js` at all — that file holds no
 coordinate — but in four arrays of `data/scene-config.json`: 46 wall runs, 8
 drums, 3 gates and 43 rooms, with the openings that connect them carried on
 eleven of the runs. So it is the same file and the same splice the placement
-editor already writes (#729), the view is an orthographic camera over the
-real scene rather than a flat schematic (#730), and the first increment
-writes nothing (#732).
+editor already writes (#742), the view is an orthographic camera over the
+real scene rather than a flat schematic (#743), and the first increment
+writes nothing (#745).
 
 ## Devon's answers, 2026-09-16
 
