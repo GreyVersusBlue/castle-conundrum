@@ -989,7 +989,7 @@ rank 2's alone.
 
 ## The retro castle: the stone in the castle's own pixel art
 
-**Rank 3. Size 2+. The first increment shipped on 2026-09-21** (#757 to
+**Rank 4. Size 2+. The first increment shipped on 2026-09-21** (#757 to
 #766). Devon's brief of the same day: the castle reads as the same
 everywhere, and he wants pixel-art textures produced by a model session
 rather than photographs, for variety room to room and for a retro look, a
