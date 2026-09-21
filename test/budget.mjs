@@ -42,8 +42,17 @@
 // which is why the two towers standing astride the cross-wall come out split
 // and why the ground planes are counted in both — a mesh that spans the
 // boundary is drawn whichever side of it you stand on. Anything reaching
-// neither rectangle is `outside`: today the road, the outside ground and four
-// trees (#546), and it is where rank 4c's yard and rank 9's town are going.
+// neither rectangle is `outside`: the road, the outside ground, the trees
+// (#546), Wykes's yard and Mereford's town (#725).
+//
+// AN OUTSIDE MESH IS PAID FOR IN BOTH WARDS (#727). It has no ceiling of its
+// own because it is not a third place anybody stands: it is what the player
+// sees over the curtain, from the North-west Tower's roof in the outer ward
+// and over the cross-wall from an inner-ward roof, and three.js draws it from
+// either. So the claim is `calls[w] + calls.outside` against the one
+// per-ward ceiling, for each ward, with no new constant. What bounds the town
+// is then 1200 less the busier ward, and when that fails the first answer is
+// still #611's: merge a drum's sectors before deleting a house.
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -224,6 +233,20 @@ for (const w of WARDS) {
   }
 }
 pass(`${meshTotal} meshes in the castle, ${calls.outside} of them outside both wards`);
+// What is drawn outside both wards is seen from each, so it counts against
+// each (#727, and WHAT A WARD IS above). The fail names the outside bucket's
+// three biggest pieces, since that is the half of the sum this line adds.
+{
+  const worstOutside = perPiece.filter((p) => p.here.outside > 0).sort((a, b) => b.here.outside - a.here.outside).slice(0, 3);
+  for (const w of WARDS) {
+    const sum = calls[w] + calls.outside;
+    if (sum > MAX_DRAW_CALLS_PER_WARD) {
+      fail(`the ${w} ward's ${calls[w]} meshes and the ${calls.outside} outside both wards come to ${sum}, over the ceiling of ${MAX_DRAW_CALLS_PER_WARD}: what is out there is drawn from inside. The outside bucket's three biggest: ${worstOutside.map((p) => `${p.id} (${p.here.outside})`).join(', ')}`);
+    } else {
+      pass(`the ${w} ward's ${calls[w]} and the outside's ${calls.outside} come to ${sum}, ${MAX_DRAW_CALLS_PER_WARD - sum} under the ceiling of ${MAX_DRAW_CALLS_PER_WARD}`);
+    }
+  }
+}
 
 /* ================================================== 2: point lights per ward ===
  *
@@ -316,7 +339,7 @@ console.log('\nskinned bodies per ward, at each watch');
 /* -------------------------------------------------------------- the sheet --- */
 console.log('\nwhere the castle stands, against ceilings that are guesses:');
 for (const w of WARDS) console.log(`  ${w.padEnd(7)} ${String(calls[w]).padStart(5)} / ${MAX_DRAW_CALLS_PER_WARD} draw calls`);
-console.log(`  ${'outside'.padEnd(7)} ${String(calls.outside).padStart(5)}   no ceiling yet: rank 4c's yard and rank 9's town go there`);
+console.log(`  ${'outside'.padEnd(7)} ${String(calls.outside).padStart(5)}   counted in each ward (#727): ${WARDS.map((w) => `${w} ${calls[w] + calls.outside} / ${MAX_DRAW_CALLS_PER_WARD}`).join(', ')}`);
 
 console.log(failures ? `\n${failures} failure(s)` : '\nall good');
 process.exit(failures ? 1 : 0);

@@ -255,6 +255,8 @@ button.journal-row:hover { background: rgba(212, 163, 73, 0.18); border-color: v
 .map-plan .map-room { fill: rgba(0, 0, 0, 0); stroke: var(--accent-dim); stroke-width: 1; vector-effect: non-scaling-stroke; }
 .map-plan .map-room.visited { fill: rgba(212, 163, 73, 0.45); stroke: var(--accent); }
 .map-plan .map-room.here { stroke: var(--parchment); stroke-width: 2; }
+/* A room outside the walls (#726): seen, never stood in, so never filled. */
+.map-plan .map-room.seen { fill: none; stroke-dasharray: 4 3; }
 .map-names { display: flex; flex-wrap: wrap; gap: 0.25em 0.6em; margin-top: 0.4em; font-size: 0.8em; }
 .map-names .map-room { color: #7d6d52; }
 .map-names .map-room.visited { color: var(--parchment); }
