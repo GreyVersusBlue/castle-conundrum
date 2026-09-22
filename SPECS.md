@@ -35,7 +35,7 @@ height," for the same reason: a GPU run found it and it sat in front of
 to "Explore: the day before," because Devon's answers to `WISHLIST.md` theme 8
 (#750 to #753) made the walking day the first door into the game and a first
 door outranks what is behind it; the sight bug was rank 2 and 5 is still
-retired. **The sight bug shipped the same day** (#775 to #777) and rank 2 is
+retired. **The sight bug shipped the same day** (#780 to #782) and rank 2 is
 retired with it. **Rank 13 is new the same day**: the floor
 plan you can see (#745 to #749), a number the table has never held before,
 because Devon asked for it by name and it did not displace anything already
@@ -203,14 +203,17 @@ that row.
 
 ## Explore: the day before
 
-**Rank 1. Size 2+. Increments 1 and 2 shipped 2026-09-21** (#767 to #770,
-#771 to #774, against #754 to #756). Devon answered `WISHLIST.md` theme 8's
-four questions on 2026-09-21 and overturned the theme on two of them: the
-walking day is the main mode with the mystery behind it (#751), and it is
-the day BEFORE the death, Hywel alive and speakable (#752). That price is
-given and is not renegotiated here. What this section does is settle ten
-calls against the code rather than against the theme, so each of the four
-increments below is class S. **Increments 3 and 4 are open.**
+**Rank 1. Size 2+. Shipped whole, all four increments, 2026-09-21** (#767 to
+#770, #771 to #774, #775 to #777, #778 to #779, against #754 to #756). Devon
+answered `WISHLIST.md` theme 8's four questions on 2026-09-21 and overturned
+the theme on two of them: the walking day is the main mode with the mystery
+behind it (#751), and it is the day BEFORE the death, Hywel alive and
+speakable (#752). That price is given and is not renegotiated here. What this
+section does is settle ten calls against the code rather than against the
+theme, so each of the four increments below is class S. **Nothing engine,
+data or suite is left in this row. What is left is the look, and it belongs
+to The GPU run** (see "What is left after increment 4" below), the way "A
+second day" handed its Lauds sky to the same row.
 
 Theme 8's engine half still holds in shape: one stage, one branch per method in
 the engine, a bell, four rails. What does not hold is anything it wrote for a
@@ -416,7 +419,7 @@ FAIL line is quoted in `HISTORY.md` (#34, #13).
   above pass, but nobody has run it. That is rank 3's first act, not this
   row's.
 
-### Scope, increment 3: the lines
+### Scope, increment 3: the lines — shipped 2026-09-21 (#775 to #777)
 
 Fourteen real `day0` sets in place of increment 1's stubs, and #752's rule held
 by construction: not one of them is a word of day-one testimony. Hywel's is the
@@ -424,47 +427,102 @@ one that has to carry the day, because he is the reason to walk it.
 
 | File | What changes |
 | --- | --- |
-| `dialogue/castle.dlg`, `data/npcs.json` | The fourteen sets, three to five lines each, written in the .dlg and compiled. About 60 lines against the file's 182. |
-| `tools/dialogue.mjs` | One check-only `?` kind, `? frame <stage>`, rebuilt from `data/quest.json`'s stages whose `dialogueState` is not `default`, refused on drift and written back by nothing. That is #690's bargain unchanged (`\|` and `%` write; `@`, `:`, `?` and `!` are rebuilt and compared), and it adds no line to any existing block, because every frame stage today is `default`. |
+| `dialogue/castle.dlg`, `data/npcs.json` | The fourteen sets, written in the .dlg and compiled. Fifty-seven lines against the file's 182: Hywel's own five, four or five each for the twelve, and one for the inspector — his `day0` set is unreachable, the way his own `default` already is, so it does not carry the same three-to-five floor as the thirteen who can be walked up to (#775). |
+| `tools/dialogue.mjs` | One check-only `?` kind, `? frame <stage>`, rebuilt from `data/quest.json`'s stages whose `dialogueState` is not `default`, refused on drift and written back by nothing. That is #690's bargain unchanged (`\|` and `%` write; `@`, `:`, `?` and `!` are rebuilt and compared). It adds two lines to every block it reaches, not one: `explore` and `night` both name `day0`, so a `day0` block carries `? frame explore` and `? frame night` both (#776). |
 | `test/dialogue.mjs` | The new kind, and its break. |
+| `test/quest.mjs` | Section 4f: the leak rail, its own control, the token rail, station coverage and the no-line-repeats rail, all against `day0` (#775). |
 
-### Acceptance, increment 3
+### Acceptance, increment 3 — green, 15 of 15
 
-- **`test/dialogue.mjs`**: extract then compile is a fixed point; the `day0`
-  blocks carry `? frame explore`; drift is refused. **Break**: delete the
-  `? frame explore` line from one block and `npm run dialogue:check` exits
-  non-zero naming the speaker.
-- **`test/quest.mjs`**: no `day0` set contains a token
-  (`{ACCUSE}` in particular), and every speaker with a day-0 station has a
-  non-empty `day0` set. **Break**: put `{ACCUSE}` in the Constable's `day0`
-  set and `validateAgainstNpcs` demands a stage in that `dialogueState` that
-  runs `openAccusation`.
+- **`test/dialogue.mjs`**: extract then compile is a fixed point; every `day0`
+  block carries both `? frame explore` and `? frame night` (#776, corrected
+  from this section's earlier text, which named only the first); drift is
+  refused. **Break**: delete the `? frame explore` line from one block and
+  `npm run dialogue:check` exits non-zero naming the speaker.
+- **`test/quest.mjs`**: no `day0` set contains a token (`{ACCUSE}` in
+  particular); no `day0` line uses a word of the five things the walking day
+  takes off the ground or of a death (#752), with the same word list run over
+  the day-one `default` sets as a control so the list is proven to trip real
+  testimony; every speaker with a day-0 station has three lines or more of
+  their own, and the inspector, who has none, still carries the one line
+  `validateAgainstNpcs` demands of every speaker (#775, corrected from this
+  section's earlier "non-empty," which did not say how many); and no `day0`
+  line is a line any other state already says. **Break**: put `{ACCUSE}` in
+  the Constable's `day0` set and `validateAgainstNpcs` demands a stage in that
+  `dialogueState` that runs `openAccusation`.
 - A reading criterion no suite can hold, named here so it is not mistaken for
   one: none of the fourteen may say anything that only makes sense after the
-  death. The check is a person reading the .dlg's `day0` blocks top to bottom.
+  death, beyond the words the leak rail knows. The check is a person reading
+  the .dlg's `day0` blocks top to bottom.
 
-### Scope, increment 4: the day itself
+### Scope, increment 4: the day itself — shipped 2026-09-21 (#778 to #779)
 
-The content, and the only increment that is large.
+The content, and the only increment that was large.
 
-| File | What changes |
+| File | What changed |
 | --- | --- |
-| `data/mystery.json` | `day0.schedule` stops being a copy: the twelve moving through four bells on the castle's own business, and Hywel's own four, ending at the Chapel Tower stair at the last bell so the night pane lands where the morning's body will be. |
-| `data/populace.json` | Day-0 rings for the nineteen. The four watches' rings copied under the day-0 ids is the floor, because a walking day with no household in it is the emptiest the castle has ever been; the day-2 comment's own boundary ("nobody here has a Lauds stop") is the precedent for shipping without them and increment 1 takes it. |
-| `data/npcs.json`, `src/lore.js` | If a sermon, a song or a chatter pair is wanted on the walking day, `indexPerformances`'s watch rail grows the day-0 list the way it grew `d2Watches`, and its condition rail is unchanged: `when`/`unless`/`knew` stay day-2-only, because a verdict is still a thing only the morning after has (#648). |
-| `test/budget.mjs` | Section 3's loop covers the walking day's bells as well as the four, holding the per-ward peak to the same 20. Measured before the fact: the cast's own peak is outer 7 and inner 5, the household takes the outer ward to 18, and Hywel's lodge is outer, so the walking day peaks at 19 of 20 with the inspector not yet arrived. |
-| `test/mystery.mjs` | The nine rails of increment 1 now run against a schedule that is not a copy, which is where they earn their keep. |
+| `data/mystery.json` | `day0.schedule` stops being a copy: thirteen people moving through four bells on the castle's own business, written off each speaker's own `day0` lines, and Hywel's own four, ending at the foot of the Chapel Tower stair at the last bell, 0.92 m from where the body lies at Prime. |
+| `data/populace.json` | Day-0 rings for the nineteen, the four watches' own rings copied under the day-0 ids. |
+| `src/populace.js` | **Not in the original scope table (#778).** `validatePopulace` had to learn `mystery.day0.watches` beside the four, or the acceptance below could not hold: `everyBell` is the four plus `day0.watches`, the chain rail runs once per day, and the message for a bell that is neither reads "not a bell of either day." |
+| `data/npcs.json`, `src/lore.js` | **The conditional half was not taken (#778).** `indexChatter` and `indexPerformances` still refuse any watch outside the four; nothing half-fires on the walking day, and the chaplain's own `day0` line argues against a sermon the evening before (#648). |
+| `test/budget.mjs` | Section 3's loop covers the walking day's bells as well as the four. Measured: the walking day peaks at outer 19 of 20 at terce-eve and inner 15, matching #756's prediction. |
+| `test/mystery.mjs` | The nine rails of increment 1 now run against a schedule that is not a copy, which is where they earn their keep, and #775's walk-into-the-night rail gets its first two pairs day one does not already imply (#779). |
 
-### Acceptance, increment 4
+### Acceptance, increment 4 — green, 15 of 15
 
 - `validateMystery` green over the real day-0 schedule, `validatePopulace` green
   over the day-0 rings, `test/budget.mjs` naming the walking day's own peak per
-  ward. **Break**: put two bodies 1.4 m apart at `sext-eve` and the clearance
-  rail names both. **Break**: give one of the nineteen a day-0 stop with no
-  floor under it and `validatePopulace` refuses the page.
-- What the walking day FEELS like is nobody in a container's to say (#53).
-  The sight-at-height bug `BACKLOG.md`'s soft order named bit hardest here
-  and shipped 2026-09-21 (#775 to #777).
+  ward (outer 19 of 20, inner 15). **Break**: two of the cast moved into the
+  outer ward at terce-eve, `FAIL on the walking day the outer ward holds 21
+  skinned bodies at terce-eve, over the ceiling of 20`. **Break**: put two
+  bodies 1.4 m apart at a bell of the walking day and the clearance rail names
+  both, `FAIL rejects two bodies 1.4 m apart at a bell of the walking day, a
+  tenth of a metre inside the 1.5 m two bodies need`. **Break**: give one of
+  the nineteen a day-0 stop with no floor under it and `validatePopulace`
+  refuses the page.
+- The day is not a copy: 9 of the 13 change room across the walking day, the 4
+  who do not (the porter at his gate, the smith behind his bars, the
+  chaplain, the merchant) each carrying a `note` saying why. **Break**:
+  increment 1's copy put back, `FAIL 9 of the 13 change room across the
+  walking day ... — still: chaplain, prisoner, merchant, hywel / with a note:
+  none`.
+- Hywel ends the day where the body will be found. **Break**: left in the
+  lodge at the last bell, `FAIL the walking day ends with Hywel 38.47 m from
+  where the body lies at prime`.
+- All 19 of the household are in the castle over the four day-0 bells.
+  **Break**: the hen-wife's four day-0 rings cut, `FAIL all 19 of the
+  household are in the castle on the walking day too, over 100 stops at its
+  four bells — nobody at any of prime-eve, terce-eve, sext-eve, vespers-eve:
+  hen-wife`.
+- **`test/mystery.mjs`'s walk-into-the-night rail (#775) now has two pairs
+  day one's own chain does not already imply** (#779): the sentry, north walk
+  at level 2 to the guardroom, and the porter, his gate rather than the
+  cross-walk. **Break**: the sentry's last bell moved into the cell, `FAIL
+  validateMystery finds nothing wrong, the castle included — ... sentry: no
+  path from PT at vespers-eve to NW at prime ...`.
+- What the walking day FEELS like is nobody in a container's to say (#53). The
+  sight-at-height bug `BACKLOG.md`'s soft order named bit hardest here and
+  shipped 2026-09-21 (#780 to #782).
+
+### What is left after increment 4
+
+1. **Somebody looks at the walking day.** Whether the two start buttons read
+   as a choice; whether "Prime, the eve" fits the tracker; whether the night
+   pane reads as an ending; a living Hywel at interact range; whether the
+   fourteen read as a castle on an ordinary day, and whether the day-one
+   testimony still lands after hearing them the day before; whether the day
+   reads as a day rather than a rota, with two masons at the stair at the
+   last bell, a porter who never moves, and 19 bodies in the outer ward at
+   terce-eve. It belongs to **The GPU run**, the way "A second day" handed it
+   the Lauds sky (#53).
+2. **`npm run play` through its new door is wired and static-checked and has
+   never been run.** This container is software-rendered; the run needs a
+   real GPU (#53, #767). Nobody has watched the walking day carry through to
+   the day of the death on a screen.
+3. **One found-not-fixed, left alone on purpose.** The cross-check message
+   reads `0.00 m from the hywel's station`: the template is `the ${id}'s` and
+   its day-one form (`from the cook's station`) is asserted verbatim in
+   `test/mystery.mjs`, so fixing the article would move an asserted string.
 
 ### Open calls
 
@@ -601,25 +659,21 @@ where it cites a number; #754, #755 and #756 are locked and are in
 
 ### Dependencies
 
-- **Lane A** for `src/save.js` (the clamp and the catalog, not the version) and
-  **lane D** for `src/main.js`: one line in increment 1, the UI-flow region in
-  increment 2. One row per lane at a time (#602), so nothing else in A or D
-  runs beside it. **Not lane B**, and that is a decision rather than a
-  coincidence: open call 10 keeps the walking day's light out of
-  `data/scene-config.json`, so this row and rank 4's retro castle can run at
-  once, which is what #753 already claimed and what would have stopped being
-  true if four `lighting.watches` blocks had been copied in.
-- Nothing is gated on this row and this row is gated on nothing. **Rank 2's
-  sight bug is a soft order, not a gate** (#753): it bites hardest in a day
-  that is nothing but walking up to people, so this row's GPU look wants it
-  fixed first, and no Node or headless criterion above waits on it.
-- **The texture-variety row is not a gate** (#750, question 14). If it lands it
-  goes before increment 3's lines and not before increment 1's engine.
-- `npm run dialogue:compile` runs in increments 1 and 3, and `npm run
-  dialogue:check` is what says the two halves agree (#687 to #690).
-- Not beside anything else that writes `data/mystery.json`, which today is
-  nobody, or `data/npcs.json`'s `cast` block, which is **lane C**: increment 1
-  adds the fourteenth entry, so rank 6 and rank 10 are out for that commit.
+- **Held lane A** for `src/save.js` (the clamp and the catalog, not the
+  version) and **lane D** for `src/main.js`: one line in increment 1, the
+  UI-flow region in increment 2. Neither ran again after increment 2, and
+  both lanes are free now that the row is closed. **Never lane B**, and that
+  was a decision rather than a coincidence: open call 10 kept the walking
+  day's light out of `data/scene-config.json`, so this row and rank 4's
+  retro castle ran at once, which is what #753 claimed.
+  This row is retired (#778, #779); nothing gates on it and it gates on
+  nothing.
+- `npm run dialogue:compile` ran in increments 1 and 3, and `npm run
+  dialogue:check` is what said the two halves agreed (#687 to #690).
+- **Also held lane C**, `data/npcs.json`'s `cast` block, twice and briefly:
+  increment 1's commit added the fourteenth entry, and increment 3's compiled
+  the fourteen `day0` line sets into the same block. Neither ran beside rank
+  6 or rank 10; lane C is free of this row now too.
 
 ### Constraints
 
@@ -680,7 +734,7 @@ where it cites a number; #754, #755 and #756 are locked and are in
 ## The GPU run
 
 **Rank 3. Size ¼. Its gate, "Sight at the body's own height," shipped
-2026-09-21** (#775 to #777, `HISTORY.md`); the gate is open. `npm run play`
+2026-09-21** (#780 to #782, `HISTORY.md`); the gate is open. `npm run play`
 is 102 assertions and a numbered screenshot per beat into `shots/play/`. It has now
 been run on a machine with real compositing six times over three sittings
 (#624 to #630 on 2026-09-17, #708 to #715 on 2026-09-19, #734 to #741 on
@@ -698,7 +752,7 @@ the reload at Sext, the riddle, the third ring and the cook's walk (#734).
 Six fixes to `test/play-castle.mjs` then carried the second run to the
 accusation (#735 to #740), where the sentry and the porter went unread and
 the ending came out wrong (#741). `src/interaction.js`'s sight rays were the
-new rank 1, then rank 2's own fix, and it shipped 2026-09-21 (#775 to #777);
+new rank 1, then rank 2's own fix, and it shipped 2026-09-21 (#780 to #782);
 what is left is the run that confirms it on a GPU (#53).
 
 **Rank 3, the preview and og card that used to sit under this same section,
@@ -789,7 +843,7 @@ rank 2's alone.
 ### Dependencies
 
 - **Gated on "Sight at the body's own height," which shipped 2026-09-21**
-  (#775 to #777). The third sitting's run 2 could not talk to the sentry at
+  (#780 to #782). The third sitting's run 2 could not talk to the sentry at
   Terce or the porter at Vespers from beside them on the walks, the ending
   came out wrong, and the run aborted at the second-day button. The gate is
   open; run again from a `main` that carries the fix.

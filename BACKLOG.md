@@ -415,6 +415,27 @@ decimal. `npm test` fifteen of fifteen, `npm run build` clean, `dist/` 52.8
 to 28.9 MB. **Increment 2 waits on the look** (#53): nobody has seen the
 castle in pixel art or the kit relit yet.
 
+**The walking day's fourth increment shipped the same day and closed the
+row** (#778 to #779, against #754 to #756): `data/mystery.json`'s
+`day0.schedule` stops being a copy of day one, thirteen people over its own
+four bells written off each speaker's own `day0` line, and Hywel ends the day
+0.92 m from where the body lies at Prime. `data/populace.json` gives the
+nineteen their day-0 rings, and `test/budget.mjs` holds the walking day's own
+peak, outer 19 of 20 at terce-eve. `src/populace.js` was outside the
+increment's own scope table and had to learn `day0.watches` for the
+acceptance to hold at all; the conditional half of the scope table, a day-0
+chatter or performance, was not taken. **#775's walk-into-the-night rail was
+near-vacuous until this increment gave it two pairs day one's own chain does
+not already imply**, the fourth rail on this row to prove less than its name
+claimed (#768, #770, #776), found and fixed rather than left green.
+`npm test` 15 of 15, `npm run build` clean, `npm run dialogue:check` green.
+**Rank 1 is done. Its section is gone from this file and from `SPECS.md`,
+and its number is retired.** What is left is the look: whether the two doors
+read as a choice, whether the day reads as a day and not a rota, and whether
+`npm run play` actually carries a save through its new door, which nobody in
+a container can run (#53). It belongs to **The GPU run**, the way "A second
+day" handed that row its Lauds sky.
+
 ## How this repo is worked
 
 The standing instruction is *"work the next batch of ranked items in
@@ -597,7 +618,16 @@ row's renumbering survivable. The claiming session's own prose still says
 "rank 3" and stays true as a dated record, the same as every earlier rank-1
 reference in this file.
 
-**Rank 2 shipped whole and is retired** (#775 to #777, 2026-09-21): the
+**The walking day shipped its fourth increment the same day and rank 1 was
+retired a fourth time** (#778 to #779). It is the number's fourth cycle
+through this table: used and retired three times before 2026-09-21 (the
+fourth body, the castle you cannot walk, the walker on the stair) and a
+fourth time the same day it took the top of the list for the walking day.
+Nothing below it moved when it left; a rank is a priority and not an id
+(#619, #491), and the gaps at 5, 8 and 12 already carry that rule without
+anything renumbering under them.
+
+**Rank 2 shipped whole and is retired** (#780 to #782, 2026-09-21): the
 sight rays now aim at a body's feet plus `SIGHT_HEIGHTS`, a `STOREY_REACH`
 gate keeps them off the storey below, and `nav.talkable` asks a station's own
 level. Rank 3's gate on it is open; its next sitting should start from a
@@ -605,7 +635,6 @@ level. Rank 3's gate on it is open; its next sitting should start from a
 
 | Rank | Item | Size | Model | Where | Gate | Lane | Claimed | Detail |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Explore: the day before the death, the walking day as the main mode, Hywel alive and nobody waiting for a name: increments 1 and 2 shipped, the engine, the save, a placeholder walking day and the two doors (#750 to #756, #767 to #774); the real lines and the day itself are left | 2+ | Opus 5 | Container | — | A, D | claude/walking-day-before-death-8apcav | [Explore: the day before](SPECS.md#explore-the-day-before) |
 | 3 | The GPU run: the looks are taken (#711 to #715); the walker holds on a GPU (#734, #736) and the third sitting reached the accusation with the wrong ending (#735 to #741) | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
 | 4 | The retro castle: increment 1 shipped, fifteen sets out and fifteen 128 px textures in (#757 to #766); the look, then variety per room, are left | 2+ | Opus 5 | Container to the look, local: GPU past it | — | B | | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
 | 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #729 to #733); the town, the four clips and the chatter pool are left | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
@@ -618,72 +647,6 @@ level. Rank 3's gate on it is open; its next sitting should start from a
 **`ROADMAP.md` is these three columns turned into an order**: which row to
 take first, what each one unblocks, and which ones two sessions may hold at
 the same time. This table still ranks; that file sequences (#601).
-
-## Explore: the day before
-
-*Where: container. Gate: none. Lanes: A, D.*
-
-**Rank 1, and a 2+. Claimed on `claude/walking-day-before-death-8apcav`,
-2026-09-21. Increments 1 and 2 shipped the same day.** `WISHLIST.md` theme 8 put four
-questions to Devon the day it was written and he answered all four the same
-day (#750 to #753), overturning the theme's own recommendation on two of them:
-the walking day is the main mode, "Walk the castle" the first door into the
-game with the mystery behind it, and it is the day before the death — Hywel
-alive and speakable, no body, no lantern, no cloak, no summons, none of the
-twelve saying a word of their day-one testimony. The first increment the
-theme already specced to `SPECS.md`'s depth — a stage `explore`, the mode
-threaded through `src/mystery.js` and `src/quest-manager.js`, a second start
-button, and four rails — did not cover what was answered, and the day-before
-content is priced as its own row the size of Phases 6 and 7 together.
-**`SPECS.md`'s section landed on 2026-09-21** (#754 to #756), four increments
-deep with ten open calls answered, so every increment after it is class S: the
-engine, the save and a placeholder walking day, then the two doors, then the
-lines, then the day itself. Two things it settled against the theme's own
-pricing. **The save stays at version 6** (#754): the walking day is `day: 0`
-on the field that already says which day a save is on, so there is no `mode`
-field and nothing for `migrate` to do, and the row holds lane A for
-`repair`'s clamp rather than for a bump. And **the mystery's door is a
-method as well as a button** (#755): `plan-vs-scene` and `map` never click
-`#start-button` at all, so `QuestManager.enterMystery()` is what they call.
-The fourteenth body takes `test/budget.mjs`'s ceiling from 32 to 33 (#756,
-#611). **A soft order, not a gate**: rank 2's
-sight-at-height bug bites hardest in a day that is nothing but walking up to
-people, so this row's own GPU look wants rank 2 fixed first, though nothing
-here waits on it and the Gate cell stays "—". **Does not collide with rank
-4, the retro castle**: this row is lanes A and D, the retro castle is lane
-B, and #602 lets different lanes run at once, so both may be claimed
-together. The spec keeps it that way on purpose: the walking day's four
-bells borrow the four hours' skies through an alias in
-`data/mystery.json` rather than copying four blocks into
-`data/scene-config.json`, which would have put this row in lane B as well.
-
-**Increment 1 shipped 2026-09-21** (#767 to #770): the `day0` block, the
-fourteenth cast entry, and the engine, save and validator rails that make the
-walking day a day the mystery can stand on, with a placeholder schedule
-(day one's own, copied) and one stub line per speaker. `npm test` 15 of 15.
-Two findings the increment's own commits made: the door out of the walking
-day (`window.__quest.enterMystery()`) had to move into `test/plan-vs-scene.mjs`,
-`test/overlays.mjs` and `test/touch.mjs` a whole increment early, because
-`start: explore` puts those suites on the wrong day the moment it lands; and
-`test/play-castle.mjs` is untouched, so **`npm run play` is broken until
-increment 2 gives it the same door**, which blocks rank 3, the GPU run, until
-then.
-
-**Increment 2 shipped 2026-09-21** (#771 to #774): the panel's two doors.
-`#start-button` stays "Walk the castle" and keeps its id; `#start-mystery`
-reads "Straight to the day of the death" and is offered on a fresh save only
-— a resumed save or an Esc'd-into panel gets one door, not two. The three
-suites increment 1 had to move early (`plan-vs-scene`, `overlays`, `touch`)
-now press the real button instead of calling `enterMystery()` by hand, and
-`test/play-castle.mjs` and `test/built.mjs`, which increment 1 left alone,
-get the door too — `npm run play`'s block is lifted on paper. **Nobody has
-run `npm run play` past it**: this container is software-rendered and the
-suite needs a real GPU (#53), so the door is wired and every static check
-passes, but whether the day plays through it is unverified and is rank 3's
-first act, not this row's. `npm test` 15 of 15, `npm run build` clean,
-`npm run dialogue:check` green. **Increments 3 and 4 are open**: the fourteen
-real `day0` line sets, and the day-before content itself, the size of
-Phases 6 and 7 together.
 
 ## The GPU run
 
@@ -700,7 +663,7 @@ wrong ending's `#restart-button`. **What stopped it is a new bug in
 `src/interaction.js`**, filed as rank 1, "Sight at the body's own height":
 the sentry and the porter were read from the wrong world height and went
 untalked-to, and the porter's admission is a premise of the ending. **That
-row shipped 2026-09-21** (#775 to #777): the gate is open, and this row's
+row shipped 2026-09-21** (#780 to #782): the gate is open, and this row's
 next sitting should start from a `main` that carries it.
 
 **The looks were taken the way rank 5 took its two** (#656 to #658):

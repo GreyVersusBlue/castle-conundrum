@@ -5,7 +5,7 @@
 //
 // Exits non-zero on any failure.
 //
-// WHAT THIS SUITE IS FOR. The .dlg is a second copy of 182 lines of dialogue
+// WHAT THIS SUITE IS FOR. The .dlg is a second copy of 240 lines of dialogue
 // that also live in data/npcs.json, and a second copy of anything is a copy
 // that drifts. The only reason it is allowed to exist is that this file forbids
 // the drift: part 5 rebuilds the whole .dlg out of data/ and compares it with
@@ -245,7 +245,7 @@ console.log('\nthe format: render out, parse back');
     check(render(back, eol) === text, `${name}: rendering what was parsed is the same text`);
   }
   // A line with the characters that would break a naive format: a double quote,
-  // a backslash, a brace token. None of the 118 real lines carries the first
+  // a backslash, a brace token. None of the real lines carries the first
   // two — measured, not assumed — so the round trip above cannot be the only
   // thing standing between a `"` in somebody's dialogue and a broken npcs.json.
   const awkward = model.flatMap((p) => p.states.flatMap((s) => s.lines)).filter((l) => l.includes('"') || l.includes('\\'));
@@ -279,8 +279,31 @@ console.log(`\n${DLG} is what extract would write`);
   const conds = parsed.flatMap((p) => p.states.flatMap((s) => s.conditions.map((c) => c.text)));
   const presses = disk.mystery.presses.map((p) => `press ${p.from.join(' ')} on ${p.on}`);
   const stages = disk.quests.flatMap((q) => Object.entries(q.stages).filter(([, s]) => s.dialogueState).map(([id]) => `quest ${q.id} at ${id}`));
-  check(conds.length === presses.length + stages.length,
-    `${conds.length} "?" lines, one for each of ${presses.length} presses and ${stages.length} quest stages`);
+  /* AND THE THIRD KIND, THE DAY'S OWN FRAME (SPECS.md, Explore: the day before,
+   * increment 3). A stage of data/quest.json whose `dialogueState` is not
+   * `default` switches every speaker at once, so it is one `? frame <stage>` per
+   * speaker per stage. `explore` and `night` both name `day0`, which is why the
+   * count is two a speaker and not one. */
+  const frameStages = Object.entries(disk.graph.stages)
+    .filter(([, s]) => s.dialogueState && s.dialogueState !== 'default').map(([id]) => id);
+  const frames = frameStages.length * disk.npcs.cast.length;
+  check(conds.length === presses.length + stages.length + frames,
+    `${conds.length} "?" lines, one for each of ${presses.length} presses and ${stages.length} quest stages, plus ${frames} frames (${frameStages.join(', ')} over ${disk.npcs.cast.length} speakers)`);
+  // Every speaker carries the frame, and it is on the state the stage names and
+  // on no other. Without this the .dlg could lose the annotation on one speaker
+  // and part 5's byte comparison would be the only thing that noticed, in a
+  // message about the whole file rather than about him.
+  const missingFrame = parsed.filter((p) => {
+    const st = p.states.find((s) => s.state === disk.graph.stages.explore.dialogueState);
+    return !st || !st.conditions.some((c) => c.text === 'frame explore');
+  }).map((p) => p.id);
+  check(missingFrame.length === 0,
+    `all ${parsed.length} speakers carry "? frame explore" on their \`${disk.graph.stages.explore.dialogueState}\` block`,
+    missingFrame.join(', '));
+  const strayFrame = parsed.flatMap((p) => p.states
+    .filter((s) => s.conditions.some((c) => /^frame /.test(c.text)) && !frameStages.some((id) => disk.graph.stages[id].dialogueState === s.state))
+    .map((s) => `${p.id}/${s.state}`));
+  check(strayFrame.length === 0, 'and no state carries one that data/quest.json does not frame', strayFrame.join(', '));
   const effects = parsed.flatMap((p) => p.states.flatMap((s) => s.effects));
   const sourced = disk.mystery.clues.filter((c) => c.source && c.source.npc);
   check(effects.length === sourced.length,
@@ -374,6 +397,16 @@ console.log('\nthe refusals: every rule broken on purpose once');
   says((m) => { m[1].states[1].conditions[0].text = 'press default on something-else'; }, 'a press that is not in mystery.json', 'the clue graph says');
   says((m) => { m[1].states[1].effects[0] = 'says something-else'; }, 'a clue that is not sourced there', "mystery.json's clues say");
   says((m) => { m[0].states[0].lines = []; }, 'a state with no lines', 'no "|" lines');
+  // THE FRAME, DROPPED OFF ONE SPEAKER. This is the annotation increment 3 added
+  // and it is the one a hand edit of a `day0` block can lose without touching a
+  // word of dialogue, so the refusal has to name the speaker (SPECS.md,
+  // increment 3's acceptance).
+  says((m) => {
+    const p = m.find((x) => x.id === 'cook');
+    const st = p.states.find((s) => s.state === 'day0');
+    st.conditions = st.conditions.filter((c) => c.text !== 'frame explore');
+  }, 'a "? frame explore" line deleted from one block', 'cook/day0');
+  refuses(`${head}? frame explore\n% an objective\n`, 'an objective under a frame', 'only a quest stage');
 
   // And the two writes refuse rather than guessing.
   check(threw(() => applyToNpcs(disk.npcsText, [{ id: 'ghost', states: [] }])) !== null,

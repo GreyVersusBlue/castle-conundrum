@@ -6,7 +6,7 @@
 #
 #   @ id | name | role | ward     a speaker, in data/npcs.json cast order
 #   : state                       one of that speaker's dialogue states
-#   ? what moves them into it     a press, or a quest stage
+#   ? what moves them into it     a press, a quest stage, or the day's own frame
 #   % the quest stage objective   only under a `? quest` line
 #   ! what the state grants       a clue sourced on it
 #   | one line of dialogue        verbatim, in order
@@ -52,7 +52,13 @@
 | His grandfather stood against my King's father for nine years on the far bank of that river, was sworn at the end of it, and kept his word and his opinions both. I have read the file. He stands on my north walk because he is the best I have.
 | So. The mason. A name, or do I write the stair?
 : day0
-| You are the new clerk, then. Keep out of the guardroom after dark and we shall get on well enough.
+? frame explore
+? frame night
+| A clerk, and two days ahead of the King's inspector. Nobody here sent for either of you.
+| Eight men, three months of wages owed, and a curtain wall with forty years of somebody else's arithmetic in it. Walk it if you like. You will find it in order.
+| I keep the days, the Steward keeps the household and the Clerk of Works keeps the works. Whatever you have come to count, one of those three has it.
+| The inspector dines at my high table when he comes, and I would rather the sheet he reads were short.
+| Keep out of the guardroom after dark. The watch is one man and he does not want company.
 
 @ steward | Piers Marrable | Steward | inner
 : default
@@ -87,7 +93,12 @@
 | It is in the roll, under her name, in a hand Caernarfon will read. Whatever else this day writes down, that is in it.
 | Do not tell her that either.
 : day0
-| The accounts are where they always are, and you are not to touch them.
+? frame explore
+? frame night
+| Piers Marrable, Steward. The household is mine: the hall, the kitchen, the beds, and what goes in the store.
+| Two offices in this castle since Sir Walter's books were opened, two rings of keys, and I hold one of them. The works are Master Robert's and you may ask him what the works cost.
+| The wages are three months behind and I have written east about it four times. The King's coin goes where the King is fighting.
+| The accounts are where they always are, behind a word on the muniment door, and you are not to touch them until somebody above me says you may.
 
 @ clerk | Master Robert Ferrour | Clerk of Works | outer
 : default
@@ -126,7 +137,12 @@
 | Wastage. Yes. Wastage is a mason's word, clerk, not a thief's. Sheets crack. Sheets are cut short. Sheets are lost off a roof in a wind.
 | You have a ledger and an apprentice's memory. The Constable has a stair and a drunk. Ask yourself which he will write down.
 : day0
-| Mind the ink. I have been three days on this one page and I will not have it blotted.
+? frame explore
+? frame night
+| Master Robert Ferrour, Clerk of Works, the third of them. Mind the ink. I have been three days on this one page and I will not have it blotted.
+| The works are in order and the lead is sheet-perfect. You may count it off the roof yourself if you have the head for a ladder.
+| Ranulf wrote like a row of spears and I can read every stroke of him. Six years after that are in a hand I cannot always read at all, and my name is under all six of them.
+| The exchequer sends a man every year now instead of every ten, and every year he comes a fortnight earlier than the last. I take it you are not him.
 
 @ porter | Gwilym | Porter of the cross-wall gate | inner
 : default
@@ -161,7 +177,12 @@
 | Twenty years of mine and twenty of his before it, and that is the first thing either of us has ever taken out through it.
 | You will be gone tomorrow and you will not think of it again. I will.
 : day0
+? frame explore
+? frame night
+| Gwilym, and this gate is the cross-wall's. You came in through it and you are in the book: the hour, the pass and the name.
+| Twenty years of mine in that book and twenty of my father's before it. He had the chaplain of that day teach him his letters, for the gate and for nothing else.
 | The gate is barred at Vespers. Ask me at Vespers and it will still be barred.
+| Everything else in this castle is somebody's opinion. What goes through this gate is written down.
 
 @ cook | Marged | Cook | outer
 : default
@@ -191,7 +212,12 @@
 | My lantern is still out there, and the man who carried it off is laid out in the chapel.
 | Ask me about that one as often as you like.
 : day0
+? frame explore
+? frame night
+| Forty mouths out of this kitchen every day, with one girl, one boy and whatever the Steward lets me have.
 | If you are hungry you are early. If you are early you can carry something.
+| The whole year's reckoning is on that slate against the west wall, in chalk, and every mark on it is mine. I cannot write and I have never once been over.
+| Both wards eat in the Great Hall at Vespers and neither of them thanks the kitchen. Come down and eat with the rest of them.
 
 @ chaplain | Father Anselm | Chaplain | inner
 : default
@@ -226,7 +252,13 @@
 | Two men on the stair at the second bell. Voices, low, then not low. Then one man, going up. Only one.
 | I lay and listened to one man go up my stair and I did not get out of my bed. That is what I heard nothing means.
 : day0
+? frame explore
+? frame night
 | The chapel is open. It is always open. Nobody comes.
+| Father Anselm. Twelve years here, out of the justiciar's own chapel at Caernarfon, a younger son with good Latin and no living.
+| Saint Osyth keeps this chapel, as she keeps every chapel the crown has raised in the March. The works keep Saint Cadeyrn, and do not trouble me about it.
+| The candle account is a column in my own hand, kept for a man of the exchequer who has never once read it. A tallow a week for the office, of the kitchen's making.
+| I have had the obituary roll in my own hand since the day I came. It is the one book in this castle nobody has ever asked to see.
 
 @ sentry | Dafydd ap Rhys | Garrison, night watch on the north walk | outer
 : default
@@ -262,7 +294,12 @@
 | North walk, Compline to Lauds, from the Kitchen Tower door. That is my post and I was at it.
 | Second bell, a man in a fur-trimmed cloak went east along it past me. I have said that to you already and I will say it to whoever asks.
 : day0
-| I have the walk again tonight. Do not whistle up at me; I will take you for the Welsh.
+? frame explore
+? frame night
+| Dafydd ap Rhys. North walk, Compline to Lauds, and the watch-bill in the guardroom has said the same name a month running.
+| Eight of us for the whole circuit, so the night is one man on the north side and the porter's bar on the south. The Constable has the days to think of.
+| I have the walk again tonight. Do not whistle up at me out of the dark; I will take you for the wrong side of the river.
+| My grandfather stood on the far bank of this river against the old King for nine years, and was sworn at the end of it. I stand the King's watch and I have the opinions.
 
 @ apprentice | Ieuan | Hywel's apprentice | outer
 : default
@@ -305,7 +342,12 @@
 | I will finish the head he was on with his own iron. That is how it should be done, and I had given it up.
 | He told me mind the fire. I have minded it.
 : day0
-| Hywel has me squaring stone until the light goes. He says the eye learns before the hand does.
+? frame explore
+? frame night
+| Ieuan. Bound to Hywel four years, and he has me squaring stone until the light goes. He says the eye learns before the hand does.
+| I lay my first course at Michaelmas with him standing over me. The whole lodge knows it, which is the worst of it.
+| Every man's mark is on the board at the post and I know them all. He took me because I can count, not because I am strong.
+| A mason's tools lie where he leaves them and nobody else puts a hand on them. That is the lodge's custom and not the castle's.
 
 @ laundress | Nest | Laundress | outer
 : default
@@ -343,7 +385,12 @@
 | They put him in the tower for the lead because somebody had to go in the tower. I have no reason on this earth to lie for the Clerk of Works, and one very good one to lie against him.
 | So weigh what I say however you like. The cloak is still the Clerk's.
 : day0
+? frame explore
+? frame night
 | Everything in this castle comes to me filthy and goes back to it wet.
+| Nest. I am on the roll for the laundry and for whatever else nobody else will do.
+| The copper goes on at Sext and the wash is in at Prime. I fill it out of the south-west well, because it is the only sweet water here.
+| Not one man of the garrison will turn that windlass after dark. Eight of them and eight reasons why, and I have drawn from it at every hour there is.
 
 @ prisoner | Madoc the smith | Held for the lead theft | outer
 : default
@@ -382,7 +429,12 @@
 | Eight days at the forge and I watched that cart both ways. It came in empty and it went out with the axle riding low, and I have shod that horse eleven years. It was not stone.
 | And the dates are in that roll and they have been in it for eleven days. Show it to the Constable. He will tell you a smith is a smith and a roll is a roll.
 : day0
-| A day is a day in here. You are a new face, at least.
+? frame explore
+? frame night
+| Madoc. Smith of this castle as my father was, and eleven days up here behind these bars.
+| My forge is under this wall and nobody has banked it in those eleven days. A hearth that goes cold and wet cracks from the back, and it is the castle's hearth and not mine.
+| Something moves under this floor at night. It has moved there since before they put me up here to hear it, and no man on the watch will come down and listen.
+| They wanted a man in the tower over the lead and I was the man they had. You will believe the roll, like the rest of them.
 
 @ merchant | Thomas Wykes | Town merchant | outer
 : default
@@ -411,7 +463,12 @@
 | You have been under the sacking. Well.
 | The Clerk sells. The Steward signs the pass. I only buy, clerk, and a man who only buys has hanged for less, so I will be in the town by Sext and you may tell them I said so.
 : day0
+? frame explore
+? frame night
 | Thomas Wykes, of the town. I buy stone and I sell lead, and both of them honestly.
+| Six years I have held the works' cart contract. Everything this castle eats or burns comes up from the quay on my wheels and pays the King's toll twice on the way.
+| There is a yard of dressed stone under the town wall that is mine, cut short or cut wrong by these works and sold me at a price. Eleven miles up the valley there is a market that does not ask which.
+| I take the cart west at Sext, and the next time I am inside this gate it will be the quarter day.
 
 @ lady | Lady Alys | The Constable's wife | inner
 : default
@@ -447,17 +504,31 @@
 | Last night: one lantern going up the Chapel Tower stair, late. And after, a shadow along the south walk, going westward, with no lantern at all.
 | I did not think it my business. I have been married to a Constable eleven years.
 : day0
+? frame explore
+? frame night
 | You may walk where you like. I do, and nobody has stopped me yet.
+| Lady Alys. Eleven years married to a Constable and eight of them in this castle. I was a clerk's daughter of Caernarfon before I was either.
+| I sit at my window over the inner ward a good part of the day. There is more to see in it than the people in it believe.
+| My brother sits at Caernarfon among the justiciar's own clerks. My husband has never once mentioned it and never once forgotten it.
+| The merlin is on her block and sulking. She goes off the sill when she likes and comes back when she likes, and the household says that is the two of us exactly.
 
 @ inspector | Master Adam Fraunceys | The King's inspector | inner
 : default
 | The King's inspector has not dismounted yet.
 : day0
-| The King's inspector is a day's ride off, and does not know your name yet.
+? frame explore
+? frame night
+| The King's inspector is two days off yet, and does not know your name.
 
 @ hywel | Hywel ap Gruffudd | Master mason | outer
 : default
 | Hywel ap Gruffudd is dead at the foot of the Chapel Tower stair.
 : day0
+? frame explore
+? frame night
 | Hywel ap Gruffudd. Master mason, and the man who has to make this roof stand up.
+| Seven and twenty years on these walls and eleven of them a master. I carried stone up them at nine years old, which is how I know what a boy can be asked and what he cannot.
+| My father cut the north curtain in the third year of the works and never saw it closed. The Kitchen Tower stood open twelve years after him and was the last of the eight to take its roof.
+| The head I am cutting is a king's, for the springing of the chapel arch, and there is a small cross going under it that the chaplain need not be told about.
+| My good iron is down at the forge under the Prison Tower for an edge, and the man who was putting it there is behind bars. So I am on the second chisel, and it shows.
 

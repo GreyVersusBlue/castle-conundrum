@@ -1388,22 +1388,25 @@
       "sext-eve",
       "vespers-eve"
     ],
-    "scheduleComment": "A COPY, ON PURPOSE, AND ONLY UNTIL INCREMENT 4. Every row below but Hywel's is day one's own station at the matching bell, so the nine `day0` rails in src/mystery.js run against real geometry before a word of the walking day's content is written. What is NOT copied is the day-one `note` on a station — \"at the body\", \"at the cart\" — because every one of them describes a morning that has not happened yet, and a placeholder that lies about the day it is placeholding is worse than a bare tile (#147). `asleep` IS copied: the sentry keeps the night watch the evening before as well. Hywel's own station is the mason's lodge, 2.0 m off his apprentice's, which is where the man the mystery is about should be found the day before he falls.",
+    "scheduleComment": "THE DAY ITSELF (SPECS.md's increment 4). A station per person per bell, thirteen people, and not one row of it is day one's any more: increment 1 shipped this block as a copy so the nine `day0` rails could run against real geometry, and this is the day the copy was standing in for. What it is written from is each speaker's own `day0` lines in npcs.json, so the schedule and the words agree: the Constable walks the curtain he tells the clerk to walk, the Steward counts the kitchen's allowance in front of the cook, the laundress fills her copper at Sext off the south-west well, the sentry sleeps off one night watch and climbs to the next, Wykes brings the cart up at Terce and takes it west at Sext, and the porter never moves at all, because his own line is that the gate is barred at Vespers and will still be barred if you ask him then. `asleep` is the sentry's at the first bell only: he is awake at the other three and can be talked to, which day one's Prime never lets him be. THE LAST BELL IS WHERE THE DAY IS GOING: Hywel carries the king's head up to the chapel at Sext and stands at the foot of the Chapel Tower stair at Vespers with his apprentice holding the light for him, which is the tile the body lies on at Prime the next morning (the lantern prop at chapel 5.875, 4.55, the Constable's own day-one Prime station 0.6 m off it). The player is not moved by the night, so whoever followed the mason there wakes up there. The nineteen of the household have rings under these four bells too, in data/populace.json, and the per-ward cost of all of it is test/budget.mjs's: outer 19 of 20 at terce-eve, which is one under the day of the death's own peak because the inspector has not arrived (#756).",
     "schedule": {
       "constable": {
         "prime-eve": {
-          "room": "chapel",
-          "tile": [
-            5.9,
-            4.2
-          ]
-        },
-        "terce-eve": {
           "room": "kings-hall",
           "tile": [
             3.0,
             -2.5
-          ]
+          ],
+          "note": "at his own board, with the wage roll on it"
+        },
+        "terce-eve": {
+          "room": "south-walk",
+          "level": 2,
+          "tile": [
+            4.313,
+            3.688
+          ],
+          "note": "walking the curtain he tells the clerk to walk"
         },
         "sext-eve": {
           "room": "kings-hall",
@@ -1417,30 +1420,32 @@
           "tile": [
             -3.0,
             2.5
-          ]
+          ],
+          "note": "the high table"
         }
       },
       "steward": {
         "prime-eve": {
-          "room": "kings-hall",
-          "tile": [
-            2.0,
-            -2.5
-          ]
-        },
-        "terce-eve": {
           "room": "steward-chamber",
           "tile": [
             1.5,
             2.5
           ]
         },
-        "sext-eve": {
+        "terce-eve": {
           "room": "kings-hall",
           "tile": [
             2.0,
             -2.5
           ]
+        },
+        "sext-eve": {
+          "room": "kitchen",
+          "tile": [
+            -4.5,
+            -2.5
+          ],
+          "note": "what the kitchen is allowed, counted out in front of the cook"
         },
         "vespers-eve": {
           "room": "great-hall",
@@ -1456,21 +1461,25 @@
           "tile": [
             -7.5,
             -2.5
-          ]
+          ],
+          "note": "three days on the one page"
         },
         "terce-eve": {
           "room": "outer-ward",
           "tile": [
             -7.0,
             -0.55
-          ]
+          ],
+          "note": "over the stone with Wykes"
         },
         "sext-eve": {
-          "room": "clerk-office",
+          "room": "clerk-chamber",
+          "level": 1,
           "tile": [
             -7.5,
             -2.5
-          ]
+          ],
+          "note": "upstairs with six years of somebody else's hand"
         },
         "vespers-eve": {
           "room": "great-hall",
@@ -1503,12 +1512,12 @@
           ]
         },
         "vespers-eve": {
-          "room": "cross-walk",
-          "level": 2,
+          "room": "porter-lodge",
           "tile": [
-            -0.25,
-            0.0
-          ]
+            0.1,
+            -4.0
+          ],
+          "note": "the gate barred at Vespers, and him still at it"
         }
       },
       "cook": {
@@ -1527,11 +1536,12 @@
           ]
         },
         "sext-eve": {
-          "room": "kitchen",
+          "room": "bakehouse",
           "tile": [
-            -5.0,
-            -2.5
-          ]
+            -0.063,
+            3.688
+          ],
+          "note": "forty mouths of bread, fetched rather than waited for"
         },
         "vespers-eve": {
           "room": "great-hall",
@@ -1550,11 +1560,13 @@
           ]
         },
         "terce-eve": {
-          "room": "chapel",
+          "room": "chaplain-chamber",
+          "level": 1,
           "tile": [
-            5.4,
-            3.8
-          ]
+            5.938,
+            3.938
+          ],
+          "note": "the candle account, the column in his own hand"
         },
         "sext-eve": {
           "room": "chapel",
@@ -1568,7 +1580,8 @@
           "tile": [
             5.4,
             3.8
-          ]
+          ],
+          "note": "Vespers, said to an empty chapel"
         }
       },
       "sentry": {
@@ -1581,27 +1594,29 @@
           "asleep": true
         },
         "terce-eve": {
-          "room": "north-walk",
-          "level": 2,
+          "room": "guardroom",
           "tile": [
-            -4.5,
-            -3.75
-          ]
+            -8.9,
+            -4.0
+          ],
+          "note": "awake, at the watch-bill with his own name a month down it"
         },
         "sext-eve": {
-          "room": "north-walk",
-          "level": 2,
-          "tile": [
-            -4.5,
-            -3.75
-          ]
-        },
-        "vespers-eve": {
           "room": "great-hall",
           "tile": [
             -6.0,
             2.3
-          ]
+          ],
+          "note": "eating early, because the night is his"
+        },
+        "vespers-eve": {
+          "room": "north-walk",
+          "level": 2,
+          "tile": [
+            -4.5,
+            -3.75
+          ],
+          "note": "up on the walk before Compline"
         }
       },
       "apprentice": {
@@ -1624,14 +1639,16 @@
           "tile": [
             -1.5,
             -2.5
-          ]
+          ],
+          "note": "squaring stone until the light goes"
         },
         "vespers-eve": {
           "room": "chapel",
           "tile": [
             5.9,
             3.7
-          ]
+          ],
+          "note": "holding the light for his master"
         }
       },
       "laundress": {
@@ -1640,21 +1657,24 @@
           "tile": [
             -8.9,
             4.06
-          ]
+          ],
+          "note": "the wash in at Prime"
         },
         "terce-eve": {
-          "room": "laundry",
-          "tile": [
-            -8.9,
-            4.06
-          ]
-        },
-        "sext-eve": {
           "room": "outer-ward",
           "tile": [
             -7.0,
             1.0
-          ]
+          ],
+          "note": "at the south-west well, the only sweet water here"
+        },
+        "sext-eve": {
+          "room": "laundry",
+          "tile": [
+            -8.9,
+            4.06
+          ],
+          "note": "the copper on at Sext"
         },
         "vespers-eve": {
           "room": "great-hall",
@@ -1691,7 +1711,8 @@
           "tile": [
             -5.0,
             3.5
-          ]
+          ],
+          "note": "eleven days of it, and nobody has banked his forge"
         }
       },
       "merchant": {
@@ -1701,9 +1722,17 @@
           "tile": [
             -7.6,
             0.15
-          ]
+          ],
+          "note": "the cart up from the quay"
         },
-        "sext-eve": null,
+        "sext-eve": {
+          "room": "west-barbican",
+          "tile": [
+            -10.0,
+            0.0
+          ],
+          "note": "taking the cart west, as he says he does"
+        },
         "vespers-eve": null
       },
       "lady": {
@@ -1716,19 +1745,21 @@
           ]
         },
         "terce-eve": {
+          "room": "inner-ward",
+          "tile": [
+            3.0,
+            0.5
+          ],
+          "note": "walking where she likes, which she says nobody has stopped yet"
+        },
+        "sext-eve": {
           "room": "royal-apartments",
           "level": 1,
           "tile": [
             3.0,
             -1.8
-          ]
-        },
-        "sext-eve": {
-          "room": "inner-ward",
-          "tile": [
-            3.0,
-            0.5
-          ]
+          ],
+          "note": "at the window over the inner ward"
         },
         "vespers-eve": {
           "room": "royal-apartments",
@@ -1745,7 +1776,8 @@
           "tile": [
             -1,
             -2.5
-          ]
+          ],
+          "note": "at the banker, the king's head roughed out"
         },
         "terce-eve": {
           "room": "lodge",
@@ -1755,18 +1787,20 @@
           ]
         },
         "sext-eve": {
-          "room": "lodge",
+          "room": "chapel",
           "tile": [
-            -1,
-            -2.5
-          ]
+            6.125,
+            4.125
+          ],
+          "note": "setting out the springing of the arch"
         },
         "vespers-eve": {
-          "room": "lodge",
+          "room": "chapel",
           "tile": [
-            -1,
-            -2.5
-          ]
+            5.75,
+            4.375
+          ],
+          "note": "at the foot of the Chapel Tower stair"
         }
       }
     },
