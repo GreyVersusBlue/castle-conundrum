@@ -627,10 +627,15 @@ Nothing below it moved when it left; a rank is a priority and not an id
 (#619, #491), and the gaps at 5, 8 and 12 already carry that rule without
 anything renumbering under them.
 
+**Rank 2 shipped whole and is retired** (#780 to #782, 2026-09-21): the
+sight rays now aim at a body's feet plus `SIGHT_HEIGHTS`, a `STOREY_REACH`
+gate keeps them off the storey below, and `nav.talkable` asks a station's own
+level. Rank 3's gate on it is open; its next sitting should start from a
+`main` that carries this.
+
 | Rank | Item | Size | Model | Where | Gate | Lane | Claimed | Detail |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 2 | Sight at the body's own height: nobody upstairs can be talked to from beside them, and the porter on the walk can be from 8 m below | ¼ | Opus 5 | Container | — | — | | [Sight at the body's own height](SPECS.md#sight-at-the-bodys-own-height) |
-| 3 | The GPU run: the looks are taken (#711 to #715); the walker holds on a GPU (#734, #736) and the third sitting reached the accusation with the wrong ending (#735 to #741) | 1 | Opus 5 | Local: GPU | **after 2** | — | | [The GPU run](SPECS.md#the-gpu-run) |
+| 3 | The GPU run: the looks are taken (#711 to #715); the walker holds on a GPU (#734, #736) and the third sitting reached the accusation with the wrong ending (#735 to #741) | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
 | 4 | The retro castle: increment 1 shipped, fifteen sets out and fifteen 128 px textures in (#757 to #766); the look, then variety per room, are left | 2+ | Opus 5 | Container to the look, local: GPU past it | — | B | | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
 | 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #729 to #733); the town, the four clips and the chatter pool are left | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: somebody listens to the seven beds, the four rings and the first two event sounds (a bed at a point and the rings, #680 to #683; the door and the hound, #696 to #698) | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
@@ -643,39 +648,9 @@ anything renumbering under them.
 take first, what each one unblocks, and which ones two sessions may hold at
 the same time. This table still ranks; that file sequences (#601).
 
-## Sight at the body's own height
-
-*Where: container. Gate: none. Lane: none.*
-
-**Rank 2, filed 2026-09-21 from the third GPU sitting's second run.**
-`src/interaction.js` casts its two sight rays at world y 1.55 and 1.15 (line
-34, used at line 210) instead of at heights on the body, and measures range
-with `to.y = 0` (line 151). So a body on an upper storey is aimed at through
-his own floor: the sentry on the north walk at Terce, 0.2 m from the player
-on the same walk, pointer locked, prompt null; the porter on the cross-wall
-walk at Vespers, 0.6 m, prompt null. And the porter was talkable from the
-ground 8 m under him, which is how run 1 passed his beat. His admission is a
-premise of the full ending, so the accusation selected 2 of 3 and the run
-aborted at the second-day button.
-
-**Props were never affected.** Every lock, bell, piece of evidence and
-readable carries a `focus` at its plan-box centre, and line 210 aims at that;
-the Stockhouse bar and the tally stick passed on the walk at 1.75 m and
-2.81 m in the same run. The Lady in the royal apartments at Prime, Terce and
-Vespers is the third person it bites, and the populace's archers, serjeant,
-man-at-arms and maid upstairs are labels that never show.
-
-**The fix is about fifteen lines**: aim at feet plus 1.55 and 1.15, gate NPC
-targets to within 2.0 m of the player's own feet, and make `nav.talkable`
-ask the station's own storey. The proof is a `plan-vs-scene.mjs` beat over
-the six upstairs station-watches (talked to from their own storey, not from
-the one below) and two `mystery.mjs` rails; `SPECS.md` has the breaks.
-**Rank 3 is gated on it.** Apart from #714's five stale checks and #659's
-journal number, it is what stands between `npm run play` and exit 0.
-
 ## The GPU run
 
-*Where: local, GPU. Gate: rank 2, sight at the body's own height. Lane: none.*
+*Where: local, GPU. Gate: none. Lane: none.*
 
 **Rank 3. It ran again on 2026-09-21, twice** (#734 to #741), and this is the
 first sitting to get past the second bell. Run one, the suite as merged: 164
@@ -687,8 +662,9 @@ accusation for the first time: 179 ok, 17 failures, and it aborted on the
 wrong ending's `#restart-button`. **What stopped it is a new bug in
 `src/interaction.js`**, filed as rank 1, "Sight at the body's own height":
 the sentry and the porter were read from the wrong world height and went
-untalked-to, and the porter's admission is a premise of the ending. **This
-row is gated on that one now.**
+untalked-to, and the porter's admission is a premise of the ending. **That
+row shipped 2026-09-21** (#780 to #782): the gate is open, and this row's
+next sitting should start from a `main` that carries it.
 
 **The looks were taken the way rank 5 took its two** (#656 to #658):
 `applyWatch(watch, { walk: false })` puts the world at a bell with nobody

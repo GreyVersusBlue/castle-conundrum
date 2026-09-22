@@ -130,9 +130,11 @@ export function castleNav(plan, mystery) {
           // Every storey the castle has, off the plan (#523): the list was
           // `[0, 1, 2]` here and in three other places, and a tower roof at
           // level 3 is out of talking range of all four until each is found.
-          for (const level of plan.levels) {
-            if (walk.fromSpawn(x, z, level)) return true;
-          }
+          // AND THAT LOOP WAS THE SAME Y-BLINDNESS AS interaction.js's rays
+          // (rank 2, sight at the body's own height): it counted a ground cell
+          // under a level-2 walk as "within talking range" of the sentry on it.
+          // A station is talked to from its own storey, so only that one is asked.
+          if (walk.fromSpawn(x, z, point.level ?? 0)) return true;
         }
       }
       return false;

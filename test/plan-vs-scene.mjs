@@ -998,6 +998,105 @@ try {
     }
   }
 
+  /* --- UPSTAIRS, FROM ITS OWN STOREY AND NOT FROM THE ONE BELOW (rank 2,
+   * sight at the body's own height). `src/interaction.js` aimed a body with no
+   * `focus` at world y 1.55 and 1.15 wherever his feet were, and its range test
+   * is horizontal. So the sentry on the north walk, feet at 8.0, could not be
+   * talked to from 0.2 m beside him (both rays ran down through the walk's own
+   * deck), and the porter on the cross-wall walk at Vespers could be talked to
+   * from the ground under it (from an eye at 1.7 the rays to 1.55 run level).
+   * Whether a ray clears a deck is geometry only the page builds, so this is a
+   * seam and it lives here (#529). The plan arithmetic it stands on — that
+   * somebody is upstairs at every bell, with cells on their own storey and
+   * under it — is test/mystery.mjs's, and a miss there is thrown, not asserted.
+   *
+   * Placed, not walked (#724, #53): `applyWatch(watch, {walk: false})` stands
+   * the cast on the watch's stations and `setWatch(watch, {walk: false})` parks
+   * the household's rings, and two frames settle them. Then the camera is put
+   * on each cell and `window.__interaction.update()` is called once, which is
+   * the same call the page's loop makes and needs only raycasts, no render.
+   * Nothing is timed.
+   *
+   * NO FRAMES PER CELL, AND ONE CDP CALL PER STATION PER HALF. The first
+   * version waited two frames at each of 490 cells inside one evaluate per
+   * station: 25 s here on a GPU, and in CI the first station (100 cells, 200
+   * software-rendered frames) ran past Puppeteer's 180 s protocolTimeout and
+   * threw. Every cell is still asked, so a failure still prints all of them.
+   *
+   * WHAT IS OUT OF THE SWEEP, AND WHY, WITH NO SKIP (#13). Day two's Lady at
+   * Lauds is the same station as her day-one three, and putting the page at
+   * day two would cost it a verdict. The household's upstairs stops go through
+   * the same line of interaction.js and are fixed by construction; a label is
+   * not something to press E at, and a walking ring is the timing trap #724
+   * had to park. */
+  {
+    const reach = 2.8;
+    const cellsAll = grid.cells.map((c) => ({ x: c.i * grid.grid + grid.grid / 2, z: c.j * grid.grid + grid.grid / 2, h: c.h, level: c.level }));
+    const roomCells = grid.rooms().flatMap((r) => r.at.map((c) => ({ ...c, level: r.level })));
+    const upstairs = [];
+    for (const watch of mystery.watches) {
+      for (const id of Object.keys(mystery.schedule)) {
+        const at = nav.at(id, watch);
+        if (!at || at.level <= 0 || at.asleep) continue;
+        const seen = new Set();
+        const own = roomCells
+          .filter((c) => c.level === at.level)
+          .map((c) => ({ ...c, d: Math.hypot(c.x - at.x, c.z - at.z) }))
+          .filter((c) => c.d >= 0.9 && c.d <= reach)
+          .filter((c) => { const k = `${c.x},${c.z},${c.h}`; if (seen.has(k)) return false; seen.add(k); return true; })
+          .sort((a, b) => a.d - b.d)
+          .slice(0, 12);
+        const below = cellsAll
+          .filter((c) => c.level < at.level)
+          .map((c) => ({ ...c, d: Math.hypot(c.x - at.x, c.z - at.z) }))
+          .filter((c) => c.d <= reach)
+          .sort((a, b) => a.d - b.d);
+        if (!own.length || !below.length) throw new Error(`${id} at ${watch} has ${own.length} own-storey and ${below.length} lower-storey cells to be tried from — test/mystery.mjs's upstairs rail should have failed first`);
+        upstairs.push({ id, watch, at, own, below, name: npcs.cast.find((n) => n.id === id).name });
+      }
+    }
+    if (!upstairs.length) throw new Error("nobody is upstairs and awake at any of day one's bells — test/mystery.mjs's upstairs rail should have failed first");
+    const where = (c) => `(${c.x.toFixed(2)}, ${c.z.toFixed(2)}) level ${c.level} ${c.d.toFixed(2)} m`;
+    // Where the camera was, put back after. AND THIS BEAT COMES AFTER THE
+    // HOUND'S BARK, NOT BEFORE IT: the hound follows the camera while the
+    // page's own loop runs, and a walk this long leaves `hound-near`'s cadence
+    // clock set, so the bark beat's first bark came 26 frames early.
+    const back = await page.evaluate(() => ({ x: window.__cam.position.x, y: window.__cam.position.y, z: window.__cam.position.z, yaw: window.__cam.rotation.y }));
+    const ask = (at, cells) => page.evaluate(({ at, cells, eye }) => {
+      const cam = window.__cam;
+      const el = document.getElementById('interact-prompt');
+      return cells.map((c) => {
+        cam.position.set(c.x, c.h + eye, c.z);
+        cam.rotation.set(0, Math.atan2(-(at.x - c.x), -(at.z - c.z)), 0, 'YXZ');
+        cam.updateMatrixWorld(true);
+        window.__interaction.update();
+        return el && !el.classList.contains('hidden') ? el.textContent.trim() : null;
+      });
+    }, { at, cells, eye: EYE_HEIGHT });
+    for (const u of upstairs) {
+      await page.evaluate(async ({ watch }) => {
+        window.__quest.applyWatch(watch, { walk: false });
+        window.__populace.setWatch(watch, { walk: false });
+        await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      }, { watch: u.watch });
+      const got = { ownSaid: await ask(u.at, u.own), belowSaid: await ask(u.at, u.below) };
+      const hit = got.ownSaid.findIndex((p) => p && p.includes(u.name));
+      check(hit >= 0,
+        `${u.id} at ${u.watch}, level ${u.at.level}, is offered from their own storey: ${hit >= 0 ? `cell ${hit + 1}` : 'no cell'} of ${u.own.length}, nearest first`,
+        `none of the ${u.own.length} cells 0.9 to ${reach} m from them offers them — ${u.own.map((c, i) => `${where(c)}: ${got.ownSaid[i] ? JSON.stringify(got.ownSaid[i]) : 'nothing'}`).join('; ')}`);
+      const leaks = u.below.map((c, i) => ({ c, p: got.belowSaid[i] })).filter((x) => x.p && x.p.includes(u.name));
+      check(leaks.length === 0,
+        `and from none of the ${u.below.length} cells on a lower storey within ${reach} m`,
+        `${leaks.length} of them offer ${u.name} through the floor — ${leaks.map((x) => `${where(x.c)}: ${JSON.stringify(x.p)}`).join('; ')}`);
+    }
+    await page.evaluate(async ({ home, back }) => {
+      window.__cam.position.set(back.x, back.y, back.z);
+      window.__cam.rotation.set(0, back.yaw, 0, 'YXZ');
+      window.__quest.applyWatch(window.__mystery.watch, { walk: false });
+      window.__populace.setWatch(home, { walk: false });
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    }, { home: mystery.watches[0], back });
+  }
   // The tint (#419). Four bodies, fourteen people: the cloth has to differ
   // fourteen ways and the skin must not differ at all, or the tint went onto
   // faces. Reading the live materials is the only thing that can say so —

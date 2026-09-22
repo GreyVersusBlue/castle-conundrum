@@ -13,8 +13,17 @@
 // press E at. The ten of the populace are the only ones (#617).
 
 import * as THREE from 'three';
+import { EYE_HEIGHT } from './castle-plan.js';
 
 const INTERACT_RANGE = 3.2;
+/* AND THE RANGE ABOVE IS HORIZONTAL, so a body 8 m overhead is "0.3 m away".
+ * A target with no `focus` (a body, whose group origin is his feet) is skipped
+ * when his feet are more than STOREY_REACH from the player's: 2.0 is half the
+ * 4.0 m storey, so any other storey is out by 2 m and a body half a flight away
+ * stays in. Props carry a `focus` and are not gated: they sit 1.5 to 1.7 m
+ * under the eye and would need a second number, and nothing has been seen
+ * offered from below. */
+const STOREY_REACH = 2.0;
 const FACING_DOT = 0.35; // must be at least vaguely looking at them
 /* AND `AIM_DOT` IS WHAT "LOOKING AT IT" MEANS, as opposed to "it is in front of
  * me somewhere" (#722). 0.95 is 18.2 degrees off the crosshair. `FACING_DOT` is
@@ -27,10 +36,18 @@ const FACING_DOT = 0.35; // must be at least vaguely looking at them
  * 11411 and 0.98 scores 11707, against 11521 here. */
 const AIM_DOT = 0.95;
 
-// Two sample heights on the NPC's body; occlusion has to block BOTH. One ray is
-// not enough — an NPC standing behind a hall table loses its low ray while being
-// perfectly visible from the chest up. A wall blocks both, which is the case that
-// matters.
+// Two sample heights on the NPC's body, as OFFSETS FROM HIS FEET; occlusion has
+// to block BOTH. One ray is not enough — an NPC standing behind a hall table
+// loses its low ray while being perfectly visible from the chest up. A wall
+// blocks both, which is the case that matters.
+//
+// THEY USED TO BE WORLD Y, under a comment that said "on the NPC's body" (#147).
+// A target with no `focus` was aimed at y 1.55 and 1.15 wherever his feet were,
+// which is on the body only on the ground floor. The sentry on the north walk
+// (feet 8.0) could not be talked to from 0.2 m beside him, because both rays ran
+// down through the walk's own deck, and the porter on the cross-wall walk could
+// be talked to from the ground under it, because from an eye at 1.7 the rays ran
+// level. test/plan-vs-scene.mjs's upstairs beat holds both halves.
 const SIGHT_HEIGHTS = [1.55, 1.15];
 // Stop the ray just short of the body. This has to stay SMALL. The NPC's own mesh
 // is already excluded from the occluder list, so the margin's only job is to keep
@@ -147,7 +164,14 @@ export class InteractionSystem {
     const named = { aim: null, aimD: INTERACT_RANGE, near: null, nearD: INTERACT_RANGE };
     for (const target of this.targets) {
       if (target.active === false) continue;
-      const to = new THREE.Vector3().subVectors(aimAt(target), camPos);
+      const at = aimAt(target);
+      // The storey gate (STOREY_REACH), bodies only. Kept anyway, open call 4:
+      // the walk's deck is what blocks at all six upstairs stations today.
+      // Removed alone, with the rays aimed at the feet plus SIGHT_HEIGHTS,
+      // test/plan-vs-scene.mjs's storey-below half stays green at all six; the
+      // gate is for the player near a deck's edge, whose ray can pass it.
+      if (!target.focus && Math.abs(at.y - (camPos.y - EYE_HEIGHT)) > STOREY_REACH) continue;
+      const to = new THREE.Vector3().subVectors(at, camPos);
       to.y = 0;
       const dist = to.length();
       if (dist > INTERACT_RANGE) continue;
@@ -211,7 +235,7 @@ export class InteractionSystem {
     const at = aimAt(target);
 
     for (const h of SIGHT_HEIGHTS) {
-      _target.set(at.x, target.focus ? at.y : h, at.z);
+      _target.set(at.x, target.focus ? at.y : at.y + h, at.z);
       const dist = _dir.subVectors(_target, camPos).length();
       if (dist <= SIGHT_MARGIN) return true;
 

@@ -38,7 +38,7 @@ import { fileURLToPath } from 'node:url';
 import { validateMystery, createMystery, earliest, shortestPath, freshState, dayTwoOutcomes, dayTwoLines, dayTwoKnew, dayWatchesOf, beforeDayOne } from '../src/mystery.js';
 import { QuestGraph, validateQuest, validateAgainstNpcs } from '../src/quest-graph.js';
 import { QuestManager, MANAGER_PAIRS } from '../src/quest-manager.js';
-import { makePlan, EYE_HEIGHT } from '../src/castle-plan.js';
+import { makePlan, walkability, EYE_HEIGHT } from '../src/castle-plan.js';
 import { castleNav } from '../src/stations.js';
 import { validatePopulace, ACTIVITY_CLIPS, populaceDefs, Populace } from '../src/populace.js';
 import { partsOf, readGLTF } from './gltf.mjs';
@@ -371,6 +371,47 @@ console.log('\nthe twelve, at their stations');
     return p && !(barred.has(p.room) ? nav.talkable(p) : nav.walkable(p));
   });
   check(unreachable.length === 0, 'the player can walk to eleven of them and to the bars of the twelfth', unreachable.map((n) => n.id).join(', '));
+
+  /* A STATION IS TALKED TO FROM ITS OWN STOREY (rank 2, sight at the body's
+   * own height). `nav.talkable` used to ask every level in `plan.levels`, so a
+   * station with ground under it and no floor of its own read as talkable: the
+   * same y-blindness as the rays in src/interaction.js, in the validator. The
+   * royal apartments' tile has cells on levels 0 and 1 within 3.2 m and none
+   * on 2, which is exactly that case. */
+  const ladyAtPrime = nav.at('lady', 'prime');
+  check(!!ladyAtPrime && nav.talkable(ladyAtPrime) && !nav.talkable({ ...ladyAtPrime, level: 2 }),
+    "the Lady's Prime station is talkable on its own storey and not when it is moved to level 2, where there is no floor under it",
+    ladyAtPrime ? `level 1 ${nav.talkable(ladyAtPrime)}, level 2 ${nav.talkable({ ...ladyAtPrime, level: 2 })}` : 'she has no Prime station');
+
+  /* AND THE COUNTS plan-vs-scene.mjs's UPSTAIRS BEAT STANDS ON (#529, #147).
+   * That beat walks every station above the ground at each of day one's four
+   * bells, not asleep, and asks for the prompt from up to 12 cells on the
+   * station's own storey 0.9 to 2.8 m away and from every cell on a lower
+   * storey within 2.8 m. On a day with nobody upstairs, or a station with no
+   * cell under it, one half or the other asserts nothing. Cells are the
+   * spawn's own fill, the grid the page's player stands on: own storey out of
+   * `rooms()`, as the beat reads it, and the storey below out of every cell,
+   * because the porter's walk crosses open ground and no room. */
+  const spawnGrid = walkability(plan);
+  const cellX = (c) => c.i * spawnGrid.grid + spawnGrid.grid / 2;
+  const cellZ = (c) => c.j * spawnGrid.grid + spawnGrid.grid / 2;
+  const roomCells = spawnGrid.rooms();
+  const perWatch = [], thin = [];
+  for (const w of mystery.watches) {
+    const up = cast.map((n) => ({ id: n.id, at: nav.at(n.id, w) })).filter((n) => n.at && n.at.level > 0 && !n.at.asleep);
+    perWatch.push(`${w} ${up.map((n) => n.id).join('+') || 'nobody'}`);
+    if (!up.length) thin.push(`nobody is upstairs and awake at ${w}`);
+    for (const { id, at } of up) {
+      const own = roomCells.filter((r) => r.level === at.level).flatMap((r) => r.at)
+        .filter((c) => { const d = Math.hypot(c.x - at.x, c.z - at.z); return d >= 0.9 && d <= 2.8; });
+      const below = spawnGrid.cells.filter((c) => c.level < at.level && Math.hypot(cellX(c) - at.x, cellZ(c) - at.z) <= 2.8);
+      if (!own.length) thin.push(`${id} at ${w} has no level-${at.level} cell 0.9 to 2.8 m away`);
+      if (!below.length) thin.push(`${id} at ${w} has no lower-storey cell within 2.8 m`);
+    }
+  }
+  check(thin.length === 0,
+    `somebody is upstairs and awake at every bell (${perWatch.join(', ')}), and each has cells on their own storey and under it for plan-vs-scene.mjs to stand on`,
+    thin.join('; '));
 
   let moves = 0, steps = 0, missing = [];
   for (const n of cast) {

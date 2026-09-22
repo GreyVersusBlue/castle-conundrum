@@ -27,8 +27,7 @@ NOW, in parallel, no gates:
 
   Devon's machine                    A container
   ---------------                    -----------
-                                     R2   sight at the body's height    no lane
-  R3  GPU run, after R2 (2026-09-21)
+  R3  GPU run, no gate (2026-09-21)
                      --+             R8   quests: the seven errands      lane A
                        |             R6   populace: the next forty       lanes C D
                        |             R4a  the bells call   (lane A: not beside R8)
@@ -38,8 +37,12 @@ NOW, in parallel, no gates:
     R12a budget suite  #607-611      R6  the first ten  #616-619
   R4b the since field shipped the same day, #646-649, in a worktree.
   R6 five more, to 32 of 32, and a talk rail, shipped 2026-09-20 (#729-733).
+
   R1 explore: the day before shipped whole, all four increments, 2026-09-21
   (#767-779). Lanes A and D are free; what is left is the GPU look, R3's.
+
+R2 sight at the body's height  -->  unlocked R3, 2026-09-21 (#780 to #782)
+  shipped                          no lane, gate now open
                        |
 R3 lands --------------+--> unlocks R11
   (the images row and R5 both shipped 2026-09-17 ahead of this row landing,
@@ -122,10 +125,10 @@ the one asset nothing else on this list would catch.**
 **R1** explore: the day before, specced 2026-09-21 (#750 to #756) and shipped
 whole the same day (#767 to #779): a `day0` block, a third branch per method
 in the engine, two doors and a night, all of it Node or headless, four
-increments, and only the last of them large. **R2** sight at the
-body's own height, filed 2026-09-21 and gating R3: a GPU found it, and a
-headless beat can hold it, because it is a camera placed and a prompt string
-read, not a walk. **R6** populace, **R8** side quests, **R9** the town, whose
+increments, and only the last of them large. ~~**R2** sight at the
+body's own height~~, filed 2026-09-21, shipped the same day (#780 to #782):
+a GPU found it, and a headless beat held it, because it was a camera placed
+and a prompt string read, not a walk. **R6** populace, **R8** side quests, **R9** the town, whose
 gate R4c opened, **R12a/b/c** the tooling, **R13** the floor plan you can see
 (#745 to #749), **R4a** the bells call (#699 to #702), and **R4b** the
 `since` field, which shipped from one on 2026-09-17. Eight and a half rows
@@ -334,7 +337,13 @@ being on `main`, and R3's next sitting is what confirms it on a GPU. Apart
 from #714's five checks and #659's journal number, it is the last thing
 between `npm run play` and exit 0.
 
-**R3 the GPU run: local, GPU, Opus 5, size ¼, no lane, after R2.** Its
+**And it shipped the same day, closing the gate.** Sight at the body's own
+height is done (#780 to #782): rays at the feet plus `SIGHT_HEIGHTS`, a
+`STOREY_REACH` gate, `nav.talkable` storey-strict. Its row is gone from this
+table and from `BACKLOG.md` and `SPECS.md`. **R3 has no gate in front of it
+now, and its next sitting should start from a `main` that carries this.**
+
+**R3 the GPU run: local, GPU, Opus 5, size ¼, no lane, no gate.** Its
 judgement half was finished on 2026-09-19 (#711 to #715) — the twelve, the
 Lauds sky, the covered hall and eleven bodies at interact range, the
 unlooked-at list down to one item, a phone (#530). Its walking half is the
@@ -368,7 +377,7 @@ its row open with its text rewritten to say what is done.
 | --- | --- | --- | --- | --- |
 | ~~**R1** Explore: the day before~~ | Opus 5 | Container | none | **Shipped whole, all four increments, 2026-09-21** (#767 to #770, #771 to #774, #775 to #777, #778 to #779, against #750 to #756). `WISHLIST.md` theme 8's four questions answered, both against the theme's own recommendation: the walking day is the main mode, not a second door, and it is the day before the death, Hywel alive, not the day of it. Increment 4 gave `data/mystery.json`'s `day0.schedule` its own thirteen-person day instead of day one's copy, and `#775`'s walk-into-the-night rail its first two pairs day one's own chain does not already imply. `npm test` 15 of 15, `npm run build` clean, `npm run dialogue:check` green. **Lanes A and D are free.** What is left is the look: whether the two doors read as a choice, whether the day reads as a day and not a rota, and whether `npm run play` actually carries a save through its new door on a real GPU (#53), which nobody has run. It belongs to R3. |
 | ~~**R1** The walker on the stair~~ | Opus 5 | Container | none | **Shipped** (#716 to #720). A same-storey walk now searches that storey's own floor, so `hike` can no longer take a flight for a stair or the wall walk for a corridor, and a tight cell costs five instead of one, so it stops hugging the walls a prop stands against. `test/layout.mjs` check 8b holds it over 66 room pairs, 153 ok. The row is closed; the run itself is Gate 1, above, and it is R3's. |
-| **R3** The GPU run | Opus 5 | **Local: GPU** | after R2 | **Gate 1, above.** Its looking is done (#711 to #715); the old R1 walker holds on a GPU now (#734, #736), and a third sitting reached the accusation for the first time before a new bug, fixed sight heights in `src/interaction.js`, produced the wrong ending (#735 to #741). Gated on the new R2, "Sight at the body's own height." **The walking day (R1, shipped whole 2026-09-21, #767 to #779) put a whole day in front of the day of the death, and its own break is lifted on paper, not confirmed**: `test/play-castle.mjs` has the same `#start-mystery` door the other suites got (#771 to #774), the file parses and the button and its wiring are in `dist/`, but nobody in a container can run `npm run play` to say the day actually carries through it (#53). Treat that as this row's first act, not a settled fact, and the checklist R1's own section left behind (whether the two doors read as a choice, whether the fourteen read as a castle on an ordinary day, whether the day reads as a day and not a rota) is now this row's to answer too. |
+| **R3** The GPU run | Opus 5 | **Local: GPU** | — | **Gate 1, above.** Its looking is done (#711 to #715); the old R1 walker holds on a GPU now (#734, #736), and a third sitting reached the accusation for the first time before a new bug, fixed sight heights in `src/interaction.js`, produced the wrong ending (#735 to #741). **Gated on R2, "Sight at the body's own height," which shipped 2026-09-21** (#780 to #782); the gate is open. **The walking day (R1, shipped whole 2026-09-21, #767 to #779) put a whole day in front of the day of the death, and its own break is lifted on paper, not confirmed**: `test/play-castle.mjs` has the same `#start-mystery` door the other suites got (#771 to #774), the file parses and the button and its wiring are in `dist/`, but nobody in a container can run `npm run play` to say the day actually carries through it (#53). Treat that as this row's first act, not a settled fact, and the checklist R1's own section left behind (whether the two doors read as a choice, whether the fourteen read as a castle on an ordinary day, whether the day reads as a day and not a rota) is now this row's to answer too. |
 | ~~**R8** Side quests~~ | Opus 5 | Container | A | **Shipped, and the row is closed** (#691 to #695). The seven errands left of the dozen went in on 2026-09-18, one voice each on the seven people who had none, so `data/quests/` is twelve files and every person the day one schedule puts in the castle has an errand. A sixth set rule came with them: a terminal stage may not park a person whose `default` lines pose one of the frame's tokens. No `save.js` change and no version bump. |
 | **R6** Life: a populace | Opus 5 | Container | C, D | ~~The file, the validator and the first ten~~ shipped 2026-09-17 (#616 to #618): a routine is a ring per bell, nine activities on three clips the kit already had, no asset added. ~~Five more people, a `talk` rail~~ shipped 2026-09-20 (#729 to #733): the page now builds 32 of 32 bodies, exactly `MAX_SKINNED_TOTAL` (#609), outer ward peaking at 18 of 20 and inner at 15 of 20, plus a flat `talk` list of three pairs played through the `#caption` band. What is left is the rest of the fifty (R9's town), the four activities still without a clip (R10), and the twelve's 27-pair chatter pool, still unspent by proximity. |
 | ~~**R1** A fourth body~~ | Fable 5.1 | Local: net | C | **Shipped** (#603 to #606). Quaternius's Ultimate Modular Women Pack, meshopt to 1.02 MB, worn by the cook, the laundress and the lady. |
