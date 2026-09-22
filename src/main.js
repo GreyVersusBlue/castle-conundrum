@@ -226,6 +226,10 @@ async function init() {
   // props that never hide and are never taken.
   const readables = castle.readables(Object.fromEntries(documentsData.documents.map((d) => [d.id, d.title])));
   const interaction = new InteractionSystem(camera, [...npcs, ...folk, ...locks, ...bells, ...evidence, ...readables], ui, scene);
+  // Read by test/plan-vs-scene.mjs's upstairs beat, which calls update() once
+  // per placed cell rather than rendering two frames per cell: 490 cells at two
+  // frames each outran Puppeteer's 180 s CDP timeout under software rendering.
+  window.__interaction = interaction;
   const auto = slot.autosave(() => {
     state.player = { x: camera.position.x, y: camera.position.y, z: camera.position.z, yaw: camera.rotation.y };
     return state;

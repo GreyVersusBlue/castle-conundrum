@@ -1012,8 +1012,16 @@ try {
    *
    * Placed, not walked (#724, #53): `applyWatch(watch, {walk: false})` stands
    * the cast on the watch's stations and `setWatch(watch, {walk: false})` parks
-   * the household's rings, then the camera is put on a cell and two frames are
-   * waited for. Nothing is timed.
+   * the household's rings, and two frames settle them. Then the camera is put
+   * on each cell and `window.__interaction.update()` is called once, which is
+   * the same call the page's loop makes and needs only raycasts, no render.
+   * Nothing is timed.
+   *
+   * NO FRAMES PER CELL, AND ONE CDP CALL PER STATION PER HALF. The first
+   * version waited two frames at each of 490 cells inside one evaluate per
+   * station: 25 s here on a GPU, and in CI the first station (100 cells, 200
+   * software-rendered frames) ran past Puppeteer's 180 s protocolTimeout and
+   * threw. Every cell is still asked, so a failure still prints all of them.
    *
    * WHAT IS OUT OF THE SWEEP, AND WHY, WITH NO SKIP (#13). Day two's Lady at
    * Lauds is the same station as her day-one three, and putting the page at
@@ -1054,25 +1062,24 @@ try {
     // page's own loop runs, and a walk this long leaves `hound-near`'s cadence
     // clock set, so the bark beat's first bark came 26 frames early.
     const back = await page.evaluate(() => ({ x: window.__cam.position.x, y: window.__cam.position.y, z: window.__cam.position.z, yaw: window.__cam.rotation.y }));
+    const ask = (at, cells) => page.evaluate(({ at, cells, eye }) => {
+      const cam = window.__cam;
+      const el = document.getElementById('interact-prompt');
+      return cells.map((c) => {
+        cam.position.set(c.x, c.h + eye, c.z);
+        cam.rotation.set(0, Math.atan2(-(at.x - c.x), -(at.z - c.z)), 0, 'YXZ');
+        cam.updateMatrixWorld(true);
+        window.__interaction.update();
+        return el && !el.classList.contains('hidden') ? el.textContent.trim() : null;
+      });
+    }, { at, cells, eye: EYE_HEIGHT });
     for (const u of upstairs) {
-      const got = await page.evaluate(async ({ watch, at, own, below, eye }) => {
-        const frame = () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
-        const promptNow = () => { const el = document.getElementById('interact-prompt'); return el && !el.classList.contains('hidden') ? el.textContent.trim() : null; };
+      await page.evaluate(async ({ watch }) => {
         window.__quest.applyWatch(watch, { walk: false });
         window.__populace.setWatch(watch, { walk: false });
-        await frame();
-        const from = async (c) => {
-          window.__cam.position.set(c.x, c.h + eye, c.z);
-          window.__cam.rotation.set(0, Math.atan2(-(at.x - c.x), -(at.z - c.z)), 0, 'YXZ');
-          await frame();
-          return promptNow();
-        };
-        const ownSaid = [];
-        for (const c of own) ownSaid.push(await from(c));
-        const belowSaid = [];
-        for (const c of below) belowSaid.push(await from(c));
-        return { ownSaid, belowSaid };
-      }, { watch: u.watch, at: u.at, own: u.own, below: u.below, eye: EYE_HEIGHT });
+        await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      }, { watch: u.watch });
+      const got = { ownSaid: await ask(u.at, u.own), belowSaid: await ask(u.at, u.below) };
       const hit = got.ownSaid.findIndex((p) => p && p.includes(u.name));
       check(hit >= 0,
         `${u.id} at ${u.watch}, level ${u.at.level}, is offered from their own storey: ${hit >= 0 ? `cell ${hit + 1}` : 'no cell'} of ${u.own.length}, nearest first`,
