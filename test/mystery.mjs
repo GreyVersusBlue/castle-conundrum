@@ -1366,8 +1366,8 @@ console.log('\nthe household validator rejects');
     /^well-wife at prime, stop 1: tile \(-8\.313, 3\.688\) is in outer-ward on level 0, not in laundry on level 0$/);
 
   expect('an activity no clip in npc.js answers to',
-    (f, people) => { of(people, 'baker').routine.terce[0].activity = 'hammer'; },
-    /^baker at terce, stop 1: activity "hammer" is one src\/npc\.js has no clip for/);
+    (f, people) => { of(people, 'baker').routine.terce[0].activity = 'juggle'; },
+    /^baker at terce, stop 1: activity "juggle" is one src\/npc\.js has no clip for/);
   expect('a stop with no floor under it',
     (f, people) => { of(people, 'baker').routine.terce[0].tile = [0.313, 6.5]; },
     /^baker at terce, stop 1: .*no floor to stand on$/);

@@ -747,9 +747,11 @@ through `populace.json` as well as `cast`, and a silhouette count asserts
 more distinct combinations than there are new bodies (#645). Two hens off
 poly.pizza's re-export of Quaternius's Farm Animals pack, `Hen.glb`, 55 KB
 (#684). A held prop, `Spear.glb`, 46 KB, the first held prop not from Poly
-Haven, worn by the serjeant and the man-at-arms (#685). **Not shipped**: the
-GPU look at any of it (#53), and the activity clips rank 6 wants (`sweep`,
-`hammer`, `spar`, `drill`), which no body has.
+Haven, worn by the serjeant and the man-at-arms (#685). Increment 2a of the
+generated half below shipped 2026-09-23: `Sweep`, `Stir`, `Hammer`, `Spar` and
+`Drill` in all four human bodies, 171 to 192 KB a body, held by check 7.
+**Not shipped**: the GPU look at any of it (#53), no routine using the five
+yet (rank 6's), and 2b, the cow.
 
 ### The generated half (#787 to #789)
 
@@ -769,7 +771,7 @@ King.glb on average. Read and written back through gltf-transform, King.glb
 is byte-identical, Woman.glb grows 20,616 bytes once and is then stable, and
 Hen.glb is not stable between two passes.
 
-#### Scope, increment 2a: five activity clips on the four human rigs
+#### Scope, increment 2a: five activity clips on the four human rigs (shipped)
 
 - **`tools/bodies/clips.json`**, the table. One row per clip: `Sweep`,
   `Stir`, `Hammer`, `Spar`, `Drill`. Each row has `cycles` (an integer),
@@ -818,7 +820,10 @@ the four bodies. Each line is the break that has to turn it red (#34).
    key over 60 steps instead of 50.
 4. **Loops.** For every channel of a generated clip, the first and last
    keys differ by no more than two quantisation steps (2/32767 on a
-   normalised int16). Break: `cycles: 1.5` on `Hammer`.
+   normalised int16). Break: `cycles: 1.5` on `Hammer`. As shipped it also
+   holds the step across the seam to 1.5 times the largest change of step
+   inside the clip: every Hammer move is phase 0, so 1.5 cycles ends where
+   it began, going the other way, and the position half alone stayed green.
 5. **Moves.** At some key, each clip's `driver` joint is at least 20
    degrees from Idle's rotation of that joint at the same key. Break:
    `amp: 0` on every move of `Stir` and re-render; line 6 stays green on a

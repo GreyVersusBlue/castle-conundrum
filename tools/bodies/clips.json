@@ -1,0 +1,77 @@
+{
+  "comment": "The five activity clips tools/bodies/index.mjs writes into Woman, Farmer, Adventurer and King (#787, #788). One row per clip. `cycles` is how many times the motion repeats over the body's own Idle length, and it has to be an integer or the clip does not loop. `driver` is the joint test/assets.mjs check 7 holds to at least 20 degrees of motion away from Idle. Each move is { bone, axis, rest, amp, phase }: a glTF joint name, an axis in the body's model frame (+x the body's left, +y up, +z the way it faces), a static offset and an amplitude in degrees, and a phase in cycles. The angle at key k of 50 is rest + amp * sin(2 pi (cycles * k / 50 + phase)), composed onto Idle's pose at that key, root to tip. A positive angle about x tips +y towards +z: a lean forward for a spine joint, an arm swung back for a hanging arm. Negative about x brings a hanging arm forward and bends a forward forearm up. Positive about y turns to the body's left; positive about z carries a hanging hand to its left. Edit a row, run `npm run bodies:render`, commit the .glb with it.",
+  "clips": [
+    {
+      "name": "Sweep",
+      "cycles": 1,
+      "driver": "UpperArm.R",
+      "moves": [
+        { "bone": "Abdomen", "axis": "x", "rest": 18, "amp": 0, "phase": 0 },
+        { "bone": "Torso", "axis": "y", "rest": 0, "amp": 22, "phase": 0 },
+        { "bone": "Head", "axis": "x", "rest": 12, "amp": 0, "phase": 0 },
+        { "bone": "UpperArm.R", "axis": "x", "rest": -32, "amp": 0, "phase": 0 },
+        { "bone": "UpperArm.R", "axis": "z", "rest": 0, "amp": 28, "phase": 0 },
+        { "bone": "LowerArm.R", "axis": "x", "rest": -18, "amp": 0, "phase": 0 },
+        { "bone": "UpperArm.L", "axis": "x", "rest": -48, "amp": 0, "phase": 0 },
+        { "bone": "UpperArm.L", "axis": "z", "rest": 0, "amp": 28, "phase": 0 },
+        { "bone": "LowerArm.L", "axis": "x", "rest": -30, "amp": 0, "phase": 0 }
+      ]
+    },
+    {
+      "name": "Stir",
+      "cycles": 2,
+      "driver": "UpperArm.R",
+      "moves": [
+        { "bone": "Abdomen", "axis": "x", "rest": 10, "amp": 0, "phase": 0 },
+        { "bone": "Torso", "axis": "y", "rest": 0, "amp": 6, "phase": 0 },
+        { "bone": "Head", "axis": "x", "rest": 15, "amp": 0, "phase": 0 },
+        { "bone": "UpperArm.R", "axis": "x", "rest": -12, "amp": 16, "phase": 0.25 },
+        { "bone": "UpperArm.R", "axis": "y", "rest": 0, "amp": 34, "phase": 0 },
+        { "bone": "LowerArm.R", "axis": "x", "rest": -62, "amp": 0, "phase": 0 },
+        { "bone": "UpperArm.L", "axis": "x", "rest": -20, "amp": 0, "phase": 0 },
+        { "bone": "LowerArm.L", "axis": "x", "rest": -55, "amp": 0, "phase": 0 }
+      ]
+    },
+    {
+      "name": "Hammer",
+      "cycles": 2,
+      "driver": "UpperArm.R",
+      "moves": [
+        { "bone": "Abdomen", "axis": "x", "rest": 12, "amp": 0, "phase": 0 },
+        { "bone": "Torso", "axis": "y", "rest": 0, "amp": 6, "phase": 0 },
+        { "bone": "Head", "axis": "x", "rest": 14, "amp": 0, "phase": 0 },
+        { "bone": "UpperArm.R", "axis": "x", "rest": -80, "amp": 60, "phase": 0 },
+        { "bone": "LowerArm.R", "axis": "x", "rest": -40, "amp": 32, "phase": 0 },
+        { "bone": "Wrist.R", "axis": "x", "rest": 0, "amp": 20, "phase": 0 },
+        { "bone": "UpperArm.L", "axis": "x", "rest": -30, "amp": 0, "phase": 0 },
+        { "bone": "LowerArm.L", "axis": "x", "rest": -50, "amp": 0, "phase": 0 }
+      ]
+    },
+    {
+      "name": "Spar",
+      "cycles": 2,
+      "driver": "UpperArm.R",
+      "moves": [
+        { "bone": "Torso", "axis": "y", "rest": -15, "amp": 12, "phase": 0.5 },
+        { "bone": "Abdomen", "axis": "x", "rest": 6, "amp": 4, "phase": 0 },
+        { "bone": "UpperArm.R", "axis": "x", "rest": -50, "amp": -30, "phase": 0 },
+        { "bone": "LowerArm.R", "axis": "x", "rest": -70, "amp": 60, "phase": 0 },
+        { "bone": "UpperArm.L", "axis": "x", "rest": -60, "amp": -25, "phase": 0.5 },
+        { "bone": "LowerArm.L", "axis": "x", "rest": -80, "amp": 55, "phase": 0.5 }
+      ]
+    },
+    {
+      "name": "Drill",
+      "cycles": 1,
+      "driver": "UpperArm.R",
+      "moves": [
+        { "bone": "Abdomen", "axis": "y", "rest": 14, "amp": 0, "phase": 0 },
+        { "bone": "Torso", "axis": "x", "rest": 4, "amp": 8, "phase": 0 },
+        { "bone": "UpperArm.R", "axis": "x", "rest": -40, "amp": -25, "phase": 0 },
+        { "bone": "LowerArm.R", "axis": "x", "rest": -55, "amp": 45, "phase": 0 },
+        { "bone": "UpperArm.L", "axis": "x", "rest": -50, "amp": -25, "phase": 0 },
+        { "bone": "LowerArm.L", "axis": "x", "rest": -65, "amp": 45, "phase": 0 }
+      ]
+    }
+  ]
+}
