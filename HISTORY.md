@@ -9250,3 +9250,44 @@ return nothing. What the rail does not cover, on purpose: the populace's 16
 stops inside 1.0 m of a piece, because a populace body is a label and never
 takes a prop's prompt (#617). The first station that needs an exemption is
 an `architect` call, and `SPECS.md` names its shape.
+
+---
+
+## Bodies: increment 2a shipped, the five clips in the four bodies (2026-09-23)
+
+**Rank 10, increment 2a shipped.** Decision #790. `tools/bodies/clips.json`
+and `tools/bodies/index.mjs` (`renderBody`, throws on an unknown bone) write
+five clips, `Sweep`, `Stir`, `Hammer`, `Spar` and `Drill`, into Woman,
+Farmer, Adventurer and King, run by `npm run bodies:render`. Every generated
+clip carries `extras.generator`, and a render drops all of them first, so a
+row deleted from the table takes its clip out of every body with it —
+forced by a #34 break: deleting `Drill`'s row stayed green before this was
+added. Rail 4 also compares the step across the loop seam to the largest
+step inside the clip, because `cycles: 1.5` on `Hammer` stayed green
+otherwise (#147); the worst clip that ships is 1.01 against a 1.5 limit.
+
+Sizes: Woman 1,073,992 to 1,265,668 bytes (+191,676, of which 20,616 is
+gltf-transform's own first-pass growth); Farmer +171,536; Adventurer
++171,440; King +171,492; total +706,144 across the four, about 34 KB a
+clip, against a 250,000-byte-per-body cap.
+
+`test/assets.mjs` check 7 gained seven rails; the break for each and the
+message it produced, from green (#34):
+
+1. `Drill`'s row deleted: "Woman.glb carries 28 clips, not 29; missing Drill".
+2. A bone renamed to `UpperArmR`: "Sweep's row moves \"UpperArmR\", not a
+   joint of this body".
+3. Keyed at 60 steps: "Sweep ends at 2.5000 s, Idle at 2.0833 s".
+4. `cycles: 1.5` on `Hammer`: "Hammer's Torso rotation turns back at the
+   loop: its speed changes by 1.65e-3 across the seam against 1.83e-4".
+5. `Stir`'s amplitudes set to 0: "Stir's driver UpperArm.R never gets more
+   than 12.0 degrees from Idle, under 20".
+6. An amplitude changed without re-rendering: "Woman.glb is not what
+   tools/bodies/index.mjs renders ... first difference at byte 8".
+7. Keyed at 500 steps: "Woman.glb is 1467152 bytes, over its 1073992 ...
+   plus 250000".
+
+`ACTIVITY_CLIPS` in `src/populace.js` gains the five names; no routine uses
+them yet, which is rank 6's to do. `npm test` 15 of 15 green. A second
+`npm run bodies:render` is a byte no-op. Whether a clip reads as its name is
+a GPU question and is not answered here (#53).
