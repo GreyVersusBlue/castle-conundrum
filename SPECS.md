@@ -646,6 +646,17 @@ a step sound for it, and the ground needs to go below y 0. The kit has
 the quay's head, the one slate roof in Mereford; every other town roof is
 `roof.glb`.
 
+Two calls from the town's first increment still bind the next one:
+
+- **Bodies in the town: none while #703 stands.** `validatePopulace` refuses
+  a stop the player cannot walk to (#707), so rank 6's "the rest of the fifty
+  go in rank 9's town" is answered no until something outside the curtain is
+  enterable. A figure in a street nobody enters is a different system from a
+  populace.
+- **Doors and windows on the house fronts: none yet.** If the GPU run says the
+  rows read as blocks, `wall-pane-wood-door.glb` and
+  `wall-pane-wood-window.glb` go on as facades and check 4d still holds.
+
 ### Constraints
 
 - #500, #529: every new piece is a plan piece; a sight check is Node

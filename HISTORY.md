@@ -9098,3 +9098,19 @@ both green after `npm install` (`node_modules` was not present in this
 container). The two browser suites in the full `npm test` run were not
 confirmed to completion here; nothing in this session touched `src/`,
 `test/` or `data/`.
+
+---
+
+## Which model does what, loosened (2026-09-23)
+
+**#784. The class table in `CLAUDE.md` is a default, not a rule, and
+judgement about what to delete is not bookkeeping.** #783's cleanup went to
+`scribe` because the table called doc edits class B, and the cuts were a
+judgement over 300 KB of cross-referenced text; the lead checked them
+afterwards and found every dropped recommendation belonged to a shipped
+increment, except two of rank 9's that still bind the quay, which are back
+in `SPECS.md`. The section is rewritten from 56 lines to 37: the lead may
+override the table and says why in one line, a third tie-break says Opus
+decides a restructure and `scribe` carries it out, and planning on Opus with
+Sonnet executing is allowed for any class where the reading is large and the
+deciding is small. Devon asked for it directly. No agent file changed.
