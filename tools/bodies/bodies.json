@@ -1,0 +1,124 @@
+{
+  "comment": "The animals tools/bodies/index.mjs builds from nothing (#787, #789). One row per animal. `joints` are { name, parent, head }: a glTF joint name (the hound's where one exists), its parent joint (null for the root) and where it sits in the bind pose, in metres, +x the animal's left, +y up, +z the way it faces. Every joint binds unrotated. `parts` are boxes or prisms, flat-shaded, each rigidly weighted to one joint: { shape, center, size, joint, material }, with `sides` and `axis` on a prism. `materials` are { color } in linear 0..1; a material with `primitive` is drawn inside that one by vertex colour rather than as a primitive of its own, which is how a hide gets patches inside #789's four primitives. `tint` says whether src/npc.js's tintBody multiplies it; the generator does not read it, test/assets.mjs does. `clips` are { name, seconds, cycles, driver, moves }, keyed at 51 uniform times; each move is { bone, axis, rest, amp, phase, rate } and its value at key k of 50 is rest + amp * sin(2 pi (cycles * rate * k / 50 + phase)), in degrees about the axis in the joint's parent frame for `path` rotation (the default) and in metres along it for `path` translation. `rate` is an integer and defaults to 1. Edit a row, run `npm run bodies:render`, commit the .glb with it.",
+  "animals": [
+    {
+      "name": "Cow",
+      "file": "assets/NPCs/Cow.glb",
+      "joints": [
+        { "name": "Body", "parent": null, "head": [0, 1.0, 0] },
+        { "name": "Neck1", "parent": "Body", "head": [0, 1.08, 0.5] },
+        { "name": "Head", "parent": "Neck1", "head": [0, 1.15, 0.92] },
+        { "name": "Ear.L", "parent": "Head", "head": [0.13, 1.25, 0.94] },
+        { "name": "Ear.R", "parent": "Head", "head": [-0.13, 1.25, 0.94] },
+        { "name": "FrontUpperLeg.L", "parent": "Body", "head": [0.19, 0.84, 0.42] },
+        { "name": "FrontLowerLeg.L", "parent": "FrontUpperLeg.L", "head": [0.19, 0.44, 0.42] },
+        { "name": "FrontUpperLeg.R", "parent": "Body", "head": [-0.19, 0.84, 0.42] },
+        { "name": "FrontLowerLeg.R", "parent": "FrontUpperLeg.R", "head": [-0.19, 0.44, 0.42] },
+        { "name": "BackUpperLeg.L", "parent": "Body", "head": [0.19, 0.84, -0.5] },
+        { "name": "BackLowerLeg.L", "parent": "BackUpperLeg.L", "head": [0.19, 0.44, -0.5] },
+        { "name": "BackUpperLeg.R", "parent": "Body", "head": [-0.19, 0.84, -0.5] },
+        { "name": "BackLowerLeg.R", "parent": "BackUpperLeg.R", "head": [-0.19, 0.44, -0.5] },
+        { "name": "Tail1", "parent": "Body", "head": [0, 1.24, -0.74] },
+        { "name": "Tail2", "parent": "Tail1", "head": [0, 0.86, -0.77] }
+      ],
+      "materials": {
+        "Hide": { "color": [0.92, 0.88, 0.82], "tint": true },
+        "Hide_Patch": { "color": [0.2, 0.17, 0.15], "tint": true, "primitive": "Hide" },
+        "Nose": { "color": [0.16, 0.12, 0.11], "tint": false },
+        "Eye": { "color": [0.02, 0.02, 0.02], "tint": false },
+        "Horn": { "color": [0.82, 0.76, 0.6], "tint": false }
+      },
+      "parts": [
+        { "shape": "prism", "sides": 6, "axis": "z", "center": [0, 1.02, -0.08], "size": [0.62, 0.6, 1.3], "joint": "Body", "material": "Hide" },
+        { "shape": "box", "center": [0, 1.3, -0.1], "size": [0.4, 0.1, 1.22], "joint": "Body", "material": "Hide" },
+        { "shape": "box", "center": [0, 0.7, -0.32], "size": [0.22, 0.1, 0.2], "joint": "Body", "material": "Nose" },
+        { "shape": "box", "center": [0.312, 1.03, -0.3], "size": [0.02, 0.28, 0.46], "joint": "Body", "material": "Hide_Patch" },
+        { "shape": "box", "center": [-0.312, 1.0, 0.12], "size": [0.02, 0.26, 0.36], "joint": "Body", "material": "Hide_Patch" },
+        { "shape": "box", "center": [0.06, 1.356, -0.45], "size": [0.3, 0.012, 0.3], "joint": "Body", "material": "Hide_Patch" },
+        { "shape": "box", "center": [-0.05, 1.356, 0.25], "size": [0.26, 0.012, 0.26], "joint": "Body", "material": "Hide_Patch" },
+        { "shape": "box", "center": [0, 1.1, 0.68], "size": [0.28, 0.36, 0.46], "joint": "Neck1", "material": "Hide" },
+        { "shape": "box", "center": [0, 1.16, 1.0], "size": [0.28, 0.3, 0.36], "joint": "Head", "material": "Hide" },
+        { "shape": "box", "center": [0, 1.24, 1.06], "size": [0.2, 0.14, 0.28], "joint": "Head", "material": "Hide_Patch" },
+        { "shape": "box", "center": [0, 1.06, 1.25], "size": [0.24, 0.2, 0.18], "joint": "Head", "material": "Nose" },
+        { "shape": "box", "center": [0.143, 1.2, 1.08], "size": [0.02, 0.05, 0.06], "joint": "Head", "material": "Eye" },
+        { "shape": "box", "center": [-0.143, 1.2, 1.08], "size": [0.02, 0.05, 0.06], "joint": "Head", "material": "Eye" },
+        { "shape": "box", "center": [0.2, 1.33, 0.96], "size": [0.16, 0.05, 0.05], "joint": "Head", "material": "Horn" },
+        { "shape": "box", "center": [0.29, 1.39, 0.96], "size": [0.05, 0.1, 0.05], "joint": "Head", "material": "Horn" },
+        { "shape": "box", "center": [-0.2, 1.33, 0.96], "size": [0.16, 0.05, 0.05], "joint": "Head", "material": "Horn" },
+        { "shape": "box", "center": [-0.29, 1.39, 0.96], "size": [0.05, 0.1, 0.05], "joint": "Head", "material": "Horn" },
+        { "shape": "box", "center": [0.2, 1.25, 0.92], "size": [0.14, 0.05, 0.1], "joint": "Ear.L", "material": "Hide" },
+        { "shape": "box", "center": [-0.2, 1.25, 0.92], "size": [0.14, 0.05, 0.1], "joint": "Ear.R", "material": "Hide" },
+        { "shape": "box", "center": [0.19, 0.64, 0.42], "size": [0.15, 0.4, 0.17], "joint": "FrontUpperLeg.L", "material": "Hide" },
+        { "shape": "box", "center": [0.19, 0.25, 0.42], "size": [0.11, 0.4, 0.12], "joint": "FrontLowerLeg.L", "material": "Hide" },
+        { "shape": "box", "center": [0.19, 0.035, 0.42], "size": [0.13, 0.07, 0.15], "joint": "FrontLowerLeg.L", "material": "Nose" },
+        { "shape": "box", "center": [-0.19, 0.64, 0.42], "size": [0.15, 0.4, 0.17], "joint": "FrontUpperLeg.R", "material": "Hide" },
+        { "shape": "box", "center": [-0.19, 0.25, 0.42], "size": [0.11, 0.4, 0.12], "joint": "FrontLowerLeg.R", "material": "Hide" },
+        { "shape": "box", "center": [-0.19, 0.035, 0.42], "size": [0.13, 0.07, 0.15], "joint": "FrontLowerLeg.R", "material": "Nose" },
+        { "shape": "box", "center": [0.19, 0.64, -0.5], "size": [0.16, 0.4, 0.2], "joint": "BackUpperLeg.L", "material": "Hide" },
+        { "shape": "box", "center": [0.19, 0.25, -0.5], "size": [0.11, 0.4, 0.12], "joint": "BackLowerLeg.L", "material": "Hide" },
+        { "shape": "box", "center": [0.19, 0.035, -0.5], "size": [0.13, 0.07, 0.15], "joint": "BackLowerLeg.L", "material": "Nose" },
+        { "shape": "box", "center": [-0.19, 0.64, -0.5], "size": [0.16, 0.4, 0.2], "joint": "BackUpperLeg.R", "material": "Hide" },
+        { "shape": "box", "center": [-0.19, 0.25, -0.5], "size": [0.11, 0.4, 0.12], "joint": "BackLowerLeg.R", "material": "Hide" },
+        { "shape": "box", "center": [-0.19, 0.035, -0.5], "size": [0.13, 0.07, 0.15], "joint": "BackLowerLeg.R", "material": "Nose" },
+        { "shape": "box", "center": [0, 1.05, -0.76], "size": [0.05, 0.4, 0.05], "joint": "Tail1", "material": "Hide" },
+        { "shape": "box", "center": [0, 0.77, -0.77], "size": [0.09, 0.16, 0.09], "joint": "Tail2", "material": "Hide_Patch" }
+      ],
+      "clips": [
+        {
+          "name": "Idle",
+          "seconds": 3.0,
+          "cycles": 1,
+          "driver": "Tail1",
+          "moves": [
+            { "bone": "Tail1", "axis": "z", "rest": 0, "amp": 22, "phase": 0, "rate": 2 },
+            { "bone": "Tail2", "axis": "z", "rest": 0, "amp": 18, "phase": 0.15, "rate": 2 },
+            { "bone": "Ear.L", "axis": "z", "rest": 0, "amp": 12, "phase": 0, "rate": 3 },
+            { "bone": "Ear.R", "axis": "z", "rest": 0, "amp": 12, "phase": 0.4, "rate": 3 },
+            { "bone": "Neck1", "axis": "x", "rest": 4, "amp": 3, "phase": 0 },
+            { "bone": "Head", "axis": "y", "rest": 0, "amp": 10, "phase": 0.25 },
+            { "bone": "Body", "path": "translation", "axis": "y", "rest": 0, "amp": 0.005, "phase": 0, "rate": 2 }
+          ]
+        },
+        {
+          "name": "Walk",
+          "seconds": 1.4,
+          "cycles": 1,
+          "driver": "FrontUpperLeg.L",
+          "moves": [
+            { "bone": "FrontUpperLeg.L", "axis": "x", "rest": 0, "amp": 24, "phase": 0 },
+            { "bone": "BackUpperLeg.R", "axis": "x", "rest": 0, "amp": 24, "phase": 0 },
+            { "bone": "FrontUpperLeg.R", "axis": "x", "rest": 0, "amp": 24, "phase": 0.5 },
+            { "bone": "BackUpperLeg.L", "axis": "x", "rest": 0, "amp": 24, "phase": 0.5 },
+            { "bone": "FrontLowerLeg.L", "axis": "x", "rest": 12, "amp": 12, "phase": 0.25 },
+            { "bone": "FrontLowerLeg.R", "axis": "x", "rest": 12, "amp": 12, "phase": 0.75 },
+            { "bone": "BackLowerLeg.L", "axis": "x", "rest": -12, "amp": 12, "phase": 0.75 },
+            { "bone": "BackLowerLeg.R", "axis": "x", "rest": -12, "amp": 12, "phase": 0.25 },
+            { "bone": "Neck1", "axis": "x", "rest": 8, "amp": 4, "phase": 0, "rate": 2 },
+            { "bone": "Head", "axis": "x", "rest": 0, "amp": 3, "phase": 0.25, "rate": 2 },
+            { "bone": "Body", "axis": "z", "rest": 0, "amp": 2.5, "phase": 0 },
+            { "bone": "Tail1", "axis": "z", "rest": 0, "amp": 8, "phase": 0.25 },
+            { "bone": "Body", "path": "translation", "axis": "y", "rest": 0, "amp": 0.018, "phase": 0.25, "rate": 2 }
+          ]
+        },
+        {
+          "name": "Eating",
+          "seconds": 3.0,
+          "cycles": 1,
+          "driver": "Neck1",
+          "moves": [
+            { "bone": "Neck1", "axis": "x", "rest": 58, "amp": 3, "phase": 0, "rate": 2 },
+            { "bone": "Head", "axis": "x", "rest": 22, "amp": 7, "phase": 0, "rate": 4 },
+            { "bone": "Head", "axis": "y", "rest": 0, "amp": 6, "phase": 0.25 },
+            { "bone": "FrontUpperLeg.L", "axis": "x", "rest": -6, "amp": 0, "phase": 0 },
+            { "bone": "FrontUpperLeg.R", "axis": "x", "rest": -6, "amp": 0, "phase": 0 },
+            { "bone": "FrontLowerLeg.L", "axis": "x", "rest": 6, "amp": 0, "phase": 0 },
+            { "bone": "FrontLowerLeg.R", "axis": "x", "rest": 6, "amp": 0, "phase": 0 },
+            { "bone": "Tail1", "axis": "z", "rest": 0, "amp": 14, "phase": 0, "rate": 2 },
+            { "bone": "Ear.L", "axis": "z", "rest": -10, "amp": 8, "phase": 0, "rate": 3 },
+            { "bone": "Ear.R", "axis": "z", "rest": 10, "amp": 8, "phase": 0.5, "rate": 3 }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -37,7 +37,9 @@ const CLIMB_SPEED = 1.6; // m/s the feet rise or fall towards the next waypoint'
 const DEFAULT_HEIGHT = 1.8; // metres; player eye height is 1.7, so npcs read as adults
 // What the tint does not touch. A nose is the hound's (#644): black on every
 // dog there is, and a tawny nose is the same wrong species a green face is.
-const BARE_MATERIALS = [/^skin$/i, /^eye/i, /^eyebrow/i, /^hair/i, /^nose$/i];
+// A horn is the cow's (#789): tools/bodies/ draws it bone-cream, and a horn
+// in the hide's own brown reads as a second pair of ears.
+const BARE_MATERIALS = [/^skin$/i, /^eye/i, /^eyebrow/i, /^hair/i, /^nose$/i, /^horn$/i];
 
 // Clip-name preferences, most-wanted first. Matched case-insensitively against whatever
 // the loaded file happens to ship, so a model with a different animation set still finds

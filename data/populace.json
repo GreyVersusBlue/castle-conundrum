@@ -5,6 +5,7 @@
   "bodyComment": "Six bodies and a prop. Four of the bodies already worn by the twelve: `Woman.glb` for the five women (#603 put it in the cast the day this was written, and a populace woman in Farmer.glb would have been the thing that row exists to stop), `King.glb` with its crown hidden for the serjeant, and Farmer and Adventurer for the rest. `modelHeight` 1.65 goes with the women's pack, which is authored shorter than the men's. The fifth is `Hound.glb` (#644), Quaternius's Husky re-exported with its five materials named and its coat lifted so the tint is the colour, and nobody in the cast wears it. The sixth is `Hen.glb` (#684) and the prop is `Spear.glb` (#685), both Quaternius's off poly.pizza; see rank10bComment.",
   "rank10Comment": "The child and the hound are BACKLOG.md rank 10's first increment (#643 to #645). The child is not a child rig: she is Woman.glb at 1.15 m with `boneScale` putting her head a third larger, `clips.walk` naming Run and `speed` 2.2 so she runs between her stops, which is what a scaled-down adult looked like it was missing when the two were put side by side. The hound has `follow`: within 6 m of the player on a floor the grid can route to, it leaves its ring, trots to 1.8 m short of them and looks at them, and goes back to its stop when they are gone.",
   "rank10bComment": "Two hens and a spear are rank 10's second increment (#684 to #686). `Hen.glb` is Quaternius's Farm Animals chicken, fetched as glTF from poly.pizza because the pack itself ships none, re-exported with its five clips named and its one material `Feathers`; the atlas is the colour and the tint is a multiply over it, so the white hen's tint is near-white and the brown hen's is tawny. `peck` is its clip and exists in its body only. `Spear.glb` is Quaternius's too, a held prop under assets/NPCs rather than under polyhavenBase, which is what `heldPropPath` in src/populace.js decides; `heldPropFit` says it is 2.1 m long, gripped 40 % up from the butt, tip up, because npc.js's defaults are a mace's. The serjeant and the man-at-arms carry it and the archer does not.",
+  "rank10cComment": "The cow is rank 10's increment 2b (#787 to #789), and the first body this repo made rather than fetched: tools/bodies/bodies.json's one row, built by `npm run bodies:render` into `assets/NPCs/Cow.glb`, 15 joints named after the hound's, flat-shaded boxes and one six-sided barrel, under 40 KB against #789's 80. `Hide` takes the tint and its dark patches are vertex colour inside the same primitive, so the tint browns the hide and darkens the patches with it; `Nose`, `Eye` and `Horn` keep their own colours. Its clips are `Idle`, `Walk` and `Eating`, so `wait` and `eat` need no new activity. It grazes by the hens all day and never leaves the outer ward, which is what makes it #789's thirty-fourth body and that ward's twentieth.",
   "activityComment": "`activity` is the job, and src/populace.js's ACTIVITY_CLIPS maps it to a clip the body doing it ships. The nine standing jobs resolve to one of three idle variants, because the kit has no sweep, stir, hammer or spar in it. `sweep`, `stir`, `hammer`, `spar` and `drill` resolve to clips tools/bodies/ generates into the four human bodies (#788), and no routine below uses them yet. `sniff` and `eat` are the hound's (#643) and exist in its body only, and test/mystery.mjs checks each person's jobs against the clips in that person's own file.",
   "day0Comment": "THE WALKING DAY'S RINGS ARE THE FOUR WATCHES' RINGS, COPIED, AND THAT IS THE FLOOR AND NOT THE CEILING (SPECS.md's increment 4, #750 to #756). Every person below has `prime-eve` to `vespers-eve` under the same stops they walk at `prime` to `vespers`, because a walking day with no household in it is the emptiest this castle has ever been and because the cast's own day-0 schedule in mystery.json is written around these stops: src/populace.js validates every one of them against the grid and against the fourteen at the same bell, so a copy is a checked copy. What a copy does NOT say is that the household's evening is the same as its morning. The `talk` pairs below are still day-one only, so a `gossip` stop at a day-0 bell is two bodies standing still and saying nothing; a row that wants the household's own evening rewrites a ring here, widens the one `watches` test in src/populace.js's pair check, and costs nothing else.",
   "day2Comment": "Nobody here has a Lauds stop, so the morning after has the cast and nothing else. That is the increment's boundary and not a claim about the fiction; a later one gives the household a second day.",
@@ -548,6 +549,49 @@
         "vespers-eve": [
           { "room": "outer-ward", "tile": [-5.313, 1.188], "activity": "wait", "facing": 0 },
           { "room": "outer-ward", "tile": [-4.563, 0.938], "activity": "peck" }
+        ]
+      }
+    },
+    {
+      "id": "cow",
+      "name": "Gwineu",
+      "role": "the house cow",
+      "modelPath": "assets/NPCs/Cow.glb",
+      "modelHeight": 1.45,
+      "speed": 0.6,
+      "tint": "#a36b43",
+      "routine": {
+        "prime": [
+          { "room": "outer-ward", "tile": [-7.438, 0.563], "activity": "eat", "facing": 0 },
+          { "room": "outer-ward", "tile": [-7.188, 0.063], "activity": "wait", "facing": 90 }
+        ],
+        "terce": [
+          { "room": "outer-ward", "tile": [-7.438, 0.563], "activity": "eat", "facing": 0 },
+          { "room": "outer-ward", "tile": [-7.188, 0.063], "activity": "wait", "facing": 90 }
+        ],
+        "sext": [
+          { "room": "outer-ward", "tile": [-7.438, 0.563], "activity": "eat", "facing": 0 },
+          { "room": "outer-ward", "tile": [-7.188, 0.063], "activity": "wait", "facing": 90 }
+        ],
+        "vespers": [
+          { "room": "outer-ward", "tile": [-7.438, 0.563], "activity": "eat", "facing": 0 },
+          { "room": "outer-ward", "tile": [-7.188, 0.063], "activity": "wait", "facing": 90 }
+        ],
+        "prime-eve": [
+          { "room": "outer-ward", "tile": [-7.438, 0.563], "activity": "eat", "facing": 0 },
+          { "room": "outer-ward", "tile": [-7.188, 0.063], "activity": "wait", "facing": 90 }
+        ],
+        "terce-eve": [
+          { "room": "outer-ward", "tile": [-7.438, 0.563], "activity": "eat", "facing": 0 },
+          { "room": "outer-ward", "tile": [-7.188, 0.063], "activity": "wait", "facing": 90 }
+        ],
+        "sext-eve": [
+          { "room": "outer-ward", "tile": [-7.438, 0.563], "activity": "eat", "facing": 0 },
+          { "room": "outer-ward", "tile": [-7.188, 0.063], "activity": "wait", "facing": 90 }
+        ],
+        "vespers-eve": [
+          { "room": "outer-ward", "tile": [-7.438, 0.563], "activity": "eat", "facing": 0 },
+          { "room": "outer-ward", "tile": [-7.188, 0.063], "activity": "wait", "facing": 90 }
         ]
       }
     },

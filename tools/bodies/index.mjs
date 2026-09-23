@@ -33,24 +33,41 @@
 // EXT_meshopt_compression and written back with it, so check 5 holds and the
 // loader (three's GLTFLoader with MeshoptDecoder, src/npc.js) reads it as it
 // read the kit's clips. Rotations stay normalised int16 like the kit's.
-// Nothing else under assets/ is touched: Hen.glb does not round-trip
+// Nothing else under assets/ is read: Hen.glb does not round-trip
 // gltf-transform stably (#788).
 //
 // RE-RUNNING IS A NO-OP. A body whose render equals what is on disk is not
 // rewritten. Woman.glb grew 20,616 bytes on its first pass through
 // gltf-transform, which is the writer, not the clips, and holds after that.
+//
+// AND THE ANIMALS, BUILT FROM NOTHING (#787, #789, increment 2b). bodies.json
+// is a second table, one row per animal: joints, boxes and prisms each rigidly
+// weighted to one joint, materials, and clips written the way clips.json's are
+// but onto a rig this script also made, so a move is simply the joint's local
+// rotation (every joint binds unrotated, so its parent frame is the model
+// frame at rest). `renderAnimal(row)` is the whole .glb from the row and
+// nothing else: no file is read, so it cannot drift from a hand-edit, and it
+// goes through `meshopt({ encoder, cleanup: false })`, the call
+// tools/encode-assets.mjs makes (#506). test/assets.mjs check 7's cow half
+// holds it byte-equal to assets/NPCs/Cow.glb and to #789's four caps.
 
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { NodeIO } from '@gltf-transform/core';
+import { Document, Logger, NodeIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
+import { meshopt } from '@gltf-transform/functions';
 import { MeshoptDecoder, MeshoptEncoder } from 'meshoptimizer';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, '../..');
 
 export const TABLE = path.join(HERE, 'clips.json');
+export const ANIMAL_TABLE = path.join(HERE, 'bodies.json');
+
+export function animals() {
+  return JSON.parse(fs.readFileSync(ANIMAL_TABLE, 'utf8')).animals;
+}
 
 /** The four bodies, repo-relative. The hound and the hen are not here: they
  *  are animal rigs with no arms, and Hen.glb is not stable through the writer. */
@@ -296,18 +313,227 @@ export async function renderBody(file, table = clips()) {
   return (await reader()).writeBinary(doc);
 }
 
+/* ------------------------------------------------------------ animals ---
+ * A box is six quads; a prism is `sides` quads round its axis and two fans
+ * for its ends, 4 * sides - 4 triangles. Every face has its own four (or
+ * `sides`) vertices and its own normal, so the animal is flat-shaded, and
+ * every vertex is weighted 1 to its part's joint. A face is wound so its
+ * normal points away from the part's centre.
+ */
+const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+const dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2];
+const unit = (a) => { const l = Math.hypot(a[0], a[1], a[2]); return a.map((v) => v / l); };
+
+function facesOf(part) {
+  const [cx, cy, cz] = part.center;
+  const [sx, sy, sz] = part.size;
+  if (part.shape === 'box') {
+    const c = (i, j, k) => [cx + (i - 0.5) * sx, cy + (j - 0.5) * sy, cz + (k - 0.5) * sz];
+    return [
+      [c(1, 0, 0), c(1, 1, 0), c(1, 1, 1), c(1, 0, 1)],
+      [c(0, 0, 0), c(0, 0, 1), c(0, 1, 1), c(0, 1, 0)],
+      [c(0, 1, 0), c(0, 1, 1), c(1, 1, 1), c(1, 1, 0)],
+      [c(0, 0, 0), c(1, 0, 0), c(1, 0, 1), c(0, 0, 1)],
+      [c(0, 0, 1), c(1, 0, 1), c(1, 1, 1), c(0, 1, 1)],
+      [c(0, 0, 0), c(0, 1, 0), c(1, 1, 0), c(1, 0, 0)],
+    ];
+  }
+  if (part.shape === 'prism') {
+    const n = part.sides;
+    if (!Number.isInteger(n) || n < 3) throw new Error(`a prism needs an integer number of sides, 3 or more, not ${JSON.stringify(n)}`);
+    // The ring is laid in the two axes across `axis`, a vertex straight up (or
+    // across) at angle 90 degrees, and scaled so the ring's extent is `size`.
+    const along = { x: 0, y: 1, z: 2 }[part.axis ?? 'z'];
+    if (along === undefined) throw new Error(`prism axis ${JSON.stringify(part.axis)} is not x, y or z`);
+    const [u, v] = [0, 1, 2].filter((i) => i !== along);
+    const ring = Array.from({ length: n }, (_, i) => [Math.cos(Math.PI / 2 + (2 * Math.PI * i) / n), Math.sin(Math.PI / 2 + (2 * Math.PI * i) / n)]);
+    const du = Math.max(...ring.map((r) => r[0])) || 1, dv = Math.max(...ring.map((r) => r[1])) || 1;
+    const at = (r, end) => {
+      const p = [...part.center];
+      p[u] += (r[0] / du) * part.size[u] / 2;
+      p[v] += (r[1] / dv) * part.size[v] / 2;
+      p[along] += (end - 0.5) * part.size[along];
+      return p;
+    };
+    const faces = [];
+    for (let i = 0; i < n; i++) {
+      const a = ring[i], b = ring[(i + 1) % n];
+      faces.push([at(a, 0), at(b, 0), at(b, 1), at(a, 1)]);
+    }
+    faces.push(ring.map((r) => at(r, 0)));
+    faces.push(ring.map((r) => at(r, 1)));
+    return faces;
+  }
+  throw new Error(`part shape ${JSON.stringify(part.shape)} is not box or prism`);
+}
+
+/**
+ * One animal, built: the .glb's bytes from its bodies.json row and nothing
+ * else. Pure; writes nothing.
+ * @returns {Promise<Uint8Array>}
+ */
+export async function renderAnimal(row) {
+  const out = await reader();
+  const d = new Document().setLogger(new Logger(Logger.Verbosity.WARN));
+  const buffer = d.createBuffer();
+  const root = d.getRoot();
+
+  // Joints, in table order, root first; each one's node is translated from
+  // its parent's head to its own and binds unrotated.
+  const jointIndex = new Map();
+  const nodes = [];
+  for (const [i, j] of row.joints.entries()) {
+    if (jointIndex.has(j.name)) throw new Error(`bodies.json ${row.name}: two joints called ${j.name}`);
+    const parent = j.parent == null ? null : row.joints[jointIndex.get(j.parent)];
+    if (j.parent != null && !parent) throw new Error(`bodies.json ${row.name}: joint ${j.name}'s parent ${j.parent} is not a joint listed before it`);
+    const node = d.createNode(j.name).setTranslation(parent ? sub(j.head, parent.head) : [...j.head]);
+    if (parent) nodes[jointIndex.get(j.parent)].addChild(node);
+    jointIndex.set(j.name, i);
+    nodes.push(node);
+  }
+
+  // One primitive per material that is not drawn inside another; a material
+  // with `primitive` is that primitive's vertex colour.
+  const mats = row.materials;
+  const primitiveOf = (name) => {
+    const m = mats[name];
+    if (!m) throw new Error(`bodies.json ${row.name}: material ${JSON.stringify(name)} is not in its materials`);
+    if (m.primitive && (!mats[m.primitive] || mats[m.primitive].primitive)) throw new Error(`bodies.json ${row.name}: material ${name} is drawn inside ${m.primitive}, which is not a primitive of its own`);
+    return m.primitive ?? name;
+  };
+  const coloured = new Set(Object.values(mats).map((m) => m.primitive).filter(Boolean));
+  const groups = new Map(); // primitive material -> { pos, nrm, col, jnt, idx }
+  for (const part of row.parts) {
+    const prim = primitiveOf(part.material);
+    if (!jointIndex.has(part.joint)) throw new Error(`bodies.json ${row.name}: a part is weighted to ${JSON.stringify(part.joint)}, which is not one of its joints`);
+    if (!groups.has(prim)) groups.set(prim, { pos: [], nrm: [], col: [], jnt: [], idx: [] });
+    const g = groups.get(prim);
+    const colour = mats[part.material].color;
+    for (let face of facesOf(part)) {
+      let n = unit(cross(sub(face[1], face[0]), sub(face[2], face[0])));
+      const mid = face.reduce((s, p) => [s[0] + p[0] / face.length, s[1] + p[1] / face.length, s[2] + p[2] / face.length], [0, 0, 0]);
+      if (dot(n, sub(mid, part.center)) < 0) { face = [...face].reverse(); n = n.map((x) => -x); }
+      const base = g.pos.length / 3;
+      for (const p of face) {
+        g.pos.push(...p);
+        g.nrm.push(...n);
+        g.col.push(...colour);
+        g.jnt.push(jointIndex.get(part.joint), 0, 0, 0);
+      }
+      for (let k = 1; k < face.length - 1; k++) g.idx.push(base, base + k, base + k + 1);
+    }
+  }
+
+  const mesh = d.createMesh(row.name);
+  for (const [name, g] of groups) {
+    const count = g.pos.length / 3;
+    const weights = new Float32Array(count * 4);
+    for (let i = 0; i < count; i++) weights[i * 4] = 1;
+    const m = mats[name];
+    const material = d.createMaterial(name)
+      .setBaseColorFactor(coloured.has(name) ? [1, 1, 1, 1] : [...m.color, 1])
+      .setMetallicFactor(0)
+      .setRoughnessFactor(0.9);
+    const prim = d.createPrimitive()
+      .setMaterial(material)
+      .setIndices(d.createAccessor().setType('SCALAR').setArray(new Uint16Array(g.idx)).setBuffer(buffer))
+      .setAttribute('POSITION', d.createAccessor().setType('VEC3').setArray(new Float32Array(g.pos)).setBuffer(buffer))
+      .setAttribute('NORMAL', d.createAccessor().setType('VEC3').setArray(new Float32Array(g.nrm)).setBuffer(buffer))
+      .setAttribute('JOINTS_0', d.createAccessor().setType('VEC4').setArray(new Uint16Array(g.jnt)).setBuffer(buffer))
+      .setAttribute('WEIGHTS_0', d.createAccessor().setType('VEC4').setArray(weights).setBuffer(buffer));
+    if (coloured.has(name)) prim.setAttribute('COLOR_0', d.createAccessor().setType('VEC3').setArray(new Float32Array(g.col)).setBuffer(buffer));
+    mesh.addPrimitive(prim);
+  }
+
+  // The skin: every joint's inverse bind is its head, negated.
+  const ibm = new Float32Array(row.joints.length * 16);
+  for (const [i, j] of row.joints.entries()) {
+    ibm.set([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -j.head[0], -j.head[1], -j.head[2], 1], i * 16);
+  }
+  const skin = d.createSkin(`${row.name}_Skin`)
+    .setSkeleton(nodes[0])
+    .setInverseBindMatrices(d.createAccessor().setType('MAT4').setArray(ibm).setBuffer(buffer));
+  for (const n of nodes) skin.addJoint(n);
+  const body = d.createNode(`${row.name}_Mesh`).setMesh(mesh).setSkin(skin);
+  const armature = d.createNode(row.name).addChild(nodes[0]).addChild(body);
+  d.createScene(row.name).addChild(armature);
+  root.setDefaultScene(root.listScenes()[0]);
+
+  // Clips. Every clip keys every joint's rotation, and the translation of
+  // every joint any clip translates, so the same (joint, path) pairs are in
+  // all of them and a cross-fade never drops a bone to bind pose.
+  const translated = new Set(row.clips.flatMap((c) => c.moves.filter((m) => m.path === 'translation').map((m) => m.bone)));
+  for (const clip of row.clips) {
+    for (const m of clip.moves) {
+      if (!jointIndex.has(m.bone)) throw new Error(`bodies.json ${row.name} clip ${clip.name} moves "${m.bone}", which is not one of its joints`);
+      if (m.rate != null && !Number.isInteger(m.rate)) throw new Error(`bodies.json ${row.name} clip ${clip.name}: a move's rate is ${m.rate}, not an integer`);
+    }
+    if (!jointIndex.has(clip.driver)) throw new Error(`bodies.json ${row.name} clip ${clip.name}'s driver "${clip.driver}" is not one of its joints`);
+    const times = new Float32Array(STEPS + 1);
+    for (let k = 0; k <= STEPS; k++) times[k] = (clip.seconds * k) / STEPS;
+    const input = d.createAccessor(`${row.name}_${clip.name}_time`).setType('SCALAR').setArray(times).setBuffer(buffer);
+    const anim = d.createAnimation(clip.name).setExtras({ generator: GENERATOR });
+    const angle = (m, k) => m.rest + m.amp * Math.sin(2 * Math.PI * ((clip.cycles * (m.rate ?? 1) * k) / STEPS + m.phase));
+    const channel = (node, pathName, output) => {
+      const sampler = d.createAnimationSampler().setInput(input).setOutput(output).setInterpolation('LINEAR');
+      anim.addSampler(sampler).addChannel(d.createAnimationChannel().setTargetNode(node).setTargetPath(pathName).setSampler(sampler));
+    };
+    for (const [i, j] of row.joints.entries()) {
+      const moves = clip.moves.filter((m) => m.bone === j.name);
+      const rot = new Int16Array((STEPS + 1) * 4);
+      for (let k = 0; k <= STEPS; k++) {
+        let q = [0, 0, 0, 1];
+        for (const m of moves) if ((m.path ?? 'rotation') === 'rotation') q = qmul(axisAngle(m.axis, angle(m, k)), q);
+        q = qnorm(q);
+        for (let c = 0; c < 4; c++) rot[k * 4 + c] = toI16(q[c]);
+      }
+      channel(nodes[i], 'rotation', d.createAccessor(`${row.name}_${clip.name}_${j.name}_rotation`).setType('VEC4').setArray(rot).setNormalized(true).setBuffer(buffer));
+      if (translated.has(j.name)) {
+        const rest = nodes[i].getTranslation();
+        const pos = new Float32Array((STEPS + 1) * 3);
+        for (let k = 0; k <= STEPS; k++) {
+          const p = [...rest];
+          for (const m of moves) if (m.path === 'translation') {
+            const a = AXES[m.axis];
+            if (!a) throw new Error(`bodies.json ${row.name} clip ${clip.name}: a translation axis is ${JSON.stringify(m.axis)}, not x, y or z`);
+            const off = angle(m, k);
+            for (let c = 0; c < 3; c++) p[c] += a[c] * off;
+          }
+          pos.set(p, k * 3);
+        }
+        channel(nodes[i], 'translation', d.createAccessor(`${row.name}_${clip.name}_${j.name}_translation`).setType('VEC3').setArray(pos).setBuffer(buffer));
+      }
+    }
+  }
+
+  await d.transform(meshopt({ encoder: MeshoptEncoder, cleanup: false }));
+  // Quantising a skinned mesh gives it a new skin with the quantisation folded
+  // into its inverse binds and leaves the old one behind; `cleanup: false`
+  // keeps it, which is how Hound.glb carries two. Only the one a node wears
+  // goes in the file, so the joint cap is read off one skin.
+  for (const s of root.listSkins()) {
+    if (s.listParents().some((p) => p.propertyType === 'Node')) continue;
+    const inverse = s.getInverseBindMatrices();
+    s.dispose();
+    if (inverse && inverse.listParents().every((p) => p === root)) inverse.dispose();
+  }
+  return out.writeBinary(d);
+}
+
 /* ---------------------------------------------------------------- main ---
- * Render all four, write the ones that differ, say which. Exits non-zero on
- * any throw, so a bad row cannot half-write the set.
+ * Render all four and every animal, write the ones that differ, say which.
+ * Exits non-zero on any throw, so a bad row cannot half-write the set.
  */
 async function main() {
   const table = clips();
   const rendered = [];
   for (const rel of BODIES) rendered.push([rel, await renderBody(rel, table)]);
+  for (const row of animals()) rendered.push([row.file, await renderAnimal(row)]);
   for (const [rel, bytes] of rendered) {
     const abs = path.join(ROOT, rel);
-    const before = fs.readFileSync(abs);
-    if (Buffer.compare(before, Buffer.from(bytes)) === 0) {
+    const before = fs.existsSync(abs) ? fs.readFileSync(abs) : Buffer.alloc(0);
+    if (before.length && Buffer.compare(before, Buffer.from(bytes)) === 0) {
       console.log(`  same   ${rel} (${bytes.length} bytes)`);
       continue;
     }
