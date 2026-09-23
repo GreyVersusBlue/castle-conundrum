@@ -3,7 +3,7 @@
 A first-person medieval murder mystery in three.js. A day of walking before
 it, twelve suspects, four bells, one accusation, and a morning after it.
 `index.html` at the repo root, source in `src/`, the mystery and the castle as
-data in `data/`, 39 MB of glTF and textures in `assets/`, fifteen suites in
+data in `data/`, 28 MB of glTF and textures in `assets/`, fifteen suites in
 `test/`.
 
 **`PLAN.md` is the most valuable file here.** It is 64 K of phase plans — what
@@ -54,7 +54,7 @@ The project lived in `GreyVersusBlue/tools-and-games` under
   `harness.mjs` refuses every offsite request and `test/built.mjs` fails on a
   non-empty `page.__blocked`.
 - **Code dependencies come from npm; assets stay committed** (#493). three is
-  `"three": "0.169.0"` in `package.json`. The 39 MB under `assets/` is in git
+  `"three": "0.169.0"` in `package.json`. The 28 MB under `assets/` is in git
   and stays there. The ceiling is **200 MB** (#499), not the 44.4 MB this
   project carried when the whole site shared one deploy.
 - **Every asset is compressed, by a script, before it is committed** (#506).

@@ -66,7 +66,7 @@ the client is behind `import.meta.env.DEV` and the writer is a Vite plugin with
 #582 to #586).
 
 Nothing the page fetches leaves its own origin: no CDN, no font host, no asset
-host. three comes from npm at build time; the 39 MB of glTF and textures under
+host. three comes from npm at build time; the 28 MB of glTF and textures under
 `assets/` is committed to this repo and copied into `dist/` whole.
 
 Every texture under `assets/` is KTX2/Basis and every Poly Haven mesh and NPC

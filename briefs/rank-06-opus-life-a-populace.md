@@ -1,15 +1,14 @@
 Take rank 6 in `BACKLOG.md`, "Life: a populace". Size 2+, container, lanes C and D, no gate. It will not finish in one sitting, so take one increment, ship it, and rewrite the row's text to say what is now done.
 
-Read the row's section in `SPECS.md` and `HISTORY.md` #616 to #618 first. Ten people shipped: `data/populace.json`, `src/populace.js`, a routine as a ring per bell, nine activities on three clips the kit already has, and `validatePopulace` owned by `test/mystery.mjs` (#529).
+Read the row's section in `SPECS.md` and `HISTORY.md` #616 to #618 and #729 to #733 first. Two increments shipped: ten people, then five more plus a `talk` rail. `data/populace.json` holds 19, and the page builds 32 of 32 bodies — 13 cast plus 19 populace, exactly `MAX_SKINNED_TOTAL`. `validatePopulace` is owned by `test/mystery.mjs` (#529).
 
-**Choose the increment and state its class.** The spec's open call recommends stopping at twenty bodies until rank 9's town exists, because fifty in the wards reads as a queue. Take that as the answer. The next increment is therefore:
+**Choose the increment and state its class.** The row's own spec says what is left waits on three other rows and one argument:
 
-1. **Ten more people, to twenty**, placed only on tiles `roomAt` and the walk grid accept, spread across the two wards, the upper floors and the wall walks. Class S (`builder`) if it needs no schema change. No body may be a woman wearing `Farmer.glb`; women wear `Woman.glb`, which is the one merge mistake lanes C rows have made before.
-2. **Ambient talk**: the 27-pair chatter pool in `data/npcs.json` is spent once two populace bodies are within 3 m at one bell. The `gossip` activity marks the stops meant for it. It is read off the DOM in `test/plan-vs-scene.mjs` the way the performance captions are (#592).
+1. **The rest of the fifty** waits on rank 9's town, and whether `garden` becomes ground is that row's call. Not startable until rank 9 gives it ground.
+2. **The twelve's 27-pair chatter pool is still unspent by proximity.** The spec recommends a later lore or dialogue increment hold each pair to the schedule the way #592 holds a performance — 5 of the 27 survive a same-room rule as written, the other 22 need a room and a bell somebody authors. This is startable now and is the most likely next increment.
+3. **The ceiling stays 32** until a row renegotiates it against the GPU run's `renderer.info`, not a second guess. Do not renegotiate it from a container.
 
-Do both if they fit one PR, otherwise the first. Clips (`sweep`, `stir`, `hammer`, `spar`) are still deferred, since no body on disk has them, so do not add an activity that needs one.
-
-**Numbers to answer to.** `test/budget.mjs` holds 20 skinned bodies per ward and 32 in the cast, and the peak is 17 per ward after the first ten (#609). Twenty more people will hit that ceiling, so run the suite early and say where it lands. If the row needs a ceiling renegotiated, that is class O (`architect`): argue it in `HISTORY.md` before building past it. The same goes for instanced meshes and animation LOD if the count demands them.
+Clips (`sweep`, `stir`, `hammer`, `spar`) are still deferred, since no body on disk has them, so do not add an activity that needs one — that is rank 10's.
 
 **Acceptance.** `validatePopulace` finds nothing and `test/mystery.mjs` still rejects every break in its list. Break the new rail on purpose once (#34) and say which assertion failed. A populace stop is not a plan piece and has no `planId` (#500).
 
