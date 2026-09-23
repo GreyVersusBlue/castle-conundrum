@@ -613,7 +613,7 @@
           { "room": "chaplain-chamber", "level": 1, "tile": [5.938, 3.938], "activity": "tend" }
         ],
         "vespers-eve": [
-          { "room": "chapel", "tile": [6.188, 4.313], "activity": "tend", "facing": 0 }
+          { "room": "chapel", "tile": [6.238, 4.263], "activity": "tend", "facing": 0 }
         ]
       }
     },

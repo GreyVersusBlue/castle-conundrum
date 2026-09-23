@@ -1538,7 +1538,7 @@
         "sext-eve": {
           "room": "bakehouse",
           "tile": [
-            -0.063,
+            -0.113,
             3.688
           ],
           "note": "forty mouths of bread, fetched rather than waited for"
@@ -1555,8 +1555,8 @@
         "prime-eve": {
           "room": "chapel",
           "tile": [
-            5.4,
-            3.8
+            5.5,
+            3.55
           ]
         },
         "terce-eve": {
@@ -1571,15 +1571,15 @@
         "sext-eve": {
           "room": "chapel",
           "tile": [
-            5.4,
-            3.8
+            5.5,
+            3.55
           ]
         },
         "vespers-eve": {
           "room": "chapel",
           "tile": [
-            5.4,
-            3.8
+            5.5,
+            3.55
           ],
           "note": "Vespers, said to an empty chapel"
         }
@@ -1797,8 +1797,8 @@
         "vespers-eve": {
           "room": "chapel",
           "tile": [
-            5.75,
-            4.375
+            5.9,
+            4.475
           ],
           "note": "at the foot of the Chapel Tower stair"
         }
@@ -1876,8 +1876,8 @@
       "chaplain": {
         "room": "chapel",
         "tile": [
-          5.4,
-          3.8
+          5.5,
+          3.55
         ],
         "note": "the grave is filled"
       },
