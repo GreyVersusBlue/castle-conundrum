@@ -9218,3 +9218,35 @@ assertions added to check 2: the Chaplain back on the gravestone at Terce,
 the Constable back at the candles at Prime, each held to its exact message,
 and the lantern at Prime against Terce. `npm test mystery layout dialogue
 quest save lore budget` green; the browser suites were not run here.
+
+---
+
+## The red suite, reopened: the rail on the other two days (2026-09-23)
+
+**A spec, not a build.** "The red suite" gains increment 4 in `SPECS.md`,
+every open call recommended; no code, no data. Decision #792, written as
+`architect`; #790 and #791 are held by a builder in the same tree.
+
+**#792. `PROP_CLEARANCE` holds on all three days, with no exemption, and
+#785's list of what it would flag there was wrong by two entries.** Measured
+in Node against `7251195` with #785's own rules (same storey, box centre, an
+evidence piece only when it is on the ground that day: `day0.evidence` on the
+walking day, nothing on the morning after, as `_showEvidence` does), the
+pairs are the Chaplain 0.20 m from the gravestone at `prime-eve`, `sext-eve`,
+`vespers-eve` and `lauds`, Hywel 0.34 m from the candles and 0.81 m from the
+bell at `vespers-eve`, and the cook 0.93 m from the knife at `sext-eve`.
+#785 listed Hywel 0.95 m from the obituary roll at `sext-eve`, which is a
+cross-storey gap (the roll is on level 1, he is on level 0) the rail never
+counts, and it missed the bell, which is the piece pressed to end the
+walking day. Each pair has a fix of 1.08 m or less that keeps the station's
+note true, so no allowlist is built: the Chaplain to day one's (5.5, 3.55)
+on all four, 1.02 m; the cook to (-0.113, 3.688), 1.10 m; Hywel to (5.9,
+4.475), 1.05 m from the candles and 0.33 m from where his lantern lies at
+Prime, so the man at the foot of the stair is standing where he is found.
+That tile is 1.32 m from the sacristan's `vespers-eve` stop, which
+`validatePopulace` refuses, so she moves 0.28 m to (6.238, 4.263). With
+all of it applied in memory, `validateMystery` and `validatePopulace` both
+return nothing. What the rail does not cover, on purpose: the populace's 16
+stops inside 1.0 m of a piece, because a populace body is a label and never
+takes a prop's prompt (#617). The first station that needs an exemption is
+an `architect` call, and `SPECS.md` names its shape.
