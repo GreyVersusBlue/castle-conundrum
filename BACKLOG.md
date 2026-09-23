@@ -49,8 +49,10 @@ the chapel-candles aim and the populace beat's timing (#721 to #724); the
 town's first increment, street and church (#725 to #728); the day-before
 walking day, whole, all four increments (#750 to #756, #767 to #779); the
 retro castle's first increment, fifteen generated textures replacing fifteen
-photographed sets (#742 to #744, #757 to #766); and the sight-ray fix that
-aims at a body's own height instead of a fixed world height (#780 to #782).
+photographed sets (#742 to #744, #757 to #766); the sight-ray fix that
+aims at a body's own height instead of a fixed world height (#780 to #782);
+and the red suite, closed whole: the day-one `PROP_CLEARANCE` rail and its
+extension to the walking day and the morning after (#785, #792, #793).
 
 **Open, ranked below.** Eight rows: the GPU run itself, now gated on nothing
 (rank 3, #780 to #782); the retro castle's look and its remaining two
@@ -61,11 +63,12 @@ theme past its shadow and hand (rank 11); and the floor-plan editor's drag
 increments (rank 13). Ranks 1, 2, 5, 8 and 12 are retired numbers, not gaps: a
 rank is a priority, never an id, and never reused (#619, #522, #491).
 
-**The red suite is reopened.** Increment 3 shipped as #785: a
-`PROP_CLEARANCE` rail of 1.0 m in `src/mystery.js`, and the Chaplain and the
-Constable moved off the gravestone and the candles, day one only. Increment
-4 extends the rail to the walking day and the morning after; it is spec'd
-under #792, every open call recommended, and is being built now.
+**The red suite is closed.** Four increments shipped: the aim cone and the
+populace beat's timing fix (#721 to #724); a `PROP_CLEARANCE` rail of 1.0 m
+in `src/mystery.js`, moving the Chaplain and the Constable off the
+gravestone and the candles, day one only (#785); the same rail extended to
+the walking day and the morning after, seven stations moved in total
+(#792, #793).
 
 ## How this repo is worked
 

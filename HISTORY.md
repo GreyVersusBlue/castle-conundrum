@@ -9291,3 +9291,35 @@ message it produced, from green (#34):
 them yet, which is rank 6's to do. `npm test` 15 of 15 green. A second
 `npm run bodies:render` is a byte no-op. Whether a clip reads as its name is
 a GPU question and is not answered here (#53).
+
+---
+
+## The red suite, increment 4 shipped (2026-09-23)
+
+**Decision #793.** `src/mystery.js`'s prop loop is one local function,
+`propClear(watchList, onGround)`, with a `dayOneGround` predicate, called
+three times: day one, the walking day (against `day0.evidence`, what
+`_showEvidence` shows), and the morning after (the day-one predicate
+against `lauds`, which hides every evidence piece, as the page does).
+
+Seven stations moved. Chaplain (5.5, 3.55) at prime-eve, sext-eve,
+vespers-eve and day2. Cook (-0.113, 3.688) at sext-eve. Hywel (5.9, 4.475)
+at vespers-eve. Sacristan's vespers-eve stop 1, (6.238, 4.263). `test/
+mystery.mjs` 386 to 390 hold them. Before the move the rail flagged exactly
+#792's seven pairs.
+
+**The breaks, from green** (#34): deleting the walking-day call to
+`propClear` reads "rejects Hywel back at (5.75, 4.375) ... said nothing" and
+"rejects the cook back on the knife at sext-eve said nothing"; deleting the
+morning's call reads "rejects the Chaplain back on the gravestone on the
+morning after said nothing"; giving the walking day the day-one predicate
+leaves the cook assertion saying nothing and Hywel's saying only "hywel
+stands 0.81 m from chapel-bell"; giving the walking day `() => true` reads
+"Hywel stands 0.32 m from lantern-chapel at vespers-eve and nothing is
+said", and check 1 also goes red with "hywel stands 0.81 m from pouch".
+
+`npm test` 15 of 15 green.
+
+**Correction to #792:** the rail measures Hywel 0.32 m from
+`lantern-chapel`, not 0.33 m as #792 and `SPECS.md` said. `SPECS.md`'s
+figure is fixed to match.

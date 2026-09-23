@@ -9,8 +9,8 @@ decision. Every "recommendation" below is exactly that, and the session that
 ships the row is the one that records the call with a number.
 
 One section per row still open in `BACKLOG.md`'s ranked table: 3, 4, 6, 7, 9,
-10, 11, 13. "The red suite" is reopened for one increment (#792); its
-section is that increment and nothing else.
+10, 11, 13. The red suite is closed; its section is a stub pointing at
+`HISTORY.md`.
 A shipped row's section is deleted, not struck through; `HISTORY.md` carries
 what it said. **Ranks are retired, never reused** (#619, #491, #522): 1, 2, 5,
 8 and 12 are gone from this file for that reason, not renumbered into gaps.
@@ -63,120 +63,14 @@ Four facts every row below leans on, stated once:
   changes go through `migrate` with a version bump; `repair` runs on every load
   (#37).
 
+---
+
 ## The red suite: what the prompt is aimed at
 
-**Increments 1 to 3 shipped** (#721 to #724, #785): the aim cone, the
-populace beat's timing fix, and `PROP_CLEARANCE = 1.0` over day one's four
-watches. **Increment 4 is the same rail on the walking day and the morning
-after** (#792). One builder job, class S, size ¼.
-
-**Measured 2026-09-23 in Node** against `7251195`, with #785's arithmetic
-and its own rules: same storey, box centre, and an evidence piece only when
-it is on the ground that day. Seven pairs, not quite #785's seven:
-
-| Who | Watch | Piece | Gap |
-| --- | --- | --- | --- |
-| chaplain | prime-eve, sext-eve, vespers-eve, lauds | gravestone | 0.20 m |
-| hywel | vespers-eve | candles-chapel | 0.34 m |
-| hywel | vespers-eve | chapel-bell | 0.81 m |
-| cook | sext-eve | knife | 0.93 m |
-
-#785's "Hywel 0.95 m from the obituary roll at sext-eve" is not a pair: the
-roll is on level 1 and Hywel stands on level 0. Its list missed Hywel 0.81 m
-from the bell, which is the piece the player presses to end the walking day.
-
-### Scope, increment 4
-
-- **`src/mystery.js`**: the prop loop in day one's nav block becomes one
-  local function, `propClear(watchList, onGround)`, called three times:
-  day one with `onGround = (e, w) => evidence.get(e).watches.includes(w)`,
-  the walking day with `(e) => day0.evidence.includes(e)` (what
-  `_showEvidence` shows, so the lantern and the pouch are not there), the
-  morning with the day-one predicate against `lauds`, which hides every
-  evidence piece, as the page does. The message string is unchanged. The
-  "Day one only" sentence in the comment goes.
-- **`data/mystery.json`**, six tiles, notes untouched:
-  - `day0.schedule.chaplain` at `prime-eve`, `sext-eve`, `vespers-eve`, and
-    `day2.schedule.chaplain`: (5.4, 3.8) to (5.5, 3.55), day one's #785
-    tile. 1.02 m from the gravestone, 1.71 m from the nearest body (the
-    apprentice at vespers-eve).
-  - `day0.schedule.cook['sext-eve']`: (-0.063, 3.688) to (-0.113, 3.688),
-    0.20 m west, 1.10 m from the knife.
-  - `day0.schedule.hywel['vespers-eve']`: (5.75, 4.375) to (5.9, 4.475),
-    0.72 m, 1.05 m from the candles, 1.52 m from the bell. This is 0.33 m
-    from where his lantern lies at Prime and 0.81 m from the pouch: he stands
-    on the spot he is found.
-- **`data/populace.json`**: the sacristan's `vespers-eve` stop 1, (6.188,
-  4.313) to (6.238, 4.263), 0.28 m. At (6.188, 4.313) it is 1.32 m from
-  Hywel's new station and `validatePopulace` refuses it; the new stop is
-  1.60 m from him and 2.17 m from the candles.
-- **`test/mystery.mjs`**: the populace break at `'one of the nineteen
-  standing on the mason at the last bell of the walking day'` writes
-  `[5.75, 4.375]`; it becomes `[5.9, 4.475]`, same expected message.
-  Check 2 gains the assertions below.
-- **`src/stations.js`**: none. `PROP_CLEARANCE` stays 1.0.
-
-With all seven tile changes applied in memory, `validateMystery` returns
-nothing on the three days and `validatePopulace` returns nothing.
-
-### Acceptance, increment 4
-
-`test/mystery.mjs`. Check 1 green on the moved data. Check 2 gains four,
-each held to its exact message:
-
-1. The Chaplain's `lauds` station put back at (5.4, 3.8): `chaplain stands
-   0.20 m from gravestone at lauds, inside the 1.0 m ...`.
-2. Hywel's `vespers-eve` put back at (5.75, 4.375): both `hywel stands 0.34
-   m from candles-chapel at vespers-eve` and `hywel stands 0.81 m from
-   chapel-bell at vespers-eve`.
-3. The cook's `sext-eve` put back at (-0.063, 3.688): `cook stands 0.93 m
-   from knife at sext-eve`.
-4. Hywel at his new tile is 0.33 m from `lantern-chapel` and nothing about
-   it is said, because the body is not on the ground the day before.
-
-**The breaks, from green** (#34): delete the walking-day call to
-`propClear` and 2 and 3 go red; delete the morning's and 1 goes red; give
-the walking day the day-one predicate (every evidence row hidden at an
-`-eve` bell) and 3 and 2's candles line go red; give it `() => true` and 4
-goes red. The rail
-is plan arithmetic and `nav.at`, so none of it goes near
-`plan-vs-scene.mjs` (#529).
-
-### Open calls, increment 4
-
-1. **Does the rail extend to both days?** Recommended: yes, all three, one
-   function. The bell at 0.81 m is the press that ends the walking day, and
-   #722's aim cone is what keeps Hywel off its prompt today, not the data.
-2. **Is Hywel's last station an exemption?** Recommended: no, and no
-   allowlist is built. (5.9, 4.475) is nearer his death than the tile he has
-   now, so the exemption would buy nothing. An allowlist with no rows is a
-   field nothing reads; the row that first needs one is an `architect` call,
-   and its shape is `mystery.propClearance.allow: [{npc, watch, piece,
-   why}]` with a rail that refuses a row which no longer fires.
-3. **Hywel's tile, and does the sacristan move?** Recommended: (5.9, 4.475)
-   and move her 0.28 m, because the other candidate, (5.875, 4.1), needs no
-   populace change but puts him 1.81 m from where he is found and 1.15 m from
-   the bell; the note says "at the foot of the Chapel Tower stair".
-4. **The cook's margin.** Recommended: (-0.113, 3.688) at 1.10 m, not
-   (-0.088, 3.688) at 1.01 m, because a tile rounded to three places moves a
-   station by up to 2 mm and 1 cm of margin is a rail one edit from red.
-5. **Does the bell count on the morning after?** Recommended: yes. There is
-   no ring on day two, but the prop is there and still takes the aim, and
-   the Chaplain's lauds pair is on the gravestone regardless.
-6. **Does it cover the populace's stops?** Recommended: no. 16 stops sit
-   inside 1.0 m of a piece (the archer 0.45 m from the tally at Terce), but a
-   populace body is a label and never out-ranks something to press E at
-   (#617), so it cannot take a prop's prompt.
-
-### Dependencies
-
-None shipped first. Lane: none, but `data/populace.json` is written by
-"Life: a populace" (rank 6), so not beside it.
-
-### Constraints
-
-#529 (Node rail, not a seam), #34 (the four breaks above), #785 (1.0 m, box
-centre, same storey, stays).
+**Shipped, closed.** Four increments: the aim cone and the populace beat's
+timing fix (#721 to #724), the day-one `PROP_CLEARANCE` rail (#785), and the
+same rail extended to the walking day and the morning after (#792, #793).
+`HISTORY.md` carries what shipped.
 
 ---
 
