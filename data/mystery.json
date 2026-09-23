@@ -881,7 +881,7 @@
       "prime": {
         "room": "chapel",
         "tile": [
-          5.9,
+          5.95,
           4.2
         ],
         "note": "at the body"
@@ -1035,30 +1035,30 @@
       "prime": {
         "room": "chapel",
         "tile": [
-          5.4,
-          3.8
+          5.5,
+          3.55
         ],
         "note": "at the body"
       },
       "terce": {
         "room": "chapel",
         "tile": [
-          5.4,
-          3.8
+          5.5,
+          3.55
         ]
       },
       "sext": {
         "room": "chapel",
         "tile": [
-          5.4,
-          3.8
+          5.5,
+          3.55
         ]
       },
       "vespers": {
         "room": "chapel",
         "tile": [
-          5.4,
-          3.8
+          5.5,
+          3.55
         ]
       }
     },

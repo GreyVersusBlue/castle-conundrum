@@ -61,10 +61,12 @@ theme past its shadow and hand (rank 11); and the floor-plan editor's drag
 increments (rank 13). Ranks 1, 2, 5, 8 and 12 are retired numbers, not gaps: a
 rank is a priority, never an id, and never reused (#619, #522, #491).
 
-**One finding with no row yet.** Nothing stops a station standing on top of a
-prop. `SPECS.md`'s "The red suite" section carries the one increment still
-open on it, a `PROP_CLEARANCE` rail in `src/mystery.js`, recommended at
-1.0 m (#721 to #724).
+**The red suite is closed.** Its last increment shipped as #785: a
+`PROP_CLEARANCE` rail of 1.0 m in `src/mystery.js`, and the Chaplain and the
+Constable moved off the gravestone and the candles. It covers day one; the
+walking day and the morning after still have seven station-and-prop pairs inside 1.0 m of a
+prop, listed under #785, and extending the rail to them is an `architect`
+call.
 
 ## How this repo is worked
 

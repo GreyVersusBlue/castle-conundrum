@@ -25,6 +25,15 @@ import { walkability, tileToWorld } from './castle-plan.js';
 
 /** How far apart two people standing at the same bell have to be, in metres. */
 export const STATION_CLEARANCE = 1.5;
+/**
+ * How far a station stands from anything the player presses E at, in metres,
+ * measured to the centre of the piece's box, on the same storey, at the watches
+ * the piece is there (#785). The second half of STATION_CLEARANCE: that one
+ * keeps two bodies apart, this one keeps a body off a prop. 1.0 rather than 1.5
+ * because 1.5 also flags the Constable 1.15 m from the bell he rings and 1.41 m
+ * from the body he stands over, which is where he is meant to be.
+ */
+export const PROP_CLEARANCE = 1.0;
 /** interaction.js's INTERACT_RANGE: how close the player gets before E works. */
 export const TALK_RANGE = 3.2;
 

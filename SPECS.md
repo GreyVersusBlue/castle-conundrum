@@ -9,7 +9,7 @@ decision. Every "recommendation" below is exactly that, and the session that
 ships the row is the one that records the call with a number.
 
 One section per row still open in `BACKLOG.md`'s ranked table: 3, 4, 6, 7, 9,
-10, 11, 13, plus "The red suite," unranked, its last increment still open.
+10, 11, 13. "The red suite" is closed (#785) and its section is a stub.
 A shipped row's section is deleted, not struck through; `HISTORY.md` carries
 what it said. **Ranks are retired, never reused** (#619, #491, #522): 1, 2, 5,
 8 and 12 are gone from this file for that reason, not renumbered into gaps.
@@ -64,61 +64,13 @@ Four facts every row below leans on, stated once:
 
 ## The red suite: what the prompt is aimed at
 
-**Unranked, the row `BACKLOG.md` calls "nobody's row yet". Size ¼.
-Increments 1 and 2 shipped** (#721 to #724): the chapel-candles aim
-(`AIM_DOT = 0.95`, a second nearest-inside-cone slot in
-`InteractionSystem.update`) and the populace beat's timing fix (park the
-rings with `setWatch(watch, { walk: false })` before reading them, `TOL`
-still 0.01 m). **One increment is left, class S**: a station-to-prop
-clearance rail.
-
-### Scope, increment 3
-
-| File | What changes |
-| --- | --- |
-| `src/mystery.js` (`validateMystery`'s nav rails), `test/mystery.mjs` | a station-to-prop clearance beside `STATION_CLEARANCE`, and the two stations that fail it |
-
-Nothing here touches `src/save.js`, its version or `migrate`, and nothing moves
-an assertion across the `layout` / `plan-vs-scene` / `mystery` / `budget` line.
-
-### Acceptance, increment 3
-
-`test/mystery.mjs` gains a rail saying no station stands within
-`PROP_CLEARANCE` of anything the player presses E at, at the watch that
-station is held. It is red on the data as it stands, so the increment carries
-the data fix with it. `npm test mystery layout plan-vs-scene` is the subset.
-
-### Open calls
-
-1. **Where does the station-to-prop rail live?** *`src/mystery.js`'s
-   `validateMystery`, surfaced by `test/mystery.mjs`*, beside the
-   `STATION_CLEARANCE` check it is a second half of. It is plan arithmetic and
-   `nav.at`, provable in Node, so #529 forbids it in `plan-vs-scene.mjs`.
-2. **What number?** *1.0 m, named `PROP_CLEARANCE` in `src/stations.js` beside
-   `STATION_CLEARANCE`.* It catches the two that actually bit and nothing else:
-   the Chaplain 0.20 m from the gravestone at all four watches, and the
-   Constable 0.92 m from the chapel candles at Prime. Reusing
-   `STATION_CLEARANCE`'s 1.5 m instead would also flag the Constable against
-   the bell (1.15 m) and the body (1.41 m), the apprentice against the
-   obituary roll (1.44 m) and the sentry against the gaol roll (1.44 m) —
-   nine pairs instead of five, four of them a body standing a sensible arm's
-   length from the thing it is meant to be attending to.
-
-### Dependencies
-
-Not in a named lane: `test/mystery.mjs` and `src/stations.js` are in none of
-A to E. Increment 3 edits station coordinates in `data/mystery.json`, which
-the second day's own rows also read, so do not run it beside a row touching
-that block.
-
-### Constraints
-
-- **#529.** The clearance rail is Node arithmetic and goes to
-  `test/mystery.mjs`, not `plan-vs-scene.mjs`.
-- **#34.** The increment names its break above, and a flake needs the
-  stronger version: show the cause moved, not the load.
-- **#13.** No skip list.
-- **CRLF here, LF in CI** (#632).
+**Closed 2026-09-23. All three increments shipped** (#721 to #724, #785):
+the aim cone, the populace beat's timing fix, and `PROP_CLEARANCE = 1.0` in
+`src/stations.js`, held by `validateMystery` over day one's four watches,
+with the Chaplain and the Constable moved off the gravestone and the candles.
+The rail does not cover the walking day or the morning after; the seven
+pairs it would flag there are listed under #785, and extending it is an
+`architect` call. Delete this section at the next cut.
 
 ---
 

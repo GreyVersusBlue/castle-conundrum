@@ -221,7 +221,28 @@ console.log('the validator rejects');
   expect('two of the twelve on one tile at one watch',
     (m) => { m.schedule.cook.vespers.tile = [...m.schedule.constable.vespers.tile]; },
     /^constable and cook stand 0.00 m apart at vespers, inside the 1.5 m two bodies need$/);
-  expect('a station inside a wall', (m) => { m.schedule.cook.prime.tile = [-3.5, -2.5]; }, /^cook: station at prime is at tile \(-3.5, -2.5\) on level 0, where there is no floor to stand on$/);
+  /* A BODY STOOD ON A PROP (#785). The two stations PROP_CLEARANCE was written
+   * for, put back where they were: the Chaplain on the gravestone, the
+   * Constable at the candles. And the half that says the rail reads the
+   * watch: the body is evidence at Prime only, so a station on its lantern at
+   * Terce is nobody standing on anything and must not fire. */
+  expect('the Chaplain back on the gravestone (`chaplain stands 0.20 m from gravestone at terce`)',
+    (m) => { m.schedule.chaplain.terce.tile = [5.4, 3.8]; },
+    /^chaplain stands 0\.20 m from gravestone at terce, inside the 1\.0 m a body keeps from something to press E at$/);
+  expect('the Constable back at the candles at Prime (`constable stands 0.92 m from candles-chapel at prime`)',
+    (m) => { m.schedule.constable.prime.tile = [5.9, 4.2]; },
+    /^constable stands 0\.92 m from candles-chapel at prime, inside the 1\.0 m a body keeps from something to press E at$/);
+  {
+    const lantern = plan.pieces.find((pc) => pc.evidence === 'body');
+    const tile = [(lantern.box.min.x + lantern.box.max.x) / 2 / plan.tile, (lantern.box.min.z + lantern.box.max.z) / 2 / plan.tile];
+    const atPrime = broken((m) => { m.schedule.chaplain.prime.tile = tile; });
+    const atTerce = broken((m) => { m.schedule.chaplain.terce.tile = tile; });
+    const said = (p, w) => p.filter((x) => new RegExp(`^chaplain stands 0\\.\\d\\d m from ${lantern.id} at ${w},`).test(x));
+    check(said(atPrime, 'prime').length === 1 && said(atTerce, 'terce').length === 0,
+      `a station on the body's lantern fires at Prime and not at Terce, when the body is no longer evidence there`,
+      `prime: ${atPrime.join('; ') || 'nothing'} | terce: ${atTerce.join('; ') || 'nothing'}`);
+  }
+  expect('a station inside a wall',(m) => { m.schedule.cook.prime.tile = [-3.5, -2.5]; }, /^cook: station at prime is at tile \(-3.5, -2.5\) on level 0, where there is no floor to stand on$/);
   expect('a station outside the room it names', (m) => { m.schedule.cook.prime.tile = [-5, -0.5]; }, /^cook: station at prime is at tile \(-5, -0.5\), which is not inside kitchen$/);
   // Lady Alys stood in the east barbican garden at Sext until this phase. The
   // east gate is shut and never opens (scene-config.json, and PLAN.md's

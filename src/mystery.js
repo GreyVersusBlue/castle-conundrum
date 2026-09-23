@@ -18,7 +18,7 @@
 // PLAN.md's Phase 1 entry are each one of those, and each has to fail here
 // with the message written there.
 
-import { STATION_CLEARANCE, TALK_RANGE } from './stations.js';
+import { STATION_CLEARANCE, PROP_CLEARANCE, TALK_RANGE } from './stations.js';
 import { DAY_SETS } from './castle-plan.js';
 
 const KINDS = new Set(['S', 'E', 'D', 'L']);
@@ -623,6 +623,35 @@ export function validateMystery(mystery, npcs, quest, nav = null, sideQuests = [
           const gap = Math.hypot(pA.x - pB.x, pA.z - pB.z);
           if (gap < STATION_CLEARANCE) {
             say(`${idA} and ${idB} stand ${gap.toFixed(2)} m apart at ${w}, inside the ${STATION_CLEARANCE} m two bodies need`);
+          }
+        }
+      }
+    }
+    /* AND A BODY IS NOT STOOD ON A PROP (#785). The other half of the rail
+     * above, which kept two bodies apart and nothing else: the Chaplain stood
+     * 0.20 m from the gravestone at all four watches and the Constable 0.92 m
+     * from the chapel candles at Prime, and the second of those is what put
+     * Sir Roger's name on the candles' prompt (#721). "Something the player
+     * presses E at" is every plan piece carrying evidence, a readable or the
+     * bell, measured to its box's centre on the same storey, and an evidence
+     * piece only at the watches mystery.json lists it for: the body is not in
+     * the chapel at Terce. Day one only, the four watches the spec measured. */
+    const evidenceWatches = new Map(evidence ? [...evidence.values()].map((e) => [e.id, e.watches]) : []);
+    const pressables = (nav.plan?.pieces ?? []).filter((pc) => pc.evidence || pc.read || pc.bell).map((pc) => ({
+      id: pc.id, level: pc.level ?? 0, evidence: pc.evidence || null,
+      x: (pc.box.min.x + pc.box.max.x) / 2, z: (pc.box.min.z + pc.box.max.z) / 2,
+    }));
+    for (const w of watches) {
+      for (const npcId of cast.keys()) {
+        const p = nav.at(npcId, w);
+        if (!p) continue;
+        for (const pc of pressables) {
+          if (pc.level !== p.level) continue;
+          const at = pc.evidence ? evidenceWatches.get(pc.evidence) : null;
+          if (Array.isArray(at) && !at.includes(w)) continue;
+          const gap = Math.hypot(p.x - pc.x, p.z - pc.z);
+          if (gap < PROP_CLEARANCE) {
+            say(`${npcId} stands ${gap.toFixed(2)} m from ${pc.id} at ${w}, inside the ${PROP_CLEARANCE.toFixed(1)} m a body keeps from something to press E at`);
           }
         }
       }

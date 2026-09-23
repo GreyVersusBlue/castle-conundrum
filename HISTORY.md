@@ -9169,3 +9169,52 @@ animals was the alternative and is refused, because it would move the hound
 and both hens out of the 33 without anyone arguing for it. Shipping the asset
 before its placement is refused too: an unreferenced `Cow.glb` fails check 4
 (#390). A pig or a goat after it costs its own argument, 34 to 35.
+
+---
+
+## The red suite: a body is not stood on a prop (2026-09-23)
+
+**Increment 3, the last, class S; the row is closed.** `PROP_CLEARANCE` is
+1.0 m in `src/stations.js` beside `STATION_CLEARANCE`, and the rail is
+`validateMystery`'s, day one's nav block, surfaced by `test/mystery.mjs`
+check 1. Plan arithmetic and `nav.at`, so #529 keeps it out of
+`plan-vs-scene.mjs`. Decision #785.
+
+**#785. No day-one station stands within 1.0 m of anything the player
+presses E at, at the watch it is held.** "Anything" is every plan piece
+carrying `evidence`, `read` or `bell` (25 pieces), measured station point to
+the centre of the piece's box, same storey only, the way `STATION_CLEARANCE`
+skips a pair on two levels; an evidence piece counts only at the watches
+`mystery.json` lists it for, so the body's lantern is a prop at Prime and
+not at Terce. On the data as it stood the rail said exactly the five pairs
+the spec measured: the Chaplain 0.20 m from the gravestone at all four
+watches and the Constable 0.92 m from the chapel candles at Prime. The fix
+moves two stations and nothing else. **The Chaplain** goes from tile
+(5.4, 3.8) to (5.5, 3.55) at all four watches, 1.08 m south-east, 1.02 m
+from the gravestone's centre and nothing else pressable within 1.8 m; a spot
+1.00 m north at (5.4, 4.05) was as close but 1.11 m from the bell and 1.57 m
+from the candles, inside the cells `plan-vs-scene`'s candles beat sweeps.
+**The Constable** at Prime goes from (5.9, 4.2) to (5.95, 4.2), 0.20 m east,
+1.10 m from the candles, 1.35 m from the bell and 1.44 m from the body's
+lantern. Both pass every other nav rail.
+
+**What it does not cover.** Day one only, the four watches the spec measured.
+Run over the walking day and the morning after, the same arithmetic finds
+the Chaplain 0.20 m from the gravestone at `prime-eve`, `sext-eve`,
+`vespers-eve` and `lauds` ("the grave is filled", which is the point),
+Hywel 0.34 m from the candles at `vespers-eve` (the foot of the stair he
+dies at), Hywel 0.95 m from the obituary roll and the cook 0.93 m from the
+knife at `sext-eve`. Whether the rail extends to those days, and whether
+Hywel's last station is the one exception, is a decision and not done here.
+
+**The breaks, from green** (#34). The Chaplain's Prime station put back at
+(5.4, 3.8) in `data/mystery.json`: check 1 went red with `FAIL
+validateMystery finds nothing wrong, the castle included — chaplain stands
+0.20 m from gravestone at prime, inside the 1.0 m a body keeps from
+something to press E at`, exit 1. The watch filter deleted from the rail:
+`FAIL a station on the body's lantern fires at Prime and not at Terce, when
+the body is no longer evidence there`, exit 1. Both restored. Three
+assertions added to check 2: the Chaplain back on the gravestone at Terce,
+the Constable back at the candles at Prime, each held to its exact message,
+and the lantern at Prime against Terce. `npm test mystery layout dialogue
+quest save lore budget` green; the browser suites were not run here.
