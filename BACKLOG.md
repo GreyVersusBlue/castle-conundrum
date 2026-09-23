@@ -51,8 +51,11 @@ walking day, whole, all four increments (#750 to #756, #767 to #779); the
 retro castle's first increment, fifteen generated textures replacing fifteen
 photographed sets (#742 to #744, #757 to #766); the sight-ray fix that
 aims at a body's own height instead of a fixed world height (#780 to #782);
-and the red suite, closed whole: the day-one `PROP_CLEARANCE` rail and its
-extension to the walking day and the morning after (#785, #792, #793).
+the red suite, closed whole: the day-one `PROP_CLEARANCE` rail and its
+extension to the walking day and the morning after (#785, #792, #793); and
+bodies' generated half, increments 2a and 2b: five activity clips in the
+four human rigs and a generated cow grazing in the outer ward, 34 bodies
+built (#787 to #790, #794).
 
 **Open, ranked below.** Eight rows: the GPU run itself, now gated on nothing
 (rank 3, #780 to #782); the retro castle's look and its remaining two
@@ -191,7 +194,7 @@ move-and-delete and the dialogue format (#583 to #587, #607 to #611, #636 to
 | 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #729 to #733); rank 10's five clips now exist (#790) and are this row's to place; the town and the chatter pool are left | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: somebody listens to the seven beds, the four rings and the first two event sounds (a bed at a point and the rings, #680 to #683; the door and the hound, #696 to #698) | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
 | 9 | A castle to get lost in: the town, the rock and river | 2+ | Opus 5 | Container | — (4c opened it) | B | | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
-| 10 | Bodies: a shared low-poly rig for the fifty (the child and the hound shipped, #643 to #645; two hens and the spear, #684 to #686); five clips generated onto the four human rigs shipped (#790); next, a generated cow (2b, #787 to #789) | 1 | Fable 5.1 | Generated: Container; sourced: Local: net | — | C | | [Bodies](SPECS.md#bodies) |
+| 10 | Bodies: a shared low-poly rig for the fifty (the child and the hound shipped, #643 to #645; two hens and the spear, #684 to #686); five clips generated onto the four human rigs shipped (#790); a generated cow shipped (2b, #787 to #789, #794), body count 34 | 1 | Fable 5.1 | Generated: Container; sourced: Local: net | — | C | | [Bodies](SPECS.md#bodies) |
 | 11 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 | Container to the Node line, local: GPU past it | **after 3** | D | shadow + hand shipped 2026-09-17 (#650 to #654) | [Feel](SPECS.md#feel) |
 | 13 | The floor plan you can see: the review view shipped (#745 to #749); a way to redraw it is left | 2+ | Opus 5 | Container | — | B | increment 1 shipped 2026-09-21 (#745 to #749) | [The floor plan you can see](SPECS.md#the-floor-plan-you-can-see) |
 
@@ -324,9 +327,11 @@ the first held prop that is not Poly Haven's (#684 to #686). Bodies and
 clips may be made here rather than fetched (#787), and increment 2a
 shipped: `Sweep`, `Stir`, `Hammer`, `Spar` and `Drill` written into Woman,
 Farmer, Adventurer and King by `npm run bodies:render` (#788, #790). Rank
-6's four deferred clips now exist and are its to place in a routine. What
-is left here: the look at all of it on a GPU (#53), and 2b, a generated cow
-placed in the outer ward, `MAX_SKINNED_TOTAL` 33 to 34 (#789).
+6's four deferred clips now exist and are its to place in a routine.
+Increment 2b shipped too: a generated cow grazing in the outer ward,
+`MAX_SKINNED_TOTAL` 33 to 34, 34 of 34 bodies built (#789, #794). What is
+left here: the look at all of it on a GPU (#53), and further generated
+kinds (a pig, then a goat), each its own table row and ceiling argument.
 
 ## Feel
 

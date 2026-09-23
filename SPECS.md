@@ -644,8 +644,11 @@ poly.pizza's re-export of Quaternius's Farm Animals pack, `Hen.glb`, 55 KB
 Haven, worn by the serjeant and the man-at-arms (#685). Increment 2a of the
 generated half below shipped 2026-09-23: `Sweep`, `Stir`, `Hammer`, `Spar` and
 `Drill` in all four human bodies, 171 to 192 KB a body, held by check 7.
-**Not shipped**: the GPU look at any of it (#53), no routine using the five
-yet (rank 6's), and 2b, the cow.
+Increment 2b shipped 2026-09-23 too: `assets/NPCs/Cow.glb`, generated and
+grazing in the outer ward, `MAX_SKINNED_TOTAL` 33 to 34 (#794). **Not
+shipped**: the GPU look at any of it (#53), and further generated kinds
+(goat, pig, sheep) as later rows of `bodies.json`, each needing its own
+budget argument.
 
 ### The generated half (#787 to #789)
 
@@ -735,7 +738,7 @@ the four bodies. Each line is the break that has to turn it red (#34).
 `test/mystery.mjs`'s orphan check holds `ACTIVITY_CLIPS` to the files.
 Whether a Sweep reads as sweeping is `npm run play`'s (#53).
 
-#### Scope, increment 2b: a cow, generated and placed
+#### Scope, increment 2b: a cow, generated and placed (shipped)
 
 - **`tools/bodies/bodies.json`**, a second table: one row per animal. The
   cow's row lists joints (name, parent, head position), parts (a box or a
@@ -744,11 +747,13 @@ Whether a Sweep reads as sweeping is `npm run play`'s (#53).
   (`Body`, `Neck1`, `Head`, `FrontUpperLeg.L`, `BackLowerLeg.R`, `Tail1`).
   Flat-shaded, one skin.
 - **Caps, which #789's ceiling depends on**: at most 16 joints, 1,000
-  triangles, 4 primitives, 80 KB on disk. Materials `Hide` and `Hide_Patch`
-  take the tint; `Nose`, `Eye` and `Horn` do not. Clips `Idle` (at least
-  2.0 s), `Walk` and `Eating`, so `CLIPS`' idle and walk resolve and the
-  existing `eat: 'Eating'` needs no new activity. No `Wave`: the cow does
-  not greet, like the hound.
+  triangles, 4 primitives, 80 KB on disk. Four primitives: `Hide`, `Nose`,
+  `Eye`, `Horn`. `Hide_Patch` is not a fifth primitive — it is a darker
+  vertex colour inside `Hide`, so the tint darkens the patches too; `Nose`,
+  `Eye` and `Horn` do not take the tint. Clips `Idle` (at least 2.0 s),
+  `Walk` and `Eating`, so `CLIPS`' idle and walk resolve and the existing
+  `eat: 'Eating'` needs no new activity. No `Wave`: the cow does not greet,
+  like the hound.
 - **`tools/bodies/index.mjs`** builds `assets/NPCs/Cow.glb` with
   gltf-transform and applies `meshopt({ encoder, cleanup: false })`, the
   call `tools/encode-assets.mjs` makes.

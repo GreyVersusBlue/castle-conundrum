@@ -9323,3 +9323,47 @@ said", and check 1 also goes red with "hywel stands 0.81 m from pouch".
 **Correction to #792:** the rail measures Hywel 0.32 m from
 `lantern-chapel`, not 0.33 m as #792 and `SPECS.md` said. `SPECS.md`'s
 figure is fixed to match.
+
+---
+
+## Bodies: increment 2b shipped, the generated cow (2026-09-23)
+
+**Decision #794.** `tools/bodies/bodies.json` and `renderAnimal` in
+`tools/bodies/index.mjs` write `assets/NPCs/Cow.glb`, meshopt applied the
+way the spec's cap requires; the extra skin meshopt leaves the render adds
+for an animal are deleted before the file is written, the same reason
+`Hound.glb` carries two. The cow is 37,548 bytes, 15 joints named after the
+hound's, 404 triangles, 4 primitives (`Hide`, `Nose`, `Eye`, `Horn`); its
+clips are `Idle` 3.0 s, `Walk` 1.4 s, `Eating` 3.0 s.
+
+**Spec conflict, resolved.** `SPECS.md` named five materials but capped
+primitives at 4. `Hide_Patch` is a darker vertex colour inside the `Hide`
+primitive, so the tint darkens the patches too, and `/^horn$/i` is the only
+line added to `BARE_MATERIALS` in `src/npc.js`.
+
+`data/populace.json` gains `cow`, "Gwineu", tint `#a36b43`, height 1.45,
+`eat` at (-7.438, 0.563) and `wait` at (-7.188, 0.063), at all 8 bells.
+`MAX_SKINNED_TOTAL` goes 33 to 34 (#789): 34 of 34 built, the outer ward
+peaks at 20 of 20 on the walking day (`terce-eve`), 19 on the day of the
+death. The household count in `test/mystery.mjs` goes 19 to 20.
+
+`test/assets.mjs` check 7 gains a cow half, five rails: 16 joints, 1,000
+triangles, 4 primitives, 80,000 bytes, `Idle` at least 2.0 s, and the body
+at least 1.3 times as long as it is tall. 2a's loop check moved into a
+shared `seamOf`, unchanged in what it asserts.
+
+**The breaks, from green** (#34): prism sides raised to 160 read "1020
+triangles, over 1000"; the horn weighted to joint 16 read "primitive 3
+vertex 0 is weighted to joint 16, and the skin has 15 (0 to 14)"; `Walk`
+keyed at `cycles: 1.5` read "Walk's Body rotation turns back at the loop:
+its speed changes by 8.18e-3 across the seam against 7.93e-4"; the body's y
+and z sizes swapped read "bind pose is 2.15 m long and 1.67 m tall, under
+1.3 to 1"; `Tail1`'s amplitude changed from 22 to 23 without re-rendering
+read "Cow.glb is not what tools/bodies/index.mjs renders from bodies.json
+... first difference at byte 24276". A second render is a byte no-op.
+`npm test` 15 of 15 green.
+
+The lead looked at a headless software render: it reads as a cow, blocky.
+The real look is `npm run play`'s (#53). The outer ward is now at its 20
+ceiling on the walking day, so the next body placed there needs its own
+ceiling argument.

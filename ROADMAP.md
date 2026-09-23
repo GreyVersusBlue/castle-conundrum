@@ -50,10 +50,10 @@ uncompressed body is the one asset nothing else on this list would catch.
 ### Container, start to finish
 
 **6** populace, **9** the town (past its next increment, which has no spec
-yet), **10** bodies' generated half (the five clips shipped, #790; the cow,
-2b, is next, #787 to #789), **13** the floor-plan editor's remaining
-increments. Every one is data, a validator, a Node suite or a headless DOM
-assertion.
+yet), **10** bodies' generated half (both increments shipped: the five clips
+and a generated cow, #787 to #790, #794, 34 bodies built), **13** the
+floor-plan editor's remaining increments. Every one is data, a validator, a
+Node suite or a headless DOM assertion.
 
 ---
 
