@@ -9020,3 +9020,97 @@ on this row is now open, and its next sitting should start from a `main`
 that carries it.
 
 ---
+
+## The planning docs, cut down to the current state (2026-09-23)
+
+**#783.** `BACKLOG.md`, `ROADMAP.md` and `SPECS.md` were about 1 MB against
+27K lines of `src/` and `test/`, built up in layers: shipped-row narrative
+that never left, paragraphs correcting earlier paragraphs, and a
+renumbering's worth of strikethrough. A session paid a large reading cost
+before it could do anything. Class B, `scribe`.
+
+**Known drift, found and fixed.** `BACKLOG.md` said "Seven ranked rows"
+against a table of eight (3, 4, 6, 7, 9, 10, 11, 13) — corrected. `CLAUDE.md`
+and `README.md` said 39 MB of assets; `du -sh assets` gives 28 MB, and both
+are corrected, nothing else in `CLAUDE.md` touched. `ROADMAP.md` opened with
+"four hard gates on twelve rows" when three of the four had shipped and most
+of the twelve had too; it is rewritten as a current-state plan with the one
+gate still standing (rank 3 before rank 11 past its Node line) and the lane
+table's substance kept (#600 to #602, unchanged).
+
+**`BACKLOG.md`**: "Where things stand" (422 lines of day-by-day shipped
+narrative) replaced by a one-screen current-state summary with # citations
+per claim; "The tooling" (rank 12, retired whole) deleted; the ranked
+table's surrounding prose and the gate list trimmed to what is still true.
+69983 to about 23100 bytes.
+
+**`ROADMAP.md`**: rewritten whole as a current-state plan — what needs which
+machine, the lane table, what can run in parallel now, the worktree rule,
+and the order of the eight open rows. The struck-through shipped rows and
+the "moved a fourth time" renumbering history are gone; four durable lessons
+are kept at one line each with their numbers: name the render a row needs,
+not the row that happens to produce one; do not gate a looking on a
+walking; a clean merge of two lane-C rows is not a correct one; read
+`HISTORY.md` on `origin/main` when picking a decision number, not when a
+branch started. 38699 to about 7100 bytes.
+
+**`SPECS.md`**: three fully shipped or retired sections deleted whole —
+"Explore: the day before" (rank 1, closed #778 to #779), "A second day"
+(rank 4, closed whole by 2026-09-19), "The tooling" (rank 12, retired
+#687 to #690). "The red suite" is trimmed to its one open increment (a
+station-to-prop `PROP_CLEARANCE` rail); its first two increments shipped as
+#721 to #724 and their scope, acceptance and answered open calls are gone.
+Every other open row's section (The GPU run, The retro castle, Life: a
+populace, Sound, A castle to get lost in, Bodies, Feel, The floor plan you
+can see) has its shipped increments stripped to a short "what shipped"
+paragraph, keeping every open increment's scope, acceptance, open calls
+(word for word) and dependencies. "A castle to get lost in" lost its most
+stale content: the town's first increment (#725 to #728) had already shipped
+against text that still described it as unbuilt work; that section now says
+what shipped and that the quay has no `SPECS.md` scope yet, an `architect`
+job. The preamble's stale renumbering history and "the ten suites" (now
+fifteen) are corrected. 160555 to about 55900 bytes.
+
+**`briefs/`**: `rank-01-opus-walker-on-the-stair.md` deleted (shipped
+#716 to #720) and `rank-99-opus-red-ci-on-main.md` deleted (both its
+failures shipped as #721 to #724, and what is left of that row is "The red
+suite" increment 3, which has no brief). `rank-02-opus-the-gpu-run.md`
+renamed to `rank-03-opus-the-gpu-run.md` to match the row's current rank,
+its gate updated to say the sight-height fix shipped. `rank-06`, `rank-09`
+and `rank-11` updated where their bodies described work that has since
+shipped (rank 6: 10 people, not 19 of 32; rank 9: the town not yet built,
+when its first increment has; rank 11: gated on "rank 2", now rank 3).
+`rank-07` and `rank-10` were already current and untouched.
+
+**`HISTORY.md`, `PLAN.md`, `WISHLIST.md`**: untouched apart from this entry.
+No decision renumbered, no entry rewritten; `src/` and `test/` cite this
+file's numbers in about ninety places and none of those citations moved.
+
+**Anchors checked.** Every `SPECS.md#...` link in `BACKLOG.md`'s ranked
+table still resolves: the eight open rows' headings are unchanged text, only
+their bodies were cut. `test/budget.mjs`, `test/layout.mjs`,
+`test/mystery.mjs`, `test/play-castle.mjs` and `tools/dialogue.mjs`'s
+comments citing `BACKLOG.md`/`SPECS.md` by rank number or section name are
+comments, not links, and none needed a code change to stay true.
+
+`npm test layout budget mystery dialogue tools` and `npm run dialogue:check`
+both green after `npm install` (`node_modules` was not present in this
+container). The two browser suites in the full `npm test` run were not
+confirmed to completion here; nothing in this session touched `src/`,
+`test/` or `data/`.
+
+---
+
+## Which model does what, loosened (2026-09-23)
+
+**#784. The class table in `CLAUDE.md` is a default, not a rule, and
+judgement about what to delete is not bookkeeping.** #783's cleanup went to
+`scribe` because the table called doc edits class B, and the cuts were a
+judgement over 300 KB of cross-referenced text; the lead checked them
+afterwards and found every dropped recommendation belonged to a shipped
+increment, except two of rank 9's that still bind the quay, which are back
+in `SPECS.md`. The section is rewritten from 56 lines to 37: the lead may
+override the table and says why in one line, a third tie-break says Opus
+decides a restructure and `scribe` carries it out, and planning on Opus with
+Sonnet executing is allowed for any class where the reading is large and the
+deciding is small. Devon asked for it directly. No agent file changed.

@@ -3,7 +3,7 @@
 A first-person medieval murder mystery in three.js. A day of walking before
 it, twelve suspects, four bells, one accusation, and a morning after it.
 `index.html` at the repo root, source in `src/`, the mystery and the castle as
-data in `data/`, 39 MB of glTF and textures in `assets/`, fifteen suites in
+data in `data/`, 28 MB of glTF and textures in `assets/`, fifteen suites in
 `test/`.
 
 **`PLAN.md` is the most valuable file here.** It is 64 K of phase plans — what
@@ -54,7 +54,7 @@ The project lived in `GreyVersusBlue/tools-and-games` under
   `harness.mjs` refuses every offsite request and `test/built.mjs` fails on a
   non-empty `page.__blocked`.
 - **Code dependencies come from npm; assets stay committed** (#493). three is
-  `"three": "0.169.0"` in `package.json`. The 39 MB under `assets/` is in git
+  `"three": "0.169.0"` in `package.json`. The 28 MB under `assets/` is in git
   and stays there. The ceiling is **200 MB** (#499), not the 44.4 MB this
   project carried when the whole site shared one deploy.
 - **Every asset is compressed, by a script, before it is committed** (#506).
@@ -137,59 +137,40 @@ The project lived in `GreyVersusBlue/tools-and-games` under
 
 ## Which model does what
 
-The three subagents this section names live in `.claude/agents/`.
+The three subagents live in `.claude/agents/`: `scribe` (Sonnet), `builder`
+(Opus) and `architect` (Opus). **The model is chosen by what a change
+touches, not by which row it belongs to.** The Model column in `BACKLOG.md`
+and `ROADMAP.md` is a row's ceiling, and the table below is the default, not
+a rule: the lead may override it and says why in one line.
 
-**The model is chosen by what a change touches, not by which row it belongs
-to.** The Model column in `BACKLOG.md` and `ROADMAP.md` is the row's ceiling;
-most of a row's commits sit well under it. About half of this repo's commits
-are renumbering, merge reconciliation, count fixes and CI flake records, and
-none of that is Opus work.
-
-### The lead's protocol
-
-The session's own model is the lead. Before touching a file, the lead reads
-the row's `SPECS.md` section, classifies the next increment with the table
-below, states the class in one line, and dispatches. **The lead does not write
-code or edit the doc files itself for class S or class B work.** It reads the
-subagent's report, runs nothing twice, and moves on. A report is at most
-fifteen lines: files touched, assertions added and which one failed when the
-guard-rail was broken on purpose (#34), the `npm test` result, and any HISTORY
-number it claimed.
-
-If the session's model is Fable or Opus, the lead is the expensive part of the
-session. Keep its turns short: classify, dispatch, read the report. Do not
-have it re-read a diff a green suite already vouched for.
-
-### The table
+**The lead** is the session's own model. Before touching a file it reads the
+row's `SPECS.md` section, classifies the next increment, states the class in
+one line and dispatches. It does not write code or edit the doc files itself
+for class S or B work, and it does not re-read a diff a green suite already
+vouched for. A subagent's report is at most fifteen lines: files touched,
+assertions added and which one failed when the guard-rail was broken on
+purpose (#34), the `npm test` result, any HISTORY number claimed.
 
 | Class | Who | The test |
 | --- | --- | --- |
-| **B** bookkeeping | `scribe` (Sonnet) | Renumbering a band after a merge. Retiring a shipped row from `BACKLOG.md`, `ROADMAP.md` and `SPECS.md`. Fixing a count (suites in the CI job name, assertions in a section, files in a list). Resolving a merge of the doc files. Recording a CI flake with its control run. Rewriting a ROADMAP row's text to say what shipped. The decision already exists; the job is writing it down where the rules say. |
-| **S** ship | `builder` (Opus) | The row's `SPECS.md` section exists, every open call in it has a recommendation, the change stays inside one lane, no `save.js` version bump, no numbered decision is overturned, and no assertion moves between suites. Content that fills an existing shape: a quest graph in the format #576 set, populace routines on clips the kit has, a `.dlg` line set, an `ambient` block, a slab in a room the castle already builds. |
-| **O** decide | `architect` (Opus) | Any one of: no `SPECS.md` section yet, or an open call without a recommendation. Touches `save.js`'s version or `migrate` (#36, #37). Overturns or amends a numbered decision. Adds, moves or deletes an assertion across the `layout` / `plan-vs-scene` / `mystery` / `budget` line (#529, #611). Renegotiates a budget ceiling. Needs two lanes at once. A guard-rail that stays green when its bug is reintroduced. |
-| **F** the lead itself | Fable, or whatever the session is | Triage. Asset sourcing and measuring (the shape rank 1 was: fetch, compare rig against the name lists, reject with a number). Reordering `ROADMAP.md` or adding a gate. Answering "what next" from the whole backlog. Anything Devon asks as a question rather than a task. |
+| **B** bookkeeping | `scribe` | The decision already exists; the job is writing it down. Renumbering a band, retiring a shipped row, fixing a count, resolving a doc merge, recording a CI flake with its control run. |
+| **S** ship | `builder` | The `SPECS.md` section exists and every open call has a recommendation; one lane; no `save.js` version bump; no numbered decision overturned; no assertion moved between suites. Content that fills an existing shape. Runs `npm test` and says which suite went red first. |
+| **O** decide | `architect` | Any one of: no section yet, or an open call without a recommendation; `save.js`'s version or `migrate` (#36, #37); overturning or amending a numbered decision; an assertion across the `layout` / `plan-vs-scene` / `mystery` / `budget` line (#529, #611); a budget ceiling; two lanes at once; a guard-rail that stays green when its bug is reintroduced. Ends on a `SPECS.md` section whose open calls all carry a recommendation. |
+| **F** the lead | the session | Triage, asset sourcing and measuring, reordering `ROADMAP.md`, "what next", and anything Devon asks as a question. |
 
-Two rules that break ties:
+Three rules that break ties:
 
-- **A row is usually two or three classes in sequence.** R4a is O (overturn
-  #533, spec `day2.watches`), then S (the engine reads whichever list the day
-  names), then B (record it, renumber if a merge took the band). Dispatch each
-  increment to its own class; do not send the whole row to the architect
-  because its first increment needed one.
-- **When the lead cannot tell S from O, it is O.** `architect` and `builder`
-  are both Opus, so the difference is the job, not the model: `architect`
-  writes the decision down before anything is built. Sending an O job to
-  `builder` skips that, and a decision nobody wrote down is how this project
-  lost the plan-suite rule for a year.
-
-### What each subagent returns to the lead
-
-`scribe` and `builder` end on a report, not a summary of the report. `builder`
-runs `npm test` (or the subset the spec names) and says which suite went red
-first if any did. `architect` ends on a `SPECS.md` section or an amended one,
-with the open calls each carrying a recommendation, so the next increment is
-class S by construction.
-
+- **A row is usually two or three classes in sequence.** Dispatch each
+  increment to its own class, not the whole row to the highest one.
+- **When the lead cannot tell S from O, it is O.** Both are Opus; the
+  difference is that `architect` writes the decision down before anything is
+  built, and a decision nobody wrote down is how this project lost the
+  plan-suite rule for a year.
+- **Judgement about what to delete or restructure is not bookkeeping, even in
+  the doc files** (#784). Opus decides and writes the cut list; `scribe`
+  carries it out. Splitting a job this way, Opus planning and Sonnet
+  executing, is allowed for any class where the reading is large and the
+  deciding is small.
 
 ## Writing style
 

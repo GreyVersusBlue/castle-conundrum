@@ -1,4 +1,4 @@
-Take rank 11 in `BACKLOG.md`, "Feel". Size 2+, lane D. Gated on rank 2 for anything past its Node line, and the Node half of the first increment shipped already (#650 to #654). Confirm what rank 2 has said about the shadow and the hand before starting anything new.
+Take rank 11 in `BACKLOG.md`, "Feel". Size 2+, lane D. Gated on rank 3, the GPU run, for anything past its Node line, and the Node half of the first increment shipped already (#650 to #654). Confirm what rank 3's run has said about the shadow and the hand before starting anything new.
 
 Read the row's section in `SPECS.md` and `HISTORY.md` #650 to #654 first. `src/player-rig.js` puts a 0.46 m blob shadow under the feet and a hand of six primitives that reaches for whatever `interaction.currentTarget` offers. Two draw calls, 16 KB of canvas-painted texture, no asset, and every mesh has `raycast` set to a no-op so the rig cannot occlude the prompt.
 
