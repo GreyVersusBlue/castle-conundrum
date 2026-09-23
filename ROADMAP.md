@@ -36,7 +36,7 @@ itch, poly.pizza, OpenGameArt or Patreon; another could reach poly.pizza.
 
 | Row | Model | What to fetch |
 | --- | --- | --- |
-| **10 Bodies** | Fable 5.1 | A low-poly, one-rig, CC0 body per new kind. The child and the hound shipped without a fetch at all — the child is the existing rig scaled down (#643 to #645); two hens and a spear came off poly.pizza (#684 to #686). What is left: the four activity clips rank 6 wants, and the GPU look. |
+| **10 Bodies**, sourced half | Fable 5.1 | A low-poly, one-rig, CC0 body per new kind. The child and the hound shipped without a fetch at all — the child is the existing rig scaled down (#643 to #645); two hens and a spear came off poly.pizza (#684 to #686). What is left here: the GPU look, and any kind the generator (below) should not make. |
 
 Every body goes through `tools/encode-assets.mjs` before commit (#506); an
 uncompressed body is the one asset nothing else on this list would catch.
@@ -50,7 +50,8 @@ uncompressed body is the one asset nothing else on this list would catch.
 ### Container, start to finish
 
 **6** populace, **9** the town (past its next increment, which has no spec
-yet), **13** the floor-plan editor's remaining increments. Every one is
+yet), **10** bodies' generated half (the five clips, then a cow, #787 to
+#789), **13** the floor-plan editor's remaining increments. Every one is
 data, a validator, a Node suite or a headless DOM assertion.
 
 ---

@@ -9114,3 +9114,58 @@ override the table and says why in one line, a third tie-break says Opus
 decides a restructure and `scribe` carries it out, and planning on Opus with
 Sonnet executing is allowed for any class where the reading is large and the
 deciding is small. Devon asked for it directly. No agent file changed.
+
+---
+
+## Bodies: made here when they cannot be fetched (2026-09-23)
+
+**A spec, not a batch.** Devon's ask for the session: if the backlog cannot
+move, make new models of maids, knights, peasants, children, dogs, cows and
+chickens. This container reaches npm and does not reach poly.pizza,
+quaternius.com, OpenGameArt or itch (all four time out); it has no Blender
+and no `ktx`. `SPECS.md`'s "Bodies" gains "The generated half", two
+increments with every open call recommended; `BACKLOG.md` and `ROADMAP.md`
+say that half is Container. No code, no asset. Decisions #787 to #789,
+written as `architect`; #785 and #786 are held by another session.
+
+**#787. Bodies and clips may be generated in this repo by a deterministic
+Node script, as textures already are.** `tools/bodies/` reads a table and
+writes `.glb` through gltf-transform, `npm run bodies:render`, and a suite
+holds each output byte-equal to what the script writes from its row: #742's
+shape and #743's provenance rule, pointed at meshes. What was wrong was the
+assumption in rank 10's spec that every body is sourced, which made the row
+Local: net in full while its largest open item, the activity clips, needs no
+network at all. Sourcing CC0 stays allowed and is still the route for any
+kind the generator does not make. What this does not license: a generated
+human. Maids, knights, peasants and children stay on the four Quaternius
+rigs, because tint, height, hidden nodes and the spear already make them
+(#643, #685) and a box-built human would sit beside the kit's people looking
+like a different game.
+
+**#788. The five activity clips go inside the four human bodies, and they
+are the first generated increment.** Measured with gltf-transform: the four
+share 62 joint names, but Woman's Idle pose differs from the three men's by
+up to 90.5 degrees at `UpperLeg.R` (the men agree within 0.93), her rest
+translations by up to 0.108 m, and her clips run 2.08 s to their 1.67 s at
+the same 51 keys. A shared clip file would be two files and a loader change
+in `npc.js`; clips inside each body need no `npc.js` change and are already
+referenced (check 4), encoded (check 5) and read by `mystery.mjs`'s
+per-person clip check. Each clip is Idle's 108 channels with model-space
+rotations composed on top at integer cycles, so it loops by construction.
+King.glb round-trips gltf-transform byte-identical and Woman.glb grows 20,616
+bytes once then holds, so a second render is a no-op; Hen.glb does not
+round-trip stably, which is why the generator touches only the four. `Drill`
+joins rank 6's four because the garrison carries the spear.
+
+**#789. `MAX_SKINNED_TOTAL` goes from 33 to 34 when a generated cow lands,
+and only for a body inside the cow's caps.** #756 said the next body should
+cost an argument; this is it. A human is 62 joints, 5,476 to 11,110
+triangles and five skinned nodes; the cow is capped at 16 joints, 1,000
+triangles, 4 primitives and 80 KB, each cap a rail in `test/assets.mjs`.
+What it adds is one AnimationMixer and at most four skinned draws.
+`MAX_SKINNED_PER_WARD` stays 20: the outer ward peaks at 19 on the walking
+day, so a cow there all day makes 20 and fits. A separate budget for cheap
+animals was the alternative and is refused, because it would move the hound
+and both hens out of the 33 without anyone arguing for it. Shipping the asset
+before its placement is refused too: an unreferenced `Cow.glb` fails check 4
+(#390). A pig or a goat after it costs its own argument, 34 to 35.

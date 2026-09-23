@@ -187,7 +187,7 @@ move-and-delete and the dialogue format (#583 to #587, #607 to #611, #636 to
 | 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #729 to #733); the town, the four clips and the chatter pool are left | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: somebody listens to the seven beds, the four rings and the first two event sounds (a bed at a point and the rings, #680 to #683; the door and the hound, #696 to #698) | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
 | 9 | A castle to get lost in: the town, the rock and river | 2+ | Opus 5 | Container | — (4c opened it) | B | | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
-| 10 | Bodies: a shared low-poly rig for the fifty (the child and the hound shipped, #643 to #645; two hens and the spear, #684 to #686) | 1 | Fable 5.1 | Local: net | — | C | | [Bodies](SPECS.md#bodies) |
+| 10 | Bodies: a shared low-poly rig for the fifty (the child and the hound shipped, #643 to #645; two hens and the spear, #684 to #686); next, five clips generated onto the four rigs, then a generated cow (#787 to #789) | 1 | Fable 5.1 | Generated: Container; sourced: Local: net | — | C | | [Bodies](SPECS.md#bodies) |
 | 11 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 | Container to the Node line, local: GPU past it | **after 3** | D | shadow + hand shipped 2026-09-17 (#650 to #654) | [Feel](SPECS.md#feel) |
 | 13 | The floor plan you can see: the review view shipped (#745 to #749); a way to redraw it is left | 2+ | Opus 5 | Container | — | B | increment 1 shipped 2026-09-21 (#745 to #749) | [The floor plan you can see](SPECS.md#the-floor-plan-you-can-see) |
 
@@ -308,15 +308,18 @@ lore row's documents.
 
 ## Bodies
 
-*Where: local, a network that reaches the asset hosts. Gate: none. Lane: C.*
+*Where: the generated half is Container (#787); the sourced half is local, a network that reaches the asset hosts. Gate: none. Lane: C.*
 
 **Rank 10.** Every row above this one that needs a new body is waiting on
 this one. Low-poly, one shared rig, CC0 (#550 question 5). Shipped: the
 child, at 1.15 m off the existing rig with a bigger head, and the hound,
 Quaternius's Husky (#643 to #645); two hens and a spear, off poly.pizza,
 the first held prop that is not Poly Haven's (#684 to #686). What is left is
-the look at all of it on a GPU (#53), and the four activity clips rank 6
-still wants (`sweep`, `hammer`, `spar`, `drill`), which no body on disk has.
+the look at all of it on a GPU (#53), and the activity clips rank 6 still
+wants, which no body on disk has. Those are now made here rather than
+fetched (#787): increment 2a writes `Sweep`, `Stir`, `Hammer`, `Spar` and
+`Drill` into the four human bodies by script (#788), and 2b generates and
+places a cow, `MAX_SKINNED_TOTAL` 33 to 34 (#789).
 
 ## Feel
 
