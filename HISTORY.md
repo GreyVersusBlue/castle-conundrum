@@ -9367,3 +9367,32 @@ The lead looked at a headless software render: it reads as a cow, blocky.
 The real look is `npm run play`'s (#53). The outer ward is now at its 20
 ceiling on the walking day, so the next body placed there needs its own
 ceiling argument.
+
+---
+
+## Life: rank 6's four clips placed in the household's routines (2026-09-24)
+
+**Decision #800.** The four clips `tools/bodies/` generated into the human
+bodies (#788, #790) are now somebody's job, twelve stops across both days,
+all on tiles the routines already used, so no ward count and no ceiling
+moved (34 of 34 bodies). The scullion sweeps the kitchen at both her Prime
+stops and stirs at her Terce stop. The carter hammers at his cart in the
+outer ward at Terce, because there is no forge room and the smith is in the
+cell. The serjeant and the man-at-arms spar in the yard at Terce, replacing
+their muster; their headings turn from 270/90 to 0/180 so they face each
+other. `muster` is now in no routine; `drill` remains in none. No mapping
+code was needed: `ACTIVITY_CLIPS` in `src/populace.js` already mapped all
+four.
+
+`test/mystery.mjs`'s per-person clip check now reads the walking day's four
+bells as well as the mystery's, so a clip missing at a day-0 stop is no
+longer invisible to it. A second check holds each of the four jobs to at
+least one person, so a routine reverting to `wait` cannot pass unnoticed.
+
+**The breaks, from green** (#34): giving the hound `spar` at `prime-eve`
+read "FAIL hound does \"spar\" in assets/NPCs/Hound.glb, which ships no clip
+called Spar"; setting the carter back to `wait` read "FAIL the four
+generated jobs are all somebody's: ... hammer (), ... — nobody does
+hammer".
+
+`npm test` 10 of 10 Node suites green; the five browser suites are CI's.
