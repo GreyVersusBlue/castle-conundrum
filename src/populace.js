@@ -46,7 +46,9 @@ import { EYE_HEIGHT } from './castle-plan.js';
  * tools/bodies/ writes Sweep, Stir, Hammer, Spar and Drill into all four human
  * bodies from tools/bodies/clips.json, each one Idle with the arms and spine
  * turned on top, and test/assets.mjs check 7 holds the files to the table.
- * No routine uses them yet; writing them into routines is "Life: a populace"'s.
+ * Four of them are placed (#800): the scullion sweeps and stirs in the
+ * kitchen, the carter hammers at his cart, and the serjeant and the
+ * man-at-arms spar in the yard at Terce. `drill` is nobody's yet.
  *
  * The map is the validator's rail as well as the player's: an `activity` the
  * data uses and this object does not name is refused at load, because the
@@ -70,7 +72,9 @@ export const ACTIVITY_CLIPS = {
   tend: 'Idle_Neutral',
   gossip: 'Idle_Neutral',
   // Idle_Sword: the stance with a weapon in hand. The garrison, and nobody
-  // else — a gardener in this pose is a gardener holding a sword.
+  // else — a gardener in this pose is a gardener holding a sword. `muster`
+  // is in no routine since the Terce muster became a spar (#800); the word
+  // stays so a later row can give it back without touching this table.
   guard: 'Idle_Sword',
   muster: 'Idle_Sword',
   /* THE GENERATED FIVE (#788). In Woman, Farmer, Adventurer and King only, so

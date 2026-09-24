@@ -1303,7 +1303,7 @@ console.log('\nthe household in data/populace.json');
    * this asked all four human bodies for all nine clips and they all had
    * them, because they are one rig. The hound's rig has `Eating` and no
    * `Idle_Sword`, and the guard has the reverse, and neither is a problem
-   * unless somebody writes the serjeant's `muster` onto the dog. So the
+   * unless somebody writes the serjeant's `spar` onto the dog. So the
    * question is the one the page will ask: does THIS body have the clip
    * for every stop THIS person has been given. */
   {
@@ -1313,7 +1313,11 @@ console.log('\nthe household in data/populace.json');
       if (!clipsOf.has(p.modelPath)) clipsOf.set(p.modelPath, new Set((readGLTF(path.join(ROOT, p.modelPath)).json.animations ?? []).map((a) => a.name)));
       const names = clipsOf.get(p.modelPath);
       const jobs = new Set();
-      for (const w of mystery.watches) for (const s of p.routine?.[w] ?? []) jobs.add(s.activity);
+      /* BOTH DAYS' BELLS (#800). Until the four generated jobs were placed
+       * this read `mystery.watches` only, so a clip missing from a body at
+       * one of the walking day's four bells froze that body with nothing
+       * here to say so. */
+      for (const w of [...mystery.watches, ...(mystery.day0?.watches ?? [])]) for (const s of p.routine?.[w] ?? []) jobs.add(s.activity);
       for (const job of jobs) {
         pairs++;
         const clip = ACTIVITY_CLIPS[job];
@@ -1326,6 +1330,17 @@ console.log('\nthe household in data/populace.json');
     const anywhere = new Set([...clipsOf.values()].flatMap((s) => [...s]));
     const orphans = Object.entries(ACTIVITY_CLIPS).filter(([, clip]) => !anywhere.has(clip));
     check(orphans.length === 0, `${Object.keys(ACTIVITY_CLIPS).length} activities, every clip in at least one body the household wears`, orphans.map(([j, c]) => `${j} -> ${c}`).join(', '));
+    /* THE FOUR THE FIRST INCREMENT DEFERRED ARE PLACED (#800). `sweep`,
+     * `stir`, `hammer` and `spar` waited on rank 10 for a clip (#618), and
+     * rank 10 shipped one for each (#788). Each is now somebody's job, at
+     * both days' bells, so the deferral cannot come back by a routine
+     * quietly reverting to `wait`; the per-person check above is what holds
+     * the body to the clip. */
+    const doing = (job) => people.filter((p) => [...mystery.watches, ...(mystery.day0?.watches ?? [])].some((w) => (p.routine?.[w] ?? []).some((s) => s.activity === job))).map((p) => p.id);
+    const placed = ['sweep', 'stir', 'hammer', 'spar'].map((job) => [job, doing(job)]);
+    check(placed.every(([, ids]) => ids.length),
+      `the four generated jobs are all somebody's: ${placed.map(([j, ids]) => `${j} (${ids.join(', ')})`).join(', ')}`,
+      `nobody does ${placed.filter(([, ids]) => !ids.length).map(([j]) => j).join(', ')}`);
   }
 
   /* THE ROW'S NODE ACCEPTANCE (SPECS.md, "Bodies"): the variation axes that

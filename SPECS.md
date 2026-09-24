@@ -349,8 +349,12 @@ this row is below.
   brings should be the GPU run's `renderer.info`, not a second guess** (#609,
   #729). Instancing and animation LOD are the tools for that argument, not
   needed yet.
-- **Four clips**, `sweep`, `stir`, `hammer` and `spar`, wait on rank 10
-  shipping a clip for them.
+- **The four clips are placed** (#800), on both days: the scullion sweeps
+  the kitchen at Prime and stirs at Terce, the carter hammers at his cart in
+  the outer ward at Terce, and the serjeant and the man-at-arms spar in the
+  yard at Terce, facing each other, where they mustered. Same tiles, so no
+  ward count moved. `drill` is still in no routine, and `muster` is now in
+  none either.
 - **The twelve's 27-pair chatter pool stays unspent.** Recommend a later
   lore or dialogue increment hold each pair to the schedule the way #592
   holds a performance, which is the pass #554 named and skipped: 5 of the

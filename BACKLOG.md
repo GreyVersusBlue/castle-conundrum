@@ -55,7 +55,8 @@ the red suite, closed whole: the day-one `PROP_CLEARANCE` rail and its
 extension to the walking day and the morning after (#785, #792, #793); and
 bodies' generated half, increments 2a and 2b: five activity clips in the
 four human rigs and a generated cow grazing in the outer ward, 34 bodies
-built (#787 to #790, #794).
+built (#787 to #790, #794); and, in rank 6, the first four of those clips
+placed in the household's routines (#800).
 
 **Open, ranked below.** Eight rows: the GPU run itself, now gated on nothing
 (rank 3, #780 to #782); the retro castle's look and its remaining two
@@ -191,7 +192,7 @@ move-and-delete and the dialogue format (#583 to #587, #607 to #611, #636 to
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 3 | The GPU run: the looks are taken (#711 to #715); the walker holds on a GPU (#734, #736) and the third sitting reached the accusation with the wrong ending (#735 to #741) | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
 | 4 | The retro castle: increment 1 shipped, fifteen sets out and fifteen 128 px textures in (#757 to #766); the look, then variety per room, are left | 2+ | Opus 5 | Container to the look, local: GPU past it | — | B | | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
-| 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #729 to #733); rank 10's five clips now exist (#790) and are this row's to place; the town and the chatter pool are left | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
+| 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #729 to #733); four of rank 10's five clips placed in the household's routines (#800), `drill` still nobody's; the town and the chatter pool are left | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: somebody listens to the seven beds, the four rings and the first two event sounds (a bed at a point and the rings, #680 to #683; the door and the hound, #696 to #698) | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
 | 9 | A castle to get lost in: the town, the rock and river | 2+ | Opus 5 | Container | — (4c opened it) | B | | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
 | 10 | Bodies: a shared low-poly rig for the fifty (the child and the hound shipped, #643 to #645; two hens and the spear, #684 to #686); five clips generated onto the four human rigs shipped (#790); a generated cow shipped (2b, #787 to #789, #794), body count 34 | 1 | Fable 5.1 | Generated: Container; sourced: Local: net | — | C | | [Bodies](SPECS.md#bodies) |
@@ -267,11 +268,14 @@ gossip pairs, bringing the page to 32 of 32 bodies built — 13 cast plus 19
 populace, exactly `MAX_SKINNED_TOTAL` (#729 to #733). `test/mystery.mjs`
 owns the validator (#529); `test/budget.mjs` counts the household.
 
-**What is left waits on two other rows and one argument.** The rest of the
+**What is left waits on one other row and one argument.** The rest of the
 fifty, and whether `garden` becomes ground, is rank 9's town. The four
 activities that had no clip, `sweep`, `stir`, `hammer` and `spar`, now do:
-rank 10 shipped all five clips into the four human bodies (#790), and
-writing them into a routine is this row's to do. The ceiling stays 32 until
+rank 10 shipped all five clips into the four human bodies (#790), and this
+row has placed four of them, twelve stops across both days (#800): the
+scullion sweeps and stirs in the kitchen, the carter hammers at his cart,
+and the serjeant and the man-at-arms spar in the yard where they used to
+muster. `drill` is still nobody's. The ceiling stays at rank 10's 34 until
 a row renegotiates it with rank 2's
 `renderer.info`. And the twelve's 27-pair chatter pool is still unspent by
 proximity; a later lore or dialogue increment is recommended to hold each
