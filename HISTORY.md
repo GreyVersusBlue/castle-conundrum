@@ -9370,6 +9370,79 @@ ceiling argument.
 
 ---
 
+## Rank 9, the quay and the river: decided before anything is built (2026-09-24)
+
+**A spec, not a build.** `SPECS.md`'s "A castle to get lost in" replaces its
+stub with two class-S increments, 3a the toll-house and 3b the water, every
+open call recommended. No code, no data. Decisions #795 to #798, written as
+`architect`; #799 is unused, and #800 up is another session's. Every number
+below is from a Node prototype against `ec11009` that cloned
+`data/scene-config.json` in memory, added the quay, and ran `makePlan`,
+`walkability`, `surfacesAt` and check 4d's segment test over it. It is not
+committed.
+
+**#795. Water is a plan piece with no surface, and the ground stops at the
+bank.** This corrects the stub `SPECS.md` carried since the town's first
+increment, which said water was a surface kind the plan lacked, that the fill
+would call it floor, that check 12 would want a step sound for it and that the
+ground had to go below y 0. What was wrong: the thing that calls a river floor
+is the ground over it, not the water. With `outside-ground` left at x -198
+over the prototype's river, all 18,240 points of a 0.5 m grid over the water
+had `outside-ground` under them at y 0; with its west edge at -140, none had
+anything. So `water.glb` is placed like any kit piece, a new `^water` rule
+makes it `kind: 'water'`, it carries `noCollide`, and it pushes no surface,
+which means no step class, no rule in the fill, and nothing for check 12's
+dead-class rail to excuse. Nothing that is a surface goes below y 0: stone
+faces and the water plane do, and a placement at a negative `base` gets
+`levelUnder`'s level -1, which nothing in `src/` or `test/` reads for a placed
+piece. New `test/layout.mjs` check 4e holds it: no point over a water piece's
+footprint has a surface. Its break is the ground put back.
+
+**#796. The water runs into the fog, with no far bank, and check 4f holds it
+to being seen.** One `water.glb` scaled [57, 1, 80], x -198..-141, z -40..40,
+its surface at -1.1, is one draw call. A far bank would be ground touching
+neither the base nor any piece that does, which the rank-5 check refuses, and
+`data/lore.json` puts the castle on a river's mouth, which is an estuary. What
+the player sees of it was measured rather than assumed: from the two west
+tower roofs, through the west gate only, 134 of 1,120 points of a 2 m lattice
+on its top, the nearest at 119.2 m, about 84 % fog under three's
+`smoothstep(30, 150, depth)`. With the gate's doorway deleted, 0. So check 4f
+asks for one lattice point seen from one of 4d's eyes within `fog.far`,
+nearest first: 98 ms to find (-155, -7) from `sw-tower-stair-3`, 229 ms to
+sweep all 1,120 on the break. Whether 84 % fog reads as a river is the GPU
+run's (#53), and if it does not, the lever is the fog and not the town.
+
+**#797. The toll-house is 6 m of `medieval_blocks_02` under a slate gable to
+9 m, and the gable is a new `builtProps` shape.** `the-quay` names it "the one
+building in Mereford with a slate roof", and `roof.glb` is a kit atlas that a
+128 px pixel material cannot be laid over, so the roof is `shape: "gable"`: a
+triangular prism filling a slab's box, one mesh, `castle_wall_slates` in
+world-space UVs, the curtain's own stone. Its box is what `Box3` reports, so
+`plan-vs-scene.mjs` diffs it with no new line (#529), and check 1d grows to
+gables because the roof's `base` is the house's height typed twice. The
+height is set by check 4d and nothing else: with the ridge at 7 m no eye sees
+it, at 8 m 64 do, at 9 m 261, the first on `west-curtain-north-walk` at
+(-35.75, 9.70, -11.75). The walls, the crane, the barrels and the crate are
+seen by nobody, so the ridge is how the quay room passes 4d, and 9 m is 1 m
+of margin over the line.
+
+**#798. The quay is one room, nothing in it moves or sounds, and no ceiling
+is renegotiated.** `mereford-quay`, "The King's quay", x -140..-129.5, z
+-16..16, `floor: "stone_pavers"`; the river is not a room, because 4c holds a
+room to lying on outside ground and the river lies on none. No bodies (#707
+stands), no boat (the kit has none; a hull is #787's generator's if the quay
+reads empty), no ambient bed (earshot is 14 m and the nearest place anyone
+stands is about 90 m off). Draw calls, estimated in the prototype with a run
+counted as its boxes: the outside bucket from 131 to about 161, which is 1
+water, 16 dock, 3 run, 1 gable, 1 floor, 6 prop and `outside-ground` re-cut
+from 5 meshes to 7. The outer ward's sum goes from 1124 to about 1154 of
+`MAX_DRAW_CALLS_PER_WARD`'s 1200 (#727), the inner's to about 804. **Before**
+1124, **after** about 1154, the ceiling unchanged at 1200. The builder
+records the numbers `test/budget.mjs` prints; if they come out over, #611's
+first answer still stands, and deleting a quay piece is not it.
+
+---
+
 ## Life: rank 6's four clips placed in the household's routines (2026-09-24)
 
 **Decision #800.** The four clips `tools/bodies/` generated into the human

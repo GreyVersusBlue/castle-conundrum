@@ -548,7 +548,8 @@ already built, and the row's premise was corrected on 2026-09-17** (#582).
 **The town's first increment shipped on 2026-09-21** (#725 to #728): a street
 of six houses and a church inside Mereford's wall, west of the town gate, seen
 from the walls and entered by nobody. **What is next is the quay and the
-river**, outside the west gate: see Open calls below.
+river**, outside the west gate, specced below in two class-S increments
+(#795 to #798).
 
 ### What was measured, and what it changed
 
@@ -593,14 +594,220 @@ summed into both wards' ceiling, 131 meshes. `npm test` fifteen of fifteen.
 
 ### What is next: the quay and the river
 
-**No `SPECS.md` scope yet — this is an `architect` job, not a class-S one.**
-Outside the west gate. Deferred because water is a surface kind the plan
-does not have: the walkability fill would call it floor, check 12 would want
-a step sound for it, and the ground needs to go below y 0. The kit has
-`water.glb`, `dock-side.glb` and `dock-corner.glb` waiting for it.
-`data/lore.json`'s `the-quay` fact already names a slate-roofed toll-house at
-the quay's head, the one slate roof in Mereford; every other town roof is
-`roof.glb`.
+**Two increments, both class S, 3a first** (the map and the town were this
+row's first two). Decided before anything is
+built (#795 to #798), against `ec11009`, from a Node prototype that cloned
+`data/scene-config.json` in memory, added everything below, and ran
+`makePlan`, `walkability`, `surfacesAt` and check 4d's own sight test over
+it. The prototype is not committed; the builder writes each rail from this
+section and breaks it from green (#34).
+
+**What the stub under this heading got wrong.** It said water is a surface
+kind the plan lacks, that the walkability fill would call it floor, that
+check 12 would want a step sound for it, and that the ground has to go below
+y 0. Measured, only the second is true, and not of the water: with
+`outside-ground` left at x -198 over a river, **all 18,240 grid points of
+the water's footprint have `outside-ground` under them at y 0**, so what
+calls the river floor is the ground over it. Water is a piece and never a
+surface (#795): the ground stops at the bank, the water has no surface, so
+`surfacesAt` over it returns nothing, check 12 never sees it and no step
+class is added. Nothing that is a surface goes below y 0. What does is stone
+faces and the water plane, and a kit placement with a negative `base` takes
+`levelUnder`'s level -1; a grep of `src/` and `test/` finds nothing that
+reads a placed piece's `level` and breaks on -1, and the builder confirms
+it by the suites staying green.
+
+**What the kit has, measured with `partsOf`.** `water.glb` is 1 x 0.2 x 1,
+**its origin at a corner** (x -1..0, z 0..1), one primitive, a plane at 0.1
+with a ripple to 0.2, `KHR_materials_unlit`, opaque. `dock-side.glb` is
+1 x 0.5 x 1.1 (z -0.6..0.5, the 0.1 past -0.5 is the lip over the water),
+two primitives; `dock-corner.glb` is 1.1 x 0.5 x 1.1 with the lip on -x and
+-z, two primitives. At scale 4 a dock piece is a 2 m stone face with its
+paved top at 2. `pulley-crate.glb` is three primitives, `barrels.glb` two,
+`detail-crate.glb` one. No boat in the kit.
+
+**What the player sees of it, measured.** The west town wall is 8 m and the
+nearest place 8 m up is 88 m east of it, so a line from the walls to
+anything low past that wall is under its top. **The quay room passes check
+4d on the toll-house's slate ridge and on nothing else**: with the ridge at
+9 m, 261 eyes see it, the first `west-curtain-north-walk` at (-35.75, 9.70,
+-11.75); at 8 m, 64; at 7 m, none. The walls, the crane, the barrels and
+the crate are seen by nobody. **The water is seen only through the west
+gate**, from the tops of the two west towers: 134 of the 1,120 points of a 2 m
+lattice on its top, the nearest (-155, -3) at 119.2 m from
+`floor-sw-tower-roof`; with the gate's doorway deleted, none. Three's fog is
+`smoothstep(30, 150, depth)`, so the ridge at about 98 m is about 60 %
+fog and the nearest water about 84 %. That is what this increment buys, and
+the GPU run is what says whether it reads (#53).
+
+#### Scope, increment 3a: the toll-house and the quay (class S)
+
+- **`src/castle-plan.js`, `builtProps`**: an entry may carry `shape:
+  "gable"` and `ridge: "x"` or `"z"`. It is placed exactly as a slab is
+  (same `tile`, `size`, `base`, same box, same collider) and the piece says
+  `built: 'gable'` and carries `ridge`. Anything else in `shape`, or a
+  gable with no `ridge`, throws, the way a diagonal run does. The box is the gable's bounding box, which is
+  what `Box3` reports for a prism, so `plan-vs-scene.mjs`'s existing 0.01 m
+  diff holds it with no new line.
+- **`src/castle-builder.js`**: `buildGable(box, ridge, material, metres)`,
+  one mesh, a triangular prism filling the box: the two eaves at the box's
+  bottom along the ridge axis, the ridge at the top centre, two sloped faces
+  and two triangular ends, no underside. World-space UVs at `repeatMetres`,
+  the way `worldUVsOnBox` does it (u along the ridge, v up the slope's own
+  length), so the slate courses match the curtain's. `buildPiece` gains the
+  branch and `carriesOwnWorldPosition` gains `'gable'`. Without the branch
+  `test/budget.mjs` already fails naming the piece ("has no branch for it").
+- **`test/layout.mjs` check 1d**: the filter becomes `built === 'slab' ||
+  built === 'gable'`. The roof's `base` is the house's height typed a second
+  time, which is exactly the number check 1d exists for.
+- **`data/scene-config.json`** (spliced, #584, #632):
+  - `quay-toll-house`, a run `from [-34, -2] to [-33, -2]`, thickness 6,
+    height 6, `medieval_blocks_02`, `repeatMetres` 3, `interior: true`: x
+    -138..-130, z -11..-5, north of the road at the quay's head, 0.5 m clear
+    of `town-wall-west`. Stone, not plaster, because it is the King's.
+  - `quay-toll-house-roof`, a `builtProps` entry, `shape: "gable"`, `ridge:
+    "x"`, `tile [-33.5, -2]`, `size [8, 3, 6]`, `base 6`,
+    `castle_wall_slates`: the one slate roof in Mereford (`the-quay` in
+    `data/lore.json`), in the curtain's own stone, ridge at 9.
+  - Room `mereford-quay`, `ward: "outside"`, name **"The King's quay"**,
+    bounds x -140..-129.5, z -16..16, `floor: "stone_pavers"`. Inside
+    `outside-ground` in both increments; its centre (-134.75, 0) is on the
+    floor patch, which check 15 and `plan-vs-scene`'s anchor need.
+  - Three placements on the quay's floor so check 11 has something in the
+    room: `quay-crane`, `pulley-crate.glb`, tile [-34.6, 1.5], rotationY 90,
+    scale 2.5, at the water's edge; `quay-barrels`, `barrels.glb`, tile
+    [-33.5, 1.2], scale 2.5; `quay-crate`, `detail-crate.glb`, tile [-34.2,
+    2.6], rotationY 15, scale 2.5.
+- **No change** to `plan-vs-scene.mjs`, `data/lore.json`, `data/mystery.json`,
+  `data/sounds.json` or `data/populace.json`.
+
+#### Acceptance, increment 3a
+
+Each line names the suite and the break that turns it red from green (#34).
+
+1. **`test/layout.mjs` check 4d**, unchanged, now over four outside rooms:
+   `mereford-quay` seen by `quay-toll-house-roof`. Break: toll-house height
+   4 and the roof's base 4, ridge at 7: `mereford-quay is seen from
+   nowhere`. The yard, the street and the church still pass, which is the
+   control.
+2. **Check 1d on the gable.** Break: toll-house height 5 with the roof's
+   base left at 6: `quay-toll-house-roof has its base at y 6.00 and nothing
+   under it`.
+3. **Checks 3d2, 4c, 11 and 12, unchanged**: a name that is not its id, the
+   room clear of the curtain, on `outside-ground` and reached by nobody,
+   three things in it, and `floor-mereford-quay` resolving to the
+   `stone_pavers` step class the base already uses.
+4. **`test/budget.mjs`, unchanged**: the gable is one mesh through
+   `buildPiece`. Break: delete the `gable` branch; the "no branch" line
+   fails. The prototype's count for 3a is about 10 more outside meshes
+   (run 1, gable 1, floor 1, crane 3, barrels 2, crate 1, and `outside-ground`
+   re-cut round the new patch); the builder reads the real number off the
+   run and writes it in `HISTORY.md`.
+5. **`plan-vs-scene.mjs` and `map.mjs`, unchanged** and green: the gable is a
+   tagged piece the box diff already covers, and the outside drawing picks
+   up a fourth room by the plan's own list (#726).
+
+#### Scope, increment 3b: the water (class S)
+
+- **`src/castle-plan.js`, the placement loop's kind rule**: a model whose
+  name starts `water` is `kind: 'water'`, beside the `tower` and
+  `wall|column` rules. One line. It pushes no surface (placements never do)
+  and the config gives it `noCollide`.
+- **`data/scene-config.json`**:
+  - `outside-ground`'s box min x from -198 to **-140**, and `outside-road`'s
+    likewise. Both comments rewritten: the ground's west edge is the bank
+    now, and the fog's `far` is the water's to meet. Both still meet the
+    base box, so the rank-5 check is unchanged.
+  - `quay-water`, `water.glb`, tile [-35.25, -10], rotationY 0, scale [57,
+    1, 80], base -1.3, `noCollide: true`: x -198..-141, z -40..40, y
+    -1.3..-1.1. One mesh. The tile is the model's corner origin, not its
+    centre, and the comment says so.
+  - Six `dock-side.glb` at tile x -35.5, z -2.5 to 2.5 by 1, rotationY 90,
+    scale 4, base -2, and two `dock-corner.glb` at [-35.5, -3.5] rotationY 0
+    and [-35.5, 3.5] rotationY 90, same scale and base: the quay front,
+    x -144.4..-140, z -16.4..16.4, stone from -2 to a top flush with the
+    road at 0.
+  - Two bank runs, `quay-bank-north` `from [-35.125, -9.5] to [-35.125,
+    -4.6]` and `quay-bank-south` `from [-35.125, 4.6] to [-35.125, 9.5]`,
+    thickness 1, height 2, `base: -2`, `forest_ground_06`, `interior: true`:
+    x -141..-140, the earth face from the water up to the ground either side
+    of the quay, stopping at the dock corners' ends so the two do not
+    overlap.
+- **`test/layout.mjs`, new check 4e, "nothing stands on the water"**: for
+  every `kind: 'water'` piece, every point of a 0.5 m grid over its box's
+  footprint gets nothing from `surfacesAt`. A plan fact, so here and not in
+  `plan-vs-scene.mjs` (#529). If no piece is water, it fails saying it
+  measured nothing.
+- **`test/layout.mjs`, new check 4f, "the water is seen"**: for every water
+  piece, some point of a 2 m lattice on its top (0.05 m under the box's top,
+  as 4d does) has a clear segment from one of 4d's eyes, within
+  `config.lighting.fog.far` of it, past 4d's occluders less the water itself.
+  Nearest the castle first, stop at the first seen point. 4d's eyes and
+  segment test are lifted into one function both checks call, not copied.
+  Prototype: seen at (-155, -7) from `sw-tower-stair-3` at 120.9 m after
+  257 of 1,120 points, 98 ms; the full sweep on the break is 229 ms.
+- **`test/budget.mjs`**: no line changes (#798).
+
+#### Acceptance, increment 3b
+
+1. **Check 4e.** Break: put `outside-ground`'s min x back at -198; the
+   failure names `outside-ground` at y 0 over 18,240 of the water's 18,240
+   points, the prototype's count. Check 10 also names the two bank runs sharing a top
+   with `outside-ground`, which is the second net and not a reason to skip
+   the first.
+2. **Check 4f.** Break: delete `town-wall-west`'s doorway: `quay-water is
+   seen from nowhere`, 0 of 1,120 points.
+3. **Check 10, unchanged**: the bank runs and the quay floor touch
+   `outside-ground` at x -140 and share no top.
+4. **Check 4, unchanged**: sealed; the fill never leaves the castle.
+5. **`test/budget.mjs`, unchanged**: about 20 more outside meshes (docks 16,
+   water 1, banks 2, and the shorter ground re-cut). With 3a, the
+   prototype's outside bucket goes from 131 to about 161, the outer ward's
+   sum from 1124 to about 1154 of 1200, the inner's to about 804. The
+   builder records the measured numbers.
+6. **`plan-vs-scene.mjs`, unchanged**: every new piece is tagged and diffed.
+
+#### Open calls, the quay and the river
+
+- **Water as a surface of its own kind, refused by walkability, or as a
+  piece with no surface.** Recommend **a piece** (#795): a surface is
+  something a foot can land on, so a water surface would need a step class
+  that check 12's dead-class rail would then have to excuse, and a rule in
+  the fill to refuse it. No surface needs neither.
+- **A far bank.** Recommend **none; the water runs into the fog** (#796). A
+  far bank is ground touching nothing the rank-5 check accepts, and the lore
+  puts the castle on a river mouth ("four rivers running to the sea ... a
+  King's castle now on the mouth of each"), which is an estuary.
+- **The road "down through Mereford to the quay".** Recommend **flat**: a
+  gradient on ground nobody walks is a sloped ground piece the plan does not
+  have, seen at 90 m through fog as nothing.
+- **Bodies on the quay.** Recommend **none**, #707 as for the town.
+- **A boat.** Recommend **none in this row**: the kit has none, and a hull is
+  #787's generator's to make, with its own table row, if the GPU run says
+  the quay reads empty.
+- **A sound for the river.** Recommend **none**: `ambient.spatial.hearMetres`
+  is 14 and the nearest place the player stands is 88 m away; check 13
+  already excludes outside rooms.
+- **The room's name.** Recommend **"The King's quay"**: `the-quay` says it is
+  the King's and not the town's, and the map is the one place the player
+  reads the name.
+- **If the GPU run cannot see the river.** Recommend **fog, not more water**:
+  the lever is `lighting.fog`, which is every view's, and is a decision for
+  whoever changes it, not this row. Do not move the town or cut the west
+  wall; #725's 8 m wall is why the street reads as a street.
+- **Tide.** Recommend **a fixed level at -1.1**: moving water is a runtime
+  animation of a plan piece, which `plan-vs-scene`'s box diff would have to
+  learn about, for a plane 84 % fogged.
+
+#### Dependencies, the quay and the river
+
+- The town's first increment, shipped (#725 to #728). 3b after 3a: both
+  write `data/scene-config.json`, and 3a's room is what 3b's docks stand at.
+- **Lane B.** Not beside rank 4 or rank 13's increments 2 and 3. 3a also
+  writes `src/castle-builder.js`, which rank 4's later increments may touch;
+  another reason not to run beside it.
+- No save bump, no `data/npcs.json`, no `src/audio.js`: lanes A, C, D and E
+  are free of it.
 
 Two calls from the town's first increment still bind the next one:
 
@@ -617,6 +824,14 @@ Two calls from the town's first increment still bind the next one:
 
 - #500, #529: every new piece is a plan piece; a sight check is Node
   arithmetic and belongs in `test/layout.mjs`, never `plan-vs-scene.mjs`.
+  Checks 4e and 4f go there; `plan-vs-scene.mjs` gains nothing, because
+  the gable and the water are tagged pieces its box diff already holds.
+- #795 to #798: water is never a surface; the ground stops at the bank; the
+  gable is the one new built shape; no ceiling moves.
+- #728: every outside room seen from the walls, and #796 holds the water to
+  the same standard inside `fog.far`.
+- #13, #34: 4e, 4f and check 1d's gable each go red from green on the break
+  this section names before the increment is called done.
 - #611: `test/budget.mjs` holds cost, `test/layout.mjs` holds whether the
   castle works.
 - #703, #704: nothing outside the curtain is enterable; `ward: "outside"` is
