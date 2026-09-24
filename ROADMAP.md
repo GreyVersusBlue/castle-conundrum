@@ -49,8 +49,8 @@ uncompressed body is the one asset nothing else on this list would catch.
 
 ### Container, start to finish
 
-**6** populace, **9** the town (past its next increment, which has no spec
-yet), **10** bodies' generated half (both increments shipped: the five clips
+**6** populace, **9** the town (its next increment, the quay and the river,
+is specced as two `builder` jobs, #795 to #798), **10** bodies' generated half (both increments shipped: the five clips
 and a generated cow, #787 to #790, #794, 34 bodies built), **13** the
 floor-plan editor's remaining increments. Every one is data, a validator, a
 Node suite or a headless DOM assertion.
@@ -72,8 +72,8 @@ lane at a time** (#602). The lanes are named by the file, not by the theme.
 | **none** | | 3 |
 
 Lane B: rank 4 and rank 9 both write `data/scene-config.json` and do not run
-together; rank 9's next increment (the quay) has no `SPECS.md` section yet
-and is not startable regardless. Lane C and D: rank 6 holds both, so it does
+together; rank 9's quay increments also write `src/castle-builder.js`
+(the gable, 3a), a second reason not to run beside rank 4. Lane C and D: rank 6 holds both, so it does
 not run beside rank 10 (lane C) or rank 11 (lane D) — a clean merge of two
 lane-C rows is not the same as a correct one; nothing in `npm test` would
 have caught the day rank 1 and rank 6 once shared a merge where five of

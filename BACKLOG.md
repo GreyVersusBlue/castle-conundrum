@@ -310,10 +310,12 @@ room is worse than no room." **The town's first increment shipped on
 wall, seen from the North-west Tower's roof, entered by nobody, drawn on a
 map frame of their own and out of the room count (back to 67.6 m, 40 rooms),
 held against both wards' mesh ceiling. **What is next is the quay and the
-river**, outside the west gate, deferred because water is a surface kind the
-plan does not have yet; it has no `SPECS.md` section, so it is an `architect`
-job first. Filling the nineteen empty rooms is rank 6's routines and a later
-lore row's documents.
+river**, outside the west gate, specced on 2026-09-24 (#795 to #798) as two
+`builder` increments: 3a, a stone toll-house under the one slate gable in
+Mereford, which is the only part of the quay the walls can see; then 3b, the
+water, a plan piece with no surface that runs into the fog, with the ground
+cut back to the bank so nothing calls it floor. Filling the nineteen empty
+rooms is rank 6's routines and a later lore row's documents.
 
 ## Bodies
 
