@@ -9114,3 +9114,256 @@ override the table and says why in one line, a third tie-break says Opus
 decides a restructure and `scribe` carries it out, and planning on Opus with
 Sonnet executing is allowed for any class where the reading is large and the
 deciding is small. Devon asked for it directly. No agent file changed.
+
+---
+
+## Bodies: made here when they cannot be fetched (2026-09-23)
+
+**A spec, not a batch.** Devon's ask for the session: if the backlog cannot
+move, make new models of maids, knights, peasants, children, dogs, cows and
+chickens. This container reaches npm and does not reach poly.pizza,
+quaternius.com, OpenGameArt or itch (all four time out); it has no Blender
+and no `ktx`. `SPECS.md`'s "Bodies" gains "The generated half", two
+increments with every open call recommended; `BACKLOG.md` and `ROADMAP.md`
+say that half is Container. No code, no asset. Decisions #787 to #789,
+written as `architect`; #785 and #786 are held by another session.
+
+**#787. Bodies and clips may be generated in this repo by a deterministic
+Node script, as textures already are.** `tools/bodies/` reads a table and
+writes `.glb` through gltf-transform, `npm run bodies:render`, and a suite
+holds each output byte-equal to what the script writes from its row: #742's
+shape and #743's provenance rule, pointed at meshes. What was wrong was the
+assumption in rank 10's spec that every body is sourced, which made the row
+Local: net in full while its largest open item, the activity clips, needs no
+network at all. Sourcing CC0 stays allowed and is still the route for any
+kind the generator does not make. What this does not license: a generated
+human. Maids, knights, peasants and children stay on the four Quaternius
+rigs, because tint, height, hidden nodes and the spear already make them
+(#643, #685) and a box-built human would sit beside the kit's people looking
+like a different game.
+
+**#788. The five activity clips go inside the four human bodies, and they
+are the first generated increment.** Measured with gltf-transform: the four
+share 62 joint names, but Woman's Idle pose differs from the three men's by
+up to 90.5 degrees at `UpperLeg.R` (the men agree within 0.93), her rest
+translations by up to 0.108 m, and her clips run 2.08 s to their 1.67 s at
+the same 51 keys. A shared clip file would be two files and a loader change
+in `npc.js`; clips inside each body need no `npc.js` change and are already
+referenced (check 4), encoded (check 5) and read by `mystery.mjs`'s
+per-person clip check. Each clip is Idle's 108 channels with model-space
+rotations composed on top at integer cycles, so it loops by construction.
+King.glb round-trips gltf-transform byte-identical and Woman.glb grows 20,616
+bytes once then holds, so a second render is a no-op; Hen.glb does not
+round-trip stably, which is why the generator touches only the four. `Drill`
+joins rank 6's four because the garrison carries the spear.
+
+**#789. `MAX_SKINNED_TOTAL` goes from 33 to 34 when a generated cow lands,
+and only for a body inside the cow's caps.** #756 said the next body should
+cost an argument; this is it. A human is 62 joints, 5,476 to 11,110
+triangles and five skinned nodes; the cow is capped at 16 joints, 1,000
+triangles, 4 primitives and 80 KB, each cap a rail in `test/assets.mjs`.
+What it adds is one AnimationMixer and at most four skinned draws.
+`MAX_SKINNED_PER_WARD` stays 20: the outer ward peaks at 19 on the walking
+day, so a cow there all day makes 20 and fits. A separate budget for cheap
+animals was the alternative and is refused, because it would move the hound
+and both hens out of the 33 without anyone arguing for it. Shipping the asset
+before its placement is refused too: an unreferenced `Cow.glb` fails check 4
+(#390). A pig or a goat after it costs its own argument, 34 to 35.
+
+---
+
+## The red suite: a body is not stood on a prop (2026-09-23)
+
+**Increment 3, the last, class S; the row is closed.** `PROP_CLEARANCE` is
+1.0 m in `src/stations.js` beside `STATION_CLEARANCE`, and the rail is
+`validateMystery`'s, day one's nav block, surfaced by `test/mystery.mjs`
+check 1. Plan arithmetic and `nav.at`, so #529 keeps it out of
+`plan-vs-scene.mjs`. Decision #785.
+
+**#785. No day-one station stands within 1.0 m of anything the player
+presses E at, at the watch it is held.** "Anything" is every plan piece
+carrying `evidence`, `read` or `bell` (25 pieces), measured station point to
+the centre of the piece's box, same storey only, the way `STATION_CLEARANCE`
+skips a pair on two levels; an evidence piece counts only at the watches
+`mystery.json` lists it for, so the body's lantern is a prop at Prime and
+not at Terce. On the data as it stood the rail said exactly the five pairs
+the spec measured: the Chaplain 0.20 m from the gravestone at all four
+watches and the Constable 0.92 m from the chapel candles at Prime. The fix
+moves two stations and nothing else. **The Chaplain** goes from tile
+(5.4, 3.8) to (5.5, 3.55) at all four watches, 1.08 m south-east, 1.02 m
+from the gravestone's centre and nothing else pressable within 1.8 m; a spot
+1.00 m north at (5.4, 4.05) was as close but 1.11 m from the bell and 1.57 m
+from the candles, inside the cells `plan-vs-scene`'s candles beat sweeps.
+**The Constable** at Prime goes from (5.9, 4.2) to (5.95, 4.2), 0.20 m east,
+1.10 m from the candles, 1.35 m from the bell and 1.44 m from the body's
+lantern. Both pass every other nav rail.
+
+**What it does not cover.** Day one only, the four watches the spec measured.
+Run over the walking day and the morning after, the same arithmetic finds
+the Chaplain 0.20 m from the gravestone at `prime-eve`, `sext-eve`,
+`vespers-eve` and `lauds` ("the grave is filled", which is the point),
+Hywel 0.34 m from the candles at `vespers-eve` (the foot of the stair he
+dies at), Hywel 0.95 m from the obituary roll and the cook 0.93 m from the
+knife at `sext-eve`. Whether the rail extends to those days, and whether
+Hywel's last station is the one exception, is a decision and not done here.
+
+**The breaks, from green** (#34). The Chaplain's Prime station put back at
+(5.4, 3.8) in `data/mystery.json`: check 1 went red with `FAIL
+validateMystery finds nothing wrong, the castle included — chaplain stands
+0.20 m from gravestone at prime, inside the 1.0 m a body keeps from
+something to press E at`, exit 1. The watch filter deleted from the rail:
+`FAIL a station on the body's lantern fires at Prime and not at Terce, when
+the body is no longer evidence there`, exit 1. Both restored. Three
+assertions added to check 2: the Chaplain back on the gravestone at Terce,
+the Constable back at the candles at Prime, each held to its exact message,
+and the lantern at Prime against Terce. `npm test mystery layout dialogue
+quest save lore budget` green; the browser suites were not run here.
+
+---
+
+## The red suite, reopened: the rail on the other two days (2026-09-23)
+
+**A spec, not a build.** "The red suite" gains increment 4 in `SPECS.md`,
+every open call recommended; no code, no data. Decision #792, written as
+`architect`; #790 and #791 are held by a builder in the same tree.
+
+**#792. `PROP_CLEARANCE` holds on all three days, with no exemption, and
+#785's list of what it would flag there was wrong by two entries.** Measured
+in Node against `7251195` with #785's own rules (same storey, box centre, an
+evidence piece only when it is on the ground that day: `day0.evidence` on the
+walking day, nothing on the morning after, as `_showEvidence` does), the
+pairs are the Chaplain 0.20 m from the gravestone at `prime-eve`, `sext-eve`,
+`vespers-eve` and `lauds`, Hywel 0.34 m from the candles and 0.81 m from the
+bell at `vespers-eve`, and the cook 0.93 m from the knife at `sext-eve`.
+#785 listed Hywel 0.95 m from the obituary roll at `sext-eve`, which is a
+cross-storey gap (the roll is on level 1, he is on level 0) the rail never
+counts, and it missed the bell, which is the piece pressed to end the
+walking day. Each pair has a fix of 1.08 m or less that keeps the station's
+note true, so no allowlist is built: the Chaplain to day one's (5.5, 3.55)
+on all four, 1.02 m; the cook to (-0.113, 3.688), 1.10 m; Hywel to (5.9,
+4.475), 1.05 m from the candles and 0.33 m from where his lantern lies at
+Prime, so the man at the foot of the stair is standing where he is found.
+That tile is 1.32 m from the sacristan's `vespers-eve` stop, which
+`validatePopulace` refuses, so she moves 0.28 m to (6.238, 4.263). With
+all of it applied in memory, `validateMystery` and `validatePopulace` both
+return nothing. What the rail does not cover, on purpose: the populace's 16
+stops inside 1.0 m of a piece, because a populace body is a label and never
+takes a prop's prompt (#617). The first station that needs an exemption is
+an `architect` call, and `SPECS.md` names its shape.
+
+---
+
+## Bodies: increment 2a shipped, the five clips in the four bodies (2026-09-23)
+
+**Rank 10, increment 2a shipped.** Decision #790. `tools/bodies/clips.json`
+and `tools/bodies/index.mjs` (`renderBody`, throws on an unknown bone) write
+five clips, `Sweep`, `Stir`, `Hammer`, `Spar` and `Drill`, into Woman,
+Farmer, Adventurer and King, run by `npm run bodies:render`. Every generated
+clip carries `extras.generator`, and a render drops all of them first, so a
+row deleted from the table takes its clip out of every body with it —
+forced by a #34 break: deleting `Drill`'s row stayed green before this was
+added. Rail 4 also compares the step across the loop seam to the largest
+step inside the clip, because `cycles: 1.5` on `Hammer` stayed green
+otherwise (#147); the worst clip that ships is 1.01 against a 1.5 limit.
+
+Sizes: Woman 1,073,992 to 1,265,668 bytes (+191,676, of which 20,616 is
+gltf-transform's own first-pass growth); Farmer +171,536; Adventurer
++171,440; King +171,492; total +706,144 across the four, about 34 KB a
+clip, against a 250,000-byte-per-body cap.
+
+`test/assets.mjs` check 7 gained seven rails; the break for each and the
+message it produced, from green (#34):
+
+1. `Drill`'s row deleted: "Woman.glb carries 28 clips, not 29; missing Drill".
+2. A bone renamed to `UpperArmR`: "Sweep's row moves \"UpperArmR\", not a
+   joint of this body".
+3. Keyed at 60 steps: "Sweep ends at 2.5000 s, Idle at 2.0833 s".
+4. `cycles: 1.5` on `Hammer`: "Hammer's Torso rotation turns back at the
+   loop: its speed changes by 1.65e-3 across the seam against 1.83e-4".
+5. `Stir`'s amplitudes set to 0: "Stir's driver UpperArm.R never gets more
+   than 12.0 degrees from Idle, under 20".
+6. An amplitude changed without re-rendering: "Woman.glb is not what
+   tools/bodies/index.mjs renders ... first difference at byte 8".
+7. Keyed at 500 steps: "Woman.glb is 1467152 bytes, over its 1073992 ...
+   plus 250000".
+
+`ACTIVITY_CLIPS` in `src/populace.js` gains the five names; no routine uses
+them yet, which is rank 6's to do. `npm test` 15 of 15 green. A second
+`npm run bodies:render` is a byte no-op. Whether a clip reads as its name is
+a GPU question and is not answered here (#53).
+
+---
+
+## The red suite, increment 4 shipped (2026-09-23)
+
+**Decision #793.** `src/mystery.js`'s prop loop is one local function,
+`propClear(watchList, onGround)`, with a `dayOneGround` predicate, called
+three times: day one, the walking day (against `day0.evidence`, what
+`_showEvidence` shows), and the morning after (the day-one predicate
+against `lauds`, which hides every evidence piece, as the page does).
+
+Seven stations moved. Chaplain (5.5, 3.55) at prime-eve, sext-eve,
+vespers-eve and day2. Cook (-0.113, 3.688) at sext-eve. Hywel (5.9, 4.475)
+at vespers-eve. Sacristan's vespers-eve stop 1, (6.238, 4.263). `test/
+mystery.mjs` 386 to 390 hold them. Before the move the rail flagged exactly
+#792's seven pairs.
+
+**The breaks, from green** (#34): deleting the walking-day call to
+`propClear` reads "rejects Hywel back at (5.75, 4.375) ... said nothing" and
+"rejects the cook back on the knife at sext-eve said nothing"; deleting the
+morning's call reads "rejects the Chaplain back on the gravestone on the
+morning after said nothing"; giving the walking day the day-one predicate
+leaves the cook assertion saying nothing and Hywel's saying only "hywel
+stands 0.81 m from chapel-bell"; giving the walking day `() => true` reads
+"Hywel stands 0.32 m from lantern-chapel at vespers-eve and nothing is
+said", and check 1 also goes red with "hywel stands 0.81 m from pouch".
+
+`npm test` 15 of 15 green.
+
+**Correction to #792:** the rail measures Hywel 0.32 m from
+`lantern-chapel`, not 0.33 m as #792 and `SPECS.md` said. `SPECS.md`'s
+figure is fixed to match.
+
+---
+
+## Bodies: increment 2b shipped, the generated cow (2026-09-23)
+
+**Decision #794.** `tools/bodies/bodies.json` and `renderAnimal` in
+`tools/bodies/index.mjs` write `assets/NPCs/Cow.glb`, meshopt applied the
+way the spec's cap requires; the extra skin meshopt leaves the render adds
+for an animal are deleted before the file is written, the same reason
+`Hound.glb` carries two. The cow is 37,548 bytes, 15 joints named after the
+hound's, 404 triangles, 4 primitives (`Hide`, `Nose`, `Eye`, `Horn`); its
+clips are `Idle` 3.0 s, `Walk` 1.4 s, `Eating` 3.0 s.
+
+**Spec conflict, resolved.** `SPECS.md` named five materials but capped
+primitives at 4. `Hide_Patch` is a darker vertex colour inside the `Hide`
+primitive, so the tint darkens the patches too, and `/^horn$/i` is the only
+line added to `BARE_MATERIALS` in `src/npc.js`.
+
+`data/populace.json` gains `cow`, "Gwineu", tint `#a36b43`, height 1.45,
+`eat` at (-7.438, 0.563) and `wait` at (-7.188, 0.063), at all 8 bells.
+`MAX_SKINNED_TOTAL` goes 33 to 34 (#789): 34 of 34 built, the outer ward
+peaks at 20 of 20 on the walking day (`terce-eve`), 19 on the day of the
+death. The household count in `test/mystery.mjs` goes 19 to 20.
+
+`test/assets.mjs` check 7 gains a cow half, five rails: 16 joints, 1,000
+triangles, 4 primitives, 80,000 bytes, `Idle` at least 2.0 s, and the body
+at least 1.3 times as long as it is tall. 2a's loop check moved into a
+shared `seamOf`, unchanged in what it asserts.
+
+**The breaks, from green** (#34): prism sides raised to 160 read "1020
+triangles, over 1000"; the horn weighted to joint 16 read "primitive 3
+vertex 0 is weighted to joint 16, and the skin has 15 (0 to 14)"; `Walk`
+keyed at `cycles: 1.5` read "Walk's Body rotation turns back at the loop:
+its speed changes by 8.18e-3 across the seam against 7.93e-4"; the body's y
+and z sizes swapped read "bind pose is 2.15 m long and 1.67 m tall, under
+1.3 to 1"; `Tail1`'s amplitude changed from 22 to 23 without re-rendering
+read "Cow.glb is not what tools/bodies/index.mjs renders from bodies.json
+... first difference at byte 24276". A second render is a byte no-op.
+`npm test` 15 of 15 green.
+
+The lead looked at a headless software render: it reads as a cow, blocky.
+The real look is `npm run play`'s (#53). The outer ward is now at its 20
+ceiling on the walking day, so the next body placed there needs its own
+ceiling argument.

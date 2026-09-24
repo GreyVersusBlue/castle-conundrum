@@ -34,16 +34,19 @@ import { STATION_CLEARANCE } from './stations.js';
 import { EYE_HEIGHT } from './castle-plan.js';
 
 /**
- * WHAT A BODY IS DOING AT A STOP, AND THE CLIP THE KIT ALREADY HAS FOR IT.
+ * WHAT A BODY IS DOING AT A STOP, AND THE CLIP ITS BODY HAS FOR IT.
  *
- * The three bodies under assets/NPCs each ship the same 24 Quaternius clips,
+ * The four human bodies under assets/NPCs ship the same 24 Quaternius clips,
  * and not one of them is a sweep, a stir, a hammer or a spar. So the first
- * increment of this row adds no clip and no asset (SPECS.md, "Life: a
- * populace"): the vocabulary below is deliberately restricted to jobs a body
- * does STANDING STILL, and every one of them resolves to one of three idle
- * variants. A baker at the oven and a boy waiting with a yoke really do look
- * like a person standing, which is why these five were the ones chosen and
- * `sweep`, `stir`, `hammer` and `spar` were not.
+ * increment of this row added no clip and no asset (SPECS.md, "Life: a
+ * populace"): its jobs are ones a body does STANDING STILL, and each resolves
+ * to one of three idle variants.
+ *
+ * The five working clips below it are generated, not the kit's (#787, #788):
+ * tools/bodies/ writes Sweep, Stir, Hammer, Spar and Drill into all four human
+ * bodies from tools/bodies/clips.json, each one Idle with the arms and spine
+ * turned on top, and test/assets.mjs check 7 holds the files to the table.
+ * No routine uses them yet; writing them into routines is "Life: a populace"'s.
  *
  * The map is the validator's rail as well as the player's: an `activity` the
  * data uses and this object does not name is refused at load, because the
@@ -70,6 +73,14 @@ export const ACTIVITY_CLIPS = {
   // else — a gardener in this pose is a gardener holding a sword.
   guard: 'Idle_Sword',
   muster: 'Idle_Sword',
+  /* THE GENERATED FIVE (#788). In Woman, Farmer, Adventurer and King only, so
+   * a hound or a hen given one of these fails mystery.mjs's per-person clip
+   * check. `drill` is the garrison's, with the spear (#685). */
+  sweep: 'Sweep',
+  stir: 'Stir',
+  hammer: 'Hammer',
+  spar: 'Spar',
+  drill: 'Drill',
   /* THE HOUND'S TWO (#644). Hound.glb ships twelve clips off Quaternius's
    * animal rig and not one of them is a human's, so these two exist in one
    * body and `wait` exists in all five. The clip check in test/mystery.mjs

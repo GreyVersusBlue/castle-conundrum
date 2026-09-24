@@ -221,7 +221,59 @@ console.log('the validator rejects');
   expect('two of the twelve on one tile at one watch',
     (m) => { m.schedule.cook.vespers.tile = [...m.schedule.constable.vespers.tile]; },
     /^constable and cook stand 0.00 m apart at vespers, inside the 1.5 m two bodies need$/);
-  expect('a station inside a wall', (m) => { m.schedule.cook.prime.tile = [-3.5, -2.5]; }, /^cook: station at prime is at tile \(-3.5, -2.5\) on level 0, where there is no floor to stand on$/);
+  /* A BODY STOOD ON A PROP (#785). The two stations PROP_CLEARANCE was written
+   * for, put back where they were: the Chaplain on the gravestone, the
+   * Constable at the candles. And the half that says the rail reads the
+   * watch: the body is evidence at Prime only, so a station on its lantern at
+   * Terce is nobody standing on anything and must not fire. */
+  expect('the Chaplain back on the gravestone (`chaplain stands 0.20 m from gravestone at terce`)',
+    (m) => { m.schedule.chaplain.terce.tile = [5.4, 3.8]; },
+    /^chaplain stands 0\.20 m from gravestone at terce, inside the 1\.0 m a body keeps from something to press E at$/);
+  expect('the Constable back at the candles at Prime (`constable stands 0.92 m from candles-chapel at prime`)',
+    (m) => { m.schedule.constable.prime.tile = [5.9, 4.2]; },
+    /^constable stands 0\.92 m from candles-chapel at prime, inside the 1\.0 m a body keeps from something to press E at$/);
+  {
+    const lantern = plan.pieces.find((pc) => pc.evidence === 'body');
+    const tile = [(lantern.box.min.x + lantern.box.max.x) / 2 / plan.tile, (lantern.box.min.z + lantern.box.max.z) / 2 / plan.tile];
+    const atPrime = broken((m) => { m.schedule.chaplain.prime.tile = tile; });
+    const atTerce = broken((m) => { m.schedule.chaplain.terce.tile = tile; });
+    const said = (p, w) => p.filter((x) => new RegExp(`^chaplain stands 0\\.\\d\\d m from ${lantern.id} at ${w},`).test(x));
+    check(said(atPrime, 'prime').length === 1 && said(atTerce, 'terce').length === 0,
+      `a station on the body's lantern fires at Prime and not at Terce, when the body is no longer evidence there`,
+      `prime: ${atPrime.join('; ') || 'nothing'} | terce: ${atTerce.join('; ') || 'nothing'}`);
+  }
+  /* THE SAME RAIL ON THE OTHER TWO DAYS (#792). Each of the three stations it
+   * moved, put back: the Chaplain on the gravestone on the morning after,
+   * Hywel on the candles and under the bell at the last bell of the walking
+   * day, the cook on the knife at its Sext. The fourth is the half that says
+   * the walking day reads `day0.evidence`: Hywel stands within a metre of
+   * where his own lantern lies at Prime, and it is not on the ground the day
+   * before, so nothing is said. */
+  expect('the Chaplain back on the gravestone on the morning after (`chaplain stands 0.20 m from gravestone at lauds`)',
+    (m) => { m.day2.schedule.chaplain.tile = [5.4, 3.8]; },
+    /^chaplain stands 0\.20 m from gravestone at lauds, inside the 1\.0 m a body keeps from something to press E at$/);
+  {
+    const p = broken((m) => { m.day0.schedule.hywel['vespers-eve'].tile = [5.75, 4.375]; });
+    const candles = p.find((x) => /^hywel stands 0\.34 m from candles-chapel at vespers-eve, inside the 1\.0 m a body keeps from something to press E at$/.test(x));
+    const bell = p.find((x) => /^hywel stands 0\.81 m from chapel-bell at vespers-eve, inside the 1\.0 m a body keeps from something to press E at$/.test(x));
+    check(!!candles && !!bell, 'rejects Hywel back at (5.75, 4.375) at vespers-eve, on the candles and under the bell',
+      p.length ? `said: ${p.join('; ')}` : 'said nothing');
+    if (candles && bell) console.log(`          said: ${candles}\n          said: ${bell}`);
+  }
+  expect('the cook back on the knife at sext-eve (`cook stands 0.93 m from knife at sext-eve`)',
+    (m) => { m.day0.schedule.cook['sext-eve'].tile = [-0.063, 3.688]; },
+    /^cook stands 0\.93 m from knife at sext-eve, inside the 1\.0 m a body keeps from something to press E at$/);
+  {
+    const lantern = plan.pieces.find((pc) => pc.evidence === 'body');
+    const at = nav.at('hywel', 'vespers-eve');
+    const gap = Math.hypot(at.x - (lantern.box.min.x + lantern.box.max.x) / 2, at.z - (lantern.box.min.z + lantern.box.max.z) / 2);
+    const p = broken(() => {});
+    const said = p.filter((x) => new RegExp(`^hywel stands 0\\.\\d\\d m from ${lantern.id} at vespers-eve,`).test(x));
+    check(at.level === (lantern.level ?? 0) && gap < 1.0 && said.length === 0,
+      `Hywel stands ${gap.toFixed(2)} m from ${lantern.id} at vespers-eve and nothing is said, because the body is not on the ground the day before`,
+      `level ${at.level} against ${lantern.level ?? 0}; said: ${said.join('; ') || 'nothing'}`);
+  }
+  expect('a station inside a wall',(m) => { m.schedule.cook.prime.tile = [-3.5, -2.5]; }, /^cook: station at prime is at tile \(-3.5, -2.5\) on level 0, where there is no floor to stand on$/);
   expect('a station outside the room it names', (m) => { m.schedule.cook.prime.tile = [-5, -0.5]; }, /^cook: station at prime is at tile \(-5, -0.5\), which is not inside kitchen$/);
   // Lady Alys stood in the east barbican garden at Sext until this phase. The
   // east gate is shut and never opens (scene-config.json, and PLAN.md's
@@ -1218,7 +1270,7 @@ console.log('\nthe household in data/populace.json');
       `all ${people.length} of the household are in the castle on the walking day too, over ${stops} stops at its four bells`,
       `nobody at any of ${W0.join(', ')}: ${empty.join(', ')}`);
   }
-  check(people.length === 19, `${people.length} of them: the first increment's ten (SPECS.md, "Life: a populace"), the child and the hound (#643, #644), two hens (#684), and the inner ward's five (#729)`);
+  check(people.length === 20, `${people.length} of them: the first increment's ten (SPECS.md, "Life: a populace"), the child and the hound (#643, #644), two hens (#684), the inner ward's five (#729) and the generated cow (#789)`);
   /* THE TALK LIST (#731), counted beside the people because a validator that
    * found nothing in an empty list would pass the same as one that found
    * nothing in three. */
@@ -1345,8 +1397,8 @@ console.log('\nthe household validator rejects');
     /^well-wife at prime, stop 1: tile \(-8\.313, 3\.688\) is in outer-ward on level 0, not in laundry on level 0$/);
 
   expect('an activity no clip in npc.js answers to',
-    (f, people) => { of(people, 'baker').routine.terce[0].activity = 'hammer'; },
-    /^baker at terce, stop 1: activity "hammer" is one src\/npc\.js has no clip for/);
+    (f, people) => { of(people, 'baker').routine.terce[0].activity = 'juggle'; },
+    /^baker at terce, stop 1: activity "juggle" is one src\/npc\.js has no clip for/);
   expect('a stop with no floor under it',
     (f, people) => { of(people, 'baker').routine.terce[0].tile = [0.313, 6.5]; },
     /^baker at terce, stop 1: .*no floor to stand on$/);
@@ -1391,7 +1443,7 @@ console.log('\nthe household validator rejects');
     (f, people) => { of(people, 'maid').routine['sext-eve'][0] = { room: 'cell', tile: [-5.063, 3.563], activity: 'wait' }; },
     /^maid: no walk from where terce-eve left them /);
   expect('one of the nineteen standing on the mason at the last bell of the walking day',
-    (f, people) => { of(people, 'sacristan').routine['vespers-eve'][0].tile = [5.75, 4.375]; },
+    (f, people) => { of(people, 'sacristan').routine['vespers-eve'][0].tile = [5.9, 4.475]; },
     /^sacristan's stop 1 at vespers-eve is 0\.00 m from the hywel's station, inside the 1\.5 m two bodies need$/);
   /* RANK 10's THREE FIELDS AND THE FOLLOW (#643, #644), each in the shape
    * that fails silently on screen rather than the shape that throws. */

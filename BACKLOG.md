@@ -49,8 +49,13 @@ the chapel-candles aim and the populace beat's timing (#721 to #724); the
 town's first increment, street and church (#725 to #728); the day-before
 walking day, whole, all four increments (#750 to #756, #767 to #779); the
 retro castle's first increment, fifteen generated textures replacing fifteen
-photographed sets (#742 to #744, #757 to #766); and the sight-ray fix that
-aims at a body's own height instead of a fixed world height (#780 to #782).
+photographed sets (#742 to #744, #757 to #766); the sight-ray fix that
+aims at a body's own height instead of a fixed world height (#780 to #782);
+the red suite, closed whole: the day-one `PROP_CLEARANCE` rail and its
+extension to the walking day and the morning after (#785, #792, #793); and
+bodies' generated half, increments 2a and 2b: five activity clips in the
+four human rigs and a generated cow grazing in the outer ward, 34 bodies
+built (#787 to #790, #794).
 
 **Open, ranked below.** Eight rows: the GPU run itself, now gated on nothing
 (rank 3, #780 to #782); the retro castle's look and its remaining two
@@ -61,10 +66,12 @@ theme past its shadow and hand (rank 11); and the floor-plan editor's drag
 increments (rank 13). Ranks 1, 2, 5, 8 and 12 are retired numbers, not gaps: a
 rank is a priority, never an id, and never reused (#619, #522, #491).
 
-**One finding with no row yet.** Nothing stops a station standing on top of a
-prop. `SPECS.md`'s "The red suite" section carries the one increment still
-open on it, a `PROP_CLEARANCE` rail in `src/mystery.js`, recommended at
-1.0 m (#721 to #724).
+**The red suite is closed.** Four increments shipped: the aim cone and the
+populace beat's timing fix (#721 to #724); a `PROP_CLEARANCE` rail of 1.0 m
+in `src/mystery.js`, moving the Chaplain and the Constable off the
+gravestone and the candles, day one only (#785); the same rail extended to
+the walking day and the morning after, seven stations moved in total
+(#792, #793).
 
 ## How this repo is worked
 
@@ -184,10 +191,10 @@ move-and-delete and the dialogue format (#583 to #587, #607 to #611, #636 to
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 3 | The GPU run: the looks are taken (#711 to #715); the walker holds on a GPU (#734, #736) and the third sitting reached the accusation with the wrong ending (#735 to #741) | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
 | 4 | The retro castle: increment 1 shipped, fifteen sets out and fifteen 128 px textures in (#757 to #766); the look, then variety per room, are left | 2+ | Opus 5 | Container to the look, local: GPU past it | — | B | | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
-| 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #729 to #733); the town, the four clips and the chatter pool are left | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
+| 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #729 to #733); rank 10's five clips now exist (#790) and are this row's to place; the town and the chatter pool are left | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: somebody listens to the seven beds, the four rings and the first two event sounds (a bed at a point and the rings, #680 to #683; the door and the hound, #696 to #698) | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
 | 9 | A castle to get lost in: the town, the rock and river | 2+ | Opus 5 | Container | — (4c opened it) | B | | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
-| 10 | Bodies: a shared low-poly rig for the fifty (the child and the hound shipped, #643 to #645; two hens and the spear, #684 to #686) | 1 | Fable 5.1 | Local: net | — | C | | [Bodies](SPECS.md#bodies) |
+| 10 | Bodies: a shared low-poly rig for the fifty (the child and the hound shipped, #643 to #645; two hens and the spear, #684 to #686); five clips generated onto the four human rigs shipped (#790); a generated cow shipped (2b, #787 to #789, #794), body count 34 | 1 | Fable 5.1 | Generated: Container; sourced: Local: net | — | C | | [Bodies](SPECS.md#bodies) |
 | 11 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 | Container to the Node line, local: GPU past it | **after 3** | D | shadow + hand shipped 2026-09-17 (#650 to #654) | [Feel](SPECS.md#feel) |
 | 13 | The floor plan you can see: the review view shipped (#745 to #749); a way to redraw it is left | 2+ | Opus 5 | Container | — | B | increment 1 shipped 2026-09-21 (#745 to #749) | [The floor plan you can see](SPECS.md#the-floor-plan-you-can-see) |
 
@@ -260,10 +267,12 @@ gossip pairs, bringing the page to 32 of 32 bodies built — 13 cast plus 19
 populace, exactly `MAX_SKINNED_TOTAL` (#729 to #733). `test/mystery.mjs`
 owns the validator (#529); `test/budget.mjs` counts the household.
 
-**What is left waits on three other rows and one argument.** The rest of the
+**What is left waits on two other rows and one argument.** The rest of the
 fifty, and whether `garden` becomes ground, is rank 9's town. The four
-activities still without a clip, `sweep`, `stir`, `hammer` and `spar`, wait
-on rank 10. The ceiling stays 32 until a row renegotiates it with rank 2's
+activities that had no clip, `sweep`, `stir`, `hammer` and `spar`, now do:
+rank 10 shipped all five clips into the four human bodies (#790), and
+writing them into a routine is this row's to do. The ceiling stays 32 until
+a row renegotiates it with rank 2's
 `renderer.info`. And the twelve's 27-pair chatter pool is still unspent by
 proximity; a later lore or dialogue increment is recommended to hold each
 pair to the schedule the way #592 holds a performance.
@@ -308,15 +317,21 @@ lore row's documents.
 
 ## Bodies
 
-*Where: local, a network that reaches the asset hosts. Gate: none. Lane: C.*
+*Where: the generated half is Container (#787); the sourced half is local, a network that reaches the asset hosts. Gate: none. Lane: C.*
 
 **Rank 10.** Every row above this one that needs a new body is waiting on
 this one. Low-poly, one shared rig, CC0 (#550 question 5). Shipped: the
 child, at 1.15 m off the existing rig with a bigger head, and the hound,
 Quaternius's Husky (#643 to #645); two hens and a spear, off poly.pizza,
-the first held prop that is not Poly Haven's (#684 to #686). What is left is
-the look at all of it on a GPU (#53), and the four activity clips rank 6
-still wants (`sweep`, `hammer`, `spar`, `drill`), which no body on disk has.
+the first held prop that is not Poly Haven's (#684 to #686). Bodies and
+clips may be made here rather than fetched (#787), and increment 2a
+shipped: `Sweep`, `Stir`, `Hammer`, `Spar` and `Drill` written into Woman,
+Farmer, Adventurer and King by `npm run bodies:render` (#788, #790). Rank
+6's four deferred clips now exist and are its to place in a routine.
+Increment 2b shipped too: a generated cow grazing in the outer ward,
+`MAX_SKINNED_TOTAL` 33 to 34, 34 of 34 bodies built (#789, #794). What is
+left here: the look at all of it on a GPU (#53), and further generated
+kinds (a pig, then a goat), each its own table row and ceiling argument.
 
 ## Feel
 

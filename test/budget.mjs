@@ -110,7 +110,7 @@ const MAX_POINT_LIGHTS_TOTAL = 8;
 
 /** Skinned bodies standing in one ward at one watch, and in the whole cast. */
 const MAX_SKINNED_PER_WARD = 20;
-const MAX_SKINNED_TOTAL = 33;
+const MAX_SKINNED_TOTAL = 34;
 /* Anchored on rank 6 rather than on hardware, because rank 6 is what is about
  * to spend it: twelve cast plus its first ten populace is 22, which fits 32
  * with room left for somebody to be standing in rank 4c's yard. The "7 today"
@@ -131,7 +131,13 @@ const MAX_SKINNED_TOTAL = 33;
  * measures outer 19 at terce-eve and inner 15, against the day of the death's
  * own outer 18 and inner 15. Rank 10's "the fifty" fits neither number
  * and is not meant to: fifty bodies is fifty AnimationMixers and fifty skinned
- * draw calls, and this is the file that says so out loud. */
+ * draw calls, and this is the file that says so out loud. 33 TO 34 IS THE COW
+ * (#789), the second argument this block has had: a generated body inside
+ * #789's caps, 15 joints, under 1,000 triangles in 4 primitives and 80 KB,
+ * held by test/assets.mjs check 7, so what it adds is one AnimationMixer and
+ * at most four skinned draws. It stands in the outer ward all day, and that
+ * ward's walking-day peak goes from 19 to 20 of `MAX_SKINNED_PER_WARD`, which
+ * stays 20. A pig or a goat after it costs its own argument, 34 to 35. */
 
 /** Every image the page can load, decoded, in megabytes of video memory. */
 const MAX_TEXTURE_MB = 64;

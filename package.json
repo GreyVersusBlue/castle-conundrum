@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "assets:encode": "node tools/encode-assets.mjs",
     "pixel:render": "node tools/pixel/index.mjs",
+    "bodies:render": "node tools/bodies/index.mjs",
     "dialogue:extract": "node tools/dialogue.mjs extract",
     "dialogue:compile": "node tools/dialogue.mjs compile",
     "dialogue:check": "node tools/dialogue.mjs check",

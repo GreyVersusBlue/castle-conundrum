@@ -9,7 +9,8 @@ decision. Every "recommendation" below is exactly that, and the session that
 ships the row is the one that records the call with a number.
 
 One section per row still open in `BACKLOG.md`'s ranked table: 3, 4, 6, 7, 9,
-10, 11, 13, plus "The red suite," unranked, its last increment still open.
+10, 11, 13. The red suite is closed; its section is a stub pointing at
+`HISTORY.md`.
 A shipped row's section is deleted, not struck through; `HISTORY.md` carries
 what it said. **Ranks are retired, never reused** (#619, #491, #522): 1, 2, 5,
 8 and 12 are gone from this file for that reason, not renumbered into gaps.
@@ -62,63 +63,14 @@ Four facts every row below leans on, stated once:
   changes go through `migrate` with a version bump; `repair` runs on every load
   (#37).
 
+---
+
 ## The red suite: what the prompt is aimed at
 
-**Unranked, the row `BACKLOG.md` calls "nobody's row yet". Size ¼.
-Increments 1 and 2 shipped** (#721 to #724): the chapel-candles aim
-(`AIM_DOT = 0.95`, a second nearest-inside-cone slot in
-`InteractionSystem.update`) and the populace beat's timing fix (park the
-rings with `setWatch(watch, { walk: false })` before reading them, `TOL`
-still 0.01 m). **One increment is left, class S**: a station-to-prop
-clearance rail.
-
-### Scope, increment 3
-
-| File | What changes |
-| --- | --- |
-| `src/mystery.js` (`validateMystery`'s nav rails), `test/mystery.mjs` | a station-to-prop clearance beside `STATION_CLEARANCE`, and the two stations that fail it |
-
-Nothing here touches `src/save.js`, its version or `migrate`, and nothing moves
-an assertion across the `layout` / `plan-vs-scene` / `mystery` / `budget` line.
-
-### Acceptance, increment 3
-
-`test/mystery.mjs` gains a rail saying no station stands within
-`PROP_CLEARANCE` of anything the player presses E at, at the watch that
-station is held. It is red on the data as it stands, so the increment carries
-the data fix with it. `npm test mystery layout plan-vs-scene` is the subset.
-
-### Open calls
-
-1. **Where does the station-to-prop rail live?** *`src/mystery.js`'s
-   `validateMystery`, surfaced by `test/mystery.mjs`*, beside the
-   `STATION_CLEARANCE` check it is a second half of. It is plan arithmetic and
-   `nav.at`, provable in Node, so #529 forbids it in `plan-vs-scene.mjs`.
-2. **What number?** *1.0 m, named `PROP_CLEARANCE` in `src/stations.js` beside
-   `STATION_CLEARANCE`.* It catches the two that actually bit and nothing else:
-   the Chaplain 0.20 m from the gravestone at all four watches, and the
-   Constable 0.92 m from the chapel candles at Prime. Reusing
-   `STATION_CLEARANCE`'s 1.5 m instead would also flag the Constable against
-   the bell (1.15 m) and the body (1.41 m), the apprentice against the
-   obituary roll (1.44 m) and the sentry against the gaol roll (1.44 m) —
-   nine pairs instead of five, four of them a body standing a sensible arm's
-   length from the thing it is meant to be attending to.
-
-### Dependencies
-
-Not in a named lane: `test/mystery.mjs` and `src/stations.js` are in none of
-A to E. Increment 3 edits station coordinates in `data/mystery.json`, which
-the second day's own rows also read, so do not run it beside a row touching
-that block.
-
-### Constraints
-
-- **#529.** The clearance rail is Node arithmetic and goes to
-  `test/mystery.mjs`, not `plan-vs-scene.mjs`.
-- **#34.** The increment names its break above, and a flake needs the
-  stronger version: show the cause moved, not the load.
-- **#13.** No skip list.
-- **CRLF here, LF in CI** (#632).
+**Shipped, closed.** Four increments: the aim cone and the populace beat's
+timing fix (#721 to #724), the day-one `PROP_CLEARANCE` rail (#785), and the
+same rail extended to the walking day and the morning after (#792, #793).
+`HISTORY.md` carries what shipped.
 
 ---
 
@@ -689,11 +641,185 @@ through `populace.json` as well as `cast`, and a silhouette count asserts
 more distinct combinations than there are new bodies (#645). Two hens off
 poly.pizza's re-export of Quaternius's Farm Animals pack, `Hen.glb`, 55 KB
 (#684). A held prop, `Spear.glb`, 46 KB, the first held prop not from Poly
-Haven, worn by the serjeant and the man-at-arms (#685). **Not shipped**: the
-GPU look at any of it (#53), and the activity clips rank 6 wants (`sweep`,
-`hammer`, `spar`, `drill`), which no body has.
+Haven, worn by the serjeant and the man-at-arms (#685). Increment 2a of the
+generated half below shipped 2026-09-23: `Sweep`, `Stir`, `Hammer`, `Spar` and
+`Drill` in all four human bodies, 171 to 192 KB a body, held by check 7.
+Increment 2b shipped 2026-09-23 too: `assets/NPCs/Cow.glb`, generated and
+grazing in the outer ward, `MAX_SKINNED_TOTAL` 33 to 34 (#794). **Not
+shipped**: the GPU look at any of it (#53), and further generated kinds
+(goat, pig, sheep) as later rows of `bodies.json`, each needing its own
+budget argument.
 
-### Scope
+### The generated half (#787 to #789)
+
+Bodies and clips may be made here by a deterministic Node script, the way
+`tools/pixel/` makes textures (#742, #787). Two increments, each one
+builder job, 2a first (#788). Both are Container; the sourced half below
+stays Local: net.
+
+**Measured 2026-09-23 with gltf-transform in Node.** The four human bodies
+share one skeleton by name: 62 joints, `Root` to `PT.R`, hand bone
+`Wrist.R`. They do not share a pose. Farmer, Adventurer and King agree to
+0.93 degrees at Idle's first key; Woman differs from them by up to 90.5
+degrees (`UpperLeg.R`) and has her own rest translations (up to 0.108 m).
+Every kit clip keys rotation on 56 joints and translation on 52, at 51 keys:
+1.67 s on the three men, 2.08 s on Woman. A kit clip costs 25.7 KB of
+King.glb on average. Read and written back through gltf-transform, King.glb
+is byte-identical, Woman.glb grows 20,616 bytes once and is then stable, and
+Hen.glb is not stable between two passes.
+
+#### Scope, increment 2a: five activity clips on the four human rigs (shipped)
+
+- **`tools/bodies/clips.json`**, the table. One row per clip: `Sweep`,
+  `Stir`, `Hammer`, `Spar`, `Drill`. Each row has `cycles` (an integer),
+  `driver` (the joint the motion rail reads) and `moves`, each
+  `{ bone, axis, rest, amp, phase }`: a glTF joint name, an axis in the
+  body's model frame (+y up, +z the way it faces), a static offset and an
+  amplitude in degrees, and a phase in cycles. The angle at key k of 50 is
+  `rest + amp * sin(2π(cycles * k / 50 + phase))`.
+- **`tools/bodies/index.mjs`**, `npm run bodies:render`. For each of
+  `Woman.glb`, `Farmer.glb`, `Adventurer.glb`, `King.glb`: read the body,
+  drop any animation whose name is in the table, and for each row write a
+  new clip keyed at the body's own Idle key times. Every channel Idle keys
+  (56 rotation, 52 translation) is copied from Idle; each move composes onto
+  its bone as `inverse(parentWorld_k) * R(axis, angle) * parentWorld_k *
+  local_k`, root to tip, `parentWorld_k` taken from the pose already built
+  at that key. Written with the reader's `EXT_meshopt_compression` intact, so
+  the writer is the encoder for these four and check 5 holds (#506). Exports
+  `renderBody(file) -> Uint8Array`, pure, for the suite. Touches no other
+  file under `assets/`.
+- **`src/populace.js`**: `ACTIVITY_CLIPS` gains `sweep: 'Sweep'`,
+  `stir: 'Stir'`, `hammer: 'Hammer'`, `spar: 'Spar'`, `drill: 'Drill'`, and
+  the comment above it stops saying the kit has none. `data/populace.json`'s
+  `activityComment` likewise. No routine uses them yet; writing them into
+  routines is "Life: a populace"'s.
+- **`test/mystery.mjs`**: the validator case at `expect('an activity no clip
+  in npc.js answers to'` uses `"hammer"` as its unknown job and goes red the
+  moment hammer is known. Change the word to one the table will not grow
+  (`"juggle"`). The orphan check below it already covers the five new names.
+- **`src/npc.js`**: no change. `pickClip` finds the clips by name.
+
+#### Acceptance, increment 2a
+
+New check 7 in `test/assets.mjs`, beside check 6's pixel provenance, over
+the four bodies. Each line is the break that has to turn it red (#34).
+
+1. **Present.** Each body carries 29 animations: the kit's 24 by name and
+   the table's 5. Break: delete `Drill` from the table and re-render.
+2. **Targets.** Every channel of a generated clip targets a joint of that
+   body's skin, and the set of (joint, path) pairs equals Idle's, so a
+   cross-fade never drops a bone to bind pose. Break: rename a move's bone
+   to `UpperArmR` (three's sanitised name, not glTF's); the generator must
+   throw on an unknown bone rather than skip it, and if it skips, this
+   fails.
+3. **Duration.** Each generated clip's last key time equals the body's Idle
+   last key time within 1e-4 s (1.67 on the men, 2.08 on Woman). Break:
+   key over 60 steps instead of 50.
+4. **Loops.** For every channel of a generated clip, the first and last
+   keys differ by no more than two quantisation steps (2/32767 on a
+   normalised int16). Break: `cycles: 1.5` on `Hammer`. As shipped it also
+   holds the step across the seam to 1.5 times the largest change of step
+   inside the clip: every Hammer move is phase 0, so 1.5 cycles ends where
+   it began, going the other way, and the position half alone stayed green.
+5. **Moves.** At some key, each clip's `driver` joint is at least 20
+   degrees from Idle's rotation of that joint at the same key. Break:
+   `amp: 0` on every move of `Stir` and re-render; line 6 stays green on a
+   clip that is only Idle, which is why this line exists.
+6. **Provenance and determinism.** `renderBody(file)` equals the file on
+   disk byte for byte, for all four. A second `npm run bodies:render` is
+   therefore a no-op. Break: change one `amp` by 1 degree without
+   re-rendering; the failure names the body and says to run
+   `npm run bodies:render`.
+7. **Size.** Each body is at most its pre-increment size plus 250 KB: Woman
+   1,073,992, Farmer 1,041,692, Adventurer 1,215,560, King 1,255,852 bytes,
+   the four as constants in the check: about twice the kit's 25.7 KB a
+   clip, five times. Break: key at 500 steps.
+
+`test/mystery.mjs`'s orphan check holds `ACTIVITY_CLIPS` to the files.
+Whether a Sweep reads as sweeping is `npm run play`'s (#53).
+
+#### Scope, increment 2b: a cow, generated and placed (shipped)
+
+- **`tools/bodies/bodies.json`**, a second table: one row per animal. The
+  cow's row lists joints (name, parent, head position), parts (a box or a
+  six-sided prism, a centre, a size, one joint it is rigidly weighted to, a
+  material) and clips. Joint names follow the hound's where one exists
+  (`Body`, `Neck1`, `Head`, `FrontUpperLeg.L`, `BackLowerLeg.R`, `Tail1`).
+  Flat-shaded, one skin.
+- **Caps, which #789's ceiling depends on**: at most 16 joints, 1,000
+  triangles, 4 primitives, 80 KB on disk. Four primitives: `Hide`, `Nose`,
+  `Eye`, `Horn`. `Hide_Patch` is not a fifth primitive — it is a darker
+  vertex colour inside `Hide`, so the tint darkens the patches too; `Nose`,
+  `Eye` and `Horn` do not take the tint. Clips `Idle` (at least 2.0 s),
+  `Walk` and `Eating`, so `CLIPS`' idle and walk resolve and the existing
+  `eat: 'Eating'` needs no new activity. No `Wave`: the cow does not greet,
+  like the hound.
+- **`tools/bodies/index.mjs`** builds `assets/NPCs/Cow.glb` with
+  gltf-transform and applies `meshopt({ encoder, cleanup: false })`, the
+  call `tools/encode-assets.mjs` makes.
+- **`src/npc.js`**: `BARE_MATERIALS` gains `/^horn$/i`. One line.
+- **`data/populace.json`**: one person, `id: "cow"`, in the outer ward by
+  the hens, `wait` and `eat` stops, `modelHeight` 1.45, a tint no other
+  person has. Asset and reference land together (#390).
+- **`test/budget.mjs`**: `MAX_SKINNED_TOTAL` 33 to 34, with #789 cited in
+  the comment block. `MAX_SKINNED_PER_WARD` stays 20.
+
+#### Acceptance, increment 2b
+
+Check 7 grows a cow half in `test/assets.mjs`.
+
+1. **Caps.** Joints, triangles, primitives and bytes under the four caps.
+   Break: raise the body's prism sides until it passes 1,000 triangles.
+2. **Skin.** Every vertex has weights summing to 1 within 1e-3 and joint
+   indices inside the skin. Break: weight one part to joint 16.
+3. **Clips.** `Idle`, `Walk`, `Eating` present, targets exist, first key
+   equals last as in 2a. Break: `cycles: 1.5` on `Walk`.
+4. **Reads as four-legged.** The bind-pose box is at least 1.3 times as long
+   (z) as it is tall (y). Break: swap the body part's y and z sizes.
+5. **Provenance and determinism**, as 2a's line 6.
+
+Held by the suites as they stand: check 4 (the cow is referenced), check 5
+(meshopt), `test/mystery.mjs`'s per-person clip check and the #645
+silhouette count, and `test/budget.mjs`: 34 built of 34, the outer ward's
+peak under 20. Whether a cow reads as a cow is `npm run play`'s (#53).
+
+#### Open calls, the generated half
+
+- **Clips in the four bodies, or one shared clip file.** Recommend **in the
+  bodies** (#788): Woman's pose differs by 90.5 degrees, so a shared file
+  would be two files plus a loader change in `npc.js`, and the bodies are
+  already referenced, encoded and read by `mystery.mjs`'s per-person check.
+- **Which clips.** Recommend **all five**, `Drill` included: the garrison's
+  spear (#685) is the reason, and a fifth row in a table costs one render.
+- **Where a new animal counts.** Recommend **against `MAX_SKINNED_TOTAL`,
+  raised by one per animal, each with its argument** (#789). A separate
+  cheap-animal budget would move the hound and both hens out of the 33
+  without anyone arguing for it.
+- **Ship the cow's asset first, place it later.** Recommend **no**: an
+  unreferenced `Cow.glb` fails check 4 (#390), and a catalogue to make it
+  referenced is a second reference kind for one file.
+- **After the cow.** Recommend **a pig, then a goat**, one table row, one
+  placement and one ceiling argument each. **Maids, knights, peasants and
+  children stay on the four Quaternius rigs** (#787): tint, height, hidden
+  nodes and the spear already make them, and a generated human would not
+  match the kit's look or carry its 29 clips.
+
+#### Dependencies, the generated half
+
+- None to start 2a. 2b after 2a, because both write `tools/bodies/index.mjs`.
+- Lane C with "Life: a populace", which writes `data/populace.json` and
+  `src/populace.js` too; 2a and 2b do not run beside it.
+
+#### Constraints, the generated half
+
+- #787 (a table row per generated asset; no hand-edited output).
+- #390, #499 (2a adds at most 1 MB across four files; 2b under 80 KB).
+- #506 (the generator writes meshopt; nothing lands raw).
+- #53 (the look at every clip and at the cow is a GPU question and blocks
+  nothing here).
+- #632 does not bite: `.glb` is binary and git leaves its bytes alone.
+
+### Scope, the sourced half (Local: net)
 
 - **Sourcing, the same search rank 1 ran and won**: a
   low-poly, one-rig, CC0 body per new kind, re-exported through
@@ -732,10 +858,9 @@ GPU look at any of it (#53), and the activity clips rank 6 wants (`sweep`,
 
 ### Dependencies
 
-- **Every activity clip rank 6 defers** (`sweep`, `hammer`, `spar`, `drill`)
-  is this row's to supply once a body needs one the shared rig does not
-  already carry; the two rows trade work back and forth rather than one
-  strictly gating the other.
+- **Every activity clip rank 6 defers** (`sweep`, `stir`, `hammer`,
+  `spar`, `drill`) is increment 2a's, above; the two rows trade work back
+  and forth rather than one strictly gating the other.
 - Goes through `tools/encode-assets.mjs` (#506) before commit, same as rank 1.
 
 ### Constraints

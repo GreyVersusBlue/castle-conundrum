@@ -32,6 +32,11 @@
 //   4. every byte under assets/poly-haven, assets/NPCs and assets/pixel is
 //      reachable from one of those references, and everything a reference needs
 //      is there
+//   5. every prop and body is meshopt-encoded (#506)
+//   7. the five activity clips tools/bodies/ writes into the four human bodies
+//      are there, loop, move and are byte-equal to their render (#787, #788),
+//      and the cow it builds from nothing is inside #789's four caps, skinned
+//      soundly, loops, reads as four-legged and is byte-equal to its render
 //
 // Everything it reads is compressed as of 2026-09-15 (#506 to #508): KTX2/Basis
 // textures and EXT_meshopt_compression geometry. `triangles()` decodes meshopt
@@ -53,6 +58,10 @@ import sharp from 'sharp';
 import { readGLTF, triangles } from './gltf.mjs';
 import { heldPropPath } from '../src/populace.js';
 import { rows as pixelRows, render as renderPixel, SIZE as GENERATOR_PX, OUT_DIR as PIXEL_DIR } from '../tools/pixel/index.mjs';
+import { renderBody, renderAnimal, animals as animalRows } from '../tools/bodies/index.mjs';
+import { NodeIO } from '@gltf-transform/core';
+import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
+import { MeshoptDecoder } from 'meshoptimizer';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, '..');
@@ -539,6 +548,318 @@ console.log('\nevery Poly Haven prop and every NPC body is meshopt-encoded');
   const raw = files.filter(rel => !(readGLTF(path.join(ROOT, rel)).json.extensionsUsed || []).includes('EXT_meshopt_compression'));
   for (const rel of raw) fail(`${rel} has no EXT_meshopt_compression — run \`npm run assets:encode\` before committing it (#506)`);
   if (!raw.length) pass(`${files.length} files, every one carrying EXT_meshopt_compression`);
+}
+
+/* ------------------------- 7: the activity clips this repo generates (#788) ---
+ * tools/bodies/ writes Sweep, Stir, Hammer, Spar and Drill into the four human
+ * bodies from tools/bodies/clips.json (#787). SPECS.md numbers this check 7;
+ * the pixel provenance it sits beside is 3b above. Seven lines, each with the
+ * break that turns it red (#34):
+ *
+ *   1. present: the kit's 24 clips by name and the five, 29 in all
+ *   2. targets: a generated clip keys exactly the (joint, path) pairs Idle
+ *      does, every one a joint of the body's skin, so a cross-fade never drops
+ *      a bone to bind pose
+ *   3. duration: its last key is Idle's last key, within 1e-4 s
+ *   4. loops: every channel's first and last keys within two int16 steps,
+ *      and no turn at the seam the clip does not make anywhere else
+ *   5. moves: the row's `driver` joint is 20 degrees or more off Idle's
+ *      rotation of it at some key. Line 6 is green on a clip that is only
+ *      Idle, which is why this line exists
+ *   6. provenance: renderBody(file) is the file on disk, byte for byte (#743)
+ *   7. size: each body at most its pre-increment size plus 250,000 bytes
+ *
+ * The names, the counts and the sizes are held here, not read off the
+ * generator, because a rail that reads its subject's constants re-implements
+ * the thing it checks (#34). `driver` is the one thing read off the table: it
+ * is which joint to look at, not what to find there.
+ */
+const KIT_CLIPS = [
+  'Death', 'Gun_Shoot', 'HitRecieve', 'HitRecieve_2', 'Idle', 'Idle_Gun', 'Idle_Gun_Pointing', 'Idle_Gun_Shoot',
+  'Idle_Neutral', 'Idle_Sword', 'Interact', 'Kick_Left', 'Kick_Right', 'Punch_Left', 'Punch_Right', 'Roll',
+  'Run', 'Run_Back', 'Run_Left', 'Run_Right', 'Run_Shoot', 'Sword_Slash', 'Walk', 'Wave',
+];
+const GENERATED_CLIPS = ['Sweep', 'Stir', 'Hammer', 'Spar', 'Drill'];
+/** Bytes on disk before 2a, and the room it was given: about twice the kit's
+ *  25.7 KB a clip, five times over (SPECS.md, "The generated half"). */
+const BODY_BYTES_BEFORE = {
+  'assets/NPCs/Woman.glb': 1073992,
+  'assets/NPCs/Farmer.glb': 1041692,
+  'assets/NPCs/Adventurer.glb': 1215560,
+  'assets/NPCs/King.glb': 1255852,
+};
+const CLIP_BYTES_ALLOWED = 250000;
+const DRIVER_MIN_DEGREES = 20;
+const LOOP_STEPS = 2;
+const SEAM_KINK = 1.5;
+/** Line 4, for any clip: null if every channel's first and last keys are
+ *  within LOOP_STEPS int16 steps and no channel turns at the seam, else what
+ *  went wrong. Shared by the humans' five and the cow's three. */
+const rowOfAcc = (acc, i) => {
+  const n = acc.getElementSize(), a = acc.getArray(), norm = acc.getNormalized() && a instanceof Int16Array;
+  return Array.from({ length: n }, (_, j) => (norm ? Math.max(a[i * n + j] / 32767, -1) : a[i * n + j]));
+};
+function seamOf(anim) {
+  const I16 = 32767;
+  for (const c of anim.listChannels()) {
+    const out = c.getSampler().getOutput();
+    const N = out.getCount() - 1;
+    const v = Array.from({ length: N + 1 }, (_, k) => rowOfAcc(out, k));
+    const worst = Math.max(...v[0].map((x, i) => Math.abs(x - v[N][i])));
+    if (worst > LOOP_STEPS / I16 + 1e-9)
+      return `${c.getTargetNode().getName()} ${c.getTargetPath()} ends ${(worst * I16).toFixed(1)} int16 steps from where it starts, over ${LOOP_STEPS}, so the clip jumps at every loop`;
+    if (N < 3) continue;
+    for (let i = 0; i < v[0].length; i++) {
+      let inner = 0;
+      for (let k = 1; k < N; k++) inner = Math.max(inner, Math.abs(v[k + 1][i] - 2 * v[k][i] + v[k - 1][i]));
+      const seam = Math.abs((v[1][i] - v[0][i]) - (v[N][i] - v[N - 1][i]));
+      if (seam > SEAM_KINK * (inner + 4 / I16))
+        return `${c.getTargetNode().getName()} ${c.getTargetPath()} turns back at the loop: its speed changes by ${seam.toExponential(2)} across the seam against ${inner.toExponential(2)} at most inside the clip. A non-integer \`cycles\` does this`;
+    }
+  }
+  return null;
+}
+console.log('\nthe five generated activity clips in the four human bodies');
+{
+  await MeshoptDecoder.ready;
+  const io = new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies({ 'meshopt.decoder': MeshoptDecoder });
+  const table = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/bodies/clips.json'), 'utf8')).clips;
+  const I16 = 32767;
+  const rowOf = (acc, i) => {
+    const n = acc.getElementSize(), a = acc.getArray(), norm = acc.getNormalized() && a instanceof Int16Array;
+    return Array.from({ length: n }, (_, j) => (norm ? Math.max(a[i * n + j] / I16, -1) : a[i * n + j]));
+  };
+  // Idle's rotation at time t, linear between its keys and renormalised: what
+  // three's mixer would show, to well under the 20 degrees asked about.
+  const rotationAt = (sampler, t) => {
+    const times = sampler.getInput().getArray();
+    let j = 1;
+    while (j < times.length - 1 && times[j] < t) j++;
+    const f = Math.min(1, Math.max(0, (t - times[j - 1]) / (times[j] - times[j - 1])));
+    const A = rowOf(sampler.getOutput(), j - 1);
+    let B = rowOf(sampler.getOutput(), j);
+    if (A.reduce((s, v, i) => s + v * B[i], 0) < 0) B = B.map((v) => -v);
+    const q = A.map((v, i) => v + (B[i] - v) * f);
+    const l = Math.hypot(...q);
+    return q.map((v) => v / l);
+  };
+  const degreesBetween = (a, b) => (2 * Math.acos(Math.min(1, Math.abs(a.reduce((s, v, i) => s + v * b[i], 0)))) * 180) / Math.PI;
+
+  for (const [rel, before] of Object.entries(BODY_BYTES_BEFORE)) {
+    const name = path.basename(rel);
+    const bytes = fs.readFileSync(path.join(ROOT, rel));
+    const doc = await io.readBinary(new Uint8Array(bytes.buffer, bytes.byteOffset, bytes.byteLength));
+    const root = doc.getRoot();
+    const anims = new Map(root.listAnimations().map((a) => [a.getName(), a]));
+    const bad = [];
+
+    // 1. present
+    const want = [...KIT_CLIPS, ...GENERATED_CLIPS];
+    const missing = want.filter((n) => !anims.has(n));
+    const extra = [...anims.keys()].filter((n) => !want.includes(n));
+    if (missing.length || extra.length || anims.size !== 29)
+      fail(`${name} carries ${anims.size} clips, not 29${missing.length ? `; missing ${missing.join(', ')}` : ''}${extra.length ? `; unexpected ${extra.join(', ')}` : ''}; run \`npm run bodies:render\``);
+    const idle = anims.get('Idle');
+    if (!idle) { fail(`${name} has no Idle to hold the generated clips to`); continue; }
+    const pairs = (a) => new Set(a.listChannels().map((c) => `${c.getTargetNode()?.getName()}:${c.getTargetPath()}`));
+    const idlePairs = pairs(idle);
+    const idleLast = Math.max(...idle.listSamplers().map((s) => s.getInput().getMax([])[0]));
+    const joints = new Set(root.listSkins().flatMap((s) => s.listJoints()));
+
+    for (const clip of GENERATED_CLIPS) {
+      const anim = anims.get(clip);
+      if (!anim) continue; // line 1 said so
+      // 2. targets
+      const off = anim.listChannels().filter((c) => !joints.has(c.getTargetNode())).map((c) => c.getTargetNode()?.getName() ?? '(none)');
+      if (off.length) bad.push(`${clip} keys ${off.join(', ')}, not a joint of the skin`);
+      const got = pairs(anim);
+      const lost = [...idlePairs].filter((p) => !got.has(p));
+      const added = [...got].filter((p) => !idlePairs.has(p));
+      if (lost.length || added.length)
+        bad.push(`${clip}'s channels are not Idle's: ${lost.length ? `lacks ${lost.slice(0, 4).join(', ')}` : ''}${added.length ? ` adds ${added.slice(0, 4).join(', ')}` : ''}, and a cross-fade from Idle would leave those bones where they were`);
+      // 3. duration
+      const last = Math.max(...anim.listSamplers().map((s) => s.getInput().getMax([])[0]));
+      if (Math.abs(last - idleLast) > 1e-4) bad.push(`${clip} ends at ${last.toFixed(4)} s, Idle at ${idleLast.toFixed(4)} s`);
+      // 4. loops. The same place at both ends, and the same speed: a sine at
+      // 1.5 cycles and phase 0 ends where it began, going the other way, and
+      // the first half of this line alone stayed green on exactly that break
+      // (#34, #147). So the step into the seam and the step out of it may
+      // differ by at most SEAM_KINK times the largest such change inside the
+      // clip, plus four int16 steps of slack. Measured on the green render:
+      // 1.01 at worst, Idle's own seams 0.75.
+      const seam = seamOf(anim);
+      if (seam) bad.push(`${clip}'s ${seam}`);
+      // 5. moves (and line 2's other half: every bone a row moves is a joint
+      // of this body by its glTF name, so a generator that skipped an unknown
+      // bone instead of throwing still goes red here)
+      const row = table.find((r) => r.name === clip);
+      if (!row) { bad.push(`${clip} has no row in tools/bodies/clips.json to name its driver`); continue; }
+      const jointNames = new Set([...joints].map((j) => j.getName()));
+      const strays = [...new Set(row.moves.map((m) => m.bone))].filter((b) => !jointNames.has(b));
+      if (strays.length) bad.push(`${clip}'s row moves ${strays.map((b) => JSON.stringify(b)).join(', ')}, not a joint of this body: glTF names (\`UpperArm.R\`), not three's sanitised ones (\`UpperArmR\`)`);
+      const find = (a) => a.listChannels().find((c) => c.getTargetNode()?.getName() === row.driver && c.getTargetPath() === 'rotation');
+      const mine = find(anim), theirs = find(idle);
+      if (!mine || !theirs) { bad.push(`${clip}'s driver ${row.driver} has no rotation channel to compare`); continue; }
+      const times = mine.getSampler().getInput().getArray();
+      let most = 0;
+      for (let k = 0; k < times.length; k++)
+        most = Math.max(most, degreesBetween(rowOf(mine.getSampler().getOutput(), k), rotationAt(theirs.getSampler(), times[k])));
+      if (most < DRIVER_MIN_DEGREES)
+        bad.push(`${clip}'s driver ${row.driver} never gets more than ${most.toFixed(1)} degrees from Idle, under ${DRIVER_MIN_DEGREES}: the clip is Idle with a new name`);
+    }
+    for (const b of bad) fail(`${name}: ${b}`);
+
+    // 6. provenance
+    let rendered = null;
+    try { rendered = await renderBody(rel); }
+    catch (err) { fail(`${name}: tools/bodies/index.mjs cannot render it: ${err.message}`); }
+    if (rendered) {
+      const same = Buffer.compare(Buffer.from(rendered), bytes) === 0;
+      if (!same) {
+        let at = 0;
+        while (at < Math.min(rendered.length, bytes.length) && rendered[at] === bytes[at]) at++;
+        fail(`${name} is not what tools/bodies/index.mjs renders from clips.json: ${bytes.length} bytes on disk, ${rendered.length} rendered, first difference at byte ${at}. Either a row moved and the body is stale, so run \`npm run bodies:render\`, or those bytes did not come from this repo (#743, #787)`);
+      } else if (!bad.length && !missing.length && !extra.length) {
+        pass(`${name}: 29 clips, the five generated ones looping on Idle's channels and ${idleLast.toFixed(2)} s, byte-equal to their render`);
+      }
+    }
+    // 7. size
+    if (bytes.length > before + CLIP_BYTES_ALLOWED)
+      fail(`${name} is ${bytes.length} bytes, over its ${before} before the five clips plus ${CLIP_BYTES_ALLOWED} (#499)`);
+  }
+}
+
+/* ------------------- 7, the cow half: an animal this repo builds (#789) ---
+ * tools/bodies/ builds assets/NPCs/Cow.glb from bodies.json's one row, and
+ * #789 raised MAX_SKINNED_TOTAL for it only because it is small. Five lines,
+ * each with the break that turns it red (#34):
+ *
+ *   1. caps: joints, triangles, primitives and bytes at or under #789's four
+ *   2. skin: every vertex's weights sum to 1 within 1e-3 and every joint
+ *      index is inside the skin
+ *   3. clips: Idle (at least 2.0 s), Walk and Eating, every channel on a
+ *      joint of the skin, the same (joint, path) pairs in all three, and each
+ *      loops by line 4 above
+ *   4. four-legged: the bind-pose box, skinned, is at least 1.3 times as long
+ *      (z) as it is tall (y)
+ *   5. provenance: renderAnimal(row) is the file on disk, byte for byte
+ *
+ * The caps are held here and not read off the table, for the reason given at
+ * the top of this check.
+ */
+const COW = 'assets/NPCs/Cow.glb';
+const COW_MAX_JOINTS = 16;
+const COW_MAX_TRIANGLES = 1000;
+const COW_MAX_PRIMITIVES = 4;
+const COW_MAX_BYTES = 80000;
+const COW_CLIPS = ['Idle', 'Walk', 'Eating'];
+const COW_IDLE_MIN_SECONDS = 2.0;
+const COW_LENGTH_OVER_HEIGHT = 1.3;
+console.log('\nthe generated cow, inside #789\'s caps');
+{
+  await MeshoptDecoder.ready;
+  const io = new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies({ 'meshopt.decoder': MeshoptDecoder });
+  const abs = path.join(ROOT, COW);
+  if (!fs.existsSync(abs)) fail(`${COW} is not there; run \`npm run bodies:render\``);
+  else {
+    const bytes = fs.readFileSync(abs);
+    const doc = await io.readBinary(new Uint8Array(bytes.buffer, bytes.byteOffset, bytes.byteLength));
+    const root = doc.getRoot();
+    const skins = root.listSkins();
+    const joints = skins.flatMap((sk) => sk.listJoints());
+    const prims = root.listMeshes().flatMap((m) => m.listPrimitives());
+    const triangles = prims.reduce((n, p) => n + (p.getIndices() ? p.getIndices().getCount() : p.getAttribute('POSITION').getCount()) / 3, 0);
+
+    // 1. caps
+    const over = [];
+    if (skins.length !== 1) over.push(`${skins.length} skins, not one`);
+    if (joints.length > COW_MAX_JOINTS) over.push(`${joints.length} joints, over ${COW_MAX_JOINTS}`);
+    if (triangles > COW_MAX_TRIANGLES) over.push(`${triangles} triangles, over ${COW_MAX_TRIANGLES}`);
+    if (prims.length > COW_MAX_PRIMITIVES) over.push(`${prims.length} primitives, over ${COW_MAX_PRIMITIVES}`);
+    if (bytes.length > COW_MAX_BYTES) over.push(`${bytes.length} bytes, over ${COW_MAX_BYTES}`);
+    if (over.length) fail(`${COW}: ${over.join('; ')}. #789 raised MAX_SKINNED_TOTAL for a body inside those caps and no other`);
+    else pass(`${COW}: ${joints.length} joints, ${triangles} triangles, ${prims.length} primitives, ${bytes.length} bytes, inside ${COW_MAX_JOINTS}, ${COW_MAX_TRIANGLES}, ${COW_MAX_PRIMITIVES} and ${COW_MAX_BYTES}`);
+
+    // 2. skin, and 4's bind-pose box, which is the same walk over the vertices:
+    // a vertex skinned at rest is sum_i w_i * jointWorld_i * inverseBind_i * v.
+    const skin = skins[0];
+    const ibm = skin?.getInverseBindMatrices();
+    const mul = (a, b) => { // column-major 4x4
+      const o = new Array(16).fill(0);
+      for (let c = 0; c < 4; c++) for (let r = 0; r < 4; r++) for (let k = 0; k < 4; k++) o[c * 4 + r] += a[k * 4 + r] * b[c * 4 + k];
+      return o;
+    };
+    const bind = joints.map((j, i) => mul(j.getWorldMatrix(), ibm ? ibm.getElement(i, []) : [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]));
+    const lo = [Infinity, Infinity, Infinity], hi = [-Infinity, -Infinity, -Infinity];
+    const skinBad = [];
+    for (const [pi, p] of prims.entries()) {
+      const pos = p.getAttribute('POSITION'), jnt = p.getAttribute('JOINTS_0'), wgt = p.getAttribute('WEIGHTS_0');
+      if (!jnt || !wgt) { skinBad.push(`primitive ${pi} has no JOINTS_0 or WEIGHTS_0`); continue; }
+      const v = [], ji = [], w = [];
+      for (let i = 0; i < pos.getCount(); i++) {
+        pos.getElement(i, v); jnt.getElement(i, ji); wgt.getElement(i, w);
+        const sum = w.reduce((a, b) => a + b, 0);
+        if (Math.abs(sum - 1) > 1e-3) { skinBad.push(`primitive ${pi} vertex ${i}'s weights sum to ${sum.toFixed(4)}`); break; }
+        const outside = ji.filter((j) => !(Number.isInteger(j) && j >= 0 && j < joints.length));
+        if (outside.length) { skinBad.push(`primitive ${pi} vertex ${i} is weighted to joint ${outside.join(', ')}, and the skin has ${joints.length} (0 to ${joints.length - 1})`); break; }
+        const out = [0, 0, 0];
+        for (let k = 0; k < 4; k++) {
+          if (!w[k]) continue;
+          const m = bind[ji[k]];
+          for (let r = 0; r < 3; r++) out[r] += w[k] * (m[r] * v[0] + m[4 + r] * v[1] + m[8 + r] * v[2] + m[12 + r]);
+        }
+        for (let r = 0; r < 3; r++) { lo[r] = Math.min(lo[r], out[r]); hi[r] = Math.max(hi[r], out[r]); }
+      }
+    }
+    if (skinBad.length) fail(`${COW}'s skin: ${skinBad.join('; ')}`);
+    else pass(`${COW}: every vertex's weights sum to 1 and name a joint of its ${joints.length}`);
+
+    // 3. clips
+    const anims = new Map(root.listAnimations().map((a) => [a.getName(), a]));
+    const clipBad = [];
+    const missing = COW_CLIPS.filter((n) => !anims.has(n));
+    if (missing.length) clipBad.push(`no ${missing.join(', ')} (it carries ${[...anims.keys()].join(', ') || 'none'})`);
+    const pairsOf = (a) => [...new Set(a.listChannels().map((c) => `${c.getTargetNode()?.getName()}:${c.getTargetPath()}`))].sort().join(',');
+    const idle = anims.get('Idle');
+    if (idle) {
+      const len = Math.max(...idle.listSamplers().map((sm) => sm.getInput().getMax([])[0]));
+      if (len < COW_IDLE_MIN_SECONDS - 1e-4) clipBad.push(`Idle runs ${len.toFixed(2)} s, under ${COW_IDLE_MIN_SECONDS}`);
+    }
+    for (const name of COW_CLIPS) {
+      const anim = anims.get(name);
+      if (!anim) continue;
+      const off = anim.listChannels().filter((c) => !joints.includes(c.getTargetNode())).map((c) => c.getTargetNode()?.getName() ?? '(none)');
+      if (off.length) clipBad.push(`${name} keys ${off.join(', ')}, not a joint of the skin`);
+      if (idle && pairsOf(anim) !== pairsOf(idle)) clipBad.push(`${name}'s channels are not Idle's, so a cross-fade would leave a bone where the last clip put it`);
+      const seam = seamOf(anim);
+      if (seam) clipBad.push(`${name}'s ${seam}`);
+    }
+    if (clipBad.length) fail(`${COW}'s clips: ${clipBad.join('; ')}`);
+    else pass(`${COW}: ${COW_CLIPS.join(', ')}, on its own joints, the same channels in all three, each one looping`);
+
+    // 4. four-legged
+    const tall = hi[1] - lo[1], long = hi[2] - lo[2];
+    if (!(tall > 0) || long < COW_LENGTH_OVER_HEIGHT * tall)
+      fail(`${COW}'s bind pose is ${long.toFixed(2)} m long and ${tall.toFixed(2)} m tall, under ${COW_LENGTH_OVER_HEIGHT} to 1: that is not a thing on four legs`);
+    else pass(`${COW}'s bind pose is ${long.toFixed(2)} m long by ${tall.toFixed(2)} m tall, ${(long / tall).toFixed(2)} to 1`);
+
+    // 5. provenance
+    const row = animalRows().find((r) => r.file === COW);
+    if (!row) fail(`tools/bodies/bodies.json has no row whose file is ${COW}, so nothing in this repo made it (#787)`);
+    else {
+      let rendered = null;
+      try { rendered = await renderAnimal(row); }
+      catch (err) { fail(`${COW}: tools/bodies/index.mjs cannot render it: ${err.message}`); }
+      if (rendered) {
+        if (Buffer.compare(Buffer.from(rendered), bytes) === 0) pass(`${COW} is byte-equal to its render from bodies.json`);
+        else {
+          let at = 0;
+          while (at < Math.min(rendered.length, bytes.length) && rendered[at] === bytes[at]) at++;
+          fail(`${COW} is not what tools/bodies/index.mjs renders from bodies.json: ${bytes.length} bytes on disk, ${rendered.length} rendered, first difference at byte ${at}. Either the row moved and the cow is stale, so run \`npm run bodies:render\`, or those bytes did not come from this repo (#743, #787)`);
+        }
+      }
+    }
+  }
 }
 
 console.log(failures ? `\n${failures} failure(s)` : '\nall good');
