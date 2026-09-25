@@ -9632,3 +9632,310 @@ triangles, 24,000 bytes and one draw call; the larder's ward goes up by that
 one draw against `MAX_DRAW_CALLS_PER_WARD`'s 1200; `dist/`, about 29 MB,
 against 200 (#499). Each pack argues its own ceilings in its own entry,
 before and after (#611).
+
+---
+
+## Blender packs 2a, 2b and 2e: evidence props, an interiors kit, the countryside (2026-09-25)
+
+**A spec, not a build.** `SPECS.md` gains three sections under "Blender:
+the pipeline": "Blender: evidence props" (rank 2a), "Blender: an interiors
+kit" (2b) and "Blender: the countryside beyond the wall" (2e), every open
+call recommended, each citing "What every Blender pack shares" rather than
+restating it. No code, no asset, no test file. Decisions #810 to #819,
+written as `architect` against `86c72fb`, where #808 was the last.
+
+**Measured before anything was decided.** `test/budget.mjs` on `86c72fb`:
+the outer ward 993 draws and the outside 131, **1124 of 1200**, 76 of
+headroom; the inner 643 and 131, 774. #798 puts the quay at about +30
+outside and rank 1's crate is one more in the outer ward, so the outer sum
+the packs start from is about **1155**. Texture memory 37.9 of 64 MB.
+`brass_candleholders` is 7 primitives and 41,936 triangles, and the castle
+places two; the static castle is about 234,000 triangles, which no suite
+counts. `data/mystery.json`'s eleven evidence rows hold no dagger, goblet,
+vial or seal: the "dagger" is `knife`, a kitchen knife on a kit barrel; the
+candle is a photoscanned spread of three brass sticks where the clue says
+one tallow candle in a pricket; the ledger is a photographed table with
+nothing on it; the seal is only a line of Madoc's. `test/mystery.mjs` check
+1 joins every `.glb` evidence prop to `kenneyBase`, so a Blender path would
+read as missing. `makePlan` gives an `interiorProps` row with no `id` the id
+`p.model.split('/')[0]`, which is `"assets"` for every Blender path, and
+gives every such row `level: 0`. `InteractionSystem.occluders()` is every
+scene child but the bodies and the targets, so anything set on a pressable
+sits in its sight ray. The castle has 43 rooms and no smithy and no stable
+(#800 said the same of the forge); the dungeon is the `cell`. The highest
+eye is 13.7 m, the eyes run x -38.25..26.25, z -17.25..17.25, and past the
+base's 2 m apron north, south and east there is only the fog's colour.
+
+**#810. Rank 2a is three pinned swaps and four dressings, against the
+evidence the data has.** What was wrong with the brief: it listed six props
+as evidence and the data names three of them. The knife, the candle and the
+ledger are evidence whose stand-in is the wrong object, and they are
+swapped: `knife-barrel.glb`, `pricket.glb` (a stub burnt to 4 cm and the
+wax pool), `ledger-desk.glb`. The goblet (on the Great Hall's table), the
+vials (on rank 1's larder crate), the aumbry's three candles at 26, 22 and
+18 cm (the `candle-count` quest's four-at-Compline, three-at-Lauds) and the
+Clerk's seal (Madoc's "the Clerk's seal on the pass") dress rooms and are not
+pressable. No clue, deduction, press, quest or station changes; a pressable
+seal would be a new clue, which is the mystery's shape and not an asset
+row's. The pouch and the tally stick, still small crates, are a conditional
+third increment if the GPU look says so.
+
+**#811. A swap keeps the piece's id, its box centre to 1 mm, and a footprint
+inside the old box.** `PROP_CLEARANCE` measures a station to a pressable's
+box centre (#785, #792), and `test/mystery.mjs` check 2 holds four of those
+gaps to the hundredth: the Constable 0.92 m and Hywel 0.34 m from
+`candles-chapel`, the cook 0.93 m from `knife`, the Chaplain 0.20 m from the
+gravestone. The pricket therefore goes at tile [5.69705, 4.30765], the old
+box's centre over 4, and not at the old tile [5.675, 4.325], which was the
+photoscan's origin 0.114 m away: at the old tile the Constable's put-back
+station is 1.03 m off and check 2's expectation says nothing. The four
+messages staying byte-identical is the proof the pin held, so no station
+line in `test/mystery.mjs` changes (#529). Check 1's resolver learns one
+branch, `assets/` through `propPath`, before the `.glb` test. The `knife`
+row moves from `courtyard.placements` to `interiorProps`, because `propPath`
+is read at the `interiorProps` sites only.
+
+**#812. Nothing stands over a pressable, and an `assets/` row names its
+id.** New `test/layout.mjs` check 1e: no non-ground piece overlaps a piece
+carrying `evidence`, `read` or `bell` in plan with its base between that
+piece's centre height and its base plus `EYE_HEIGHT`, the band a sight ray
+from a standing eye crosses. A plan fact, so `layout.mjs`'s. And an
+`interiorProps` row whose model starts `assets/` with no `id` throws in
+`makePlan`: check 2's messages and `plan-vs-scene.mjs`'s tags name pieces
+by id, and deriving one from a basename would give two goblets one id in
+silence. Rank 1's crate takes `larder-crate` if it shipped without one.
+
+**#813. Surfaces are rank 4's and volumes are the Blender band's; rank 4's
+increment 3 moves to 2b.** The brief asked whether 2b folds into, follows,
+or splits from rank 4's increment 2 (a wall and a floor texture per named
+room). Split: rank 4 owns every face's texture and makes no piece; 2b makes
+pieces and never one whose job is to cover a wall or a floor. Neither waits
+on the other; both hold lane B, so they never run at once. Rank 4's third
+increment, "the props, if the look says so", is a job of Blender sets and
+becomes 2b's increment 3 under the same gate, the looking checklist's "The
+props" line. Rank 4 may add palette colours and never removes one a
+manifest row uses; check 8 line 7 names the asset the day it does. The
+`scribe` pass rewrites rank 4's increment 3 as a pointer to 2b.
+
+**#814. 2b dresses four rooms, not six, and a set never moves a station.**
+The kitchen, the Great Hall, the chapel, and the cell as the dungeon. The
+smithy and the stables are not rooms, a room is a layout decision and not a
+kit's, and #582 refused new rooms for volume; the lore puts the forge under
+the Prison Tower's wall, outside the south curtain, and a stable waits on a
+horse that is 2d's to make or not. Every set collides, so `validateMystery`
+and `validatePopulace` hold it; when one fails, the set's tile moves.
+
+**#815. 2b merges in Blender, one mesh per set; `InstancedMesh` is
+refused.** Pieces are functions in `interiors.py`, a `packs.json` row
+composes them, and the set is joined before export: one primitive, one
+draw. Instancing would need a builder branch, a `budget.mjs` branch and a
+rule for which box `plan-vs-scene.mjs` diffs, three new things for a count a
+join reaches for nothing.
+
+**#816. No Blender pack moves `MAX_DRAW_CALLS_PER_WARD`, and no triangle
+ceiling is added.** The outer ward's sum, **before** the band about 1155 of
+1200 (1124 measured, plus the crate and the quay's estimate), **after** 2a,
+2b's first two increments and 2e about **1171**: 2a +3, 2b +8, 2e +5 (every
+backdrop piece is outside both wards and paid in each, #727). The inner
+about 804 before and 805 after: 2a +1 and -6 (seven candleholder primitives
+become one pricket), 2b +1, 2e +5. 2b's increment 3, if the look sends it,
+takes about 20 off the outer. The ceiling stays 1200; each builder records
+the lines `budget.mjs` prints before and after. If a measured sum crosses
+1200, the answer is #609's merge of a drum's sectors as its own `architect`
+row, not a raised number. A triangle ceiling would be a new cost line; the
+countryside caps at 30,000 and is expected near 12,000, and 2a's pricket
+alone takes 41,936 out, so the line is not argued for yet.
+
+**#817. The countryside is five backdrop pieces cut from one seeded field,
+placed as `interiorProps` with `backdrop` and `noCollide`.** The field covers
+x -140..180, z -170..170 and is cut into north, south, east, north-west and
+south-west pieces that tile it edge to edge with `ground` and
+`outside-ground`, so shared edges share heights by construction. They are
+pieces and not ground: a `ground.outside` box is a flat walkable surface
+that check 10 and the rank-5 check hold, and a hill is neither. A `backdrop`
+row without `noCollide` throws, since a colliding prop pushes its box top as
+a surface. Nothing crosses x -140 and nothing is built west of the water
+(#796 stands). Gated on rank 9's 3b, which sets that edge and lifts 4d's
+eyes into the function the new check calls.
+
+**#818. "Fog-compatible" is three rules, and check 4g holds the two that
+are plan facts.** The land runs to `fog.far` past the nearest eye: 152.75 m
+north, south and on the two west pieces' far sides, 153.75 m east. Every
+side of `ground` and `outside-ground` but the river's is met along its whole
+length by a backdrop side or another ground side, so no seam of fog colour
+shows under the wall. And every edge that touches nothing rises to a crest
+of at least 20 m, above the 13.7 m eye, so the field's back edge is hidden
+the way a horizon hides one; that is the script's and the GPU look's,
+because the plan holds the box and not the crest. A first draft of the seam
+rule asked each piece to touch something; worked on paper against its own
+break, moving the east piece 1 m east left it green, still touching the
+north and south pieces along z -22 and 22, so the rule is written from the
+ground's sides (#147).
+
+**#819. The three packs' caps and colours.** Check 8's caps block gains
+`evidence: { triangles: 600, bytes: 32000 }` (round things lathed at 8 to 12
+sides, twice the crate's 300), `interiors: { triangles: 2500, bytes: 96000 }`
+(a set is several pieces joined) and `countryside: { triangles: 6000, bytes:
+160000 }` (a field at about 8 m, clumps and farmsteads, one mesh per piece).
+`extraColours` per pack, each with a `why`, under the pipeline's eight:
+evidence seven (tallow, sealing wax, brass, pewter, two glass, steel), interiors
+three (linen, straw, ember), countryside three (wheat, meadow, thatch). The
+palette union's 108 colours hold the greens and browns of a field and none
+of these.
+
+---
+
+## Blender: the shared rig and the animals, decided before anything is built (2026-09-25)
+
+**A spec, not a build.** `SPECS.md` gains "Blender: a shared rig with
+swappable parts" (rank 2c) and "Blender: the animals" (rank 2d), every open
+call recommended, both citing "What every Blender pack shares" rather than
+restating it. They are rank 10's successors (#807), so `scribe` deletes the
+Bodies section once both land. No code, no asset, no test file. Decisions
+#820 to #829, written as `architect` against `86c72fb`, where #808 was the
+last; #810 to #819 are the other pack architect's band.
+
+**Measured before anything was decided**, gltf-transform and `test/gltf.mjs`
+in Node, a prototype of `test/budget.mjs` section 3 that is not committed.
+The four Quaternius humans carry 62 joints, 5,476 to 11,110 triangles and
+1,213,228 to 1,427,344 bytes each, and a person on one draws 12 to 15 skinned
+primitives once `hideNodes` and `hideMaterials` are applied: #789's "five
+skinned nodes" counted nodes, and three.js draws a primitive. The 34 bodies
+the page builds draw **380 skinned primitives**, 165 of them the cast's and
+204 the 16 populace humans'. Counted per ward the way section 3 counts
+bodies, the peaks are **outer 205 at `terce-eve` and inner 183 at `terce`**,
+while the body counts stand at 34 of 34, outer 20 of 20 and inner 15. No
+suite counts any of those draws. `Box3.setFromObject`, which `npc.js` uses to
+normalise a body's height, counts hidden meshes. `_attachHeldProp` aims a
+prop along the mean of the hand bone's child joints and falls back to local
+-Y, which on a Blender bone points back up the arm. No room called a stable
+exists, and `wykes-yard` is `outside`, which section 3 refuses a stop in.
+
+**#820. 2c is one rig in one file, its parts are one-primitive mesh nodes,
+and a skinned pack carries two materials over its one atlas image.** The
+pack `folk` writes `assets/blender/folk/folk.glb`: a 20-joint rig and every
+part as its own node named `<slot>-<variant>` (a hyphen, because three
+strips dots from node names), five slots, `skin` and `garment` required,
+`hair`, `over` and `hat` optional. The pipeline's "one material" is amended
+for a skinned pack only: `Cloth` (`Coat` on an animal), which the tint
+multiplies, and `Bare`, which it does not, both sampling the one palette
+image. One tinted material puts the tint on a face, which is what the live
+skin rail has held against since #419. `npc.js`'s `BARE_MATERIALS` gains
+`/^bare$/i`, one line, as the cow's horn was. A skinned pack is framed on its
+`Root` joint rather than centred on its box, because a cloak on the back
+moves the union of 22 parts off the feet. Held tools are a second pack,
+`held`, rigid files on the existing `heldProp`, because a skinned tool would
+be one more skinned draw per holder.
+
+**#821. Swapping is a `parts` list on the person, and the body fields are
+the body rows'.** `npc.js` hides every mesh the list does not name, before
+it measures, and a parts body's height is its `skin-*` node's box, not the
+model's. The body fields are `modelPath`, `modelHeight`, `tint`, `parts`,
+`hideNodes`, `hideMaterials`, `boneScale`, `clips`, `speed`, `heldProp` and
+`heldPropFit`, and 2c and 2d write them; `id`, `name`, `role`, `routine`,
+`follow` and the `talk` list are rank 6's. **#807 is amended in one clause**:
+it said rank 6 owns "placing bodies", and #390 says a new asset lands with
+its reference. A body row therefore writes the first ring of a person its
+asset needs, and only that; every later change to a ring is rank 6's. Both
+hold lane C, so the two never run at once. The person-against-file rail
+(every part a node of the file, one per slot, `skin` and `garment` present,
+no parts file worn without `parts`) is `test/mystery.mjs`'s, beside the
+per-person clip check that already reads the file (#529); the live hide and
+height are one `plan-vs-scene.mjs` beat, because they are `npc.js` running.
+
+**#822. 2c's clips are authored in Blender from a table in the pack's row,
+and `tools/bodies/`' five are not retargeted.** Eleven: `Idle`,
+`Idle_Neutral`, `Idle_Sword`, `Walk`, `Run`, `Wave`, `Sweep`, `Stir`,
+`Hammer`, `Spar`, `Drill`, the values `ACTIVITY_CLIPS` and `CLIPS` already
+name, so `src/populace.js` does not change. The table uses `clips.json`'s
+grammar over the rig's own `Idle`. Retargeting was refused for three
+reasons. `clips.json`'s moves are offsets composed on the Quaternius `Idle`,
+which Blender can only read by importing a `.glb`, and #803 refuses an
+import. `clips.json` is outside the Blender source hash, so check 8 line 4
+could not see a change to it. And #807 keeps each tool out of the other's
+files. 2a's clip rails (targets, loops, moves) apply to `folk.glb` in check 8.
+
+**#823. 2c's caps.** `folk`: 20 joints (`Root`, `Hips`, `Torso`, `Chest`,
+`Neck`, `Head`, and `UpperArm`, `LowerArm`, `Wrist`, `Fingers`, `UpperLeg`,
+`LowerLeg`, `Foot` on each side), `Head` and `Wrist.R` as Quaternius names
+them so `boneScale` and `HAND_BONES` need no change, and `Fingers.R` so a
+held prop points out of the hand; 12,000 triangles and 400,000 bytes for
+the file; 1,500 triangles for a person, asserted as the sum of the heaviest
+part in each slot, which bounds every combination without listing one;
+every part one primitive; eleven clips. `held`: 300 triangles, 16,000 bytes.
+Against a Quaternius human: a third of the joints, at most a seventh of the
+triangles, under a third of the bytes, and at most 5 skinned draws against
+12 to 15.
+
+**#824. The transition off the Quaternius rigs is #807's line-up, then the
+household, and the cast stays.** 2c's increment 1 renders on Devon's machine
+and, before `populace.json` is touched, lines up the hen-wife's parts on
+`folk.glb` beside the baker on `Woman.glb` on the grey background #606 and
+#643 used. If it passes, this file gets one sentence saying so and the
+hen-wife moves in the same commit; if not, nothing under
+`assets/blender/folk/` is committed and the row returns to `architect`.
+Increment 2 moves the other 15 populace humans, in a container. The 14 cast
+stay on Quaternius in this row: the live skin rail reads their `Skin`
+material, their look was judged in the GPU run (#780 to #782), and
+`tools/bodies/`' byte rails need the four files referenced. Retiring those
+files is a later decision that has to take 2a's clips with it.
+
+**#825. Skinned draws are counted, and the two body ceilings hold through
+2c.** `test/budget.mjs` section 3 counts each person's visible skinned
+primitives, after `hideNodes`, `hideMaterials` and `parts`, in every ward
+it counts that person's body in. **Two new ceilings, set at today's
+measurement**: `MAX_SKINNED_DRAWS_TOTAL` 380 and
+`MAX_SKINNED_DRAWS_PER_WARD` 205. **Before**: uncounted, at 380 and 205.
+**After 2c's increment 1**: about 373 and 198 under the same ceilings.
+**After its increment 2**: about 256 and 143, and both ceilings come down to
+what the suite prints, because a ceiling with room in it is a ceiling nobody
+argues about (#756). `MAX_SKINNED_TOTAL` stays 34 and `MAX_SKINNED_PER_WARD`
+stays 20: a swap adds no body (#807). The answer to whether a part costs a
+skinned draw is yes, one per visible part and at most five per person, and
+this count is where that cost goes on the bill. The break that proves it
+reads the data: the baker's `hideNodes: ["Sword"]` deleted makes 381.
+
+**#826. 2d is one quadruped topology on the cow's names, one file per kind,
+and the goose has a bird topology of its own.** Pig, goat, sheep, horse and
+cat share the cow's 15 joint names (#794), which are the hound's where the
+hound has one, plus `Root`: 16. Each kind is its own `.glb` with its own
+proportions, because a horse and a cat are not one mesh with a scale. The
+goose is 12 joints, `Wing.L/R` in place of front legs. The hen's 7-joint rig
+is not reused because it is a sourced file and #803 refuses an import. The
+cow stays `tools/bodies/`', and the hound and the hens stay sourced (#807).
+2d adds kinds and replaces none of them.
+
+**#827. 2d's caps, per animal**: 16 joints, 1,000 triangles, 2 primitives
+(`Coat`, `Bare`), 80,000 bytes. That is #789's cow caps with 2 primitives in
+place of 4. Quadrupeds carry `Idle` (at least 2.0 s), `Walk` and `Eating`,
+the goose `Idle`, `Walk` and `Idle_Peck`, so `wait`, `eat` and `peck`
+resolve with no new activity. A quadruped is at least 1.15 times as long as
+it is tall, which is the cow's 1.3 less the goat's horns.
+
+**#828. `MAX_SKINNED_TOTAL` 34 to 41 and `MAX_SKINNED_PER_WARD` 20 to 24,
+argued in draws, and #789's refusal of a cheap-animal budget holds.** Seven
+bodies: pig, goat, sheep, horse, cat and two geese, each inside #827's caps.
+#789 raised the total by one per body and refused a separate count, and
+both still stand: each animal is one argued body. What is new is the
+evidence. The per-ward body ceiling of 20 was a proxy for what a ward costs
+to skin and draw, and #825 now counts that directly. After 2c's increment 2
+the outer ward's peak is about 143 skinned draws against the 205 it carried
+at 20 bodies, and seven animals at 2 draws each add 14. **Before**: 34
+bodies, outer 20, inner 15; 256 draws, outer 143, inner 111. **After 2d's
+increment 1** (five kinds): 39, outer 22, inner 18. **After its increment 2**
+(the geese): 41, outer 24, inner 18; about 270 draws, outer 151, inner 117.
+The draw ceilings rise by those 14 and stay under the 380 and 205 the castle
+already ran at on Devon's GPU. The increment writes the numbers the suite
+prints. If 2c's increment 2 has not shipped, 2d argues 380 to 394 and 205 to
+213 instead; if 2c's increment 1 never lands, 2d's increment 1 carries the
+`/^bare$/i` line, the check 8 amendment and the draw count itself.
+
+**#829. The animals stand in the two wards, not a stable or the yard.** The
+pig, the sheep and the two geese are in the outer ward, by the hen-wife's
+patch and the cow. The horse and the goat are in the inner ward, the horse
+by the porter's lodge, and the cat is in the bakehouse. Each has a first
+ring of `wait` and `eat` or `peck` at all eight bells, as the cow's, written
+by 2d under #821. No stable: a new room is a plan piece in
+`data/scene-config.json`, lane B, and a row that wants one says so there.
+No yard: `wykes-yard` is `outside`, rank 4c keeps the player out of it, and
+section 3 refuses a stop in a room with no ward.
