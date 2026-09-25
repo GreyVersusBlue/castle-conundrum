@@ -10179,3 +10179,12 @@ walls and a floor 7, the pulpit, the rood and three pews 5; the moved rows
 stay in the inner ward), 833 to 845 with the outside, of 1200. Texture
 43.7 to 43.8 of 64 MB, 139 to 141 textures. #816's projection for the
 outer ward is untouched.
+
+Measured by `builder` in the build commit, `41457cb`, the lines
+`test/budget.mjs` prints: outer ward 1020 / 1200 draw calls, unchanged
+(1151 / 1200 with the outside, also unchanged); inner ward 702 to 714 /
+1200 (833 to 845 / 1200 with the outside); texture 43.7 to 43.8 of 64 MB,
+from 139 to 141 textures; the outside bucket stays 131. The prototype's
+numbers held to the draw. `npm test` ran 15 of 15, `plan-vs-scene.mjs`
+diffed 427 pieces at 0.01 m, and the second `npm run assets:encode` run
+printed "nothing to do" for both `pulpit.glb` and `rood-cross.glb`.

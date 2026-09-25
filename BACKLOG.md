@@ -58,7 +58,10 @@ bodies' generated half, increments 2a and 2b: five activity clips in the
 four human rigs and a generated cow grazing in the outer ward, 34 bodies
 built (#787 to #790, #794); and, in rank 6, the first four of those clips
 placed in the household's routines (#800); and rank 10, retired into 2c and
-2d (#807).
+2d (#807); and Devon's own props placed, 70 rows from 69 files dressing
+thirteen rooms and two open-ward stretches (#830 to #834); and the chapel
+nave, a new inner-ward ground room for the pulpit and the rood (#835 to
+#838).
 
 **Open, ranked below.** Devon made Blender-built assets the project's top
 priority on 2026-09-25 and reopened ranks 1 and 2 himself to hold them
@@ -169,7 +172,7 @@ together.
 | Lane | The file that decides it | Rows |
 | --- | --- | --- |
 | A | `src/save.js` — the version number and `migrate` | none held |
-| B | `data/scene-config.json` — and `test/tools.mjs`'s byte-exactness rail | 1, 2a, 2b, 2e, 2f, 4, 9, 13 (increments 2 and 3 only) |
+| B | `data/scene-config.json` — and `test/tools.mjs`'s byte-exactness rail | 1, 2a, 2b, 2e, 4, 9, 13 (increments 2 and 3 only) |
 | C | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | 2c, 2d, 6 |
 | D | `src/main.js`'s player rig and spawn | 6, 11 |
 | E | `src/audio.js` and `data/sounds.json` | 7 |
@@ -185,18 +188,19 @@ row that adds a state or rewords a line runs `npm run dialogue:extract`
 before it commits (#687). Lane B: rank 4 and rank 9 both write
 `data/scene-config.json` and do not run together; rank 13's increments 2 and 3
 are the same lane and wait behind whichever of the other two is running; the
-Blender rows that place (1, 2a, 2b, 2e, 2f, 2g) hold it too. Lane F is every Blender
+Blender rows that place (1, 2a, 2b, 2e) hold it too. Lane F is every Blender
 row: one machine renders, so they run one at a time regardless (#804).
 
 ## The ranked table
 
-Fifteen ranked rows: 1, 2a, 2b, 2c, 2d, 2e, 2f, 2g, 3, 4, 6, 7, 9, 11, 13. Devon
+Thirteen ranked rows: 1, 2a, 2b, 2c, 2d, 2e, 3, 4, 6, 7, 9, 11, 13. Devon
 reopened ranks 1 and 2 himself on 2026-09-25 for the Blender rows, and
 lettered the pack band by priority (#801, #802). 2f, his own props, took
-the next letter the same day and runs first; the letter is his to change
-(#830). 2g, the chapel nave, is his answer to one of 2f's open
-questions and follows it (#835). **A session never reuses a
-retired rank; Devon may, and did, here** (#802). Rank 10 is retired, with
+the next letter the same day, ran first, and shipped the same day
+(#830 to #834); 2g, the chapel nave, his answer to one of 2f's open
+questions, followed it and shipped the same day too (#835 to #838).
+**A session never reuses a retired rank; Devon may, and did, here** (#802).
+Rank 10 is retired, with
 2c and 2d as its successors (#807). Ranks 5, 8 and 12 stay retired numbers,
 not gaps: a rank is a priority, not an id (#619, #491), which is why every
 row is named by title as well as by rank in this file, `SPECS.md` and
@@ -220,8 +224,6 @@ the placement editor, budget suite, move-and-delete and the dialogue format
 | 2c | Blender: a shared rig with swappable parts: one rig, one-primitive parts, at most five skinned draws a person against the Quaternius rigs' 12 to 15, specced (#820 to #825); nothing built | 2+ | Opus 5 | Local: Blender, then Container; judged local: GPU (#53) | after 1 | F, C | | [Blender: a shared rig with swappable parts](SPECS.md#blender-a-shared-rig-with-swappable-parts) |
 | 2d | Blender: the animals: pig, goat, sheep, horse, cat and two geese on one quadruped topology plus a bird one for the goose, specced (#826 to #829); nothing built | 1 | Opus 5 | Local: Blender; judged local: GPU (#53) | after 1, 2c increment 1 | F, C | | [Blender: the animals](SPECS.md#blender-the-animals) |
 | 2e | Blender: the countryside beyond the wall: five backdrop pieces cut from one seeded height field, specced (#816 to #819); nothing built | 1 | Opus 5 | Local: Blender | after 1, rank 9's 3b | F, B | | [Blender: the countryside beyond the wall](SPECS.md#blender-the-countryside-beyond-the-wall) |
-| 2f | Blender: Devon's props, placed: 70 rows from the 85 props in `51735fa`, dressing only, 16 left out with a reason each; `base` and `propPath` on `interiorProps`, the encoder's 128 px rule in code, check 9, specced (#830 to #834); nothing built | 1 | Opus 5 | Container or local, `ktx` on PATH | — | B | | [Blender: Devon's props, placed](SPECS.md#blender-devons-props-placed) |
-| 2g | Devon's props: the chapel nave: a new inner-ward ground room, x 10..18, z 6..14, for the pulpit and the rood, the loft's altar, font and pew moved into it, three more pews, the garden moved west; `mystery.json`'s `rooms` +1 and the literal 15, specced (#835 to #838); nothing built | 1 | Opus 5 | Container or local, `ktx` on PATH | after 2f | B, E | | [Devon's props: the chapel nave](SPECS.md#devons-props-the-chapel-nave) |
 | 3 | The GPU run: the looks are taken (#711 to #715); the walker holds on a GPU (#734, #736) and the third sitting reached the accusation with the wrong ending (#735 to #741) | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
 | 4 | The retro castle: increment 1 shipped, fifteen sets out and fifteen 128 px textures in (#757 to #766); the look, then variety per room, are left; the props increment moved to 2b (#813) | 2+ | Opus 5 | Container to the look, local: GPU past it | — | B | | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
 | 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #729 to #733); four of the five generated clips placed in the household's routines (#800), `drill` still nobody's; the town and the chatter pool are left | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
@@ -233,44 +235,6 @@ the placement editor, budget suite, move-and-delete and the dialogue format
 **`ROADMAP.md` is these three columns turned into an order**: which row to
 take first, what each one unblocks, and which ones two sessions may hold at
 the same time. This table still ranks; that file sequences (#601).
-
-## Blender: Devon's props, placed
-
-*Where: any machine with `ktx` on PATH. Gate: none. Lane: B.*
-
-**Rank 2f, size 1.** Devon, 2026-09-25: "We now have all of these props in
-assets/props. Can we go in and place these?" Specced whole, decisions #830
-to #834, against `51735fa`. The 85 files are Devon's, made outside the repo
-by his own Blender 5.2 script, and they are held the way the Kenney kit is,
-not by rank 1's pipeline (#830). Seventy rows from 69 files dress thirteen
-rooms and two stretches of open ward. Every row was measured against the suites in a
-prototype. None is pressable and no station moves. The other 16 files leave
-the tree with a reason each (#833). `interiorProps` gains `base` and
-`propPath` (#832). The encoder's 128 px PNG exemption becomes code, with a
-check 9 behind it, because the prototype showed the encoder turning every
-atlas into KTX2 and dropping the cobwebs' alpha while all fifteen suites
-stayed green (#831). The outer ward goes from 1124 to 1151 of 1200 and the
-inner from 774 to 833. No ceiling moves and no light is added (#834).
-Detail: [Blender: Devon's props, placed](SPECS.md#blender-devons-props-placed).
-
-## Devon's props: the chapel nave
-
-*Where: any machine with `ktx` on PATH. Gate: none. Lanes: B and E.*
-
-**Rank 2g, size 1.** Devon, 2026-09-25, answering 2f: yes to a real chapel
-room for the pulpit and the rood, which no wall of the Chapel Tower's drum
-could take (#833). Specced whole, decisions #835 to #838, against
-`b41de72`. A new ground room, `chapel-nave`, stands east of the Steward's
-chamber and west of the chapel's vestibule, 7 m by 7.5 m inside, with 8 m
-walls and a door on its north side, and does not open into the tower
-(#835). The rood hangs on its east wall over the altar, the pulpit stands
-on its north wall, and four pews face east. The loft's altar, font and pew
-move down into it, and 2f's garden moves to the Steward's north wall
-(#837). `mystery.json` gains the room in `rooms` and nowhere else, and
-`layout.mjs`'s ground-room literal goes from 14 to 15 (#836). The inner
-ward goes from 833 to 845 of 1200 with the outside; no ceiling moves
-(#838). Every number was measured in a prototype, since reverted.
-Detail: [Devon's props: the chapel nave](SPECS.md#devons-props-the-chapel-nave).
 
 ## Blender: the pipeline
 
