@@ -13,7 +13,7 @@
 
 import * as THREE from 'three';
 import { loadModel, loadPixelMaterial } from './assets.js';
-import { makePlan, tileToWorld } from './castle-plan.js';
+import { makePlan, tileToWorld, propPath } from './castle-plan.js';
 
 /* ------------------------------------------------- built stone and its UVs ---
  *
@@ -595,7 +595,7 @@ function modelPaths(config) {
   out.add(config.kenneyBase + config.battlements.model);
   for (const g of config.gates) out.add(config.kenneyBase + g.archModel);
   for (const p of config.courtyard.placements) out.add(config.kenneyBase + p.model);
-  for (const p of config.interiorProps) out.add(config.polyhavenBase + p.model);
+  for (const p of config.interiorProps) out.add(propPath(config.polyhavenBase, p.model));
   if (config.stairs) out.add(config.kenneyBase + config.stairs.model);
   return [...out];
 }

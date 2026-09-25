@@ -57,6 +57,7 @@ import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
 import { readGLTF, triangles } from './gltf.mjs';
 import { heldPropPath } from '../src/populace.js';
+import { propPath } from '../src/castle-plan.js';
 import { rows as pixelRows, render as renderPixel, SIZE as GENERATOR_PX, OUT_DIR as PIXEL_DIR } from '../tools/pixel/index.mjs';
 import { renderBody, renderAnimal, animals as animalRows } from '../tools/bodies/index.mjs';
 import { NodeIO } from '@gltf-transform/core';
@@ -128,7 +129,7 @@ const refs = [
   ...(config.stairs ? [[config.kenneyBase + config.stairs.model, 'the tower stairs']] : []),
   ...config.gates.map(g => [config.kenneyBase + g.archModel, `${g.id}'s archway`]),
   ...config.courtyard.placements.map(p => [config.kenneyBase + p.model, p.id || p.model]),
-  ...config.interiorProps.map(p => [config.polyhavenBase + p.model, p.model]),
+  ...config.interiorProps.map(p => [propPath(config.polyhavenBase, p.model), p.model]),
   ...npcData.cast.map(n => [n.modelPath, `${n.id || n.name}'s body`]),
   ...npcData.cast.filter(n => n.heldProp).map(n => [config.polyhavenBase + n.heldProp, `${n.id || n.name}'s heldProp`]),
   /* AND THE TEN OF THE HOUSEHOLD. They wear bodies the cast already names, so
@@ -451,7 +452,8 @@ console.log('\nevery built thing names a material that exists');
  * including the two that ARE used, where only the `textures/` beside the ball
  * were ever loaded.
  *
- * The rule, for `assets/poly-haven`, `assets/NPCs` and `assets/pixel`: a file
+ * The rule, for `assets/poly-haven`, `assets/NPCs`, `assets/pixel` and, since
+ * #830, `assets/props`: a file
  * may be there if some entry in data/ names it, or if a .gltf that some entry
  * in data/ names declares it as a buffer or an image. Nothing else. A rendered
  * texture no material wears is in that rule too: tools/pixel/ writes whatever
@@ -471,7 +473,7 @@ console.log('\nnothing on disk that nothing asks for');
   const need = (rel, why) => { if (!needed.has(rel)) needed.set(rel, why); };
 
   const gltfRefs = [
-    ...config.interiorProps.map(p => [config.polyhavenBase + p.model, p.model.split('/')[0]]),
+    ...config.interiorProps.map(p => [propPath(config.polyhavenBase, p.model), p.id || p.model.split('/')[0]]),
     ...npcData.cast.filter(n => n.heldProp)
       .map(n => [config.polyhavenBase + n.heldProp, `${n.id || n.name}'s heldProp`]),
     ...(populace.people ?? []).filter(p => p.heldProp)
@@ -505,7 +507,7 @@ console.log('\nnothing on disk that nothing asks for');
   };
 
   let dead = 0, deadBytes = 0;
-  for (const rel of [...walk('assets/poly-haven'), ...walk('assets/NPCs'), ...walk('assets/pixel')]) {
+  for (const rel of [...walk('assets/poly-haven'), ...walk('assets/NPCs'), ...walk('assets/pixel'), ...walk('assets/props')]) {
     if (needed.has(rel)) continue;
     dead++;
     deadBytes += fs.statSync(path.join(ROOT, rel)).size;
@@ -513,7 +515,7 @@ console.log('\nnothing on disk that nothing asks for');
   }
   if (dead > 8) fail(`...and ${dead - 8} more unreferenced files`);
   if (dead) fail(`${dead} unreferenced file(s) under assets/, ${(deadBytes / 1048576).toFixed(1)} MB`);
-  else pass(`${needed.size} files under assets/poly-haven, assets/NPCs and assets/pixel, every one of them asked for`);
+  else pass(`${needed.size} files under assets/poly-haven, assets/NPCs, assets/pixel and assets/props, every one of them asked for`);
 
   for (const [rel, why] of needed) {
     if (!fs.existsSync(path.join(ROOT, rel))) fail(`${why} needs ${rel}, which is not there`);
@@ -536,7 +538,7 @@ console.log('\nnothing on disk that nothing asks for');
 console.log('\nevery Poly Haven prop and every NPC body is meshopt-encoded');
 {
   const files = [...new Set([
-    ...config.interiorProps.map(p => config.polyhavenBase + p.model),
+    ...config.interiorProps.map(p => propPath(config.polyhavenBase, p.model)),
     ...npcData.cast.filter(n => n.heldProp).map(n => config.polyhavenBase + n.heldProp),
     ...npcData.cast.map(n => n.modelPath),
     // And the household's: the hound is the first body the cast does not
@@ -860,6 +862,54 @@ console.log('\nthe generated cow, inside #789\'s caps');
       }
     }
   }
+}
+
+/* ------------------------------------------------- 9: Devon's props (#831) ---
+ * assets/props/ is a family made outside this repo by Devon's own Blender
+ * script (#830; the script is in tools/props/ and nothing runs it). Every file
+ * carries the same 128 x 128 atlas, NEAREST, and two of them (the cobwebs) and
+ * net-rack an alpha mask. The encoder's size exemption is what keeps that atlas
+ * a PNG, and it was missing: the first run over these files turned every atlas
+ * into ETC1S, which blurs a hard pixel edge, and dropped the mask through
+ * `removeAlpha()`, with all fifteen suites green. So this holds the family's
+ * shape as it must arrive in a commit: meshopt-encoded (#506), one material,
+ * one image, that image a PNG no bigger than PIXEL_PX on either side by its
+ * own IHDR, and no KHR_texture_basisu declared. Check 8 is the Blender
+ * pipeline's number and stays free.
+ */
+console.log("\nDevon's props: meshopt, one material, one small PNG atlas");
+{
+  const dir = 'assets/props';
+  const abs = path.join(ROOT, dir);
+  const files = fs.existsSync(abs) ? fs.readdirSync(abs).filter(n => n.endsWith('.glb')).sort().map(n => `${dir}/${n}`) : [];
+  if (!files.length) fail(`${dir} holds no .glb, so this check tests nothing`);
+  let bad = 0;
+  for (const rel of files) {
+    const g = readGLTF(path.join(ROOT, rel));
+    const { json } = g;
+    const said = [];
+    const used = json.extensionsUsed || [];
+    if (!used.includes('EXT_meshopt_compression')) said.push('has no EXT_meshopt_compression');
+    if (used.includes('KHR_texture_basisu')) said.push('declares KHR_texture_basisu');
+    const mats = (json.materials || []).length, imgs = json.images || [];
+    if (mats !== 1) said.push(`has ${mats} materials, not one`);
+    if (imgs.length !== 1) said.push(`has ${imgs.length} images, not one`);
+    for (const img of imgs) {
+      if (img.mimeType !== 'image/png') { said.push(`'s image is ${img.mimeType || img.uri || 'untyped'}, not a PNG of ${PIXEL_PX} px or under`); continue; }
+      const bv = json.bufferViews?.[img.bufferView];
+      const buf = bv && g.buffers[bv.buffer];
+      if (!buf) { said.push("'s image has no bytes this suite can read"); continue; }
+      const head = buf.subarray(bv.byteOffset || 0, (bv.byteOffset || 0) + Math.min(bv.byteLength, 24));
+      const isPNG = head.length >= 24 && head.readUInt32BE(0) === 0x89504e47 && head.subarray(12, 16).toString('latin1') === 'IHDR';
+      if (!isPNG) { said.push(`'s image says image/png and opens 0x${head.subarray(0, 4).toString('hex')}`); continue; }
+      const w = head.readUInt32BE(16), h = head.readUInt32BE(20);
+      if (w > PIXEL_PX || h > PIXEL_PX) said.push(`'s image is a ${w} x ${h} PNG, over ${PIXEL_PX} px, which the encoder does not exempt`);
+    }
+    if (!said.length) continue;
+    bad++;
+    for (const x of said) fail(`${rel}${x.startsWith("'") ? '' : ' '}${x} (#831)`);
+  }
+  if (!bad && files.length) pass(`${files.length} files under ${dir}, each meshopt-encoded with one material and one PNG atlas of ${PIXEL_PX} px or under`);
 }
 
 console.log(failures ? `\n${failures} failure(s)` : '\nall good');

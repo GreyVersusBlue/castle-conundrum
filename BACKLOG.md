@@ -169,7 +169,7 @@ together.
 | Lane | The file that decides it | Rows |
 | --- | --- | --- |
 | A | `src/save.js` — the version number and `migrate` | none held |
-| B | `data/scene-config.json` — and `test/tools.mjs`'s byte-exactness rail | 1, 2a, 2b, 2e, 4, 9, 13 (increments 2 and 3 only) |
+| B | `data/scene-config.json` — and `test/tools.mjs`'s byte-exactness rail | 1, 2a, 2b, 2e, 2f, 4, 9, 13 (increments 2 and 3 only) |
 | C | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | 2c, 2d, 6 |
 | D | `src/main.js`'s player rig and spawn | 6, 11 |
 | E | `src/audio.js` and `data/sounds.json` | 7 |
@@ -185,14 +185,16 @@ row that adds a state or rewords a line runs `npm run dialogue:extract`
 before it commits (#687). Lane B: rank 4 and rank 9 both write
 `data/scene-config.json` and do not run together; rank 13's increments 2 and 3
 are the same lane and wait behind whichever of the other two is running; the
-Blender rows that place (1, 2a, 2b, 2e) hold it too. Lane F is every Blender
+Blender rows that place (1, 2a, 2b, 2e, 2f) hold it too. Lane F is every Blender
 row: one machine renders, so they run one at a time regardless (#804).
 
 ## The ranked table
 
-Thirteen ranked rows: 1, 2a, 2b, 2c, 2d, 2e, 3, 4, 6, 7, 9, 11, 13. Devon
+Fourteen ranked rows: 1, 2a, 2b, 2c, 2d, 2e, 2f, 3, 4, 6, 7, 9, 11, 13. Devon
 reopened ranks 1 and 2 himself on 2026-09-25 for the Blender rows, and
-lettered the pack band by priority (#801, #802). **A session never reuses a
+lettered the pack band by priority (#801, #802). 2f, his own props, took
+the next letter the same day and runs first; the letter is his to change
+(#830). **A session never reuses a
 retired rank; Devon may, and did, here** (#802). Rank 10 is retired, with
 2c and 2d as its successors (#807). Ranks 5, 8 and 12 stay retired numbers,
 not gaps: a rank is a priority, not an id (#619, #491), which is why every
@@ -212,11 +214,12 @@ the placement editor, budget suite, move-and-delete and the dialogue format
 | Rank | Item | Size | Model | Where | Gate | Lane | Claimed | Detail |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 1 | Blender: the pipeline: the empty-scene builder, the manifest, check 8 and one placed calibration crate, specced (#801 to #808); nothing built | 1 | Opus 5 | Local: Blender | — | F, B | | [Blender: the pipeline](SPECS.md#blender-the-pipeline) |
-| 2a | Blender: evidence props: three pinned swaps (the knife, the candle, the ledger) and four dressings (the goblet, the vials, the aumbry candles, the seal), specced (#810 to #812, #816, #819); nothing built | 1 | Opus 5 | Local: Blender | after 1 | F, B | | [Blender: evidence props](SPECS.md#blender-evidence-props) |
-| 2b | Blender: an interiors kit: joined sets dressing the kitchen, the great hall, the chapel and the cell, specced (#813 to #816, #819); nothing built | 2+ | Opus 5 | Local: Blender | after 1, 2a | F, B | | [Blender: an interiors kit](SPECS.md#blender-an-interiors-kit) |
+| 2a | Blender: evidence props: three pinned swaps (the knife, the candle, the ledger) and the aumbry candles, specced (#810 to #812, #816, #819); the goblet, the vial and the seal went to 2f (#830); nothing built | 1 | Opus 5 | Local: Blender | after 1 | F, B | | [Blender: evidence props](SPECS.md#blender-evidence-props) |
+| 2b | Blender: an interiors kit: joined sets dressing the kitchen, the great hall and the cell, specced (#813 to #816, #819); the two hearths and the chapel altar went to 2f (#830); nothing built | 2+ | Opus 5 | Local: Blender | after 1, 2a | F, B | | [Blender: an interiors kit](SPECS.md#blender-an-interiors-kit) |
 | 2c | Blender: a shared rig with swappable parts: one rig, one-primitive parts, at most five skinned draws a person against the Quaternius rigs' 12 to 15, specced (#820 to #825); nothing built | 2+ | Opus 5 | Local: Blender, then Container; judged local: GPU (#53) | after 1 | F, C | | [Blender: a shared rig with swappable parts](SPECS.md#blender-a-shared-rig-with-swappable-parts) |
 | 2d | Blender: the animals: pig, goat, sheep, horse, cat and two geese on one quadruped topology plus a bird one for the goose, specced (#826 to #829); nothing built | 1 | Opus 5 | Local: Blender; judged local: GPU (#53) | after 1, 2c increment 1 | F, C | | [Blender: the animals](SPECS.md#blender-the-animals) |
 | 2e | Blender: the countryside beyond the wall: five backdrop pieces cut from one seeded height field, specced (#816 to #819); nothing built | 1 | Opus 5 | Local: Blender | after 1, rank 9's 3b | F, B | | [Blender: the countryside beyond the wall](SPECS.md#blender-the-countryside-beyond-the-wall) |
+| 2f | Blender: Devon's props, placed: 70 rows from the 85 props in `51735fa`, dressing only, 16 left out with a reason each; `base` and `propPath` on `interiorProps`, the encoder's 128 px rule in code, check 9, specced (#830 to #834); nothing built | 1 | Opus 5 | Container or local, `ktx` on PATH | — | B | | [Blender: Devon's props, placed](SPECS.md#blender-devons-props-placed) |
 | 3 | The GPU run: the looks are taken (#711 to #715); the walker holds on a GPU (#734, #736) and the third sitting reached the accusation with the wrong ending (#735 to #741) | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
 | 4 | The retro castle: increment 1 shipped, fifteen sets out and fifteen 128 px textures in (#757 to #766); the look, then variety per room, are left; the props increment moved to 2b (#813) | 2+ | Opus 5 | Container to the look, local: GPU past it | — | B | | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
 | 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #729 to #733); four of the five generated clips placed in the household's routines (#800), `drill` still nobody's; the town and the chatter pool are left | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
@@ -228,6 +231,25 @@ the placement editor, budget suite, move-and-delete and the dialogue format
 **`ROADMAP.md` is these three columns turned into an order**: which row to
 take first, what each one unblocks, and which ones two sessions may hold at
 the same time. This table still ranks; that file sequences (#601).
+
+## Blender: Devon's props, placed
+
+*Where: any machine with `ktx` on PATH. Gate: none. Lane: B.*
+
+**Rank 2f, size 1.** Devon, 2026-09-25: "We now have all of these props in
+assets/props. Can we go in and place these?" Specced whole, decisions #830
+to #834, against `51735fa`. The 85 files are Devon's, made outside the repo
+by his own Blender 5.2 script, and they are held the way the Kenney kit is,
+not by rank 1's pipeline (#830). Seventy rows from 69 files dress thirteen
+rooms and two stretches of open ward. Every row was measured against the suites in a
+prototype. None is pressable and no station moves. The other 16 files leave
+the tree with a reason each (#833). `interiorProps` gains `base` and
+`propPath` (#832). The encoder's 128 px PNG exemption becomes code, with a
+check 9 behind it, because the prototype showed the encoder turning every
+atlas into KTX2 and dropping the cobwebs' alpha while all fifteen suites
+stayed green (#831). The outer ward goes from 1124 to 1151 of 1200 and the
+inner from 774 to 833. No ceiling moves and no light is added (#834).
+Detail: [Blender: Devon's props, placed](SPECS.md#blender-devons-props-placed).
 
 ## Blender: the pipeline
 

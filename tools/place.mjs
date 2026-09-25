@@ -283,7 +283,7 @@ export function noteComment(comment, note) {
 
 /** The arrays a placement may be written into, and the keys each row may carry. */
 export const PLACEABLE = {
-  interiorProps: ['model', 'tile', 'rotationY', 'yOffset', 'noCollide', 'id', 'evidence', 'comment'],
+  interiorProps: ['model', 'tile', 'rotationY', 'yOffset', 'base', 'noCollide', 'id', 'evidence', 'comment'],
   builtProps: ['id', 'evidence', 'read', 'material', 'tile', 'base', 'size', 'comment'],
   // A brazier carries a tile and nothing else: main.js hands `b.tile` to
   // `createBrazier` through `tileToWorld`, so the stand always stands on the

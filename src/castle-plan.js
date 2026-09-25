@@ -130,6 +130,19 @@ const meets2D = (b, x0, z0, x1, z1) =>
   Math.min(b.max.x, x1) > Math.max(b.min.x, x0) &&
   Math.min(b.max.z, z1) > Math.max(b.min.z, z0);
 
+/**
+ * WHERE AN INTERIOR PROP'S FILE LIVES (#832). `interiorProps` was Poly Haven's
+ * array and its `model` has always been a path under `polyhavenBase`. Devon's
+ * props are not Poly Haven's: they sit under `assets/props/`, so a `model`
+ * that already starts with `assets/` is repo-relative and left alone. This is
+ * `heldPropPath`'s rule (#685), and every site that turns an `interiorProps`
+ * row into a file reads it from here: this file, castle-builder.js,
+ * tools/encode-assets.mjs, test/budget.mjs and test/assets.mjs (#500).
+ */
+export function propPath(base, model) {
+  return model.startsWith('assets/') ? model : base + model;
+}
+
 /** A tile coordinate in world metres. The castle's one unit conversion. */
 export function tileToWorld(tileSize, tx, tz) {
   return [tx * tileSize, 0, tz * tileSize];
@@ -1429,18 +1442,29 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
   /* --- interior props, in config order, each able to stand on any before it --- */
   const stack = [];
   for (const p of config.interiorProps) {
-    const parts = boundsOf(pBase + p.model).parts;
+    const model = propPath(pBase, p.model);
+    // A row from outside Poly Haven has no folder name to take an id from, and
+    // `assets` would be every such row's id. Refused by name rather than let
+    // seventy props all answer to one id (#812, #832).
+    if (p.model.startsWith('assets/') && !p.id) throw new Error(`interiorProps: ${p.model} has no id (#812)`);
+    const parts = boundsOf(model).parts;
     const flat = place({ parts, tileSize, tile: p.tile, rotationY: p.rotationY || 0, scaleRule: 'native' });
-    const lift = surfaceHeightUnder(stack, flat.box) + (p.yOffset || 0);
+    // `base` stands a prop on an upper floor, read the way a placement reads it
+    // (#832): its level is the storey under the base, it stacks only on props
+    // on that level, and it stands on whichever is higher, the base or the
+    // surface under it. With no `base` this is level 0 and the ground, which is
+    // every row this array carried before Devon's props.
+    const base = p.base || 0, lvl = levelUnder(base);
+    const lift = Math.max(base, surfaceHeightUnder(stack.filter((s) => levelUnder(s.min.y) === lvl), flat.box)) + (p.yOffset || 0);
     const { transform, box } = place({
       parts, tileSize, tile: p.tile, rotationY: p.rotationY || 0, scaleRule: 'native', lift,
     });
     const id = p.id || p.model.split('/')[0].replace(/_1k\.gltf$/, '');
-    addPiece({ id, kind: 'prop', model: pBase + p.model, level: 0, curtain: false, label: id, evidence: p.evidence || null, read: p.read || null, transform, box });
+    addPiece({ id, kind: 'prop', model, level: lvl, curtain: false, label: id, evidence: p.evidence || null, read: p.read || null, transform, box });
     if (!p.noCollide) {
       collide(id, box);
       stack.push(box);
-      surfaces.push({ id, box, top: box.max.y, level: 0, slope: null });
+      surfaces.push({ id, box, top: box.max.y, level: lvl, slope: null });
     }
   }
 

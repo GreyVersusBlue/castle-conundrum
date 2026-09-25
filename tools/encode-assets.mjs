@@ -38,7 +38,15 @@
 // WHAT IT DOES NOT ENCODE, AND THE RULE IS A SIZE (#508, as #742 restates it).
 // A texture 128 px or under is a PNG and does not come through here: the
 // Kenney kit's ten 64 px maps never did, and as of 2026-09-21 neither do the
-// fifteen 128 px textures this repo draws into assets/pixel/. One of those is
+// fifteen 128 px textures this repo draws into assets/pixel/. Since #831 THE
+// RULE LIVES HERE, IN CODE, and not only in CLAUDE.md: `encodeGLTF` skips a PNG
+// whose header says 128 px or under on both sides (`isSmallPNG`). Before
+// that, the kit and the pixel textures stayed PNG only because nothing ever
+// handed them to this script, and the first family that was handed over,
+// Devon's props in assets/props/, came out with its 128 px atlas turned to
+// ETC1S and its cobwebs' alpha mask removed, with every suite green. The
+// props' meshes are still meshopt-encoded; their one atlas stays a PNG, and
+// test/assets.mjs check 9 holds that. One of those is
 // 85 KB in video memory with its whole mip chain, ETC1S carries two base
 // colours per 4 x 4 block and would mangle a hard pixel edge, and the saving
 // across all fifteen is under a megabyte. THE EXEMPTION IS HELD TO ITS SIZE BY
@@ -64,6 +72,7 @@ import { ALL_EXTENSIONS, KHRTextureBasisu } from '@gltf-transform/extensions';
 import { dedup, meshopt, listTextureSlots } from '@gltf-transform/functions';
 import { MeshoptDecoder, MeshoptEncoder } from 'meshoptimizer';
 import { heldPropPath } from '../src/populace.js';
+import { propPath } from '../src/castle-plan.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, '..');
@@ -134,6 +143,23 @@ const totals = { texturesBefore: 0, texturesAfter: 0, meshBefore: 0, meshAfter: 
  * wall-fortified-gate.glb triangle by triangle, and that is the one
  * measurement in the project that reads raw index and position buffers.
  */
+/** PNG's eight-byte signature, which every PNG opens with. */
+const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+/** The size under which a texture stays a PNG (#508, #742, #831). */
+const SMALL_PX = 128;
+
+/**
+ * Is this image a PNG no wider and no taller than SMALL_PX? Read off the IHDR
+ * chunk, which the format puts first: width and height are big-endian at bytes
+ * 16 and 20. Not a decode, so a file that is not a PNG is simply not small.
+ */
+function isSmallPNG(bytes) {
+  if (!bytes || bytes.byteLength < 24) return false;
+  if (!PNG_SIGNATURE.every((b, i) => bytes[i] === b)) return false;
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  return view.getUint32(16) <= SMALL_PX && view.getUint32(20) <= SMALL_PX;
+}
+
 async function encodeGLTF(file, { textures, mesh }) {
   // The encoder and decoder are dependencies of EXT_meshopt_compression rather
   // than arguments to it: the extension reaches for `meshopt.encoder` when it
@@ -174,8 +200,12 @@ async function encodeGLTF(file, { textures, mesh }) {
     // dedup over meshes or accessors would be free to change how many
     // primitives a file has, which is what partsOf measures.
     await doc.transform(dedup({ propertyTypes: [PropertyType.TEXTURE] }));
+    let encoded = 0;
     for (const tex of doc.getRoot().listTextures()) {
       if (tex.getMimeType() === 'image/ktx2') continue;
+      // The size exemption (#831): pixel art keeps its edges and its alpha.
+      if (isSmallPNG(tex.getImage())) continue;
+      encoded++;
       const uri = tex.getURI();
       const slots = listTextureSlots(tex);
       const srgb = slots.some((s) => SRGB_GLTF_SLOTS.includes(s));
@@ -195,7 +225,9 @@ async function encodeGLTF(file, { textures, mesh }) {
     }
     // Required, not optional: there is no jpg left to fall back to, and a
     // loader without KTX2 should say so rather than render an untextured prop.
-    if (!already.includes('KHR_texture_basisu')) doc.createExtension(KHRTextureBasisu).setRequired(true);
+    // And only when something here WAS encoded: a file whose every texture is a
+    // small PNG would otherwise declare an extension it does not use (#831).
+    if (encoded && !already.includes('KHR_texture_basisu')) doc.createExtension(KHRTextureBasisu).setRequired(true);
   }
 
   // A file with nothing left to encode is not rewritten. On a CRLF checkout the
@@ -247,7 +279,7 @@ const config = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/scene-config.jso
 const npcs = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/npcs.json'), 'utf8'));
 const populace = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/populace.json'), 'utf8'));
 const props = new Set([
-  ...config.interiorProps.map((p) => config.polyhavenBase + p.model),
+  ...config.interiorProps.map((p) => propPath(config.polyhavenBase, p.model)),
   ...npcs.cast.filter((n) => n.heldProp).map((n) => config.polyhavenBase + n.heldProp),
   // And what the household carries (#685): the spear is under assets/NPCs,
   // not Poly Haven's, and `heldPropPath` is the one place that knows which.
