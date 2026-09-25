@@ -68,9 +68,10 @@ The project lived in `GreyVersusBlue/tools-and-games` under
   failing by construction. Disk barely moved; video memory went from 317.9 MB
   to 79.9. **The exemption is a size, not a kit**: a texture 128 px or under is
   a PNG and does not come through the encoder, which is the Kenney kit and, since
-  #742, the fifteen textures this repo draws into `assets/pixel/`, and
-  `test/assets.mjs`'s check 3b is what holds it to 128 px so it cannot grow into
-  a 1k PNG.
+  #742, the fifteen textures this repo draws into `assets/pixel/`, and since
+  #831 the one 128 px atlas embedded in every `assets/props/` glb. Check 3b is
+  what holds a texture to 128 px so it cannot grow into a 1k PNG, and check 9
+  is what fails if the encoder ever turns a small PNG into KTX2 anyway.
 - **`src/castle-plan.js` is the single source the builder and every suite
   read** (#500). Neither side computes a transform the other cannot see:
   `castle-builder.js` places what the plan says and tags it with a `planId`,

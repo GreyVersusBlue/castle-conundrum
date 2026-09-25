@@ -140,3 +140,6 @@ by `tools/pixel/`, which is in this repo, from the parameters in
 `tools/pixel/textures.json`. There is nobody else to credit. `npm run
 pixel:render` reproduces every byte of them, and `test/assets.mjs` fails if it
 does not.
+
+The props under `assets/props/` are Devon's own work, made with his script in
+Blender (#830). The script and its manifest are kept in `tools/props/`.
