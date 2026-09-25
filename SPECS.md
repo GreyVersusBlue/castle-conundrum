@@ -8,12 +8,16 @@ and that one differ, this one was written against the code and wins. `HISTORY.md
 decision. Every "recommendation" below is exactly that, and the session that
 ships the row is the one that records the call with a number.
 
-One section per row still open in `BACKLOG.md`'s ranked table: 3, 4, 6, 7, 9,
-10, 11, 13. The red suite is closed; its section is a stub pointing at
-`HISTORY.md`.
+One section per row still open in `BACKLOG.md`'s ranked table: 1, 3, 4, 6, 7,
+9, 11, 13, and the rank 2 band (2a to 2e), whose five pack sections are
+being written by other sessions. The red suite is closed; its section is a
+stub pointing at `HISTORY.md`. "Bodies" stays until 2c's and 2d's sections
+land, and is then deleted (#807).
 A shipped row's section is deleted, not struck through; `HISTORY.md` carries
-what it said. **Ranks are retired, never reused** (#619, #491, #522): 1, 2, 5,
-8 and 12 are gone from this file for that reason, not renumbered into gaps.
+what it said. **A session never reuses a retired rank; Devon may** (#619 as
+#802 amends it, #491, #522): he reopened 1 and 2 on 2026-09-25 for the
+Blender rows (#801, #802). 5, 8, 10 and 12 are retired and gone from this
+file, not renumbered into gaps.
 Where a brief and the code disagree, the code is quoted and the disagreement
 is named. Measurements are `git ls-tree`, `du` and `ls -la` against the commit
 each section names.
@@ -71,6 +75,1282 @@ Four facts every row below leans on, stated once:
 timing fix (#721 to #724), the day-one `PROP_CLEARANCE` rail (#785), and the
 same rail extended to the walking day and the morning after (#792, #793).
 `HISTORY.md` carries what shipped.
+
+---
+
+## Blender: the pipeline
+
+**Rank 1. Size 1. Model Opus 5. Where: Local: Blender. Gate: none; it is
+the gate for every rank 2 pack. Lanes F and B.** Devon's instruction of
+2026-09-25: assets made in Blender are the top priority (#801). Blender runs
+on his Windows machine only, headless, never in a container and never in CI
+(#804). This row builds the pipeline every pack in the rank 2 band (2a
+evidence props, 2b an interiors kit, 2c the shared rig, 2d animals, 2e the
+countryside backdrop) goes through, and proves it end to end with one placed
+crate. Decided in `HISTORY.md` as #801 to #808; this section is the
+`builder` job those decisions leave. Nothing under `tools/blender/` exists
+on `6a279de`.
+
+**The shape, in one line**: Blender builds each asset from an empty factory
+scene out of a seeded script, exports it into a gitignored staging folder,
+and a Node step writes the bytes that are committed, meshopt-encoded, with a
+manifest row per file; CI never runs Blender and holds the committed bytes
+to the manifest and the manifest to the scripts (#803, #806).
+
+### Scope, the pipeline (class S from here)
+
+- **`tools/blender/common.py`**, imported by every pack script. In order:
+  - **The pin** (#805): `if bpy.app.version[:2] != (4, 5):` print the
+    version found and `sys.exit(3)`.
+  - **An empty scene**: delete every object, mesh, material, image and
+    camera the factory startup made, so an asset owes nothing to what was
+    there. `scene.unit_settings.system = 'METRIC'`, `scale_length = 1.0`:
+    one Blender unit is one metre.
+  - **The seed**: `seed(row)` calls `random.seed(row["seed"])` with the
+    row's string seed, and every random draw in a pack goes through Python's
+    `random` after it. No `time`, no `uuid`, no `os.urandom`, no iteration
+    over a `set` of strings whose order matters (`render.mjs` fixes
+    `PYTHONHASHSEED=0`, which is a backstop, not a licence).
+  - **The frame**: build Z-up, as Blender is; before export, move every
+    root so the asset's bounding box has min Z at 0 and is centred in X and
+    Y, and apply the transform. The front faces Blender -Y, which the
+    exporter turns into glTF +Z, the way the bodies face (#788).
+  - **The look helpers**: `flat(obj)` shades flat; `palette_material(pack)`
+    makes the pack's one material, a Principled BSDF with metallic 0,
+    roughness 1, and a palette atlas PNG (below) on base colour, sampled
+    Closest; `swatch_uv(obj, face, colour)` points a face's UVs at a
+    swatch's centre.
+  - **The export**: `export(path)` calls `bpy.ops.export_scene.gltf` with
+    `export_format='GLB'`, `export_yup=True`, `export_apply=True`,
+    `export_extras=False`, no cameras, no lights, animations only when the
+    pack says so, into the staging path `render.mjs` passed.
+  - **The contact sheet**: `contact_sheet(pack, objects)` lays the pack's
+    assets on a row, one fixed orthographic camera at a three-quarter view,
+    Workbench with flat lighting, 1600 x 900, into `shots/blender/<pack>.png`.
+    `shots/` is already gitignored. It is for Devon to look at and is not a
+    test.
+- **`tools/blender/packs.json`**, the table, one row per asset:
+  `{ pack, name, script, seed, why, ...params }`, and per pack an optional
+  `extraColours` (below). The table is what the source hash reads.
+- **`tools/blender/packs/calibration.py`**, the one pack this row ships: a
+  crate, about 0.8 m on a side, planks and two battens, flat, under the caps
+  below. It is a real prop and stays; it is also the file a later session
+  reads to write its first pack.
+- **`tools/blender/render.mjs`**, `npm run blender:render [pack ...]`,
+  Devon's machine only. Exits non-zero if `CI` is set (#804). Finds Blender
+  at `BLENDER` or on PATH, runs `blender --version` and refuses anything but
+  4.5 before any pack. For each row: `blender -b --factory-startup
+  --python-exit-code 1 -P tools/blender/packs/<script> -- --row <json>
+  --out tools/blender/.staging/<pack>/<name>.glb`, with `PYTHONHASHSEED=0` in
+  the environment and `pathToFileURL`/`path.join` for every path, since it
+  runs on Windows. Then calls `finish.mjs` on what landed. Prints a line per
+  file: written, or unchanged.
+- **`tools/blender/finish.mjs`**, pure Node, exports `finish(staged, row) ->
+  { bytes, manifestRow }` for `render.mjs` (#806). Reads with gltf-transform,
+  sets `asset.generator` to `"castle-conundrum tools/blender"`, drops
+  `asset.copyright` and every `extras`, applies `meshopt({ encoder:
+  MeshoptEncoder, cleanup: false })`, and returns the bytes and the row:
+  `{ file, pack, name, bytes, sha256, triangles, images: [[w, h], ...],
+  blender, source }`. `render.mjs` writes the `.glb` only if the bytes differ
+  from what is on disk, and the manifest only if a row changed.
+- **`tools/blender/manifest.json`**: `{ comment, blender: "4.5", rows }`,
+  rows sorted by `file`, two-space JSON. **Written in the file's own line
+  ending** with `eolOf` from `tools/place.mjs` (#631, #632): CRLF on Devon's
+  checkout, LF in CI, and a new file starts LF. `render.mjs` for one pack
+  rewrites that pack's rows and leaves every other row's text alone.
+- **`source`**, the hash that makes a stale render visible: sha256 over, in
+  order, `common.py`, the row's script, `finish.mjs`, and the row as
+  `JSON.stringify` of its keys sorted, **each text file normalised to LF
+  first**, so the same commit hashes the same on Windows and in CI. The
+  function is exported from `finish.mjs` so check 8 and the writer agree by
+  import, and check 8's line 5 is what stops that being a test that
+  re-implements its subject.
+- **`assets/blender/calibration/crate.glb`**, the only asset.
+- **`src/castle-plan.js`**: export `propPath(base, model)`, `heldPropPath`'s
+  rule (a `model` starting `assets/` is repo-relative, anything else is under
+  `polyhavenBase`), and use it at all eight sites that join an
+  `interiorProps` model today: `castle-plan.js` twice, `castle-builder.js`,
+  `tools/encode-assets.mjs`, `test/budget.mjs`, `test/assets.mjs` three
+  times (#500: one computation, everybody reads it). An `interiorProps` row
+  whose `model` starts `assets/` with no `id` throws, naming the model
+  (#812): check 2's messages and `plan-vs-scene.mjs`'s tags name a piece by
+  its id, and deriving one from a basename would give two goblets one id in
+  silence.
+- **`data/scene-config.json`**: one `interiorProps` row, `"id":
+  "larder-crate"`, `"model": "assets/blender/calibration/crate.glb"`, in
+  the larder, spliced by `tools/place.mjs`'s writer in the file's own
+  ending (#584, #632). Asset and reference in one commit (#390).
+- **`test/assets.mjs`**: check 8 (below), and check 4's sweep gains
+  `assets/blender`.
+- **`package.json`**: `"blender:render": "node tools/blender/render.mjs"`.
+  **`.gitignore`**: `tools/blender/.staging/`. `CLAUDE.md`'s npm table and
+  `README.md`'s credits line (the meshes under `assets/blender/` are the
+  project's own, as #743 said of the pixels) are the lead's one-liners.
+- **Untouched**: `tools/bodies/`, `tools/pixel/`, `assets/NPCs/`,
+  `src/save.js` (no version bump), `test/budget.mjs`'s ceilings.
+
+### The look (#742, #803)
+
+- **Low-poly and flat-shaded**, the Kenney kit's kind of object: bevels
+  only where a silhouette needs one, no subdivision, no sculpt.
+- **Colour comes from one palette atlas per pack**, a PNG embedded in each
+  `.glb`, at most 128 px a side and 32 colours, one swatch per colour,
+  every face's UVs on a swatch centre. That is how the kit colours its own
+  pieces with 64 px maps, it keeps an asset to one material and one draw
+  call, and a 16 x 16 atlas costs about 1 KB of video memory.
+- **The colours are the castle's**: every swatch is a colour in the union
+  of `tools/pixel/textures.json`'s palettes, plus at most 8 a pack lists as
+  `extraColours` in `packs.json`, each with a `why`.
+- **Lit, never unlit**: no `KHR_materials_unlit`, metallic 0, one map, no
+  normal or ORM map, as `pixelMaterials` are (#742), so the sun per watch
+  and the braziers light it like the stone beside it.
+- **No texture over 128 px, and so no KTX2, in this pipeline.** A KTX2 pass
+  after `finish.mjs` would change bytes the manifest has already recorded,
+  and a pack that needs a bigger texture amends this section first.
+
+### Acceptance
+
+**`npm test` fifteen of fifteen, and check 8 is new in `test/assets.mjs`**
+(#808), after check 7, over every row of `tools/blender/manifest.json` and
+every file under `assets/blender/`. Its caps are named constants in one
+block at the top of the check, one line per pack, never read from the
+generator: `calibration: { triangles: 300, bytes: 24000 }`. Each line below
+has the break that must turn it red from green (#34); the ones marked
+*local* need a re-render, and so Devon's machine.
+
+1. **The pin.** Every row's `blender` starts `4.5.` Break: edit the crate's
+   row to `4.2.1`.
+2. **The bytes.** Every row's `file` exists, is `bytes` long and hashes to
+   `sha256`. **Break, the one the builder quotes in the report: flip one
+   byte of `crate.glb`.** Expected: "assets/blender/calibration/crate.glb
+   hashes to ..., the manifest says ...: it changed after its render".
+3. **Both ways.** Every file under `assets/blender/` is a manifest row, and
+   every manifest row is a `packs.json` row and back. Break: delete the
+   crate's manifest row.
+4. **Not stale.** Each row's `source` equals the hash of today's
+   `common.py`, script, `finish.mjs` and table row. Break: change the
+   crate's `seed` in `packs.json` without rendering. The failure says to run
+   `npm run blender:render calibration` on a machine with Blender 4.5.
+5. **Both endings** (#632). The source hash of each input, built once as LF
+   and once as CRLF from what is on disk, is the same hash; and
+   `manifest.json` has no line ending of the other kind. Break: remove the
+   LF normalisation from the hash; the CRLF copy disagrees on every machine.
+6. **The shape.** Each file carries `EXT_meshopt_compression`, and no
+   `KHR_texture_basisu`, `KHR_materials_unlit` or `COLOR_0`; one material,
+   metallic 0; its triangle count (`test/gltf.mjs`'s `triangles`) equals the
+   row's and is under its pack's cap, and its bytes are under the cap; its
+   box (`partsOf`) has min y within 1 mm of 0 and x and z centred within
+   1 mm. Breaks, *local*: a bevel with enough segments to pass 300
+   triangles; the crate lifted 0.1 m before export.
+7. **The images.** Every image in a Blender `.glb` is a PNG, at most 128 px
+   a side, at most 32 colours, and every texel is in the castle's palette
+   union or the pack's `extraColours`. Break, *local*: one swatch
+   `#ff00ff`.
+8. **No input files** (#803). No `.blend` anywhere under `tools/` or
+   `assets/`, and no file under `tools/blender/` calls `import_scene`,
+   `open_mainfile`, `libraries.load` or `images.load`, or imports `time`.
+   Break: add a `bpy.ops.import_scene.gltf(...)` line to `calibration.py`
+   (line 4 goes red too; the report quotes line 8's message).
+
+**Held by what already exists, once `propPath` is in**: check 1 (the
+crate's model resolves), check 4 (it is referenced), check 5 (meshopt),
+`test/layout.mjs`'s prop rules and `PROP_CLEARANCE`, `test/plan-vs-scene.mjs`
+diffing its box at 0.01 m with no new line (#529), `test/budget.mjs` counting
+its one draw and its atlas, `test/built.mjs` serving it from `dist/`.
+
+**Determinism, local, and written into `HISTORY.md`**: two consecutive
+`npm run blender:render` on Devon's machine; the second prints "unchanged"
+for the crate and `git status` is clean. If it is not, #806's fallback, in
+that order.
+
+**The look, local** (#53): the contact sheet and the crate in the larder on
+a GPU, one sentence each: does it read as the kit's kind of object beside
+the kit's barrels? Blocks nothing in `npm test`.
+
+### Open calls
+
+- **Where the crate stands.** Recommend **the larder**, against a wall, on
+  the ground: a store room already reads as crates, it is indoors so it
+  moves no outside bucket, and one draw call is the whole cost.
+- **Vertex colours or an atlas.** Recommend **the atlas, and `COLOR_0`
+  refused**: a float colour through linear-to-sRGB is not checkable against
+  a palette without a tolerance, an atlas texel is, and it is the kit's own
+  method. The cow's vertex colours are `tools/bodies/`' and untouched.
+- **Colours outside `textures.json`.** Recommend **at most 8 per pack in
+  `extraColours`, each with a `why`**: a bloodstain or a cow's hide has no
+  stone colour, and a cap keeps the look one castle.
+- **One manifest or one per pack.** Recommend **one**: line 3 is one read,
+  lane F serialises every writer anyway, and one machine renders.
+- **Commit the contact sheet.** Recommend **no**, into `shots/blender/`:
+  it is a look, not a record, and a binary nobody diffs.
+- **What the source hash covers.** Recommend **`common.py`, the script,
+  `finish.mjs` and the row**, not `render.mjs`: `render.mjs` only launches,
+  and a change to how it launches that moves bytes shows up in line 2 on
+  the next render anyway.
+- **If Devon's installed Blender is not 4.5.** Recommend **install 4.5 LTS
+  beside it (the portable zip) and point `BLENDER` at it**; the pin moves
+  only by a HISTORY entry and a full re-render (#805).
+
+### Dependencies
+
+- **Gate: none to start.** Needs Blender 4.5 and Devon's machine (#804);
+  a session without it writes nothing here.
+- **Lanes F and B.** F because this row makes `tools/blender/`; B because
+  the crate is spliced into `data/scene-config.json`, so it does not run
+  beside rank 4, rank 9 or rank 13's increments 2 and 3.
+- **Every rank 2 pack is gated on this row shipping**: none of them has a
+  `common.py`, a manifest or a check 8 to extend until it does.
+- **Beside rank 3 on the same machine**: yes, if rank 3 takes its
+  `git worktree` first (#602's note); this row writes the tree.
+
+### Constraints
+
+- #493: nothing fetched; Blender and its exporter run offline.
+- #499: the crate is under 24 KB against 200 MB.
+- #506: meshopt by `finish.mjs`, the encoder's own call; nothing lands raw.
+- #390: the crate and its `interiorProps` row in one commit.
+- #500: `propPath` lives in `castle-plan.js` and every site reads it.
+- #529, #611: every rail is `assets.mjs`'s; no ceiling moves, the draw count
+  is `budget.mjs`'s as it stands.
+- #632: the manifest in its own ending, the source hash over LF, both
+  endings asserted.
+- #13, #34, #147: every line has its break; a line that stays green on its
+  break is not shipped.
+- #53: the look and the second-run evidence are Devon's machine's.
+- Windows: `pathToFileURL` for any absolute `import()`, no brace expansion
+  in any script `render.mjs` shells.
+- #801 to #808.
+
+### What every Blender pack shares
+
+A pack section cites this paragraph instead of restating it. **A pack is
+rows in `tools/blender/packs.json`, one script at
+`tools/blender/packs/<pack>.py` that imports `common.py`, and output under
+`assets/blender/<pack>/`, written by `npm run blender:render <pack>` on
+Devon's machine with Blender 4.5 and nowhere else** (#804, #805). Every
+asset is a `.glb` in metres, +Y up, its base at y 0, centred, facing +Z,
+seeded by its row, flat-shaded, one material with a palette atlas of at
+most 128 px and 32 colours from the castle's palettes plus at most 8 of its
+own, lit, meshopt by `finish.mjs`, never KTX2 (this section's "The look").
+**A skinned pack amends two of those rules** (#820): it carries two
+materials over the one palette image, `Cloth` (or `Coat`), which the tint
+multiplies, and `Bare`, which it does not; and it is framed on its root
+joint at x and z 0, not centred on its bounding box, because a cloak or a
+tail moves the union of its parts off the feet. Every file is a row of
+`tools/blender/manifest.json`, and `test/assets.mjs`
+check 8 holds it; the pack adds one line to check 8's caps block (triangles
+and bytes per asset) and argues it. Every asset is referenced in the commit
+it lands (#390). A pack's `HISTORY.md` entry carries its ceilings before and
+after (#611) and the second-run no-op. Every pack holds lane F; a pack that
+places into `data/scene-config.json` holds B; 2c and 2d hold C. A pack
+writes nothing `tools/bodies/` writes and makes no body another row makes
+(#807). Its GPU look is a checklist in its own section, and blocks nothing
+in `npm test` (#53).
+
+---
+
+## Blender: evidence props
+
+**Rank 2a. Size 1. Model Opus 5. Where: Local: Blender. Gate: after rank 1.
+Lanes F and B.** The first pack after the calibration crate, and the one
+that proves `finish.mjs`, check 8 and `test/budget.mjs` on content a player
+presses E at. Everything under "What every Blender pack shares" in "Blender:
+the pipeline" holds here and is not restated. Decided in `HISTORY.md` as
+#810, #811, #812, #816 and #819, against `86c72fb`; this section is the
+`builder` job those leave. Two increments, both class S, each one sitting on
+Devon's machine; a third is conditional on the GPU look.
+
+**What the brief asked for, against the data.** The brief named a dagger, a
+goblet, vials, candles at several heights, a ledger and a seal.
+`data/mystery.json` has eleven evidence rows and none of them is a dagger, a
+goblet, a vial or a seal. What each of the six is, measured:
+
+| Brief | What the data has | Stand-in today | This pack |
+| --- | --- | --- | --- |
+| dagger | `knife`, "bakehouse barrel": "The kitchen knife, in the bakehouse, flour on it" (`knife-found`, a herring) | `detail-barrel.glb`, a kit barrel, in `courtyard.placements` | **swap**: `knife-barrel.glb`, a flour barrel with the knife's handle over the rim |
+| candles at several heights | `candle`, "chapel candles": "One tallow candle in a pricket at the first turn of the Chapel Tower stair. Wax pooled on the step below it"; `candle-count` quest: four tallow in the aumbry at Compline, three at Lauds | `brass_candleholders`, a photoscanned 1.08 m spread of three brass candlesticks, 7 primitives, 41,936 triangles | **swap**: `pricket.glb`, an iron floor pricket, a stub burnt to 4 cm, the wax pool; **dress**: `aumbry-candles.glb`, the aumbry with the three at 26, 22 and 18 cm |
+| ledger | `ledger`, "works ledger", behind the word-lock: "340 sheets received, 212 laid" | `WoodenTable_01`, a photoscanned table with nothing on it | **swap**: `ledger-desk.glb`, a desk with the ledger open on it |
+| seal | no evidence; `prisoner-story`: "with the Clerk's seal on the pass" | nothing | **dress**: `seal.glb`, the seal matrix, a stick of red wax and a folded pass, in the Clerk of Works' office |
+| goblet | no evidence; `steward-denies` ("He was drunk") against `hywel-sober` | nothing | **dress**: `goblet.glb`, pewter, on the Great Hall's table |
+| vials | nothing in any clue, quest or document | nothing | **dress**: `vials.glb`, three stoppered vials in a rack, on rank 1's crate in the larder |
+
+Three swaps replace the thing the player presses; four dressings stand
+beside it or in a room with no evidence at all. No dressing is pressable,
+so no dressing is a clue, and no clue, deduction, press or station changes
+(#810).
+
+### Scope, increment 1: the four dressings (class S)
+
+- **`tools/blender/packs/evidence.py`**, importing `common.py`: one function
+  per asset, dispatched on the row's `name`. Round things (goblet, vials,
+  candles) are lathed at 8 to 12 sides; nothing is subdivided.
+- **`tools/blender/packs.json`**: four rows, pack `evidence`, each with a
+  `why` that names the clue it dresses or says it dresses none. The pack's
+  `extraColours`, at most 8: tallow, sealing wax, brass, pewter, two glass
+  and steel, each with a `why`. The palette union has no bright tallow,
+  wax red, glass or brass.
+- **`assets/blender/evidence/{goblet,vials,aumbry-candles,seal}.glb`** and
+  their `tools/blender/manifest.json` rows.
+- **`data/scene-config.json`, `interiorProps`**, four rows, spliced by
+  `tools/place.mjs` in the file's own ending (#584, #632), each with an
+  explicit `id`:
+  - `hall-goblet` on the Great Hall's `WoodenTable_01`, a free spot on its
+    top clear of the lantern and the candleholders; stacked by
+    `surfaceHeightUnder`, so the row comes after the table's.
+  - `larder-vials` on rank 1's crate, stacked the same way. The larder is
+    one of the nineteen empty rooms (#582), and this is its second thing.
+  - `chapel-aumbry` on the chapel's drum wall, `yOffset` 1.2 and
+    `noCollide`, the way `kite_shield` hangs in the hall. The builder picks
+    the arc, clear of the chapel's door and of every pressable (check 1e
+    below), and writes the tile in `HISTORY.md`.
+  - `clerk-seal` on the roped crate by the barrels in the Clerk of Works'
+    office (tile [-8.1, -1.85]), `yOffset` the crate's top off `partsOf`,
+    `noCollide`. Not on `works-ledger`, which is a pressable.
+- **`src/castle-plan.js`**: an `interiorProps` row whose `model` starts
+  `assets/` and carries no `id` throws, naming the model (#812). Today the
+  id is `p.model.split('/')[0]`, which is `"assets"` for every Blender
+  path, so the second Blender row would share an id with the first. Rank
+  1's crate row gains `id: "larder-crate"` in this commit if it shipped
+  without one.
+- **`test/layout.mjs`, new check 1e, "nothing stands over a pressable"**
+  (#812): for every piece carrying `evidence`, `read` or `bell`, no other
+  non-ground piece overlaps its box in plan by more than 1 cm in x and in z
+  with its own base at or above the pressable's centre height and below
+  the pressable's base plus `EYE_HEIGHT`. That is the band between the
+  prompt's aim point and a standing eye, where
+  `InteractionSystem.hasLineOfSight` would meet it: `occluders()` is every
+  scene child but the bodies and the targets, and a dressing is neither. A
+  floor slab 4 m over a level-0 pressable is above the band, and a crate
+  under the gaol roll or the cloak is below it. A plan fact, so here and
+  not in `plan-vs-scene.mjs` (#529).
+- **`test/assets.mjs`**, check 8's caps block, one line:
+  `evidence: { triangles: 600, bytes: 32000 }` (#819).
+
+### Scope, increment 2: the three pinned swaps (class S)
+
+- **`tools/blender/packs.json`**: three rows, `pricket`, `knife-barrel`,
+  `ledger-desk`. Each asset is symmetric about its origin in x and z to
+  1 mm, so a rotation cannot move its box centre.
+- **`assets/blender/evidence/{pricket,knife-barrel,ledger-desk}.glb`** and
+  their manifest rows.
+- **`data/scene-config.json`**, each swap under #811's rule (same id, box
+  centre to 1 mm, footprint inside the old box):
+  - `candles-chapel`: `model` to `assets/blender/evidence/pricket.glb`, tile
+    **[5.69705, 4.30765]**, rotationY 0. That tile is the old box's centre,
+    (22.7882, 17.2306), over 4. The old tile [5.675, 4.325] was the
+    photoscan's origin, 0.114 m off its box centre, and is not where the
+    rail measures from. Footprint at most 0.4 x 0.4 m inside the old
+    1.08 x 0.43.
+  - `table-muniment`: `model` to `assets/blender/evidence/ledger-desk.glb`,
+    tile and rotationY 90 unchanged, since the table's box centre is its
+    tile (24.2, -16.6). Footprint inside 0.66 x 1.80.
+  - `knife`: the row leaves `courtyard.placements` and becomes an
+    `interiorProps` row, same `id` and `evidence`, `model`
+    `assets/blender/evidence/knife-barrel.glb`, tile [0.125, 3.825] (the
+    kit barrel's centre, (0.5, 15.3)), because `propPath` is read at the
+    `interiorProps` sites only. `tools/place.mjs` does not take
+    `courtyard.placements`, so that one row is cut by hand in the file's own
+    ending (#632). The piece's kind goes from `decor` to `prop`, which puts
+    it under check 1; it stands 0.86 m from the drum's centre and clears
+    the stone. Footprint inside 0.49 x 0.49.
+- **`data/mystery.json`**: the three evidence rows' `prop` become the three
+  new paths. `name`, `clue`, `watches`, `room` and every station unchanged.
+- **`test/mystery.mjs` check 1, one line**: the resolver for "every evidence
+  prop is a model already on disk" tests `e.prop.startsWith('assets/')`
+  before `.endsWith('.glb')` and takes such a path as repo-relative through
+  `propPath`. Today every `.glb` is joined to `kenneyBase`, so
+  `assets/blender/evidence/pricket.glb` reads as missing. **No station line
+  in `test/mystery.mjs` changes** (#529): check 2's four `PROP_CLEARANCE`
+  expectations stay byte-identical, which is the evidence that the pins
+  held.
+- **Untouched**: `data/npcs.json`, `data/populace.json`, `data/quests/`,
+  `src/save.js`, `src/interaction.js`, `test/plan-vs-scene.mjs`,
+  `test/budget.mjs`'s ceilings. The brass candleholders' pack stays on disk:
+  the hall's table still carries a set.
+
+### Acceptance
+
+`npm test` fifteen of fifteen after each increment. Each line names its
+suite and the break that turns it red from green (#34).
+
+1. **Check 8, the pack's lines** (`test/assets.mjs`), over seven new rows,
+   under `evidence`'s cap. **The break the builder quotes for increment 1 is
+   line 2's**: flip one byte of `goblet.glb`, expecting "assets/blender/
+   evidence/goblet.glb hashes to ..., the manifest says ...: it changed after
+   its render". Line 6 (the cap) is *local*: `goblet.py`'s lathe at 64 sides.
+2. **Check 1e** (`test/layout.mjs`), new, green on today's data before any
+   dressing lands; if it is red on today's data, that is a finding for
+   `HISTORY.md` before anything is placed. Break: `hall-goblet`'s tile set
+   onto `table-muniment`'s centre (after increment 2, `ledger-desk`), expecting
+   "hall-goblet stands over table-muniment, which the player presses E at".
+3. **The id rule** (`makePlan`, surfaced by every Node suite). Break: delete
+   `hall-goblet`'s `id`; `makePlan` throws naming
+   `assets/blender/evidence/goblet.glb`.
+4. **`test/mystery.mjs` check 1, the resolver.** Break: take the `assets/`
+   branch out; expecting "every evidence prop is a model already on disk"
+   to fail listing `candle`, `knife` and `ledger`.
+5. **The pins** (`test/mystery.mjs` check 2, unchanged). **The break the
+   builder quotes for increment 2**: `candles-chapel` at the old tile
+   [5.675, 4.325]. The Constable's put-back station at (5.9, 4.2) is then
+   1.03 m from the candle and the rail says nothing, so "the Constable back
+   at the candles at Prime" fails; restore the pinned tile and it prints
+   0.92 m again, as Hywel's line prints 0.34.
+6. **Held with no new line**: `test/layout.mjs` check 3e (each evidence
+   piece's model ends with its `prop`, in its room, base inside 1.5 m of the
+   floor), checks 1, 1b and 11; `validateMystery` and `validatePopulace` with
+   no station moved; `test/plan-vs-scene.mjs` diffing all seven boxes at
+   0.01 m, and its candles beat still finding a cell 0.9 to 2.8 m out that
+   offers the pricket; `test/built.mjs` serving the seven from `dist/`.
+7. **The budget, recorded, not asserted anew** (#816): increment 1 moves
+   the outer ward up 3 (goblet, vials, seal) and the inner up 1 (the
+   aumbry); increment 2 takes the inner ward down 6 (seven primitives of
+   candleholders become one) and removes 41,936 triangles no suite counts.
+   The builder writes the two lines `test/budget.mjs` prints, before and
+   after each increment, in `HISTORY.md`.
+
+### Open calls
+
+- **The brief's six against the data's eleven.** Recommend **three pinned
+  swaps and four dressings, as the table above**: the knife, the candle and
+  the ledger are evidence whose stand-in is the wrong object, and the other
+  three name no evidence, so they dress rooms rather than invent clues.
+- **Swap or dress, for the knife and the ledger.** Recommend **swap**: a
+  dressing on top of a pressable sits in its sight ray, and the target is
+  the one object the ray is not tested against, so what the player sees on
+  it has to be the target itself.
+- **Make the seal, the goblet or the vials pressable.** Recommend **no**: a
+  new pressable is a new clue with a `source`, which is `validateMystery`'s
+  and the mystery's shape, not an asset row's.
+- **Rename "chapel candles".** Recommend **no**: `plan-vs-scene.mjs`'s
+  candles beat and `npm run play`'s `examine('candle', 'chapel candles')`
+  read the name, and it still fits a chapel with an aumbry of three and a
+  stub on a pricket.
+- **Where the vials stand.** Recommend **on rank 1's crate in the larder**:
+  a store room is where vinegar and verjuice stand, it fills an empty room a
+  little, and it proves stacking on a Blender asset.
+- **An `assets/` row with no id: derive or throw.** Recommend **throw**:
+  check 2's messages and `plan-vs-scene.mjs`'s tags name a piece by its id,
+  and a basename rule would give two goblets one id without a word.
+- **The pouch and the tally stick**, both a `detail-crate-small.glb` today.
+  Recommend **a conditional increment 3, only if the GPU look says a crate
+  for a tally stick reads wrong**: both are `courtyard.placements` (the
+  tally at level 2, where `interiorProps` cannot stand, since the plan
+  gives every `interiorProps` row `level: 0`), so it needs `propPath` at the
+  placement loop and at `test/assets.mjs`'s placement reference check
+  (#500), then the same pinned swap. Class S as written here.
+
+### Dependencies
+
+- **Gate: rank 1 shipped.** `common.py`, the manifest, check 8, `propPath`
+  and the larder crate the vials stand on are all rank 1's.
+- **Lanes F and B.** Not beside another Blender pack (F), nor rank 4, rank 9
+  or rank 13's increments 2 and 3 (B).
+- **Rank 3**: increment 2 changes three things `npm run play` examines.
+  The next GPU run after it is the one that says the pricket, the barrel and
+  the desk still take E on a real screen (#53); run it from a worktree.
+- **2b after 2a**: 2b's increment 3 uses #811's pin, and check 1e is the
+  rail 2b's sets stand under.
+
+### Constraints
+
+- #529: check 1e is `layout.mjs`'s; `mystery.mjs` changes one resolver line
+  and no station line; `plan-vs-scene.mjs` gains nothing.
+- #785, #792: `PROP_CLEARANCE` is measured to a pressable's box centre, so
+  a swap pins the centre and a dressing is not pressable.
+- #500: one `propPath`, read by the resolver too. #390: each asset and its
+  row in one commit. #584, #632: spliced, own line ending, including the
+  hand-cut `knife` row.
+- #611, #816: no ceiling moves. #499: seven files under 32 KB each.
+- #13, #34, #147: every line above has its break.
+- #53: whether the pricket reads as a candle is a GPU look.
+- #801 to #808, #810 to #812, #816, #819.
+
+### Looking checklist
+
+- [ ] The pricket in the chapel at Prime: one candle burnt down, or a stick?
+- [ ] The aumbry's three beside it: do the heights read as a count?
+- [ ] The goblet on the hall's photographed table, and the seal in the
+      office: the kit's kind of object beside a photograph, or a third look?
+- [ ] E at the barrel, the desk and the pricket from where a player stands.
+
+---
+
+## Blender: an interiors kit
+
+**Rank 2b. Size 2+. Model Opus 5. Where: Local: Blender. Gate: after rank 1
+(and after 2a, for check 1e and #811's pin). Lanes F and B.** Modular
+pieces that make the castle's working rooms read as what they are. "What
+every Blender pack shares" holds and is not restated. Decided as #813 to
+#816 and #819. Three increments: two class S, the third gated on rank 4's
+look.
+
+**The rooms, measured.** The brief named the kitchen, the great hall, the
+chapel, a smithy, stables and a dungeon. `data/scene-config.json` has 43
+rooms and no smithy and no stables; #800 found the same ("there is no forge
+room", which is why the carter hammers at his cart). The dungeon is the
+`cell` in the Prison Tower, the gaol since lore year 9, which today holds
+nothing but its 123 drum meshes and is shut. So the kit dresses four rooms
+(#814):
+
+| Room | Ward | Extent | What stands in it today |
+| --- | --- | --- | --- |
+| `kitchen` | outer | x -26..-14, z -14..-6 | two barrels, a crate, a small barrel, the cook's slate |
+| `great-hall` | outer | x -34..-6, z 6..14 | nine photographed props (29 draws), a kit dais, seven trusses, seven roofs |
+| `chapel` | inner | Chapel Tower, r 2.8 | the body's lantern, candles, pouch, gravestone, bell, three stations |
+| `cell` | outer | Prison Tower, r 2.8 | nothing |
+
+**Sets, not loose pieces** (#815). The modular pieces are Python functions
+in one script (a hearth, a hood, a spit, a cauldron, a trestle board, a
+bench, a shelf, a crock, an altar, a pallet, a bucket, a wall ring and
+chain). Each `packs.json` row composes pieces into a **set**, and the set is
+joined into one mesh before export: one primitive, one material, one draw
+call. Modularity lives where it costs nothing and the draw count stays flat.
+
+### Scope, increment 1: the kitchen and the great hall (class S)
+
+- **`tools/blender/packs/interiors.py`**, importing `common.py`: the piece
+  functions and `build_set(row)`, which places `row.pieces` (each `[piece,
+  x, y, z, rotationY]` in the set's own metres) and joins them.
+- **`tools/blender/packs.json`**, six rows, pack `interiors`, each with a
+  `why`; `extraColours` at most 8 (linen, straw, ember, each with a `why`):
+  - `kitchen-hearth`: a raised hearth, its hood, a spit and a cauldron on a
+    chain, about 2.4 m wide, against a wall.
+  - `kitchen-worktable`: a board on trestles, a trough, two pots.
+  - `kitchen-shelves`: a rack of crocks.
+  - `hall-trestle`: a trestle board and two benches, used twice.
+  - `hall-high-table`: a board and a bench on the dais, where
+    `data/lore.json` seats the Constable and his lady.
+  - `hall-hearth`: an open hearth with a stone kerb, mid-hall.
+- **`assets/blender/interiors/*.glb`**, six files, and their manifest rows.
+- **`data/scene-config.json`, `interiorProps`**: seven rows, each with an
+  `id`, spliced (#584, #632). Every set collides (no `noCollide`), so the nav
+  rails hold it; `kitchen-shelves` may hang by `yOffset` and `noCollide` if
+  it stands above head height.
+- **`test/assets.mjs`**, check 8's caps block, one line:
+  `interiors: { triangles: 2500, bytes: 96000 }` (#819).
+
+### Scope, increment 2: the chapel and the cell (class S)
+
+- Two rows: `chapel-altar` (a stone altar, a frontal, a cross) and
+  `cell-pallet` (a straw pallet, a bucket, a ring and chain on the wall).
+  Two files, two `interiorProps` rows.
+- **The chapel is the tight one**: three stations, five pressables, a stair
+  in its east half. The altar stands where check 1e, check 1b and the nav
+  rails all pass with no station moved. If no spot does, the chapel gets no
+  altar and `HISTORY.md` records the spots tried.
+- **The cell is shut**, so the pallet is seen through the bars; it is a
+  low collider a body may step onto (its top is under `STEP_UP`), so
+  Madoc's stations stay standable.
+
+### Scope, increment 3: the photographed props (gated)
+
+Rank 4's increment 3 ("the props, if the look says a photographed cabinet
+in a pixel room is the next wrong thing") moves here (#813). **Gated on rank
+4's looking checklist answering "The props" with "replace"**. Then: the
+hall's nine photographed `interiorProps` (table, chair, stool, cabinet,
+commode, statue, lantern, candleholders, kite shield: 29 draws) become
+`interiors` sets, and `lantern-chapel`, which is evidence `body`, becomes a
+pinned swap under #811 (its id and box centre, (23.50, 18.21), kept). Every
+Poly Haven folder nothing then references leaves in the same commit (#390,
+check 4); `ornate_medieval_mace` stays, held by the populace. That leaves
+the outer ward about 20 draws lighter, and frees most of the 35.1 MB the ten
+prop packs hold of the 37.9 MB of texture memory `test/budget.mjs` counts
+today. Class S if the look says "replace all"; if it says anything
+narrower, the increment comes back to `architect` first.
+
+### Acceptance
+
+`npm test` fifteen of fifteen after each increment; each line has its break
+(#34).
+
+1. **Check 8** over the new rows, under `interiors`' cap. Line 6's break is
+   *local*: `hall-trestle` with its benches' legs bevelled at 8 segments.
+2. **Check 1, "no interior prop is in a wall"** (`test/layout.mjs`,
+   unchanged). **The break the builder quotes**: `kitchen-hearth` moved 0.5 m
+   into the kitchen's north wall, expecting "kitchen-hearth at x ... is inside
+   <that run's label>".
+3. **Check 1e** (2a's): no set stands over a pressable. Break: `hall-high-
+   table` over `cooks-accounts`' tile.
+4. **Checks 1b, 11, 14, unchanged**; `validateMystery` and
+   `validatePopulace` with no station moved: a set on a Vespers station fails
+   `nav.standable` by name, and the fix is the set's tile, never the
+   station (#814).
+5. **`test/budget.mjs`, unchanged** (#816): increment 1 adds 7 draws to the
+   outer ward, increment 2 one to each ward. The builder writes the printed
+   lines before and after in `HISTORY.md`.
+6. **`plan-vs-scene.mjs`**, unchanged: one tagged mesh per set, diffed.
+
+### Open calls
+
+- **Fold, sequence or split with rank 4's increment 2** (a wall and a floor
+  texture per named room). Recommend **split, by surface and volume**
+  (#813): rank 4 owns every face's texture and makes no piece; 2b makes
+  pieces and never one whose job is to cover a wall or a floor (no
+  panelling, no floor tiles, no rugs). Both are lane B, so they never run at
+  once, and neither waits on the other. Rank 4 may add palette colours and
+  never removes one a manifest row uses; check 8 line 7 fails the day it
+  does, naming the asset.
+- **Instancing or merging.** Recommend **merge in Blender, one mesh per
+  set** (#815): an `InstancedMesh` needs a builder branch, a `budget.mjs`
+  branch and a rule for which box `plan-vs-scene.mjs` diffs, three new
+  things for a count a join gets to for nothing. A repeated bench costs a
+  few KB of bytes, not a draw.
+- **The smithy and the stables.** Recommend **not in this row** (#814):
+  neither is a room, and a room is a layout call (rank 13's editor or a
+  rank 9 increment), not a kit's; #582 refused new rooms for volume. The
+  lore puts the forge "under the Prison Tower's wall" (year 12), which is
+  outside the south curtain; a stable waits on a horse, which is 2d's to
+  make or not.
+- **The photographed props.** Recommend **2b's increment 3, gated on rank
+  4's look** (#813), since the replacement is Blender sets and 2b makes them.
+- **A set against a station.** Recommend **the set moves, the station never**:
+  stations are `test/mystery.mjs`'s (#529), and a kit has no claim on them.
+- **The draw ceiling.** Recommend **no move** (#816); the numbers are there.
+
+### Dependencies
+
+- **Gate: rank 1 shipped; 2a shipped** (check 1e, #811).
+- **Lanes F and B.** Not beside any Blender pack, rank 4, rank 9, or rank
+  13's increments 2 and 3.
+- **Increment 3 waits on rank 4's look** (#53), which is rank 3's machine
+  and sitting.
+
+### Constraints
+
+- #813: no piece covers a face. #815: one mesh per set. #814: no station moves.
+- #500: every set is an `interiorProps` plan piece with a `planId`.
+- #390, #506, #584, #632. #611, #816: no ceiling moves.
+- #529: no rail moves; every one above already exists but check 8's line.
+- #13, #34, #147. #53: whether a room reads as its trade is Devon's look.
+- #801 to #808, #811 to #816, #819.
+
+### Looking checklist
+
+- [ ] The kitchen from its door: a kitchen, or a room with furniture?
+- [ ] The hall at Vespers with the household at the trestles: seated, or
+      standing in the benches?
+- [ ] Kit sets beside the photographed cabinet: the answer rank 4's "The
+      props" line needs for increment 3.
+- [ ] The cell through the bars.
+
+---
+
+## Blender: a shared rig with swappable parts
+
+**Rank 2c. Size 2+. Model Opus 5. Where: Local: Blender (increment 1, whose
+GPU look is on the same machine); Container (increment 2). Gate: after rank
+1, "Blender: the pipeline". Lanes F and C; not B.** Decided in `HISTORY.md`
+as #820 to #825; this section is the `builder` job those decisions leave.
+Nothing under `assets/blender/` exists on `86c72fb`. **Rank 10 is retired**
+(#807): its "shared low-poly rig for the fifty" is this row, and the Bodies
+section is deleted once this one and "Blender: the animals" land. **This row
+does not duplicate rank 6**: it makes bodies and writes a person's body
+fields; "Life: a populace" owns every ring, every `talk` pair and every new
+person's place in the day (#821).
+
+**Every pack rule is "Blender: the pipeline"'s "What every Blender pack
+shares"**, cited, not repeated. What this row changes about it is #820:
+a skinned pack carries two materials over its one atlas image, and its frame
+is its root joint rather than its box centre.
+
+**The shape, in one line**: one rig in one file, `folk.glb`, carrying every
+part as its own one-primitive mesh node; a person names the parts they wear
+in `data/populace.json`, `npc.js` hides the rest, and a 2c person draws at
+most five skinned primitives where a Quaternius one draws 12 to 15.
+
+**Measured on `86c72fb`, gltf-transform in Node.** The four Quaternius
+humans: 62 joints, 5,476 (Farmer) to 11,110 (King) triangles, 1,213,228 to
+1,427,344 bytes, and 12 to 15 visible skinned primitives per person once
+`hideNodes` and `hideMaterials` are applied (Woman, Farmer and King 12,
+Adventurer 15). The 34 bodies the page builds draw **380 skinned primitives**:
+the 14 cast 165, the 16 populace humans 204, the hound 5, the hens 1 each,
+the cow 4. Per ward, counted the way `test/budget.mjs` section 3 counts
+bodies, the peaks are **outer 205 at `terce-eve`, inner 183 at `terce` and
+`terce-eve`**. Bodies: 34 of `MAX_SKINNED_TOTAL`'s 34; outer 20 of 20 at
+`terce-eve`, inner 15. Clips the 16 populace humans' routines resolve to:
+`Idle`, `Idle_Neutral`, `Idle_Sword`, `Sweep`, `Stir`, `Hammer`, `Spar`, and
+`Run` for the girl's walk.
+
+### Scope, increment 1: the rig, the parts, one wearer (Local: Blender)
+
+- **`tools/blender/packs.json`**: two packs.
+  - **`folk`**, one row, `name: "folk"`: the rig, the parts catalogue and
+    the clip table as the row's params, so all three are inside the source
+    hash (#806) and check 8 line 4 sees a change to any of them.
+  - **`held`**, one row per rigid tool. Increment 1 ships one, `mallet`,
+    for the carter (his `hammer` stop, #800).
+- **`tools/blender/packs/folk.py`**, importing `common.py`:
+  - **The rig** (#823): 20 joints, named as Quaternius names them where one
+    exists, so `boneScale: { Head: 1.35 }` and `HAND_BONES`' `/^wrist\.?r$/i`
+    keep working with no change: `Root`, `Hips`, `Torso`, `Chest`, `Neck`,
+    `Head`, `UpperArm.L/R`, `LowerArm.L/R`, `Wrist.L/R`, `Fingers.L/R`,
+    `UpperLeg.L/R`, `LowerLeg.L/R`, `Foot.L/R`. `Fingers.R` exists because
+    `_attachHeldProp` aims a prop along the mean of the hand bone's child
+    joints and falls back to local -Y, which on a Blender bone points back
+    up the arm. One armature, one skin, every part weighted to it.
+  - **The parts** (#820), each its own mesh object, one material, so one
+    glTF node with one primitive, named `<slot>-<variant>` with a hyphen,
+    because three's `sanitizeNodeName` strips dots. Five slots:
+    `skin` (face, hands; `Bare`; required), `garment` (required), `hair`,
+    `over`, `hat` (each optional). The recommended first catalogue, 22
+    parts: `skin-man`, `skin-woman`, `skin-old-man`, `skin-old-woman`;
+    `garment-tunic`, `garment-gown`, `garment-robe`, `garment-smock`,
+    `garment-mail` (`Bare`); `hair-cropped`, `hair-long`, `hair-bun`,
+    `hair-grey`, `hair-beard`; `over-apron`, `over-cloak`, `over-tabard`;
+    `hat-coif`, `hat-hood`, `hat-cap`, `hat-wimple`, `hat-helm` (`Bare`).
+    Every garment is modelled over the same rest pose, so any garment fits
+    any `skin`. A child is `skin-woman` or `skin-man` at `modelHeight` 1.15
+    with `Head` at 1.35, as #643 made one.
+  - **Two materials over the one atlas image**: `Cloth`, which the tint
+    multiplies, and `Bare`, which it does not (skin, hair, eyes, mail, a
+    helm). Cloth swatches sit at the light end of the palette, so the tint
+    carries the colour the way the hound's coat was lifted (#644) and the
+    hen is near-white (#684); undyed linen may be one of the pack's 8
+    `extraColours` if `textures.json` has nothing light enough.
+  - **The clips** (#822), keyed by the script from the row's `clips` table,
+    one row per clip in `tools/bodies/clips.json`'s grammar (`cycles`,
+    `driver`, `moves` of `{ bone, axis, rest, amp, phase }`) over this
+    rig's own `Idle`. Eleven: `Idle` (at least 2.0 s), `Idle_Neutral`,
+    `Idle_Sword`, `Walk`, `Run`, `Wave`, `Sweep`, `Stir`, `Hammer`, `Spar`,
+    `Drill`. Integer cycles, so every clip loops by construction. Exported
+    with animations on.
+  - **The frame** (#820): the `Root` joint at the origin, feet on y 0,
+    facing -Y in Blender, so +Z in glTF. Not box-centred: the union of 22
+    parts, a cloak's back included, is not where the feet are.
+  - The contact sheet lays out six assembled people, not the 22 parts.
+- **`tools/blender/packs/held.py`**: a mallet, head and haft, about 0.45 m,
+  authored along +Y with the head up; one material, no skin.
+- **Output**: `assets/blender/folk/folk.glb`, `assets/blender/held/mallet.glb`,
+  their manifest rows.
+- **`src/npc.js`** (lane C):
+  - `BARE_MATERIALS` gains `/^bare$/i`. One line, as `/^horn$/i` was (#789).
+  - **`parts`**: when `def.parts` is set, every mesh under the model whose
+    name is not in it is hidden, before anything is measured.
+  - **The height of a parts body is its `skin-*` node's box**, not the
+    model's: `Box3.setFromObject` counts hidden meshes, so today's line 143
+    would scale a bare-headed person by the tallest hat in the file.
+  - Nothing else: tint, `boneScale`, `clips`, `speed`, `heldProp` and
+    `heldPropFit` already read the def and work on this rig by its names.
+- **`data/populace.json`** (lane C, body fields only, #821):
+  - **The first wearer is the hen-wife**: `modelPath` to
+    `assets/blender/folk/folk.glb`, `parts` e.g. `["skin-old-woman",
+    "garment-gown", "over-apron", "hat-wimple"]`, her tint kept,
+    `hideNodes` and `hideMaterials` removed. Her ring is untouched: `tend`
+    and `wait`, `Idle_Neutral` and `Idle`, both in the file. This is the
+    reference #390 needs for `folk.glb`, and it is written only after the
+    GPU look below passes.
+  - **The carter** gains `heldProp: "assets/blender/held/mallet.glb"` and a
+    `heldPropFit`, on his Farmer body; the reference #390 needs for the
+    mallet.
+  - `bodyComment` says what `parts` is and that the body fields are the body
+    rows'.
+- **`test/assets.mjs`** check 8 (lane F): caps lines `folk` and `held`
+  (Acceptance), the `materials` and `frame` amendments of line 6 (#820),
+  and a skinned half for `folk`.
+- **`test/mystery.mjs`**: the parts rail, and the silhouette tuple gains
+  `parts` sorted.
+- **`test/budget.mjs`** section 3: skinned draws, per ward and in total,
+  beside skinned bodies, with two new ceilings (#825).
+- **`test/plan-vs-scene.mjs`**: one beat, the live seam only.
+- **Untouched**: `tools/bodies/` and every file it writes (#807),
+  `assets/NPCs/`, `data/npcs.json`'s cast, `src/populace.js`'s
+  `ACTIVITY_CLIPS` (the eleven names are the values it already maps to),
+  `src/save.js` (bodies are not saved; `SAVE_VERSION` stays 6),
+  `data/scene-config.json`, `MAX_SKINNED_TOTAL` and `MAX_SKINNED_PER_WARD`.
+
+### Scope, increment 2: the rest of the household (Container)
+
+- **`data/populace.json`**: the other 15 populace humans move to `folk.glb`,
+  each with `parts` and their tint, `hideNodes` and `hideMaterials` dropped.
+  Every ring stays as it is. The girl keeps `modelHeight` 1.15, `boneScale`,
+  `clips: { walk: "Run" }` and `speed`; the serjeant, man-at-arms and
+  watchman keep `assets/NPCs/Spear.glb` and its fit. At least as many
+  distinct `parts` sets as people, so the silhouette count rises.
+- **`test/budget.mjs`**: the two draw ceilings come down to what the suite
+  then prints (#825): about 256 in total and 143 in the busier ward.
+- No Blender and no GPU: every line is data and a Node or headless suite.
+  The look at a whole household of 2c people is the next GPU sitting's, not
+  this increment's gate, because #807's gate is the line-up increment 1
+  already passed.
+
+### Acceptance
+
+**`npm test` fifteen of fifteen.** Each line names its suite and the break
+that turns it red from green (#34); *local* needs a re-render.
+
+**`test/assets.mjs` check 8, the caps block gains two lines** (#823):
+`folk: { triangles: 12000, bytes: 400000, person: 1500, joints: 20,
+materials: ['Cloth', 'Bare'], clips: 11 }` and `held: { triangles: 300,
+bytes: 16000 }`. Line 6 reads `materials` off the pack's caps line, one
+unnamed material by default (#820), and for a skinned pack holds the `Root`
+joint at x and z 0 within 1 mm instead of the box centre. The skinned half,
+over `folk.glb`:
+
+1. **Rig.** One skin, at most 20 joints, `Head` and `Wrist.R` among them,
+   and `Wrist.R` with a child joint. Break, *local*: drop `Fingers.R`.
+2. **Parts.** Every mesh node is one primitive, its material `Cloth` or
+   `Bare`, its name `<slot>-<variant>` with the slot one of the five, and
+   `skin` and `garment` each have at least one. Break, *local*: join
+   `hat-helm` and `hat-coif` into one object with two materials.
+3. **A person's triangles.** The sum over the five slots of the heaviest
+   part in each is at most `person`, which bounds every combination without
+   naming one. Break, *local*: subdivide `garment-robe` past it.
+4. **Skin.** Every vertex's weights sum to 1 within 1e-3 and index inside
+   the skin, the cow's rail (#794) pointed at this file. Break, *local*:
+   weight `hat-cap` to joint 20.
+5. **Clips.** Exactly the eleven names; every channel targets a joint of
+   the skin; every clip loops (`seamOf`, as 2a's line 4); each activity
+   clip's `driver` gets 20 degrees from `Idle` at some key (2a's line 5).
+   Break, *local*: `cycles: 1.5` on `Sweep`.
+
+`held` is held by the pipeline's lines as they stand.
+
+**`test/mystery.mjs`, the parts rail**, per person, reading the file the
+person wears as the per-person clip check already does:
+
+- every `parts` entry is a mesh node of that file; exactly one `skin-*`,
+  exactly one `garment-*`, at most one of each other slot;
+- a file with slot-named nodes is refused without `parts` (it would wear
+  all 22 at once), and `parts` on a file without them is refused;
+- `parts` beside `hideNodes` or `hideMaterials` is refused;
+- the silhouette count still exceeds the number of body files.
+
+Break, the one increment 2's builder quotes: delete the page's `parts` line.
+Expected: "page wears assets/blender/folk/folk.glb with no parts, and would
+show all 22 of them".
+
+**`test/budget.mjs` section 3, skinned draws** (#825). A person's draws are
+the skinned primitives of their file left visible by `hideNodes`,
+`hideMaterials` and `parts`; a body counts in every ward it counts in for
+bodies. `MAX_SKINNED_DRAWS_PER_WARD = 205` and `MAX_SKINNED_DRAWS_TOTAL =
+380` in the ceilings block, with #825 beside them. Increment 1 prints about
+373 and 198; increment 2 lowers both ceilings to what it prints. Break:
+delete the baker's `hideNodes: ["Sword"]`; expected "381 skinned draws,
+over the ceiling of 380".
+
+**`test/plan-vs-scene.mjs`, one beat, the seam and nothing Node can prove**
+(#529): for every live body whose def has `parts`, the visible meshes under
+it are exactly those names; its `Bare` material's colour is `ffffff`, so the
+tint missed it; its `skin-*` node's live box top is its `modelHeight` (1.8
+if none) within 0.02 m. **Break, the one increment 1's builder quotes:
+delete the hide branch for `parts` in `npc.js`.** Expected: "hen-wife shows
+22 meshes; her parts name 4", and the height line goes red with it.
+
+**Held by what exists**: check 1 and check 4 (both files resolve and are
+referenced), check 5 (meshopt, `finish.mjs`'s), check 8 lines 1 to 8,
+`test/mystery.mjs`'s per-person clip check (every job the hen-wife and,
+in increment 2, all sixteen do resolves in `folk.glb`), section 4 of
+`test/budget.mjs` pricing the embedded atlas, `test/built.mjs` serving both.
+
+**The GPU look, local, and it gates the wearer** (#807, #53). On Devon's
+machine, before `populace.json` is touched: `npm run dev`, a line-up on the
+grey background #606 and #643 used, the hen-wife's parts on `folk.glb` at
+1.65 m beside the baker on `Woman.glb`, both tinted, both in `Idle`, then
+both in `Walk`. One sentence in the increment's `HISTORY.md` entry: does the
+2c woman read as the same game as the Quaternius one? **Yes**: the hen-wife
+moves in this commit. **No**: nothing under `assets/blender/folk/` is
+committed, and the row comes back to `architect` with what read wrong.
+Rank 10's inherited look goes on the same sitting's checklist and blocks
+nothing: the girl at running speed, the spear on the garrison, the five
+clips on the four Quaternius bodies, and the eleven on `folk.glb`.
+
+**Determinism, local**: a second `npm run blender:render folk held` prints
+"unchanged" for both, `git status` clean.
+
+### Open calls
+
+- **Clips: authored in Blender or retargeted from `tools/bodies/`' five.**
+  Recommend **authored in Blender from a table in the row** (#822):
+  `clips.json`'s moves are offsets on the Quaternius `Idle`, which Blender
+  can only read by importing a `.glb`, which #803 forbids.
+- **One file of parts or one file per part.** Recommend **one file**: one
+  skeleton per person with no rebinding code in `npc.js`, one fetch, and
+  `hideNodes`' own mechanism.
+- **Where held tools live.** Recommend **rigid `.glb` rows in a `held` pack
+  on `heldProp`**: a skinned tool would be a sixth skinned draw, and
+  `_attachHeldProp` already parents a static mesh to `Wrist.R`.
+- **Tint on one material or two.** Recommend **two, `Cloth` and `Bare`,
+  over one image** (#820): one material tinted puts the tint on faces,
+  which is the thing the live skin rail exists to catch (#419).
+- **The first wearer.** Recommend **the hen-wife**: populace, not cast; her
+  two jobs are two of the eleven clips; she stands in the outer ward beside
+  the hens and the cow, which is where 2d's animals go too.
+- **The cast.** Recommend **the fourteen stay on Quaternius in this row**
+  (#824): the live skin rail reads the cast's `Skin` material, their look
+  was judged in the GPU run (#780 to #782), and `tools/bodies/`' byte rails
+  need the four files referenced.
+- **Swapped parts per bell.** Recommend **no**: `parts` is a body field
+  fixed for the page, as `tint` is; a hat that comes off at Sext is a
+  routine field, and routines are rank 6's.
+- **The 16 more toward fifty.** Recommend **rank 6's, on 2c's rig**, each
+  new body costing the #789 argument against both skinned ceilings; this row
+  adds no person and moves neither body ceiling (#825).
+
+### Dependencies
+
+- **Gate: rank 1 shipped.** No `common.py`, manifest or check 8 exists
+  before it.
+- **Lanes F and C.** Increment 1 holds both; increment 2 holds C only. Not
+  beside rank 6 (C), 2d (F and C), or 2a, 2b, 2e (F). Beside rank 9 or rank
+  4 (B) and rank 7 (E): yes.
+- **Increment 2 after increment 1**, and only after its look passed.
+- **"Blender: the animals" follows this row** by letter, and uses
+  increment 1's `/^bare$/i`, check 8's `materials` and `frame` amendment
+  and the draw count.
+
+### Constraints
+
+- #807: bodies from Blender only, never from `tools/bodies/`; no file it
+  writes is touched; the Quaternius rigs keep every body until the look.
+- #803, #805, #806, #808: the pipeline's rules as "What every Blender pack
+  shares" states them.
+- #390: `folk.glb` and the hen-wife, `mallet.glb` and the carter, one commit
+  each.
+- #499: two files under about 420 KB against 200 MB.
+- #500: a person is not a plan piece; nothing here gets a `planId`.
+- #529, #611: file facts in `assets.mjs`, person-against-file in
+  `mystery.mjs`, cost in `budget.mjs`, the live hide and height in
+  `plan-vs-scene.mjs` only.
+- #36: no save field, `SAVE_VERSION` stays 6.
+- #632: `populace.json` is written in its own ending; `packs.json` and
+  `manifest.json` as the pipeline says.
+- #13, #34, #147: every line above has its break; one that stays green on
+  its break is not shipped.
+- #53: the line-up and every clip's look are a GPU's; a real-time assertion
+  failing under software Chromium is inconclusive.
+- #820 to #825.
+
+---
+
+## Blender: the animals
+
+**Rank 2d. Size 1. Model Opus 5. Where: Local: Blender. Gate: after rank 1
+and after "Blender: a shared rig with swappable parts" increment 1;
+recommended after its increment 2. Lanes F and C; not B.** Decided in
+`HISTORY.md` as #826 to #829, on #820's and #825's shape. **Rank 10 is
+retired** (#807): its "pig, then a goat" is this row, and its GPU look at
+the hound, the hens and the cow moves into this row's checklist. **This row
+does not duplicate rank 6**: it makes the animals and writes each one's
+first ring, the reference #390 needs (#821); every later change to a ring is
+"Life: a populace"'s.
+
+**Every pack rule is "What every Blender pack shares"**, cited, not repeated,
+as #820 amends it for a skinned pack: `Coat` and `Bare` over one atlas image,
+framed on the `Root` joint.
+
+**What stays as it is** (#807, #826): `assets/NPCs/Cow.glb` is
+`tools/bodies/`' and is not re-made; the hound (`Hound.glb`, #644) and the
+two hens (`Hen.glb`, #684) are sourced Quaternius files and stay. This row
+adds kinds; it replaces none.
+
+### Scope (two increments, one machine)
+
+- **`tools/blender/packs.json`**: pack `animals`, one row per kind: `pig`,
+  `goat`, `sheep`, `horse`, `cat`, `goose`. A row carries the kind's
+  proportions (bone heads and lengths) and its clip table in
+  `tools/bodies/clips.json`'s grammar.
+- **`tools/blender/packs/animals.py`**, importing `common.py`:
+  - **One quadruped topology** (#826), the cow's 15 joint names, which
+    are the hound's where one exists (#794): `Body`, `Neck1`, `Head`,
+    `Ear.L/R`, `FrontUpperLeg.L/R`, `FrontLowerLeg.L/R`,
+    `BackUpperLeg.L/R`, `BackLowerLeg.L/R`, `Tail1`, `Tail2`, plus `Root`
+    at the origin: 16. Each of the five kinds is its own `.glb` with its own
+    rest proportions and meshes; the topology, names and clip grammar are
+    shared.
+  - **A bird topology for the goose**: `Root`, `Body`, `Neck1`, `Neck2`,
+    `Head`, `Wing.L/R`, `UpperLeg.L/R`, `LowerLeg.L/R`, `Tail1`: 12.
+  - **Two materials over the one atlas**: `Coat`, tinted, and `Bare`
+    (eyes, nose, hooves, horns, beak, feet), not. So one kind file makes a
+    white and a dark sheep by `tint`, as two hens are one file (#684).
+  - **Clips**: quadrupeds `Idle` (at least 2.0 s), `Walk`, `Eating`; the
+    goose `Idle`, `Walk`, `Idle_Peck`. So `wait`, `eat` and `peck` resolve
+    through `ACTIVITY_CLIPS` as it stands, and no activity is added. No
+    `Wave`: an animal does not greet (#644, #794).
+- **Output**: `assets/blender/animals/<kind>.glb`, six files.
+- **`data/populace.json`** (lane C): seven people, each with `id`, `name`,
+  `role` ("one of the ..." as the hens'), `modelPath`, `modelHeight`,
+  `tint`, and a first ring of `wait` and `eat` (or `peck`) stops at all
+  eight bells, as the cow's (#794). Where (#829):
+
+  | Kind | Ward | Room | `modelHeight` |
+  | --- | --- | --- | --- |
+  | pig | outer | `outer-ward`, by the hen-wife's patch | 0.8 |
+  | sheep | outer | `outer-ward`, beside the cow | 0.9 |
+  | goose x2 | outer | `outer-ward`, by the hens | 0.75 |
+  | horse | inner | `inner-ward`, by the porter's lodge | 1.65 |
+  | goat | inner | `inner-ward` | 0.95 |
+  | cat | inner | `bakehouse` | 0.3 |
+
+  No stable: no such room exists, and a new room is a plan piece in
+  `data/scene-config.json`, lane B. No yard: `wykes-yard` is `outside`,
+  unreachable by rank 4c's rule, and section 3 refuses a stop there. If
+  `validatePopulace` refuses a tile, the fallback is the same ward's
+  courtyard, as the writer's was (#729).
+- **`test/assets.mjs`** check 8: caps line `animals` and a skinned half.
+- **`test/budget.mjs`**: the ceilings #828 sets.
+- **`test/mystery.mjs`**: the household count, 20 to 27.
+- **Untouched**: `tools/bodies/`, `assets/NPCs/`, `src/npc.js` (2c's
+  `/^bare$/i` covers `Bare`), `src/populace.js`, `src/save.js`,
+  `data/scene-config.json`.
+
+**Increment 1**: the quadruped topology and its five kinds, placed; bodies
+34 to 39. **Increment 2**: the goose and its bird topology, two placed;
+39 to 41. One Blender session each.
+
+### Acceptance
+
+**`npm test` fifteen of fifteen.** Check 8's caps block gains
+`animals: { triangles: 1000, bytes: 80000, joints: 16, primitives: 2,
+materials: ['Coat', 'Bare'] }`, per asset (#827). The skinned half over the
+six files, each with its break:
+
+1. **Caps.** One skin; joints, triangles, primitives and bytes under the
+   line. Break, *local*: give the pig's snout a third material.
+   **This is the break the builder quotes.** Expected:
+   "assets/blender/animals/pig.glb has 3 primitives, over 2".
+2. **Topology.** A quadruped's joint names are exactly the 16 above, a
+   goose's exactly the 12. Break, *local*: rename the goat's `Tail1`.
+3. **Skin**, as 2c's line 4. Break, *local*: weight the cat's ear to
+   joint 16.
+4. **Clips.** Exactly its three names, each channel on a joint of the skin,
+   each loop sealed (`seamOf`), `Idle` at least 2.0 s, and `Eating` or
+   `Idle_Peck`'s driver (`Head`) 20 degrees from `Idle` at some key.
+   Break, *local*: `cycles: 1.5` on the horse's `Walk`.
+5. **Reads as four-legged.** A quadruped's bind-pose box is at least 1.15
+   times as long (z) as it is tall (y): the cow's 1.3 less the goat's horns.
+   Break, *local*: swap the sheep body's y and z.
+
+**`test/budget.mjs`** (#828): increment 1 prints 39 bodies, outer 22 at
+`terce-eve`, inner 18; increment 2 prints 41 and outer 24. The draw ceilings
+rise by the animals' own draws, 2 each. **`test/mystery.mjs`**: the
+per-person clip check holds `eat` and `peck` to the file each animal wears;
+the silhouette count rises by six files and seven shapes.
+
+**The GPU look, local, blocks nothing** (#53): each kind at 10 m in the
+castle reads as its kind; the pig and sheep beside the cow read as one farm;
+the geese beside the hens; and rank 10's inherited three: the hound's
+follow, the hens' peck, the cow grazing. One sentence each in the entry.
+
+**Determinism, local**: a second `npm run blender:render animals` prints
+"unchanged" six times, `git status` clean.
+
+### Open calls
+
+- **One quadruped rig or one per kind.** Recommend **one topology, the
+  cow's names, one file per kind** (#826): proportions differ too much for
+  one mesh, and shared names keep one clip grammar and one rail.
+- **The geese.** Recommend **a 12-joint bird topology of their own**: the
+  quadruped's front legs are wings on nothing, and the hen's 7-joint rig is
+  a sourced file this pipeline may not import (#803).
+- **Re-make the cow in Blender to match.** Recommend **no**: #807 keeps it
+  `tools/bodies/`', it is byte-held in Node, and the look sitting says
+  whether it jars.
+- **A cheap-animal budget.** Recommend **hold #789's refusal** (#828): the
+  draw count #825 adds is the cost measure that tells an animal from a
+  human, so a second body count is not needed to make that argument.
+- **How many sheep.** Recommend **one**, tinted, and a second only as a
+  rank 6 row's argument: one per kind proves the kind, and every body is
+  the #789 argument.
+- **The cat's job.** Recommend **`wait` and `eat` in the bakehouse**, no
+  new activity: `ACTIVITY_CLIPS` is shared with rank 6 and a mouser needs
+  no clip the table lacks.
+- **If 2c's look fails and its increment 1 never lands.** Recommend
+  **2d's increment 1 carries the three shared pieces itself** (the
+  `/^bare$/i` line, check 8's `materials` and `frame`, section 3's draw
+  count at 380 and 205) and argues its own draws on top in its entry.
+
+### Dependencies
+
+- **Gate: rank 1**, and 2c's increment 1 for the shared pieces above.
+- **Recommended after 2c's increment 2**, which frees the draw headroom this
+  row spends (#828); before it, the argument is 380 to 394 and 205 to 213.
+- **Lanes F and C.** Not beside rank 6, 2c, 2a, 2b or 2e.
+
+### Constraints
+
+- #807: the cow, hound and hens stay; no file `tools/bodies/` writes is
+  touched.
+- #789, #828: one body, one count, each argued; the per-ward ceiling's
+  argument is the draw count, before and after.
+- #390: each `.glb` and its person in one commit.
+- #499: six files under 480 KB.
+- #500, #529, #611: as 2c's.
+- #36: no save change.
+- #632: `populace.json` in its own ending.
+- #13, #34, #147: every line has its break.
+- #53: the look is a GPU's and blocks nothing in `npm test`.
+- #820, #821, #825 to #829.
+
+---
+
+## Blender: the countryside beyond the wall
+
+**Rank 2e. Size 1. Model Opus 5. Where: Local: Blender. Gate: after rank 1
+and after rank 9's increment 3b. Lanes F and B.** Hills, fields, tree lines
+and distant farms on every side the walls look out on, so that what lies
+past the curtain is land and not the fog's colour. "What every Blender pack
+shares" holds and is not restated. Decided as #816 to #819. One increment,
+class S.
+
+**What is there now, measured on `86c72fb`.** The base ground is x -48..36,
+z -22..22, the curtain plus 2 m. `outside-ground` is x -198..-48, z -40..40,
+west only, and rank 9's 3b cuts its west edge to -140 for the river. North,
+south and east of the base's 2 m apron there is nothing: `scene.background`
+is the fog colour, so from the north walk the land stops two metres out.
+The eyes (every reachable cell 8 m up, 4d's set) run x -38.25..26.25, z
+-17.25..17.25, and the highest stands at 12 m, an eye at 13.7. Fog is
+`smoothstep(30, 150, depth)`, the camera's far plane 300. The town's walls
+reach z -34..30.
+
+**The shape** (#817). One seeded height field over **x -140..180, z
+-170..170**, cut into **five backdrop pieces** that, with the two grounds,
+tile that rectangle edge to edge:
+
+| Piece | Box in plan | Tile (centre / 4) |
+| --- | --- | --- |
+| `backdrop-north` | x -48..180, z -170..-22 | [16.5, -24] |
+| `backdrop-south` | x -48..180, z 22..170 | [16.5, 24] |
+| `backdrop-east` | x 36..180, z -22..22 | [27, 0] |
+| `backdrop-north-west` | x -140..-48, z -170..-40 | [-23.5, -26.25] |
+| `backdrop-south-west` | x -140..-48, z 40..170 | [-23.5, 26.25] |
+
+Cut from one field, two pieces sharing an edge share its heights by
+construction. No piece crosses the river's line at x -140, and nothing is
+built west of the water (#796 stands: no far bank).
+
+### Scope (class S)
+
+- **`tools/blender/packs/countryside.py`**, importing `common.py`. The
+  field's constants live in the script; each row carries only its `cut`.
+  Heights: 0 within 10 m of either ground rectangle; rising through fields
+  and slopes; a crest of at least 20 m along every edge that touches nothing
+  (the rim, #818). Fields are swatch-coloured faces of the field in its low
+  ground; tree lines are low-poly clumps along field edges; woods on the
+  slopes; four to six farmsteads (a longhouse, a barn, a fence, a rick) at 60
+  to 130 m from the curtain, none nearer than 40 m. All of a piece is joined
+  into one mesh: one draw.
+- **`tools/blender/packs.json`**: five rows, pack `countryside`, one shared
+  seed, `extraColours` at most 8 (wheat, meadow, thatch, each with a `why`).
+- **`assets/blender/countryside/*.glb`**, five files; manifest rows.
+- **`src/castle-plan.js`**: an `interiorProps` row may carry `backdrop:
+  true`, and the piece carries `backdrop: true`. A `backdrop` row without
+  `noCollide` throws, because a colliding prop pushes its box top as a
+  surface and a 20 m surface over the countryside is a floor nobody built.
+  Nothing else changes: with `noCollide` a prop pushes no collider and no
+  surface, so the fill, `surfacesAt`, check 4e and check 12 never see it.
+- **`data/scene-config.json`, `interiorProps`**: five rows, ids and tiles as
+  the table, rotationY 0, `noCollide`, `backdrop`. Spliced (#584, #632).
+- **`test/layout.mjs`, new check 4g, "the countryside meets the ground and
+  runs into the fog"** (#818), over every `backdrop` piece:
+  - its box's min y is 0 within 1 mm;
+  - in plan it overlaps no ground piece and no other backdrop piece;
+  - every side of `ground` and `outside-ground` (read by id, and the check
+    stops if either id is missing, as `budget.mjs` does for the cross-wall)
+    is met along its whole length by a backdrop piece's side or another
+    ground piece's, except `outside-ground`'s west side, which is the
+    river's (#796). That is the seam rule: a gap is a line of fog colour
+    between the land and the apron;
+  - for each axis in which its box lies wholly beyond the base ground, its
+    far side is at least `config.lighting.fog.far` from the nearest of 4d's
+    eyes along that axis, except a side on `outside-ground`'s min x, which
+    #796 gives to the fog. Measured today: north 152.75, south 152.75, east
+    153.75, north-west and south-west 152.75 in z.
+  - If no piece is a backdrop, it fails saying it measured nothing.
+
+  4d's eyes come from the one function 3b lifted for 4d and 4f, not a copy.
+- **`test/assets.mjs`**, check 8's caps block, one line:
+  `countryside: { triangles: 6000, bytes: 160000 }` (#819).
+
+### Acceptance
+
+`npm test` fifteen of fifteen. Each line has its break (#34).
+
+1. **Check 4g, the seam.** **The break the builder quotes**:
+   `backdrop-east`'s tile to [27.25, 0], 1 m east, expecting "ground's east
+   side at x 36 is met by nothing over z -22..22". (A rule that only asked
+   each piece to touch something stays green here, because the moved piece
+   still touches the north and south pieces along z -22 and 22; that is why
+   the rule is written from the ground's sides.)
+2. **Check 4g, overlap.** Break: `backdrop-north`'s tile to [16.5, -23.75],
+   1 m south: it overlaps `ground` by 1.00 m in z.
+3. **Check 4g, the far side.** Break: `backdrop-north`'s `cut` to z
+   -100..-22 and a re-render, *local*: the far side is 82.75 m from the
+   nearest eye, inside 150.
+4. **The throw.** Break: delete `noCollide` from `backdrop-south`; `makePlan`
+   throws naming it.
+5. **Checks 4d and 4f, unchanged**, with the five boxes among their
+   occluders, which only makes them harder to pass. Every box lies at
+   |z| >= 22 east of x -48 and |z| >= 40 west of it; the lines 4d and 4f
+   print today (the quay's ridge from `west-curtain-north-walk`, the water
+   from `sw-tower-stair-3`, the yard from the North-west Tower's roof) run
+   at z -17..16 and meet none of them. The builder records the printed lines
+   as unchanged; if one moves, it is still a pass and the new line goes in
+   `HISTORY.md`; if one fails, the piece is lowered near the castle, and the
+   town is not moved.
+6. **Checks 1, 4, 4c, 4e, 10, 11, unchanged**: the backdrop is clear of
+   stone, the castle is still sealed, no surface lies over the water, and no
+   room has a backdrop piece's centre in it.
+7. **`test/budget.mjs`, unchanged** (#816): five meshes, all outside both
+   wards, so five more in each ward's sum. The builder records the printed
+   lines before and after.
+8. **Check 8** over five rows under `countryside`'s cap; line 6 is *local*:
+   the field at a 1 m grid.
+
+### Open calls
+
+- **Pieces or ground.** Recommend **pieces with `backdrop` and
+  `noCollide`** (#817): a `ground.outside` box is a flat walkable surface
+  that check 10 and the rank-5 check hold, and a hill is neither.
+- **One mesh, five, or many.** Recommend **five, cut from one field**: five
+  draws, and the edges match without a rule to hold them.
+- **How far.** Recommend **to `fog.far` past the nearest eye** (170 north
+  and south, 180 east): short of it, the land ends in a line against the
+  background; past it, it is bytes nobody sees.
+- **The rim.** Recommend **a crest of at least 20 m on every edge that
+  touches nothing** (#818): the highest eye is 13.7 m, so a crest above it
+  hides the field's back edge the way a horizon does.
+- **West of the river.** Recommend **nothing** (#796 stands).
+- **The forge under the Prison Tower** (lore year 12). Recommend **not
+  here**: it is a building by a wall, not country, and 2b's #814 names it.
+- **Beasts in the fields.** Recommend **none**: a body is 2d's and costs a
+  skinned draw and an `AnimationMixer` against a per-ward ceiling at 20 of
+  20 on the walking day.
+- **Shadows.** Recommend **as the builder does now**: the sun's shadow
+  camera is 80 m square (`scene-setup.js`, -40..40), so at most each piece's
+  inner 18 m is ever drawn into the shadow map.
+- **A triangle ceiling.** Recommend **none** (#816): the five cap at 30,000
+  and are expected near 12,000, against about 234,000 in the castle's static
+  pieces, of which the two photoscanned candlestick sets are 83,872.
+
+### Dependencies
+
+- **Gate: rank 1 shipped, and rank 9's 3b shipped.** 3b sets the ground's
+  west edge at -140 that the two west pieces are cut to, and lifts 4d's eyes
+  into the function 4g calls.
+- **Lanes F and B.** Not beside any Blender pack, rank 4, rank 9, or rank
+  13's increments 2 and 3.
+- A later rank 9 increment that moves `outside-ground` breaks check 4g by
+  name; it re-cuts the field in the same commit.
+
+### Constraints
+
+- #796: no far bank; the water runs into the fog. #795: nothing here is a
+  surface. #703, #704: nothing out there is reachable.
+- #500: the field's ground rectangles are typed in the script and check 4g
+  is what holds them to the plan, the way check 1d holds a roof's base.
+- #529: 4g is plan arithmetic and `layout.mjs`'s; `plan-vs-scene.mjs` gains
+  nothing.
+- #611, #727, #816: every piece is paid in both wards; no ceiling moves.
+- #390, #499, #506, #584, #632. #13, #34, #147.
+- #53: whether it reads as land at each bell is the GPU's.
+- #801 to #808, #816 to #819.
+
+### Looking checklist
+
+- [ ] From the north walk: land under the wall, or a seam at the apron?
+- [ ] From the North-west Tower's roof: town, quay and hills as one view?
+- [ ] The rim at Prime, Sext, Vespers and Lauds: a horizon in the fog?
+- [ ] The farms at 60 to 130 m: farms, or boxes?
 
 ---
 
@@ -182,9 +1462,9 @@ Haven's 341.
 2. **Variety**: a wall and a floor per named room, about forty textures,
    against the texture ceiling below. Gated on the look, the way rank 11's
    second increment is.
-3. **The props**, if the look says a photographed cabinet in a pixel room is
-   the next wrong thing. Waits on the look saying so; "What shipped" below
-   carries the recorded answer to each open call increment 1 raised.
+3. **The props** move to rank 2b's increment 3, gated the same way (#813):
+   surfaces are this row's and volumes are the Blender band's, so the props
+   are a job of Blender sets, not this row's.
 
 ### What shipped, increment 1, in short
 
@@ -841,255 +2121,6 @@ Two calls from the town's first increment still bind the next one:
   its own line ending.
 - #493, #506: no asset fetched without going through the encoder.
 - #53: the look is the GPU run's.
-
----
-
-## Bodies
-
-**Rank 10. Size 1.** `WISHLIST.md` theme 6. The plan bet the project on tints
-(#419); this row answers the body-sourcing question at the scale of a child,
-a dog, a chicken and a garrison rather than one woman.
-
-### What shipped
-
-The child is the existing rig scaled down (`Woman.glb` at 1.15 m, a bigger
-head bone, `Run` for `walk`), not a new rig (#643). The dog is a fifth file,
-Quaternius's Husky as `assets/NPCs/Hound.glb`, meshopted to 0.63 MB, with a
-`follow` behaviour and `sniff`/`eat` clips (#644). Rails: bodies are found
-through `populace.json` as well as `cast`, and a silhouette count asserts
-more distinct combinations than there are new bodies (#645). Two hens off
-poly.pizza's re-export of Quaternius's Farm Animals pack, `Hen.glb`, 55 KB
-(#684). A held prop, `Spear.glb`, 46 KB, the first held prop not from Poly
-Haven, worn by the serjeant and the man-at-arms (#685). Increment 2a of the
-generated half below shipped 2026-09-23: `Sweep`, `Stir`, `Hammer`, `Spar` and
-`Drill` in all four human bodies, 171 to 192 KB a body, held by check 7.
-Increment 2b shipped 2026-09-23 too: `assets/NPCs/Cow.glb`, generated and
-grazing in the outer ward, `MAX_SKINNED_TOTAL` 33 to 34 (#794). **Not
-shipped**: the GPU look at any of it (#53), and further generated kinds
-(goat, pig, sheep) as later rows of `bodies.json`, each needing its own
-budget argument.
-
-### The generated half (#787 to #789)
-
-Bodies and clips may be made here by a deterministic Node script, the way
-`tools/pixel/` makes textures (#742, #787). Two increments, each one
-builder job, 2a first (#788). Both are Container; the sourced half below
-stays Local: net.
-
-**Measured 2026-09-23 with gltf-transform in Node.** The four human bodies
-share one skeleton by name: 62 joints, `Root` to `PT.R`, hand bone
-`Wrist.R`. They do not share a pose. Farmer, Adventurer and King agree to
-0.93 degrees at Idle's first key; Woman differs from them by up to 90.5
-degrees (`UpperLeg.R`) and has her own rest translations (up to 0.108 m).
-Every kit clip keys rotation on 56 joints and translation on 52, at 51 keys:
-1.67 s on the three men, 2.08 s on Woman. A kit clip costs 25.7 KB of
-King.glb on average. Read and written back through gltf-transform, King.glb
-is byte-identical, Woman.glb grows 20,616 bytes once and is then stable, and
-Hen.glb is not stable between two passes.
-
-#### Scope, increment 2a: five activity clips on the four human rigs (shipped)
-
-- **`tools/bodies/clips.json`**, the table. One row per clip: `Sweep`,
-  `Stir`, `Hammer`, `Spar`, `Drill`. Each row has `cycles` (an integer),
-  `driver` (the joint the motion rail reads) and `moves`, each
-  `{ bone, axis, rest, amp, phase }`: a glTF joint name, an axis in the
-  body's model frame (+y up, +z the way it faces), a static offset and an
-  amplitude in degrees, and a phase in cycles. The angle at key k of 50 is
-  `rest + amp * sin(2π(cycles * k / 50 + phase))`.
-- **`tools/bodies/index.mjs`**, `npm run bodies:render`. For each of
-  `Woman.glb`, `Farmer.glb`, `Adventurer.glb`, `King.glb`: read the body,
-  drop any animation whose name is in the table, and for each row write a
-  new clip keyed at the body's own Idle key times. Every channel Idle keys
-  (56 rotation, 52 translation) is copied from Idle; each move composes onto
-  its bone as `inverse(parentWorld_k) * R(axis, angle) * parentWorld_k *
-  local_k`, root to tip, `parentWorld_k` taken from the pose already built
-  at that key. Written with the reader's `EXT_meshopt_compression` intact, so
-  the writer is the encoder for these four and check 5 holds (#506). Exports
-  `renderBody(file) -> Uint8Array`, pure, for the suite. Touches no other
-  file under `assets/`.
-- **`src/populace.js`**: `ACTIVITY_CLIPS` gains `sweep: 'Sweep'`,
-  `stir: 'Stir'`, `hammer: 'Hammer'`, `spar: 'Spar'`, `drill: 'Drill'`, and
-  the comment above it stops saying the kit has none. `data/populace.json`'s
-  `activityComment` likewise. No routine uses them yet; writing them into
-  routines is "Life: a populace"'s.
-- **`test/mystery.mjs`**: the validator case at `expect('an activity no clip
-  in npc.js answers to'` uses `"hammer"` as its unknown job and goes red the
-  moment hammer is known. Change the word to one the table will not grow
-  (`"juggle"`). The orphan check below it already covers the five new names.
-- **`src/npc.js`**: no change. `pickClip` finds the clips by name.
-
-#### Acceptance, increment 2a
-
-New check 7 in `test/assets.mjs`, beside check 6's pixel provenance, over
-the four bodies. Each line is the break that has to turn it red (#34).
-
-1. **Present.** Each body carries 29 animations: the kit's 24 by name and
-   the table's 5. Break: delete `Drill` from the table and re-render.
-2. **Targets.** Every channel of a generated clip targets a joint of that
-   body's skin, and the set of (joint, path) pairs equals Idle's, so a
-   cross-fade never drops a bone to bind pose. Break: rename a move's bone
-   to `UpperArmR` (three's sanitised name, not glTF's); the generator must
-   throw on an unknown bone rather than skip it, and if it skips, this
-   fails.
-3. **Duration.** Each generated clip's last key time equals the body's Idle
-   last key time within 1e-4 s (1.67 on the men, 2.08 on Woman). Break:
-   key over 60 steps instead of 50.
-4. **Loops.** For every channel of a generated clip, the first and last
-   keys differ by no more than two quantisation steps (2/32767 on a
-   normalised int16). Break: `cycles: 1.5` on `Hammer`. As shipped it also
-   holds the step across the seam to 1.5 times the largest change of step
-   inside the clip: every Hammer move is phase 0, so 1.5 cycles ends where
-   it began, going the other way, and the position half alone stayed green.
-5. **Moves.** At some key, each clip's `driver` joint is at least 20
-   degrees from Idle's rotation of that joint at the same key. Break:
-   `amp: 0` on every move of `Stir` and re-render; line 6 stays green on a
-   clip that is only Idle, which is why this line exists.
-6. **Provenance and determinism.** `renderBody(file)` equals the file on
-   disk byte for byte, for all four. A second `npm run bodies:render` is
-   therefore a no-op. Break: change one `amp` by 1 degree without
-   re-rendering; the failure names the body and says to run
-   `npm run bodies:render`.
-7. **Size.** Each body is at most its pre-increment size plus 250 KB: Woman
-   1,073,992, Farmer 1,041,692, Adventurer 1,215,560, King 1,255,852 bytes,
-   the four as constants in the check: about twice the kit's 25.7 KB a
-   clip, five times. Break: key at 500 steps.
-
-`test/mystery.mjs`'s orphan check holds `ACTIVITY_CLIPS` to the files.
-Whether a Sweep reads as sweeping is `npm run play`'s (#53).
-
-#### Scope, increment 2b: a cow, generated and placed (shipped)
-
-- **`tools/bodies/bodies.json`**, a second table: one row per animal. The
-  cow's row lists joints (name, parent, head position), parts (a box or a
-  six-sided prism, a centre, a size, one joint it is rigidly weighted to, a
-  material) and clips. Joint names follow the hound's where one exists
-  (`Body`, `Neck1`, `Head`, `FrontUpperLeg.L`, `BackLowerLeg.R`, `Tail1`).
-  Flat-shaded, one skin.
-- **Caps, which #789's ceiling depends on**: at most 16 joints, 1,000
-  triangles, 4 primitives, 80 KB on disk. Four primitives: `Hide`, `Nose`,
-  `Eye`, `Horn`. `Hide_Patch` is not a fifth primitive — it is a darker
-  vertex colour inside `Hide`, so the tint darkens the patches too; `Nose`,
-  `Eye` and `Horn` do not take the tint. Clips `Idle` (at least 2.0 s),
-  `Walk` and `Eating`, so `CLIPS`' idle and walk resolve and the existing
-  `eat: 'Eating'` needs no new activity. No `Wave`: the cow does not greet,
-  like the hound.
-- **`tools/bodies/index.mjs`** builds `assets/NPCs/Cow.glb` with
-  gltf-transform and applies `meshopt({ encoder, cleanup: false })`, the
-  call `tools/encode-assets.mjs` makes.
-- **`src/npc.js`**: `BARE_MATERIALS` gains `/^horn$/i`. One line.
-- **`data/populace.json`**: one person, `id: "cow"`, in the outer ward by
-  the hens, `wait` and `eat` stops, `modelHeight` 1.45, a tint no other
-  person has. Asset and reference land together (#390).
-- **`test/budget.mjs`**: `MAX_SKINNED_TOTAL` 33 to 34, with #789 cited in
-  the comment block. `MAX_SKINNED_PER_WARD` stays 20.
-
-#### Acceptance, increment 2b
-
-Check 7 grows a cow half in `test/assets.mjs`.
-
-1. **Caps.** Joints, triangles, primitives and bytes under the four caps.
-   Break: raise the body's prism sides until it passes 1,000 triangles.
-2. **Skin.** Every vertex has weights summing to 1 within 1e-3 and joint
-   indices inside the skin. Break: weight one part to joint 16.
-3. **Clips.** `Idle`, `Walk`, `Eating` present, targets exist, first key
-   equals last as in 2a. Break: `cycles: 1.5` on `Walk`.
-4. **Reads as four-legged.** The bind-pose box is at least 1.3 times as long
-   (z) as it is tall (y). Break: swap the body part's y and z sizes.
-5. **Provenance and determinism**, as 2a's line 6.
-
-Held by the suites as they stand: check 4 (the cow is referenced), check 5
-(meshopt), `test/mystery.mjs`'s per-person clip check and the #645
-silhouette count, and `test/budget.mjs`: 34 built of 34, the outer ward's
-peak under 20. Whether a cow reads as a cow is `npm run play`'s (#53).
-
-#### Open calls, the generated half
-
-- **Clips in the four bodies, or one shared clip file.** Recommend **in the
-  bodies** (#788): Woman's pose differs by 90.5 degrees, so a shared file
-  would be two files plus a loader change in `npc.js`, and the bodies are
-  already referenced, encoded and read by `mystery.mjs`'s per-person check.
-- **Which clips.** Recommend **all five**, `Drill` included: the garrison's
-  spear (#685) is the reason, and a fifth row in a table costs one render.
-- **Where a new animal counts.** Recommend **against `MAX_SKINNED_TOTAL`,
-  raised by one per animal, each with its argument** (#789). A separate
-  cheap-animal budget would move the hound and both hens out of the 33
-  without anyone arguing for it.
-- **Ship the cow's asset first, place it later.** Recommend **no**: an
-  unreferenced `Cow.glb` fails check 4 (#390), and a catalogue to make it
-  referenced is a second reference kind for one file.
-- **After the cow.** Recommend **a pig, then a goat**, one table row, one
-  placement and one ceiling argument each. **Maids, knights, peasants and
-  children stay on the four Quaternius rigs** (#787): tint, height, hidden
-  nodes and the spear already make them, and a generated human would not
-  match the kit's look or carry its 29 clips.
-
-#### Dependencies, the generated half
-
-- None to start 2a. 2b after 2a, because both write `tools/bodies/index.mjs`.
-- Lane C with "Life: a populace", which writes `data/populace.json` and
-  `src/populace.js` too; 2a and 2b do not run beside it.
-
-#### Constraints, the generated half
-
-- #787 (a table row per generated asset; no hand-edited output).
-- #390, #499 (2a adds at most 1 MB across four files; 2b under 80 KB).
-- #506 (the generator writes meshopt; nothing lands raw).
-- #53 (the look at every clip and at the cow is a GPU question and blocks
-  nothing here).
-- #632 does not bite: `.glb` is binary and git leaves its bytes alone.
-
-### Scope, the sourced half (Local: net)
-
-- **Sourcing, the same search rank 1 ran and won**: a
-  low-poly, one-rig, CC0 body per new kind, re-exported through
-  `gltf-transform` if it is not already the right generator, so `npc.js`'s
-  `pickClip`, `tintBody` and `_findHandBone` keep working with no code change.
-  A child scaled down from the existing rig rather than a new one is the
-  cheapest version of "child," and should be tried first.
-- **`data/npcs.json`** (or `data/populace.json` once rank 6 exists) gets the
-  new `modelPath`s and the variation fields `WISHLIST.md` names: `modelHeight`
-  (already precedented at #128, rank 1), a tint, a hidden hood/hat node, a
-  held prop, a beard-material toggle — all `npc.js` machinery that exists for
-  hiding nodes and materials today.
-- **The dog**: one body, one behaviour (follow a station or the player,
-  bark within a radius), the cheapest "companion" the theme names.
-
-### Acceptance
-
-- `test/assets.mjs` check 4: every new body referenced the same commit it
-  lands, per #390.
-- A visual acceptance — does the child read as a child at running speed, does
-  the dog read as a dog — is `npm run play`'s (#53), same split as rank 1's.
-- Node acceptance: the six variation axes (tint, height, hood, prop, beard,
-  body) combine to more distinct silhouettes than there are new bodies, which
-  a script can just count off `data/npcs.json`/`populace.json`.
-
-### Open calls
-
-- **Which kind first.** Recommend **the child**, per `WISHLIST.md`'s own
-  ordering ("Devon named them first," and running is the one thing the walk
-  grid already does well), then the dog, then chickens, then the garrison's
-  spear-bodies, in that order.
-- **New rig or scaled existing rig for the child.** Recommend **scale the
-  existing rig** first and only source a true child rig if the proportions
-  read wrong on a GPU — this is the cheaper thing to try and to be wrong
-  about.
-
-### Dependencies
-
-- **Every activity clip rank 6 defers** (`sweep`, `stir`, `hammer`,
-  `spar`, `drill`) is increment 2a's, above; the two rows trade work back
-  and forth rather than one strictly gating the other.
-- Goes through `tools/encode-assets.mjs` (#506) before commit, same as rank 1.
-
-### Constraints
-
-- #390 (asset and reference, one commit).
-- #499 (budget: `WISHLIST.md`'s own number is 0.5-1.5 MB a body meshopted,
-  ten bodies and thirty clips under 20 MB against headroom).
-- #419, #471 (tint clones the material; a new body's own `Skin` hex is either
-  matched to the existing three or the live-skin assertion changes to say what
-  it actually guards, the same call rank 1 already has to make).
 
 ---
 

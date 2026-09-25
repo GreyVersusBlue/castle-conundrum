@@ -24,7 +24,8 @@ compressed (KTX2/Basis, meshopt) except the Kenney kit and this repo's own
 generated pixel-art textures at 128 px or under (#506, #742, #757 to #766).
 `du -sh assets` is 28 MB, against a 200 MB ceiling (#499). Fifteen suites run
 under `npm test`; `npm run play` is the GPU-backed end-to-end walk and only
-runs by hand, on Devon's machine (#53).
+runs by hand, on Devon's machine (#53). Devon made Blender-built assets the
+project's top priority on 2026-09-25 (#801).
 
 **Shipped and closed**, in one line each, numbers only: the move to this repo
 and asset compression (#491 to #510); four GPU-found fixes from Phase 5
@@ -56,16 +57,23 @@ extension to the walking day and the morning after (#785, #792, #793); and
 bodies' generated half, increments 2a and 2b: five activity clips in the
 four human rigs and a generated cow grazing in the outer ward, 34 bodies
 built (#787 to #790, #794); and, in rank 6, the first four of those clips
-placed in the household's routines (#800).
+placed in the household's routines (#800); and rank 10, retired into 2c and
+2d (#807).
 
-**Open, ranked below.** Eight rows: the GPU run itself, now gated on nothing
-(rank 3, #780 to #782); the retro castle's look and its remaining two
-increments (rank 4); the rest of the fifty-person populace (rank 6); somebody
-with speakers to judge the soundscape (rank 7); the town's quay and river
-(rank 9); a shared low-poly rig for the rest of the bodies (rank 10); the feel
-theme past its shadow and hand (rank 11); and the floor-plan editor's drag
-increments (rank 13). Ranks 1, 2, 5, 8 and 12 are retired numbers, not gaps: a
-rank is a priority, never an id, and never reused (#619, #522, #491).
+**Open, ranked below.** Devon made Blender-built assets the project's top
+priority on 2026-09-25 and reopened ranks 1 and 2 himself to hold them
+(#801). Thirteen rows: the Blender pipeline (rank 1); the Blender pack band,
+five rows lettered by priority (2a evidence props, 2b an interiors kit, 2c a
+shared rig with swappable parts, 2d the animals, 2e the countryside beyond
+the wall); the GPU run itself, now gated on nothing (rank 3, #780 to #782);
+the retro castle's look and its remaining increment (rank 4); the rest of
+the fifty-person populace (rank 6); somebody with speakers to judge the
+soundscape (rank 7); the town's quay and river (rank 9); the feel theme past
+its shadow and hand (rank 11); and the floor-plan editor's drag increments
+(rank 13). A session never reuses a retired rank; Devon may, and did, here
+(#802). Rank 10 is retired, with 2c and 2d as its successors (#807). Ranks
+5, 8 and 12 stay retired numbers, not gaps: a rank is a priority, never an
+id, and a number a session retires is never reused (#619, #522, #491, #802).
 
 **The red suite is closed.** Four increments shipped: the aim cone and the
 populace beat's timing fix (#721 to #724); a `PROP_CLEARANCE` rail of 1.0 m
@@ -119,19 +127,26 @@ them was written anywhere before: the header said "ranks 2, 3 and 5 need a
 GPU" in a paragraph a reader had to parse, and said nothing at all about which
 two rows would collide.
 
-**Where.** Four values, and three of them mean this container cannot finish
-the row.
+**Where.** Five values now, and four of them mean this container cannot
+finish the row.
 
 - **Container.** A session like this one closes it: data, validators, Node
   suites, headless Chromium.
+- **Local: Blender.** Needs Blender 4.5 LTS on `PATH` (or at `BLENDER`),
+  headless, and only Devon's Windows machine has it (#804, #805). A session
+  without it does not claim the row's build increment; CI runs only the Node
+  check against the committed output. Ranks 1, 2a, 2b, 2c (increment 1), 2d
+  and 2e.
 - **Local: GPU.** Needs `npm run play` on a machine with real compositing, or
   needs somebody to look at a render. This is #53, and #53 cuts both ways: a
   real-time assertion that *fails* under software rendering is inconclusive,
   not confirmed. Ranks 3, 4 past its first increment, and rank 11 past its
-  Node line.
+  Node line; 2c's and 2d's clips are judged here too.
 - **Local: net.** Needs a network that reaches the asset hosts. Not a GPU
   question and not the same block: #518's container could not reach Poly
-  Haven and #541's could; #568's could not reach quaternius.com. Rank 10.
+  Haven and #541's could; #568's could not reach quaternius.com. No row needs
+  it today, since rank 10 retired (#807), but sourcing CC0 stays allowed
+  inside 2c and 2d if their sections say so.
 - **Local: audio.** Needs speakers and a person. Rank 7 only, and only for the
   judgement — the assignment and the cross-fade are a container's.
 
@@ -144,9 +159,8 @@ The one gate still standing: **rank 3 before rank 11 ships past its Node
 acceptance.** Rank 11's own spec says nothing in it goes past a `snap` and a
 sentence until the GPU run has happened.
 
-Two softer dependencies, not gates, worth naming: rank 10 and rank 6 trade
-activity clips both ways, and a budget ceiling read against whatever bodies
-exist at the time (#609).
+One softer dependency, not a gate, worth naming: a budget ceiling reads
+against whatever bodies exist at the time (#609).
 
 **Lane.** The file that two sessions would collide on. **One row per lane at a
 time** (#602); rows in different lanes, or with no lane, may be claimed
@@ -155,10 +169,11 @@ together.
 | Lane | The file that decides it | Rows |
 | --- | --- | --- |
 | A | `src/save.js` — the version number and `migrate` | none held |
-| B | `data/scene-config.json` — and `test/tools.mjs`'s byte-exactness rail | 4, 9, 13 (increments 2 and 3 only) |
-| C | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | 6, 10 |
+| B | `data/scene-config.json` — and `test/tools.mjs`'s byte-exactness rail | 1, 2a, 2b, 2e, 4, 9, 13 (increments 2 and 3 only) |
+| C | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | 2c, 2d, 6 |
 | D | `src/main.js`'s player rig and spawn | 6, 11 |
 | E | `src/audio.js` and `data/sounds.json` | 7 |
+| F | `tools/blender/` and its manifest | 1, 2a, 2b, 2c, 2d, 2e |
 
 Lane A last bumped the save version to 6 (#612); the next row that bumps it
 takes that lane and bumps to 7. Lane C is the `cast` block specifically, not
@@ -169,39 +184,141 @@ writes there next**: every `dialogue` block in that file is also
 row that adds a state or rewords a line runs `npm run dialogue:extract`
 before it commits (#687). Lane B: rank 4 and rank 9 both write
 `data/scene-config.json` and do not run together; rank 13's increments 2 and 3
-are the same lane and wait behind whichever of the other two is running.
+are the same lane and wait behind whichever of the other two is running; the
+Blender rows that place (1, 2a, 2b, 2e) hold it too. Lane F is every Blender
+row: one machine renders, so they run one at a time regardless (#804).
 
 ## The ranked table
 
-Eight ranked rows: 3, 4, 6, 7, 9, 10, 11, 13. **Ranks 1, 2, 5, 8 and 12 are
-retired numbers, not gaps.** A rank is a priority, not an id, and a retired
-number is never reused (#619, #491) — which is why every row is named by
-title as well as by rank in this file, `SPECS.md` and `ROADMAP.md` (#522):
-that is what makes a renumbering survivable even when a row is claimed.
-Rank 1 cycled through four different rows before retiring for good on
-2026-09-21 (the fourth body, the castle you could not walk, the walker on the
-stair, then the day-before walking day, #778 to #779); rank 2 was last held
-by "Sight at the body's own height," which shipped the same day (#780 to
-#782) and opened rank 3's gate. Ranks 5, 8 and 12 finished rather than being
-retired part-way: 5 was the hall covering (#656 to #658), 8 was the twelve
-side quests (#691 to #695), 12 was the placement editor, budget suite,
-move-and-delete and the dialogue format (#583 to #587, #607 to #611, #636 to
-#642, #687 to #690).
+Thirteen ranked rows: 1, 2a, 2b, 2c, 2d, 2e, 3, 4, 6, 7, 9, 11, 13. Devon
+reopened ranks 1 and 2 himself on 2026-09-25 for the Blender rows, and
+lettered the pack band by priority (#801, #802). **A session never reuses a
+retired rank; Devon may, and did, here** (#802). Rank 10 is retired, with
+2c and 2d as its successors (#807). Ranks 5, 8 and 12 stay retired numbers,
+not gaps: a rank is a priority, not an id (#619, #491), which is why every
+row is named by title as well as by rank in this file, `SPECS.md` and
+`ROADMAP.md` (#522): that is what makes a renumbering survivable even when
+a row is claimed. Rank 1 cycled through four different rows before retiring
+on 2026-09-21 (the fourth body, the castle you could not walk, the walker on
+the stair, then the day-before walking day, #778 to #779) and reopened for
+the Blender pipeline on 2026-09-25; rank 2 was last held by "Sight at the
+body's own height," which shipped 2026-09-21 (#780 to #782) and opened
+rank 3's gate, and reopened the same day as the Blender pack band. Ranks 5,
+8 and 12 finished rather than being retired part-way: 5 was the hall
+covering (#656 to #658), 8 was the twelve side quests (#691 to #695), 12 was
+the placement editor, budget suite, move-and-delete and the dialogue format
+(#583 to #587, #607 to #611, #636 to #642, #687 to #690).
 
 | Rank | Item | Size | Model | Where | Gate | Lane | Claimed | Detail |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | Blender: the pipeline: the empty-scene builder, the manifest, check 8 and one placed calibration crate, specced (#801 to #808); nothing built | 1 | Opus 5 | Local: Blender | — | F, B | | [Blender: the pipeline](SPECS.md#blender-the-pipeline) |
+| 2a | Blender: evidence props: three pinned swaps (the knife, the candle, the ledger) and four dressings (the goblet, the vials, the aumbry candles, the seal), specced (#810 to #812, #816, #819); nothing built | 1 | Opus 5 | Local: Blender | after 1 | F, B | | [Blender: evidence props](SPECS.md#blender-evidence-props) |
+| 2b | Blender: an interiors kit: joined sets dressing the kitchen, the great hall, the chapel and the cell, specced (#813 to #816, #819); nothing built | 2+ | Opus 5 | Local: Blender | after 1, 2a | F, B | | [Blender: an interiors kit](SPECS.md#blender-an-interiors-kit) |
+| 2c | Blender: a shared rig with swappable parts: one rig, one-primitive parts, at most five skinned draws a person against the Quaternius rigs' 12 to 15, specced (#820 to #825); nothing built | 2+ | Opus 5 | Local: Blender, then Container; judged local: GPU (#53) | after 1 | F, C | | [Blender: a shared rig with swappable parts](SPECS.md#blender-a-shared-rig-with-swappable-parts) |
+| 2d | Blender: the animals: pig, goat, sheep, horse, cat and two geese on one quadruped topology plus a bird one for the goose, specced (#826 to #829); nothing built | 1 | Opus 5 | Local: Blender; judged local: GPU (#53) | after 1, 2c increment 1 | F, C | | [Blender: the animals](SPECS.md#blender-the-animals) |
+| 2e | Blender: the countryside beyond the wall: five backdrop pieces cut from one seeded height field, specced (#816 to #819); nothing built | 1 | Opus 5 | Local: Blender | after 1, rank 9's 3b | F, B | | [Blender: the countryside beyond the wall](SPECS.md#blender-the-countryside-beyond-the-wall) |
 | 3 | The GPU run: the looks are taken (#711 to #715); the walker holds on a GPU (#734, #736) and the third sitting reached the accusation with the wrong ending (#735 to #741) | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
-| 4 | The retro castle: increment 1 shipped, fifteen sets out and fifteen 128 px textures in (#757 to #766); the look, then variety per room, are left | 2+ | Opus 5 | Container to the look, local: GPU past it | — | B | | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
-| 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #729 to #733); four of rank 10's five clips placed in the household's routines (#800), `drill` still nobody's; the town and the chatter pool are left | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
+| 4 | The retro castle: increment 1 shipped, fifteen sets out and fifteen 128 px textures in (#757 to #766); the look, then variety per room, are left; the props increment moved to 2b (#813) | 2+ | Opus 5 | Container to the look, local: GPU past it | — | B | | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
+| 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #729 to #733); four of the five generated clips placed in the household's routines (#800), `drill` still nobody's; the town and the chatter pool are left | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: somebody listens to the seven beds, the four rings and the first two event sounds (a bed at a point and the rings, #680 to #683; the door and the hound, #696 to #698) | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
 | 9 | A castle to get lost in: the town, the rock and river | 2+ | Opus 5 | Container | — (4c opened it) | B | | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
-| 10 | Bodies: a shared low-poly rig for the fifty (the child and the hound shipped, #643 to #645; two hens and the spear, #684 to #686); five clips generated onto the four human rigs shipped (#790); a generated cow shipped (2b, #787 to #789, #794), body count 34 | 1 | Fable 5.1 | Generated: Container; sourced: Local: net | — | C | | [Bodies](SPECS.md#bodies) |
 | 11 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 | Container to the Node line, local: GPU past it | **after 3** | D | shadow + hand shipped 2026-09-17 (#650 to #654) | [Feel](SPECS.md#feel) |
 | 13 | The floor plan you can see: the review view shipped (#745 to #749); a way to redraw it is left | 2+ | Opus 5 | Container | — | B | increment 1 shipped 2026-09-21 (#745 to #749) | [The floor plan you can see](SPECS.md#the-floor-plan-you-can-see) |
 
 **`ROADMAP.md` is these three columns turned into an order**: which row to
 take first, what each one unblocks, and which ones two sessions may hold at
 the same time. This table still ranks; that file sequences (#601).
+
+## Blender: the pipeline
+
+*Where: local, Blender. Gate: none. Lanes: F and B.*
+
+**Rank 1.** Devon's instruction of 2026-09-25: assets made in Blender are the
+new top priority, and he reopened this rank himself to hold it (#801, #802).
+Specced whole, decisions #801 to #808, against `6a279de`: `tools/blender/`
+builds every asset from an empty factory scene out of a seeded script,
+exports it into a staging folder, and a Node step (`finish.mjs`) writes the
+committed bytes, meshopt-encoded, with a manifest row per file; `test/
+assets.mjs` check 8 holds the committed bytes to the manifest and the
+manifest to the scripts. Blender never runs in CI (#804); a session without
+it on `PATH` does not claim this row. One asset ships with the pipeline
+itself, a calibration crate placed in the larder, proving `propPath`, check
+8 and the budget line end to end (#808). Every rank 2 pack is gated on this
+row. Detail: [Blender: the pipeline](SPECS.md#blender-the-pipeline).
+
+## Blender: evidence props
+
+*Where: local, Blender. Gate: after rank 1. Lanes: F and B.*
+
+**Rank 2a, size 1.** Specced whole, decisions #810 to #812, #816 and #819.
+`data/mystery.json`'s eleven evidence rows hold no dagger, goblet, vial or
+seal: the brief's six against the data's names three of them wrong. Three
+pinned swaps replace what the player presses (the knife, the candle, the
+ledger), each keeping its piece's id and box centre so no station moves
+(#811); four dressings (the goblet, the vials, the aumbry's three candles,
+the Clerk's seal) stand beside a pressable or in a room with none, and
+dress nothing pressable, so no clue changes. New `test/layout.mjs` check
+1e holds that nothing stands over a pressable (#812). Detail: [Blender:
+evidence props](SPECS.md#blender-evidence-props).
+
+## Blender: an interiors kit
+
+*Where: local, Blender. Gate: after rank 1 and 2a. Lanes: F and B.*
+
+**Rank 2b, size 2+.** Specced whole, decisions #813 to #816 and #819. Dresses
+four rooms, the kitchen, the great hall, the chapel, and the cell as the
+dungeon, with joined sets (a hearth, a trestle board, an altar, a pallet)
+built as one mesh, one draw call each; no smithy or stable, because a room
+is a layout call and neither exists (#814). Splits from rank 4 by surface
+and volume: rank 4 owns every face's texture, this row makes pieces and
+never a wall or floor covering, so rank 4's old increment 3 (the props)
+moves here as this row's increment 3, gated on rank 4's look (#813). Detail:
+[Blender: an interiors kit](SPECS.md#blender-an-interiors-kit).
+
+## Blender: a shared rig with swappable parts
+
+*Where: local, Blender for increment 1, then container; judged local GPU
+(#53). Gate: after rank 1. Lanes: F and C; not B.*
+
+**Rank 2c, size 2+.** Specced whole, decisions #820 to #825. Rank 10's
+successor for people (#807): one rig, `folk.glb`, with every wearable part
+its own one-primitive mesh node, so a person names the parts they wear in
+`data/populace.json` and draws at most five skinned primitives where a
+Quaternius body draws 12 to 15. Increment 1 renders the rig and moves one
+wearer, the hen-wife, gated on a GPU look beside a Quaternius body before
+anything else is committed; increment 2, a container job, moves the other
+15 populace humans. The 14 cast stay on the Quaternius rigs (#824). Makes
+bodies and writes a person's first body fields only; "Life: a populace"
+still owns every ring and every later change (#821). Detail: [Blender: a
+shared rig with swappable parts](SPECS.md#blender-a-shared-rig-with-swappable-parts).
+
+## Blender: the animals
+
+*Where: local, Blender; judged local GPU (#53). Gate: after rank 1 and 2c's
+increment 1. Lanes: F and C; not B.*
+
+**Rank 2d, size 1.** Specced whole, decisions #826 to #829. Rank 10's
+successor for animals (#807): pig, goat, sheep, horse and cat on one
+quadruped topology sharing the cow's joint names, and a goose on a bird
+topology of its own, each its own file, two materials (`Coat`, tinted, and
+`Bare`) over one atlas. The cow, the hound and the two hens stay as they
+are (#807). Placed in the two wards beside the hen-wife's patch and the
+cow, no stable and no yard (#829); the two skinned-draw ceilings #825 sets
+rise by the animals' own draws. Detail: [Blender: the animals](SPECS.md#blender-the-animals).
+
+## Blender: the countryside beyond the wall
+
+*Where: local, Blender. Gate: after rank 1 and rank 9's increment 3b. Lanes:
+F and B.*
+
+**Rank 2e, size 1.** Specced whole, decisions #816 to #819. Five backdrop
+pieces cut from one seeded height field, tiling the ground and each other
+edge to edge so nothing seams, placed as `interiorProps` with `backdrop` and
+`noCollide` so they push no collider and no surface. New `test/layout.mjs`
+check 4g holds the seam to the ground's sides and the far edge out to the
+fog's distance (#817, #818). Gated on rank 9's 3b, which sets the ground's
+west edge and lifts the eyes check 4g reads. Detail: [Blender: the
+countryside beyond the wall](SPECS.md#blender-the-countryside-beyond-the-wall).
 
 ## The GPU run
 
@@ -269,17 +386,18 @@ populace, exactly `MAX_SKINNED_TOTAL` (#729 to #733). `test/mystery.mjs`
 owns the validator (#529); `test/budget.mjs` counts the household.
 
 **What is left waits on one other row and one argument.** The rest of the
-fifty, and whether `garden` becomes ground, is rank 9's town. The four
-activities that had no clip, `sweep`, `stir`, `hammer` and `spar`, now do:
-rank 10 shipped all five clips into the four human bodies (#790), and this
-row has placed four of them, twelve stops across both days (#800): the
-scullion sweeps and stirs in the kitchen, the carter hammers at his cart,
-and the serjeant and the man-at-arms spar in the yard where they used to
-muster. `drill` is still nobody's. The ceiling stays at rank 10's 34 until
-a row renegotiates it with rank 2's
-`renderer.info`. And the twelve's 27-pair chatter pool is still unspent by
-proximity; a later lore or dialogue increment is recommended to hold each
-pair to the schedule the way #592 holds a performance.
+fifty, some of it on 2c's rig once it ships (#821), and whether `garden`
+becomes ground, is rank 9's town. The four activities that had no clip,
+`sweep`, `stir`, `hammer` and `spar`, now do: `tools/bodies/` shipped all
+five clips into the four human bodies (#790, kept as it is under 2c and 2d,
+#807), and this row has placed four of them, twelve stops across both days
+(#800): the scullion sweeps and stirs in the kitchen, the carter hammers at
+his cart, and the serjeant and the man-at-arms spar in the yard where they
+used to muster. `drill` is still nobody's. `MAX_SKINNED_TOTAL` stays 34
+until 2c or 2d renegotiates it (#825, #828). And the twelve's 27-pair
+chatter pool is still unspent by proximity; a later lore or dialogue
+increment is recommended to hold each pair to the schedule the way #592
+holds a performance.
 
 ## Sound: a soundscape
 
@@ -320,24 +438,6 @@ Mereford, which is the only part of the quay the walls can see; then 3b, the
 water, a plan piece with no surface that runs into the fog, with the ground
 cut back to the bank so nothing calls it floor. Filling the nineteen empty
 rooms is rank 6's routines and a later lore row's documents.
-
-## Bodies
-
-*Where: the generated half is Container (#787); the sourced half is local, a network that reaches the asset hosts. Gate: none. Lane: C.*
-
-**Rank 10.** Every row above this one that needs a new body is waiting on
-this one. Low-poly, one shared rig, CC0 (#550 question 5). Shipped: the
-child, at 1.15 m off the existing rig with a bigger head, and the hound,
-Quaternius's Husky (#643 to #645); two hens and a spear, off poly.pizza,
-the first held prop that is not Poly Haven's (#684 to #686). Bodies and
-clips may be made here rather than fetched (#787), and increment 2a
-shipped: `Sweep`, `Stir`, `Hammer`, `Spar` and `Drill` written into Woman,
-Farmer, Adventurer and King by `npm run bodies:render` (#788, #790). Rank
-6's four deferred clips now exist and are its to place in a routine.
-Increment 2b shipped too: a generated cow grazing in the outer ward,
-`MAX_SKINNED_TOTAL` 33 to 34, 34 of 34 bodies built (#789, #794). What is
-left here: the look at all of it on a GPU (#53), and further generated
-kinds (a pig, then a goat), each its own table row and ceiling argument.
 
 ## Feel
 
