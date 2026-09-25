@@ -9939,3 +9939,154 @@ by 2d under #821. No stable: a new room is a plan piece in
 `data/scene-config.json`, lane B, and a row that wants one says so there.
 No yard: `wykes-yard` is `outside`, rank 4c keeps the player out of it, and
 section 3 refuses a stop in a room with no ward.
+
+---
+
+## Blender: Devon's props, placed: decided before anything is built (2026-09-25)
+
+**A spec, not a build.** Devon, 2026-09-25: "We now have all of these props
+in assets/props. Can we go in and place these?" Commit `51735fa` added 85
+`.glb` files and a README under `assets/props/`, made by his own Blender
+script outside this repo (`Claude Files/Blender Projects/Castle/_source/`).
+`SPECS.md` gains "Blender: Devon's props, placed" as rank 2f, every open call
+recommended, with the 70 rows as data. Decisions #830 to #834, written as
+`architect` against `51735fa`, where #829 was the last. No code, no asset
+and no data file changed in this entry; the prototype that measured the
+rows was reverted.
+
+**Measured before anything was decided.** The 85 files are 108 primitives
+and 4.2 MB, one material each, `KHR_materials_specular`, metallic 0, and
+one embedded 128 x 128 RGBA PNG, NEAREST. The PNG is byte-identical in all
+85 and to `_source/castle_props_atlas.png` (sha256 `e58ea65f8c61...`). It
+has 1821 distinct RGBA values, none of them among the 108 colours of
+`tools/pixel/textures.json`. The exporter string is `Khronos glTF Blender
+I/O v5.2.40`. `build.py` writes its `.glb` files straight into
+`assets/props/`, raw. `interiorProps` joins every `model` to
+`polyhavenBase` at eight sites, so `assets/props/altar.glb` reads as
+`assets/poly-haven/assets/props/altar.glb`, and `makePlan` gives every
+`interiorProps` row level 0. `test/assets.mjs` check 4 sweeps
+`assets/poly-haven`, `assets/NPCs` and `assets/pixel`, so the 85 files are
+dead weight today that no suite reports. A prototype in the working tree
+(`propPath`, a `base` field, 70 rows spliced by `insertRow`) held `layout`,
+`mystery`, `budget`, `tools`, `dialogue`, `map`, `built` and
+`plan-vs-scene` green: 419 pieces, every one within 0.01 m of its plan box.
+Only `assets` went red, on check 5, for the unencoded files. `layout` check
+6 caught one first draft: a brazier on the Stockhouse Tower's first floor
+cut the tower's walk off from its own stair. Under 2a's check 1e rule, none
+of the 70 rows stands over any of the 25 pressables. `test/budget.mjs`:
+outer 993 to 1020 draws, inner 643 to 702, outer plus outside 1124 to 1151
+of 1200, inner 774 to 833, texture memory 37.9 to 43.7 of 64 MB.
+
+**#830. `assets/props/` is a committed asset family made outside this repo,
+like the Kenney kit and Poly Haven. It does not go through rank 1's
+pipeline.** The pipeline's conditions (#803, #805) cannot be met by these
+files. They were exported by Blender 5.2, not the pinned 4.5. The script
+writes raw files into `assets/`, not through `finish.mjs`. The atlas fails
+#803's look by 1789 colours. These files are Devon's, made on his machine
+and handed over, which is what the Kenney kit is too. Held the same way:
+every placed file encoded by `npm run assets:encode` (#506), every file on
+disk referenced (#390, and check 4's sweep gains `assets/props`), and a new
+check 9 over the family's shape (#831). Devon's scripts and manifest are
+copied into `tools/props/` for the record: `build.py`, `kit.py`,
+`atlas.py`, `registry.py`, the three `props_*.py` and `manifest.json`. The
+`.blend`, its backup, the previews and the atlas PNG are not copied, since
+the PNG is in every `.glb` and `atlas.py` draws it. Nothing runs these
+files and nothing checks them. `assets/props/README.md` moves beside them,
+because check 4 would report it as unreferenced. **What this does to the
+Blender band**: rank 1 keeps its pipeline, its crate and check 8, and loses
+one bullet: `propPath` at the eight sites ships here. 2a's increment 1
+shrinks to `chapel-aumbry` and check 1e. Its goblet, seal and vials are
+Devon's files here, under the ids 2a gave them (`hall-goblet`,
+`clerk-seal`, and `larder-vial`, one vial and not three), and the #812 id
+throw ships here. 2a's increment 2, the three pinned swaps, is unchanged.
+2b drops `kitchen-hearth`, `hall-hearth` and `chapel-altar`, because
+Devon's hearth crane, spit, fireplace and altar stand in those places now.
+It keeps `kitchen-worktable`, `kitchen-shelves`, `hall-trestle`,
+`hall-high-table` and `cell-pallet`, and its increment 3. A 2b set fitting
+around a 2f row may move that row, since both are dressing. 2c, 2d and 2e
+are untouched.
+
+**#831. A PNG 128 px or under inside a glTF stays a PNG, in the encoder's
+code and not only in `CLAUDE.md`.** What was wrong: `CLAUDE.md` says "the
+exemption is a size, not a kit", and `tools/encode-assets.mjs` has no size
+test. The Kenney kit and `assets/pixel/` stayed PNG only because the
+encoder never saw them. The prototype ran the encoder over 67 placed props
+and every atlas became KTX2 ETC1S ("textures 0.02 MB -> 0.00 MB"). Two
+things break when that happens. ETC1S stores two base colours per 4 x 4
+block, which blurs a hard pixel edge, and `toKTX2` calls
+`sharp(...).removeAlpha()`, which drops the cobwebs' alpha mask. All
+fifteen suites stayed green through both, so this is a guard-rail missing
+rather than a rule broken (#34). The fix: `encodeGLTF` skips a texture
+whose image is a PNG no wider or taller than 128 px, and declares
+`KHR_texture_basisu` only when it encoded something. `test/assets.mjs`
+gains check 9 over every file under `assets/props/`: meshopt, one material,
+one image, that image a PNG at most 128 px a side, and no
+`KHR_texture_basisu`. Its break is the bug itself: run the encoder without
+the skip. The PNG route costs about 5 MB of video memory that KTX2 would
+have saved (43.5 against 38.6 of 64, measured at 68 rows). That is the price of pixel art that keeps
+its edges and cobwebs that keep their holes.
+
+**#832. `interiorProps` gains `base`, one `propPath`, and #812's throw.**
+Twenty of the rows stand on an upper floor, a roof or the chapel loft,
+and the only way onto one today is `courtyard.placements`, which joins
+`kenneyBase`. So `base` works the way it already does on a placement: the
+row's level is `levelUnder(base)`, it stacks only on earlier boxes on that
+level, and it stands at `max(base, the surface under it) + yOffset`. Every
+existing row has no `base`, which gives level 0, so its box does not move.
+`tools/place.mjs` allows the key, and `test/tools.mjs`'s allow-list rail is
+satisfied because the rows that use it land in the same commit.
+`propPath(base, model)` in `src/castle-plan.js` is `heldPropPath`'s rule,
+used at all eight sites (#500). An `interiorProps` row whose `model` starts
+`assets/` with no `id` throws, naming the model (#812). `test/layout.mjs`
+check 1d extends to every colliding `interiorProps` row with a `base`,
+because a mistyped `base` is exactly the number that check exists for.
+`yOffset` may be negative, used twice: `writing-desk-locked`'s box top is
+its gallery at 0.93 while its writing surface is at 0.76, and
+`trestle-table-set`'s is its cups at 0.98 while its board is at 0.76.
+
+**#833. Seventy rows from 69 files, dressing only; 16 files are not placed
+and leave the tree.** No row is pressable. No evidence, clue, press, quest,
+station or save field changes, so `data/mystery.json`, `test/mystery.mjs`
+and `src/save.js` are untouched. Swaps under #811 are 2a's work. Where the
+rows go: the kitchen, the Great Hall, the dormitory, the Clerk's office,
+the larder, the outer ward's first well, the Prison Tower's roof, the
+King's Hall as the Constable's board, the royal apartments as a
+bedchamber, the Steward's chamber as a counting room, the porter's lodge,
+the King's Tower's first floor, the chapel, the Chapel Tower's top room as
+a loft chapel, and the empty inner-ward ground east of the Steward's
+chamber as a garden. Three files are refused because they look like a
+clue and are not one: `body-scene-set` (a body on the floor all three days,
+including the walking day, when Hywel is alive), `dagger-crested` (a loose
+blade, in a mystery with two knife clues, `knife-missing` and
+`pouch-empty`) and `torn-letter` (the shape of `summons-note`).
+`signet-ring` is 2.8 cm across, and `interiorProps` has no scale to make it
+visible from standing height. `bell-and-rope` and `coin-pouch` are swap
+candidates for `chapel-bell` (`bell: true`) and `pouch` (evidence), which
+is #811's pinned work. `cell-door-barred` belongs to the cell's `bars`,
+which are a built fixture that `layout` check 3c holds. `pulpit`
+(1.07 x 2.31 m) and `rood-cross` (1.82 m wide) fit no chapel wall: the
+chapel is a 2.8 m drum, and its sector boxes bulge inward at every
+diagonal. The seven quay pieces (`rowboat`, `quay-crane`, `net-rack`,
+`fish-crates`, `mooring-post`, `mooring-bollard`, `toll-house-sign`) are
+rank 9's, whose quay is not built and is seen by nobody but its roof ridge
+(#795 to #798). Anything outside both wards is paid for in each of them
+(#727). The 16 are deleted in the placing commit, because check 4's sweep
+cannot hold a file nothing references (#390). Git history keeps them, and
+so does Devon's `_source`. A later row restores one with `git checkout
+51735fa -- assets/props/<file>` in the commit that places it.
+
+**#834. No ceiling moves and no light is added.** Draws before and after:
+outer 993 to 1020 (+27), inner 643 to 702 (+59). Outer plus outside goes
+from 1124 to 1151 of 1200, inner from 774 to 833. Devon's lean was to
+spread into the inner ward, and 59 of the 86 draws are there. #816's
+projection for the band is restated from the measured number. Outer
+starts at 1151. Rank 1's crate adds 1, the quay about 30, 2e 5 and what is
+left of 2b's increment 1 about 5, for about 1192 of 1200. 2a no longer adds
+to the outer ward. If a measured sum crosses 1200, the answer is still
+#609's merge of a drum's sectors, not a raised number. Texture memory goes
+from 37.9 to 43.7 of 64 MB (#831), and `dist/` grows by about 2.5 MB of
+the 200 allowed (#499). The chandelier, the two sconces, the lantern and
+the brazier are placed cold. `test/budget.mjs` counts point lights by
+grepping for exactly one `new THREE.PointLight` in `scene-setup.js`, and
+the scene already carries three braziers against a total of 8. A lit
+chandelier is rank 11's fire, with its own argument.
