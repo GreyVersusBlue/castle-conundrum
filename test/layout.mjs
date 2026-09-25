@@ -161,11 +161,22 @@ console.log('\nthe pieces the player presses E at');
  * So: under every slab, within 0.05 m of its base and overlapping it in plan,
  * there is something whose top is there. Floor counts, stone counts and another
  * prop counts; the gaol roll is the first one whose support is a prop (#574).
+ *
+ * AND EVERY interiorProps ROW WITH A `base` (#832). Devon's props put twenty
+ * rows on a first floor, a top room, a roof and the chapel loft, and a `base`
+ * is the same kind of typed number a slab's is: a 4.3 where the floor is 4 is a
+ * bed floating 0.3 m over the royal apartments, in the right room and
+ * reachable. The rows are found by id in the config, so a row that loses its
+ * `base` drops out of this list rather than being guessed at; a `noCollide`
+ * row is hung on a wall by its `yOffset` and has nothing under it by design.
  */
-console.log('\nthe built slabs, and what each one rests on');
+console.log('\nthe built slabs and the props on an upper floor, and what each one rests on');
 {
-  const slabs = plan.pieces.filter(p => p.built === 'slab');
+  const based = new Set((config.interiorProps || []).filter(p => p.base && !p.noCollide).map(p => p.id));
+  const slabs = plan.pieces.filter(p => p.built === 'slab' || (p.kind === 'prop' && based.has(p.id)));
   if (!slabs.length) fail('the plan builds no slabs at all, so this check tests nothing');
+  const onFloor = slabs.filter(p => based.has(p.id)).length;
+  if (onFloor !== based.size) fail(`${based.size} interiorProps rows carry a base and ${onFloor} of them were found in the plan by id`);
   const overlapsXZ = (a, b) =>
     Math.min(a.max.x, b.max.x) - Math.max(a.min.x, b.min.x) > 0 &&
     Math.min(a.max.z, b.max.z) - Math.max(a.min.z, b.min.z) > 0;

@@ -2701,6 +2701,681 @@
       ],
       "rotationY": 90,
       "evidence": "ledger"
+    },
+    {
+      "id": "kitchen-hearth-crane",
+      "model": "assets/props/hearth-crane-cauldron.glb",
+      "tile": [
+        -5.8,
+        -1.6925
+      ],
+      "rotationY": 180
+    },
+    {
+      "id": "kitchen-firewood",
+      "model": "assets/props/firewood-stack.glb",
+      "tile": [
+        -6.15,
+        -1.7225
+      ]
+    },
+    {
+      "id": "kitchen-spit",
+      "model": "assets/props/spit-rotisserie.glb",
+      "tile": [
+        -4.25,
+        -1.66625
+      ],
+      "rotationY": 180
+    },
+    {
+      "id": "kitchen-butcher-block",
+      "model": "assets/props/butcher-block.glb",
+      "tile": [
+        -5.625,
+        -2.75
+      ],
+      "rotationY": 20
+    },
+    {
+      "id": "kitchen-herbs",
+      "model": "assets/props/herb-bundles.glb",
+      "tile": [
+        -5.25,
+        -2.25
+      ],
+      "yOffset": 3.27,
+      "noCollide": true
+    },
+    {
+      "id": "kitchen-sacks",
+      "model": "assets/props/sack-pile.glb",
+      "tile": [
+        -3.775,
+        -2.65
+      ],
+      "rotationY": -90
+    },
+    {
+      "id": "kitchen-bread-oven",
+      "model": "assets/props/bread-oven-door.glb",
+      "tile": [
+        -6.2975,
+        -2.575
+      ],
+      "rotationY": 90
+    },
+    {
+      "id": "hall-fireplace",
+      "model": "assets/props/stone-fireplace.glb",
+      "tile": [
+        -6.75,
+        1.795
+      ]
+    },
+    {
+      "id": "hall-high-chair",
+      "model": "assets/props/lords-high-chair.glb",
+      "tile": [
+        -2.25,
+        2.5
+      ],
+      "rotationY": -90,
+      "yOffset": 0.32
+    },
+    {
+      "id": "hall-goblet",
+      "model": "assets/props/goblet-poisoned.glb",
+      "tile": [
+        -4.91,
+        2.625
+      ],
+      "noCollide": true
+    },
+    {
+      "id": "hall-banner-a",
+      "model": "assets/props/heraldic-banner-a.glb",
+      "tile": [
+        -1.63625,
+        2.85
+      ],
+      "rotationY": -90,
+      "yOffset": 1.5,
+      "noCollide": true
+    },
+    {
+      "id": "dormitory-weapon-rack",
+      "model": "assets/props/weapon-rack.glb",
+      "tile": [
+        -3.665,
+        -2.75
+      ],
+      "rotationY": -90,
+      "base": 4
+    },
+    {
+      "id": "dormitory-armour-stand",
+      "model": "assets/props/armour-stand.glb",
+      "tile": [
+        -3.8,
+        -2
+      ],
+      "rotationY": -90,
+      "base": 4
+    },
+    {
+      "id": "dormitory-gaming-table",
+      "model": "assets/props/gaming-table.glb",
+      "tile": [
+        -5.375,
+        -2.75
+      ],
+      "base": 4
+    },
+    {
+      "id": "dormitory-watch-bill",
+      "model": "assets/props/watch-bill-board.glb",
+      "tile": [
+        -6.36125,
+        -2.875
+      ],
+      "rotationY": 90,
+      "base": 4,
+      "yOffset": 1.2,
+      "noCollide": true
+    },
+    {
+      "id": "dormitory-boot",
+      "model": "assets/props/muddy-boot.glb",
+      "tile": [
+        -4.875,
+        -1.75
+      ],
+      "rotationY": 30,
+      "base": 4
+    },
+    {
+      "id": "clerk-seal",
+      "model": "assets/props/wax-seal-stamp.glb",
+      "tile": [
+        -8.1,
+        -1.85
+      ],
+      "yOffset": 0.45,
+      "noCollide": true
+    },
+    {
+      "id": "larder-vial",
+      "model": "assets/props/vial-residue.glb",
+      "tile": [
+        -5.4,
+        -4.1
+      ],
+      "yOffset": 0.45,
+      "noCollide": true
+    },
+    {
+      "id": "larder-apples",
+      "model": "assets/props/apple-barrel.glb",
+      "tile": [
+        -5.4,
+        -4.375
+      ]
+    },
+    {
+      "id": "outer-well",
+      "model": "assets/props/covered-well.glb",
+      "tile": [
+        -4.25,
+        -0.5
+      ]
+    },
+    {
+      "id": "prison-roof-ballista",
+      "model": "assets/props/ballista.glb",
+      "tile": [
+        -5.05,
+        3.75
+      ],
+      "rotationY": 90,
+      "base": 12
+    },
+    {
+      "id": "kings-hall-trestle",
+      "model": "assets/props/trestle-table-set.glb",
+      "tile": [
+        3.375,
+        -3.1
+      ]
+    },
+    {
+      "id": "kings-hall-boar",
+      "model": "assets/props/roasted-boar-platter.glb",
+      "tile": [
+        3.3,
+        -3.1
+      ],
+      "yOffset": -0.22,
+      "noCollide": true
+    },
+    {
+      "id": "kings-hall-banner-b",
+      "model": "assets/props/heraldic-banner-b.glb",
+      "tile": [
+        1.375,
+        -3.48875
+      ],
+      "yOffset": 1.5,
+      "noCollide": true
+    },
+    {
+      "id": "kings-hall-sconce-west",
+      "model": "assets/props/wall-torch-sconce.glb",
+      "tile": [
+        2,
+        -3.47125
+      ],
+      "yOffset": 1.6,
+      "noCollide": true
+    },
+    {
+      "id": "kings-hall-tapestry",
+      "model": "assets/props/tapestry-a.glb",
+      "tile": [
+        3.375,
+        -3.49
+      ],
+      "yOffset": 1.2,
+      "noCollide": true
+    },
+    {
+      "id": "kings-hall-sconce-east",
+      "model": "assets/props/wall-torch-sconce.glb",
+      "tile": [
+        4.25,
+        -3.47125
+      ],
+      "yOffset": 1.6,
+      "noCollide": true
+    },
+    {
+      "id": "kings-hall-banner-c",
+      "model": "assets/props/heraldic-banner-c.glb",
+      "tile": [
+        4.75,
+        -3.48875
+      ],
+      "yOffset": 1.5,
+      "noCollide": true
+    },
+    {
+      "id": "kings-hall-shield-a",
+      "model": "assets/props/crest-shield-a.glb",
+      "tile": [
+        1.125,
+        -1.63625
+      ],
+      "rotationY": 180,
+      "yOffset": 1.9,
+      "noCollide": true
+    },
+    {
+      "id": "kings-hall-shield-b",
+      "model": "assets/props/crest-shield-b.glb",
+      "tile": [
+        2,
+        -1.63625
+      ],
+      "rotationY": 180,
+      "yOffset": 1.9,
+      "noCollide": true
+    },
+    {
+      "id": "kings-hall-shield-c",
+      "model": "assets/props/crest-shield-c.glb",
+      "tile": [
+        3.75,
+        -1.63625
+      ],
+      "rotationY": 180,
+      "yOffset": 1.9,
+      "noCollide": true
+    },
+    {
+      "id": "kings-hall-shield-d",
+      "model": "assets/props/crest-shield-d.glb",
+      "tile": [
+        4.625,
+        -1.63625
+      ],
+      "rotationY": 180,
+      "yOffset": 1.9,
+      "noCollide": true
+    },
+    {
+      "id": "kings-hall-chandelier",
+      "model": "assets/props/chandelier-ring.glb",
+      "tile": [
+        3.375,
+        -2.5
+      ],
+      "yOffset": 2.45,
+      "noCollide": true
+    },
+    {
+      "id": "kings-hall-rug",
+      "model": "assets/props/rug-large.glb",
+      "tile": [
+        2.125,
+        -2.5
+      ],
+      "noCollide": true
+    },
+    {
+      "id": "kings-hall-cobweb",
+      "model": "assets/props/cobweb-corner-a.glb",
+      "tile": [
+        5.4225,
+        -1.69125
+      ],
+      "rotationY": 180,
+      "yOffset": 3.18,
+      "noCollide": true
+    },
+    {
+      "id": "royal-bed",
+      "model": "assets/props/four-poster-bed.glb",
+      "tile": [
+        2.375,
+        -3.20875
+      ],
+      "base": 4
+    },
+    {
+      "id": "royal-basin",
+      "model": "assets/props/wash-basin-stand.glb",
+      "tile": [
+        2.825,
+        -3.435
+      ],
+      "base": 4
+    },
+    {
+      "id": "royal-travel-chest",
+      "model": "assets/props/travel-chest.glb",
+      "tile": [
+        2.375,
+        -2.8
+      ],
+      "base": 4
+    },
+    {
+      "id": "royal-garderobe",
+      "model": "assets/props/garderobe-door.glb",
+      "tile": [
+        5.34625,
+        -2.25
+      ],
+      "rotationY": -90,
+      "base": 4
+    },
+    {
+      "id": "royal-chest",
+      "model": "assets/props/chest-iron-banded.glb",
+      "tile": [
+        3.75,
+        -3.415
+      ],
+      "base": 4
+    },
+    {
+      "id": "royal-tapestry",
+      "model": "assets/props/tapestry-b.glb",
+      "tile": [
+        2.375,
+        -1.635
+      ],
+      "rotationY": 180,
+      "base": 4,
+      "yOffset": 1,
+      "noCollide": true
+    },
+    {
+      "id": "royal-rug",
+      "model": "assets/props/rug-medium.glb",
+      "tile": [
+        2.375,
+        -2.475
+      ],
+      "base": 4,
+      "noCollide": true
+    },
+    {
+      "id": "royal-lantern",
+      "model": "assets/props/hanging-lantern.glb",
+      "tile": [
+        3.25,
+        -2.5
+      ],
+      "base": 4,
+      "yOffset": 2.6,
+      "noCollide": true
+    },
+    {
+      "id": "royal-cobweb",
+      "model": "assets/props/cobweb-corner-b.glb",
+      "tile": [
+        5.45375,
+        -1.66475
+      ],
+      "rotationY": 180,
+      "base": 4,
+      "yOffset": 3.43,
+      "noCollide": true
+    },
+    {
+      "id": "steward-bookshelf",
+      "model": "assets/props/bookshelf-wall.glb",
+      "tile": [
+        2.31875,
+        2.625
+      ],
+      "rotationY": -90
+    },
+    {
+      "id": "steward-lectern",
+      "model": "assets/props/lectern-slanted.glb",
+      "tile": [
+        0.5725,
+        2.5
+      ],
+      "rotationY": 90
+    },
+    {
+      "id": "steward-book-press",
+      "model": "assets/props/book-press.glb",
+      "tile": [
+        1.875,
+        3.4475
+      ],
+      "rotationY": 180
+    },
+    {
+      "id": "steward-desk",
+      "model": "assets/props/writing-desk-locked.glb",
+      "tile": [
+        1.25,
+        3.41625
+      ],
+      "rotationY": 180
+    },
+    {
+      "id": "steward-ledger",
+      "model": "assets/props/ledger.glb",
+      "tile": [
+        1.2625,
+        3.425
+      ],
+      "rotationY": 180,
+      "yOffset": -0.17,
+      "noCollide": true
+    },
+    {
+      "id": "steward-inkwell",
+      "model": "assets/props/inkwell-quill-cup.glb",
+      "tile": [
+        1.17,
+        3.4375
+      ],
+      "rotationY": 180,
+      "yOffset": -0.17,
+      "noCollide": true
+    },
+    {
+      "id": "steward-candlestick",
+      "model": "assets/props/candlestick-brass-bent.glb",
+      "tile": [
+        1.335,
+        3.4375
+      ],
+      "yOffset": -0.17,
+      "noCollide": true
+    },
+    {
+      "id": "steward-strongbox",
+      "model": "assets/props/strongbox.glb",
+      "tile": [
+        2.3,
+        1.75
+      ],
+      "rotationY": -90
+    },
+    {
+      "id": "steward-tapestry",
+      "model": "assets/props/tapestry-c.glb",
+      "tile": [
+        0.51,
+        2.125
+      ],
+      "rotationY": 90,
+      "yOffset": 1,
+      "noCollide": true
+    },
+    {
+      "id": "steward-rug",
+      "model": "assets/props/rug-small.glb",
+      "tile": [
+        1.5,
+        2.7
+      ],
+      "noCollide": true
+    },
+    {
+      "id": "steward-manuscripts",
+      "model": "assets/props/manuscript-stack.glb",
+      "tile": [
+        2.3,
+        2.1
+      ],
+      "rotationY": -90
+    },
+    {
+      "id": "porter-keys",
+      "model": "assets/props/key-ring.glb",
+      "tile": [
+        0.4,
+        -3.65
+      ],
+      "yOffset": 0.79,
+      "noCollide": true
+    },
+    {
+      "id": "kings-tower-bookcase",
+      "model": "assets/props/secret-bookcase.glb",
+      "tile": [
+        6,
+        -4.5
+      ],
+      "base": 4
+    },
+    {
+      "id": "kings-tower-sconce",
+      "model": "assets/props/secret-turning-sconce.glb",
+      "tile": [
+        6.25,
+        -4.55
+      ],
+      "base": 4,
+      "yOffset": 1.5,
+      "noCollide": true
+    },
+    {
+      "id": "kings-hall-window",
+      "model": "assets/props/stained-glass-window.glb",
+      "tile": [
+        2.5,
+        -1.6725
+      ],
+      "rotationY": 180,
+      "yOffset": 1.2,
+      "noCollide": true
+    },
+    {
+      "id": "chapel-censer",
+      "model": "assets/props/censer-hanging.glb",
+      "tile": [
+        5.775,
+        3.9
+      ],
+      "yOffset": 2.4,
+      "noCollide": true
+    },
+    {
+      "id": "chapel-loft-altar",
+      "model": "assets/props/altar.glb",
+      "tile": [
+        6.075,
+        3.51625
+      ],
+      "base": 8
+    },
+    {
+      "id": "chapel-loft-font",
+      "model": "assets/props/stone-font.glb",
+      "tile": [
+        6.325,
+        3.775
+      ],
+      "base": 8
+    },
+    {
+      "id": "chapel-loft-pew",
+      "model": "assets/props/pew-section.glb",
+      "tile": [
+        6.0125,
+        3.805
+      ],
+      "rotationY": 180,
+      "base": 8
+    },
+    {
+      "id": "garden-raised-bed",
+      "model": "assets/props/raised-bed.glb",
+      "tile": [
+        3.5,
+        2.875
+      ]
+    },
+    {
+      "id": "garden-bucket",
+      "model": "assets/props/well-bucket.glb",
+      "tile": [
+        3.825,
+        2.9
+      ]
+    },
+    {
+      "id": "garden-scarecrow",
+      "model": "assets/props/scarecrow.glb",
+      "tile": [
+        4.2,
+        2.8
+      ]
+    },
+    {
+      "id": "garden-beehive",
+      "model": "assets/props/beehive-skep.glb",
+      "tile": [
+        5.44375,
+        2
+      ],
+      "rotationY": -90
+    },
+    {
+      "id": "garden-sundial",
+      "model": "assets/props/sundial.glb",
+      "tile": [
+        3.125,
+        2
+      ]
+    },
+    {
+      "id": "garden-shears",
+      "model": "assets/props/garden-shears.glb",
+      "tile": [
+        3.5,
+        2.675
+      ],
+      "rotationY": 15,
+      "noCollide": true
+    },
+    {
+      "id": "kings-hall-brazier",
+      "model": "assets/props/brazier.glb",
+      "tile": [
+        4.375,
+        -2.8
+      ]
     }
   ],
   "braziers": [

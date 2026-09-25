@@ -59,7 +59,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as THREE from 'three';
 import { partsOf, readGLTF } from './gltf.mjs';
-import { makePlan, tileToWorld } from '../src/castle-plan.js';
+import { makePlan, tileToWorld, propPath } from '../src/castle-plan.js';
 import { buildPiece, carriesOwnWorldPosition } from '../src/castle-builder.js';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -521,7 +521,7 @@ console.log('\ntexture memory, from the image headers');
     ...(config.stairs ? [[config.kenneyBase + config.stairs.model, 'the tower stairs']] : []),
     ...config.gates.map((g) => [config.kenneyBase + g.archModel, `${g.id}'s archway`]),
     ...config.courtyard.placements.map((p) => [config.kenneyBase + p.model, p.id || p.model]),
-    ...config.interiorProps.map((p) => [config.polyhavenBase + p.model, p.model.split('/')[0]]),
+    ...config.interiorProps.map((p) => [propPath(config.polyhavenBase, p.model), p.id || p.model.split('/')[0]]),
     ...npcs.cast.map((n) => [n.modelPath, `${n.id || n.name}'s body`]),
     ...npcs.cast.filter((n) => n.heldProp).map((n) => [config.polyhavenBase + n.heldProp, `${n.id || n.name}'s heldProp`]),
     ...(populace.people ?? []).map((p) => [p.modelPath, `${p.id || p.name}'s body`]),

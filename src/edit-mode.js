@@ -63,6 +63,8 @@ const RULE = 'border:0; border-top:1px solid #6b5c44; margin:10px 0 8px;';
 const NEAR = 6;
 /** How long a Delete press stays armed, in ms. Two presses rather than one, because the other two verbs are additive and this one is not. */
 const ARMED_FOR = 4000;
+/** An interiorProps model that names its own file, and so must name its own id (#832). */
+const ownsId = (model) => typeof model === 'string' && model.startsWith('assets/');
 
 /**
  * @param scene      the THREE.Scene, for the marker
@@ -166,9 +168,12 @@ export function mountEditor({ scene, THREE, camera, nav, config, eyeHeight, rend
     const kind = arraySel.value;
     $('[data-model-row]').hidden = kind !== 'interiorProps';
     $('[data-material-row]').hidden = kind !== 'builtProps';
-    $('[data-id-row]').hidden = kind !== 'builtProps';
+    // A model under assets/ (Devon's props) has no Poly Haven folder to take an
+    // id from, and makePlan refuses one without an id (#812, #832).
+    $('[data-id-row]').hidden = !(kind === 'builtProps' || (kind === 'interiorProps' && ownsId($('[data-model]').value)));
   };
   arraySel.addEventListener('change', syncFields);
+  $('[data-model]').addEventListener('change', syncFields);
   syncFields();
 
   // The marker: a wire box on the last tile placed, so the thing that just went
@@ -209,7 +214,17 @@ export function mountEditor({ scene, THREE, camera, nav, config, eyeHeight, rend
     const kind = arraySel.value;
     const comment = $('[data-comment]').value.trim();
     const row = { tile: at.tile };
-    if (kind === 'interiorProps') row.model = $('[data-model]').value;
+    if (kind === 'interiorProps') {
+      row.model = $('[data-model]').value;
+      // Written here, not left for the page: a row without the id makePlan
+      // needs is a row that stops the next load (#812, #832).
+      if (ownsId(row.model)) {
+        row.id = $('[data-id]').value.trim();
+        if (!row.id) return say(`an interiorProps row from ${row.model} needs an id`, false);
+      }
+      // Above the ground, the row stands on the floor the editor is on (#832).
+      if (at.base > 0.01) row.base = at.base;
+    }
     if (kind === 'builtProps') {
       row.id = $('[data-id]').value.trim();
       row.material = $('[data-material]').value;

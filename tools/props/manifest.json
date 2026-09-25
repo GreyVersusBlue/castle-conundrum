@@ -1,0 +1,2249 @@
+[
+ {
+  "file": "candlestick-brass-bent.glb",
+  "title": "Candlestick, heavy brass, slightly bent",
+  "category": "Mystery and evidence",
+  "triangles": 288,
+  "size_m": [
+   0.139,
+   0.359,
+   0.143
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "candlestick-brass-bent",
+    "pivot_blender_xyz": [
+     0.0,
+     0.002,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": "The upper stem leans 10 degrees off true at the knop, where a blow would bend it."
+ },
+ {
+  "file": "goblet-poisoned.glb",
+  "title": "Poisoned goblet, pewter with dark dregs",
+  "category": "Mystery and evidence",
+  "triangles": 344,
+  "size_m": [
+   0.132,
+   0.16,
+   0.093
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "goblet-poisoned",
+    "pivot_blender_xyz": [
+     -0.022,
+     0.0,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "garden-shears.glb",
+  "title": "Garden shears, long-handled, rust-flecked",
+  "category": "Mystery and evidence",
+  "triangles": 216,
+  "size_m": [
+   0.773,
+   0.041,
+   0.199
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "garden-shears",
+    "pivot_blender_xyz": [
+     0.14,
+     0.0,
+     0.011
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "dagger-crested.glb",
+  "title": "Dagger with the family crest on the pommel",
+  "category": "Mystery and evidence",
+  "triangles": 224,
+  "size_m": [
+   0.383,
+   0.026,
+   0.122
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "dagger-crested",
+    "pivot_blender_xyz": [
+     -0.039,
+     0.0,
+     0.001
+    ],
+    "parent": null
+   }
+  ],
+  "notes": "The pommel face (up when the dagger lies flat) carries crest A, the red chevron house."
+ },
+ {
+  "file": "body-scene-set.glb",
+  "title": "Body scene: sprawled figure, spilled cup, tipped stool, ink pot",
+  "category": "Mystery and evidence",
+  "triangles": 556,
+  "size_m": [
+   2.16,
+   0.333,
+   1.658
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "figure",
+    "pivot_blender_xyz": [
+     -0.023,
+     -0.175,
+     0.001
+    ],
+    "parent": null
+   },
+   {
+    "name": "cup",
+    "pivot_blender_xyz": [
+     0.827,
+     -0.525,
+     0.041
+    ],
+    "parent": null
+   },
+   {
+    "name": "stool",
+    "pivot_blender_xyz": [
+     -0.373,
+     0.425,
+     0.171
+    ],
+    "parent": null
+   },
+   {
+    "name": "inkpot",
+    "pivot_blender_xyz": [
+     0.697,
+     0.245,
+     0.031
+    ],
+    "parent": null
+   }
+  ],
+  "notes": "Four nodes (figure, cup, stool, inkpot) so the scene can be dressed apart. The figure lies face down, head toward +X, and is clothed and bloodless on purpose."
+ },
+ {
+  "file": "torn-letter.glb",
+  "title": "Torn letter with a broken wax seal",
+  "category": "Mystery and evidence",
+  "triangles": 116,
+  "size_m": [
+   0.243,
+   0.007,
+   0.227
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "torn-letter",
+    "pivot_blender_xyz": [
+     0.008,
+     -0.033,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "signet-ring.glb",
+  "title": "Signet ring",
+  "category": "Mystery and evidence",
+  "triangles": 128,
+  "size_m": [
+   0.026,
+   0.028,
+   0.014
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "signet-ring",
+    "pivot_blender_xyz": [
+     0.0,
+     0.0,
+     -0.001
+    ],
+    "parent": null
+   }
+  ],
+  "notes": "Real size (2.8 cm). Scale it up if it has to read on a table at 2 m."
+ },
+ {
+  "file": "wax-seal-stamp.glb",
+  "title": "Wax seal stamp and a stick of sealing wax",
+  "category": "Mystery and evidence",
+  "triangles": 156,
+  "size_m": [
+   0.129,
+   0.108,
+   0.07
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "wax-seal-stamp",
+    "pivot_blender_xyz": [
+     -0.049,
+     -0.019,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "ledger.glb",
+  "title": "Ledger, thick with a ribbon bookmark",
+  "category": "Mystery and evidence",
+  "triangles": 144,
+  "size_m": [
+   0.345,
+   0.076,
+   0.3
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "ledger",
+    "pivot_blender_xyz": [
+     -0.003,
+     0.029,
+     0.001
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "muddy-boot.glb",
+  "title": "Muddy boot",
+  "category": "Mystery and evidence",
+  "triangles": 256,
+  "size_m": [
+   0.142,
+   0.335,
+   0.325
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "muddy-boot",
+    "pivot_blender_xyz": [
+     0.0,
+     0.048,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "key-ring.glb",
+  "title": "Key ring with four keys",
+  "category": "Mystery and evidence",
+  "triangles": 416,
+  "size_m": [
+   0.229,
+   0.007,
+   0.22
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "key-ring",
+    "pivot_blender_xyz": [
+     -0.067,
+     -0.053,
+     -0.001
+    ],
+    "parent": null
+   }
+  ],
+  "notes": "One of the four keys is brass and newer than the rest, which is the kind of wrong-place key the design brief asks for."
+ },
+ {
+  "file": "coin-pouch.glb",
+  "title": "Coin pouch",
+  "category": "Mystery and evidence",
+  "triangles": 366,
+  "size_m": [
+   0.192,
+   0.121,
+   0.136
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "coin-pouch",
+    "pivot_blender_xyz": [
+     -0.015,
+     0.018,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "vial-residue.glb",
+  "title": "Small vial with residue",
+  "category": "Mystery and evidence",
+  "triangles": 148,
+  "size_m": [
+   0.028,
+   0.085,
+   0.03
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "vial-residue",
+    "pivot_blender_xyz": [
+     0.0,
+     0.001,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": "Opaque greenish glass with a dark band around the base; the atlas has no transparency on purpose."
+ },
+ {
+  "file": "strongbox.glb",
+  "title": "Strongbox, iron-banded with a lock",
+  "category": "Mystery and evidence",
+  "triangles": 216,
+  "size_m": [
+   0.441,
+   0.28,
+   0.306
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "strongbox",
+    "pivot_blender_xyz": [
+     0.0,
+     0.003,
+     0.005
+    ],
+    "parent": null
+   },
+   {
+    "name": "lid",
+    "pivot_blender_xyz": [
+     0.0,
+     0.143,
+     0.205
+    ],
+    "parent": "strongbox"
+   }
+  ],
+  "notes": "The lid is its own node, hinged along the back top edge."
+ },
+ {
+  "file": "chest-iron-banded.glb",
+  "title": "Chest, iron-banded with a hasp lock",
+  "category": "Mystery and evidence",
+  "triangles": 276,
+  "size_m": [
+   1.03,
+   0.645,
+   0.585
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "chest",
+    "pivot_blender_xyz": [
+     0.0,
+     0.002,
+     0.0
+    ],
+    "parent": null
+   },
+   {
+    "name": "lid",
+    "pivot_blender_xyz": [
+     0.0,
+     0.278,
+     0.52
+    ],
+    "parent": "chest"
+   }
+  ],
+  "notes": "The lid is its own node, hinged along the back top edge."
+ },
+ {
+  "file": "writing-desk-locked.glb",
+  "title": "Writing desk with a locked drawer",
+  "category": "Mystery and evidence",
+  "triangles": 252,
+  "size_m": [
+   0.92,
+   0.93,
+   0.57
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "desk",
+    "pivot_blender_xyz": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "parent": null
+   },
+   {
+    "name": "drawer",
+    "pivot_blender_xyz": [
+     0.0,
+     -0.245,
+     0.66
+    ],
+    "parent": "desk"
+   }
+  ],
+  "notes": "The drawer is its own node and slides along -Z in glTF. It has a keyhole and no pull, which is the point."
+ },
+ {
+  "file": "cell-door-barred.glb",
+  "title": "Barred cell door with stone frame",
+  "category": "Mystery and evidence",
+  "triangles": 288,
+  "size_m": [
+   1.4,
+   2.25,
+   0.3
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "frame",
+    "pivot_blender_xyz": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "parent": null
+   },
+   {
+    "name": "door",
+    "pivot_blender_xyz": [
+     -0.44,
+     0.0,
+     0.0
+    ],
+    "parent": "frame"
+   }
+  ],
+  "notes": "The door leaf is its own node, hinged on the left edge (-X). The opening is 0.9 x 2.0 m."
+ },
+ {
+  "file": "lectern-slanted.glb",
+  "title": "Slanted lectern with an open book",
+  "category": "Scriptorium",
+  "triangles": 192,
+  "size_m": [
+   0.66,
+   1.317,
+   0.485
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "lectern-slanted",
+    "pivot_blender_xyz": [
+     0.0,
+     0.018,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "inkwell-quill-cup.glb",
+  "title": "Inkwell and quill cup",
+  "category": "Scriptorium",
+  "triangles": 260,
+  "size_m": [
+   0.193,
+   0.257,
+   0.096
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "inkwell-quill-cup",
+    "pivot_blender_xyz": [
+     -0.058,
+     -0.004,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "manuscript-stack.glb",
+  "title": "Manuscript stack, loose leaves and tied quires",
+  "category": "Scriptorium",
+  "triangles": 120,
+  "size_m": [
+   0.538,
+   0.16,
+   0.335
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "manuscript-stack",
+    "pivot_blender_xyz": [
+     -0.097,
+     0.014,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "book-press.glb",
+  "title": "Book press",
+  "category": "Scriptorium",
+  "triangles": 232,
+  "size_m": [
+   0.6,
+   0.672,
+   0.32
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "book-press",
+    "pivot_blender_xyz": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "bookshelf-wall.glb",
+  "title": "Bookshelf, wall unit with mixed spines",
+  "category": "Scriptorium",
+  "triangles": 672,
+  "size_m": [
+   1.24,
+   2.05,
+   0.39
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "bookshelf-wall",
+    "pivot_blender_xyz": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "altar.glb",
+  "title": "Altar with cloth and a small cross",
+  "category": "Chapel",
+  "triangles": 312,
+  "size_m": [
+   1.8,
+   1.55,
+   0.928
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "altar",
+    "pivot_blender_xyz": [
+     0.0,
+     0.004,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "pulpit.glb",
+  "title": "Pulpit with steps",
+  "category": "Chapel",
+  "triangles": 350,
+  "size_m": [
+   1.07,
+   1.904,
+   2.311
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "pulpit",
+    "pivot_blender_xyz": [
+     -0.0,
+     -0.516,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "pew-section.glb",
+  "title": "Pew, modular 1.5 m section",
+  "category": "Chapel",
+  "triangles": 116,
+  "size_m": [
+   1.49,
+   1.0,
+   0.45
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "pew-section",
+    "pivot_blender_xyz": [
+     0.0,
+     -0.005,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": "The end panels sit inside the 1.5 m, so sections line up end to end with a double panel at each joint. Sitting side faces -Y (front, +Z in glTF)."
+ },
+ {
+  "file": "censer-hanging.glb",
+  "title": "Hanging censer",
+  "category": "Chapel",
+  "triangles": 334,
+  "size_m": [
+   0.161,
+   1.128,
+   0.157
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "censer",
+    "pivot_blender_xyz": [
+     -0.002,
+     0.0,
+     1.1
+    ],
+    "parent": null
+   }
+  ],
+  "notes": "Pivot at the top hook (1.1 m above the base), so it can swing."
+ },
+ {
+  "file": "stone-font.glb",
+  "title": "Stone font with water",
+  "category": "Chapel",
+  "triangles": 188,
+  "size_m": [
+   0.813,
+   0.96,
+   0.847
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "stone-font",
+    "pivot_blender_xyz": [
+     0.0,
+     0.017,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "rood-cross.glb",
+  "title": "Rood cross, large, for a wall",
+  "category": "Chapel",
+  "triangles": 96,
+  "size_m": [
+   1.823,
+   2.761,
+   0.205
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "rood-cross",
+    "pivot_blender_xyz": [
+     0.0,
+     -0.027,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": "Plain cross with gilded terminals and no corpus. Back at -Z; hang it with its base on a beam or corbel."
+ },
+ {
+  "file": "stained-glass-window.glb",
+  "title": "Stained-glass lancet window",
+  "category": "Chapel",
+  "triangles": 176,
+  "size_m": [
+   1.2,
+   2.169,
+   0.36
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "stained-glass-window",
+    "pivot_blender_xyz": [
+     0.0,
+     0.03,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": "Opaque coloured panes; light it from behind with a coloured point light or an emissive tweak in three.js if it should glow."
+ },
+ {
+  "file": "hearth-crane-cauldron.glb",
+  "title": "Hearth crane with a cauldron",
+  "category": "Kitchen",
+  "triangles": 394,
+  "size_m": [
+   0.981,
+   1.2,
+   0.52
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "crane",
+    "pivot_blender_xyz": [
+     -0.461,
+     -0.0,
+     0.0
+    ],
+    "parent": null
+   },
+   {
+    "name": "cauldron",
+    "pivot_blender_xyz": [
+     0.24,
+     -0.0,
+     0.9
+    ],
+    "parent": "crane"
+   }
+  ],
+  "notes": "The crane swings on its post (node pivot at the post); the cauldron hangs from the hook as a child node."
+ },
+ {
+  "file": "spit-rotisserie.glb",
+  "title": "Spit with firedogs and a crank",
+  "category": "Kitchen",
+  "triangles": 308,
+  "size_m": [
+   1.6,
+   0.717,
+   0.307
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "firedogs",
+    "pivot_blender_xyz": [
+     -0.05,
+     0.0,
+     0.0
+    ],
+    "parent": null
+   },
+   {
+    "name": "spit",
+    "pivot_blender_xyz": [
+     -0.05,
+     0.0,
+     0.6
+    ],
+    "parent": "firedogs"
+   }
+  ],
+  "notes": "The spit (rod, crank and roast) is its own node turning about the rod axis."
+ },
+ {
+  "file": "butcher-block.glb",
+  "title": "Butcher block with a cleaver",
+  "category": "Kitchen",
+  "triangles": 160,
+  "size_m": [
+   0.62,
+   0.944,
+   0.62
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "butcher-block",
+    "pivot_blender_xyz": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": "The cleaver is sunk into the block top. The stains are old and dark, not fresh."
+ },
+ {
+  "file": "herb-bundles.glb",
+  "title": "Hanging herb bundles on a rail",
+  "category": "Kitchen",
+  "triangles": 588,
+  "size_m": [
+   1.24,
+   0.51,
+   0.108
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "herb-bundles",
+    "pivot_blender_xyz": [
+     0.0,
+     0.0,
+     -0.59
+    ],
+    "parent": null
+   }
+  ],
+  "notes": "Hangs from a ceiling beam: the rail brackets are at the top. Base is the lowest bundle tip."
+ },
+ {
+  "file": "bread-oven-door.glb",
+  "title": "Bread oven door in a stone face",
+  "category": "Kitchen",
+  "triangles": 152,
+  "size_m": [
+   1.36,
+   1.16,
+   0.6
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "oven",
+    "pivot_blender_xyz": [
+     0.0,
+     0.03,
+     0.0
+    ],
+    "parent": null
+   },
+   {
+    "name": "door",
+    "pivot_blender_xyz": [
+     -0.28,
+     -0.24,
+     0.45
+    ],
+    "parent": "oven"
+   }
+  ],
+  "notes": "A stone oven face with its iron door as a child node, hinged on the left. Put the face flush with a wall."
+ },
+ {
+  "file": "sack-pile.glb",
+  "title": "Sack pile, grain and flour",
+  "category": "Kitchen",
+  "triangles": 464,
+  "size_m": [
+   1.148,
+   0.734,
+   0.896
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "sack-pile",
+    "pivot_blender_xyz": [
+     -0.022,
+     -0.075,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": "The two cream sacks are flour; a little has spilled at the front."
+ },
+ {
+  "file": "well-bucket.glb",
+  "title": "Well bucket",
+  "category": "Kitchen",
+  "triangles": 230,
+  "size_m": [
+   0.307,
+   0.6,
+   0.303
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "well-bucket",
+    "pivot_blender_xyz": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "trestle-table-set.glb",
+  "title": "Trestle table set with plates, cups and bread",
+  "category": "Great Hall",
+  "triangles": 1072,
+  "size_m": [
+   2.4,
+   0.98,
+   0.8
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "table",
+    "pivot_blender_xyz": [
+     0.0,
+     0.0,
+     0.01
+    ],
+    "parent": null
+   },
+   {
+    "name": "setting",
+    "pivot_blender_xyz": [
+     0.0,
+     0.0,
+     0.01
+    ],
+    "parent": "table"
+   }
+  ],
+  "notes": "The table and the table setting are separate nodes, so the table can be used bare."
+ },
+ {
+  "file": "roasted-boar-platter.glb",
+  "title": "Roasted boar on a platter",
+  "category": "Great Hall",
+  "triangles": 612,
+  "size_m": [
+   1.12,
+   0.305,
+   0.773
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "roasted-boar-platter",
+    "pivot_blender_xyz": [
+     0.0,
+     0.0,
+     0.005
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "lords-high-chair.glb",
+  "title": "Lord's high chair, carved",
+  "category": "Great Hall",
+  "triangles": 240,
+  "size_m": [
+   0.827,
+   2.26,
+   0.63
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "lords-high-chair",
+    "pivot_blender_xyz": [
+     0.0,
+     0.005,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": "The back carries a small shield with crest A (the red chevron house)."
+ },
+ {
+  "file": "heraldic-banner-a.glb",
+  "title": "Heraldic banner A (red, gold chevron)",
+  "category": "Great Hall",
+  "triangles": 280,
+  "size_m": [
+   1.28,
+   1.93,
+   0.07
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "heraldic-banner-a",
+    "pivot_blender_xyz": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "heraldic-banner-b.glb",
+  "title": "Heraldic banner B (blue, white tower)",
+  "category": "Great Hall",
+  "triangles": 280,
+  "size_m": [
+   1.28,
+   1.93,
+   0.07
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "heraldic-banner-b",
+    "pivot_blender_xyz": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "heraldic-banner-c.glb",
+  "title": "Heraldic banner C (green, gold key)",
+  "category": "Great Hall",
+  "triangles": 280,
+  "size_m": [
+   1.28,
+   1.93,
+   0.07
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "heraldic-banner-c",
+    "pivot_blender_xyz": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "chandelier-ring.glb",
+  "title": "Chandelier ring, iron wheel with candles",
+  "category": "Great Hall",
+  "triangles": 760,
+  "size_m": [
+   1.235,
+   1.285,
+   1.235
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "chandelier",
+    "pivot_blender_xyz": [
+     0.0,
+     0.0,
+     1.25
+    ],
+    "parent": null
+   }
+  ],
+  "notes": "Pivot at the top ring, 1.3 m above the bottom of the hub. Add a point light at the ring height in three.js."
+ },
+ {
+  "file": "stone-fireplace.glb",
+  "title": "Stone fireplace: carved mantel, chimney breast, log stack",
+  "category": "Great Hall",
+  "triangles": 396,
+  "size_m": [
+   2.4,
+   4.2,
+   1.3
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "stone-fireplace",
+    "pivot_blender_xyz": [
+     0.0,
+     0.2,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": "Firebox opening is 1.4 m wide and 1.3 m tall; back it against a wall. Add the fire as a light and a flame sprite in three.js."
+ },
+ {
+  "file": "four-poster-bed.glb",
+  "title": "Four-poster bed with curtains",
+  "category": "Bedchamber",
+  "triangles": 372,
+  "size_m": [
+   1.73,
+   2.44,
+   2.225
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "four-poster-bed",
+    "pivot_blender_xyz": [
+     0.0,
+     0.002,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": "Foot of the bed faces +Z. The curtains are gathered at the posts, so a player can see and walk to the pillow."
+ },
+ {
+  "file": "wash-basin-stand.glb",
+  "title": "Wash basin and stand",
+  "category": "Bedchamber",
+  "triangles": 442,
+  "size_m": [
+   0.44,
+   0.851,
+   0.417
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "wash-basin-stand",
+    "pivot_blender_xyz": [
+     -0.029,
+     -0.009,
+     0.001
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "garderobe-door.glb",
+  "title": "Garderobe door and privy alcove",
+  "category": "Bedchamber",
+  "triangles": 236,
+  "size_m": [
+   1.2,
+   2.3,
+   1.171
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "alcove",
+    "pivot_blender_xyz": [
+     0.0,
+     0.036,
+     0.0
+    ],
+    "parent": null
+   },
+   {
+    "name": "door",
+    "pivot_blender_xyz": [
+     -0.36,
+     -0.494,
+     0.0
+    ],
+    "parent": "alcove"
+   }
+  ],
+  "notes": "The alcove is 1.2 m wide and 1.1 m deep; the door leaf is its own node hinged on the left."
+ },
+ {
+  "file": "travel-chest.glb",
+  "title": "Travel chest with a domed lid",
+  "category": "Bedchamber",
+  "triangles": 192,
+  "size_m": [
+   0.872,
+   0.572,
+   0.501
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "chest",
+    "pivot_blender_xyz": [
+     0.0,
+     0.003,
+     0.003
+    ],
+    "parent": null
+   },
+   {
+    "name": "lid",
+    "pivot_blender_xyz": [
+     0.0,
+     0.243,
+     0.403
+    ],
+    "parent": "chest"
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "weapon-rack.glb",
+  "title": "Weapon rack with spears and swords",
+  "category": "Guardroom and armoury",
+  "triangles": 444,
+  "size_m": [
+   1.48,
+   2.37,
+   0.3
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "weapon-rack",
+    "pivot_blender_xyz": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "armour-stand.glb",
+  "title": "Armour stand with a mail shirt and helm",
+  "category": "Guardroom and armoury",
+  "triangles": 360,
+  "size_m": [
+   0.748,
+   1.77,
+   0.5
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "armour-stand",
+    "pivot_blender_xyz": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "gaming-table.glb",
+  "title": "Gaming table with dice, tankards and a stool",
+  "category": "Guardroom and armoury",
+  "triangles": 476,
+  "size_m": [
+   0.84,
+   0.864,
+   1.117
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "table",
+    "pivot_blender_xyz": [
+     0.0,
+     0.238,
+     0.004
+    ],
+    "parent": null
+   },
+   {
+    "name": "stool",
+    "pivot_blender_xyz": [
+     0.1,
+     -0.362,
+     0.004
+    ],
+    "parent": "table"
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "brazier.glb",
+  "title": "Brazier, iron with coals",
+  "category": "Guardroom and armoury",
+  "triangles": 280,
+  "size_m": [
+   0.673,
+   0.846,
+   0.665
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "brazier",
+    "pivot_blender_xyz": [
+     -0.004,
+     0.0,
+     0.006
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "watch-bill-board.glb",
+  "title": "Watch-bill board with pinned sheets",
+  "category": "Guardroom and armoury",
+  "triangles": 216,
+  "size_m": [
+   1.06,
+   0.75,
+   0.088
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "watch-bill-board",
+    "pivot_blender_xyz": [
+     0.0,
+     0.029,
+     0.025
+    ],
+    "parent": null
+   }
+  ],
+  "notes": "Wall-mounted; back at -Z. The sheets are the watch bill, a duty roster and two notes."
+ },
+ {
+  "file": "sundial.glb",
+  "title": "Sundial on a stone pedestal",
+  "category": "Garden",
+  "triangles": 176,
+  "size_m": [
+   0.554,
+   1.072,
+   0.554
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "sundial",
+    "pivot_blender_xyz": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "covered-well.glb",
+  "title": "Covered well with a winch and bucket",
+  "category": "Garden",
+  "triangles": 510,
+  "size_m": [
+   2.05,
+   2.47,
+   1.851
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "well",
+    "pivot_blender_xyz": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "parent": null
+   },
+   {
+    "name": "bucket",
+    "pivot_blender_xyz": [
+     0.0,
+     -0.09,
+     1.0
+    ],
+    "parent": "well"
+   }
+  ],
+  "notes": "The bucket is a child node hanging on the rope, so it can be raised or lowered."
+ },
+ {
+  "file": "beehive-skep.glb",
+  "title": "Beehive skep on a bench",
+  "category": "Garden",
+  "triangles": 272,
+  "size_m": [
+   0.838,
+   0.865,
+   0.435
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "beehive-skep",
+    "pivot_blender_xyz": [
+     -0.019,
+     -0.017,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "raised-bed.glb",
+  "title": "Raised bed with herbs and vegetables",
+  "category": "Garden",
+  "triangles": 454,
+  "size_m": [
+   1.8,
+   0.5,
+   0.9
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "raised-bed",
+    "pivot_blender_xyz": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "scarecrow.glb",
+  "title": "Scarecrow",
+  "category": "Garden",
+  "triangles": 320,
+  "size_m": [
+   1.263,
+   1.91,
+   0.48
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "scarecrow",
+    "pivot_blender_xyz": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "bell-and-rope.glb",
+  "title": "Tower bell in its frame, with rope and swinging clapper",
+  "category": "Large set pieces",
+  "triangles": 528,
+  "size_m": [
+   1.8,
+   2.478,
+   1.35
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "frame",
+    "pivot_blender_xyz": [
+     0.0,
+     0.075,
+     0.0
+    ],
+    "parent": null
+   },
+   {
+    "name": "bell",
+    "pivot_blender_xyz": [
+     0.0,
+     0.075,
+     2.15
+    ],
+    "parent": "frame"
+   },
+   {
+    "name": "clapper",
+    "pivot_blender_xyz": [
+     0.0,
+     0.075,
+     1.98
+    ],
+    "parent": "bell"
+   }
+  ],
+  "notes": "Three nodes: frame, bell (headstock, bell, stay and rope; swings about the axle, along X) and clapper (child of the bell, swings about its own pivot inside the crown)."
+ },
+ {
+  "file": "ballista.glb",
+  "title": "Ballista for the wall walk",
+  "category": "Large set pieces",
+  "triangles": 456,
+  "size_m": [
+   1.951,
+   1.1,
+   2.51
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "base",
+    "pivot_blender_xyz": [
+     0.0,
+     0.115,
+     0.0
+    ],
+    "parent": null
+   },
+   {
+    "name": "ballista",
+    "pivot_blender_xyz": [
+     0.0,
+     0.115,
+     0.28
+    ],
+    "parent": "base"
+   }
+  ],
+  "notes": "Shoots toward +Z in glTF. The upper part is its own node and turns on the base; the pivot is at the top of the turntable."
+ },
+ {
+  "file": "rowboat.glb",
+  "title": "Rowboat with oars",
+  "category": "Large set pieces",
+  "triangles": 324,
+  "size_m": [
+   1.44,
+   0.802,
+   3.323
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "rowboat",
+    "pivot_blender_xyz": [
+     0.0,
+     0.062,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": "About 3.3 m long, bow toward +Z in glTF, sitting on its keel. Float it by lowering it about 0.25 m into the water plane."
+ },
+ {
+  "file": "quay-crane.glb",
+  "title": "Quay crane, timber jib with windlass",
+  "category": "Large set pieces",
+  "triangles": 482,
+  "size_m": [
+   2.4,
+   4.85,
+   4.648
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "base",
+    "pivot_blender_xyz": [
+     0.0,
+     1.124,
+     0.0
+    ],
+    "parent": null
+   },
+   {
+    "name": "jib",
+    "pivot_blender_xyz": [
+     0.0,
+     1.124,
+     0.0
+    ],
+    "parent": "base"
+   }
+  ],
+  "notes": "The jib (mast, boom, ropes, windlass) is its own node and slews about the mast; the hook hangs 1.4 m up, 3.3 m out toward +Z."
+ },
+ {
+  "file": "net-rack.glb",
+  "title": "Net drying rack with floats",
+  "category": "Large set pieces",
+  "triangles": 306,
+  "size_m": [
+   2.7,
+   1.92,
+   1.077
+  ],
+  "cutout": true,
+  "nodes": [
+   {
+    "name": "net-rack",
+    "pivot_blender_xyz": [
+     0.0,
+     0.0,
+     0.01
+    ],
+    "parent": null
+   }
+  ],
+  "notes": "Alpha-masked and double-sided so the nets read as mesh from both sides."
+ },
+ {
+  "file": "fish-crates.glb",
+  "title": "Fish crates, one stacked",
+  "category": "Large set pieces",
+  "triangles": 192,
+  "size_m": [
+   1.336,
+   0.46,
+   0.767
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "fish-crates",
+    "pivot_blender_xyz": [
+     -0.353,
+     0.027,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "mooring-post.glb",
+  "title": "Mooring post, timber with rope",
+  "category": "Large set pieces",
+  "triangles": 224,
+  "size_m": [
+   1.34,
+   1.0,
+   0.89
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "mooring-post",
+    "pivot_blender_xyz": [
+     -0.493,
+     0.267,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "mooring-bollard.glb",
+  "title": "Mooring bollard, iron on a stone block",
+  "category": "Large set pieces",
+  "triangles": 156,
+  "size_m": [
+   0.5,
+   0.7,
+   0.5
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "mooring-bollard",
+    "pivot_blender_xyz": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "toll-house-sign.glb",
+  "title": "Toll-house sign on a post",
+  "category": "Large set pieces",
+  "triangles": 104,
+  "size_m": [
+   1.2,
+   2.7,
+   0.4
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "post",
+    "pivot_blender_xyz": [
+     -0.4,
+     0.0,
+     0.0
+    ],
+    "parent": null
+   },
+   {
+    "name": "sign",
+    "pivot_blender_xyz": [
+     0.3,
+     0.0,
+     2.43
+    ],
+    "parent": "post"
+   }
+  ],
+  "notes": "The board shows a coin over a river, no words, so it reads without a language. It hangs from its own node and can sway."
+ },
+ {
+  "file": "secret-bookcase.glb",
+  "title": "Secret mechanism: swinging bookcase over a passage",
+  "category": "Large set pieces",
+  "triangles": 636,
+  "size_m": [
+   1.3,
+   2.2,
+   0.85
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "frame",
+    "pivot_blender_xyz": [
+     0.0,
+     -0.25,
+     0.0
+    ],
+    "parent": null
+   },
+   {
+    "name": "bookcase",
+    "pivot_blender_xyz": [
+     -0.55,
+     -0.425,
+     0.0
+    ],
+    "parent": "frame"
+   }
+  ],
+  "notes": "The bookcase is its own node hinged at its front-left corner; swing it about Y to open. The frame behind is a dark passage mouth. One brass-tipped book on the middle shelf is the trigger."
+ },
+ {
+  "file": "secret-turning-sconce.glb",
+  "title": "Secret mechanism: turning wall sconce",
+  "category": "Large set pieces",
+  "triangles": 112,
+  "size_m": [
+   0.14,
+   0.32,
+   0.266
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "plate",
+    "pivot_blender_xyz": [
+     0.0,
+     0.118,
+     0.0
+    ],
+    "parent": null
+   },
+   {
+    "name": "sconce",
+    "pivot_blender_xyz": [
+     0.0,
+     0.088,
+     0.14
+    ],
+    "parent": "plate"
+   }
+  ],
+  "notes": "The sconce turns on its node (axis along Z in glTF, out of the wall); a quarter turn is the tell."
+ },
+ {
+  "file": "wall-torch-sconce.glb",
+  "title": "Wall torch sconce with torch",
+  "category": "Dressing kit",
+  "triangles": 144,
+  "size_m": [
+   0.1,
+   0.7,
+   0.213
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "sconce",
+    "pivot_blender_xyz": [
+     0.0,
+     0.092,
+     0.0
+    ],
+    "parent": null
+   },
+   {
+    "name": "torch",
+    "pivot_blender_xyz": [
+     0.0,
+     0.092,
+     0.0
+    ],
+    "parent": "sconce"
+   }
+  ],
+  "notes": "Torch is a separate node so it can be taken; put a point light at the flame."
+ },
+ {
+  "file": "tapestry-a.glb",
+  "title": "Tapestry A (tree of life)",
+  "category": "Dressing kit",
+  "triangles": 312,
+  "size_m": [
+   1.933,
+   2.035,
+   0.061
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "tapestry-a",
+    "pivot_blender_xyz": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "tapestry-b.glb",
+  "title": "Tapestry B (gold lattice)",
+  "category": "Dressing kit",
+  "triangles": 312,
+  "size_m": [
+   1.933,
+   2.035,
+   0.061
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "tapestry-b",
+    "pivot_blender_xyz": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "tapestry-c.glb",
+  "title": "Tapestry C (white stag)",
+  "category": "Dressing kit",
+  "triangles": 312,
+  "size_m": [
+   1.933,
+   2.035,
+   0.061
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "tapestry-c",
+    "pivot_blender_xyz": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "rug-small.glb",
+  "title": "Rug, small (0.9 x 0.6 m)",
+  "category": "Dressing kit",
+  "triangles": 30,
+  "size_m": [
+   0.9,
+   0.013,
+   0.6
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "rug-small",
+    "pivot_blender_xyz": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "rug-medium.glb",
+  "title": "Rug, medium (1.6 x 1.0 m)",
+  "category": "Dressing kit",
+  "triangles": 30,
+  "size_m": [
+   1.6,
+   0.013,
+   1.0
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "rug-medium",
+    "pivot_blender_xyz": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "rug-large.glb",
+  "title": "Rug, large (2.8 x 1.8 m)",
+  "category": "Dressing kit",
+  "triangles": 30,
+  "size_m": [
+   2.8,
+   0.013,
+   1.8
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "rug-large",
+    "pivot_blender_xyz": [
+     0.0,
+     0.0,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "apple-barrel.glb",
+  "title": "Apple barrel",
+  "category": "Dressing kit",
+  "triangles": 552,
+  "size_m": [
+   0.664,
+   0.755,
+   0.6
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "apple-barrel",
+    "pivot_blender_xyz": [
+     -0.047,
+     0.0,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "firewood-stack.glb",
+  "title": "Firewood stack",
+  "category": "Dressing kit",
+  "triangles": 348,
+  "size_m": [
+   1.17,
+   0.481,
+   0.763
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "firewood-stack",
+    "pivot_blender_xyz": [
+     -0.12,
+     0.037,
+     0.0
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "cobweb-corner-a.glb",
+  "title": "Cobweb for an upper corner, large",
+  "category": "Dressing kit",
+  "triangles": 3,
+  "size_m": [
+   0.6,
+   0.6,
+   0.51
+  ],
+  "cutout": true,
+  "nodes": [
+   {
+    "name": "cobweb-corner-a",
+    "pivot_blender_xyz": [
+     -0.3,
+     0.255,
+     0.6
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "cobweb-corner-b.glb",
+  "title": "Cobweb for an upper corner, small",
+  "category": "Dressing kit",
+  "triangles": 3,
+  "size_m": [
+   0.35,
+   0.35,
+   0.298
+  ],
+  "cutout": true,
+  "nodes": [
+   {
+    "name": "cobweb-corner-b",
+    "pivot_blender_xyz": [
+     -0.175,
+     0.149,
+     0.35
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "hanging-lantern.glb",
+  "title": "Hanging lantern with horn panes",
+  "category": "Dressing kit",
+  "triangles": 184,
+  "size_m": [
+   0.156,
+   0.979,
+   0.156
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "lantern",
+    "pivot_blender_xyz": [
+     0.0,
+     0.0,
+     0.95
+    ],
+    "parent": null
+   }
+  ],
+  "notes": "Pivot at the top ring so it can sway. The horn panes are warm and opaque; put a point light inside."
+ },
+ {
+  "file": "crest-shield-a.glb",
+  "title": "Crest shield A (red, gold chevron)",
+  "category": "Dressing kit",
+  "triangles": 76,
+  "size_m": [
+   0.54,
+   0.636,
+   0.07
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "crest-shield-a",
+    "pivot_blender_xyz": [
+     0.0,
+     -0.005,
+     0.02
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "crest-shield-b.glb",
+  "title": "Crest shield B (blue, white tower)",
+  "category": "Dressing kit",
+  "triangles": 76,
+  "size_m": [
+   0.54,
+   0.636,
+   0.07
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "crest-shield-b",
+    "pivot_blender_xyz": [
+     0.0,
+     -0.005,
+     0.02
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "crest-shield-c.glb",
+  "title": "Crest shield C (green, gold key)",
+  "category": "Dressing kit",
+  "triangles": 76,
+  "size_m": [
+   0.54,
+   0.636,
+   0.07
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "crest-shield-c",
+    "pivot_blender_xyz": [
+     0.0,
+     -0.005,
+     0.02
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ },
+ {
+  "file": "crest-shield-d.glb",
+  "title": "Crest shield D (quarterly black and gold)",
+  "category": "Dressing kit",
+  "triangles": 76,
+  "size_m": [
+   0.54,
+   0.636,
+   0.07
+  ],
+  "cutout": false,
+  "nodes": [
+   {
+    "name": "crest-shield-d",
+    "pivot_blender_xyz": [
+     0.0,
+     -0.005,
+     0.02
+    ],
+    "parent": null
+   }
+  ],
+  "notes": ""
+ }
+]

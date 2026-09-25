@@ -10090,3 +10090,11 @@ the brazier are placed cold. `test/budget.mjs` counts point lights by
 grepping for exactly one `new THREE.PointLight` in `scene-setup.js`, and
 the scene already carries three braziers against a total of 8. A lit
 chandelier is rank 11's fire, with its own argument.
+
+Measured by `builder` in the placing commit, the lines `test/budget.mjs`
+prints. Before the rows: outer 993 / 1200 draw calls, inner 643 / 1200,
+outside 131 counted in each ward (outer 1124 / 1200, inner 774 / 1200),
+texture 37.9 / 64 MB from 70 textures. After the 70 rows, the encode and
+the 16 deletions: outer 1020 / 1200, inner 702 / 1200, outside 131 (outer
+1151 / 1200, inner 833 / 1200), texture 43.7 / 64 MB from 139 textures.
+The prototype's numbers held to the draw.
