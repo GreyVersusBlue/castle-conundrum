@@ -5,11 +5,12 @@ what can be done *when*, on *what machine*, and *next to what else*.**
 `SPECS.md` is the spec behind every row and `HISTORY.md` is the only record.
 Nothing here is a locked decision except the lane rule (#600 to #602).
 
-Fourteen open rows: 1, 2a, 2b, 2c, 2d, 2e, 2f, 3, 4, 6, 7, 9, 11, 13. Rows are
-named by title as well as by rank (#522), because a rank is a priority and
-gets reused across different rows over time, never renumbered mid-table
-(#619, #491). Devon re-ranked on 2026-09-25, reopening ranks 1 and 2 for the
-Blender rows and retiring rank 10 into 2c and 2d (#801, #802, #807).
+Thirteen open rows: 1, 2a, 2b, 2c, 2d, 2e, 3, 4, 6, 7, 9, 11, 13, and ~~2f~~
+and ~~2g~~ shipped (#830 to #838). Rows are named by title as well as by rank
+(#522), because a rank is a priority and gets reused across different rows
+over time, never renumbered mid-table (#619, #491). Devon re-ranked on
+2026-09-25, reopening ranks 1 and 2 for the Blender rows and retiring rank 10
+into 2c and 2d (#801, #802, #807).
 
 ---
 
@@ -70,8 +71,13 @@ uncompressed body is the one asset nothing else on this list would catch.
 
 ### Container, start to finish
 
-**2f** Devon's props, placed (#830 to #834), on any machine with `ktx` on
-PATH, since `npm run assets:encode` refuses to start without it; no Blender.
+~~**2f** Devon's props, placed (#830 to #834), on any machine with `ktx` on
+PATH, since `npm run assets:encode` refuses to start without it; no
+Blender.~~ **Shipped** in `01ee3dd`.
+
+~~**2g** the chapel nave (#835 to #838), on the same terms, after 2f: two
+files restored from `51735fa` and encoded, a room, two walls and 14 rows.~~
+**Shipped** in `41457cb`.
 
 **6** populace, **9** the town (its next increment, the quay and the river,
 is specced as two `builder` jobs, #795 to #798), **2c**'s increment 2 (the
@@ -89,7 +95,7 @@ lane at a time** (#602). The lanes are named by the file, not by the theme.
 | Lane | The file that decides it | Rows in it |
 | --- | --- | --- |
 | **A** | `src/save.js` — the version number and `migrate` | none held; next bump is to 7 |
-| **B** | `data/scene-config.json`, and `test/tools.mjs`'s byte-exactness rail | 1, 2a, 2b, 2e, 2f, 4, 9, 13 (increments 2 and 3 only) |
+| **B** | `data/scene-config.json`, and `test/tools.mjs`'s byte-exactness rail | 1, 2a, 2b, 2e, 4, 9, 13 (increments 2 and 3 only) |
 | **C** | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | 2c, 2d, 6 |
 | **D** | `src/main.js`'s player rig and spawn | 6, 11 |
 | **E** | `src/audio.js` and `data/sounds.json` | 7 |
@@ -126,19 +132,25 @@ when you branched.** Two rows once picked the same next-free band from a
 stale view and had to renumber twice. A decision number is picked at the end
 of a row, not the start.
 
-**Startable together right now:** 2f (lane B), and after it rank 1 on
-Devon's machine (lanes F and B),
-plus rank 3 on the same machine in a worktree, plus rank 6 or rank 11 (not
-both, lane D), plus rank 7 in lane E alongside any of them.
+**Startable together right now:** ~~2f (lane B), then 2g (lanes B and
+E)~~, both shipped; rank 1 on Devon's machine (lanes F and B), plus rank 3
+on the same machine in a worktree, plus rank 6 or rank 11 (not both, lane
+D), plus rank 7 in lane E alongside any of them.
 
 ---
 
 ## 3. The order
 
-**2f, Devon's props, runs before everything else in the band**, on his
+~~**2f, Devon's props, runs before everything else in the band**, on his
 request of 2026-09-25 (#830). It needs no Blender and has no gate. It holds
 lane B, so rank 1 follows it rather than running beside it, and rank 1 then
-finds `propPath` already shipped. **Blender runs first, on Devon's own instruction** (#801). The order inside
+finds `propPath` already shipped.~~ **Shipped** (#830 to #834), in
+`01ee3dd`. ~~**2g, the chapel nave, follows 2f and precedes rank 1** on the
+same terms: it is Devon's answer to 2f's pulpit and rood, lane B, no
+Blender, no gate (#835). It also holds lane E for one line of
+`data/sounds.json`, so it does not run beside rank 7 if rank 7 writes that
+file.~~ **Shipped** (#835 to #838), in `41457cb`. **Blender runs first, on
+Devon's own instruction** (#801). The order inside
 the band is 1 the pipeline, then 2a evidence props (lowest risk: it proves
 the encode, manifest and budget paths on real content), then 2b the
 interiors kit, then 2c the shared rig, then 2d the animals, then 2e the

@@ -269,7 +269,7 @@ for (const name of ['GothicCabinet_01', 'GothicCommode_01']) {
  * from the tower next door, along the walk and down. Check 6 is the one that
  * fires, by flooding with one tower's stairs at a time.
  *
- * TWO OF THE FOURTEEN GROUND ROOMS ARE NOT WALKED INTO, AND THAT IS THE POINT
+ * TWO OF THE FIFTEEN GROUND ROOMS ARE NOT WALKED INTO, AND THAT IS THE POINT
  * OF THEM. The muniment room is behind the word-lock until the riddle is
  * answered, and the cell is behind bars that never open. Both are asserted
  * below rather than excused: the muniment room opens when the lock does and not
@@ -280,7 +280,7 @@ console.log(`\nwalkability: ${walk.cells.length} cells on a ${GRID} m grid from 
 if (!walk.started) fail(`the spawn at ${config.spawn.position} stands on nothing the grid calls a floor`);
 else pass(`the spawn at [${config.spawn.position.join(', ')}] stands on a floor`);
 const rooms = walk.rooms();
-/* A ROOM PAST THE CURTAIN IS NOT ONE OF THE FOURTEEN. Rank 4c builds Thomas
+/* A ROOM PAST THE CURTAIN IS NOT ONE OF THE FIFTEEN. Rank 4c builds Thomas
  * Wykes's yard on the ground rank 5 laid west of the barbican, and rank 9's
  * town goes beside it. Such a room declares `ward: "outside"` instead of outer
  * or inner, and that declaration is what lifts it out of this check, out of
@@ -289,7 +289,7 @@ const rooms = walk.rooms();
  * things it cannot move: the curtain box and the flood fill. */
 const isOutside = (r) => r.ward === 'outside';
 const groundRooms = rooms.filter(r => r.level === 0 && !isOutside(r));
-if (groundRooms.length !== 14) fail(`${groundRooms.length} ground rooms in the plan, not the fourteen PLAN.md's room table names`);
+if (groundRooms.length !== 15) fail(`${groundRooms.length} ground rooms in the plan, not the fourteen PLAN.md's room table names and the chapel nave (#836)`);
 // The levels the castle has, read off the plan (#523), not a literal `[1, 2]`
 // that a fourth storey has to be remembered into.
 const upper = plan.levels.filter(l => l > 0);
@@ -477,7 +477,7 @@ console.log('\nthe day overlay, undone');
  * id, and `data/scene-config.json` builds rooms by id. Nothing made those two
  * lists agree until now; Phase 1 wrote room ids that the scene config did not
  * have (`clerk-office` against `clerks-office`, `lodge` against `masons-lodge`)
- * and nothing said so. They are the same fourteen ids at level 0 and this is
+ * and nothing said so. They are the same fifteen ids at level 0 and this is
  * what keeps them that way. The four level-0 rooms mystery.json marks `open`
  * are the two wards, the barbican and the garden — ground, not rooms with
  * doors.
@@ -637,7 +637,7 @@ console.log('\noutside ground, past the base');
 /* -------------- 4c (rank 4c): a room outside the curtain reaches nobody ---
  * Thomas Wykes's yard is the first thing built on that ground, and rank 9's
  * town is next. A room out there declares `ward: "outside"`, and that one word
- * excuses it from three checks above: it is not one of the fourteen ground
+ * excuses it from three checks above: it is not one of the fifteen ground
  * rooms, the mystery has never heard of it, and it wants no ambient bed
  * because nobody will ever be standing in it to hear one.
  *

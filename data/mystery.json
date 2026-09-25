@@ -39,7 +39,7 @@
       "level": 0,
       "name": "West barbican",
       "open": true,
-      "comment": "`open` marks the four places on this list that are open ground rather than a room with a door: the two wards, the barbican the player spawns in and the walled garden. The other fourteen at level 0 are scene-config.json's `rooms`, one for one, and test/layout.mjs fails if the two lists ever stop matching."
+      "comment": "`open` marks the four places on this list that are open ground rather than a room with a door: the two wards, the barbican the player spawns in and the walled garden. The other fifteen at level 0 are scene-config.json's `rooms`, one for one, and test/layout.mjs fails if the two lists ever stop matching."
     },
     {
       "id": "outer-ward",
@@ -156,6 +156,13 @@
       "ward": "inner",
       "level": 0,
       "name": "Chapel, Chapel Tower"
+    },
+    {
+      "id": "chapel-nave",
+      "code": "NV",
+      "ward": "inner",
+      "level": 0,
+      "name": "Chapel nave"
     },
     {
       "id": "garden",

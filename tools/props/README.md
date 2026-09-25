@@ -6,7 +6,7 @@ Every file shares one 128 px pixel-art atlas embedded in the glb, one material p
 Wall-hung pieces (banners, tapestries, shields, sconces, the rood, the window, cobwebs, the watch bill) have their back at -Z, so place them half their depth off the wall.
 Cobwebs and the net rack use an alpha-masked, double-sided material.
 The files live in `assets/props/`; the scripts and `manifest.json` beside this README are byte-for-byte copies from Devon's `_source/` folder, kept for the record (#830). Nothing in this repo runs them and nothing checks them.
-The 69 placed files are meshopt-encoded by `npm run assets:encode`, and their atlas stays a 128 px PNG by the encoder's size rule (#831). The 16 that are not placed, and their rows and notes in this README, left the tree in the commit that placed the rest and are in `51735fa`: `git checkout 51735fa -- assets/props/<file>` in the commit that places one (#833).
+The 71 placed files are meshopt-encoded by `npm run assets:encode`, and their atlas stays a 128 px PNG by the encoder's size rule (#831). The 14 that are not placed, and their rows and notes in this README, left the tree in the commit that placed the rest and are in `51735fa`: `git checkout 51735fa -- assets/props/<file>` in the commit that places one (#833).
 `build.py` still names `assets\props` as its output. A re-export writes raw files over the encoded ones, which `test/assets.mjs` checks 5 and 9 then fail until `npm run assets:encode` runs again.
 
 | File | Prop | Tris | W x H x D (m) | Moving nodes |
@@ -28,9 +28,11 @@ The 69 placed files are meshopt-encoded by `npm run assets:encode`, and their at
 | `book-press.glb` | Book press | 232 | 0.60 x 0.67 x 0.32 |  |
 | `bookshelf-wall.glb` | Bookshelf, wall unit with mixed spines | 672 | 1.24 x 2.05 x 0.39 |  |
 | `altar.glb` | Altar with cloth and a small cross | 312 | 1.80 x 1.55 x 0.93 |  |
+| `pulpit.glb` | Pulpit with steps | 350 | 1.07 x 1.90 x 2.31 |  |
 | `pew-section.glb` | Pew, modular 1.5 m section | 116 | 1.49 x 1.00 x 0.45 |  |
 | `censer-hanging.glb` | Hanging censer | 334 | 0.16 x 1.13 x 0.16 | censer |
 | `stone-font.glb` | Stone font with water | 188 | 0.81 x 0.96 x 0.85 |  |
+| `rood-cross.glb` | Rood cross, large, for a wall | 96 | 1.82 x 2.76 x 0.20 |  |
 | `stained-glass-window.glb` | Stained-glass lancet window | 176 | 1.20 x 2.17 x 0.36 |  |
 | `hearth-crane-cauldron.glb` | Hearth crane with a cauldron | 394 | 0.98 x 1.20 x 0.52 | crane, cauldron |
 | `spit-rotisserie.glb` | Spit with firedogs and a crank | 308 | 1.60 x 0.72 x 0.31 | firedogs, spit |
@@ -91,6 +93,7 @@ The 69 placed files are meshopt-encoded by `npm run assets:encode`, and their at
 - `writing-desk-locked.glb`: The drawer is its own node and slides along -Z in glTF. It has a keyhole and no pull, which is the point.
 - `pew-section.glb`: The end panels sit inside the 1.5 m, so sections line up end to end with a double panel at each joint. Sitting side faces -Y (front, +Z in glTF).
 - `censer-hanging.glb`: Pivot at the top hook (1.1 m above the base), so it can swing.
+- `rood-cross.glb`: Plain cross with gilded terminals and no corpus. Back at -Z; hang it with its base on a beam or corbel.
 - `stained-glass-window.glb`: Opaque coloured panes; light it from behind with a coloured point light or an emissive tweak in three.js if it should glow.
 - `hearth-crane-cauldron.glb`: The crane swings on its post (node pivot at the post); the cauldron hangs from the hook as a child node.
 - `spit-rotisserie.glb`: The spit (rod, crank and roast) is its own node turning about the rod axis.

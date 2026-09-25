@@ -10075,6 +10075,12 @@ cannot hold a file nothing references (#390). Git history keeps them, and
 so does Devon's `_source`. A later row restores one with `git checkout
 51735fa -- assets/props/<file>` in the commit that places it.
 
+*Confirmed and amended, 2026-09-25.* Devon agreed with refusing
+`body-scene-set`, `dagger-crested` and `torn-letter`; that refusal now
+stands as his and not only as a recommendation. He answered the pulpit and
+the rood the other way: he wants a chapel room for them, which is #835. The
+loft chapel and the garden this entry placed move under #837.
+
 **#834. No ceiling moves and no light is added.** Draws before and after:
 outer 993 to 1020 (+27), inner 643 to 702 (+59). Outer plus outside goes
 from 1124 to 1151 of 1200, inner from 774 to 833. Devon's lean was to
@@ -10098,3 +10104,87 @@ texture 37.9 / 64 MB from 70 textures. After the 70 rows, the encode and
 the 16 deletions: outer 1020 / 1200, inner 702 / 1200, outside 131 (outer
 1151 / 1200, inner 833 / 1200), texture 43.7 / 64 MB from 139 textures.
 The prototype's numbers held to the draw.
+
+---
+
+## Devon's props: the chapel nave, decided before anything is built (2026-09-25)
+
+**A spec, not a build.** Devon answered 2f's open questions the same day:
+the three clue-shaped files stay out (recorded under #833), the GPU look
+is his for later, and "yes" to a real chapel room for `pulpit` and
+`rood-cross`, which 2f refused because no wall of the Chapel Tower's drum
+is flat. `SPECS.md` gains "Devon's props: the chapel nave" as rank 2g, every
+open call recommended. Decisions #835 to #838, written as `architect`
+against `b41de72`, where #834 was the last. No code, asset or data file
+changed in this entry; the prototype that measured it was reverted.
+
+**Measured before anything was decided.** The pulpit is 1.07 x 1.90 x
+2.31 m, its steps behind it at -Z; the rood is 1.82 x 2.76 x 0.20 m, back
+at -Z, and README says to hang it "with its base on a beam or corbel". A
+prototype in the working tree added the room, two walls, the moved and new
+rows, the room's `mystery.json` and `sounds.json` lines and the literal 15.
+Before those last three it failed exactly three `layout` lines, each quoted
+in 2g's acceptance. With them, `layout`, `mystery`, `budget`, `map`,
+`tools`, `lore`, `quest`, `save`, `dialogue` and `overlays` were green,
+`assets` green after `npm run assets:encode` on the two restored files, and
+`plan-vs-scene.mjs` diffed 427 pieces at 0.01 m and stood the camera in all
+44 rooms.
+
+**#835. The pulpit and the rood get a new ground room, `chapel-nave`, on
+tiles x 3..4, z 2..3 of the inner ward (x 10..18, z 6..14).** It stands
+east of the Steward's chamber and west of the chapel's paved vestibule,
+shares the one's east wall and the south curtain, and does not open into
+the Chapel Tower. Six other places were measured and refused, and 2g's
+section lists them: the drum's facets are 0.73 m wide; the three inner-ward
+rectangles hold stations and 2f's dressing; the Clerk's chamber is in the
+outer ward 44 m away; a nave round the vestibule walls in the chapel's only
+door; a nave one tile deep leaves a 0.58 m aisle for a 0.9 m body; a first
+floor needs a slab and a new drum door. **This amends #582**, which refused
+a latrine turret and a well chamber because more empty rooms was the
+castle's problem. That reason does not reach a room built to hold
+furniture Devon asked to see, which opens with eight things in it. #814's
+"a room is a layout decision and not a kit's" stands unamended: this
+layout decision is Devon's.
+
+**#836. `data/mystery.json` gains the room in its `rooms` list and nowhere
+else, and `layout.mjs`'s ground-room literal goes from 14 to 15.** Check 3c
+fails on a non-drum room the mystery has never heard of, in both
+directions, and check 3d2 takes the map's name from the same list, so a
+named ground room without a `mystery.json` row is not possible and was not
+wanted. The row is `chapel-nave`, code NV, "Chapel nave". No clue,
+evidence, station, press, lock or schedule moves, the `chapel` room stays
+the drum under the same name, and both sermons stay in it, because moving
+one moves the chaplain's station (#814). The literal is an assertion
+amended in place, not moved: it was typed from `PLAN.md`'s fourteen-room
+table, 3c already holds the ids, and the number stays in `layout.mjs` as
+the second independent count (#529). `data/sounds.json` gives the room the
+`chapel` bed, since check 13 fails on a room with none.
+
+**#837. The loft chapel moves down, the garden moves west, and the
+Steward's chamber's east wall rises to 8 m.** 2f put the altar, the font
+and a pew in the Chapel Tower's top room because no room held a chapel
+(#833); they move into the nave as `nave-altar`, `nave-font` and
+`nave-pew-1`, and the loft is empty again, as #582 counted it. Three more
+pews, the pulpit on the north wall facing west, and the rood on the east
+wall over the altar. The six garden rows stood on the nave's ground and go
+against the Steward's chamber's north wall, between his door and the
+nave's. The strip east of the nave was the other choice and is refused:
+it is the chapel's only approach, 3.5 m wide. `steward-chamber-east`, the
+nave's west wall, goes from 4 to 8 m, because the rood over a 1.55 m altar
+tops out at 4.46 m.
+
+**#838. No ceiling moves.** Measured in the prototype: the outer ward 1020,
+and 1151 with the outside, unchanged; the inner ward 702 to 714 (+12: two
+walls and a floor 7, the pulpit, the rood and three pews 5; the moved rows
+stay in the inner ward), 833 to 845 with the outside, of 1200. Texture
+43.7 to 43.8 of 64 MB, 139 to 141 textures. #816's projection for the
+outer ward is untouched.
+
+Measured by `builder` in the build commit, `41457cb`, the lines
+`test/budget.mjs` prints: outer ward 1020 / 1200 draw calls, unchanged
+(1151 / 1200 with the outside, also unchanged); inner ward 702 to 714 /
+1200 (833 to 845 / 1200 with the outside); texture 43.7 to 43.8 of 64 MB,
+from 139 to 141 textures; the outside bucket stays 131. The prototype's
+numbers held to the draw. `npm test` ran 15 of 15, `plan-vs-scene.mjs`
+diffed 427 pieces at 0.01 m, and the second `npm run assets:encode` run
+printed "nothing to do" for both `pulpit.glb` and `rood-cross.glb`.
