@@ -854,7 +854,48 @@
         2.5,
         3
       ],
-      "height": 4,
+      "height": 8,
+      "thickness": 1,
+      "material": "medieval_blocks_02",
+      "repeatMetres": 1.5,
+      "interior": true,
+      "heightComment": "Raised from 4 to 8 when it became the chapel nave's west wall as well as the Steward's east one: the rood over the nave's altar tops out at 4.46 m (#837)."
+    },
+    {
+      "id": "chapel-nave-north",
+      "from": [
+        3,
+        1.5
+      ],
+      "to": [
+        4,
+        1.5
+      ],
+      "height": 8,
+      "thickness": 1,
+      "material": "medieval_blocks_02",
+      "repeatMetres": 1.5,
+      "interior": true,
+      "doorways": [
+        {
+          "at": 3,
+          "width": 2,
+          "height": 2.5
+        }
+      ],
+      "doorwaysComment": "The nave's one door, at its west end as a nave's door is, onto the inner ward and not into the Chapel Tower (#835)."
+    },
+    {
+      "id": "chapel-nave-east",
+      "from": [
+        4.5,
+        2
+      ],
+      "to": [
+        4.5,
+        3
+      ],
+      "height": 8,
       "thickness": 1,
       "material": "medieval_blocks_02",
       "repeatMetres": 1.5,
@@ -1634,7 +1675,7 @@
         ]
       },
       "floor": "old_planks_02",
-      "comment": "The fourteen ground rooms of WISHLIST.md's table, with mystery.json's ids: these are the same fourteen rooms the mystery puts people and evidence in, and test/layout.mjs holds the two lists to each other. A room is either `tiles` (a rectangle of whole tiles, walled by the runs above) or `drum` (a tower interior, whose bounds come from that drum's `interior.radius` rather than being typed again). `floor` names a material patch laid on the ground inside it; a room with no `floor` keeps whatever ground it stands on, which is pavers in the towers and grassy cobbles in the mason's lodge."
+      "comment": "The fifteen ground rooms: the fourteen of WISHLIST.md's table and the chapel nave (#836), with mystery.json's ids: these are the fifteen rooms mystery.json names at level 0 beside its four open places, and test/layout.mjs holds the two lists to each other. A room is either `tiles` (a rectangle of whole tiles, walled by the runs above) or `drum` (a tower interior, whose bounds come from that drum's `interior.radius` rather than being typed again). `floor` names a material patch laid on the ground inside it; a room with no `floor` keeps whatever ground it stands on, which is pavers in the towers and grassy cobbles in the mason's lodge."
     },
     {
       "id": "kitchen",
@@ -1771,6 +1812,23 @@
       "ward": "inner",
       "drum": "chapel-tower",
       "floor": "floor_tiles_02"
+    },
+    {
+      "id": "chapel-nave",
+      "level": 0,
+      "ward": "inner",
+      "tiles": {
+        "min": [
+          3,
+          2
+        ],
+        "max": [
+          4,
+          3
+        ]
+      },
+      "floor": "floor_tiles_02",
+      "comment": "NV. Built for the pulpit and the rood cross, which no facet of the Chapel Tower's drum is wide enough to hang or stand (#833, #835). Its west wall is steward-chamber-east and its south wall the curtain; its one door is at the west end of its north wall, and it does not open into the tower. The chapel's own floor. No clue, station or evidence is in it (#836)."
     },
     {
       "id": "clerk-chamber",
@@ -3291,80 +3349,78 @@
       "noCollide": true
     },
     {
-      "id": "chapel-loft-altar",
+      "id": "nave-altar",
       "model": "assets/props/altar.glb",
       "tile": [
-        6.075,
-        3.51625
+        4.2,
+        2.5625
       ],
-      "base": 8
+      "rotationY": -90
     },
     {
-      "id": "chapel-loft-font",
+      "id": "nave-font",
       "model": "assets/props/stone-font.glb",
       "tile": [
-        6.325,
-        3.775
-      ],
-      "base": 8
+        2.775,
+        3.3
+      ]
     },
     {
-      "id": "chapel-loft-pew",
+      "id": "nave-pew-1",
       "model": "assets/props/pew-section.glb",
       "tile": [
-        6.0125,
-        3.805
+        3.2,
+        2.15
       ],
-      "rotationY": 180,
-      "base": 8
+      "rotationY": 90
     },
     {
       "id": "garden-raised-bed",
       "model": "assets/props/raised-bed.glb",
       "tile": [
-        3.5,
-        2.875
+        2.125,
+        1.25
       ]
     },
     {
       "id": "garden-bucket",
       "model": "assets/props/well-bucket.glb",
       "tile": [
-        3.825,
-        2.9
+        2.425,
+        1.3
       ]
     },
     {
       "id": "garden-scarecrow",
       "model": "assets/props/scarecrow.glb",
       "tile": [
-        4.2,
-        2.8
+        2.125,
+        0.9625
       ]
     },
     {
       "id": "garden-beehive",
       "model": "assets/props/beehive-skep.glb",
       "tile": [
-        5.44375,
-        2
+        2.6,
+        1.31875
       ],
-      "rotationY": -90
+      "rotationY": 180
     },
     {
       "id": "garden-sundial",
       "model": "assets/props/sundial.glb",
       "tile": [
-        3.125,
-        2
+        1.875,
+        1
       ]
     },
     {
       "id": "garden-shears",
       "model": "assets/props/garden-shears.glb",
       "tile": [
-        3.5,
-        2.675
+        2.4,
+        1.1125
       ],
       "rotationY": 15,
       "noCollide": true
@@ -3376,6 +3432,53 @@
         4.375,
         -2.8
       ]
+    },
+    {
+      "id": "nave-pew-2",
+      "model": "assets/props/pew-section.glb",
+      "tile": [
+        3.5,
+        2.15
+      ],
+      "rotationY": 90
+    },
+    {
+      "id": "nave-pew-3",
+      "model": "assets/props/pew-section.glb",
+      "tile": [
+        3.2,
+        2.975
+      ],
+      "rotationY": 90
+    },
+    {
+      "id": "nave-pew-4",
+      "model": "assets/props/pew-section.glb",
+      "tile": [
+        3.5,
+        2.975
+      ],
+      "rotationY": 90
+    },
+    {
+      "id": "nave-pulpit",
+      "model": "assets/props/pulpit.glb",
+      "tile": [
+        3.875,
+        1.78375
+      ],
+      "rotationY": -90
+    },
+    {
+      "id": "nave-rood",
+      "model": "assets/props/rood-cross.glb",
+      "tile": [
+        4.349375,
+        2.5625
+      ],
+      "rotationY": -90,
+      "yOffset": 1.7,
+      "noCollide": true
     }
   ],
   "braziers": [
@@ -3759,5 +3862,5 @@
     }
   ],
   "drumsComment": "Eight drums. `interior.doors` is every opening in the ring: `base` is the opening's floor (0, 4 or 8, a level's height), `theta` its bearing in three's cylinder angle (0 is +z, south; 90 is +x, east), `arc` its width in degrees, and both have to land on the drum's own vertices. The level-0 door is the room's; the level-1 doors (three of them) lead to the chambers built over the rooms beside those towers; the level-2 doors are where the wall walk passes through the tower's top room, sixty degrees wide because a 2 m deck's cells cross the ring over about thirty degrees and the grid's sector boxes bulge past that. The Stockhouse Tower's west door at level 2 carries `bar`: it is the walk door the porter swears he bars every night, it ships open because he did not, and `bar.closed` is the one thing test/layout.mjs forces shut to prove the wards would separate if he had. `stairs` names the side of the tower the upper flight and its well go on, which is the outer side, away from where the walk crosses. `lowerFlight: false` on the two towers whose ground room is shut leaves them the upper flight only.",
-  "roomsComment": "Fourteen ground rooms (Phase 4), then the upper ones. A room is a rectangle of whole tiles, a tower interior (`drum`, and its disc is the drum's), or a `bounds` rectangle in world metres, which is how a stretch of decking is named. A room above the ground with a `floor` gets a slab from src/castle-plan.js: a rectangle cut back to any drum it runs into, or a disc with a well cut where a stair comes up through it. A room at level 3 in a drum is that drum's ROOF (#523): it is at the drum's own 12 m, its slab replaces the lid the drum used to draw there, the drum grows a third flight to reach it, and the crown built in #514 is its parapet. Four of the eight have one — the four with no turret, because a 2.5 m turret inside a 2.8 m ring leaves a 0.3 m ledge and a 0.45 m body cannot stand on it. Tower rooms above the ground that the mystery never names (nw-tower-1, sw-tower-2 and so on) are here so the suite can hold every tower's upper floors reachable from its own stairs; the four the mystery does name at level 1 and the four at level 2 have to match data/mystery.json by id, level and ward, and test/layout.mjs says so."
+  "roomsComment": "Fifteen ground rooms, Phase 4's fourteen and the chapel nave (#836), then the upper ones. A room is a rectangle of whole tiles, a tower interior (`drum`, and its disc is the drum's), or a `bounds` rectangle in world metres, which is how a stretch of decking is named. A room above the ground with a `floor` gets a slab from src/castle-plan.js: a rectangle cut back to any drum it runs into, or a disc with a well cut where a stair comes up through it. A room at level 3 in a drum is that drum's ROOF (#523): it is at the drum's own 12 m, its slab replaces the lid the drum used to draw there, the drum grows a third flight to reach it, and the crown built in #514 is its parapet. Four of the eight have one — the four with no turret, because a 2.5 m turret inside a 2.8 m ring leaves a 0.3 m ledge and a 0.45 m body cannot stand on it. Tower rooms above the ground that the mystery never names (nw-tower-1, sw-tower-2 and so on) are here so the suite can hold every tower's upper floors reachable from its own stairs; the four the mystery does name at level 1 and the four at level 2 have to match data/mystery.json by id, level and ward, and test/layout.mjs says so."
 }
