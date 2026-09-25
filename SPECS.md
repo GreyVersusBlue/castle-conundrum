@@ -9,8 +9,9 @@ decision. Every "recommendation" below is exactly that, and the session that
 ships the row is the one that records the call with a number.
 
 One section per row still open in `BACKLOG.md`'s ranked table: 1, 3, 4, 6, 7,
-9, 11, 13, and the rank 2 band (2a to 2f). 2f's section comes first
-because 2f runs first (#830). The red suite is closed; its section is a
+9, 11, 13, and the rank 2 band (2a to 2g). 2f's section comes first
+because 2f runs first (#830), and 2g's second because it finishes 2f's
+refusals on Devon's answer (#835). The red suite is closed; its section is a
 stub pointing at `HISTORY.md`. "Bodies" stays until 2c's and 2d's sections
 land, and is then deleted (#807).
 A shipped row's section is deleted, not struck through; `HISTORY.md` carries
@@ -301,7 +302,6 @@ All 16 are deleted in the placing commit (check 4) and restored from
 | `coin-pouch` | the swap for evidence `pouch` under #811 | 2a's conditional increment 3 |
 | `bell-and-rope` | the swap for `chapel-bell`, `bell: true` | a pinned swap, as #811 |
 | `cell-door-barred` | the cell's door is `bars`, a built fixture held by check 3c | 2b's cell |
-| `pulpit`, `rood-cross` | 2.31 m and 1.82 m of flat back; the chapel is a 2.8 m drum whose sector boxes bulge at every diagonal | Devon: a chapel room is a layout call |
 | `rowboat`, `quay-crane`, `net-rack`, `fish-crates`, `mooring-post`, `mooring-bollard`, `toll-house-sign` | the quay is unbuilt, and anything outside the wards is paid for in both (#727) | rank 9's quay |
 
 ### Acceptance
@@ -416,7 +416,249 @@ red from green (#34), after the rows, the encode and the deletions.
 - [ ] The boar on the trestle and the three things on the Steward's desk:
       sitting on the surface, or floating and sunk?
 - [ ] The chapel loft, and the ballista on the Prison Tower's roof, from the
-      walk.
+      walk. (The loft's three rows move to the chapel nave under 2g, #837;
+      the ballista line stands.)
+
+---
+
+## Devon's props: the chapel nave
+
+**Rank 2g. Size 1. Model Opus 5. Where: any machine with KTX-Software's
+`ktx` on PATH, for the encode of two files. No Blender and no GPU. Gate:
+none. Lanes B and E.** Devon, 2026-09-25, answering 2f's open question:
+yes, he wants a real chapel room for the pulpit and the rood cross. Both
+were refused in 2f because no wall of the Chapel Tower's 2.8 m drum is flat
+(#833), and left the tree in `01ee3dd`. Decided in `HISTORY.md` as #835 to
+#838 against `b41de72`; this section is the `builder` job those decisions
+leave, one increment, class S. Every number below was measured in a
+prototype in the working tree and the prototype was reverted.
+
+**The space.** A new ground room, `chapel-nave`, on tiles x 3..4, z 2..3 of
+the inner ward: world x 10..18, z 6..14, the ground east of the Steward's
+chamber and west of the chapel's paved vestibule (`chapel-vestibule`, x
+18..22, z 10..14). Inside the walls it is 7 m east to west and 7.5 m north
+to south. Its west wall is `steward-chamber-east`, its south wall is the
+south curtain, and it gains a north wall with a 2 m door and an east wall.
+The Chapel Tower's ring, its one door and the vestibule are untouched: the
+nave does not open into the tower (#835).
+
+**What was measured and refused** (#835):
+
+| Option | Why not |
+| --- | --- |
+| The chapel drum, any level | 24 facets 0.73 m wide; the rood is 1.82 m across and the pulpit 2.31 m deep (#833) |
+| The Steward's chamber, the King's Hall, the royal apartments | the three rectangles in the inner ward; each holds stations or evidence, and 2f dressed all three |
+| `clerk-chamber`, over the Clerk's office | outer ward, 44 m from the chapel, and the outer ward is 49 draws under its ceiling (#834) |
+| x 14..22, z 6..14 | walls in the vestibule and the chapel's only door, so every chapel station's route runs through a new room |
+| x 10..18, z 10..14, one tile deep, the garden left where it is | 7 x 3.5 m inside: the pulpit and one row of pews leave a 0.58 m aisle, and a body is 0.9 m (`BODY_RADIUS` 0.45) |
+| A first floor over the Steward's chamber | a slab and a new base-4 door in the Bakehouse Tower's ring, two pieces of access for a room nobody passes |
+
+### Scope (class S)
+
+- **`data/scene-config.json`**, by hand in the file's own CRLF and its
+  multi-line style, because `rooms` and `walls` are not placeable yet (rank
+  13's increment 2):
+  - `rooms`: after the `chapel` row, `{"id": "chapel-nave", "level": 0,
+    "ward": "inner", "tiles": {"min": [3, 2], "max": [4, 3]}, "floor":
+    "floor_tiles_02"}`, with a comment citing #835. The chapel's own floor.
+  - `walls`: after `steward-chamber-east`, `chapel-nave-north` from [3, 1.5]
+    to [4, 1.5] with `"doorways": [{"at": 3, "width": 2, "height": 2.5}]`,
+    and `chapel-nave-east` from [4.5, 2] to [4.5, 3]. Both `height` 8,
+    `thickness` 1, `material` `medieval_blocks_02`, `repeatMetres` 1.5,
+    `interior` true, which is `kings-hall-south`'s stone.
+  - `steward-chamber-east`: `height` 4 to 8. It is the nave's west wall
+    and the rood's top is at 4.46 m (#837).
+  - `roomsComment` and the `clerk-office` row's comment: "fourteen ground
+    rooms" becomes fifteen, naming the nave and #836.
+  - `interiorProps`, **rewritten in place** (same index, `replaceRow`'s
+    rule: every byte outside the row unchanged):
+
+    ```json
+    {"id":"nave-altar","model":"assets/props/altar.glb","tile":[4.2,2.5625],"rotationY":-90}
+    {"id":"nave-font","model":"assets/props/stone-font.glb","tile":[2.775,3.3]}
+    {"id":"nave-pew-1","model":"assets/props/pew-section.glb","tile":[3.2,2.15],"rotationY":90}
+    {"id":"garden-raised-bed","model":"assets/props/raised-bed.glb","tile":[2.125,1.25]}
+    {"id":"garden-bucket","model":"assets/props/well-bucket.glb","tile":[2.425,1.3]}
+    {"id":"garden-scarecrow","model":"assets/props/scarecrow.glb","tile":[2.125,0.9625]}
+    {"id":"garden-beehive","model":"assets/props/beehive-skep.glb","tile":[2.6,1.31875],"rotationY":180}
+    {"id":"garden-sundial","model":"assets/props/sundial.glb","tile":[1.875,1]}
+    {"id":"garden-shears","model":"assets/props/garden-shears.glb","tile":[2.4,1.1125],"rotationY":15,"noCollide":true}
+    ```
+
+    The first three replace `chapel-loft-altar`, `chapel-loft-font` and
+    `chapel-loft-pew`, which lose `base` 8 and their ids (#837). The six
+    garden rows keep their ids.
+  - `interiorProps`, **appended** through `insertRow`, in this order:
+
+    ```json
+    {"id":"nave-pew-2","model":"assets/props/pew-section.glb","tile":[3.5,2.15],"rotationY":90}
+    {"id":"nave-pew-3","model":"assets/props/pew-section.glb","tile":[3.2,2.975],"rotationY":90}
+    {"id":"nave-pew-4","model":"assets/props/pew-section.glb","tile":[3.5,2.975],"rotationY":90}
+    {"id":"nave-pulpit","model":"assets/props/pulpit.glb","tile":[3.875,1.78375],"rotationY":-90}
+    {"id":"nave-rood","model":"assets/props/rood-cross.glb","tile":[4.349375,2.5625],"rotationY":-90,"yOffset":1.7,"noCollide":true}
+    ```
+
+- **What the rows make, as measured boxes** (x, z, y in metres): the altar
+  16.34..17.26, 9.35..11.15, top 1.55, facing west, its back 0.24 m off the
+  east wall. The rood 17.30..17.50, 9.34..11.16, 1.70..4.46, hung on the east
+  wall's face at 17.5 and centred over the altar. Its footprint misses the
+  altar's by 0.04 m, so it stands on the floor plus `yOffset` rather than
+  stacking on the altar's top: an altar moved east by more than that lifts
+  the rood 1.55 m, and no suite would say so. The pulpit 14.34..16.66,
+  6.60..7.67, top 1.90, on the north wall, facing west over the pews, its
+  steps rising from the east. Four pews facing east in two blocks, x
+  12.57..13.03 and 13.77..14.23, z 7.85..9.35 and 11.15..12.65, with a 1.8 m
+  aisle between. The font 10.69..11.51, 12.78..13.62, in the south-west
+  corner by the west end. The door is x 11..13 on the north wall, at the
+  west end, as a nave's door is.
+- **The garden** (#837) stands against the Steward's chamber's north wall,
+  between his door (x 5..7) and the nave's (x 11..13): bed 7.60..9.40,
+  4.55..5.45; scarecrow in front of it; sundial west of it; bucket, then
+  beehive (backed onto the wall, `rotationY` 180), east of it; shears on the
+  ground by the bucket. Every box is inside x 7.2..10.9, z 3.6..5.5.
+- **`data/mystery.json`**, `rooms` only: after `chapel`, `{"id":
+  "chapel-nave", "code": "NV", "ward": "inner", "level": 0, "name": "Chapel
+  nave"}`, and the `west-barbican` row's comment says fifteen, not
+  fourteen. CRLF, by hand. No clue, evidence, station, press, lock or
+  schedule changes (#836).
+- **`data/sounds.json`**: `ambient.byRoom` gains `"chapel-nave": "chapel"`,
+  after `"chapel"`. CRLF.
+- **`test/layout.mjs`**: line 292's literal 14 becomes 15, and its message
+  reads "not the fourteen PLAN.md's room table names and the chapel nave
+  (#836)". The comments at 272, 283, 480 and 640 that count the ground rooms
+  say fifteen. No assertion is added, moved or deleted (#529).
+- **`assets/props/`**: `git checkout 51735fa -- assets/props/pulpit.glb
+  assets/props/rood-cross.glb`, then `npm run assets:encode`. Measured:
+  "pulpit.glb: geometry 0.05 MB -> 0.04 MB", "rood-cross.glb: geometry 0.03
+  MB -> 0.03 MB", each atlas left a PNG by #831's size rule. A second run is
+  "nothing to do".
+- **`tools/props/README.md`**: the two table rows and the rood's note back
+  from `51735fa:assets/props/README.md` (lines 35, 39 and 112 there), in
+  table order, and the header's counts become "The 71 placed files" and "The
+  14 that are not placed".
+- **This file**: 2f's "Not placed" table loses its `pulpit`, `rood-cross`
+  row, since those two are placed here.
+- **Untouched**: `src/`, `data/npcs.json`, `data/populace.json`,
+  `data/lore.json`, `data/quests/`, `src/save.js` (no version bump; `visited`
+  is a list of ids and takes a new one as it is), `test/mystery.mjs`,
+  `test/plan-vs-scene.mjs`, `test/budget.mjs`'s ceilings.
+
+### Acceptance
+
+`npm test` fifteen of fifteen. The prototype, against `b41de72`, held
+`layout`, `mystery`, `budget`, `map`, `tools`, `lore`, `quest`, `save`,
+`dialogue`, `overlays`, `assets` (after the encode) and `plan-vs-scene`
+green. Each line has its break, from green (#34):
+
+1. **3c, the room against the mystery.** Break: take the `chapel-nave` row
+   out of `mystery.json`. Observed in the prototype before that row existed:
+   `the castle builds a room "chapel-nave" that the mystery has never heard
+   of`, and line 292's `15 ground rooms in the plan, not the fourteen
+   PLAN.md's room table names` when the literal was still 14.
+2. **3d2, the map's name.** Same break, observed: `"chapel-nave" on level 0
+   would go on the map as "chapel-nave": neither mystery.json's rooms nor
+   scene-config.json names it`.
+3. **Check 13, a bed for every zone.** Break: drop the `byRoom` line.
+   Observed: `"chapel-nave" is a room on level 0 and data/sounds.json's
+   ambient block says nothing about what it sounds like`.
+4. **Check 3, reachable.** Break: delete `chapel-nave-north`'s doorway.
+   Expected: `chapel-nave (inner ward, level 0) cannot be reached on foot
+   from the spawn`, 0 cells in x 10..18, z 6..14.
+5. **Check 1, props against stone.** Break: `nave-pulpit`'s tile z to
+   1.73375, 0.2 m into the north wall. Expected: a check 1 line naming
+   `nave-pulpit` and `chapel-nave-north`.
+6. **Checks 4, 5 and 9 over the two restored files.** Observed before the
+   encode: `assets/props/pulpit.glb has no EXT_meshopt_compression` from
+   check 5 and from check 9, and the same for `rood-cross.glb`. Break for
+   check 4: delete the `nave-rood` row; expected "nothing references
+   assets/props/rood-cross.glb".
+7. **`plan-vs-scene.mjs`, unchanged and wider.** Observed: 427 pieces at
+   0.01 m (419 before: two walls, a floor, five props and none lost), the
+   camera on the plan's floor and the HUD's room line right in all 44
+   rooms, 18 of them on level 0.
+8. **No station moves** (#814): `validateMystery` and `validatePopulace`
+   green with the nave standing on ground that was open, which is the nav
+   rail saying every route that used to cross it still finds a way round.
+9. **The budget, recorded, not asserted anew** (#838). Measured: outer 1020
+   and 1151 with the outside, unchanged; inner 702 to 714, and 833 to 845
+   with the outside, of 1200; texture 43.7 to 43.8 of 64 MB, 139 to 141
+   textures. The builder writes the lines `budget.mjs` prints.
+
+### Open calls
+
+- **A new room, or an old one re-purposed.** Recommend **the new room**
+  (#835): the table above is every candidate, and the only one that holds a
+  1.82 m rood on a flat wall with no station in the way is ground nobody
+  was standing on.
+- **Does the nave open into the Chapel Tower?** Recommend **no** (#835): a
+  door in the ring changes the room every chapel clue and station is in,
+  and the chapel's door is about 15 m from the nave's by the ward.
+- **Its id and name.** Recommend **`chapel-nave`, "Chapel nave", code NV**:
+  it reads as the chapel's without taking `chapel`, which every clue,
+  sermon and journal line means as the tower.
+- **`data/mystery.json`.** Recommend **its `rooms` list only** (#836):
+  check 3c holds every non-drum room to that list, both ways, so there is no
+  way to build a named room without it, and nothing else in the file moves.
+- **The sermons.** Recommend **they stay in `chapel`** (#814): moving one
+  moves the chaplain's station, and the lore already has a chapel arch whose
+  king's head is still being cut, which is a chapel not yet joined to its
+  nave.
+- **Wall height.** Recommend **8 m, and `steward-chamber-east` raised to 8**
+  (#837): an altar 1.55 m high with a 2.76 m rood above it needs 4.46 m, and
+  the nave's other two walls are the 8 m curtain and a new run.
+- **A roof.** Recommend **none**: the Steward's chamber beside it has none,
+  and a roof is the GPU look's question, not a rail's.
+- **The loft's altar, font and pew.** Recommend **they move into the nave,
+  in scope** (#837): a second altar would be two chapels in one ward, and
+  the loft held them only because no room could (#833). The loft goes back
+  to empty, which is the state #582 counted it in.
+- **More pews.** Recommend **three more, four in all**, +3 draws: a nave
+  with one pew reads as a room with a bench in it.
+- **The garden.** Recommend **against the Steward's chamber's north wall,
+  between the two doors** (#837): it was on the nave's ground, and the
+  strip east of the nave is the chapel's only approach, 3.5 m wide.
+- **The censer.** Recommend **it stays in the drum**: it hangs where the
+  office is said.
+- **The sound bed.** Recommend **`chapel`**: the same stone, and check 13
+  needs one.
+
+### Dependencies
+
+- **Gate: none.** 2f shipped in `01ee3dd`; this needs its `base`,
+  `propPath`, check 9 and the encoder's size rule, all in.
+- **Lane B** (`data/scene-config.json`) **and lane E** (`data/sounds.json`,
+  one line). Not beside rank 1, 2a, 2b, 2e, 4, 9, or 13's increments 2 and
+  3, nor rank 7 if it writes `sounds.json`. **Before rank 1**, as 2f was.
+- **2b**: its chapel set is the drum's (#814) and still drops its altar
+  (#830); the nave is nobody's kit.
+- **2a's aumbry** is in the drum and unaffected.
+
+### Constraints
+
+- #390, #506, #831: both files and their rows in one commit, encoded, the
+  atlas a 128 px PNG.
+- #500: the plan places the nave's walls, floor and props; nothing is
+  computed outside `castle-plan.js`.
+- #529: the literal is `layout.mjs`'s and stays there; `plan-vs-scene.mjs`
+  gains nothing.
+- #582, #835: a room made for content Devon asked for, not for volume.
+- #584, #632: `insertRow` for the appended rows; the hand edits in each
+  file's own CRLF.
+- #611, #834, #838: no ceiling moves.
+- #785, #814: nothing pressable and no station moves.
+- #36: no save change.
+- #13, #34: every line above has its break.
+- #53: whether it reads as a chapel is a GPU look.
+
+### Looking checklist
+
+- [ ] The nave from its door: the rood over the altar, or a cross floating
+      on a wall?
+- [ ] The pulpit's steps against the east end, and whether a preacher could
+      climb them.
+- [ ] The 8 m wall the Steward's chamber now has on its east side, from
+      inside the chamber.
+- [ ] The garden between the two doors, and whether it crowds either.
 
 ---
 
