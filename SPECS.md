@@ -8,12 +8,16 @@ and that one differ, this one was written against the code and wins. `HISTORY.md
 decision. Every "recommendation" below is exactly that, and the session that
 ships the row is the one that records the call with a number.
 
-One section per row still open in `BACKLOG.md`'s ranked table: 3, 4, 6, 7, 9,
-10, 11, 13. The red suite is closed; its section is a stub pointing at
-`HISTORY.md`.
+One section per row still open in `BACKLOG.md`'s ranked table: 1, 3, 4, 6, 7,
+9, 11, 13, and the rank 2 band (2a to 2e), whose five pack sections are
+being written by other sessions. The red suite is closed; its section is a
+stub pointing at `HISTORY.md`. "Bodies" stays until 2c's and 2d's sections
+land, and is then deleted (#807).
 A shipped row's section is deleted, not struck through; `HISTORY.md` carries
-what it said. **Ranks are retired, never reused** (#619, #491, #522): 1, 2, 5,
-8 and 12 are gone from this file for that reason, not renumbered into gaps.
+what it said. **A session never reuses a retired rank; Devon may** (#619 as
+#802 amends it, #491, #522): he reopened 1 and 2 on 2026-09-25 for the
+Blender rows (#801, #802). 5, 8, 10 and 12 are retired and gone from this
+file, not renumbered into gaps.
 Where a brief and the code disagree, the code is quoted and the disagreement
 is named. Measurements are `git ls-tree`, `du` and `ls -la` against the commit
 each section names.
@@ -71,6 +75,268 @@ Four facts every row below leans on, stated once:
 timing fix (#721 to #724), the day-one `PROP_CLEARANCE` rail (#785), and the
 same rail extended to the walking day and the morning after (#792, #793).
 `HISTORY.md` carries what shipped.
+
+---
+
+## Blender: the pipeline
+
+**Rank 1. Size 1. Model Opus 5. Where: Local: Blender. Gate: none; it is
+the gate for every rank 2 pack. Lanes F and B.** Devon's instruction of
+2026-09-25: assets made in Blender are the top priority (#801). Blender runs
+on his Windows machine only, headless, never in a container and never in CI
+(#804). This row builds the pipeline every pack in the rank 2 band (2a
+evidence props, 2b an interiors kit, 2c the shared rig, 2d animals, 2e the
+countryside backdrop) goes through, and proves it end to end with one placed
+crate. Decided in `HISTORY.md` as #801 to #808; this section is the
+`builder` job those decisions leave. Nothing under `tools/blender/` exists
+on `6a279de`.
+
+**The shape, in one line**: Blender builds each asset from an empty factory
+scene out of a seeded script, exports it into a gitignored staging folder,
+and a Node step writes the bytes that are committed, meshopt-encoded, with a
+manifest row per file; CI never runs Blender and holds the committed bytes
+to the manifest and the manifest to the scripts (#803, #806).
+
+### Scope, the pipeline (class S from here)
+
+- **`tools/blender/common.py`**, imported by every pack script. In order:
+  - **The pin** (#805): `if bpy.app.version[:2] != (4, 5):` print the
+    version found and `sys.exit(3)`.
+  - **An empty scene**: delete every object, mesh, material, image and
+    camera the factory startup made, so an asset owes nothing to what was
+    there. `scene.unit_settings.system = 'METRIC'`, `scale_length = 1.0`:
+    one Blender unit is one metre.
+  - **The seed**: `seed(row)` calls `random.seed(row["seed"])` with the
+    row's string seed, and every random draw in a pack goes through Python's
+    `random` after it. No `time`, no `uuid`, no `os.urandom`, no iteration
+    over a `set` of strings whose order matters (`render.mjs` fixes
+    `PYTHONHASHSEED=0`, which is a backstop, not a licence).
+  - **The frame**: build Z-up, as Blender is; before export, move every
+    root so the asset's bounding box has min Z at 0 and is centred in X and
+    Y, and apply the transform. The front faces Blender -Y, which the
+    exporter turns into glTF +Z, the way the bodies face (#788).
+  - **The look helpers**: `flat(obj)` shades flat; `palette_material(pack)`
+    makes the pack's one material, a Principled BSDF with metallic 0,
+    roughness 1, and a palette atlas PNG (below) on base colour, sampled
+    Closest; `swatch_uv(obj, face, colour)` points a face's UVs at a
+    swatch's centre.
+  - **The export**: `export(path)` calls `bpy.ops.export_scene.gltf` with
+    `export_format='GLB'`, `export_yup=True`, `export_apply=True`,
+    `export_extras=False`, no cameras, no lights, animations only when the
+    pack says so, into the staging path `render.mjs` passed.
+  - **The contact sheet**: `contact_sheet(pack, objects)` lays the pack's
+    assets on a row, one fixed orthographic camera at a three-quarter view,
+    Workbench with flat lighting, 1600 x 900, into `shots/blender/<pack>.png`.
+    `shots/` is already gitignored. It is for Devon to look at and is not a
+    test.
+- **`tools/blender/packs.json`**, the table, one row per asset:
+  `{ pack, name, script, seed, why, ...params }`, and per pack an optional
+  `extraColours` (below). The table is what the source hash reads.
+- **`tools/blender/packs/calibration.py`**, the one pack this row ships: a
+  crate, about 0.8 m on a side, planks and two battens, flat, under the caps
+  below. It is a real prop and stays; it is also the file a later session
+  reads to write its first pack.
+- **`tools/blender/render.mjs`**, `npm run blender:render [pack ...]`,
+  Devon's machine only. Exits non-zero if `CI` is set (#804). Finds Blender
+  at `BLENDER` or on PATH, runs `blender --version` and refuses anything but
+  4.5 before any pack. For each row: `blender -b --factory-startup
+  --python-exit-code 1 -P tools/blender/packs/<script> -- --row <json>
+  --out tools/blender/.staging/<pack>/<name>.glb`, with `PYTHONHASHSEED=0` in
+  the environment and `pathToFileURL`/`path.join` for every path, since it
+  runs on Windows. Then calls `finish.mjs` on what landed. Prints a line per
+  file: written, or unchanged.
+- **`tools/blender/finish.mjs`**, pure Node, exports `finish(staged, row) ->
+  { bytes, manifestRow }` for `render.mjs` (#806). Reads with gltf-transform,
+  sets `asset.generator` to `"castle-conundrum tools/blender"`, drops
+  `asset.copyright` and every `extras`, applies `meshopt({ encoder:
+  MeshoptEncoder, cleanup: false })`, and returns the bytes and the row:
+  `{ file, pack, name, bytes, sha256, triangles, images: [[w, h], ...],
+  blender, source }`. `render.mjs` writes the `.glb` only if the bytes differ
+  from what is on disk, and the manifest only if a row changed.
+- **`tools/blender/manifest.json`**: `{ comment, blender: "4.5", rows }`,
+  rows sorted by `file`, two-space JSON. **Written in the file's own line
+  ending** with `eolOf` from `tools/place.mjs` (#631, #632): CRLF on Devon's
+  checkout, LF in CI, and a new file starts LF. `render.mjs` for one pack
+  rewrites that pack's rows and leaves every other row's text alone.
+- **`source`**, the hash that makes a stale render visible: sha256 over, in
+  order, `common.py`, the row's script, `finish.mjs`, and the row as
+  `JSON.stringify` of its keys sorted, **each text file normalised to LF
+  first**, so the same commit hashes the same on Windows and in CI. The
+  function is exported from `finish.mjs` so check 8 and the writer agree by
+  import, and check 8's line 5 is what stops that being a test that
+  re-implements its subject.
+- **`assets/blender/calibration/crate.glb`**, the only asset.
+- **`src/castle-plan.js`**: export `propPath(base, model)`, `heldPropPath`'s
+  rule (a `model` starting `assets/` is repo-relative, anything else is under
+  `polyhavenBase`), and use it at all eight sites that join an
+  `interiorProps` model today: `castle-plan.js` twice, `castle-builder.js`,
+  `tools/encode-assets.mjs`, `test/budget.mjs`, `test/assets.mjs` three
+  times (#500: one computation, everybody reads it).
+- **`data/scene-config.json`**: one `interiorProps` row, `"model":
+  "assets/blender/calibration/crate.glb"`, in the larder, spliced by
+  `tools/place.mjs`'s writer in the file's own ending (#584, #632). Asset
+  and reference in one commit (#390).
+- **`test/assets.mjs`**: check 8 (below), and check 4's sweep gains
+  `assets/blender`.
+- **`package.json`**: `"blender:render": "node tools/blender/render.mjs"`.
+  **`.gitignore`**: `tools/blender/.staging/`. `CLAUDE.md`'s npm table and
+  `README.md`'s credits line (the meshes under `assets/blender/` are the
+  project's own, as #743 said of the pixels) are the lead's one-liners.
+- **Untouched**: `tools/bodies/`, `tools/pixel/`, `assets/NPCs/`,
+  `src/save.js` (no version bump), `test/budget.mjs`'s ceilings.
+
+### The look (#742, #803)
+
+- **Low-poly and flat-shaded**, the Kenney kit's kind of object: bevels
+  only where a silhouette needs one, no subdivision, no sculpt.
+- **Colour comes from one palette atlas per pack**, a PNG embedded in each
+  `.glb`, at most 128 px a side and 32 colours, one swatch per colour,
+  every face's UVs on a swatch centre. That is how the kit colours its own
+  pieces with 64 px maps, it keeps an asset to one material and one draw
+  call, and a 16 x 16 atlas costs about 1 KB of video memory.
+- **The colours are the castle's**: every swatch is a colour in the union
+  of `tools/pixel/textures.json`'s palettes, plus at most 8 a pack lists as
+  `extraColours` in `packs.json`, each with a `why`.
+- **Lit, never unlit**: no `KHR_materials_unlit`, metallic 0, one map, no
+  normal or ORM map, as `pixelMaterials` are (#742), so the sun per watch
+  and the braziers light it like the stone beside it.
+- **No texture over 128 px, and so no KTX2, in this pipeline.** A KTX2 pass
+  after `finish.mjs` would change bytes the manifest has already recorded,
+  and a pack that needs a bigger texture amends this section first.
+
+### Acceptance
+
+**`npm test` fifteen of fifteen, and check 8 is new in `test/assets.mjs`**
+(#808), after check 7, over every row of `tools/blender/manifest.json` and
+every file under `assets/blender/`. Its caps are named constants in one
+block at the top of the check, one line per pack, never read from the
+generator: `calibration: { triangles: 300, bytes: 24000 }`. Each line below
+has the break that must turn it red from green (#34); the ones marked
+*local* need a re-render, and so Devon's machine.
+
+1. **The pin.** Every row's `blender` starts `4.5.` Break: edit the crate's
+   row to `4.2.1`.
+2. **The bytes.** Every row's `file` exists, is `bytes` long and hashes to
+   `sha256`. **Break, the one the builder quotes in the report: flip one
+   byte of `crate.glb`.** Expected: "assets/blender/calibration/crate.glb
+   hashes to ..., the manifest says ...: it changed after its render".
+3. **Both ways.** Every file under `assets/blender/` is a manifest row, and
+   every manifest row is a `packs.json` row and back. Break: delete the
+   crate's manifest row.
+4. **Not stale.** Each row's `source` equals the hash of today's
+   `common.py`, script, `finish.mjs` and table row. Break: change the
+   crate's `seed` in `packs.json` without rendering. The failure says to run
+   `npm run blender:render calibration` on a machine with Blender 4.5.
+5. **Both endings** (#632). The source hash of each input, built once as LF
+   and once as CRLF from what is on disk, is the same hash; and
+   `manifest.json` has no line ending of the other kind. Break: remove the
+   LF normalisation from the hash; the CRLF copy disagrees on every machine.
+6. **The shape.** Each file carries `EXT_meshopt_compression`, and no
+   `KHR_texture_basisu`, `KHR_materials_unlit` or `COLOR_0`; one material,
+   metallic 0; its triangle count (`test/gltf.mjs`'s `triangles`) equals the
+   row's and is under its pack's cap, and its bytes are under the cap; its
+   box (`partsOf`) has min y within 1 mm of 0 and x and z centred within
+   1 mm. Breaks, *local*: a bevel with enough segments to pass 300
+   triangles; the crate lifted 0.1 m before export.
+7. **The images.** Every image in a Blender `.glb` is a PNG, at most 128 px
+   a side, at most 32 colours, and every texel is in the castle's palette
+   union or the pack's `extraColours`. Break, *local*: one swatch
+   `#ff00ff`.
+8. **No input files** (#803). No `.blend` anywhere under `tools/` or
+   `assets/`, and no file under `tools/blender/` calls `import_scene`,
+   `open_mainfile`, `libraries.load` or `images.load`, or imports `time`.
+   Break: add a `bpy.ops.import_scene.gltf(...)` line to `calibration.py`
+   (line 4 goes red too; the report quotes line 8's message).
+
+**Held by what already exists, once `propPath` is in**: check 1 (the
+crate's model resolves), check 4 (it is referenced), check 5 (meshopt),
+`test/layout.mjs`'s prop rules and `PROP_CLEARANCE`, `test/plan-vs-scene.mjs`
+diffing its box at 0.01 m with no new line (#529), `test/budget.mjs` counting
+its one draw and its atlas, `test/built.mjs` serving it from `dist/`.
+
+**Determinism, local, and written into `HISTORY.md`**: two consecutive
+`npm run blender:render` on Devon's machine; the second prints "unchanged"
+for the crate and `git status` is clean. If it is not, #806's fallback, in
+that order.
+
+**The look, local** (#53): the contact sheet and the crate in the larder on
+a GPU, one sentence each: does it read as the kit's kind of object beside
+the kit's barrels? Blocks nothing in `npm test`.
+
+### Open calls
+
+- **Where the crate stands.** Recommend **the larder**, against a wall, on
+  the ground: a store room already reads as crates, it is indoors so it
+  moves no outside bucket, and one draw call is the whole cost.
+- **Vertex colours or an atlas.** Recommend **the atlas, and `COLOR_0`
+  refused**: a float colour through linear-to-sRGB is not checkable against
+  a palette without a tolerance, an atlas texel is, and it is the kit's own
+  method. The cow's vertex colours are `tools/bodies/`' and untouched.
+- **Colours outside `textures.json`.** Recommend **at most 8 per pack in
+  `extraColours`, each with a `why`**: a bloodstain or a cow's hide has no
+  stone colour, and a cap keeps the look one castle.
+- **One manifest or one per pack.** Recommend **one**: line 3 is one read,
+  lane F serialises every writer anyway, and one machine renders.
+- **Commit the contact sheet.** Recommend **no**, into `shots/blender/`:
+  it is a look, not a record, and a binary nobody diffs.
+- **What the source hash covers.** Recommend **`common.py`, the script,
+  `finish.mjs` and the row**, not `render.mjs`: `render.mjs` only launches,
+  and a change to how it launches that moves bytes shows up in line 2 on
+  the next render anyway.
+- **If Devon's installed Blender is not 4.5.** Recommend **install 4.5 LTS
+  beside it (the portable zip) and point `BLENDER` at it**; the pin moves
+  only by a HISTORY entry and a full re-render (#805).
+
+### Dependencies
+
+- **Gate: none to start.** Needs Blender 4.5 and Devon's machine (#804);
+  a session without it writes nothing here.
+- **Lanes F and B.** F because this row makes `tools/blender/`; B because
+  the crate is spliced into `data/scene-config.json`, so it does not run
+  beside rank 4, rank 9 or rank 13's increments 2 and 3.
+- **Every rank 2 pack is gated on this row shipping**: none of them has a
+  `common.py`, a manifest or a check 8 to extend until it does.
+- **Beside rank 3 on the same machine**: yes, if rank 3 takes its
+  `git worktree` first (#602's note); this row writes the tree.
+
+### Constraints
+
+- #493: nothing fetched; Blender and its exporter run offline.
+- #499: the crate is under 24 KB against 200 MB.
+- #506: meshopt by `finish.mjs`, the encoder's own call; nothing lands raw.
+- #390: the crate and its `interiorProps` row in one commit.
+- #500: `propPath` lives in `castle-plan.js` and every site reads it.
+- #529, #611: every rail is `assets.mjs`'s; no ceiling moves, the draw count
+  is `budget.mjs`'s as it stands.
+- #632: the manifest in its own ending, the source hash over LF, both
+  endings asserted.
+- #13, #34, #147: every line has its break; a line that stays green on its
+  break is not shipped.
+- #53: the look and the second-run evidence are Devon's machine's.
+- Windows: `pathToFileURL` for any absolute `import()`, no brace expansion
+  in any script `render.mjs` shells.
+- #801 to #808.
+
+### What every Blender pack shares
+
+A pack section cites this paragraph instead of restating it. **A pack is
+rows in `tools/blender/packs.json`, one script at
+`tools/blender/packs/<pack>.py` that imports `common.py`, and output under
+`assets/blender/<pack>/`, written by `npm run blender:render <pack>` on
+Devon's machine with Blender 4.5 and nowhere else** (#804, #805). Every
+asset is a `.glb` in metres, +Y up, its base at y 0, centred, facing +Z,
+seeded by its row, flat-shaded, one material with a palette atlas of at
+most 128 px and 32 colours from the castle's palettes plus at most 8 of its
+own, lit, meshopt by `finish.mjs`, never KTX2 (this section's "The look").
+Every file is a row of `tools/blender/manifest.json`, and `test/assets.mjs`
+check 8 holds it; the pack adds one line to check 8's caps block (triangles
+and bytes per asset) and argues it. Every asset is referenced in the commit
+it lands (#390). A pack's `HISTORY.md` entry carries its ceilings before and
+after (#611) and the second-run no-op. Every pack holds lane F; a pack that
+places into `data/scene-config.json` holds B; 2c and 2d hold C. A pack
+writes nothing `tools/bodies/` writes and makes no body another row makes
+(#807). Its GPU look is a checklist in its own section, and blocks nothing
+in `npm test` (#53).
 
 ---
 
@@ -845,6 +1111,13 @@ Two calls from the town's first increment still bind the next one:
 ---
 
 ## Bodies
+
+**Retired on 2026-09-25, and kept only until its successors' sections land**
+(#807). Its "shared low-poly rig for the fifty" is rank 2c's, its "pig, then
+a goat" is rank 2d's, its sourced half retires, and its GPU look moves into
+2c's and 2d's GPU acceptance. `tools/bodies/` and what it owns (the five
+clips, `Cow.glb`) are unchanged. Read what follows as the record of what
+shipped, not as open work.
 
 **Rank 10. Size 1.** `WISHLIST.md` theme 6. The plan bet the project on tints
 (#419); this row answers the body-sourcing question at the scale of a child,

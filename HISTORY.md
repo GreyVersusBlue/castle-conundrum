@@ -9469,3 +9469,166 @@ generated jobs are all somebody's: ... hammer (), ... — nobody does
 hammer".
 
 `npm test` 10 of 10 Node suites green; the five browser suites are CI's.
+
+---
+
+## Blender: the pipeline, and the re-rank that puts it first (2026-09-25)
+
+**A spec, not a build.** Devon's instruction of 2026-09-25: assets made in
+Blender are the new top priority, and he authorized the re-rank himself.
+Blender runs on his Windows machine only, headless (`blender -b -P
+script.py`), never in a container. `SPECS.md` gains "Blender: the pipeline"
+ahead of "The GPU run", every open call recommended, its preamble's
+retired-rank sentence amended to #802, and a pointer at the top of "Bodies".
+No code, no asset, no test file. `BACKLOG.md` and `ROADMAP.md` are a
+`scribe` pass carrying out #801, #802, #804 and #807: the table, the new
+gate, lane F, rank 10's retirement. Decisions #801 to #808, written as
+`architect` against `origin/main` at `6a279de`, where #800 was the last;
+#809 is unused, and #810 up belong to the two architects writing the pack
+sections.
+
+**Measured before anything was decided.** This container has no `blender`
+on PATH and the tree carries no `.blend`. `tools/encode-assets.mjs` finds a
+mesh by reference and skips any file already carrying
+`EXT_meshopt_compression`, and Blender's glTF exporter writes Draco, not
+meshopt, so a Node step between Blender and `assets/` is needed whatever the
+exporter's bytes do (#506). `data/scene-config.json`'s `interiorProps` are
+joined to `polyhavenBase` at eight sites (`src/castle-plan.js` twice,
+`src/castle-builder.js`, `tools/encode-assets.mjs`, `test/budget.mjs`,
+`test/assets.mjs` three times); `heldPropPath` in `src/populace.js` is the
+one place a model path may already start with `assets/`. `test/budget.mjs`
+section 4 already prices an image embedded in a `.glb` (`glb#i`), so an
+embedded palette PNG is on the texture bill with no change. `pixel:render`
+and `bodies:render` are held by re-rendering in CI and comparing bytes
+(check 3b, check 7); a Blender render cannot be, which is what #803 and #806
+are about.
+
+**#801. The Blender rows rank first, on Devon's authority.** Everything
+already in the table keeps its number and its relative order below them: 3
+the GPU run, 4 the retro castle, 6 the populace, 7 sound, 9 the town, 11
+feel, 13 the floor plan. Rank 10 leaves the table (#807). The GPU run is not
+displaced in practice: it reads the tree from a `git worktree` (#602's note)
+and the Blender pipeline writes it, so both run on Devon's machine in the
+same sitting.
+
+**#802. #619 is amended once: Devon may reopen a retired rank, and a session
+may not.** Rank 1 reopens for "Blender: the pipeline". Rank 2 reopens as the
+Blender pack band, one table row per pack, lettered as rank 4c was: 2a
+evidence props, 2b an interiors kit, 2c the shared rig, 2d animals, 2e the
+countryside backdrop. The letter order is the priority among the five and is
+Devon's to change; a letter, once shipped, is retired like a rank. What was
+wrong with the rule as `BACKLOG.md` stated it ("a retired number is never
+reused"): it was already false. Rank 1 held four rows before it retired
+(#778) and rank 3 came back for the retro castle (#744), and #619's own last
+paragraph said a re-rank by Devon spends it. The amended rule is the one the
+table has actually followed: **a session never reuses a retired rank; Devon
+may, and the entry recording his re-rank names the number and the row it now
+holds**, as this one does. Rank 10 is retired, not reopened. One collision
+is named rather than left: "increment 2a" and "2b" in the Bodies section
+(#790, #794) were that row's increments, and from here "2a" to "2e" mean
+rank 2's rows; a citation of the old two is "Bodies' increment 2a" with its
+number (#522).
+
+**#803. #743 is amended: a Blender bake is this repo's own, on three
+conditions.** The script is committed and builds from Blender's factory
+startup with no input file: no `.blend`, no `import_scene`, no
+`open_mainfile`, no `libraries.load`, no `images.load`. A second
+`npm run blender:render` on the pinned version is a byte no-op. The
+committed file's sha256 and its scripts' source hash are in
+`tools/blender/manifest.json` and `test/assets.mjs` check 8 agrees with both.
+Refused, as before: an image model's output, a texture painted by hand that
+no script reproduces, and now a hand-modelled `.blend` and a CC0 mesh
+imported through Blender (sourcing CC0 stays #787's route, not this
+pipeline's). **What is weaker than #743, said out loud**: CI cannot run
+Blender, so check 8 proves the committed bytes are the bytes the manifest
+recorded and that no script moved since the render; it cannot prove the
+script made them. Pixel identity is reproduction in CI; this is reproduction
+on one machine plus a hash in CI. That is the price of Blender and it is
+accepted, and the grep for input files closes the cheapest way round it.
+
+**#804. A fourth machine in `ROADMAP.md` §1, "Local: Blender", and lane F.**
+A session without Blender 4.5 on PATH (or at `BLENDER`) does not claim a Blender row's
+build increment; the row's `SPECS.md` work is a container's, as this entry
+was. Blender output is never produced in a container, CI included, and
+`tools/blender/render.mjs` exits non-zero when `CI` is set, so that is a
+construction and not a promise. What CI runs is Node: check 8 against the
+committed output, which needs no Blender. **Lane F is `tools/blender/`**
+(`common.py`, `render.mjs`, `finish.mjs`, `packs.json`, `manifest.json`)
+and check 8's caps block. Every Blender row holds it, so Blender build
+increments run one at a time, which one machine forces anyway. A pack that
+places into `data/scene-config.json` also holds B; 2c and 2d also hold C.
+Rank 1 holds F and B, because its calibration crate is placed (#808).
+
+**#805. Blender 4.5 LTS, and nothing else.** 4.2 LTS left support in July
+2026; 4.5 is supported to July 2027. `tools/blender/common.py` opens with
+`if bpy.app.version[:2] != (4, 5): sys.exit(3)` with the version it found in
+the message, and `render.mjs` launches Blender with `--python-exit-code 1`,
+because Blender otherwise exits 0 after an uncaught Python exception, which
+is #13's failure one level down. `render.mjs` also runs `blender --version`
+first and refuses before any pack. Every manifest row records
+`bpy.app.version_string` and check 8 fails a row that does not start `4.5`.
+Moving the pin is a HISTORY entry and a full re-render in the same commit.
+
+**#806. The exporter's bytes are not trusted and never committed; the
+committed bytes are Node's, and the check holds their plain sha256.**
+Blender exports into a gitignored staging folder. `tools/blender/finish.mjs`
+reads each file with gltf-transform (4.5.0 by the lockfile), sets
+`asset.generator` to a fixed string, drops `asset.copyright` and every
+`extras`, applies `meshopt({ encoder: MeshoptEncoder, cleanup: false })`,
+which is the call `tools/encode-assets.mjs` and `tools/bodies/` make, and
+hands back the bytes and the manifest row; `render.mjs` writes
+`assets/blender/<pack>/<name>.glb` and the row only if either differs. Three reasons: the exporter stamps its own and
+Blender's version into `asset.generator`; it cannot write meshopt, so the
+Node step exists regardless; and meshopt's quantisation absorbs float drift
+below its step. `render.mjs` also sets `PYTHONHASHSEED=0` and
+`--factory-startup`, so neither a set's order nor Devon's preferences reach
+the output. **The check compares file bytes, not a canonical hash**: a
+canonical hash is a second derivation of the file that the check would have
+to trust, which is the test re-implementing its subject (#34). **Fallback**,
+if the pipeline increment's second same-machine run is not a no-op:
+`finish.mjs` snaps positions to a 1/1024 m grid before meshopt, and the
+increment records which bytes moved and whether that stopped it. If that
+does not, the row comes back to `architect`; nobody loosens the check to a
+canonical hash without a decision.
+
+**#807. The pipeline sits beside `tools/bodies/`, rank 10 retires, and
+#787's "no generated human" is amended.** `tools/bodies/` keeps what it
+owns, shipped and byte-held in Node: the five clips in the four Quaternius
+rigs (#790) and `Cow.glb` (#794). Blender writes only under
+`assets/blender/`, bodies included, and never a file `tools/bodies/`
+writes. **Rank 10 retires with 2c and 2d as its successors.** Its unshipped
+"shared low-poly rig for the fifty" is 2c's; its "further generated kinds (a
+pig, then a goat)" are 2d's; its sourced half (Local: net) retires, and
+sourcing CC0 stays allowed under #787 inside 2c or 2d if their section says
+so. What survives of rank 10 is its GPU look at the child, the hound, the
+hens, the spear, the five clips and the cow (#53), which moves into 2c's GPU
+acceptance for the people and the clips and 2d's for the animals. Its
+`SPECS.md` section stays, with a pointer, until 2c's and 2d's sections land;
+then `scribe` deletes it. **Never two rows for one body**: a body is 2c's or
+2d's by kind, and rank 6 stays, owning routines and placing bodies, making
+none. **2c may make humans**, from Blender only (never `tools/bodies/`' box
+builder), matching the Kenney kit's look under "What every Blender pack
+shares". #787's reason, a box-built human looking like a different game,
+is answered by that look rule and by a person, not by the rule: the four
+Quaternius rigs keep every body they wear today until a GPU look (#53)
+passes a 2c human standing beside a Quaternius one, recorded in this file.
+Any person moved onto 2c's rig must resolve every clip its routine asks for,
+which `test/mystery.mjs`'s per-person clip check already holds. A 2c body
+that replaces a Quaternius one moves no ceiling; a body that adds one costs
+its own argument (#789).
+
+**#808. The Node check is `test/assets.mjs` check 8, the suites stay
+fifteen, and the pipeline proves itself with one placed crate.**
+`assets.mjs` already holds both generators' provenance (3b, 7) and the
+dead-file sweep (4), which extends to `assets/blender/`; `test/tools.mjs` is
+the placement editor's writer and has no asset in it. The calibration asset
+is a crate, pack `calibration`, placed once in the larder as an
+`interiorProps` row whose `model` is `assets/blender/calibration/crate.glb`,
+because an asset nothing references fails check 4 (#390, #789's refusal).
+That needs `interiorProps` to take a path rooted at `assets/` the way
+`heldPropPath` does: one `propPath` export in `src/castle-plan.js` (#500),
+used at all eight sites. **No ceiling moves.** The crate is capped at 300
+triangles, 24,000 bytes and one draw call; the larder's ward goes up by that
+one draw against `MAX_DRAW_CALLS_PER_WARD`'s 1200; `dist/`, about 29 MB,
+against 200 (#499). Each pack argues its own ceilings in its own entry,
+before and after (#611).
