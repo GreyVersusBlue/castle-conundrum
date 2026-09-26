@@ -10188,3 +10188,219 @@ from 139 to 141 textures; the outside bucket stays 131. The prototype's
 numbers held to the draw. `npm test` ran 15 of 15, `plan-vs-scene.mjs`
 diffed 427 pieces at 0.01 m, and the second `npm run assets:encode` run
 printed "nothing to do" for both `pulpit.glb` and `rood-cross.glb`.
+
+---
+
+## Castle in Blender: the realistic model, decided before anything is built (2026-09-26)
+
+**A spec, not a build.** Devon, 2026-09-26, in chat and on his own
+authority: rebuild the castle, Mereford and the countryside as a realistic
+standalone Blender model with Poly Haven PBR materials, using today's
+layout as a guide. Standalone first; the game does not load it, and wiring
+it into the game is a later row. Later, Blender drives the plan: gameplay
+data is authored in the `.blend` as named markers the game will one day
+read. The model is built by committed Python scripts run headless by the
+Steam Blender, with blender-mcp for live review, and his 71 props are
+re-materialed with PBR inside the model while `assets/props/` stays as it
+is. He approved the plan at `~/.claude/plans/i-d-like-us-to-glowing-karp.md`
+the same day, and every call below comes from it. `SPECS.md` gains "Castle
+in Blender" as rank 2h, every open call recommended; `BACKLOG.md` gains the
+row and `ROADMAP.md` lane G. Decisions #839 to #844, written as `architect`
+against `e05ac72`, where #838 was the last. No code, asset, data or test
+file changed in this entry.
+
+**Measured before anything was decided.** The Steam `blender.exe` reports
+`Blender 5.2.2 LTS`. `makePlan` in Node, with `test/gltf.mjs`'s `partsOf`
+as `boundsOf` (`test/layout.mjs` line 69's way), returns 427 pieces (51
+wall, 8 tower, 18 stair, 38 floor, 4 gate-leaf, 3 gate-arch, 1 fixture, 181
+decor, 108 prop, 15 ground), 745 colliders with 745 distinct ids, 124
+surfaces, 44 rooms (18 at level 0, 11 at 1, 11 at 2, 4 at 3, 28 of them
+discs), 5 gates, 18 ramps, 8 drums and levels 0 to 3. The pieces span x
+-198 to 36 and z -40 to 40, y 0 to 18; the curtain is x -46 to 34, z -20 to
+20. `data/mystery.json` has 27 rooms and `scene-config.json` 44, and they
+are not the same list: 23 are in both, 21 are the config's only (18 tower
+rooms and roofs, `wykes-yard`, `mereford-street`, `mereford-church`), and
+4 are the mystery's only (`west-barbican`, `outer-ward`, `inner-ward`,
+`garden`), marked `open` and cut out of the ground by the three gates' x,
+-36, 0 and 24, in `src/stations.js` line 207. Of the 5 gates, 4 carry a
+`pivot`; `stockhouse-walk` is a bar and has no leaf. No plan piece carries
+a `noCollide` or a `day` field. `noCollide` is a config row's (33
+`courtyard.placements`, 37 `interiorProps`) and reaches the plan as a piece
+with no collider under its id. A day reaches the castle through
+`data/mystery.json`'s `day0.castle` and `day2.castle`, lists of `{ piece,
+set, unless }` whose `set` is one of `DAY_SETS` (`open`, `shut`, `gone`,
+`shown`). 11 pieces carry `evidence`, 13 carry `read` (all `builtProps`),
+and one carries `bell` (`chapel-bell`). 75 `interiorProps` rows name a file
+under `assets/props/`, from the 71 files there.
+`shots/` is already in `.gitignore` whole.
+
+**#839. "Castle in Blender" is rank 2h, a standalone realistic model; it
+supersedes rank 4's increment 2 and reverts nothing rank 4 shipped.** It
+takes the next letter in Devon's Blender band, as 2f did for his props
+(#830), and is not a pack: it goes through nothing of rank 1's. **What it
+does to rank 4, the retro castle** (#742 to #744, #757 to #766): the model
+is photographic PBR, so #742's pixel look does not govern it. Rank 4's
+increment 2, about forty more 128 px textures for per-room variety, is
+superseded and will not be built, because the integration row would delete
+every one of them the day the game takes the model's walls. **The fifteen
+pixel textures stay in the game** until that integration row ships, with
+`pixelMaterials`, check 3b, `RELIGHT_KIT` and the `MAX_TEXTURE_MB` count
+exactly as they are: this row writes nothing the game loads. Rank 4 stays
+open as its looking checklist only, because the game wears those textures
+for as long as the integration row is unbuilt and the look is one sitting
+beside rank 3; a look that finds a hole gets a fix, not variety. 2b's
+increment 3 stays gated on that look. **What it does not do**: ranks 1 and
+2a to 2e are untouched, and still build flat low-poly assets for the game
+as it looks today. When the game takes the realistic model, their look
+rule (#803's palette) and this model's disagree. That conflict is the
+integration row's to decide, and it is named here so that row cannot miss
+it. The integration row (reading markers into `castle-plan.js`, LOD and
+bake, KTX2 through `assets:encode`, new ceilings) is not specced and not
+ranked. It is `architect`'s, and it amends #500, #506 and #611 by name.
+
+**#840. `tools/castle3d/` is a family outside rank 1's pipeline, like
+`assets/props/` under #830. #803 and #805 stay whole for `tools/blender/`;
+this family is exempt from both and pinned to Blender 5.2.** It may load
+what #803 refuses: Poly Haven and other CC0 images, HDRIs and models, and
+Devon's `_source/castle_props.blend` through `libraries.load`, since his 71
+meshes are the ones he wants re-materialed. It runs Blender 5.2, which
+#805 refuses, because the Steam install is 5.2.2 LTS and his props were
+made in 5.2 (#830). `common.py` opens with `if bpy.app.version[:2] != (5,
+2): sys.exit(3)`, printing the version it found; moving the pin is a
+HISTORY entry. Rank 1's check 8 already scopes its grep for
+`import_scene`, `libraries.load` and `images.load` to `tools/blender/`, so
+nothing there needs amending, and its "no `.blend` under `tools/`" sweep
+still holds this family, which commits none. Every input file is pinned in
+`tools/castle3d/sources.json`: its URL or path, its licence and its sha256.
+The fetch refuses a download that hashes differently and the build refuses
+a changed props `.blend`, until the new hash lands in the same commit that
+wants it. **What is weaker than #803, said out loud**: #803 is
+reproduction on one machine plus a hash in CI, and this is reproduction on
+one machine with nothing in CI. No byte of the model is committed, so no
+suite holds it, no manifest records it, and a second build is not claimed
+to be a byte no-op, only seeded (`PYTHONHASHSEED=0`, and a
+`random.seed(<stage name>)` per stage) so it lays out the same. Poly Haven
+can change a file under a stable URL, and `sources.json`'s hashes are what
+turn that into a failure instead of a different castle. The props `.blend`
+is an input no script in this repo reproduces; its hash is the only hold
+on it. That is the price of a realistic model built from other people's
+scans and Devon's own file, and it is accepted because nothing the game
+serves depends on it yet.
+
+**#841. The model lives outside the repo, and the repo holds only what
+builds it.** The master `castle.blend`, the Poly Haven cache, `castle.glb`,
+`blueprint.json` and `markers.json` go to `C:\Users\devon\OneDrive\
+Documents\Claude Files\Blender Projects\Castle\castle3d\`, or wherever
+`CASTLE3D_OUT` points. `build.mjs` refuses an output path inside the repo
+root, so `assets/` cannot take a byte from this row by accident. Eight
+2k PBR sets and an HDRI are hundreds of megabytes before any mesh, against
+the 200 MB ceiling for the whole repo (#499), and the game does not load
+any of it. Committed: the scripts under `tools/castle3d/`, `sources.json`,
+`allow.json`, `CREDITS.md`, `README.md`, and one `package.json` script.
+**`blueprint.json` is not committed.** `build.mjs` writes it fresh from
+`makePlan` before every build, because a committed copy of what the plan
+computes is a second source #500 refuses, and no suite could hold it fresh
+without a suite line this row does not add. Review stills go to
+`shots/castle3d/`, which `.gitignore`'s `shots/` already covers. **The
+master `.blend` is always output and never input**: every build starts
+from factory startup, and an adjustment Devon or a session makes over MCP
+is written back into a stage script or its parameters, or the next build
+loses it. That is the part of #803 this family keeps, and it is what makes
+"Blender drives the plan" mean "the committed scripts drive the plan".
+
+**#842. The launcher exits non-zero under CI, launches with
+`--python-exit-code 1`, and nothing in `npm test` runs Blender.**
+`npm run castle3d:build [-- --only stage,stage]` is `tools/castle3d/
+build.mjs`. It exits non-zero when `CI` is set, #804's construction and
+not a promise. It finds Blender at `CASTLE3D_BLENDER`, then at the Steam
+path. It never reads `BLENDER`, because rank 1 points that variable at a
+4.5 install (#805) and one variable cannot name two versions. It runs
+`--version` first and refuses anything that does not start `Blender 5.2`.
+Every Blender launch carries `--factory-startup` and `--python-exit-code
+1`: Blender otherwise exits 0 after an uncaught Python exception, which is
+#13's failure one level down (#805's reason). It then runs `check.py` over
+the file it wrote (#844) and exits non-zero if either run did. `npm test`
+stays fifteen suites and green; no suite reads `tools/castle3d/`, and none
+gains a line. **Lane G is `tools/castle3d/`**, held by this row alone. It
+shares no file with lane F, so it may run beside a rank 1 or rank 2
+session, which is two Blenders on one machine and is Devon's call on the
+day. The machine is "Local: Blender" at 5.2, plus "Local: net" for the one
+increment that fetches.
+
+**#843. The marker contract, so "Blender drives the plan" has a shape
+before any geometry exists.** Blender is Z-up and the game is Y-up, and
+the exporter's conversion is the contract's: a game point (x, y, z) is
+Blender (x, -z, y), and a game `rotationY` is the same angle about
+Blender's Z, same sign. Every name below uses the plan's own ids; the
+longest is 34 characters. Every marker lives in the `MARKERS` collection,
+hidden from render, and carries `level` (an integer storey, the plan's
+`level`) and `planId` (the plan piece id it stands for, where it stands for
+one).
+
+- **`ROOM_<room id>`**, a mesh volume from the room's floor to one storey
+  up: a box, or a 32-sided cylinder for a disc room. 48 of them, one for
+  each of the plan's 44 rooms and the mystery's 4 open places. Props:
+  `level`, `ward`, `drum` if it has one, `shape` (`box` or `disc`) and
+  `open` (true for the 4).
+- **`COL_<collider id>`**, a box, one per plan collider (745 today).
+- **`GATE_<gate id>`**, an empty at the opening; `GATE_<gate id>_HINGE`,
+  an empty at the plan's `pivot.position` turned by its `rotationY`, with
+  the leaf parented to it. 5 gates, 4 hinges; `stockhouse-walk` carries
+  `bar: true` and has no hinge. Props mirror the plan's gate: `closed`,
+  `shutAngle`, `openAngle`, and `quest`, `lock` and `evidence` where set.
+- **`STAIR_<ramp id>`**, the ramp's box, with `STAIR_<id>_LOW` and
+  `STAIR_<id>_HIGH` empties at its `slope.from` and `slope.to`. Those two
+  are stored `[x, z, y]` in the plan, not `[x, y, z]`, and the blueprint
+  writes them as the plan does. Props: `level`, `drum`. 18 of them.
+- **`SPAWN`**, one empty at the plan's `spawn.position`, which is the eye
+  and not the feet (1.7 m, `EYE_HEIGHT`), aimed at `spawn.lookAt`.
+- **`EVID_<evidence id>`** (11), **`READ_<document id>`** (13) and
+  **`BELL_<piece id>`** (1), empties at the centre of the piece that
+  carries that field, with `planId`.
+- **`noCollide`**, a boolean on each placed prop object, which is named
+  `PROP_<piece id>`: the config row's field, true when the plan has no
+  collider under that id, so an adjusted collider set can be told from a
+  forgotten one.
+- **No `day` property.** No such field exists in `castle-plan.js`. A day is
+  `mystery.json`'s `day0.castle` and `day2.castle` overlays, keyed by piece
+  id, and a marker's `planId` is what they will find. A second copy of the
+  day in the `.blend` would drift from the mystery's, which
+  `test/mystery.mjs` holds.
+- **Every geometry object** that realises a plan piece carries `planId`, or
+  `planIds` (a list) when one object realises several, as a crenellation
+  realises a run's merlons.
+
+**#844. `tools/castle3d/check.py` is the net, run by the launcher after
+every build, non-zero on any failure, and each line is broken on purpose
+once from green** (#13, #34). It runs in a second Blender that opens the
+saved file, not in the process that built it. A check inside the builder
+can see an image loaded but never saved with a resolvable path, and the
+saved file is what export and Devon open. The file records the stages that
+built it in a scene property, and each line runs when its stage did; the
+output names the lines that ran. A line that did not run says so and
+passes nothing silently.
+
+1. **Rooms** (markers): each of the 27 mystery rooms and each of the 44
+   blueprint rooms has exactly one `ROOM_`, and no `ROOM_` names an id in
+   neither.
+2. **Gates** (markers): each of the blueprint's gates has exactly one
+   `GATE_`; each gate whose blueprint entry has a `pivot` has its `_HINGE`
+   empty, and a gate without one carries `bar: true`.
+3. **Where the rooms are** (markers): each `ROOM_` with a blueprint box has
+   its plan-view centre within 0.5 m of the box's, and its `level` equal.
+   An open place's centre lies in its band between the gates' x, the band
+   `stations.js` uses. The exception is a `tools/castle3d/allow.json` entry
+   `{ "ROOM_<id>": "<reason>" }`: an entry with no reason fails, and so
+   does an entry for a room already within 0.5 m, so the list cannot rot.
+4. **Images** (always): every Image Texture node has an image, every image
+   resolves to a file on disk or is packed, and each reports a non-zero
+   size once loaded. That is the pink material, caught as a name.
+5. **Level ground** (terrain): the terrain's height at the four corners and
+   the centre of every level-0 blueprint room is 0 within 0.02 m, since the
+   floors are where every gameplay distance is measured from.
+6. **Coverage** (each geometry stage): each blueprint piece of the kinds
+   the stage table in `common.py` gives a stage that ran is named by at
+   least one object's `planId` or `planIds`, and no object names an id the
+   blueprint lacks. The exceptions sit in the same `allow.json`, keyed by id
+   or by `model:<file>`, each with a reason.
+
