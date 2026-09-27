@@ -1505,7 +1505,8 @@ recorded in `HISTORY.md` against the increment (#53).
    larder, the cell, the Clerk's rooms and the rest. The castle's 21
    non-curtain runs get real thickness, window reveals, beams and
    plaster; the hall's seven trusses stay trusses (#528), and the hall's
-   26 kit roof pieces are realised by its roof through `planIds`.
+   14 kit roof pieces (7 `hall-truss`, 7 `hall-roof`) are realised by its
+   roof through `planIds`.
 5. **Mereford.** The 29 `mereford-*` pieces (9 runs, 20 decor) and Wykes's
    yard's 3 runs, shed and ground: the town wall, the church, and
    timber-framed houses from a parametric generator seeded by
@@ -1596,7 +1597,7 @@ walks, in daylight, at the five places the game's own player stands?
   the cache for a model reviewed in stills at 1920 x 1080.
 - **The kit decor (120 pieces that are not merlons).** Recommend **a Poly
   Haven model where a CC0 equivalent exists (barrels, crates, trees),
-  generated otherwise (poles, ladders, steps), and the 26 kit roof pieces
+  generated otherwise (poles, ladders, steps), and the 14 kit roof pieces
   over the hall realised by its roof through `planIds`**: every one stays
   covered by line 6 without an allow-list line per crate.
 - **How the props are re-materialed.** Recommend **per face, by the atlas
