@@ -46,6 +46,84 @@ SLIT = 0.1              # an arrow slit's width
 SLIT_TALL = 1.2         # and its height, centred in the parapet
 EPS = 1e-6
 
+# #851: THE OUTER GATE, a model-only amendment of #435 (the game's barbican-west
+# stays solid and #435 stands for the game). `run`'s wall is built as its
+# collider less a block the size of `like`'s arch: the run's x, the like-arch
+# box's z and y (x -46 to -42, z -2 to 2, y 0 to 4 today). WALL_barbican-west
+# keeps its planId, so check.py line 6 still names the run if it goes, and
+# gates.py builds the block as ARCH_barbican-outer from this same constant, so
+# the hole and the arch cannot drift apart. There is no allow.json entry: the
+# departure fails neither line 3 nor line 6, and an entry would hide a deleted
+# wall (#851). The block must span outside-road's z exactly, or the stage
+# raises naming both: a plan that moves the road leaves a failed build, not a
+# gate beside it.
+OUTER_GATE = {'run': 'barbican-west', 'like': 'west-gate-arch', 'road': 'outside-road'}
+
+
+def outer_gate_block(bp):
+    """#851's block as a game box {min, max}: OUTER_GATE's run's x, its like-
+    arch's z and y. Raises unless its z span is the road's within EPS."""
+    pieces = {p['id']: p for p in bp['pieces']}
+    for k in ('run', 'like', 'road'):
+        if OUTER_GATE[k] not in pieces:
+            raise ValueError(f"walls: OUTER_GATE's {k} {OUTER_GATE[k]} is not a blueprint piece (#851)")
+    run, like, road = (pieces[OUTER_GATE[k]]['box'] for k in ('run', 'like', 'road'))
+    block = {'min': {'x': run['min']['x'], 'y': like['min']['y'], 'z': like['min']['z']},
+             'max': {'x': run['max']['x'], 'y': like['max']['y'], 'z': like['max']['z']}}
+    if abs(block['min']['z'] - road['min']['z']) > EPS or abs(block['max']['z'] - road['max']['z']) > EPS:
+        raise ValueError(f"walls: #851's outer gate block in {OUTER_GATE['run']} spans z {block['min']['z']:g} to "
+                         f"{block['max']['z']:g}, but {OUTER_GATE['road']} spans z {road['min']['z']:g} to "
+                         f"{road['max']['z']:g}; the gate must stand on the road")
+    return block
+
+
+def minus_block(cols, block):
+    """Each collider box less `block`, as up to six boxes per collider: either
+    side of it in z, then either side in x within its z span, then above and
+    below it within both. The ids are kept, since build_run reads only boxes."""
+    out = []
+    for c in cols:
+        b = c['box']
+        lo, hi = b['min'], b['max']
+        blo, bhi = block['min'], block['max']
+        if any(hi[k] <= blo[k] + EPS or lo[k] >= bhi[k] - EPS for k in 'xyz'):
+            out.append(c)
+            continue
+
+        def part(**r):
+            box = {'min': dict(lo), 'max': dict(hi)}
+            for k, (a, z) in r.items():
+                box['min'][k], box['max'][k] = a, z
+            if all(box['max'][k] - box['min'][k] > EPS for k in 'xyz'):
+                out.append({'id': c['id'], 'box': box})
+        zin = (max(lo['z'], blo['z']), min(hi['z'], bhi['z']))
+        xin = (max(lo['x'], blo['x']), min(hi['x'], bhi['x']))
+        part(z=(lo['z'], blo['z']))
+        part(z=(bhi['z'], hi['z']))
+        part(z=zin, x=(lo['x'], blo['x']))
+        part(z=zin, x=(bhi['x'], hi['x']))
+        part(z=zin, x=xin, y=(lo['y'], blo['y']))
+        part(z=zin, x=xin, y=(bhi['y'], hi['y']))
+    return out
+
+
+def ward_centre(bp):
+    cb = bp['curtain']
+    return ((cb['min']['x'] + cb['max']['x']) / 2, (cb['min']['z'] + cb['max']['z']) / 2)
+
+
+def battered(piece):
+    """A curtain run standing on the ground splays its outer face (BATTER)."""
+    return bool(piece['curtain']) and piece['box']['min']['y'] < EPS
+
+
+def facing_of(bp, piece):
+    """The run's (axis, outward sign), exactly as build() decides it, for
+    gates.py's jambs, which splay the way the runs beside them do."""
+    cols = masonry.colliders_of(bp, piece['id'])
+    walk = next((p for p in bp['pieces'] if p['id'] == piece['id'] + '-walk'), None)
+    return _facing(piece, _union([c['box'] for c in cols]), walk, ward_centre(bp))
+
 
 def _rect(box):
     return box['min']['x'], box['max']['x'], box['min']['z'], box['max']['z']
@@ -211,8 +289,8 @@ def build(bp):
     if len(crowns) != 1:
         raise ValueError(f"walls: the drums carry {len(crowns)} different crowns; the crenellation needs one rhythm")
     crown = next(d['crown'] for d in bp['drums'] if d.get('crown'))
-    cb = bp['curtain']
-    ward = ((cb['min']['x'] + cb['max']['x']) / 2, (cb['min']['z'] + cb['max']['z']) / 2)
+    ward = ward_centre(bp)
+    block = outer_gate_block(bp)
 
     info = {}
     for p in runs:
@@ -241,13 +319,17 @@ def build(bp):
         claimed[hits[0]].append(m)
 
     slits, corners = 0, 0
-    battered = [(p, info[p['id']][2]) for p in runs if p['curtain'] and p['box']['min']['y'] < EPS]
+    battered_runs = [(p, info[p['id']][2]) for p in runs if battered(p)]
+    cut = None
     for p in runs:
         cols, whole, facing = info[p['id']]
         mat = materials.library(p['material'])
-        batter = bool(p['curtain']) and p['box']['min']['y'] < EPS
-        returns = returns_of(p, facing, battered) if batter else {}
+        batter = battered(p)
+        returns = returns_of(p, facing, battered_runs) if batter else {}
         corners += len(returns)
+        if p['id'] == OUTER_GATE['run']:  # #851: the run less the outer gate's block
+            cols = minus_block(cols, block)
+            cut = len(cols)
         s = masonry.Solid()
         build_run(s, p, cols, facing, batter, returns)
         s.finish(f"WALL_{p['id']}", col, [mat], plan_id=p['id'])
@@ -261,7 +343,11 @@ def build(bp):
         s.box(b['min']['x'], b['max']['x'], b['min']['y'], b['max']['y'] + WALK_LIFT, b['min']['z'], b['max']['z'])
         s.finish(f"WALK_{wid}", col, [materials.library(w['material'])], plan_id=wid)
 
-    print(f"walls: {len(runs)} runs ({len(battered)} battered {BATTER[0]} m over {BATTER[1]} m, "
+    if cut is None:
+        raise ValueError(f"walls: OUTER_GATE's run {OUTER_GATE['run']} is not a run of this stage (#851)")
+    print(f"walls: {len(runs)} runs ({len(battered_runs)} battered {BATTER[0]} m over {BATTER[1]} m, "
           f"{corners} ends returned round an outside corner), {len(walks)} walks, "
           f"{sum(1 for v in claimed.values() if v)} crenellations realising {len(merlons)} merlons at "
-          f"{crown['merlon']} / {crown['crenel']} m, {slits} merlon slits")
+          f"{crown['merlon']} / {crown['crenel']} m, {slits} merlon slits; {OUTER_GATE['run']} built as "
+          f"{cut} boxes round #851's gate block, x {block['min']['x']:g} to {block['max']['x']:g}, "
+          f"z {block['min']['z']:g} to {block['max']['z']:g}, y {block['min']['y']:g} to {block['max']['y']:g}")

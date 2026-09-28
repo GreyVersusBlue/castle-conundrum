@@ -46,8 +46,12 @@ const BAND = {
   'garden': ['east-gate', null],
 };
 
+/* `leaf` (width, springline, archRadius, thickness; the four gate leaves) and
+ * `bars` (width, height, thickness, count; cell-bars) from increment 3, copied
+ * as the plan returns them, so gates.py draws the game's round-headed leaf and
+ * six bars without a second copy of scene-config.json's numbers (#500). */
 const PIECE_FIELDS = ['id', 'kind', 'level', 'curtain', 'material', 'model', 'transform', 'box',
-  'drum', 'disc', 'pivot', 'evidence', 'read', 'bell', 'roofs'];
+  'drum', 'disc', 'pivot', 'evidence', 'read', 'bell', 'roofs', 'leaf', 'bars'];
 
 export async function makeBlueprint() {
   const imp = (rel) => import(pathToFileURL(path.join(ROOT, rel)).href);

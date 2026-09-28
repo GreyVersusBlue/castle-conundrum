@@ -2,3 +2,5 @@ node_modules/
 dist/
 # `npm run play` writes a numbered screenshot per beat here for eyeballing.
 shots/
+# Blender compiles each tools/castle3d stage module it imports (#852).
+__pycache__/

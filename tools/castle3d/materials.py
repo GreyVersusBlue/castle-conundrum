@@ -15,8 +15,10 @@
 # Increment 1: mud, grass and cobble, the ground's grass-mud blend, the road's
 # cobble-mud blend, and world_from_hdri. Increment 2: LIBRARY, the nine sets
 # the blueprint's `material` field names for the curtain, the drums, their
-# floors, walks and roofs (#849), through library(slug). Later increments add
-# iron, timber and the rest here, not in their stage modules.
+# floors, walks and roofs (#849), through library(slug). Increment 3: the gate
+# timber and iron (#852), ALIAS for the slugs `iron` and `oak`, and PLAIN for
+# the sets that take no tiling break-up. Later increments add the rest here,
+# not in their stage modules.
 
 import os
 
@@ -44,7 +46,24 @@ LIBRARY = {
     'wood_planks': 1.5,
     'wood_floor_deck': 1.8,
     'roof_slates_02': 3.0,
+    'wooden_gate': 1.9,     # increment 3 (#852): the gate leaves and the portcullis timber
+    'rusty_metal': 1.5,     # increment 3 (#852): straps, portcullis points, cell-bars
 }
+# A blueprint slug with no set of its own -> the LIBRARY set that dresses it
+# (#852, SPECS "The alias"). library() names the material after the set,
+# MAT_<asset>, so `oak` and `wooden_gate` share one material and one set of
+# image loads, and the name says which Poly Haven set is on the object.
+ALIAS = {'iron': 'rusty_metal', 'oak': 'wooden_gate'}
+# Sets built with no tiling break-up (SPECS "The tiling break-up on timber and
+# iron"): a leaf is 1.9 m, one tile of wooden_gate, and the offset sample would
+# shift boards sideways at a patch seam across it.
+PLAIN = {'wooden_gate', 'rusty_metal'}
+for _k, _v in ALIAS.items():
+    if _k in LIBRARY or _v not in LIBRARY:
+        raise ValueError(f"materials: ALIAS {_k!r} -> {_v!r} must map a slug not in LIBRARY onto one that is")
+for _k in PLAIN:
+    if _k not in LIBRARY:
+        raise ValueError(f"materials: PLAIN names {_k!r}, which is not in LIBRARY")
 MAPS = ('diff', 'nor_gl', 'rough', 'disp', 'ao')
 BOX_BLEND = 0.2
 BUMP_SCALE = 0.05  # metres of displacement at full white, as bump only
@@ -104,30 +123,102 @@ MUD_WARM = (1.0, 0.86, 0.66, 1.0)
 RUT_FEATHER = 0.3  # the road's mud blend, either side of its midpoint
 
 
-def _maps(tree, asset, size, x, y, tint=None, rough_min=None, warm=None):
-    """`asset`'s five maps box-projected on world coordinates at `size` metres
-    per repeat, blend 0.2. Returns the sockets a shader reads: the diffuse
-    times AO (after `tint`, a Hue/Saturation/Value dict, and then `warm`, an
-    RGBA multiply, each when given), the roughness (no lower than
-    `rough_min`, when given), the tangent normal colour and the height."""
-    rows = {m: common.source(f"{asset}:{m}") for m in MAPS}
-    links = tree.links
-    geo = _node(tree, 'ShaderNodeNewGeometry', x - 500, y)
-    mapping = _node(tree, 'ShaderNodeMapping', x - 300, y)
-    mapping.inputs['Scale'].default_value = (1.0 / size, 1.0 / size, 1.0 / size)
-    links.new(geo.outputs['Position'], mapping.inputs['Vector'])
+# A library set box-projected at one scale repeats on a grid you can count:
+# castle_wall_slates' few pale stones came back every 2.5 m along a 40 m run in
+# the increment 2 still. So each LIBRARY set is sampled twice, A at the plain
+# mapping and B at the same scale moved by SWAP_OFFSET of a tile along the two
+# horizontal axes. A coursed set (brick, blocks, planks, roof slates) moves no
+# further, so B's courses stay level with A's. An uncoursed one moves SWAP_RISE
+# of a tile up as well: with the sideways shift alone the slates' pale stones
+# in B sat on A's rows and the rows still read as a 2.5 m grid, and rubble has
+# no course for a vertical shift to break at the seam.
+# A world-space noise of SWAP_SCALE tiles picks A or B per patch, through a
+# smoothstep SWAP_EDGE either side of its midpoint so most of a wall is purely
+# one or the other and the seam is about half a metre, never a half-and-half
+# blur. All five maps take the same factor, so the relief follows the colour.
+# Then VALUE_SPREAD of brightness, either way, from a VALUE_SCALE metre noise,
+# on the colour only, so a long run is not one flat tone. Every map stays an
+# Image Texture, BOX at BOX_BLEND, so check.py line 4 still sees each image.
+# The ground sets are not doubled: terrain.py already varies them by attribute.
+SWAP_OFFSET = (0.37, 0.61)       # of a tile, Blender x and y (z is up)
+SWAP_RISE = {'castle_wall_slates': 0.5, 'defense_wall': 0.5, 'plastered_wall_04': 0.5}
+SWAP_SCALE = 1.5                 # the A/B noise's feature size, in tiles
+SWAP_EDGE = 0.04                 # the smoothstep's half width, in noise units
+VALUE_SPREAD = 0.08              # brightness moves by up to this, either way
+VALUE_SCALE = 12.0               # metres, the brightness noise's feature size
 
+
+def _sample(tree, asset, rows, vector, x, y, tag=''):
+    """The five maps box-projected at `vector`, as {map: Image Texture node}."""
     tex = {}
     for i, m in enumerate(MAPS):
         t = _node(tree, 'ShaderNodeTexImage', x, y + 300 - 280 * i)
         t.image = load_image(rows[m], colour=(m == 'diff'))
         t.projection = 'BOX'
         t.projection_blend = BOX_BLEND
-        t.label = f"{asset} {m}"
-        links.new(mapping.outputs['Vector'], t.inputs['Vector'])
+        t.label = f"{asset} {m}{tag}"
+        tree.links.new(vector, t.inputs['Vector'])
         tex[m] = t
+    return tex
 
-    diff = tex['diff'].outputs['Color']
+
+def _world_noise(tree, x, y, scale, detail):
+    """A world-space Noise Texture of about `scale` metres; returns its Fac."""
+    geo = _node(tree, 'ShaderNodeNewGeometry', x - 200, y)
+    noise = _node(tree, 'ShaderNodeTexNoise', x, y)
+    noise.inputs['Scale'].default_value = 1.0 / scale
+    noise.inputs['Detail'].default_value = detail
+    tree.links.new(geo.outputs['Position'], noise.inputs['Vector'])
+    return noise.outputs['Fac']
+
+
+def _maps(tree, asset, size, x, y, tint=None, rough_min=None, warm=None, rise=None):
+    """`asset`'s five maps box-projected on world coordinates at `size` metres
+    per repeat, blend 0.2. Returns the sockets a shader reads: the diffuse
+    times AO (after `tint`, a Hue/Saturation/Value dict, and then `warm`, an
+    RGBA multiply, each when given), the roughness (no lower than
+    `rough_min`, when given), the tangent normal colour and the height. With
+    `rise` (a tile fraction, 0 for a coursed set), each map is two offset
+    samples swapped by patch and the colour's brightness drifts (SWAP_OFFSET
+    and the constants beside it)."""
+    rows = {m: common.source(f"{asset}:{m}") for m in MAPS}
+    links = tree.links
+    geo = _node(tree, 'ShaderNodeNewGeometry', x - 500, y)
+    mapping = _node(tree, 'ShaderNodeMapping', x - 300, y)
+    mapping.inputs['Scale'].default_value = (1.0 / size, 1.0 / size, 1.0 / size)
+    links.new(geo.outputs['Position'], mapping.inputs['Vector'])
+    a = _sample(tree, asset, rows, mapping.outputs['Vector'], x, y)
+    tex = {m: a[m].outputs['Color'] for m in MAPS}
+
+    if rise is not None:
+        shift = _node(tree, 'ShaderNodeMapping', x - 300, y - 1600)
+        shift.inputs['Scale'].default_value = (1.0 / size, 1.0 / size, 1.0 / size)
+        shift.inputs['Location'].default_value = (*SWAP_OFFSET, rise)  # added after the scale, so in tiles
+        links.new(geo.outputs['Position'], shift.inputs['Vector'])
+        b = _sample(tree, asset, rows, shift.outputs['Vector'], x, y - 1600, ' B')
+        fac = _world_noise(tree, x - 300, y - 3100, SWAP_SCALE * size, 2.0)
+        edge = _node(tree, 'ShaderNodeMapRange', x - 100, y - 3100, interpolation_type='SMOOTHSTEP', clamp=True)
+        edge.inputs['From Min'].default_value = 0.5 - SWAP_EDGE
+        edge.inputs['From Max'].default_value = 0.5 + SWAP_EDGE
+        links.new(fac, edge.inputs['Value'])
+        f = edge.outputs['Result']
+        tex = {m: _mix(tree, 'RGBA', x + 150, y + 300 - 280 * i, f, tex[m], b[m].outputs['Color'])
+               for i, m in enumerate(MAPS)}
+        # The noise's Fac sits mostly in 0.3..0.7, mapped onto 1 -+ VALUE_SPREAD.
+        drift = _world_noise(tree, x - 300, y - 3400, VALUE_SCALE, 2.0)
+        val = _node(tree, 'ShaderNodeMapRange', x - 100, y - 3400, clamp=True)
+        val.inputs['From Min'].default_value = 0.3
+        val.inputs['From Max'].default_value = 0.7
+        val.inputs['To Min'].default_value = 1.0 - VALUE_SPREAD
+        val.inputs['To Max'].default_value = 1.0 + VALUE_SPREAD
+        links.new(drift, val.inputs['Value'])
+        hsv = _node(tree, 'ShaderNodeHueSaturation', x + 300, y + 450)
+        hsv.label = f"{asset} value drift"
+        links.new(tex['diff'], hsv.inputs['Color'])
+        links.new(val.outputs['Result'], hsv.inputs['Value'])
+        tex['diff'] = hsv.outputs['Color']
+
+    diff = tex['diff']
     if tint:
         hsv = _node(tree, 'ShaderNodeHueSaturation', x + 250, y + 450)
         hsv.label = f"{asset} tint"
@@ -145,15 +236,15 @@ def _maps(tree, asset, size, x, y, tint=None, rough_min=None, warm=None):
     ao =_node(tree, 'ShaderNodeMix', x + 450, y + 300, data_type='RGBA', blend_type='MULTIPLY')
     _sock(ao.inputs, 'Factor').default_value = 1.0
     links.new(diff, _sock(ao.inputs, 'A'))
-    links.new(tex['ao'].outputs['Color'], _sock(ao.inputs, 'B'))
-    rough = tex['rough'].outputs['Color']
+    links.new(tex['ao'], _sock(ao.inputs, 'B'))
+    rough = tex['rough']
     if rough_min is not None:
         floor = _node(tree, 'ShaderNodeMath', x + 250, y - 250, operation='MAXIMUM')
         floor.inputs[1].default_value = rough_min
         links.new(rough, floor.inputs[0])
         rough = floor.outputs[0]
     return {'base': _sock(ao.outputs, 'Result'), 'rough': rough,
-            'nor': tex['nor_gl'].outputs['Color'], 'disp': tex['disp'].outputs['Color']}
+            'nor': tex['nor_gl'], 'disp': tex['disp']}
 
 
 def _new_material(name):
@@ -188,11 +279,12 @@ def _finish(mat, bsdf_x, maps, surface=None):
     return mat
 
 
-def box_material(name, asset, size, tint=None):
+def box_material(name, asset, size, tint=None, rise=None):
     """A Principled material from `asset`'s five maps, box-projected on world
-    coordinates at `size` metres per repeat, blend 0.2."""
+    coordinates at `size` metres per repeat, blend 0.2, doubled when `rise`
+    is given (see _maps)."""
     mat = _new_material(name)
-    return _finish(mat, 600, _maps(mat.node_tree, asset, size, -400, 0, tint))
+    return _finish(mat, 600, _maps(mat.node_tree, asset, size, -400, 0, tint, rise=rise))
 
 
 def ground(name):
@@ -207,16 +299,21 @@ def ground(name):
 
 
 def library(slug):
-    """MAT_<slug>, one of LIBRARY's sets box-projected on world coordinates at
-    its real-world size, blend 0.2, built once per file. A slug that is not in
-    LIBRARY raises, naming it: a piece whose `material` this library cannot
-    dress is a question for the lead, not a flat colour."""
-    if slug not in LIBRARY:
-        raise KeyError(f"materials: no library material {slug!r}; there are {', '.join(LIBRARY)}")
-    have = bpy.data.materials.get(f"MAT_{slug}")
+    """MAT_<asset>, one of LIBRARY's sets box-projected on world coordinates at
+    its real-world size, blend 0.2, its repeat broken up by a second offset
+    sample (SWAP_OFFSET) unless the set is PLAIN, built once per file. `slug`
+    is a LIBRARY key or an ALIAS key, which resolves to its set. Anything else
+    raises, naming it: a piece whose `material` this library cannot dress is
+    a question for the lead, not a flat colour."""
+    asset = ALIAS.get(slug, slug)
+    if asset not in LIBRARY:
+        raise KeyError(f"materials: no library material {slug!r}; there are {', '.join(LIBRARY)} "
+                       f"and the aliases {', '.join(ALIAS)}")
+    have = bpy.data.materials.get(f"MAT_{asset}")
     if have is not None:
         return have
-    return box_material(f"MAT_{slug}", slug, LIBRARY[slug])
+    rise = None if asset in PLAIN else SWAP_RISE.get(asset, 0.0)
+    return box_material(f"MAT_{asset}", asset, LIBRARY[asset], rise=rise)
 
 
 def _blend_factor(tree, attribute, x, y, scale, spread, width=0.12):

@@ -1,5 +1,5 @@
-# masonry.py - closed solids for the built stages (walls, towers, and later
-# gates and buildings): prisms whose plan polygon may change with height, so a
+# masonry.py - closed solids for the built stages (walls, towers, gates, and
+# later buildings): prisms whose plan polygon may change with height, so a
 # battered face is one ring per height rather than a modifier, and an opening
 # is a gap between prisms rather than a boolean (#843: the geometry the checks
 # measure is the geometry the build made).
@@ -108,6 +108,22 @@ class Solid:
         if x1 - x0 < 1e-6 or y1 - y0 < 1e-6 or z1 - z0 < 1e-6:
             return
         self.prism(lambda y: [(x0, z0), (x1, z0), (x1, z1), (x0, z1)], [y0, y1], slot)
+
+    def plate(self, poly, z0, z1, slot=0):
+        """A closed polygon [(x, y), ...] in a vertical plane of constant game
+        z, extruded across it from z0 to z1: a gate leaf's plank, drawn in the
+        leaf's own frame (gates.py). Closed: sides and both faces."""
+        if z1 - z0 < 1e-6 or len(poly) < 3:
+            return
+        a = [self.bm.verts.new(common.to_blender((x, y, z0))) for x, y in poly]
+        b = [self.bm.verts.new(common.to_blender((x, y, z1))) for x, y in poly]
+        n = len(poly)
+        faces = [self.bm.faces.new((a[i], a[(i + 1) % n], b[(i + 1) % n], b[i])) for i in range(n)]
+        faces.append(self.bm.faces.new(list(reversed(a))))
+        faces.append(self.bm.faces.new(b))
+        for f in faces:
+            f.material_index = slot
+        self.count += 1
 
     def cone(self, cx, cz, r, y0, apex, segments, slot=0):
         """A closed cone: a disc foot at y0 and a point at `apex`."""

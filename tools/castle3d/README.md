@@ -57,7 +57,7 @@ uncaught Python exception exits 0. Any failure exits the launcher non-zero.
 | `terrain` | `terrain.py` | A 400 m height field on game x -81, z 0, exactly 0 over the pieces plus 10 m and seeded hills outside; the cobbled road to the west gate; 120 trees and 60 rocks from Poly Haven models, each with a seeded yaw, scale, lean and leaf tint; grass by a seeded Geometry Nodes scatter; the World from the HDRI. Mud, grass and cobble come from `materials.py`. | 1 |
 | `walls` | `walls.py` | The 21 runs (16 curtain, 2 cross-wall, 3 gate-over) as the plan's collider boxes clipped to each piece's box, so a doorway the plan cuts is an opening; the 15 walks; one crenellation per run carrying its kit merlons in `planIds`, every one of the 61 claimed by exactly one run or the stage raises. Arrow slits through every other merlon. The blueprint's own slugs (#849) from `materials.library`. | 2 |
 | `towers` | `towers.py` | The eight drums from each piece's per-sector `stone` (doors and crown included), hollow to the interior radius, with a 0.4 m plinth over the bottom 2 m and an arrow slit per storey in every third sector not buried in a run; floors and flat roofs as the plan's discs cut to their colliders (the stair wells); the four turrets, capped at 12 m, under roof_slates_02 cones in the drum's own object; the 18 flights as solid steps of about 0.18 m along each ramp's `slope`, in defense_wall. | 2 |
-| `gates` | `gates.py` | Arches, portcullis, leaves on `GATE_<id>_HINGE`, the bars. | 3 |
+| `gates` | `gates.py` | The three gate arches (`ARCH_<gate id>`), round-headed to the leaf's `springline` and `archRadius` through the arch's depth, in the stone of the runs either side, the west and east jambs battered with the curtain; the four leaves (`LEAF_<id>`: seven planks, two ledges, iron straps) built in the hinge's frame and parented to `GATE_<id>_HINGE`, a plain-axes empty in `MARKERS` at the blueprint's `pivot`; the west gate's portcullis, raised, in a slot, no `planId`; `BARS_cell-bars` (the plan's six uprights and two rails) and `BAR_walk-bar`. Each leaf and bar is held within 0.01 m of its blueprint box or the stage raises. Then #851's shut outer gate in `barbican-west`, which `walls.py` cuts out through `walls.OUTER_GATE`: `ARCH_barbican-outer`, two shut leaves and a lowered portcullis, each `modelOnly: "#851"` and none with a `planId`. `wooden_gate` and `rusty_metal` (#852), which `oak` and `iron` reach through `materials.ALIAS`, with no tiling break-up (`materials.PLAIN`). | 3 |
 | `buildings` | `buildings.py` | The inner rooms with thickness, the hall's trusses and roof. | 4 |
 | `town` | `town.py` | Mereford, the town wall, Wykes's yard. | 5 |
 | `props` | `props.py` | Devon's 71 props re-materialed, Poly Haven props, built slabs, kit decor. | 6 |
@@ -115,6 +115,6 @@ Non-zero on any failure.
 ## Committed here
 
 The scripts, `sources.json` (every input with its URL or path, licence and
-sha256; 97 rows from increment 2), `allow.json` (each departure from the
+sha256; 107 rows from increment 3), `allow.json` (each departure from the
 blueprint with its reason; empty), this file and `CREDITS.md`. No `.blend`,
 no image, no model: those stay in the output folder (#499, #841).

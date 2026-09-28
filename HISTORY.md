@@ -10458,3 +10458,91 @@ alternative, `defense_wall` on all eight drums for 44.5 MB total, was
 offered and declined. Sizes are from `api.polyhaven.com/files/<id>`. This
 makes increment 2 a third increment that adds `sources.json` rows,
 alongside 1 and 6.
+
+**#850. Rank 2h increment 2 closes: Devon's verdict, the review camera, and
+seven builder calls the spec did not make.** Devon's verdict on
+`shots/castle3d/walls.png` (2026-09-27), quoted exactly: "The shape is nice
+and it looks good for now, but the wall stone is very repetitive; could the
+walls be taller?" The repetition is taken up in increment 3, a noise-driven
+break-up of the box-projected tiling in `materials.py`, made required by
+Devon. Wall height is not changed in increment 3 at Devon's instruction and
+stays an open question for a later increment, because a taller curtain moves
+the wall walk off the plan's 8 m, which the game's plan and colliders fix,
+so it is not a castle3d-only change. The review camera behind `walls.png` is
+the same uncommitted scratch script as terrain's (#848): game eye (-78,
+5.5, 14) looking at (-38, 6, -2), 28 mm lens, Cycles 128 samples with the
+denoiser. Like `terrain.png`, `walls.png` cannot be reproduced from
+committed code until increment 7's cameras. The builder made seven calls
+SPECS.md did not: curtain runs are built from the plan's colliders clipped
+to each piece box; the batter is on the outer face only, 0.5 m over 2.5 m,
+returned round outside corners; drums carry a 0.4 m splay over 2 m;
+merlons are claimed by collider anchor plus facing; the crenel sill is
+0.9 m above the walk; each drum is one object including its turret and
+cone; `defense_wall` is mapped at Poly Haven's 20 m real-world scale. A
+carry-over for increment 3: four battered curtain ends meet gate jambs
+(west-curtain-north at z -2, west-curtain-south at z 2, east-curtain-north
+at z -2, east-curtain-south at z 2); each foot stands 0.5 m past a plumb
+jamb, so `gates.py` batters its jambs to match or records why not.
+`tools/castle3d/__pycache__/` appears untracked after a build, because
+Blender's Python compiles the stage modules it imports. Whether to add it
+to `.gitignore`, which would amend SPECS' "`.gitignore` is unchanged" by
+one line, is a question put to Devon, not decided here.
+
+**#851. The castle3d model cuts a shut outer gate into `barbican-west`: an
+amendment of #435 for the model only, and the game does not change.** Devon,
+2026-09-27, in chat. **What the game has**: `barbican-west` is one run and
+one collider, x -46 to -42, z -10 to 10, y 0 to 8, solid; the spawn stands
+inside the barbican at (-40, 1.7, 0) looking east; #435 says the barbican's
+west face "carries no archway at all", and `data/scene-config.json`'s
+`west-gate` comment says the same. **What was wrong with carrying that into
+the model**: increment 1 built `outside-road`, the plan's own piece, x -198
+to -46 and z -2 to 2, and it runs 152 m to a blank wall. The clerk "arrives
+a day early, by the west barbican" (`PLAN.md` line 26), and `PLAN.md` line
+552, "the barbican gates stay shut forever", describes a gate that exists
+and is shut, which #435 honoured in a game with nothing outside the curtain
+by building no gate at all. The model has the road, so it has the gate.
+**What the model shows**: a 4 m gate in `barbican-west` at z -2 to 2, the
+road's own z span, the same size as the plan's three gate arches (opening
+1.9 m wide, round-headed from a springing at 2 m to 2.95 m, stone to 4 m,
+the barbican's wall over it to 8 m), with its portcullis down and its two
+leaves shut. A shut gate is as impassable as the wall, so the game's
+collider, the spawn and every suite stay true, and nothing under `src/`,
+`data/`, `assets/` or `test/` changes (#839). #435 stands whole for the
+game. **How coverage stays honest**: `walls.py` builds `WALL_barbican-west`
+as its collider less the 4 m block, and it still carries `planId`
+`barbican-west`, so check.py line 6 still names that run if it is deleted.
+`gates.py` builds the block. Its objects, `ARCH_barbican-outer`,
+`LEAF_barbican-outer-a` and `-b`, and `PORT_barbican-outer`, realise no plan
+piece and carry no `planId` or `planIds`, so line 6 neither counts nor
+refuses them. They are not named `GATE_barbican-outer`, because #843 keeps
+`GATE_<gate id>` for markers of the plan's five gates and line 2 counts them.
+Each carries `modelOnly: "#851"`, so a later reader can find every object
+this entry put there. **No `allow.json` entry**: that file lists departures
+lines 3 and 6 would otherwise fail, and this one fails neither. An entry
+keyed `barbican-west` would exempt the run from coverage and hide a deleted
+wall, and one keyed `barbican-outer` would name an id the blueprint lacks,
+which line 6 does not check in `allow.json` and so could never go stale. The
+record is this entry and the comment beside `walls.OUTER_GATE`. **For the
+integration row** (#839): the day the game takes the model's walls, the
+barbican's west face has a hole in it at z -2 to 2, and that row must
+collide the shut leaves and the lowered portcullis, or keep today's
+`barbican-west` box, or it opens a way out of the castle that #435 closed.
+
+**#852. Rank 2h increment 3 fetches two texture sets, approved by Devon
+2026-09-27.** `wooden_gate` (Amal Kumar, the blueprint's own slug, real size
+1.9 m, for the four gate leaves and the portcullis timber, 5 files,
+9,008,010 bytes) and `rusty_metal` (Rob Tuytel, real size 1.5 m, for the
+blueprint slug `iron`: portcullis points and straps, `cell-bars`, hinge
+straps; 5 files, 6,879,297 bytes). Both are 2k JPG, five maps each (diff,
+nor_gl, rough, disp, ao), CC0, 10 `sources.json` rows, 15.9 MB (15.2 MiB;
+`CREDITS.md` counts in MiB and now reads 107 files in 20 assets, 347.2 MB).
+The blueprint slug `oak` (only `walk-bar`) reuses `wooden_gate` with no
+fetch, through `materials.ALIAS` (#851's SPECS open calls). The
+alternatives offered and declined: `rusty_metal_02` (6.5 MB),
+`rust_coarse_01` (14.3 MB), and `oak_veneer_01` (11.2 MB, reads as
+furniture veneer). Sizes are from `api.polyhaven.com/files/<id>`; each file
+was downloaded once into the session scratchpad, refused unless its size
+and md5 equalled the API's, then its sha256 written into the row, as
+increment 2 did. `__pycache__/` joins `.gitignore` (Devon, 2026-09-27),
+amending SPECS' "`.gitignore` is unchanged", because Blender's Python
+writes `tools/castle3d/__pycache__/` on every build.
