@@ -3203,6 +3203,11 @@ pick (#857); item (4) needs nothing.
   label. Not re-rendered: `gates-dressed-5.png` and `buildings-4b-5.png`,
   which frame no `medieval_blocks_02` face and no timber beyond the
   louvre's frame; the interiors, which wait for increment 7.
+- **The swap, by Devon's ruling of 2026-09-28.** The thatch is
+  `reed_roof_04` ("Thatch: reed_roof_04"), `THATCH_SET = ('reed_roof_04',
+  2.5, 0.0, {})`, its 5 rows fetched and the stand-in retired; the stone
+  is `medieval_blocks_02` at 2.5 m ("yes for stone at 2.5"), #860's
+  fallback, the second labelled exception to #849.
 
 ### Dependencies
 

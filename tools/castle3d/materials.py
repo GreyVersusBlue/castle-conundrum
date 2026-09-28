@@ -22,10 +22,10 @@
 # SWAP_RISE. Increment 4b (#854): DRESSED and dressing(), the plan's dressed
 # stone darkened for the openings in rubble, and LOOK, plastered_wall_04's
 # tint, warmth, grime and undulation, all from maps already fetched.
-# Increment 5 (#857, #858): THATCH_SET and thatch(), the thatch as a labelled
-# stand-in from rough_wood until Devon picks the set; DRESSING moved to
+# Increment 5 (#857, #858): THATCH_SET and thatch(), the thatch, first a
+# labelled stand-in from rough_wood, now reed_roof_04; DRESSING moved to
 # stone_pavers; and LOOK's `object_tint`, the plaster multiplied by the
-# object's colour, white on every object but the six houses. Nothing fetched.
+# object's colour, white on every object but the six houses. The swap after it fetched reed_roof_04's 5 rows.
 # Later increments add the rest here, not in their stage modules.
 
 import os
@@ -48,7 +48,9 @@ LIBRARY = {
     'castle_wall_slates': 2.5,
     'defense_wall': 20.0,
     'castle_brick_02_red': 1.5,
-    'medieval_blocks_02': 1.5,
+    # Not its real 1.5 m: #860's named fallback, the library's one labelled
+    # exception to #849, with Devon's yes of 2026-09-28 ("yes for stone at 2.5").
+    'medieval_blocks_02': 2.5,
     'plastered_wall_04': 3.2,
     'stone_pavers': 2.0,
     'wood_planks': 1.5,
@@ -93,16 +95,11 @@ if DRESSING[0] not in LIBRARY:
     raise ValueError(f"materials: DRESSING names {DRESSING[0]!r}, which is not in LIBRARY")
 # The thatch (#857): (set, metres per repeat, rise, look) in one tuple, built by
 # thatch(). Not a LIBRARY entry, since no blueprint `material` names thatch, so
-# SWAP_RISE gains nothing and the rise lives here. A STAND-IN until Devon picks
-# the set ("Build with stand-in", 2026-09-28): rough_wood's long splits run the
-# image's height, which a 50 degree slope's side projection turns downslope;
-# at 2.0 m, not its real 0.5, the splits read as straw rather than cracks
-# repeating 9 times down a 5.6 m slope. The library's one size that is not its
-# set's real size, allowed only as this labelled stand-in (#857). The warm
-# pulls its grey-brown toward straw, blue cut most. At the swap: fetch the
-# picked set's 5 rows, then ('reed_roof_03', 2.5, 0.0, {}) or
-# ('reed_roof_04', 2.5, 0.0, {}), or ('thatch_roof_angled', 0.54, 0.5, {}).
-THATCH_SET = ('rough_wood', 2.0, 0.5, {'warm': (1.0, 0.88, 0.66, 1.0)})
+# SWAP_RISE gains nothing and the rise lives here. reed_roof_04, Devon's pick
+# of 2026-09-28 ("Thatch: reed_roof_04"), at its real 2.5 m and rise 0, since
+# the reeds' butt ends are courses. It retires the stand-in #857 built on,
+# ('rough_wood', 2.0, 0.5, {'warm': (1.0, 0.88, 0.66, 1.0)}).
+THATCH_SET = ('reed_roof_04', 2.5, 0.0, {})
 # Per-set look (#854), applied inside library(), so MAT_<asset> is the one
 # material everywhere the set is used. plastered_wall_04's maps are a neutral
 # grey at linear 0.257 with AO 1.000 and displacement std 0.003: a lit card.
