@@ -10881,8 +10881,16 @@ pitch 0.449, eave z 5.2 underside 3.865 top 4.045`; dressed openings
 clerk-office-south 2 (47 faces), kitchen-south 3 (59), great-hall-north 7
 (134); gate passages ARCH_west-gate 78 faces, ARCH_east-gate 38,
 ARCH_barbican-outer 78, ARCH_porter-gate 0; four drum walk doors shut
-(sw-tower 1 and 2, prison-tower 1 and 2), 13 passed over. **Open, not
-ruled on by Devon**: (a) `royal-tapestry` and `dormitory-watch-bill`'s
+(sw-tower 1 and 2, prison-tower 1 and 2), 13 passed over. **Ruled rather
+than left open**: Devon, 2026-09-28, on `buildings-hall-4b.png` at 1024
+samples, quoted exactly: "I'm concerned with this gap in the wall." The
+lead traced it by ray cast to one of `DRUM_prison-tower`'s arrow slits,
+through the drum wall at about game x -21.4, y 5.2 to 6.4, z 12.35,
+opening from the hall into the tower's dark level-1 room: `towers.py` cuts
+slits round every drum with no knowledge of the buildings later built
+against it. Offered: skip any slit whose outer face opens inside a roofed
+room, a model-only rule in `towers.py`, or leave it. Devon: "Leave it and
+merge." **Open, not ruled on by Devon**: (a) `royal-tapestry` and `dormitory-watch-bill`'s
 backs sit 5 mm into the 15 mm plaster, fronts clear, for increment 6 to
 settle; (b) the dressed surrounds read as reddish rubble rather than
 squared blocks at `medieval_blocks_02`'s scale; (c) `wood_planks` on the
