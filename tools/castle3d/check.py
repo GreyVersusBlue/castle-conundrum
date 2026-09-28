@@ -17,11 +17,11 @@
 #   2 gates     (markers)   every gate a GATE_, a _HINGE where it has a pivot
 #   3 where     (markers)   each ROOM_ within 0.5 m of its box, allow.json aside
 #   4 images    (always)    every Image Texture node resolves and loads   LIVE
-#   5 ground    (terrain)   level-0 room corners and centres at 0 +- 0.02 m
-#   6 coverage  (geometry)  each piece of a stage that ran is named by a
+#   5 ground    (terrain)   level-0 room corners and centres at 0 +- 0.02 m  LIVE
+#   6 coverage  (geometry)  each piece of a stage that ran is named by a      LIVE
 #                           planId or planIds outside GUIDE and MARKERS
-# Lines 1, 2, 3, 5 and 6 are frames in increment 0; their bodies land with
-# the increments that build their stages.
+# Lines 1, 2 and 3 are frames until increment 8 builds the markers. Lines 5
+# and 6 are live from increment 1, whose terrain is the first geometry stage.
 
 import os
 import sys
@@ -118,15 +118,96 @@ else:
     report(4, 'images', True, f"{nodes} image texture nodes, {len(images)} images, each on disk or packed and non-empty")
 
 # ----------------------------------------------------------- 5: level ground --
+# The terrain's height, by a ray straight down onto common.TERRAIN alone, at
+# the four corners and the centre of every level-0 blueprint room: a box
+# room's bounds, a disc room's square about its centre. Each is 0 within
+# GROUND_TOLERANCE, since the floors are where every gameplay distance is
+# measured from. The message names the first room, in blueprint order, whose
+# point is off, and the point.
+GROUND_TOLERANCE = 0.02
+
+
+def room_points(room):
+    shape = room.get('shape')
+    if shape and shape.get('kind') == 'disc':
+        cx, cz, r = shape['cx'], shape['cz'], shape['radius']
+        x0, x1, z0, z1 = cx - r, cx + r, cz - r, cz + r
+    else:
+        b = room['bounds']
+        x0, x1, z0, z1 = b['min']['x'], b['max']['x'], b['min']['z'], b['max']['z']
+    return [('corner', x0, z0), ('corner', x1, z0), ('corner', x1, z1), ('corner', x0, z1),
+            ('centre', (x0 + x1) / 2, (z0 + z1) / 2)]
+
+
 if 'terrain' in stages:
-    not_written(5, 'level ground', 'terrain')
+    from mathutils import Vector
+    ground = bpy.data.objects.get(common.TERRAIN)
+    if ground is None or ground.type != 'MESH':
+        report(5, 'level ground', False, f"terrain was built but there is no mesh {common.TERRAIN}")
+    else:
+        inv = ground.matrix_world.inverted()
+        rooms0 = [r for r in bp['rooms'] if r['level'] == 0]
+        bad, worst, count = None, 0.0, 0
+        for room in rooms0:
+            for what, x, z in room_points(room):
+                bx, by, _ = common.to_blender((x, 0.0, z))
+                o = inv @ Vector((bx, by, 1000.0))
+                d = (inv.to_3x3() @ Vector((0.0, 0.0, -1.0))).normalized()
+                hit, loc, _n, _i = ground.ray_cast(o, d)
+                count += 1
+                h = (ground.matrix_world @ loc).z if hit else None
+                if h is None or abs(h) > GROUND_TOLERANCE:
+                    if bad is None:
+                        at = 'no ground under it' if h is None else f"height {h:+.3f} m"
+                        bad = f"room {room['id']} {what} at game x {x:g}, z {z:g} has {at}, not 0 +- {GROUND_TOLERANCE}"
+                else:
+                    worst = max(worst, abs(h))
+        if bad:
+            report(5, 'level ground', False, bad)
+        else:
+            report(5, 'level ground', True, f"{len(rooms0)} level-0 rooms, {count} points, largest |height| {worst:.4f} m")
 else:
     skipped(5, 'level ground', 'terrain was not built')
 
 # --------------------------------------------------------------- 6: coverage --
+# Each blueprint piece that STAGE_OF gives a stage that ran is named by at
+# least one object's planId or planIds outside GUIDE and MARKERS, and no object
+# names an id the blueprint lacks. The exceptions are allow.json entries keyed
+# by piece id (or model:<file>), each with a reason; one with no reason fails.
 ran = [s for s in common.GEOMETRY if s in stages]
 if ran:
-    not_written(6, 'coverage', ', '.join(ran))
+    table = common.STAGE_OF(bp)
+    outside = set()
+    for name in ('GUIDE', 'MARKERS'):
+        c = bpy.data.collections.get(name)
+        if c:
+            outside |= set(c.all_objects)
+    named = {}
+    for ob in bpy.data.objects:
+        if ob in outside:
+            continue
+        ids = []
+        if 'planId' in ob.keys():
+            ids.append(str(ob['planId']))
+        if 'planIds' in ob.keys():
+            ids += [str(i) for i in ob['planIds']]
+        for i in ids:
+            named.setdefault(i, ob.name)
+    unreasoned = sorted(k for k, v in allow.items() if not k.startswith('ROOM_') and not (isinstance(v, str) and v.strip()))
+    want = [pid for pid, s in table.items() if s in ran]
+    missing = [pid for pid in want if pid not in named and pid not in allow]
+    unknown = sorted(f"{i} (on {o})" for i, o in named.items() if i not in table)
+    why = []
+    if missing:
+        why.append(f"{len(missing)} piece(s) nothing realises: {', '.join(missing[:12])}" + (' ...' if len(missing) > 12 else ''))
+    if unknown:
+        why.append(f"object(s) name ids the blueprint lacks: {', '.join(unknown[:12])}")
+    if unreasoned:
+        why.append(f"allow.json entries with no reason: {', '.join(unreasoned)}")
+    if why:
+        report(6, 'coverage', False, '; '.join(why))
+    else:
+        report(6, 'coverage', True, f"{len(want)} pieces of {', '.join(ran)} each named by a planId or planIds")
 else:
     skipped(6, 'coverage', 'no geometry stage was built')
 

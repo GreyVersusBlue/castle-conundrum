@@ -10404,3 +10404,27 @@ passes nothing silently.
    blueprint lacks. The exceptions sit in the same `allow.json`, keyed by id
    or by `model:<file>`, each with a reason.
 
+**#845. Rank 2h increment 1's trees are fetched at 1k, not the 2k SPECS.md's
+"Texture resolution" open call recommends.** The two Poly Haven trees
+(island_tree_01, tree_small_02) are 255 MB at 2k against 156 MB at 1k
+(76.2 + 80.2 MB), and they are mostly seen at a distance. Every other
+increment 1 input stays 2k: textures sparse_grass, brown_mud_02,
+cobblestone_large_01; rocks boulder_01, rock_moss_set_02; grass_medium_02.
+Broadleaf trees only is accepted for now, because Poly Haven has no oak or
+beech.
+
+**#846. The HDRI comes in with increment 1, not increment 7.**
+kloofendal_48d_partly_cloudy_puresky, 4k .hdr, 19.7 MB, so terrain stills
+are not lit by a grey void. Increment 7 (lighting.py) still owns the
+lighting design; this only moves the fetch and a world setup earlier. The
+approved list is about 249 MB in total, all CC0 from Poly Haven, into
+`CASTLE3D_OUT\cache\`, never the repo.
+
+**#847. A CI flake, PR #84, CI run 36358382428, with its control run.**
+Attempt 1 failed `plan-vs-scene` on "Gelert beside the player cues a bark
+inside 0.6 s plus a margin (1 frames driven): 0 cued" and "it is heard from
+where the hound stands: Infinity m off". Attempt 2, the control run, passed
+15/15. PR #84 (castle3d increment 0) touched nothing the game loads, only
+`tools/castle3d/`, docs and one `package.json` script line, and #53 makes a
+real-time failure on software-rendered CI inconclusive rather than
+confirmed.

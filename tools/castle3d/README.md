@@ -44,7 +44,7 @@ uncaught Python exception exits 0. Any failure exits the launcher non-zero.
 | File | What |
 | --- | --- |
 | `blueprint.json` | `makePlan`'s output in the game's frame, rewritten every build, never committed (#500, #841). |
-| `cache/` | The hash-pinned Poly Haven inputs. |
+| `cache/<asset>/<file>` | The hash-pinned Poly Haven inputs, one folder per `sources.json` `asset`. See below. |
 | `castle.blend` | The master, from a full build only. Always output, never input: an MCP adjustment goes back into a script or it is lost (#841). |
 | `partial/<stages>.blend` | An `--only` build. Never overwrites the master. |
 | `last-build.txt` | The path `build.py` saved, which the launcher hands to `check.py`. |
@@ -54,7 +54,7 @@ uncaught Python exception exits 0. Any failure exits the launcher non-zero.
 | Stage | Module | Builds | Increment |
 | --- | --- | --- | --- |
 | `guide` | `blueprint.py` | `GUIDE`: a wireframe box per piece and ramp, a box or 32-sided cylinder per room, a box per open room over its gate band. Always runs. | 0 |
-| `terrain` | `terrain.py` | A 400 m height field, flat at 0 under the castle, the road, trees, rocks, grass. | 1 |
+| `terrain` | `terrain.py` | A 400 m height field on game x -81, z 0, exactly 0 over the pieces plus 10 m and seeded hills outside; the cobbled road to the west gate; 120 trees and 60 rocks from Poly Haven models, each with a seeded yaw, scale, lean and leaf tint; grass by a seeded Geometry Nodes scatter; the World from the HDRI. Mud, grass and cobble come from `materials.py`. | 1 |
 | `walls` | `walls.py` | The curtain, the cross-wall, walks, crenellation. | 2 |
 | `towers` | `towers.py` | The eight drums, their floors and eighteen flights. | 2 |
 | `gates` | `gates.py` | Arches, portcullis, leaves on `GATE_<id>_HINGE`, the bars. | 3 |
@@ -72,15 +72,41 @@ the table in `common.py` that gives each blueprint piece to one stage.
 The frame, from #843: a game point `(x, y, z)` is Blender `(x, -z, y)`, and
 a game `rotationY` is the same angle about Blender Z, same sign.
 
+## The cache
+
+`fetch.mjs` lands each `url` row of `sources.json` at
+`<out>/cache/<asset>/<file>`, and `common.cached(row)` is the same path on the
+Blender side. `asset` is the Poly Haven slug. `file` is the URL's file name
+for a texture map, an HDRI or a model's `.blend`, and the API's `include` key
+verbatim for a file only a model's `.blend` reads
+(`textures/island_tree_01_leaves_diff_1k.png`), so each `.blend` finds its
+`textures/` beside it exactly as Poly Haven laid it out. One row per file,
+each with its own sha256 and `bytes`. A row whose `asset` or `file` is
+missing, absolute, or holds a `..` segment or a backslash is refused, and so
+are two rows that land on one path.
+
+A cached file that hashes differently from its row is deleted and the fetch
+exits non-zero; run it again to download it fresh. A new row's sha256 comes
+from one download whose size and md5 matched the Poly Haven API's listing
+(`https://api.polyhaven.com/files/<id>`); the helper that did that is not
+committed, and `fetch.mjs` has no pin mode.
+
+Images are not packed. `build.py` saves every image path `//`-relative, so
+`castle.blend` reads `//cache/...` and a partial `//../cache/...`: copy or move
+the whole output folder and it still opens whole; move a `.blend` without its
+`cache/` and `check.py` line 4 names every image it lost.
+
 ## check.py
 
 Six lines (#844), each printed `ok`, `FAIL` or `--` (did not run). Line 4,
 images, runs on every build; the rest run when their stage did, and a line
-whose stage ran before its body was written fails. Non-zero on any failure.
+whose stage ran before its body was written fails. Lines 5 (level ground) and
+6 (coverage) are live from increment 1; lines 1 to 3 wait for the markers.
+Non-zero on any failure.
 
 ## Committed here
 
 The scripts, `sources.json` (every input with its URL or path, licence and
-sha256; empty until increment 1), `allow.json` (each departure from the
+sha256; 52 rows from increment 1), `allow.json` (each departure from the
 blueprint with its reason; empty), this file and `CREDITS.md`. No `.blend`,
 no image, no model: those stay in the output folder (#499, #841).
