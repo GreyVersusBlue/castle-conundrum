@@ -17,8 +17,9 @@
 # the blueprint's `material` field names for the curtain, the drums, their
 # floors, walks and roofs (#849), through library(slug). Increment 3: the gate
 # timber and iron (#852), ALIAS for the slugs `iron` and `oak`, and PLAIN for
-# the sets that take no tiling break-up. Later increments add the rest here,
-# not in their stage modules.
+# the sets that take no tiling break-up. Increment 4: the buildings' five sets
+# (#853), the two tile floors in PLAIN and the carpet and the timber in
+# SWAP_RISE. Later increments add the rest here, not in their stage modules.
 
 import os
 
@@ -48,6 +49,11 @@ LIBRARY = {
     'roof_slates_02': 3.0,
     'wooden_gate': 1.9,     # increment 3 (#852): the gate leaves and the portcullis timber
     'rusty_metal': 1.5,     # increment 3 (#852): straps, portcullis points, cell-bars
+    'old_planks_02': 2.0,   # increment 4 (#853): masons-lodge-roof, 5 ground floors, the hall roof's boards
+    'rock_tile_floor': 1.96,  # increment 4: the great hall and the King's hall floors
+    'floor_tiles_02': 4.0,  # increment 4: the chapel drum and the nave floors
+    'dirty_carpet': 0.6,    # increment 4: floor-royal-apartments, the one carpet in the castle
+    'rough_wood': 0.5,      # increment 4: the hall trusses and every #853 beam (buildings.TIMBER)
 }
 # A blueprint slug with no set of its own -> the LIBRARY set that dresses it
 # (#852, SPECS "The alias"). library() names the material after the set,
@@ -56,8 +62,9 @@ LIBRARY = {
 ALIAS = {'iron': 'rusty_metal', 'oak': 'wooden_gate'}
 # Sets built with no tiling break-up (SPECS "The tiling break-up on timber and
 # iron"): a leaf is 1.9 m, one tile of wooden_gate, and the offset sample would
-# shift boards sideways at a patch seam across it.
-PLAIN = {'wooden_gate', 'rusty_metal'}
+# shift boards sideways at a patch seam across it. The two tile floors (increment
+# 4) likewise: the offset sample would step their grout grid at every seam.
+PLAIN = {'wooden_gate', 'rusty_metal', 'rock_tile_floor', 'floor_tiles_02'}
 for _k, _v in ALIAS.items():
     if _k in LIBRARY or _v not in LIBRARY:
         raise ValueError(f"materials: ALIAS {_k!r} -> {_v!r} must map a slug not in LIBRARY onto one that is")
@@ -141,7 +148,10 @@ RUT_FEATHER = 0.3  # the road's mud blend, either side of its midpoint
 # Image Texture, BOX at BOX_BLEND, so check.py line 4 still sees each image.
 # The ground sets are not doubled: terrain.py already varies them by attribute.
 SWAP_OFFSET = (0.37, 0.61)       # of a tile, Blender x and y (z is up)
-SWAP_RISE = {'castle_wall_slates': 0.5, 'defense_wall': 0.5, 'plastered_wall_04': 0.5}
+# rough_wood and dirty_carpet (increment 4) are uncoursed too: a 0.5 m grain and a
+# 0.6 m carpet repeat 14 and 33 times along a truss and a 20 m floor.
+SWAP_RISE = {'castle_wall_slates': 0.5, 'defense_wall': 0.5, 'plastered_wall_04': 0.5,
+             'rough_wood': 0.5, 'dirty_carpet': 0.5}
 SWAP_SCALE = 1.5                 # the A/B noise's feature size, in tiles
 SWAP_EDGE = 0.04                 # the smoothstep's half width, in noise units
 VALUE_SPREAD = 0.08              # brightness moves by up to this, either way
