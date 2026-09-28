@@ -10899,3 +10899,319 @@ interiors need +11 to +11.5 stops until increment 7's sun; (e) from #852,
 its (a) porter gate-over, (d) slates' pale stones and (e) brick and block
 repeat stay left for now by Devon's ruling (#854), and 4a's (d) lodge deck
 waits for increment 6.
+
+## Castle in Blender increment 5: Mereford, decided before anything is built (2026-09-28)
+
+**A spec, not a build.** `SPECS.md` gains "Increment 5's open calls" under
+"Castle in Blender", every call recommended, and corrects increment 5's scope
+line: it said "the 29 `mereford-*` pieces (9 runs, 20 decor) and Wykes's
+yard's 3 runs, shed and ground", and on `8a90b88` `STAGE_OF` gives the stage
+43 pieces. One of the 9 `mereford-*` walls is the churchyard cross, a kit
+column with a collider and not a run; the yard's "3 runs" are 2 runs and the
+shed's deck; and the 4 town-wall runs and 4 `town-tree-*` were not named.
+Written as `architect` against `8a90b88`, where #856 was the last. No code,
+asset or data file changed in this entry.
+
+**#857. The castle3d model's Mereford: thatch at 50 degrees everywhere,
+jettied timber-framed houses with shut doors and shutters, a church with
+recessed openings, and open leaves in the town gates; model only, and the
+game does not change.** **What the game has** (#725, #705, #703): six solid
+plastered blocks 8 by 6 by 5 m with no door ("a doorway in a 6 m solid block
+is a 6 m tunnel"), each under two kit `roof.glb` pitches at 33.7 degrees to 7
+m; a stone nave to 7 m under four pitches to 10 and a 15 m tower under a
+saddleback to 18; a town wall with no battlements and a 4 by 5.5 m opening
+in its east and west runs; nobody stands in any of it, and the one place the
+player sees it from is the North-west Tower's roof. **What was wrong with
+carrying that into the model**: a plastered block with no door, window or
+frame reads as a crate in a photographic render, and the kit's pitch is a
+slate pitch. The lore rules slate out: `data/lore.json`'s `the-quay` makes
+the toll-house "the one building in Mereford with a slate roof", and the
+toll-house is rank 9's increment 3a. Thatch at 33.7 degrees is wrong twice:
+it is laid at about 50 to shed rain, and `masonry.finish` maps a slope under
+45 degrees from above, which lays the straws along the ridge. **What the
+model shows**: every pitched roof in the stage thatched, 0.45 m thick, at the
+steeper of its plan pitch and 50 degrees, sitting on its walls' outer
+arrises, 0.4 m eaves and 0.3 m verges; house ridges at 9.20 to 9.38 m where
+the plan's boxes stop at 7, the nave's at 12.22 against 10; each house two
+storeys with a 0.3 to 0.6 m jetty to the street at 2.6 m, an oak box frame
+flush with the plan box and the plaster 0.05 m behind it, a shut door,
+shuttered windows, a tint and a chimney drawn from `random.Random("town:<id>")`;
+the church's lancets, east window, door and belfry lights recessed 0.3 m
+into its solid, in the plan's stone; the two town gates with their leaves
+open against the passage. **Four look calls, ruled by Devon, 2026-09-28, quoted as he typed
+them**: roofs, thatch everywhere and no slate, "tatch everywhere" (his
+typo); `THATCH_MIN_PITCH` 50 degrees rather than the plan's 33.7, "50 sounds
+good"; jetties on the houses, "yes"; the church tower's saddleback thatched
+rather than a shingle set, "Thatch". **The seed**: the lead put to Devon
+that each house seeds from `random.Random("town:<piece id>")` rather than
+`seed("town")` plus its index, since the spec departs from the brief this
+way, and he did not object. **The thatch set is not yet chosen**: the
+architect proposed `thatch_roof_angled`, which `api.polyhaven.com` gives a
+real size of 0.54 m (2k jpg, five maps, 15,012,012 bytes); the lead
+recommended `reed_roof_03` (2.5 m, 11,799,312 bytes), with `reed_roof_04`
+(2.5 m, 11,072,326 bytes) offered alongside it; Devon has not picked and
+nothing is fetched. **The stand-in, ruled by Devon, 2026-09-28**: offered
+the choice of waiting for the set or building on a stand-in, he chose
+"Build with stand-in". So increment 5 builds every thatch face from
+`materials.thatch()`, which reads one tuple, `THATCH_SET = ('rough_wood',
+2.0, 0.5, {'warm': (1.0, 0.88, 0.66, 1.0)})`: `rough_wood`'s cached maps,
+already fetched for #853, a grey-brown (linear luminance 0.103, hue 33
+degrees, saturation 0.18) whose long splits run the image's height and so
+run downslope under the side projection a 50 degree slope takes, scaled to
+2.0 m rather than its real 0.5 so the splits read as straw and do not
+repeat 9 times down a 5.6 m slope, and warmed toward straw. It is the
+library's one size that is not a set's real size, and it is allowed only
+as a labelled stand-in. `wood_planks` and `old_planks_02` were refused as
+boards, `sparse_grass` as a green turf at luminance 0.045, and a flat tint
+as the felt the checklist asks about. Every still with thatch in it is
+labelled "stand-in thatch". The swap is Devon's pick among the three sets,
+their 5 rows fetched, `THATCH_SET` changed in one line (rise 0 for either
+reed set, whose butt ends are courses) and the town stills re-rendered; no
+other file changes. **How coverage stays honest**: `HOUSE_`, `ROOF_`,
+`CHURCH_`, `CROSS_`, `BARRELS_`, `CRATE_`, `TREE_`, `WALL_`, `DECK_` and
+`FLOOR_` carry the 43 pieces' `planId`s, with the departures held in named
+constants citing this entry; the gate leaves, which realise no piece, carry
+`modelOnly: "#857"` and no `planId`, so line 6 neither counts nor refuses
+them. No `allow.json` entry, for #851's reason. **For the integration row**
+(#839): nothing here opens a way through a collider (the doors and shutters
+are shut on solid blocks, the town gates are the plan's openings), the
+church's recesses take 0.3 m dents out of its colliders' stone and the
+houses' plaster stands 0.05 m inside theirs, and none of it is reachable
+(#703); the
+jetties at 2.45 m and up and the eaves and verges stand outside the plan's
+boxes over ground no body walks.
+
+**#858. Devon's picks on 4b's four open look notes, and the dressed stone
+round an opening is `stone_pavers` at Value 1.2, not `medieval_blocks_02`
+at 0.6; this amends #854.** **The picks, Devon, 2026-09-28, by the options
+he chose**, on the notes the 4b close-out left open: (a) `royal-tapestry`
+and `dormitory-watch-bill`'s backs 5 mm into the plaster: fix later, in
+increment 6; (b) the dressed surrounds read as reddish rubble rather than
+squared blocks at `medieval_blocks_02`'s scale: fix in 5, since the
+church's walls are that set and its recesses are `dressing()`; (c)
+`wood_planks`' board-end grid on the hall roof at 1.5 m: leave; (d) the
+interiors' +11 to +11.5 stops: fix later, in increment 7. **What was wrong
+in #854**: it chose `medieval_blocks_02` because the plan calls it the
+dressed stone (#541), and measured its luminance, not its shape. Its 2k
+diffuse is random rubble: irregular round-edged stones about 0.05 to 0.35 m
+across at its 1.5 m size, in mortar that is about a third of the face, no
+course, no squared edge, and a red-orange stone in each tile. So the fault
+is the set: at 3.0 m the stones are 0.1 to 0.7 m and still round. Scale is
+not the cause, and the tint is the cause of the red only: HSV Value 0.6
+keeps the set's hue (27 degrees) and saturation (0.38, mean sRGB 0.673,
+0.531, 0.416, the most saturated stone in `LIBRARY`), so darkened sand
+reads red-brown. **The fix**: `DRESSING = ('stone_pavers', 1.2)`, one line,
+no fetch. `stone_pavers`, cached since #849, is squared blocks in straight
+courses, four to its 2.0 m tile, so 0.49 m courses and 0.55 to 0.65 m
+blocks with 0.03 m joints, hue 27, saturation 0.25, linear luminance 0.090
+as diffuse times AO; Value 1.2 brings it to 0.108, #854's own target
+against `castle_wall_slates`' 0.107. `DRESSED` stays `medieval_blocks_02`,
+the plan's slug: the church's walls, the town wall, the houses' plinths and
+chimneys stay rubble, which is what they were, with squared dressings; the
+churchyard cross takes `dressing()`, because a 0.3 m shaft in 0.35 m rubble
+is not a cross. No vertex moves and no painted face count changes, so 4b's
+dressed openings and arches keep their numbers; `gates-dressed.png` and
+`buildings-4b.png` are rendered again in increment 5 from their own
+cameras and exposures so Devon compares the pair, and `buildings-hall-4b`
+waits for increment 7's sun. A `materials.py` check refuses a `DRESSING`
+set that is not in `LIBRARY`. Written as `architect`; no code, asset or
+data file changed in this entry.
+
+**#859. Increment 5 builds: the review stills, the breaks, and what stays
+open.** This is the lead's own session, 2026-09-28; nothing here is a
+verdict and nothing closes. **Green builds**: `--only
+terrain,walls,towers,gates,buildings,town` gave `ok line 4 images: 212
+image texture nodes, 127 images`, `ok line 5 level ground: 18 level-0
+rooms, 90 points, largest |height| 0.0001 m`, `ok line 6 coverage: 240
+pieces of terrain, walls, towers, gates, buildings, town`; `--only town`
+gave `ok line 4 images: 100 image texture nodes, 50 images`, line 5 did
+not run, `ok line 6 coverage: 43 pieces of town`, identical house lines on
+two runs. 4b's two builds reran green at 202/127/197 and 115/60/40 after
+the materials step. `npm test` 15 of 15. **Breaks from green (#34), each
+restored**: (1) `FAIL line 6 coverage: 1 piece(s) nothing realises:
+mereford-house-s2`; (2) `FAIL line 6 coverage: 4 piece(s) nothing
+realises: mereford-church-nave-pitch-1, mereford-church-nave-pitch-2,
+mereford-church-nave-pitch-3, mereford-church-nave-pitch-4`; (3) `FAIL
+line 6 coverage: allow.json entries with no reason: town-tree-3`; (4)
+`ValueError: town: mereford-house-n1's street eave at z -1.900 passes the
+road's edge at z -2 (jetty 0.6, THATCH_EAVE 0.5)`; (5) `ValueError: town:
+HOUSE_mereford-house-n1 (piece mereford-house-n1) is off its blueprint box
+by 0.700 m at its worst face, min z -9.700 against -9.000`, which departs
+from SPECS' 0.600 at -9.600 because n1's east chimney is centred on zr and
+the flipped jetty moves zr to -9.3; the first run gave 1.153 at -10.153
+from a brace overrunning a 0.6 m gable, fixed by clamping braces to their
+bay, no change at green; (6) `ValueError: town: CROSS_mereford-churchyard-
+cross (piece mereford-churchyard-cross) is off its blueprint box by 0.100
+m at its worst face, min x -92.500 against -92.400`; (7) `ValueError:
+town: TREE_town-tree-2 (5.509 m, its box x -54.07 to -50.56, z -13.43 to
+-8.05) meets DECK_wykes-shed-roof's box`; (8) skipping LEAVES_town-wall
+leaves line 6 green by design (#857 object, no planId); (9) `ValueError:
+materials: DRESSING names 'stone_paver', which is not in LIBRARY`; (10)
+`KeyError: 'sources.json has no row reed_roof_03:diff'`. SPECS.md's own
+break (5) text is corrected to the 0.700 / -9.700 figures with the
+reason. **Worth quoting**: roofs at 50.0 deg, house eave underside 4.523
+top 4.973, n1's street eave at exactly -2.000; nave ridge top 12.217, roll
+top 12.387; tower 56.3 deg ridge top 18.450; shed x -62.500 to -53.700
+ridge top 7.325; `LEAVES_town-wall x -64.800 to -62.800`,
+`LEAVES_town-wall-west x -129.200 to -127.200`; town-tree heights 4.159,
+4.204 (0.12 m clear of ROOF_wykes-shed-roof), 4.190, 4.275, churchyard
+4.186; the build prints `STAND-IN thatch (#857)`; WALL_west-gate-over
+color (1,1,1,1), n1 (0.92, 0.94, 0.96, 1). Church faces dressed: nave 66,
+tower 22. **Review stills**: `still_5.py` in the increment 5 session's
+scratchpad, uncommitted, as before. Cycles OPTIX, 1920x1080, denoiser, 128
+samples, 24 mm unless noted, exposure probed to a median display value
+near 0.35: `town-standin.png` -0.5, `town-gate-standin.png` -0.5,
+`town-street-standin.png` +2.5, `town-church-standin.png` -0.5, all at
+SPECS' cameras; `gates-dressed-5.png` +3.5 at 18 mm and
+`buildings-4b-5.png` +2.5, 4b's cameras and exposures. Four live Material
+Preview captures from the four town eyes in Devon's Blender 5.2.2, GUIDE
+and MARKERS hidden, overlays off, scene World. **What stays open**:
+Devon's line on the stills, 2026-09-28, quoted exactly: "Make your best
+call." The lead's read, which is the lead's and not Devon's: (1) the
+stand-in reads as grey board roofing, not thatch, and is judged only
+after the reed set is picked; (2) `medieval_blocks_02` on the town wall
+and church shows a diagonal repeat and a strong pink cast over long plain
+faces, which is #852 (e) at a scale Devon ruled on for the castle only;
+(3) timber reads silver-grey and the four plaster tints barely separate
+the houses, so each row reads as one terrace; (4) #858's `stone_pavers`
+dressing reads as squared blocks in `gates-dressed-5.png`. The lead's
+call: fix (2) and (3) in increment 5 before it closes, each as a written
+decision first since (2) amends #854's "leave" on (e); (1) waits on
+Devon's thatch pick.
+
+## Castle in Blender increment 5: the town's look fixes, decided before anything is built (2026-09-28)
+
+**A spec, not a build.** `SPECS.md` gains "Increment 5's look fixes" under
+"Castle in Blender", every call recommended, adds a sentence each to the
+scope by file, the increment 5 acceptance and the lane's order, and
+corrects break (5) to #859's 0.700 m at -9.700, which #859 said was done
+and was not. Written as `architect` against `51ec045`, where #859 was the
+last. Measured on the cached 2k maps and on #859's stills; no code, asset or
+data file changed in this entry.
+
+**#860. `medieval_blocks_02` takes a rise of 0.5 and a tint, everywhere the
+set is used, and keeps its 1.5 m; this amends #854's "leave" on #852 (e).**
+**What was wrong**: #852 (e) said brick and blocks "still show a repeat,
+since their courses keep a rise of 0", and Devon ruled *leave* (#854) on the
+castle's faces. On the town wall's 64 m runs and the church, #859's stills
+show a diagonal repeat and a pink cast. The evidence: the map's row means
+vary with a coefficient of 0.125 against 0.080 for its columns, with a dark
+mortar band at 0.02 of the tile at 0.67 of the mean, which is the slates'
+shape (0.154, 0.084, 0.68), and the slates were given rise 0.5 for exactly
+that; `SWAP_RISE` files blocks with brick as coursed on the set's name,
+where #858 found random rubble with no course. At rise 0 `_maps`' B sample
+never moves up, so the bands run unbroken along the whole face and the
+large stones on them read as diagonals. The pink is the set, not its red
+stone: mean sRGB (0.686, 0.547, 0.440), hue 26, saturation 0.36, the render
+at hue 25 and saturation 0.29 to 0.33, and red-orange texels only 0.8%.
+**The fix**: `SWAP_RISE['medieval_blocks_02'] = 0.5` and
+`LOOK['medieval_blocks_02'] = {'tint': {'Hue': 0.52, 'Saturation': 0.6,
+'Value': 0.65}}`, hue 26 to 31, saturation 0.36 to 0.20, luminance 0.180 to
+0.144. The scale stays at the set's real 1.5 m (#849): a simulated face
+under the swap kept a one-tile autocorrelation of 0.61 to 0.76 at 1.5, 2.0
+and 2.5 m alike, so size does not break the grid; 2.5 m is the named
+fallback if `town-gate-standin-fix.png` still shows it, as a second
+labelled exception to #849 and after Devon's yes. **It reaches the castle
+too**, because `LOOK` and `SWAP_RISE` act inside `library()` and one slug is
+one material (#854): the cross-wall's two halves, `kings-hall-south`, the
+Steward's chamber's north and east runs and the chapel nave's, as well as
+the town wall, Wykes's yard walls, the church and the houses' plinths and
+chimneys. `blocks-inner-before.png` and `-fix.png`, from (18, 1.7, 1) in
+the inner ward, are what Devon judges that by. The recesses' `stone_pavers`
+(#858) do not change and read at 0.75 of the church's wall, where they were
+0.61. Line 4 gains 5 texture nodes and no image in every build holding the
+material.
+
+**Correction (2026-09-28, after the build).** The prediction above, that
+line 4 gains exactly 5 texture nodes and no image, was wrong. Measured
+after the fix: 4b builds 202/127 and 115/60 (texture nodes / images),
+full build 212/127, `--only town` 100/50, all unchanged from baseline.
+`medieval_blocks_02` already built with two samples (10 image nodes)
+before this fix, because `SWAP_RISE.get(asset, 0.0)` returned 0.0 for it
+and sample B existed regardless of rise; #860's change only moves sample
+B's Location z from 0 to 0.5, which repositions an existing node and adds
+none. A background-Blender check confirmed the fix landed:
+`MAT_medieval_blocks_02` B location (0.37, 0.61, 0.5), tint (0.52, 0.6,
+0.65); `MAT_rough_wood` tint (0.5, 1.0, 0.5) with a MAXIMUM roughness
+floor at 0.75.
+
+**#861. Timber darker, warmer and matte, and four plaster tints far enough
+apart to tell the houses apart; model only.** **What was wrong**:
+`rough_wood` is luminance 0.105, hue 34, saturation 0.18 and roughness
+0.51, and the posts in `town-street-standin.png` sample at saturation 0.07 to
+0.13, the sky mirrored off it, so it reads silver-grey. #857's
+`PLASTER_TINTS`, on `LOOK`'s cream, sit 1.6 to 6.1 apart in CIE dE76, the
+closest pair (white and cool white) at 1.6, so a row reads as one terrace.
+**The fix**: `LOOK['rough_wood'] = {'tint': {'Hue': 0.5, 'Saturation':
+1.0, 'Value': 0.5}, 'warm': (1.0, 0.78, 0.55, 1.0), 'rough_min': 0.75}`,
+luminance 0.043, hue 32, saturation 0.41, with `box_material` passing
+`rough_min` through as `_maps` already takes it (0.75 for the reason
+`MUD_ROUGH` is 0.85). It reaches every `rough_wood` in the model, the
+castle's trusses, beams, plate and louvre frame included, and not the
+thatch stand-in, which builds from `THATCH_SET`'s own look. `PLASTER_TINTS
+= [(1.0, 1.0, 1.0), (1.0, 0.80, 0.48), (0.95, 0.66, 0.58), (0.60, 0.64,
+0.66)]`, limewash, yellow ochre, red ochre and unwashed daub, 9.2 to 15.7
+apart and stepping down in L* from 46.6 to 37.7. Four and not six, since
+`randrange(6)` would move every later draw and the increment 5 table with
+it; the draw and #857's fix-up stand, so n1 3, n2 0, n3 1, s1 0, s2 2, s3 3,
+no equal neighbour along a row or across the street. `town.py` gains
+`TINT_APART = 0.15`, raising if two tints are closer as RGB triples, which
+#857's four fail at 0.089 and these pass at 0.179: break (11).
+
+## Castle in Blender increment 5 closes: Devon's verdict, the final stills, and what is left for props (2026-09-28)
+
+**#862. Increment 5 closes: Devon's verdict on the final stills, the swap
+behind them, and what increment 6 opens on.** Devon's verdicts, 2026-09-28,
+quoted exactly: on the `-fix` stills (1.5 m stone, stand-in thatch),
+"-fix stills is fine"; on the thatch set, "Thatch: reed_roof_04"; on the
+stone's named fallback (#860), "yes for stone at 2.5"; on the five final
+stills, "all of those stills look great". The lead flagged that the near
+town wall in `town.png` still shows a faint diamond repeat at 2.5 m; Devon
+did not ask for a change on it, so it stands as accepted by his verdict,
+not open. **The swap** (`96143ce`, `eaa3c45`, `a8f96ac`, `be281eb`):
+`THATCH_SET = ('reed_roof_04', 2.5, 0.0, {})`, the `rough_wood` stand-in
+retired; `reed_roof_04` fetched the #852 way, Poly Haven 2k, 11,072,326
+bytes, five files size and md5 matched the API (diff 2,585,643; nor_gl
+4,381,563; rough 1,263,557; disp 706,592; ao 2,134,971), sha256 recorded in
+`sources.json`; `CREDITS.md` is now 137 files across 26 assets, 406.3 MB.
+`LIBRARY['medieval_blocks_02']` moves from 1.5 to 2.5 m, #860's named
+fallback taken on Devon's yes, with `SWAP_RISE` 0.5 and the tint (0.52,
+0.6, 0.65) standing; it reaches the castle's 7 pieces in the set as well
+as the town's 6 runs, the church and the houses' plinths and chimneys.
+**The builds**: `--only terrain,walls,towers,gates,buildings,town` exits
+0, line 4 212 texture nodes (unchanged) and 132 images (127 before the
+thatch; the stand-in reused `rough_wood`'s images, `reed_roof_04` adds 5),
+line 5 unchanged at 18 rooms and 90 points, line 6 at 240 pieces; `--only
+town` exits 0, line 4 100 texture nodes and 55 images (50 before), line 6
+at 43 pieces; 4b's own two builds rerun unchanged at 202/127. `npm test`
+fifteen of fifteen. **Breaks from green (#34), each restored**: (9)
+`ValueError: materials: DRESSING names 'stone_paver', which is not in
+LIBRARY`; (10) first against `reed_roof_03`, `KeyError: 'sources.json has
+no row reed_roof_03:diff'`, then against the real set, `KeyError:
+'sources.json has no row reed_roof_04:diff'`; (11) `ValueError: town:
+PLASTER_TINTS 1 (1.0, 0.92, 0.76) and 2 (1.0, 0.88, 0.84) are 0.089 apart,
+under TINT_APART 0.15`. **The stills**, Cycles OPTIX, 1920x1080, 24 mm,
+128 samples, denoiser, `still_5.py` in the increment 5 session's
+scratchpad (`review/increment5/`), uncommitted as before, five cameras:
+`town` eye (-38.5, 13.7, -13.6) at (-82, 3, -4); `town-gate` eye (-50,
+1.7, 1.0) at (-64, 3.5, -2); `town-street` eye (-67, 1.7, 0.5) at (-95, 4,
+-1); `town-church` eye (-76, 1.7, -11.5) at (-98, 7, -17.5); `blocks-inner`
+eye (18, 1.7, 1) at (2, 4, -2). At the `-fix` set's own exposures (-0.5,
+-0.5, +2.5, -0.5, 0.0), the final set reads `town.png` median 0.367,
+`town-gate.png` 0.324, `town-street.png` 0.290, `town-church.png` 0.311
+(3.3% crushed), `blocks-inner.png` 0.361, none clipped. Live Material
+Preview captures of the five cameras were also taken against the `-fix`
+build, in Devon's Blender 5.2.2, file not dirty, partial reloaded,
+`GUIDE`/`MARKERS` hidden, overlays off, scene World; Cycles is the colour
+reference, since Material Preview reads the plaster blue-grey under the
+world light. **Read, not ruled on**: the salmon cast is gone and the
+timber reads dark brown; the grey slab on the castle pair in earlier
+stills predates this fix, from a different set; `town.png`, framed from
+the tower roof, shows more roof than plaster, so it cannot by itself show
+#861's six-house separation, which the street and church stills carry.
+**Increment 6 is next: props.** Of #858's four open notes, (b) closed in
+this increment (`stone_pavers` dressing) and (c) and (d) stay where #858
+put them (left; increment 7); increment 6 inherits (a), the tapestry's and
+the watch-bill's backs 5 mm into the plaster, plus the lodge's and Wykes
+shed's floating decks (#848 note (d), #859's stage note). No PR opened;
+Devon says when.

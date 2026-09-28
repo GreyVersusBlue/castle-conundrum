@@ -256,10 +256,11 @@ def in_disc(discs, x, z):
     return any(math.hypot(x - cx, z - cz) < r for cx, cz, r in discs)
 
 
-def check_box(ob, piece, faces):
+def check_box(ob, piece, faces, stage='buildings'):
     """Raises unless `ob`'s world box is within BOX_TOLERANCE of the piece's box
     on each of `faces` ('min y', 'max z', ..., or 'centre x'), naming the piece
-    and the worst face. Returns the worst difference."""
+    and the worst face; `stage` prefixes the message (town.py imports this
+    rather than copying it, #857). Returns the worst difference."""
     have, want = world_box(ob), piece['box']
     worst, face = 0.0, None
     for f in faces:
@@ -272,7 +273,7 @@ def check_box(ob, piece, faces):
         if abs(h - w) > worst:
             worst, face = abs(h - w), f"{f} {h:.3f} against {w:.3f}"
     if worst > BOX_TOLERANCE:
-        raise ValueError(f"buildings: {ob.name} (piece {piece['id']}) is off its blueprint box by {worst:.3f} m "
+        raise ValueError(f"{stage}: {ob.name} (piece {piece['id']}) is off its blueprint box by {worst:.3f} m "
                          f"at its worst face, {face} (game frame, tolerance {BOX_TOLERANCE} m)")
     return worst
 
