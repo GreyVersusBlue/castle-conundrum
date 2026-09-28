@@ -386,9 +386,21 @@ def build_road(g, col):
     return ob
 
 
+# append_model's memo, {asset: its templates} (#857): a second append of the
+# same .blend would rename the mesh (tree_small_02_LOD1.001), MODELS' pattern
+# would delete it and the call would raise. So town.py's trees reuse the
+# terrain's template when terrain ran, and append it themselves when it did
+# not (`--only town`). One Blender builds one file, so the memo is per build.
+_APPENDED = {}
+
+
 def append_model(asset, library):
     """Every object of the asset's cached .blend, appended whole; what is not a
-    mesh or not in MODELS is deleted, and the rest go into `library`."""
+    mesh or not in MODELS is deleted, and the rest go into `library`. A second
+    call for the same asset returns the first call's templates (_APPENDED),
+    and its `library` is not used."""
+    if asset in _APPENDED:
+        return _APPENDED[asset]
     row = common.source(f"{asset}:blend")
     path = common.cached(row)
     if not os.path.isfile(path):
@@ -417,7 +429,8 @@ def append_model(asset, library):
     for ob in keep:
         ob.location = (0.0, 0.0, 0.0)
         library.objects.link(ob)
-    return sorted(keep, key=lambda o: o.name)
+    _APPENDED[asset] = sorted(keep, key=lambda o: o.name)
+    return _APPENDED[asset]
 
 
 def native_height(ob):

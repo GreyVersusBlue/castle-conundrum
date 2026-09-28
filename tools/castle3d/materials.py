@@ -21,8 +21,12 @@
 # (#853), the two tile floors in PLAIN and the carpet and the timber in
 # SWAP_RISE. Increment 4b (#854): DRESSED and dressing(), the plan's dressed
 # stone darkened for the openings in rubble, and LOOK, plastered_wall_04's
-# tint, warmth, grime and undulation, all from maps already fetched. Later
-# increments add the rest here, not in their stage modules.
+# tint, warmth, grime and undulation, all from maps already fetched.
+# Increment 5 (#857, #858): THATCH_SET and thatch(), the thatch as a labelled
+# stand-in from rough_wood until Devon picks the set; DRESSING moved to
+# stone_pavers; and LOOK's `object_tint`, the plaster multiplied by the
+# object's colour, white on every object but the six houses. Nothing fetched.
+# Later increments add the rest here, not in their stage modules.
 
 import os
 
@@ -77,11 +81,28 @@ for _k in PLAIN:
 # The plan's dressed stone (#541). gates.py and buildings.py both read it, so it
 # lives here as a material fact: a run or an arch already in it is not dressed.
 DRESSED = 'medieval_blocks_02'
-# The dressing round an opening in rubble (#854): DRESSED's set, coursed, its
-# Value times this. Diffuse times AO in linear luminance is 0.109 for
-# castle_wall_slates and 0.180 for medieval_blocks_02 on the 2k maps, so 0.6
-# brings the blocks to the rubble's 0.108 and the step at the arris is light.
-DRESSING = (DRESSED, 0.6)
+# The dressing round an opening in rubble (#854, amended by #858): a coursed
+# set and its Value times this. #854 took DRESSED's own set at 0.6, and its 2k
+# diffuse is random round-edged rubble, reddened by the darkening; stone_pavers
+# is squared blocks in straight courses (0.49 m courses, 0.55 to 0.65 m
+# blocks), diffuse times AO 0.090 in linear luminance, so 1.2 brings it to
+# 0.108 against castle_wall_slates' 0.107 and the step at the arris stays
+# light. DRESSED itself stays the plan's slug (#541).
+DRESSING = ('stone_pavers', 1.2)
+if DRESSING[0] not in LIBRARY:
+    raise ValueError(f"materials: DRESSING names {DRESSING[0]!r}, which is not in LIBRARY")
+# The thatch (#857): (set, metres per repeat, rise, look) in one tuple, built by
+# thatch(). Not a LIBRARY entry, since no blueprint `material` names thatch, so
+# SWAP_RISE gains nothing and the rise lives here. A STAND-IN until Devon picks
+# the set ("Build with stand-in", 2026-09-28): rough_wood's long splits run the
+# image's height, which a 50 degree slope's side projection turns downslope;
+# at 2.0 m, not its real 0.5, the splits read as straw rather than cracks
+# repeating 9 times down a 5.6 m slope. The library's one size that is not its
+# set's real size, allowed only as this labelled stand-in (#857). The warm
+# pulls its grey-brown toward straw, blue cut most. At the swap: fetch the
+# picked set's 5 rows, then ('reed_roof_03', 2.5, 0.0, {}) or
+# ('reed_roof_04', 2.5, 0.0, {}), or ('thatch_roof_angled', 0.54, 0.5, {}).
+THATCH_SET = ('rough_wood', 2.0, 0.5, {'warm': (1.0, 0.88, 0.66, 1.0)})
 # Per-set look (#854), applied inside library(), so MAT_<asset> is the one
 # material everywhere the set is used. plastered_wall_04's maps are a neutral
 # grey at linear 0.257 with AO 1.000 and displacement std 0.003: a lit card.
@@ -90,12 +111,16 @@ DRESSING = (DRESSED, 0.6)
 # multiplying the colour's Value after the drift; `undulate` is a Bump
 # (strength, distance in metres) on a world noise (metres, detail) between
 # the normal map and the BSDF, so the render follows uneven stone under it.
+# `object_tint` (#857) multiplies the colour by Object Info's Color after
+# `warm`: Blender's default object colour is white, so every object but the
+# six houses (town.PLASTER_TINTS) renders exactly as before.
 LOOK = {
     'plastered_wall_04': {
         'tint': {'Hue': 0.5, 'Saturation': 1.0, 'Value': 0.65},
         'warm': (1.0, 0.93, 0.80, 1.0),
         'grime': (1.5, 4.0, (0.4, 0.6), (0.75, 1.2)),
         'undulate': (0.3, 0.02, 0.6, 3.0),
+        'object_tint': True,
     },
 }
 for _k in LOOK:
@@ -212,12 +237,13 @@ def _world_noise(tree, x, y, scale, detail):
     return noise.outputs['Fac']
 
 
-def _maps(tree, asset, size, x, y, tint=None, rough_min=None, warm=None, rise=None, grime=None):
+def _maps(tree, asset, size, x, y, tint=None, rough_min=None, warm=None, rise=None, grime=None, object_tint=False):
     """`asset`'s five maps box-projected on world coordinates at `size` metres
     per repeat, blend 0.2. Returns the sockets a shader reads: the diffuse
     times AO (after `grime`, a LOOK noise on its Value, then `tint`, a
-    Hue/Saturation/Value dict, and then `warm`, an RGBA multiply, each when
-    given), the roughness (no lower than `rough_min`, when given), the tangent
+    Hue/Saturation/Value dict, then `warm`, an RGBA multiply, and then, with
+    `object_tint`, a multiply by Object Info's Color, each when given), the
+    roughness (no lower than `rough_min`, when given), the tangent
     normal colour and the height. With `rise` (a tile fraction, 0 for a
     coursed set), each map is two offset samples swapped by patch and the
     colour's brightness drifts (SWAP_OFFSET and the constants beside it)."""
@@ -287,6 +313,14 @@ def _maps(tree, asset, size, x, y, tint=None, rough_min=None, warm=None, rise=No
         links.new(diff, _sock(mul.inputs, 'A'))
         _sock(mul.inputs, 'B').default_value = warm
         diff = _sock(mul.outputs, 'Result')
+    if object_tint:
+        info = _node(tree, 'ShaderNodeObjectInfo', x + 50, y + 850)
+        mul = _node(tree, 'ShaderNodeMix', x + 250, y + 850, data_type='RGBA', blend_type='MULTIPLY')
+        mul.label = f"{asset} object tint"
+        _sock(mul.inputs, 'Factor').default_value = 1.0
+        links.new(diff, _sock(mul.inputs, 'A'))
+        links.new(info.outputs['Color'], _sock(mul.inputs, 'B'))
+        diff = _sock(mul.outputs, 'Result')
     ao =_node(tree, 'ShaderNodeMix', x + 450, y + 300, data_type='RGBA', blend_type='MULTIPLY')
     _sock(ao.inputs, 'Factor').default_value = 1.0
     links.new(diff, _sock(ao.inputs, 'A'))
@@ -346,13 +380,14 @@ def _finish(mat, bsdf_x, maps, surface=None, undulate=None):
     return mat
 
 
-def box_material(name, asset, size, tint=None, rise=None, warm=None, grime=None, undulate=None):
+def box_material(name, asset, size, tint=None, rise=None, warm=None, grime=None, undulate=None, object_tint=False):
     """A Principled material from `asset`'s five maps, box-projected on world
     coordinates at `size` metres per repeat, blend 0.2, doubled when `rise`
-    is given (see _maps), with a LOOK's `warm`, `grime` and `undulate` when
-    given."""
+    is given (see _maps), with a LOOK's `warm`, `grime`, `undulate` and
+    `object_tint` when given."""
     mat = _new_material(name)
-    maps = _maps(mat.node_tree, asset, size, -400, 0, tint, warm=warm, rise=rise, grime=grime)
+    maps = _maps(mat.node_tree, asset, size, -400, 0, tint, warm=warm, rise=rise, grime=grime,
+                 object_tint=object_tint)
     return _finish(mat, 600, maps, undulate=undulate)
 
 
@@ -386,16 +421,32 @@ def library(slug):
 
 
 def dressing():
-    """MAT_<DRESSING's set>_dressing: the plan's dressed stone, coursed (rise
-    0), its Value times DRESSING[1], for the reveals and bands round the
-    openings in rubble (#854). Built once per file; the set's name stays in
-    the material's, for check.py line 4 and CREDITS.md."""
+    """MAT_<DRESSING's set>_dressing: squared, coursed stone (rise 0), its
+    Value times DRESSING[1], for the reveals and bands round the openings in
+    rubble (#854, #858) and the church's recesses and cross (#857). Built once
+    per file; the set's name stays in the material's, for check.py line 4 and
+    CREDITS.md."""
     asset, value = DRESSING
     name = f"MAT_{asset}_dressing"
     have = bpy.data.materials.get(name)
     if have is not None:
         return have
     return box_material(name, asset, LIBRARY[asset], {'Hue': 0.5, 'Saturation': 1.0, 'Value': value}, rise=0.0)
+
+
+def thatch():
+    """MAT_<THATCH_SET's set>_thatch, every thatch face in town.py (#857):
+    the set at THATCH_SET's size, rise and look, built once per file. Its own
+    material, so MAT_<set> (rough_wood's is buildings.TIMBER) does not change;
+    the images load once (check_existing). A set with no sources.json rows
+    raises in _maps, naming the first row, which is why the swap cannot land
+    without its fetch."""
+    asset, size, rise, look = THATCH_SET
+    name = f"MAT_{asset}_thatch"
+    have = bpy.data.materials.get(name)
+    if have is not None:
+        return have
+    return box_material(name, asset, size, rise=rise, **look)
 
 
 def _blend_factor(tree, attribute, x, y, scale, spread, width=0.12):

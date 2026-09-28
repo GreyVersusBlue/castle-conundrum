@@ -1379,11 +1379,15 @@ net for the first fetch. Gate: none. Lane G.** Devon, 2026-09-26: rebuild
 the castle, Mereford and the countryside as a realistic standalone Blender
 model with Poly Haven PBR materials, today's layout as the guide, his 71
 props re-materialed inside it (#839). Decided in `HISTORY.md` as #839 to
-#844, with #845 to #855 since (#851 amends #435 for the model only: a shut
+#844, with #845 to #858 since (#851 amends #435 for the model only: a shut
 outer gate in `barbican-west`; #853 covers and windows the rooms the game
 leaves open to the sky, model only; #854 is Devon's ruling on the ten open
 look notes, and adds the hall's louvre, dressed openings and a darker
-plaster; #855 corrects 4b from its stills); this section is the `builder`
+plaster; #855 corrects 4b from its stills; #856 moves the roof boards to
+`wood_planks`; #857 is Mereford's shape in the model, thatch and jetties,
+ruled by Devon, the thatch on a `rough_wood` stand-in until he picks the
+set; #858 is his picks on 4b's four open notes and moves the dressing to
+`stone_pavers`, amending #854); this section is the `builder`
 job those decisions leave. Nothing
 under `tools/castle3d/` exists on `e05ac72`. **The game loads none of it**:
 no file under `src/`, `data/`, `assets/` or `test/` changes in any
@@ -1496,7 +1500,14 @@ one shared module, one module per stage.
   undulation bump inside `library()`, and `dressing()` builds
   `MAT_medieval_blocks_02_dressing`, the dressed stone darkened to the
   rubble's albedo; `LIBRARY` gains nothing and nothing is fetched. See
-  increment 4b's open calls.
+  increment 4b's open calls. From increment 5 (#857), `THATCH_SET` names the
+  thatch's set, size, rise and look in one tuple and `thatch()` builds it,
+  a stand-in from `rough_wood` until Devon picks the set; `DRESSING` moves
+  to `stone_pavers` at Value 1.2 (#858, amending #854); `LIBRARY` and
+  `SWAP_RISE` gain nothing; and `LOOK`'s `plastered_wall_04` gains
+  `object_tint`, a multiply by the object's colour, white on every object
+  but the six houses; `terrain.append_model` gains a memo so the town's trees
+  reuse the terrain's template. See increment 5's open calls.
 - **The stage modules**, one per increment 1 to 8: `blueprint.py` (the
   `GUIDE` collection, increment 0), `terrain.py`, `walls.py`, `towers.py`,
   `gates.py`, `buildings.py`, `town.py`, `props.py`, `lighting.py`,
@@ -1602,6 +1613,16 @@ recorded in `HISTORY.md` against the increment (#53).
    yard's 3 runs, shed and ground: the town wall, the church, and
    timber-framed houses from a parametric generator seeded by
    `seed("town")` and each house's index. Roof slate or thatch.
+   *Corrected 2026-09-28*: `STAGE_OF` gives the stage 43 pieces on
+   `8a90b88`: the 29 `mereford-*` (9 `wall`, of which 8 are buildings and one
+   is the churchyard cross, and 20 `decor`), the 4 town-wall runs, the 4
+   `town-tree-*`, and Wykes's 2 runs, shed deck, 2 shed pitches and yard
+   floor. Every roof is thatch (#857, the lore's one slate roof is the
+   toll-house), and each house draws from `random.Random("town:<id>")`.
+   Every number the builder needs is in the increment 5 open calls below.
+   Devon's yes to #857 is given; the thatch is a stand-in, `rough_wood`,
+   until he picks the set (#857), and the dressed stone round every opening
+   moves to `stone_pavers` (#858).
 6. **Props.** The 71 files' meshes appended from the pinned
    `castle_props.blend` by object name (`libraries.load`, #840) and
    re-materialed; each of the 75 rows that name one is placed by its
@@ -1731,6 +1752,19 @@ turn it red from green (#34). The report quotes the failing line.
   `DECK_masons-lodge-roof` and the five `old_planks_02` ground floors still
   carry `MAT_old_planks_02`; the report quotes each object's slot list,
   and `buildings-hall-4b.png` is re-rendered at 1024 samples for Devon.
+- **Increment 5, in full.** `npm test` fifteen of fifteen, unchanged.
+  `npm run castle3d:build -- --only terrain,walls,towers,gates,buildings,town`
+  exits 0 with lines 4, 5 and 6 passing, line 5 unchanged at 18 level-0
+  rooms and 90 points and line 6 at 240 pieces (5 terrain, 97 walls, 46
+  towers, 9 gates, 40 buildings, 43 town); `--only town` exits 0 with lines
+  4 and 6 passing, line 6 at 43 and line 5 not run. The report quotes: the
+  six house lines, which equal the increment 5 table, from two `--only town`
+  builds; each roof's pitch, eaves, verges and ridge top; the leaves' x
+  spans; each tree's height and nearest margin; `WALL_west-gate-over`'s
+  `color`, `(1, 1, 1, 1)`; the line 4 counts. The eight breaks in increment
+  5's open calls, each from green, each quoted. Four stills, `town.png`,
+  `town-gate.png`, `town-street.png` and `town-church.png`, each with its
+  exposure, and Devon's line on each recorded in `HISTORY.md`.
 - **Increment 7.** Five stills exist, one per camera, and line 4 passes
   with the HDRI in the scene.
 - **Increment 8.** Lines 1, 2 and 3 pass: 48 `ROOM_`, 5 `GATE_` and 4
@@ -2534,11 +2568,494 @@ model-only object, so line 6 stays at 197 and 40 and no `planId` moves.
   eye) +2.5, `buildings-hall-4b` +11.5, `gates-dressed` +3.5. The report
   gives each still's exposure.
 
+**Increment 5's open calls** (architect, 2026-09-28, against `8a90b88`; the
+lead's list, and five more found in the reading). Every number is in the
+game's frame. "The road" is `outside-road`, x -198 to -46, z -2 to 2, centre
+line z 0. k is a pitch as rise over run; tan 50 degrees is 1.19175. Every
+object `town.py` adds that realises no plan piece carries `modelOnly: "#857"`
+and no `planId`; what departs from a piece's box inside an object that
+carries its `planId` (a jetty, a chimney, a roof above its pitch boxes) is
+held in a named constant citing #857, as #853's were, and the object carries
+no `modelOnly`. **#857's four look calls are ruled** (thatch at 50 degrees,
+no slate, jettied houses, a thatched saddleback), recorded in `HISTORY.md`.
+**The thatch set is not picked, and the builder does not wait for it**:
+Devon, 2026-09-28, "Build with stand-in". Every thatch surface takes
+`materials.thatch()`, a stand-in from `rough_wood` (below), and the build,
+the counts, the breaks and the stills proceed on it; every still with thatch
+in it is labelled "stand-in thatch". Swapping the real set in later is one
+5-row fetch, one line (`materials.THATCH_SET`) and the stills re-rendered. **Devon's four
+picks on 4b's look notes** (#858): (a) the tapestry and watch-bill backs,
+increment 6; (b) the dressed surrounds reading as rubble, this increment,
+below; (c) `wood_planks`' board-end grid on the hall roof, left; (d) the
+interiors' +11 to +11.5 stops, increment 7.
+
+- **The count and the scope line.** Confirmed against `castle-plan.js` on
+  `8a90b88` (`export-blueprint.mjs`, then `STAGE_OF`): 29 `mereford-*`
+  pieces, 9 `wall` and 20 `decor`, as the scope line says, but only 8 of the
+  9 are buildings. `mereford-churchyard-cross` is `kind: wall` because the
+  plan builds it from `column-damaged.glb` with a collider; it is a stone
+  cross here, not a run. Wykes's yard is 2 runs (`wykes-yard-north`,
+  `-east`), the shed's deck `wykes-shed-roof` (a `wall` lifted on `base` 3,
+  with no collider), `wykes-shed-pitch-1` and `-2`, and `floor-wykes-yard`;
+  the scope's "3 runs" counted the deck as one. The stage also takes the 4
+  town-wall runs and the 4 `town-tree-*`, which the scope line did not name:
+  **43 pieces, 16 `wall`, 26 `decor`, 1 `ground`**. Not the stage's:
+  `wykes-block`, `wykes-course-1` to `-3` and `wykes-slab` (`kind: prop`, so
+  `props`), the shed's four posts `structure-pole-126` to `-129` and the
+  yard's kit decor `ladder-130` to `tree-shrub-136` (`props`, increment 6).
+  So the shed's deck floats until increment 6, as the lodge's does (#854's
+  note 10), and the report says so. The objects, in build order, 33 of them
+  carrying the 43 ids: `WALL_<id>` for `town-wall`, `town-wall-north`,
+  `town-wall-south`, `town-wall-west`, `wykes-yard-north` and
+  `wykes-yard-east`; `DECK_wykes-shed-roof`; `FLOOR_floor-wykes-yard`;
+  `ROOF_wykes-shed-roof` (`planIds` the 2 shed pitches); `HOUSE_<id>` and
+  `ROOF_<id>` for each of the 6 houses (`planIds` its 2 pitches);
+  `CHURCH_mereford-church-nave`, `ROOF_mereford-church-nave` (`planIds` its 4
+  pitches), `CHURCH_mereford-church-tower`, `ROOF_mereford-church-tower`
+  (`planIds` `mereford-church-tower-pitch`); `CROSS_mereford-churchyard-cross`,
+  `BARRELS_mereford-street-barrels`, `CRATE_mereford-street-crate`; and
+  `TREE_<id>` for the 4 `town-tree-*` and `mereford-churchyard-tree`. Two more
+  carry no `planId`: `LEAVES_town-wall` and `LEAVES_town-wall-west`. A `ROOF_`
+  is named for the wall piece its pitches sit on. **Line 6 then counts 43
+  pieces on `--only town` and 240 on `--only
+  terrain,walls,towers,gates,buildings,town`** (5 terrain, 97 walls, 46
+  towers, 9 gates, 40 buildings, 43 town). `STAGE_OF`, `check.py` and
+  `allow.json` do not change. Correct the scope line to say so.
+- **Which piece is which, by rule.** Recommend **constants in `town.py`, and
+  a raise for any town piece no rule takes, naming it, as `buildings.py`
+  does**: `RUNS = r'^(town-wall|wykes-yard-)'` (built from their colliders),
+  `HOUSES = r'^mereford-house-'`, `CHURCH = r'^mereford-church-(nave|tower)$'`,
+  `CROSS = 'mereford-churchyard-cross'`, a deck is any other `wall` with no
+  collider of its own (`buildings`' `has_col` test), a pitch is a `decor`
+  whose id ends `-pitch` or `-pitch-<n>`, and the tree, barrels and crate are
+  found by the piece's `model` file name (`tree-large.glb`, `barrels.glb`,
+  `detail-crate.glb`). A pitch belongs to the one `wall` piece whose box top
+  equals the pitch box's foot within 1e-6 and whose plan rectangle holds the
+  pitch's; none or two raises, naming the pitch. Every pitch in the stage
+  has `rotationY` 90, which is a ridge along x; one whose `rotationY` is not
+  90 or 270, or two pitches of one building that disagree, raises: no town
+  roof runs along z on `8a90b88`, and a roof builder for both axes is code
+  nothing exercises.
+- **The seed and the draws.** Recommend **`common.seed("town")` as every stage
+  has it, and each house and tree drawing from its own `rng =
+  random.Random(f"town:{piece id}")`, never from the global `random`**. A
+  str seed is hashed with sha512, so it is independent of `PYTHONHASHSEED`
+  (#840), and a house's draws do not move when another house draws more or
+  less. *This departs from the lead's "each house's index"*: an index moves
+  every later house's look the day the plan adds one, and the id does not.
+  A house's draws, in this order, one call each: (1) `frame =
+  rng.choice(('square', 'close'))`; (2) `jetty = rng.choice((0.3, 0.45,
+  0.6))`; (3) `tint = rng.randrange(4)`; (4) `door = rng.randrange(4)`, the
+  street bay; (5) four `rng.random() < 0.5`, ground street windows by bay;
+  (6) four `< 0.6`, upper street; (7) four `< 0.35`, ground rear; (8) four `<
+  0.4`, upper rear; (9) two `< 0.5`, the west and east gable windows; (10)
+  `chimney = rng.choice((None, 'west', 'east'))`. Then three fix-ups, in
+  order: the door's bay loses its ground street window; a house with no
+  upper street window takes one in bay `(door + 2) % 4`; and, going west
+  from the gate along each row (`n1`, `n2`, `n3`; `s1`, `s2`, `s3`), a house
+  whose tint equals the house before it takes `(tint + 1) % 4`. Bays count
+  from the house's west end. Computed with Blender 5.2's own Python 3.13
+  (and 3.14, which agrees), the six lines the build must print, `W` a window
+  and `-` none, bays 0 to 3 west to east, gables west then east:
+
+  | House | Frame | Jetty | Tint | Door bay | Ground street | Upper street | Ground rear | Upper rear | Gables | Chimney | Ridge top |
+  | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+  | `n1` | square | 0.6 | 3 | 3 | `WWW-` | `---W` | `W-W-` | `----` | `-W` | east | 9.383 |
+  | `n2` | close | 0.45 | 0 (drew 3) | 3 | `W-W-` | `-W-W` | `---W` | `WWW-` | `-W` | none | 9.293 |
+  | `n3` | square | 0.3 | 1 | 0 | `-WWW` | `--W-` | `WW--` | `WWWW` | `-W` | west | 9.204 |
+  | `s1` | square | 0.45 | 0 | 2 | `WW-W` | `W-WW` | `---W` | `WWWW` | `--` | east | 9.293 |
+  | `s2` | square | 0.45 | 2 | 3 | `W---` | `W-WW` | `----` | `-W-W` | `-W` | east | 9.293 |
+  | `s3` | close | 0.45 | 3 (drew 2) | 1 | `W---` | `WWWW` | `W---` | `W-W-` | `-W` | east | 9.293 |
+
+  A second `--only town` prints the same six lines; the report quotes both.
+- **The house, in section.** Recommend **a solid, as the game's is (a house
+  nobody enters is a block, #703 and `mereford-house-n1`'s comment), two
+  storeys with a jetty to the street, its plaster face `FRAME_PROUD` 0.05 m
+  inside the plan box so the timbers stand flush with the box's faces**. The
+  street face is the box's z face nearer the road's centre line (`n*` at z
+  -3, `s*` at z 3); the rear face is the other. `PLINTH` 0.3: the full box, y
+  0 to 0.3, in `materials.DRESSED` (`medieval_blocks_02`, slot 2). The ground
+  storey: y 0.3 to `FIRST` 2.6, the box less `FRAME_PROUD` on every side, in
+  the piece's `material` (`plastered_wall_04`, slot 0). The upper storey: one
+  `Solid.plate(axis='x')` from x a0 + 0.05 to a1 - 0.05, the pentagon (rear
+  + 0.05, 2.6), (street' - 0.05, 2.6), (street' - 0.05, 5.0), (zr, apex),
+  (rear + 0.05, 5.0), signs taken toward the house, where street' is the
+  street face moved `jetty` toward the road, zr the middle of rear and
+  street', and apex the thatch's underside at the ridge (below), so the
+  gables are plaster to the thatch. Under the jetty, `JOIST` ends, 0.15 m
+  square at 0.5 m centres along x (first 0.25 in from each end), from the
+  street face to street', y 2.45 to 2.6, `TIMBER` (slot 1). The house holds
+  its box on `min x`, `max x`, `min y` and the rear z face within
+  `BOX_TOLERANCE` 0.01 (`buildings.check_box`), and the rear face is found
+  from the road, not from the jetty code, which is what the sign break
+  below catches. It stands past its box by the jetty (0.3 to 0.6 m, from
+  2.45 m up) and the chimney. **Ruled by Devon (#857): "yes".**
+- **The framing.** Recommend **a box frame of `buildings.TIMBER`
+  (`rough_wood`, slot 1), every member 0.1 m deep from the box face inward,
+  so 0.05 m proud of the plaster, imported and not copied**, per storey and
+  face: bays `round(length / BAY)`, `BAY` 2.0, so a long face is 4 bays of 2
+  m and a gable face 3 (6 m below, 6.3 to 6.6 m above); a `POST` 0.2 m wide
+  at every bay line, 0.2 m square at a corner; rails 0.2 m tall unless
+  given: a sill beam y 0.3 to 0.5, the ground head rail 2.4 to 2.6, on the
+  street face a bressumer 2.6 to 2.85 at street', on the other three faces a
+  girding beam 2.6 to 2.8, and a wall plate 4.8 to 5.0 round the upper
+  storey. `frame` `square`: a mid rail per bay, 1.35 to 1.55 below and 3.7 to
+  3.9 above, and one `BRACE` 0.15 m wide in each end bay of every face and
+  storey, a straight strut from the corner post's inner edge at the upper
+  rail's foot to the mid rail's top 0.9 m along; the mid rail and the brace
+  are left out of a bay holding a door or window. `frame` `close`: studs 0.15
+  m wide at `CLOSE` 0.5 m centres between the posts on the two long faces,
+  rail to rail, the gables staying square; a stud crossing a window's span
+  grown by 0.1 m keeps only its parts below the sill timber and above the
+  head timber, and one crossing the door keeps only its part above the door
+  head. Each gable carries a king post 0.2 m wide from the wall plate's top
+  to the thatch's underside at zr.
+- **Doors and windows.** Recommend **shut, as #851's gate and #855's walk
+  doors are shut: the model is not walked, and a shut leaf needs no room
+  behind it, where an opening in a solid block is the "6 m tunnel"
+  `mereford-house-n1`'s comment refuses**. One door per house on the street
+  face, in bay `door`: a leaf of `oak` (`MAT_wooden_gate` through
+  `materials.ALIAS`, slot 3), 1.0 by 2.0 m from the plinth's top (0.3) to
+  2.3, centred in the bay, from the plaster face out 0.03 m, so 0.02 m
+  behind the posts' faces; a door head timber 2.3 to 2.45 across the bay;
+  two `iron` straps (slot 4) 0.06 m tall, 0.01 m proud of the leaf, at 0.4
+  and 1.8 m over the threshold, over 0.8 of the leaf's width from its west
+  edge. A window is an opening's frame with its shutters shut: ground 0.8 by
+  0.8 m, sill 1.0, head 1.8; upper 0.8 by 0.9, sill 3.4, head 4.3; gable
+  (upper storey, the face's middle bay) 0.6 by 0.7, sill 3.5, head 4.2; each
+  centred in its bay, with a sill timber 0.1 m tall under it and a head
+  timber 0.1 m tall over it, each the opening's width plus 0.2, flush with
+  the box face, and two shutters of `oak`, each half the width less 0.005,
+  0.03 m proud of the plaster. The rear faces get windows and no door.
+- **The plaster's tint per house.** Recommend **`materials.LOOK`'s
+  `plastered_wall_04` gains `object_tint: True`, a Multiply by Object Info's
+  Color after `warm`, and each `HOUSE_` sets `ob.color` from `PLASTER_TINTS`
+  by its `tint`**: `(1.0, 1.0, 1.0)` (the LOOK cream as it is), `(1.0, 0.92,
+  0.76)` (ochre wash), `(1.0, 0.88, 0.84)` (a pink wash), `(0.92, 0.94,
+  0.96)` (a cool white). Every other object keeps Blender's default colour,
+  `(1, 1, 1, 1)`, so `MAT_plastered_wall_04` on the gate-overs and the three
+  `PLASTER_` rooms renders exactly as Devon passed it in 4b; the report
+  quotes `WALL_west-gate-over`'s `color`. One material still (#854), and six
+  houses of one tone is what the checklist's "one house forty times" asks
+  about.
+- **Roofs: thatch, not slate, and the rule.** Recommend **every pitched roof
+  in the stage is thatch, with no list**: `data/lore.json`'s `the-quay` and
+  `data/documents.json` say the toll-house at the quay's head is "the one
+  building in Mereford with a slate roof", and `mereford-church-nave-pitch-1`'s
+  comment already refuses slate for the nave on that line. The toll-house is
+  rank 9's increment 3a and is not in this blueprint, so no roof here is
+  slate. That covers the six houses, the nave, the tower's saddleback and
+  Wykes's shed, which stands outside the gate but is a Mereford man's.
+  **Ruled by Devon (#857): "tatch everywhere"** (his typo, quoted as typed).
+  *A taste call for Devon on the tower*: a thatched saddleback on a stone
+  tower is less usual than the nave's thatch; the recommendation keeps the
+  rule whole rather than open a second fetch for one 4 m roof, and the named
+  alternative is a shingle set, fetched after his yes. **Ruled by Devon
+  (#857): "Thatch".**
+- **Pitch, eaves, verges and what stands above the boxes.** Recommend
+  **`THATCH_MIN_PITCH` 50 degrees: a roof takes the steeper of its pitches'
+  own and 50 degrees; its underside through the wall's top outer arris at
+  the pitches' foot height, as #855's lean-to sits on its wall; `THATCH`
+  0.45 m thick measured vertically (0.29 m square to the slope); eaves
+  `THATCH_EAVE` 0.4 m out from each wall line; verges `VERGE` 0.3 m past each
+  gable end, stopped at the face of any town `wall` piece whose box the
+  verge's box would enter (the shed's west end at the town wall's east face,
+  x -62.5, and the nave's west end at the tower's east face, x -100); a
+  ridge roll of 12 facets, radius 0.22 m, centred 0.05 m under the ridge
+  top, the roof's length; slot 0 `materials.thatch()`.** Why 50: thatch sheds rain
+  at 45 degrees and up and is laid at about 50, and the plan's 33.7 degrees
+  (the kit's `roof.glb`) is a slate pitch; and `masonry.finish` writes `UVMap`
+  by the face's dominant axis, so a slope steeper than 45 degrees takes the
+  side projection and the straws run downslope, where at 33.7 the top
+  projection lays them along the ridge. *A taste call for Devon*: the
+  fallback is the plans' own pitch, one constant. **Ruled by Devon (#857):
+  "50 sounds good".** The numbers (plan box
+  tops in brackets): houses, half-span (6 + jetty) / 2, ridge underside and
+  top 8.754 and 9.204 (jetty 0.3), 8.843 and 9.293 (0.45), 8.933 and 9.383
+  (0.6), roll top 0.17 over those (the plan's 7.0); every eave's underside
+  4.523 and top 4.973 at 0.4 m out; the nave, 7 + 4k, 11.767 and 12.217
+  (10.0); the tower keeps the plan's 56.3 degrees (3 over 2, steeper than 50),
+  18.0 and 18.45 (18.0); the shed, 3.3 + 3k, 6.875 and 7.325 (5.3). Model
+  only, above the plan's boxes, under #857. The rule that holds the street:
+  `town.py` raises if a house's jetty or street eave passes the road's box
+  edge (z -2 or 2) by more than 1e-6, naming the house, the eave's z and the
+  jetty; at green `n1`, jetty 0.6, puts its eave at exactly -2.0.
+- **Chimneys.** Recommend **`CHIMNEY` 0.8 m square in `DRESSED` (slot 2),
+  centred on zr at x a0 + 0.9 (west) or a1 - 0.9 (east), from y 5.0 to its
+  roof's ridge top plus 1.0**, part of `HOUSE_`: from the North-west Tower's
+  roof a stack is what tells six ridges apart.
+- **The church.** Recommend **the nave and tower as solids with recessed
+  openings, in their slug, `medieval_blocks_02` (slot 0), with the recess
+  faces in `materials.dressing()` (slot 1) so an opening reads dark**. Each
+  face that carries an opening is a core inset by `RECESS` 0.3 m plus a skin
+  0.3 m deep, split along the face at each opening's edges: a strip with no
+  opening is one box; a strip with one is a box from the foot to the sill
+  (none for a door) and, above the springing, two convex quads per opening
+  as `Solid.plate`s, (a, springing), (mid, apex), (mid, top), (a, top) and
+  its mirror, so the head is pointed by two straight chords. Skins on the
+  faces normal to z run the face's full length; a skin on a face normal to x
+  stops `RECESS` short of each end that meets another skin, so no two skins
+  share a coplanar face. The core is cut by `masonry.split_boxes` at each
+  opening's edges and sill and apex, and `Solid.paint` gives slot 1 to every
+  face whose centre lies within an opening's span and sill-to-apex band and
+  within `RECESS` of the outer face (back, reveals, chord soffits). Openings,
+  `(width, sill, springing, apex)`: `LANCET` (0.7, 2.2, 4.6, 5.2) at x -96,
+  -92 and -88 on the north face and -93 and -89 on the south; `EAST_WINDOW`
+  (1.4, 2.4, 5.2, 6.2) at z -18 in the east face; `NAVE_DOOR` (1.4, 0, 2.4,
+  3.1) at x -97 in the south face, its leaf of `oak` (slot 2) the opening's
+  outline standing 0.06 m off the core; `BELFRY` (0.5, 12.8, 13.9, 14.3)
+  centred on each of the tower's four faces, whose east one clears the
+  nave's ridge roll (12.387) by 0.41 m. The nave's gables are one stone
+  triangle prism along x over its whole length, (-22, 7), (-18, 11.767),
+  (-14, 7); the tower's the same, (-20, 15), (-18, 18.0), (-16, 15). No
+  porch, buttresses or chancel: the plan has none. Each `CHURCH_` holds its
+  box within 0.01 on `min x`, `max x`, `min z`, `max z` and `min y`.
+- **The town wall and its gates.** Recommend **the four runs through
+  `walls.build_run(s, p, cols, None, batter=False)`, imported, on
+  `masonry.colliders_of`, so the two gates are the plan's openings exactly
+  (4 m wide at z -2 to 2, flat-headed at 5.5 m, 3 m deep), plain-topped with
+  no parapet (#705), undressed since the slug is `DRESSED`; and in each gate
+  two open leaves, one object per gate, `LEAVES_<run id>`, `modelOnly:
+  "#857"`**. Each leaf is `oak`, 2.0 m (half the opening) by 5.4 m (the head
+  less 0.1), 0.1 m thick, standing 0.02 m off a passage side (z -1.98 to
+  -1.88 and 1.88 to 1.98), from a hinge line 0.3 m inside the gate's outer
+  face toward the town: the outer face is the run's x face farther from the
+  town's centre, the middle of the four runs' union (x -96, z -2), so
+  `town-wall`'s leaves are x -64.8 to -62.8 and `town-wall-west`'s -129.2 to
+  -127.2; two `iron` straps 0.08 m tall and 0.01 m proud on the passage side
+  at y 1.0 and 4.2. Open, because the road runs through and the model is a
+  day. The flat 4 m stone head is the plan's (#500); if the still reads it
+  as impossible stone, the named fix is a timber lintel face, not a taller
+  opening than the colliders.
+- **Wykes's yard.** Recommend **the two runs as the town wall's are;
+  `DECK_wykes-shed-roof` as its box, x -62.5 to -54, y 3 to 3.3, z -16 to
+  -10, in its slug `old_planks_02`, as `DECK_masons-lodge-roof` is;
+  `FLOOR_floor-wykes-yard` as its box from `buildings.GROUND_Y` (-0.1 to
+  0.005) in `stone_pavers`; `ROOF_wykes-shed-roof` thatched as above, x -62.5
+  to -53.7, eaves z -16.4 and -9.6, with a gable of `buildings.ROOF_BOARDS`
+  boards `buildings.GABLE` 0.05 m thick at the deck's east end (x -54.05 to
+  -54), the triangle (-16, 3.3), (-13, 6.875), (-10, 3.3), in slot 1**. The
+  west end needs none: the town wall closes it.
+- **The cross, the barrels and the crate.** Recommend **generated, each held
+  to its box on every face within 0.01, no fetch**. `CROSS_`: steps 0.8 m
+  square 0 to 0.3 and 0.55 m square 0.3 to 0.6, a shaft 0.3 m square 0.6 to
+  4.0, arms `CROSS_ARM` 0.8 m along x by 0.3 m in z at y 3.2 to 3.45, in
+  `materials.dressing()` (the plan's dressed stone, #541, squared by #858). `BARRELS_`: two barrels of 16
+  facets at x = box x0 + dx / 4 and x0 + 3 dx / 4 (-72.37 and -71.63), z the
+  box's centre, the box's height, belly radius min(dx / 4, dz / 2) = 0.37,
+  ends 0.8 of the belly, rings at 0, 0.10, 0.16, 0.5, 0.84, 0.90 and 1.0 of
+  the height with radius end + (belly - end) sin(pi t), `rough_wood` (slot
+  0) and the two hoop bands, 0.10 to 0.16 and 0.84 to 0.90, `iron` (slot 1).
+  `CRATE_`: a cube of side dx / (|cos r| + |sin r|) = 0.750 m, 0.75 m tall,
+  turned by the piece's `rotationY` r (-20) about the box centre in three's
+  sense (x' = x cos r + z sin r, z' = -x sin r + z cos r), 12 edge battens
+  0.06 m square inside the outline in `rough_wood`, panels the cube shrunk
+  0.02 m a side in `wood_planks`. A Poly Haven barrel or crate is increment
+  6's call for the kit decor; two dressings at 30 m are not worth a fetch
+  before it.
+- **The trees.** Recommend **`tree_small_02` (already cached, #845), its
+  `LOD1` mesh through `terrain.append_model`, placed at the piece's
+  `transform` x and z, y 0 less terrain's 0.05 sink, turned by the piece's
+  `rotationY` about Blender Z (#843), no lean, height
+  `rng.uniform(*TOWN_TREE_METRES)` with `TOWN_TREE_METRES = (4.0, 4.6)`, scale
+  height / 4.564 (the mesh's own), `TREE_<id>` with `planId` the id, sharing
+  the template's mesh, its leaf materials through `materials.tint_leaves`**.
+  Heights: `town-tree-1` 4.159, `-2` 4.204, `-3` 4.190, `-4` 4.275,
+  `mereford-churchyard-tree` 4.186. The kit trees are 1.7 m and a Poly Haven
+  one is not; 4.0 to 4.6 is what clears: measured on the cached mesh with
+  each tree's own yaw, `town-tree-2`, which stands in Wykes's yard at (-52,
+  -10), has its canopy's box reach x -53.58 at 4.204 m, 0.12 m clear of
+  `ROOF_wykes-shed-roof`'s verge at -53.7, and at 5.0 m it is into the shed.
+  `town.py` raises if a `TREE_`'s world bounding box meets the world
+  bounding box of any other object the stage built, `FLOOR_` and `TREE_`
+  aside, naming both, checked in build order. `terrain.append_model` gains
+  a module memo, `_APPENDED = {asset: templates}`, returning the first
+  call's templates on a second call: a second append of the same `.blend`
+  renames the mesh `tree_small_02_LOD1.001`, `MODELS`' pattern deletes it,
+  and the call raises. This is the one place `town` shares data with
+  another stage, and it is the template mesh, not a placed object: under
+  `--only town` the town's call is the first and appends.
+- **Materials: nothing fetched in increment 5.** *Amended 2026-09-28
+  (#857, #858)*: this call said "one new set, the thatch", with `LIBRARY`
+  and `SWAP_RISE` gaining it after Devon's pick. He has not picked, and
+  ruled "Build with stand-in"; the two calls below replace that. The set is
+  still his to pick among `reed_roof_03` (2.5 m, 11,799,312 bytes, the
+  lead's recommendation), `reed_roof_04` (2.5 m, 11,072,326 bytes) and
+  `thatch_roof_angled` (0.54 m, 15,012,012 bytes), 2k jpg, five maps, 5
+  `sources.json` rows. `PLAIN`, `ALIAS`, `LIBRARY` and `SWAP_RISE` gain
+  nothing. Reused, unfetched: `plastered_wall_04` (with `LOOK`, #854, and
+  `object_tint`), `rough_wood` (`buildings.TIMBER`, and the stand-in
+  thatch), `medieval_blocks_02` (`DRESSED`), `stone_pavers` (the floor and,
+  from #858, `dressing()`), `wooden_gate` and `rusty_metal` through `oak` and
+  `iron`, `old_planks_02`, `wood_planks` and `tree_small_02`. `CREDITS.md`
+  gains nothing in increment 5, since every set is already credited, and
+  one line at the swap.
+- **The thatch stand-in (#857).** Recommend **`materials.THATCH_SET =
+  ('rough_wood', 2.0, 0.5, {'warm': (1.0, 0.88, 0.66, 1.0)})`, the set,
+  metres per repeat, rise and look in one tuple, and `materials.thatch()`
+  building `MAT_<set>_thatch` from it once per file through
+  `box_material(name, set, size, rise=rise, **look)`, as `dressing()` does;
+  every thatch face in `town.py` is `thatch()`, never `library()`**. The
+  constant is named `THATCH_SET` because `town.py`'s `THATCH` is the 0.45 m
+  thickness. The thatch is not a `LIBRARY` entry: `LIBRARY` is the slugs a
+  blueprint `material` names, and no pitch names thatch; so `SWAP_RISE`
+  gains nothing and the rise lives in the tuple. **Why `rough_wood`**,
+  measured on the cached 2k maps as diffuse times AO: linear luminance
+  0.103, mean sRGB (0.417, 0.383, 0.341), hue 33 degrees, saturation 0.18, a
+  grey-brown between straw and weathered reed, and its grain is long fine
+  splits running the image's height, which the side projection turns
+  downslope as the straws should run. Refused: `wood_planks` (saturation
+  0.53, orange, board joints, and 4b note (c) is its grid), `old_planks_02`
+  (boards), `sparse_grass` (a `GROUND` set, luminance 0.045, saturation 0.73
+  with green patches: a turf roof), and a flat `LOOK` tint, which has no
+  fibre and is the "brown felt" the checklist asks about, built in. **Why
+  2.0 m and not its real 0.5**: at 0.5 the splits are cracks in a board and
+  repeat about 9 times down a house's 5.6 m slope (3.6 m out from the ridge
+  at 50 degrees, 0.65 m a repeat after the stretch below); at 2.0 they are 4
+  times longer and read as runs of straw at the 5 to 80 m the stills see
+  roofs from. This is
+  the library's one size that is not the set's real size, and the tuple's
+  comment says so and cites #857. **The warm**, a multiply as `LOOK`'s is,
+  pulls the grey toward straw, blue cut most, and lands at about 0.092
+  linear luminance. `MAT_rough_wood_thatch` is its own material, so
+  `buildings.TIMBER` and `MAT_rough_wood` do not change; it loads the same 5
+  images (`check_existing`), so check line 4's image count does not move for
+  it and its texture node count rises by 10. **The projection under the
+  stand-in, unchanged**: a 50 degree slope's normal has |horizontal| 0.766
+  against vertical 0.643, so `masonry.finish` and the box projection both
+  take the side (x, height) projection, the image's height runs downslope,
+  and the repeat is stretched 1 / sin 50 = 1.305 along the slope: 2.61 m for
+  the stand-in, 3.26 m for a 2.5 m reed set. The tower's 56.3 degrees is the
+  same projection, stretched 1.202. `town.png` and `town-street.png` are
+  where Devon judges it. **The rise under the stand-in is 0.5**, as
+  `rough_wood`'s `SWAP_RISE` is, since grain has no course. **At the swap**:
+  fetch the picked set's 5 rows as increments 2 to 4 did; set `THATCH_SET`
+  to `('reed_roof_03', 2.5, 0.0, {})` or `('reed_roof_04', 2.5, 0.0, {})`,
+  rise 0 because a reed roof's butt ends lie in horizontal courses and a
+  vertical shift would step them at every patch seam, as it would brick's,
+  or `('thatch_roof_angled', 0.54, 0.5, {})`, rise 0.5 unless its diffuse
+  shows courses, which the lead checks by eye on the fetched map; the look
+  starts empty, and a new-gold read is fixed in the tuple's look; re-render
+  the four town stills without the label; `CREDITS.md` gains one line. No
+  other file changes.
+- **The dressed stone round an opening (#858, amending #854).** Devon's pick
+  on 4b note (b): fix in 5. **Diagnosis: the set, not the scale, and the
+  tint only for the red.** `medieval_blocks_02`'s 2k diffuse is random
+  rubble: irregular round-edged stones from about 0.05 to 0.35 m across at
+  its 1.5 m size, in mortar that is about a third of the face, with no
+  course and no squared edge, and a red-orange stone in each tile. At any
+  scale it is rubble in mortar: at 3.0 m the stones are 0.1 to 0.7 m and
+  still round. The red is the tint: `DRESSING`'s Value 0.6 keeps its hue (27
+  degrees) and saturation (0.38, mean sRGB 0.673, 0.531, 0.416, the most
+  saturated stone in `LIBRARY`), so the darkened sand goes red-brown. #854
+  took the set on the plan's word "dressed stone" (#541) and measured its
+  luminance, not its shape. **Recommend `DRESSING = ('stone_pavers', 1.2)`,
+  one line, no fetch**: `stone_pavers`' diffuse is squared blocks in
+  straight courses, four courses to its 2.0 m tile, so courses 0.49 m and
+  blocks 0.55 to 0.65 m long with 0.03 m joints, hue 27, saturation 0.25,
+  luminance 0.090; Value 1.2 brings it to 0.108, #854's own target against
+  the slates' 0.107, so the step at the arris stays light. Its courses run
+  the image's width, so the side projection lays them level on a jamb and a
+  band, and a soffit (top projection) takes them as a floor does; rise stays
+  0 (coursed). The material becomes `MAT_stone_pavers_dressing`, distinct
+  from the floors' `MAT_stone_pavers`. `materials.py` gains, beside `ALIAS`'s
+  check, `DRESSING[0]` must be in `LIBRARY`, raising `materials: DRESSING
+  names '<slug>', which is not in LIBRARY`. **`DRESSED` stays
+  `medieval_blocks_02`**: it is the plan's slug (#541), and a rubble church,
+  town wall, plinth and chimney with squared dressings is what a parish
+  church and a town wall were; `gates.py` and `buildings.py` still leave a
+  run or arch already in `DRESSED` unpainted. On the church, the recesses'
+  backs, reveals and chord soffits are pavers at 0.108 against the walls'
+  0.178, 0.61 of the wall, which is the dark the church call asks for.
+  **The cross takes `dressing()`, not `library(DRESSED)`**: a 0.3 m shaft in
+  0.35 m rubble is not a cross, and the plan's "dressed stone" means
+  squared. The 4b objects this changes, with no vertex moved and the painted
+  face counts unchanged (`clerk-office-south` 47, `kitchen-south` 59,
+  `great-hall-north` 134, `ARCH_west-gate` 78, `ARCH_east-gate` 38,
+  `ARCH_barbican-outer` 78): every run with a dressed opening and the three
+  rubble arches. Stills: see the review stills below.
+- **The module split.** Recommend **`town.py` new, reading the blueprint and
+  never another stage's objects, so `--only town` builds alone; `materials.py`
+  gains `THATCH_SET` and `thatch()` (#857), `DRESSING`'s new set and its
+  `LIBRARY` check (#858), and `object_tint` in `_maps`, `box_material` and
+  `LOOK`; `terrain.py` gains `_APPENDED`;
+  `buildings.check_box` gains `stage='buildings'`, the prefix of its message,
+  so `town.py` imports it rather than copying it; `town.py` imports
+  `walls.build_run`, `buildings.TIMBER`, `ROOF_BOARDS`, `GABLE`, `GROUND_Y`,
+  `BOX_TOLERANCE` and `check_box`, and `materials.DRESSED`**. `common.py`,
+  `check.py`, `build.py`, `allow.json`, `walls.py`, `towers.py` and `gates.py`
+  do not change. The stage prints one line per house (the table's
+  columns), one per roof (pitch in degrees, eave z each side, ridge top,
+  verge each end), one per church object, the leaves' x spans, and each
+  tree's height and its nearest object's margin.
+- **The breaks from green** (#34), each quoted in the report: (1) skip
+  `HOUSE_mereford-house-s2`'s `finish`: `FAIL line 6 coverage: 1 piece(s)
+  nothing realises: mereford-house-s2`; (2) skip `ROOF_mereford-church-nave`:
+  line 6 names `mereford-church-nave-pitch-1` to `-4`, all four; (3)
+  `allow.json` `{"town-tree-3": ""}`: `FAIL line 6 coverage: allow.json
+  entries with no reason: town-tree-3`; (4) `THATCH_EAVE = 0.5` in
+  `town.py`: the build raises naming `mereford-house-n1`, eave z -1.9 past
+  the road's edge at -2, jetty 0.6; (5) flip the street side's sign in the
+  jetty code only: the build raises from `check_box` naming
+  `HOUSE_mereford-house-n1`, off by 0.600 m at `min z -9.600 against
+  -9.000`; (6) `CROSS_ARM = 1.0`: `check_box` raises naming
+  `mereford-churchyard-cross`, off by 0.100 m at `min x -92.500 against
+  -92.400`; (7) `TOWN_TREE_METRES = (5.0, 6.5)`: the build raises naming
+  `TREE_town-tree-2` (5.509 m, its box about x -54.07 to -50.56) and
+  `DECK_wykes-shed-roof`, the first object in build order its box meets;
+  (8) skip `LEAVES_town-wall`: line 6 stays green by design, and the report
+  says so in one line (a #857 object realises no plan piece; the still holds
+  it); (9) `DRESSING = ('stone_paver', 1.2)`: the build raises on importing
+  `materials`, `ValueError: materials: DRESSING names 'stone_paver', which is
+  not in LIBRARY`; (10) `THATCH_SET = ('reed_roof_03', 2.5, 0.0, {})` with no
+  fetch: `--only town` raises at the first `thatch()`, `KeyError: 'sources.json
+  has no row reed_roof_03:diff'`, which is the proof the swap cannot land
+  without its 5 rows. Each is restored before the next.
+- **The review stills.** Recommend **four, from uncommitted scratch cameras
+  as #848 to #856's were, of `partial/terrain+walls+towers+gates+buildings+
+  town.blend` (so the World, the road and the pad are in them), Cycles 1920
+  by 1080, 24 mm, 128 samples with the denoiser, all four exterior (#855),
+  Film exposure auto-probed to a median display value of about 0.35 and
+  given per still**; before rendering, a Material Preview capture over MCP
+  from each eye in Devon's live Blender (GUIDE and MARKERS hidden, overlays
+  off, scene World) to check the frame. `town.png`, eye (-38.5, 13.7, -13.6)
+  at (-82, 3, -4): the North-west Tower's roof, which is `tools/shot-yard.mjs`'s
+  `4-nw-tower-roof-road` eye and the one place the game shows the town
+  (#727, #728); it judges the checklist's line, a town or one house six
+  times, roofs and chimneys over a wall, with the tower's own merlons in the
+  foreground as the player has them. `town-gate.png`, eye (-50, 1.7, 1.0) at
+  (-64, 3.5, -2): the road to the east gate, which no player stands on (as
+  `gates-outer.png` was); it judges the wall's stone, the flat head, the open
+  leaves, the yard's walls and the shed and its floating deck. `town-street.png`,
+  eye (-67, 1.7, 0.5) at (-95, 4, -1), inside the gate: it judges the jetties,
+  framing, shut doors and shutters, the tints and the thatch eaves, with the
+  church tower over the north row about 23 degrees up, inside the frame's 22.9
+  degree half-height above a 4.7 degree pitch. `town-church.png`, eye (-76,
+  1.7, -11.5) at (-98, 7, -17.5), between the north row's backs and the nave:
+  it judges the recessed lancets and door, the thatched nave and saddleback,
+  and the cross. **All four carry thatch and are labelled "stand-in thatch"**
+  in the file name (`town-standin.png` and so on) and in the report's line
+  for each, and are rendered again under their plain names at the swap
+  (#857). **And two re-renders of 4b for #858**, so Devon judges the dressing
+  against the stills he flagged: `gates-dressed-5.png` and
+  `buildings-4b-5.png`, from 4b's own cameras, lens, 128 samples and
+  exposures (+3.5 and +2.5) exactly, of `partial/terrain+walls+towers+gates+
+  buildings.blend` rebuilt after the `materials.py` step, so the pair
+  differs from 4b's only by `DRESSING`. They show the west arch's jamb and
+  soffit and the outer-ward dressed doors and windows. `buildings-hall-4b` is
+  not re-rendered: its dressing is the same material on the hall's inner
+  faces, a 1024-sample interior at +11.5 stops is cost with nothing the two
+  exteriors do not show, and the interiors re-render under increment 7's
+  sun (note (d)). `buildings-dormitory` shows no dressed opening. Six stills
+  in all.
+
 ### Dependencies
 
 - **Gate: none.** Needs Devon's machine with the Steam Blender 5.2 (#840),
   and a network to Poly Haven for each increment that adds a `sources.json`
-  row (1, 2, 3, 4 and 6; the HDRI moved from 7 to 1, #846; increment 2's
+  row (1, 2, 3, 4 and 6, and the thatch swap after 5; increment 5 builds
+  on a stand-in and fetches nothing, #857; the
+  HDRI moved from 7 to 1, #846; increment 2's
   nine sets are #849; increment 3's two, `wooden_gate` and `rusty_metal`,
   are #852, Devon's of 2026-09-27, already fetched). The first fetch waited
   on Devon's yes to the asset list with sizes, given 2026-09-27. **Increment
@@ -2557,6 +3074,20 @@ model-only object, so line 6 stays at 197 and 40 and no `planId` moves.
   first, then `gates.py`'s passage paint (a `--only gates` build shows the
   dressed arch and the new plaster before `buildings.py` is touched), then
   `buildings.py`. No fetch: 4b adds no `sources.json` row.
+- **Increment 5's order inside the lane**: Devon's lines on #857's look
+  calls, the stand-in and 4b's notes are given (2026-09-28), so no fetch;
+  `materials.py` (`THATCH_SET`, `thatch()`, `DRESSING` and its check,
+  `object_tint`), `terrain.py`'s memo and `buildings.check_box`'s `stage`
+  first, with 4b's two `--only` builds rerun green and the two #858
+  re-renders made before `town.py` is touched, so a moved gate-over or hall
+  is caught as those files' fault and the dressing is judged on its own;
+  check line 4's counts before and after are quoted, since the dressing now
+  loads `stone_pavers`' images where it loaded `medieval_blocks_02`'s; then
+  `town.py`. **The swap, a later increment of its own**: Devon's pick among
+  the three sets; the fetch (5 rows, one download each into scratch,
+  refused unless size and md5 equal the API's, then sha256 and `bytes` by
+  hand, as increments 2 to 4); `THATCH_SET`, one line; the four town stills
+  under their plain names. A `builder` job, since every number is here.
 - **Lane G, `tools/castle3d/`**, this row's alone (#842). It shares no file
   with lane F, so it may run beside a rank 1 or rank 2 session; that is two
   Blenders on one machine and Devon's call. Both add a line to
@@ -2618,6 +3149,8 @@ model-only object, so line 6 stays at 197 and 40 and no `planId` moves.
       lit card?
 - [ ] Devon's props re-materialed: his objects, or somebody else's?
 - [ ] Mereford at `CAM_town`: a town, or one house forty times?
+- [ ] The thatch from the North-west Tower and from the street: thatch, or
+      a brown felt? The jetties and the framing: a street, or a stage set?
 
 ---
 
