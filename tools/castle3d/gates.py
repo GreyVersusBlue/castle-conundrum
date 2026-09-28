@@ -1,6 +1,7 @@
 # gates.py - the gates stage: the three gate arches, the four leaves on their
 # hinges, the west portcullis, the cell's bars and the Stockhouse walk bar, and
-# #851's shut outer gate in barbican-west (increment 3).
+# #851's shut outer gate in barbican-west (increment 3); and #854's dressed
+# passages (increment 4b).
 #
 # Every number is the blueprint's (#500) or a named constant below, from
 # SPECS.md's increment 3 open calls. All five arches run their passage along
@@ -51,6 +52,15 @@
 # PORT_barbican-outer, lowered. None carries a planId; each carries
 # modelOnly "#851" and none is named GATE_ (#843 keeps that for the plan's
 # gates).
+#
+# #854: THE DRESSED PASSAGE. An arch in rubble (any slug but
+# materials.DRESSED) takes materials.dressing() as its second slot on the
+# passage faces only: every face whose centre is strictly inside the arch's x
+# span, so neither end face, and within the opening's half width plus
+# SLOT_JAMB of the passage's centre in z (0 above the crown): the jambs, the
+# vault's soffit and the portcullis slot's cuts. The porter arch stands in the
+# dressed cross-wall and is left alone. A slot moves no vertex, so the shape and
+# every box above are unchanged.
 
 import math
 
@@ -169,6 +179,18 @@ def build_arch(s, sh, x0, x1, outer=None, slot=None):
         cut = jz + SLOT_JAMB
         s.box(slot[0], slot[1], y0, top, cz - oz, cz - cut)
         s.box(slot[0], slot[1], y0, top, cz + cut, cz + oz)
+
+
+def paint_passage(s, sh, x0, x1, slug):
+    """#854: slot 1 on the passage faces of an arch in rubble; returns the
+    materials list for finish and how many faces it painted (0 in DRESSED)."""
+    if slug == materials.DRESSED:
+        return [materials.library(slug)], 0
+
+    def passage(x, y, z):
+        inner = _inner(sh, y) if y <= sh['crown'] + EPS else 0.0
+        return x0 + EPS < x < x1 - EPS and abs(z - sh['cz']) <= inner + SLOT_JAMB + EPS
+    return [materials.library(slug), materials.dressing()], s.paint(passage, 1)
 
 
 def slot_band(x0, x1, outer):
@@ -338,6 +360,7 @@ def build(bp):
     wood = materials.library('wooden_gate')
     iron = materials.library('iron')
     checked = []
+    painted = {}   # #854: passage faces dressed, per arch
 
     # the plan's three arches, and the west gate's portcullis
     for arch in arches:
@@ -351,7 +374,8 @@ def build(bp):
         slot, xc = slot_band(x0, x1, outer) if arch['id'] in PORTCULLIS else (None, None)
         s = masonry.Solid()
         build_arch(s, sh, x0, x1, outer, slot)
-        s.finish(f"ARCH_{gate}", col, [materials.library(slug)], plan_id=arch['id'])
+        mats, painted[f"ARCH_{gate}"] = paint_passage(s, sh, x0, x1, slug)
+        s.finish(f"ARCH_{gate}", col, mats, plan_id=arch['id'])
         if slot is not None:
             p = masonry.Solid()
             build_portcullis(p, xc, sh['cz'], sh['crown'] - RAISED_BELOW_CROWN, outer, 0, 1)
@@ -410,7 +434,8 @@ def build(bp):
     slot, xc = slot_band(x0, x1, outer)
     s = masonry.Solid()
     build_arch(s, sh, x0, x1, outer, slot)
-    outer_obs = [s.finish('ARCH_barbican-outer', col, [materials.library(run['material'])])]
+    mats, painted['ARCH_barbican-outer'] = paint_passage(s, sh, x0, x1, run['material'])
+    outer_obs = [s.finish('ARCH_barbican-outer', col, mats)]
     p = masonry.Solid()
     build_portcullis(p, xc, sh['cz'], sh['y0'], -outer if outer else 1, 0, 1)
     outer_obs.append(p.finish('PORT_barbican-outer', col, [wood, iron]))
@@ -433,4 +458,5 @@ def build(bp):
     print(f"gates: {len(arches)} arches, {len(leaves)} leaves on hinges in MARKERS, {len(bars)} bars, "
           f"{len(walk_bars)} walk bar, {len(PORTCULLIS)} portcullis raised; each leaf and bar within "
           f"{worst:.4f} m of its blueprint box; #851's outer gate in {run['id']}: {len(outer_obs)} objects, "
-          f"modelOnly, no planId")
+          f"modelOnly, no planId; #854 passage faces dressed: "
+          + ', '.join(f"{k} {v}" for k, v in painted.items()))

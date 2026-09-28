@@ -19,7 +19,10 @@
 # timber and iron (#852), ALIAS for the slugs `iron` and `oak`, and PLAIN for
 # the sets that take no tiling break-up. Increment 4: the buildings' five sets
 # (#853), the two tile floors in PLAIN and the carpet and the timber in
-# SWAP_RISE. Later increments add the rest here, not in their stage modules.
+# SWAP_RISE. Increment 4b (#854): DRESSED and dressing(), the plan's dressed
+# stone darkened for the openings in rubble, and LOOK, plastered_wall_04's
+# tint, warmth, grime and undulation, all from maps already fetched. Later
+# increments add the rest here, not in their stage modules.
 
 import os
 
@@ -49,7 +52,7 @@ LIBRARY = {
     'roof_slates_02': 3.0,
     'wooden_gate': 1.9,     # increment 3 (#852): the gate leaves and the portcullis timber
     'rusty_metal': 1.5,     # increment 3 (#852): straps, portcullis points, cell-bars
-    'old_planks_02': 2.0,   # increment 4 (#853): masons-lodge-roof, 5 ground floors, the hall roof's boards
+    'old_planks_02': 2.0,   # increment 4 (#853): masons-lodge-roof, 5 ground floors (not the roof boards, #856)
     'rock_tile_floor': 1.96,  # increment 4: the great hall and the King's hall floors
     'floor_tiles_02': 4.0,  # increment 4: the chapel drum and the nave floors
     'dirty_carpet': 0.6,    # increment 4: floor-royal-apartments, the one carpet in the castle
@@ -71,6 +74,33 @@ for _k, _v in ALIAS.items():
 for _k in PLAIN:
     if _k not in LIBRARY:
         raise ValueError(f"materials: PLAIN names {_k!r}, which is not in LIBRARY")
+# The plan's dressed stone (#541). gates.py and buildings.py both read it, so it
+# lives here as a material fact: a run or an arch already in it is not dressed.
+DRESSED = 'medieval_blocks_02'
+# The dressing round an opening in rubble (#854): DRESSED's set, coursed, its
+# Value times this. Diffuse times AO in linear luminance is 0.109 for
+# castle_wall_slates and 0.180 for medieval_blocks_02 on the 2k maps, so 0.6
+# brings the blocks to the rubble's 0.108 and the step at the arris is light.
+DRESSING = (DRESSED, 0.6)
+# Per-set look (#854), applied inside library(), so MAT_<asset> is the one
+# material everywhere the set is used. plastered_wall_04's maps are a neutral
+# grey at linear 0.257 with AO 1.000 and displacement std 0.003: a lit card.
+# `tint` and `warm` bring it to about 0.156 and a limewash cream; `grime` is a
+# world noise (metres, detail, the Fac range mapped, onto this Value range)
+# multiplying the colour's Value after the drift; `undulate` is a Bump
+# (strength, distance in metres) on a world noise (metres, detail) between
+# the normal map and the BSDF, so the render follows uneven stone under it.
+LOOK = {
+    'plastered_wall_04': {
+        'tint': {'Hue': 0.5, 'Saturation': 1.0, 'Value': 0.65},
+        'warm': (1.0, 0.93, 0.80, 1.0),
+        'grime': (1.5, 4.0, (0.4, 0.6), (0.75, 1.2)),
+        'undulate': (0.3, 0.02, 0.6, 3.0),
+    },
+}
+for _k in LOOK:
+    if _k not in LIBRARY:
+        raise ValueError(f"materials: LOOK names {_k!r}, which is not in LIBRARY")
 MAPS = ('diff', 'nor_gl', 'rough', 'disp', 'ao')
 BOX_BLEND = 0.2
 BUMP_SCALE = 0.05  # metres of displacement at full white, as bump only
@@ -182,15 +212,15 @@ def _world_noise(tree, x, y, scale, detail):
     return noise.outputs['Fac']
 
 
-def _maps(tree, asset, size, x, y, tint=None, rough_min=None, warm=None, rise=None):
+def _maps(tree, asset, size, x, y, tint=None, rough_min=None, warm=None, rise=None, grime=None):
     """`asset`'s five maps box-projected on world coordinates at `size` metres
     per repeat, blend 0.2. Returns the sockets a shader reads: the diffuse
-    times AO (after `tint`, a Hue/Saturation/Value dict, and then `warm`, an
-    RGBA multiply, each when given), the roughness (no lower than
-    `rough_min`, when given), the tangent normal colour and the height. With
-    `rise` (a tile fraction, 0 for a coursed set), each map is two offset
-    samples swapped by patch and the colour's brightness drifts (SWAP_OFFSET
-    and the constants beside it)."""
+    times AO (after `grime`, a LOOK noise on its Value, then `tint`, a
+    Hue/Saturation/Value dict, and then `warm`, an RGBA multiply, each when
+    given), the roughness (no lower than `rough_min`, when given), the tangent
+    normal colour and the height. With `rise` (a tile fraction, 0 for a
+    coursed set), each map is two offset samples swapped by patch and the
+    colour's brightness drifts (SWAP_OFFSET and the constants beside it)."""
     rows = {m: common.source(f"{asset}:{m}") for m in MAPS}
     links = tree.links
     geo = _node(tree, 'ShaderNodeNewGeometry', x - 500, y)
@@ -229,6 +259,20 @@ def _maps(tree, asset, size, x, y, tint=None, rough_min=None, warm=None, rise=No
         tex['diff'] = hsv.outputs['Color']
 
     diff = tex['diff']
+    if grime:
+        scale, detail, (f0, f1), (v0, v1) = grime
+        dirt = _world_noise(tree, x - 300, y - 3700, scale, detail)
+        rng = _node(tree, 'ShaderNodeMapRange', x - 100, y - 3700, clamp=True)
+        rng.inputs['From Min'].default_value = f0
+        rng.inputs['From Max'].default_value = f1
+        rng.inputs['To Min'].default_value = v0
+        rng.inputs['To Max'].default_value = v1
+        links.new(dirt, rng.inputs['Value'])
+        hsv = _node(tree, 'ShaderNodeHueSaturation', x + 250, y + 250)
+        hsv.label = f"{asset} grime"
+        links.new(diff, hsv.inputs['Color'])
+        links.new(rng.outputs['Result'], hsv.inputs['Value'])
+        diff = hsv.outputs['Color']
     if tint:
         hsv = _node(tree, 'ShaderNodeHueSaturation', x + 250, y + 450)
         hsv.label = f"{asset} tint"
@@ -264,9 +308,11 @@ def _new_material(name):
     return mat
 
 
-def _finish(mat, bsdf_x, maps, surface=None):
+def _finish(mat, bsdf_x, maps, surface=None, undulate=None):
     """A Principled BSDF from `maps`, a tangent normal map, bump-only
-    displacement, and the output. `surface(bsdf_socket)` may wrap the BSDF."""
+    displacement, and the output. `surface(bsdf_socket)` may wrap the BSDF.
+    `undulate`, a LOOK tuple, puts a Bump on a world noise between the normal
+    map and the BSDF."""
     tree = mat.node_tree
     links = tree.links
     out = _node(tree, 'ShaderNodeOutputMaterial', bsdf_x + 600, 0)
@@ -275,7 +321,18 @@ def _finish(mat, bsdf_x, maps, surface=None):
     links.new(maps['rough'], bsdf.inputs['Roughness'])
     nmap = _node(tree, 'ShaderNodeNormalMap', bsdf_x - 300, -300, space='TANGENT', uv_map='UVMap')
     links.new(maps['nor'], nmap.inputs['Color'])
-    links.new(nmap.outputs['Normal'], bsdf.inputs['Normal'])
+    normal = nmap.outputs['Normal']
+    if undulate:
+        strength, distance, scale, detail = undulate
+        height = _world_noise(tree, bsdf_x - 500, -700, scale, detail)
+        bump = _node(tree, 'ShaderNodeBump', bsdf_x - 150, -550)
+        bump.label = 'undulate'
+        bump.inputs['Strength'].default_value = strength
+        bump.inputs['Distance'].default_value = distance
+        links.new(height, bump.inputs['Height'])
+        links.new(normal, bump.inputs['Normal'])
+        normal = bump.outputs['Normal']
+    links.new(normal, bsdf.inputs['Normal'])
     shader = bsdf.outputs[0] if surface is None else surface(bsdf.outputs[0])
     links.new(shader, out.inputs['Surface'])
     disp = _node(tree, 'ShaderNodeDisplacement', bsdf_x + 300, -400)
@@ -289,12 +346,14 @@ def _finish(mat, bsdf_x, maps, surface=None):
     return mat
 
 
-def box_material(name, asset, size, tint=None, rise=None):
+def box_material(name, asset, size, tint=None, rise=None, warm=None, grime=None, undulate=None):
     """A Principled material from `asset`'s five maps, box-projected on world
     coordinates at `size` metres per repeat, blend 0.2, doubled when `rise`
-    is given (see _maps)."""
+    is given (see _maps), with a LOOK's `warm`, `grime` and `undulate` when
+    given."""
     mat = _new_material(name)
-    return _finish(mat, 600, _maps(mat.node_tree, asset, size, -400, 0, tint, rise=rise))
+    maps = _maps(mat.node_tree, asset, size, -400, 0, tint, warm=warm, rise=rise, grime=grime)
+    return _finish(mat, 600, maps, undulate=undulate)
 
 
 def ground(name):
@@ -323,7 +382,20 @@ def library(slug):
     if have is not None:
         return have
     rise = None if asset in PLAIN else SWAP_RISE.get(asset, 0.0)
-    return box_material(f"MAT_{asset}", asset, LIBRARY[asset], rise=rise)
+    return box_material(f"MAT_{asset}", asset, LIBRARY[asset], rise=rise, **LOOK.get(asset, {}))
+
+
+def dressing():
+    """MAT_<DRESSING's set>_dressing: the plan's dressed stone, coursed (rise
+    0), its Value times DRESSING[1], for the reveals and bands round the
+    openings in rubble (#854). Built once per file; the set's name stays in
+    the material's, for check.py line 4 and CREDITS.md."""
+    asset, value = DRESSING
+    name = f"MAT_{asset}_dressing"
+    have = bpy.data.materials.get(name)
+    if have is not None:
+        return have
+    return box_material(name, asset, LIBRARY[asset], {'Hue': 0.5, 'Saturation': 1.0, 'Value': value}, rise=0.0)
 
 
 def _blend_factor(tree, attribute, x, y, scale, spread, width=0.12):

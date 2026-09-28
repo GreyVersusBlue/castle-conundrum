@@ -10649,3 +10649,245 @@ hidden from the outer ward at standing height by the 8 m north wall; (b)
 door and window reveals read pale and flat; (c) the hall interior is near
 black without +7 stops until 4b's windows, beams and plaster; (d) the
 lodge deck floats until increment 6 places kit poles 73 to 76.
+
+## Castle in Blender increment 4b: Devon's rulings on the look notes, decided before anything is built (2026-09-28)
+
+**A spec, not a build.** `SPECS.md` gains "Increment 4b's open calls" under
+"Castle in Blender", every call recommended, and amends increment 4's scope
+line, its "Beams and plaster (4b)" and "The review stills" calls, the 4b
+acceptance and the lane's order. Written as `architect` against `1d1308e`,
+where #853 was the last. No code, asset or data file changed in this entry.
+
+**#854. Devon rules on the ten open look notes, and 4b takes five of them:
+a ridge louvre on the hall, dressed stone round the openings in rubble, and
+a darker plaster; model only, and the game does not change.** **The
+rulings**, Devon, 2026-09-28, numbered as the lead put the ten to him,
+#852's six and 4a's four; the options he picked are in italics and the two
+he typed are quoted: 1, #852 (a), the porter
+gate-over a dark square on the cross-wall: *leave*. 2, #852 (b), the west
+gate-over's `plastered_wall_04` a flat grey panel: *fix in 4b*. 3, #852 (c),
+the west arch's soffit lighter than the wall face: *fix in 4b*. 4, #852 (d),
+the slates' pale stones as scattered dots: *leave*. 5, #852 (e), brick and
+blocks still showing a repeat: *leave*. 6, #852 (f), "could the walls be
+taller?": "Ignore previous question about wall height", which withdraws the
+question #850 left open, so the curtain stays at the plan's 8 m in the model
+too. 7, 4a (a), the hall roof hidden from the outer ward at standing height:
+*fix in 4b*, and of the ways offered Devon chose a ridge louvre. 8, 4a (b),
+door and window reveals pale and flat: *fix in 4b*. 9, 4a (c), the hall
+interior near black without +7 stops: "Fix in 4b I guess?". 10, 4a (d), the
+lodge deck floating: *fix later*, which is increment 6's four poles.
+**The louvre**: the hall's ridge top is 10.68 and the sight line from 4a's
+eye, (-4, 1.7, -5), over `great-hall-north`'s top arris at z 5.5 and y 8
+reaches 10.475 at the ridge, so 0.2 m of roof shows; that height is the
+same for every x, because the wall and the ridge both run along x, so no
+bay is better placed and the louvre has to be tall rather than well placed.
+`LOUVRE_great-hall` stands on the ridge over the bay at x -14, between
+`hall-truss-5` and `-6`, 2.4 by 2.0 m, slatted sides of `old_planks_02` on a
+`rough_wood` frame under a cap of the hall roof's own section, its whole
+north side above the sight line and its cap ridge at 12.27, 1.80 m over it.
+The roof under it is opened, 2.16 by 1.76 m, so it is a louvre and not a
+box, and that hole is the hall's one new source of daylight. The bay at -14
+keeps the hole clear of the Prison Tower's cut of the south slope, where a
+hole at -18 would put both its south corners inside the disc. It carries
+`modelOnly: "#854"` and no `planId`, and `ROOF_great-hall` keeps its seven
+`planIds` with a hole in it, since #853 already departs from the pieces'
+extents and line 6 checks coverage, not shape. **The reveals**: the lead
+measured in Devon's live Blender that this is not a projection fault:
+`masonry.finish` writes `UVMap` per face by its dominant axis, the box
+projection agrees, and a jamb's rubble is at the face's scale. The reveal is
+the face's own `castle_wall_slates` cut straight through 1 m, facing another
+part of the sky, with nothing at the arris; the west arch's soffit is the
+same fault over 4 m. The fix is `medieval_blocks_02`, the plan's dressed
+stone (#541), as a second material slot on the run's own faces over each
+reveal and a 0.25 m band round it on both faces, in the three rubble runs
+with openings (12 openings), and on the passage faces of the three rubble
+gate arches (west, east and #851's outer gate). A slot moves no vertex, so
+every opening keeps the plan's size (#500), the collider boxes the build
+clips from are unchanged, and line 6 is unchanged at 197 and 40. The
+dressing is darkened to Value 0.6, because the maps say the undarkened set
+would have made the reveals paler, not less pale: diffuse times AO in
+linear luminance is 0.109 for the slates and 0.180 for the blocks, and 0.6
+brings the blocks to 0.108. **This amends #853** where it said "a window's
+reveal is that 1 m, straight" and "Ten windows copy Lady Alys's (...
+straight through the run)": a reveal is still that 1 m and still straight,
+since #853's reason for refusing a splay stands, and in a rubble run it is
+now dressed. Only the look changes; the shape #853 decided does not.
+**The plaster**: the set is the fault, not the tiling. On the 2k maps
+`plastered_wall_04`'s diffuse is neutral grey with a linear luminance of
+0.257 and a std of 0.019, its AO map is 1.000 everywhere against the
+slates' mean of 0.445, its displacement std is 0.003 and its roughness std
+0.015. `materials._maps` multiplies the diffuse by AO, so the stone renders
+at 0.109 and the plaster at 0.257, 2.4 times as bright with a coefficient
+of variation of 0.07 against 0.67: a lit card. The set is kept, since the
+blueprint names it (#849) and the fault is two numbers, and
+`materials.LOOK` gives it a Value of 0.65, a cream multiply of (1.0, 0.93,
+0.80), a 1.5 m grime noise from 0.75 to 1.2 of its brightness and a 0.6 m
+undulation bump, for an effective albedo of 0.156, 1.43 times the rubble.
+One material means it reaches both gate-overs, 4b's three plastered rooms
+and Mereford's six plastered houses. A different Poly Haven plaster is the
+named fallback if `gates-dressed.png` still reads a card, and would need
+Devon's yes to a list with sizes; nothing is fetched in 4b. **The dark
+hall**: no light is added before increment 7; each 4b still reports the
+Film exposure it needed, and `buildings-hall.png` is re-rendered from 4a's
+camera so the louvre's hole is measured in stops against 4a's +7. **For the
+integration row** (#839): the louvre's hole is at 9.9 m and up and opens no
+collider; the dressing is a material and moves nothing a body touches.
+
+**#855. Rank 2h increment 4b, corrected from its first stills: the lean-to
+sits on its wall, four drum walk doors under the hall roof are shut, and
+interior stills take 1024 samples; model only.** A decision of its own
+rather than part of #854, because #854 was written before 4b was built and
+these three come from what the build showed. **The lean-to**: #853's call
+ran `ROOF_steward-chamber`'s underside through the north run's inner top
+edge (z 6.5, y 4.0) at a pitch of 0.509, so at the run's outer face, z 5.5,
+the roof's top was 3.67 and the wall's outer arris stood 0.33 m up through
+the slates, and the eave at z 5.2 hung under the wall top as a loose strip,
+seen in a Material Preview capture. Devon, 2026-09-28: "The roof should sit
+on the wall." The underside now runs through the outer top edge (z 5.5, y
+4.0) and (z 14, y 7.82): pitch 0.449, 24.2 degrees; eave at z 5.2 at 3.865
+under and 4.045 on top, 1.955 m over `garden-scarecrow` (was 3.34 and 1.43
+m); top 8.00 at the curtain as before. It leaves a wedge over the wall top,
+1.0 m deep and 0.449 m tall at the inner face, closed outside and open to
+the chamber, which `PLATE_steward-chamber`, a `rough_wood` wall plate,
+fills. **The drum doors**: `buildings-hall-4b.png` showed a bright wedge
+where `DRUM_prison-tower` meets `ROOF_great-hall`; rays through it hit the
+drum at x -22.3 to -21.2, y 8.0 to 9.6, z 12.9 to 13.3, a sill at y 8.0
+among them, which is the drum's level-2 walk door (8 to 10.5 m). In the
+game that door opens onto #527's 0.75 m slot of sky; in the model #853's
+roof runs past it, and the hall roof's top stands above the sill for z under
+13.51, so the lit drum room glows into the hall. A ray scan from under the
+hall roof found no sky leak anywhere else. Of the castle's 17 drum walk
+doors, 4 open under the hall roof, `prison-tower` 1 and 2 and `sw-tower` 1
+and 2 (the last two behind the hall camera); 6 open onto a flat #853 roof
+whose top is the sill, 1 onto the lean-to below its sill, and 6 onto walks
+or open ground. The four get a shut plank leaf in `oak`,
+`DOOR_<drum>-<index>`, `modelOnly: "#855"`, found by a rule over the
+blueprint's drums and the roofs' planes rather than a table, as #851's
+outer gate is shut: the model is not walked, and #527 stands for the game.
+**For the integration row** (#839): those four doors are open in the game,
+and a row that takes the model's roofs must keep them reachable or shut
+them in the game too. **The stills**: at the hall eye, 960 x 540 and +11.5
+stops, 128 samples raw was nearly pure noise and 128 denoised left smeared
+streaks along the ceiling boards, which Devon read as "a lighting issue at
+the top of the ceiling"; 1024 denoised was clean. Interior stills take 1024
+samples until increment 7's light, exterior ones stay at 128. Exposures used,
+auto-probed to a median display value of about 0.35: `buildings-dormitory`
++11, `buildings-4b` (4a's outer-ward eye) +2.5, `buildings-hall-4b` +11.5,
+`gates-dressed` +3.5. `gates-dressed.png` departed from #854's camera: eye
+(-41.5, 1.7, 8) at (-37, 4.25, 0) framed a dark corner with no arch in
+view, so it was taken from (-40.5, 1.7, 1.5) at (-35, 2.4, -0.3), 18 mm,
+and SPECS now names that camera.
+
+**#856. Rank 2h increment 4b: the model's roof boards seen from below are
+`wood_planks`, not `old_planks_02`; this amends 4a's call on the null
+pieces' materials, model only.** Devon, 2026-09-28, on `buildings-hall-4b.png`
+at 1024 samples, quoted exactly: "Fix the roof board steaks now." **What was
+wrong**: 4a chose `ROOF_BOARDS = 'old_planks_02'` because it is
+`masons-lodge-roof`'s slug, the plan's only roof with a material. The set is
+exterior cladding with rust-stained nail runs and drip stains at the foot of
+every board, so on the hall roof's underside each 2.0 m tile laid a row of
+dark streaks up the 34.6 degree slope. The lead's evidence: the streaks are
+in the diffuse map itself, not light or sampling noise, since they survive
+1024 samples, and the dormitory's flat ceiling in `wood_planks` reads clean
+in the same render. Devon's first verdict, on the first 128-sample stills,
+was "there seems to be a lighting issue at the top of the ceiling, as well
+as where the curved wall hits the roof" (#855); the lead traced "where the
+curved wall hits the roof" to the Prison Tower's walk door, fixed by #855's
+leaves, and "the top of the ceiling" first to plain denoiser noise at 128
+samples, which #855's move to 1024 samples for interior stills removed. The
+streaks that survived 1024 samples and prompted "Fix the roof board steaks
+now" are these nail-drip stains, not the noise #855 already fixed.
+**What changes**: `buildings.ROOF_BOARDS = 'wood_planks'` (in `LIBRARY`, 1.5
+m, coursed, rise 0: the plan's own board under `stone_pavers` on the flat
+roofs), which reaches every board surface `buildings.py` takes from that
+constant as a model-only choice: `ROOF_great-hall`'s slot 1 and its two
+gables, `LOUVRE_great-hall`'s slats, end boards and cap boards, and
+`ROOF_steward-chamber`'s slot 1. **What keeps `old_planks_02`**: every piece
+whose blueprint `material` names it, `DECK_masons-lodge-roof` and the five
+ground floors, because the model dresses a piece in its own slug (#849). No
+row is fetched or dropped; `old_planks_02` stays in `sources.json` for those
+six. **The stills Devon has seen of 4b's re-renders**: the first pass, at 128
+samples, drew "Out the dorm looks great. Inside, there seems to be a
+lighting issue at the top of the ceiling, as well as where the curved wall
+hits the roof" and "The roof should sit on the wall," the second of which
+#855 already answers. The 1024-sample re-render, `buildings-dormitory.png`
+at +11 stops, drew "The rerender looks better." `buildings-hall-4b.png` at
+1024 samples then drew "Fix the roof board steaks now," which this entry
+answers.
+
+**Increment 4b closes: Devon's verdict and the review cameras.** Devon's
+verdicts on the review stills (2026-09-28), quoted exactly: on the first
+128-sample stills, "Out the dorm looks great. Inside, there seems to be a
+lighting issue at the top of the ceiling, as well as where the curved wall
+hits the roof." and "The roof should sit on the wall." On the 1024-sample
+re-render, "The rerender looks better." Then, on `buildings-hall-4b.png` at
+1024 samples, "Fix the roof board steaks now." The lead traced "where the
+curved wall hits the roof" to the Prison Tower's walk door, fixed by #855's
+leaves, and "the top of the ceiling" first to denoiser noise at 128 samples,
+which 1024 samples removed the blotches of, and then to `old_planks_02`'s
+own nail-drip stains (#856); after #856 the hall re-render at 1024 samples
+shows no streaks. The review cameras are `still_4b.py`, in the increment 4b
+session's scratchpad and uncommitted, as #848's, #850's, #852's and 4a's
+were: Cycles OPTIX, 1920x1080, denoiser, 24 mm unless noted, exposure
+probed to a median display value near 0.35. `buildings-dormitory.png` eye
+(-25, 5.7, -10) at (-14.5, 6.2, -9), 1024 samples, Film exposure +11 (the
+first render at 128 samples also +11). `buildings-4b.png`, from 4a's
+outer-ward eye (-4, 1.7, -5) at (-13, 5.5, 7), 128 samples, +2.5, shows
+`LOUVRE_great-hall` above the north wall and the dressed surrounds.
+`buildings-hall-4b.png`, 4a's eye (-30.5, 1.7, 10) at (-20.5, 10.47, 10),
+1024 samples, +11.5 (4a's `buildings-hall.png` was +7 set by eye, so not
+comparable). `gates-dressed.png`, eye (-40.5, 1.7, 1.5) at (-35, 2.4, -0.3),
+18 mm, 128 samples, +3.5 (the spec's first camera framed a dark corner;
+#855 records the move). The 4a stills `buildings.png` and `buildings-hall.png`
+were not overwritten; 4b's are the -4b names. Four live-session Material
+Preview captures stand too, Devon's Blender 5.2.2 with GUIDE and MARKERS
+hidden, overlays off, scene world: the dormitory from the spec's eye; the
+east range roofs from the cross-wall walk, which the parapet hides at 8 m,
+so shot through two crenels at game (1.1, 9.7, -7.4) looking at (12, 7.4,
+-10.5), the royal apartments' roof, and (1.1, 9.7, 5.44) at (10, 6.5, 10),
+the nave and the Steward's range; the lean-to from (4.5, 5.5, 1.0) at (6,
+3.8, 7), before and after #855, and from inside at (8.5, 1.7, 10) at (4,
+4.2, 6). **Before anything was built**, the lead's own diagnoses in the
+live session: the reveals were not a projection fault, since per-face
+`UVMap` and box projection agree and plain rubble cuts straight, lit from
+another part of the sky; `plastered_wall_04`'s maps read a diffuse std of
+0.024 against `castle_wall_slates`' 0.148, an AO uniformly 1.0 against
+0.446, and a normal std of 0.011, so plaster rendered about twice the
+stone's brightness (#854). **The builds**, green at the end:
+`--only terrain,walls,towers,gates,buildings` gave `ok line 4 images: 202
+image texture nodes, 127 images`, `ok line 5 level ground: 18 level-0
+rooms, 90 points, largest |height| 0.0001 m` and `ok line 6 coverage: 197
+pieces of terrain, walls, towers, gates, buildings`; `--only buildings`
+gave `ok line 4 images: 115 image texture nodes, 60 images` and `ok line 6
+coverage: 40 pieces of buildings`. `npm test` ran 15 of 15. **Breaks from
+green** (#34), each restored: skipping the King's hall beams at x 6, 10,
+14, 18 gave `ValueError: buildings: the beam at x 14 in kings-hall (x
+13.85 to 14.15, y 3.5 to 3.8, z -14.25 to -6.25) meets props piece
+kings-hall-chandelier's box`; an `allow.json` entry of `{"kings-hall-south":
+""}` gave `FAIL line 6 coverage: allow.json entries with no reason:
+kings-hall-south`; skipping `ROOF_dormitory` left line 6 at `ok ... 40
+pieces`, by design, since it is model-only with no `planId`; `LOUVRE_X =
+-12` gave `ValueError: buildings: the louvre's hole x -13.08 to -10.92
+(LOUVRE_X -12), grown by 0.1 m, meets hall-truss-6's box (x -12.25 to
+-11.75)`; `DRESS = 1.3` gave `ValueError: buildings: clerk-office-south's
+openings at (x -30, y 1.25) and (x -30, y 5.7), grown by DRESS 1.3 m,
+overlap from y 3.7 to 3.8`; skipping `DOOR_prison-tower-2` left line 6
+green, by design, and the build printed `shut under a roof (3):
+DOOR_sw-tower-1, DOOR_sw-tower-2, DOOR_prison-tower-1`. Worth quoting from
+the green build: `LOUVRE_great-hall over the bay between hall-truss-5 and
+hall-truss-6 at x -14, hole x -15.08 to -12.92, z 8.745 to 10.505, foot y
+9.990, head y 11.400, cap ridge y 12.270`; `ROOF_steward-chamber lean-to,
+pitch 0.449, eave z 5.2 underside 3.865 top 4.045`; dressed openings
+clerk-office-south 2 (47 faces), kitchen-south 3 (59), great-hall-north 7
+(134); gate passages ARCH_west-gate 78 faces, ARCH_east-gate 38,
+ARCH_barbican-outer 78, ARCH_porter-gate 0; four drum walk doors shut
+(sw-tower 1 and 2, prison-tower 1 and 2), 13 passed over. **Open, not
+ruled on by Devon**: (a) `royal-tapestry` and `dormitory-watch-bill`'s
+backs sit 5 mm into the 15 mm plaster, fronts clear, for increment 6 to
+settle; (b) the dressed surrounds read as reddish rubble rather than
+squared blocks at `medieval_blocks_02`'s scale; (c) `wood_planks` on the
+hall roof shows its board-end joints as a fine grid at 1.5 m; (d)
+interiors need +11 to +11.5 stops until increment 7's sun; (e) from #852,
+its (a) porter gate-over, (d) slates' pale stones and (e) brick and block
+repeat stay left for now by Devon's ruling (#854), and 4a's (d) lodge deck
+waits for increment 6.

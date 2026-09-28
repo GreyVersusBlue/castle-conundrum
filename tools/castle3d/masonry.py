@@ -162,6 +162,19 @@ class Solid:
             f.material_index = slot
         self.count += 1
 
+    def paint(self, test, slot):
+        """Sets `slot` on every face whose centre, turned back into the game
+        frame, passes test(x, y, z); returns how many it painted. A slot moves
+        no vertex (#854): the dressing round an opening is a material, not a
+        shape."""
+        n = 0
+        for f in self.bm.faces:
+            c = f.calc_center_median()
+            if test(c.x, c.z, -c.y):
+                f.material_index = slot
+                n += 1
+        return n
+
     def finish(self, name, col, mats, plan_id=None, plan_ids=None, smooth_angle=35.0):
         """The mesh object `name` in `col`, normals out, a `UVMap` per face by
         its dominant axis (the box projection's own choice, so the normal
@@ -207,6 +220,33 @@ def colliders_of(bp, piece_id):
            (c['id'].startswith(piece_id + '-') and c['id'][len(piece_id) + 1:].isdigit())]
     if not out:
         raise ValueError(f"masonry: the blueprint has no collider for {piece_id}")
+    return out
+
+
+def split_boxes(cols, cuts, eps=1e-6):
+    """Each collider box cut at every plane in `cuts` ({'x': [...], 'y': [...],
+    'z': [...]}) that lies strictly inside it, ids kept, so no face of the
+    result straddles a plane (#854: a dressed band's edge). Raises unless each
+    box's pieces sum to its volume within 1e-9."""
+    out = []
+    for c in cols:
+        b = c['box']
+        edges = {}
+        for k in 'xyz':
+            inner = sorted(p for p in set(cuts.get(k, [])) if b['min'][k] + eps < p < b['max'][k] - eps)
+            edges[k] = [b['min'][k]] + inner + [b['max'][k]]
+        parts = []
+        for x0, x1 in zip(edges['x'], edges['x'][1:]):
+            for y0, y1 in zip(edges['y'], edges['y'][1:]):
+                for z0, z1 in zip(edges['z'], edges['z'][1:]):
+                    parts.append({'id': c['id'], 'box': {'min': {'x': x0, 'y': y0, 'z': z0},
+                                                         'max': {'x': x1, 'y': y1, 'z': z1}}})
+
+        def vol(q):
+            return math.prod(q['max'][k] - q['min'][k] for k in 'xyz')
+        if abs(sum(vol(p['box']) for p in parts) - vol(b)) > 1e-9:
+            raise ValueError(f"masonry.split_boxes: {c['id']}'s pieces do not sum to its volume")
+        out += parts
     return out
 
 

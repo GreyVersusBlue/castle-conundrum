@@ -1379,10 +1379,12 @@ net for the first fetch. Gate: none. Lane G.** Devon, 2026-09-26: rebuild
 the castle, Mereford and the countryside as a realistic standalone Blender
 model with Poly Haven PBR materials, today's layout as the guide, his 71
 props re-materialed inside it (#839). Decided in `HISTORY.md` as #839 to
-#844, with #845 to #853 since (#851 amends #435 for the model only: a shut
+#844, with #845 to #855 since (#851 amends #435 for the model only: a shut
 outer gate in `barbican-west`; #853 covers and windows the rooms the game
-leaves open to the sky, model only); this section is the `builder` job those
-decisions leave. Nothing
+leaves open to the sky, model only; #854 is Devon's ruling on the ten open
+look notes, and adds the hall's louvre, dressed openings and a darker
+plaster; #855 corrects 4b from its stills); this section is the `builder`
+job those decisions leave. Nothing
 under `tools/castle3d/` exists on `e05ac72`. **The game loads none of it**:
 no file under `src/`, `data/`, `assets/` or `test/` changes in any
 increment, `npm test` stays fifteen of fifteen, and the integration row
@@ -1489,7 +1491,12 @@ one shared module, one module per stage.
   gains `old_planks_02` (2.0 m), `rock_tile_floor` (1.96), `floor_tiles_02`
   (4.0), `dirty_carpet` (0.6) and `rough_wood` (0.5); `PLAIN` gains the two
   tile floors and `SWAP_RISE` the carpet and `rough_wood`; `ALIAS` is
-  unchanged. See the increment 4 open calls.
+  unchanged. See the increment 4 open calls. From 4b (#854), `LOOK` gives
+  `plastered_wall_04` a tint, a warm multiply, a grime noise and an
+  undulation bump inside `library()`, and `dressing()` builds
+  `MAT_medieval_blocks_02_dressing`, the dressed stone darkened to the
+  rubble's albedo; `LIBRARY` gains nothing and nothing is fetched. See
+  increment 4b's open calls.
 - **The stage modules**, one per increment 1 to 8: `blueprint.py` (the
   `GUIDE` collection, increment 0), `terrain.py`, `walls.py`, `towers.py`,
   `gates.py`, `buildings.py`, `town.py`, `props.py`, `lighting.py`,
@@ -1577,13 +1584,20 @@ recorded in `HISTORY.md` against the increment (#53).
    other rooms: flat roofs over the Clerk's chamber, the dormitory, the
    royal apartments and the chapel nave, a lean-to over the Steward's
    chamber, beams under every upper floor and flat roof, five windows, and
-   plaster in the three upper rooms. *Corrected 2026-09-27*: this line said
+   plaster in the three upper rooms; and, from Devon's rulings of
+   2026-09-28 (#854), a ridge louvre on the hall's roof, dressed stone round
+   every opening in a rubble run and through the three rubble gate arches'
+   passages, and `plastered_wall_04` darkened, warmed and broken up, which
+   reaches the two gate-overs too. *Corrected 2026-09-27*: this line said
    "the castle's 21 non-curtain runs", which is the plan's 33 `curtain:
    false` wall pieces less increment 5's twelve: it counted the 4 town-wall
    runs (`town`'s), the 2 cross-wall runs and `porter-gate-over` (`walls`',
    built in increment 2), and this stage's 14 wall pieces, of which 11 are
    runs. The runs' thickness is the plan's 1 m already, and a window's
-   reveal is that 1 m, straight, as the plan's one window has it.
+   reveal is that 1 m, straight, as the plan's one window has it. *Amended
+   2026-09-28 (#854)*: still straight and still 1 m, and in a rubble run
+   dressed, by material slot, in the plan's dressed stone; the shape does not
+   change, the look does.
 5. **Mereford.** The 29 `mereford-*` pieces (9 runs, 20 decor) and Wykes's
    yard's 3 runs, shed and ground: the town wall, the church, and
    timber-framed houses from a parametric generator seeded by
@@ -1681,11 +1695,42 @@ turn it red from green (#34). The report quotes the failing line.
   it. The report quotes `ROOF_great-hall`'s `planIds`. Two stills,
   `shots/castle3d/buildings.png` and `buildings-hall.png`, with Devon's line
   on each recorded in `HISTORY.md`.
-- **Increment 4b, in full.** Both builds above exit 0 again, line 6
-  unchanged at 197 and 40, since 4b adds no `planId`. Breaks: move the King's
-  hall beams to x 6, 10, 14 and 18 (the build raises, naming
-  `kings-hall-chandelier`, whose top at 3.73 m is inside the beam at x 14).
-  One still, `buildings-dormitory.png`, with Devon's line recorded.
+- **Increment 4b, in full.** `npm test` fifteen of fifteen, unchanged. Both
+  builds above exit 0 again, lines 4, 5 and 6 passing on the first and 4
+  and 6 on the second, line 6 unchanged at 197 and 40, since 4b adds no
+  `planId`. The report quotes: the dressed openings per run (12 in 3 runs:
+  `clerk-office-south` 2, `kitchen-south` 3, `great-hall-north` 7) and the
+  faces painted in each; the passage faces painted in `ARCH_west-gate`,
+  `ARCH_east-gate` and `ARCH_barbican-outer`, and none in
+  `ARCH_porter-gate`; `MAT_plastered_wall_04`'s `LOOK` values; and
+  `LOUVRE_great-hall`'s print line (bay, hole, foot y, head y, cap ridge y);
+  from #855, `ROOF_steward-chamber`'s pitch (0.449) and eave (z 5.2, underside
+  3.865, top 4.045), `PLATE_steward-chamber`, and the four
+  `DOOR_` leaves by name (`prison-tower-1`, `-2`, `sw-tower-1`, `-2`) with
+  the 13 doors the rule passed over.
+  Breaks, each from green and each quoted: move the King's hall beams to x
+  6, 10, 14 and 18 (the build raises, naming `kings-hall-chandelier`, whose
+  top at 3.73 m is inside the beam at x 14); an `allow.json` entry
+  `{"kings-hall-south": ""}` (line 6 fails on the empty reason); delete
+  `ROOF_dormitory` (line 6 stays green by design, and the report says so in
+  one line: an #853 object realises no plan piece, and the still holds it);
+  `LOUVRE_X = -12` (the build raises, naming `hall-truss-6`, whose box the
+  hole grown by 0.1 m meets); `DRESS = 1.3` (the build raises, naming the
+  first rubble run it dresses and a door and the window over or beside it,
+  whose grown boxes overlap from y 3.7 to 3.8). Four stills, with Devon's
+  line on each recorded in `HISTORY.md`: `buildings-dormitory.png`,
+  `buildings.png` and `buildings-hall.png` again from 4a's two cameras, and
+  `gates-dressed.png`; see increment 4b's open calls. From #855: deleting
+  `DOOR_prison-tower-2` or `PLATE_steward-chamber` leaves line 6 green by
+  design, and the report says so in one line; the two interiors at 1024
+  samples and the two exteriors at 128, each with its Film exposure; and
+  Devon's line on the lean-to and the hall's drum doors recorded.
+  From #856: every board surface `buildings.py` takes from `ROOF_BOARDS`
+  is `MAT_wood_planks` (the hall roof's slot 1 and gables, the louvre's
+  slats, end boards and cap boards, the lean-to's slot 1), and
+  `DECK_masons-lodge-roof` and the five `old_planks_02` ground floors still
+  carry `MAT_old_planks_02`; the report quotes each object's slot list,
+  and `buildings-hall-4b.png` is re-rendered at 1024 samples for Devon.
 - **Increment 7.** Five stills exist, one per camera, and line 4 passes
   with the HDRI in the scene.
 - **Increment 8.** Lines 1, 2 and 3 pass: 48 `ROOM_`, 5 `GATE_` and 4
@@ -2004,12 +2049,20 @@ to two. Everything `buildings.py` adds that realises no plan piece carries
   0.27 m boards, and box-projected onto a 0.3 m member it draws board
   seams across a squared timber in the one still Devon asked to see from
   underneath. `rough_wood` is grain with no plank seams. `oak` stays on
-  `walk-bar` as shipped.
+  `walk-bar` as shipped. *Amended 2026-09-28 (#856)*: `ROOF_BOARDS =
+  'wood_planks'`. `old_planks_02` is exterior cladding with rust-stained
+  nail runs and drip stains at the foot of every board, so each 2.0 m tile
+  laid a row of dark streaks up the hall's 34.6 degree underside; Devon:
+  "Fix the roof board steaks now." `wood_planks` (1.5 m, coursed) is the
+  plan's own board under `stone_pavers` on the flat roofs and reads clean
+  on the dormitory's ceiling in the same render. The constant's reason
+  above no longer holds for it: it is a model-only choice, and the
+  pieces whose blueprint `material` is `old_planks_02` keep it (#849).
 - **The new `sources.json` rows.** Recommend **five sets, 2k jpg, the five
   maps each (diff, nor_gl, rough, disp, ao), 25 rows, 50,820,764 bytes**,
   fetched after Devon's yes to this list with sizes: `old_planks_02`
-  6,286,253 (2 m; `masons-lodge-roof`, 5 ground floors, the hall roof's
-  boards), `rock_tile_floor` 15,323,983 (1.96 m; the hall and the King's
+  6,286,253 (2 m; `masons-lodge-roof`, 5 ground floors, and the hall
+  roof's boards until #856 moved those to `wood_planks`), `rock_tile_floor` 15,323,983 (1.96 m; the hall and the King's
   hall), `floor_tiles_02` 5,186,646 (4 m; the chapel drum and the nave),
   `dirty_carpet` 16,509,766 (0.6 m; `floor-royal-apartments`, "the one
   carpet in the castle") and `rough_wood` 7,514,116 (0.5 m; the trusses and
@@ -2041,7 +2094,7 @@ to two. Everything `buildings.py` adds that realises no plan piece carries
   13.25, a ridge at y 10.5 on z 9.625, so the pitch is 2.5 over 3.625,
   0.6897, 34.6 degrees, the ridge along x. The trusses' top edges are those
   two lines and the roof's underside lies on them; the roof is 0.18 m thick
-  measured vertically, 0.12 of `old_planks_02` boards (slot 1) under 0.06
+  measured vertically, 0.12 of `ROOF_BOARDS` boards (slot 1) under 0.06
   of `roof_slates_02` (slot 0), so its ridge top is 10.68. The south eave
   does not stand on the curtain: #527 stopped the trusses at 13.25, 0.75 m
   short of its face at z 14, for the Prison Tower's level-2 floor, and in
@@ -2055,10 +2108,11 @@ to two. Everything `buildings.py` adds that realises no plan piece carries
   cuts z 14 at x -23.46 and -16.54 and reaches z 12 at x -20, the South-west
   Tower's cuts the corner from x -34, z 12.54 to x -32.54, z 14, and the
   roof meets each drum's face. Closed at both ends by a gable of
-  `old_planks_02` boards 0.05 m thick inside the roof's x span (x -34 to
+  `ROOF_BOARDS` boards 0.05 m thick inside the roof's x span (x -34 to
   -33.95 and -6.05 to -6), the triangle (z 6, y 8), (9.625, 10.5), (13.25,
   8), in `ROOF_great-hall`'s own object: a stone gable on the west curtain
-  would stand on the west walk. `masonry` gains `Solid.slab(poly, under,
+  would stand on the west walk. (`ROOF_BOARDS` is `wood_planks` since
+  #856, `old_planks_02` before.) `masonry` gains `Solid.slab(poly, under,
   thickness, slot)`, a plan polygon lifted onto a plane, closed.
 - **The trusses' shape.** Recommend **a king-post truss in the piece's
   box, drawn in its (z, y) plane**: the two principal rafters 0.3 m deep
@@ -2143,7 +2197,11 @@ to two. Everything `buildings.py` adds that realises no plan piece carries
   room-facing face of every flat run that bounds the room (the buildings
   runs and the curtain and cross-wall faces), built from the same boxes
   `build_run` received less the window blocks, so every opening stays open,
-  from the floor's top at 4.0 to the roof's underside at 7.8. Drum faces
+  from the floor's top at 4.0 to the roof's underside at 7.8. *Amended
+  2026-09-28 (#854)*: in a rubble run the skin also stops at each opening
+  grown by `DRESS`, so the dressed band shows inside as stone round the
+  window, as it would in a limewashed chamber; in a `medieval_blocks_02` run
+  (Lady Alys's window) it stops at the opening itself. Drum faces
   stay stone, and a skin that runs behind a drum's bulge is buried in its
   stone. The ground rooms keep the plan's stone, since their slugs were
   chosen for them (#541) and the upper rooms' were not.
@@ -2176,7 +2234,21 @@ to two. Everything `buildings.py` adds that realises no plan piece carries
   inner edge, and (z 14, y 7.82), a pitch of 0.509, 27 degrees, 0.18 m
   thick as the hall's roof is, so it meets the curtain at 8.0 under the
   walk's edge and its eave at z 5.2 is 3.34 m up, 1.43 m over the tallest
-  garden row (`garden-scarecrow`, 1.91). `buildings.py` raises if any #853
+  garden row (`garden-scarecrow`, 1.91). *Amended 2026-09-28 (#855)*: the
+  underside runs through the north run's OUTER top edge, (z 5.5, y 4.0),
+  and (z 14, y 7.82): pitch 3.82 / 8.5 = 0.449, 24.2 degrees. Built through
+  the inner edge, the roof's top was 3.67 at z 5.5, so the wall's outer
+  arris stood 0.33 m up through the slates and the eave hung under the wall
+  top as a loose strip; Devon: "The roof should sit on the wall." Derived:
+  eave at z 5.2, underside 3.865 and top 4.045, 1.955 m over
+  `garden-scarecrow`; at z 5.5 underside 4.000 (on the arris), top 4.180; at
+  z 6.5, the inner edge, underside 4.449; at the Bakehouse disc's cut, z
+  12.54 at x 2, underside 7.164 and top 7.344; at the curtain's face, z 14,
+  underside 7.82 and top 8.00, flush with the wall top and under the walk's
+  edge as before. The disc cut is the plan's and does not move. The wedge
+  this leaves over the wall top, 1.0 m deep and 0.449 m tall at the inner
+  face, is filled by `PLATE_steward-chamber`; see increment 4b's open
+  calls. `buildings.py` raises if any #853
   roof's box meets a props-stage piece's box. The Steward's chamber gets
   no window: a sill at 5 m does not fit a 4 m wall, and its door is its
   light, as the King's hall's is.
@@ -2202,11 +2274,265 @@ to two. Everything `buildings.py` adds that realises no plan piece carries
   `buildings-dormitory.png`, eye at (-25, 5.7, -10) looking at (-14.5, 6.2,
   -9), which holds the south windows, the beams, the plaster and the
   Kitchen Tower's bulge. Light is increment 7's, so a still may raise the
-  Film exposure, and the report says by how much.
+  Film exposure, and the report says by how much. *Amended 2026-09-28
+  (#854)*: 4b sends four stills, not one; increment 4b's open calls name
+  them.
 - **Two sittings, not one.** Decided, Devon 2026-09-27: **4a then 4b, each
   a class S sitting**: 4a is every piece with a `planId` plus the hall's
   #853 pieces, which Devon's two stills need (a roofed hall with no windows
   is a black still); 4b is #853 everywhere else.
+
+**Increment 4b's open calls** (architect, 2026-09-28, against `1d1308e`;
+Devon's rulings of 2026-09-28 on the ten open look notes, #854, and the
+lead's measurements in Devon's live Blender, Material Preview, scene World).
+Every number is in the game's frame. Everything below is a material or a
+model-only object, so line 6 stays at 197 and 40 and no `planId` moves.
+
+- **Which notes 4b takes.** Decided, Devon 2026-09-28 (#854): #852's (b),
+  the west gate-over's flat grey plaster, and (c), the west arch's pale
+  soffit; 4a's (a), the hall roof hidden from the outer ward (a ridge
+  louvre), (b), the pale flat reveals, and (c), the dark hall. Left:
+  #852's (a), (d) and (e). Withdrawn: #852's (f), the wall height (#850's
+  open question is closed). Later: 4a's (d), the lodge deck, which
+  increment 6's four poles fix.
+- **Why the reveals read pale and flat.** Not a projection fault:
+  `masonry.finish` writes `UVMap` per face by its dominant axis, the box
+  projection makes the same choice, and a jamb's rubble is at the face's
+  scale. A jamb, head or sill is the same `castle_wall_slates` rubble as the
+  face, cut dead straight through 1 m, facing another part of the sky, with
+  nothing at the arris to say the stone turned there. The three rubble gate
+  arches are the same fault over a 4 m passage (#852 c).
+- **The dressed openings in the runs.** Recommend **the plan's dressed
+  stone round every opening in a run whose slug is not already
+  `materials.DRESSED` (`'medieval_blocks_02'`, #541), as a second material
+  slot on the run's own faces, over the reveal and a band `DRESS` 0.25 m
+  wide on both wall faces round the jambs, head and sill**. A slot moves no
+  vertex: every opening stays the plan's size (#500), the run's solid stays
+  its colliders clipped to its box, and line 6 is untouched, where a skin
+  inside the opening narrows it and a skin proud of the face stands outside
+  the collider with an arris of its own. The band is what a mason's dressed
+  jamb shows on the face, and it moves the material change a quarter metre
+  out from the arris, so the eye reads a surround and not a paint line. In
+  `buildings.py`, for each such run, after #853's windows are cut:
+  `openings(piece, cols)` is the piece box less the colliders, found on the
+  grid of the colliders' edges along the run and in y, merged along the
+  run, each spanning the run's whole depth or the stage raises; each is
+  grown by `DRESS` along the run and in y, except that an opening standing
+  on the piece's foot (a door) grows no sill band; the stage raises if a
+  grown opening leaves the piece box or meets another's, naming the run and
+  both openings by their centres; `masonry.split_boxes(cols, cuts)` cuts
+  every collider box at each grown box's along and y planes, so no face
+  straddles a band's edge; `walls.build_run` as today; then
+  `Solid.paint(test, 1)` paints every face whose centre lies inside a grown
+  opening (across, the piece box's full depth), and `finish` takes
+  `[library(slug), materials.dressing()]`. Dressed: `clerk-office-south`
+  (its door and #853's window at x -30), `kitchen-south` (door, windows at
+  -22 and -18), `great-hall-north` (two doors, five windows); 12 openings.
+  Not dressed, already `medieval_blocks_02`: `kings-hall-south` (door and
+  Lady Alys's window), `steward-chamber-north`, `chapel-nave-north` and
+  `chapel-nave-east`. At `DRESS` 0.25 no two grown openings meet: a door's
+  band tops out at 2.75 and a window's sill band starts at 4.75.
+- **The dressed passages in the gates.** Recommend **the passage faces
+  only, painted slot 1, in `ARCH_west-gate`, `ARCH_east-gate` and
+  `ARCH_barbican-outer`**, the three in `castle_wall_slates`;
+  `ARCH_porter-gate` stands in the `medieval_blocks_02` cross-wall and is
+  left alone. After `build_arch`, `Solid.paint` takes every face whose
+  centre is strictly inside the arch's x span (so neither end face, plumb or
+  battered) and within `inner(y) + SLOT_JAMB + EPS` of the passage's
+  centre in z, `inner` being 0 above the crown: the jambs, the vault's
+  soffit and the portcullis slot's cuts. No face band on the arch ends: a
+  band round a round head needs a curved split the prisms do not have, and
+  the 4 m passage is what Devon saw.
+- **The dressing's tone.** Recommend **`MAT_medieval_blocks_02_dressing`,
+  the set coursed (rise 0) with a Hue/Saturation/Value of Value 0.6, built
+  once by `materials.dressing()` from `DRESSING = ('medieval_blocks_02',
+  0.6)`**. Measured on the 2k maps as the linear luminance of diffuse times
+  AO, which is what `_maps` feeds the shader: `castle_wall_slates` 0.109,
+  `medieval_blocks_02` 0.180. Value 0.6 puts the dressing at 0.108, the
+  rubble's own, so the brightness step at the arris is the light's alone
+  and the blocks' joints and relief (displacement std 0.145) do the
+  reading; the undarkened set would be a frame 1.65 times the rubble's
+  brightness round a note that says "pale". The name keeps the Poly Haven
+  set in it for line 4 and `CREDITS.md`. The cross-wall, the columns and
+  the blocks runs keep `MAT_medieval_blocks_02` as Devon has seen them. If
+  the still reads the band as dark, the fix is that one number.
+- **Why the plaster is a white card.** Measured on the 2k maps:
+  `plastered_wall_04`'s diffuse is neutral grey (sRGB mean 0.553, 0.542,
+  0.531), linear luminance 0.257 with std 0.019; its AO map is 1.000
+  everywhere (slates' mean 0.445), its displacement std 0.003 (slates'
+  0.137) and its roughness std 0.015. So it renders at 0.257 against the
+  rubble's 0.109, 2.4 times as bright, with a coefficient of variation of
+  0.07 against the rubble's 0.67. It is a smooth modern render.
+- **The plaster fix.** Recommend **option (i), keep the set, no fetch:
+  `materials.LOOK = {'plastered_wall_04': {...}}`, applied inside
+  `library()` so `MAT_plastered_wall_04` is the one material everywhere**:
+  `tint` `{'Hue': 0.5, 'Saturation': 1.0, 'Value': 0.65}`; `warm` `(1.0,
+  0.93, 0.80, 1.0)`, a limewash cream; `grime`, a world Noise of 1.5 m
+  (detail 4) whose Fac, mapped from 0.4 to 0.6 onto 0.75 to 1.2 and
+  clamped, multiplies the colour's Value after #850's drift; `undulate`, a
+  Bump node (Strength 0.3, Distance 0.02 m) on a world Noise of 0.6 m
+  (detail 3), fed the Normal Map's output and feeding the BSDF's Normal, so
+  the render follows the uneven stone under it. `_maps` gains `grime`,
+  `_finish` gains `undulate`, both off for every other set. The effective
+  albedo goes from 0.257 to 0.156 (0.257 x 0.65 x 0.935, the warm's
+  luminance weight), 1.43 times the rubble and 0.87 times the blocks, so it
+  still reads as a lighter finish and no longer as a lit card; its linear
+  red to blue goes from 1.09 to 1.36. One material means the fix reaches
+  `west-gate-over`, `east-gate-over`, every `PLASTER_<room id>` and the six
+  plastered Mereford houses of increment 5. Option (ii), another Poly Haven
+  plaster, is refused for now: it is a round trip to Devon for a fetch, it
+  leaves the blueprint's own slug (#849), and the fault is brightness, which
+  is two numbers. If `gates-dressed.png` still reads a card, the fallback is
+  named and is the lead's to price: `plastered_stone_wall` or
+  `painted_plaster_wall`, IDs not yet checked against
+  `api.polyhaven.com/files/<id>`.
+- **The ridge louvre.** Recommend **`LOUVRE_great-hall`, one object,
+  `modelOnly: "#854"`, no `planId`, over the bay between `hall-truss-5` (x
+  -16) and `hall-truss-6` (-12), centred `LOUVRE_X = -14`, with the roof
+  opened under it**. The sight line: from 4a's eye (-4, 1.7, -5) over
+  `great-hall-north`'s outer top arris (z 5.5, y 8), a ray's height at z is
+  1.7 + 0.6 (z + 5), whatever its x, since the wall and the ridge both run
+  along x: 9.875 at z 8.625 and 10.475 at the ridge, z 9.625, whose top is
+  10.68, the 0.2 m the still shows. The louvre, footprint x -15.2 to -12.8
+  (2.4 m) by z 8.625 to 10.625 (2.0 m) on the ridge: sill plates `rough_wood`
+  0.12 by 0.12 along both long sides, y 9.99 to 10.11 (9.99 is the roof's
+  top at 1.0 m off the ridge, 10.68 - 0.6897); four corner posts 0.12 m
+  square, 10.11 to 11.28; head plates 11.28 to 11.40, `LOUVRE_RISE` 0.72
+  over the ridge top; between the posts on each long side four slats of
+  `ROOF_BOARDS`, 0.25 by 0.025 m, tipped 45 degrees with their low edge
+  outward, centred on the side's plane (z 8.685 and 10.565) at y 10.256,
+  10.549, 10.841 and 11.134, so light and smoke pass and rain does not;
+  each end closed by `ROOF_BOARDS` boards 0.05 m thick (x -15.2 to -15.15
+  and -12.85 to -12.8) from the roof's top line to the cap's underside, as
+  two convex quads per end, (8.625, 9.99), (9.625, 10.68), (9.625, 12.09),
+  (8.625, 11.40) and its mirror; a cap of the hall roof's own section,
+  0.12 m of `ROOF_BOARDS` (slot 1) under 0.06 m of `roof_slates_02`
+  (slot 0, `towers.ROOF_MATERIAL`), pitch 0.6897, ridge along x, underside
+  12.09 at z 9.625 and 11.40 at the head plates, eaves 0.1 m past the
+  footprint on all four sides (x -15.3 to -12.7, z 8.525 to 10.725), ridge
+  top 12.27. Slots: 0 `roof_slates_02`, 1 `ROOF_BOARDS` (`wood_planks`
+  since #856), 2 `rough_wood`,
+  `smooth_angle` 5 as the roof. **What reads**: the louvre's whole north
+  side is above the sight line, its foot 0.115 m over it and its sill's top
+  0.235 m, and its cap ridge stands 1.80 m over the sight line at the ridge
+  and 1.59 m over the hall's ridge, 2.28 m of louvre from foot to cap. Why
+  that bay: it is outside the Prison Tower disc's cut of the south slope (x
+  -23.46 to -16.54), so the slope's rectangles split round the hole keep
+  `minus_discs`' one-corner rule (a hole at x -18 has both its south
+  corners inside the disc and raises); its centre is 1 m from where
+  `buildings.png`'s camera axis crosses the ridge (x -14.97); it is not
+  over the fireplace at -26; and `buildings-hall.png`'s camera sees it 28.6
+  degrees up, inside its frame. **The roof is opened**: a hole x -15.08 to
+  -12.92, z 8.745 to 10.505, inside the sill and post faces so every louvre
+  member stands on roof, through boards and slates both. `build_roof` builds
+  each slope as three rectangles, the two either side of the hole's x span
+  whole and the middle one stopping at the hole's z, each through
+  `minus_discs` as today; the gables do not change. The hole is what lets a
+  louvre work, and it is the hall's one new source of daylight (4a's c).
+  `buildings.py` raises if the hole's x span grown by 0.1 m meets any
+  `hall-truss` piece's box, naming it (the `LOUVRE_X = -12` break names
+  `hall-truss-6`), and if the louvre's box grown by 0.1 m meets any
+  props-stage piece's box, naming both, as every #853 object does. Constants
+  in `buildings.py`, citing #854: `LOUVRE_X`, `LOUVRE_SIZE = (2.4, 2.0)`,
+  `LOUVRE_RISE`, `LOUVRE_FRAME = 0.12`, `LOUVRE_SLATS = 4`, `SLAT = (0.25,
+  0.025, 45)`, `LOUVRE_EAVE = 0.1`; the end boards reuse `GABLE`. The
+  object is named for the room it vents, as `ROOF_great-hall` and
+  `CORBELS_great-hall` are.
+- **The dark hall (4a's c).** Recommend **no light in this increment**:
+  light is increment 7's, and #853's windows are already in the hall. 4b's
+  windows, beams and plaster answer it for the other rooms and the louvre's
+  hole adds the hall's daylight. The report gives the Film exposure each of
+  the four stills needed, and `buildings-hall.png`'s against 4a's +7 stops.
+- **The module split.** Recommend **`masonry.py` gains two helpers,
+  `split_boxes(cols, cuts)` (each collider box cut at every plane in `cuts`
+  = `{'x': [...], 'y': [...], 'z': [...]}` that lies strictly inside it, ids
+  kept, raising unless the pieces' summed volume is the box's within 1e-9)
+  and `Solid.paint(test, slot)` (sets `material_index` on every face of the
+  bmesh whose centre, turned back into the game frame, passes `test(x, y,
+  z)`, and returns the count); `materials.py` gains `DRESSED`, `DRESSING`,
+  `dressing()`, `LOOK` and the `grime` and `undulate` parameters;
+  `buildings.py` gains `DRESS`, `openings`, the dressing pass, the louvre
+  and the opened roof; `gates.py` gains the passage paint, reading
+  `materials.DRESSED`, never `buildings` (which imports `gates`)**:
+  `DRESSED` lives in `materials.py` because both stages read it and it is a
+  material fact. `walls.py` and `towers.py` do not change.
+- **The lean-to's wall plate (#855).** Recommend **`PLATE_steward-chamber`,
+  one `rough_wood` (`TIMBER`) wedge filling the space between the north
+  run's top and the lean-to's underside, `modelOnly: "#855"`, no
+  `planId`**: x 2 to 9.5 (the roof's span; the Bakehouse disc does not
+  reach z 5.5 to 6.5), section (z 5.5, y 4.0), (6.5, 4.0), (6.5, 4.449), a
+  `Solid.plate` with `axis='x'`. With the roof through the outer arris the
+  wedge is closed outside, since roof and arris meet on a line, and open
+  inside: from the chamber the eye sees a slot 0.449 m tall at the inner
+  face narrowing to nothing 1 m back, a dark sliver under every rafter
+  line. Nothing would leave that slot as a gap in the one room the lean-to
+  exists to close; a plate is what a lean-to's rafters bear on, and its
+  0.449 m face reads as one. `buildings.py` raises if its box grown by 0.1
+  m meets a props-stage piece's box, naming both.
+- **The drum walk doors under a pitched roof (#855).** Recommend **a shut
+  plank leaf, `DOOR_<drum id>-<door index>`, in every drum door whose base
+  is 8 and whose arc passes under an #853 roof whose top there stands above
+  the door's base; `modelOnly: "#855"`, no `planId`, `oak` (so
+  `MAT_wooden_gate` through `ALIAS`, the plan's leaf timber, as #851's shut
+  leaves are)**. In the game these doors open onto #527's 0.75 m slot of
+  sky; in the model the hall roof now runs past them, so between the sill
+  at 8 and the roof's underside the lit drum room glows into the hall
+  (`buildings-hall-4b.png`, rays on `DRUM_prison-tower` at x -22.3 to
+  -21.2, y 8.0 to 9.6, z 12.9 to 13.3). The hall roof's top is above 8 for
+  z under 13.51 (top 8.18 + 0.6897 (13.25 - z)), which is where every hit
+  lay. The rule, computed in `buildings.py` from the blueprint's `drums`
+  (`cx`, `cz`, `radius`, `doors` with `from`, `arc`, `base`, `top`) and the
+  #853 roofs' own planes, not a table: sample the door's arc 0.05 m
+  outside the ring (on the ring itself a sample lies on the roof polygon's
+  own disc-cut edge) at `masonry.arc`'s step; a door takes a leaf if any sample inside a roof's
+  plan polygon has that roof's top above `base` + 1e-6. The walk doors
+  checked, all base 8, top 10.5, are 17:
+  - **Under the hall roof, a leaf each (4)**: `prison-tower` door 1 (arc
+    90 to 150, x -18 to -16, z 12.54 to 16) and door 2 (210 to 270, x -24
+    to -22, the still's); `sw-tower` door 1 (90 to 150, x -34 to -32, z
+    12.54 to 16) and door 2 (135 to 180, of which x -34 to -33.17, z 12.3
+    to 13.17 is under the roof and the rest opens on the west walk). The
+    two `sw-tower` doors are behind 4a's hall camera, which is why no ray
+    found them.
+  - **Onto a flat #853 roof, top 8.00 = the sill, no leaf (6)**:
+    `nw-tower` 2 and 3 (the Clerk's chamber), `kitchen-tower` 2 and 3 (the
+    dormitory), `stockhouse-tower` 2 and `kings-tower` 2 (the royal
+    apartments).
+  - **Onto the lean-to, below the sill, no leaf (1)**: `bakehouse-tower`
+    door 2 (x 2 to 4, z 12.54 to 16), where the roof's top is 7.344 to 8.00
+    along the arc, so the door opens onto the roof outdoors, as a walk door
+    onto a lower roof does.
+  - **Onto walks or open ground, no #853 roof (6)**: `stockhouse-tower` 1
+    and 3, `kings-tower` 3, `bakehouse-tower` 1, `chapel-tower` 1 and 2
+    (the chapel drum's two open east of the nave's x 18).
+  The leaf: two plates of `oak`, 0.1 m thick, 5 mm apart at the middle, on
+  the chord between the door's outer-arc ends (4.0 m for a 60 degree door,
+  3.06 m for a 45; the chord's middle is at radius 3.46 or 3.70, inside the
+  ring's 2.8 to 4.0), set 0.1 m inward of the chord, from y 8.0 to 10.5.
+  `buildings.py` raises if a chord's middle is not inside the ring, and if a
+  leaf's box grown by 0.1 m meets a props-stage piece's box, naming both.
+  This shuts four walk doors the game leaves open; the model is not walked
+  and a shut door is what the walk would show (#851's reasoning). The
+  report lists the four by name.
+- **The review stills.** Recommend **four, from uncommitted scratch
+  cameras, Cycles 1920 x 1080 with the denoiser; the two interiors,
+  `buildings-dormitory.png` and `buildings-hall.png`, at 1024 samples, and
+  the two exteriors at 128, until increment 7's light** (#855: at the hall
+  eye, 960 x 540 and +11.5 stops, 128 samples raw was nearly pure noise and
+  128 denoised smeared streaks along the ceiling boards that Devon read as
+  "a lighting issue at the top of the ceiling"; 1024 denoised was clean):
+  `buildings-dormitory.png` as increment 4's call has it; `buildings.png`
+  and `buildings-hall.png` from 4a's two cameras exactly, so Devon compares
+  the louvre, the dressed doors and windows and the hall's light against
+  the stills he liked; and `gates-dressed.png`, 18 mm, eye (-40.5, 1.7,
+  1.5) inside the barbican looking at (-35, 2.4, -0.3), which holds the
+  west arch's jamb and soffit and the plastered gate-over. *Amended
+  2026-09-28 (#855)*: this call named eye (-41.5, 1.7, 8) at (-37, 4.25,
+  0), which framed a dark corner with no arch in view. Film exposure,
+  auto-probed to a median display value of about 0.35, as used for 4b's
+  first stills: `buildings-dormitory` +11, `buildings-4b` (4a's outer-ward
+  eye) +2.5, `buildings-hall-4b` +11.5, `gates-dressed` +3.5. The report
+  gives each still's exposure.
 
 ### Dependencies
 
@@ -2225,7 +2551,12 @@ to two. Everything `buildings.py` adds that realises no plan piece carries
 - **Increment 4's order inside the lane**: Devon's yes to the five sets,
   then `materials.py`'s `LIBRARY`, `PLAIN` and `SWAP_RISE` and `masonry.py`'s
   three helpers (`minus_discs`, `Solid.slab`, `plate`'s `axis`), then 4a's
-  `buildings.py`, then Devon's lines on 4a's two stills, then 4b.
+  `buildings.py`, then Devon's lines on 4a's two stills, then 4b. **4b's
+  own order** (#854): `materials.py`'s `DRESSED`, `DRESSING`, `LOOK` and
+  its two parameters and `masonry.py`'s `split_boxes` and `Solid.paint`
+  first, then `gates.py`'s passage paint (a `--only gates` build shows the
+  dressed arch and the new plaster before `buildings.py` is touched), then
+  `buildings.py`. No fetch: 4b adds no `sources.json` row.
 - **Lane G, `tools/castle3d/`**, this row's alone (#842). It shares no file
   with lane F, so it may run beside a rank 1 or rank 2 session; that is two
   Blenders on one machine and Devon's call. Both add a line to
@@ -2281,6 +2612,10 @@ to two. Everything `buildings.py` adds that realises no plan piece carries
 - [ ] The hall's roof from the outer ward and from under the trusses: a
       roof on a frame, or a lid on scaffolding? The tile floor: a floor,
       or a repeat you can count?
+- [ ] The louvre from the outer ward: a louvre on a ridge, or a box on a
+      roof? The dressed doors and windows: a surround, or a painted frame?
+- [ ] The gate-overs and the upper rooms' plaster: a limewashed wall, or a
+      lit card?
 - [ ] Devon's props re-materialed: his objects, or somebody else's?
 - [ ] Mereford at `CAM_town`: a town, or one house forty times?
 
