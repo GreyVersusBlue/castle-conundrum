@@ -1507,7 +1507,13 @@ one shared module, one module per stage.
   `SWAP_RISE` gain nothing; and `LOOK`'s `plastered_wall_04` gains
   `object_tint`, a multiply by the object's colour, white on every object
   but the six houses; `terrain.append_model` gains a memo so the town's trees
-  reuse the terrain's template. See increment 5's open calls.
+  reuse the terrain's template. See increment 5's open calls. From
+  increment 5's look fixes (#860, #861), `LOOK` gains `medieval_blocks_02`
+  (a tint) and `rough_wood` (a tint, a warm and a `rough_min`, which
+  `box_material` gains and passes to `_maps`), and `SWAP_RISE` gains
+  `medieval_blocks_02` at 0.5; both reach the castle as well as the town,
+  and `THATCH_SET`'s stand-in does not change. See "Increment 5's look
+  fixes".
 - **The stage modules**, one per increment 1 to 8: `blueprint.py` (the
   `GUIDE` collection, increment 0), `terrain.py`, `walls.py`, `towers.py`,
   `gates.py`, `buildings.py`, `town.py`, `props.py`, `lighting.py`,
@@ -1764,7 +1770,13 @@ turn it red from green (#34). The report quotes the failing line.
   `color`, `(1, 1, 1, 1)`; the line 4 counts. The eight breaks in increment
   5's open calls, each from green, each quoted. Four stills, `town.png`,
   `town-gate.png`, `town-street.png` and `town-church.png`, each with its
-  exposure, and Devon's line on each recorded in `HISTORY.md`.
+  exposure, and Devon's line on each recorded in `HISTORY.md`. **The look
+  fixes (#860, #861)**, before increment 5 closes: the same two builds exit
+  0 with line 5 and line 6 unchanged, line 4's image counts unchanged and
+  its texture node counts up by exactly 5 in every build holding
+  `MAT_medieval_blocks_02`; the six house lines unchanged; break (11) red
+  and restored; the six stills in "Increment 5's look fixes", each with
+  its exposure.
 - **Increment 7.** Five stills exist, one per camera, and line 4 passes
   with the HDRI in the scene.
 - **Increment 8.** Lines 1, 2 and 3 pass: 48 `ROOM_`, 5 `GATE_` and 4
@@ -2997,8 +3009,12 @@ interiors' +11 to +11.5 stops, increment 7.
   `town.py`: the build raises naming `mereford-house-n1`, eave z -1.9 past
   the road's edge at -2, jetty 0.6; (5) flip the street side's sign in the
   jetty code only: the build raises from `check_box` naming
-  `HOUSE_mereford-house-n1`, off by 0.600 m at `min z -9.600 against
-  -9.000`; (6) `CROSS_ARM = 1.0`: `check_box` raises naming
+  `HOUSE_mereford-house-n1`, off by 0.700 m at `min z -9.700 against
+  -9.000`. *Corrected 2026-09-28 (#859)*: this said 0.600 m at -9.600,
+  which is the jetty alone; n1's east chimney is centred on zr, the flipped
+  jetty moves zr to -9.3, and the 0.8 m stack's far face lands at -9.7. The
+  first run gave 1.153 m at -10.153, from a brace overrunning a 0.6 m
+  gable, fixed by clamping each brace to its bay with no change at green; (6) `CROSS_ARM = 1.0`: `check_box` raises naming
   `mereford-churchyard-cross`, off by 0.100 m at `min x -92.500 against
   -92.400`; (7) `TOWN_TREE_METRES = (5.0, 6.5)`: the build raises naming
   `TREE_town-tree-2` (5.509 m, its box about x -54.07 to -50.56) and
@@ -3049,6 +3065,142 @@ interiors' +11 to +11.5 stops, increment 7.
   sun (note (d)). `buildings-dormitory` shows no dressed opening. Six stills
   in all.
 
+**Increment 5's look fixes** (architect, 2026-09-28, against `51ec045`,
+where #859 was the last; the lead's read of #859's stills, items (2) and
+(3), after Devon's "Make your best call"). Class S from here: every number
+is below, no `save.js` change, no suite line moves. Measured on the cached
+2k maps, "luminance" is linear diffuse times AO as #854 and #858 measured
+it, "hue" and "saturation" are of the mean colour in sRGB, and the tints
+were computed by applying the Hue/Saturation/Value node's own sums to every
+texel in linear, as Blender does. Item (1), the thatch, waits on Devon's
+pick (#857); item (4) needs nothing.
+
+- **The town wall's and the church's stone: rise 0.5 and a tint, no scale
+  change (#860, amending #854's "leave" on #852 (e)).** **What the maps
+  say**: `medieval_blocks_02` is diffuse sRGB (0.686, 0.547, 0.440), hue
+  26, saturation 0.36, luminance 0.180, against `castle_wall_slates`' hue
+  39, saturation 0.24, luminance 0.109; the render's wall in
+  `town-gate-standin.png` samples at hue 25 to 26, saturation 0.29 to 0.33,
+  which is the pink. Red-orange texels (hue under 22, saturation over 0.45)
+  are 0.8% of the map, so the cast is the whole set's salmon, not its one
+  red stone. The repeat: the map's row means have a coefficient of
+  variation of 0.125 against 0.080 for its column means, with a dark mortar
+  band at 0.02 of the tile at 0.67 of the mean; the slates' figures are
+  0.154, 0.084 and 0.68. So the set carries a horizontal band every 1.5 m
+  as the slates do, and `SWAP_RISE` gives it rise 0, so `_maps`' B sample
+  moves 0.37 or 0.61 of a tile sideways and never up: every patch keeps
+  A's band heights, the bands run the full 64 m, and the few large stones
+  on that grid of 1.5 m rows read as diagonals under perspective. That is
+  #852 (e)'s own diagnosis ("their courses keep a rise of 0"), and
+  `SWAP_RISE`'s comment files the set with brick as "coursed" on its name;
+  #858 found it is random rubble with no course. **Recommend**:
+  `SWAP_RISE['medieval_blocks_02'] = 0.5`, as the slates, `defense_wall`
+  and `plastered_wall_04` have, and `LOOK['medieval_blocks_02'] = {'tint':
+  {'Hue': 0.52, 'Saturation': 0.6, 'Value': 0.65}}`, which takes it to hue
+  31, saturation 0.20, mean sRGB (0.451, 0.409, 0.362), luminance 0.144.
+  The Value is 0.65 and not higher because desaturating in linear lifts
+  the two lower channels: Saturation 0.6 at Value 0.8 leaves luminance at
+  0.177. **Scale stays 1.5 m**: `LIBRARY` holds each set's real size
+  (#849) and the stand-in thatch is its one labelled exception (#857); a
+  larger tile repeats fewer times (43 along the town wall's 64 m at 1.5, 26
+  at 2.5) but draws the same banded grid larger, and a simulated 24 by 8 m
+  face under `_maps`' swap gave a one-tile autocorrelation of 0.61 to 0.76
+  at 1.5, 2.0 and 2.5 m alike, so size is not the lever. The named
+  fallback, if `town-gate-look-standin.png` still shows the diagonal, is
+  `LIBRARY['medieval_blocks_02'] = 2.5` as a second labelled exception,
+  which needs Devon's yes. **It reaches the castle too, on purpose**:
+  `LOOK` and `SWAP_RISE` act inside `library()`, and `MAT_medieval_blocks_02`
+  is one material wherever the slug is (#854's rule for the plaster), so
+  the fix lands on the 7 castle pieces in the set (`cross-wall-north` and
+  `-south` in `walls`; `kings-hall-south`, `steward-chamber-north` and
+  `-east`, `chapel-nave-north` and `-east` in `buildings`) as on the 6 town
+  runs, the church, and the houses' plinths and chimneys. A town-only copy
+  would give the plan's one slug two looks, and #852 (e) was raised on the
+  castle's faces first. `dressing()` is `stone_pavers` (#858) and does not
+  change: the church's recesses stay at 0.108 against a wall now at 0.144,
+  0.75 of it where #858 had 0.61, still the darker. **Line 4**: the second
+  sample adds 5 Image Texture nodes and no image, so any build holding
+  `MAT_medieval_blocks_02` goes up by exactly 5 nodes: 212 to 217 and 100
+  to 105 for #859's two builds, 202 to 207 and 115 to 120 for 4b's.
+- **Timber: darker, warmer and matte (#861).** **What the maps say**:
+  `rough_wood` is diffuse sRGB (0.428, 0.395, 0.352), hue 34, saturation
+  0.18, luminance 0.105, roughness mean 0.51; the render's posts and
+  girding beams in `town-street-standin.png` sample at saturation 0.07 to
+  0.13, below the map's, which is the sky mirrored off a surface at 0.51,
+  the fault `MUD_ROUGH` exists for on the mud. **Recommend**:
+  `LOOK['rough_wood'] = {'tint': {'Hue': 0.5, 'Saturation': 1.0, 'Value':
+  0.5}, 'warm': (1.0, 0.78, 0.55, 1.0), 'rough_min': 0.75}`, which takes it
+  to mean sRGB (0.272, 0.219, 0.160), hue 32, saturation 0.41, luminance
+  0.043: weathered oak, 3.6 times darker than the plain plaster (0.157) and
+  2.3 times darker than the darkest tint below. `box_material` gains
+  `rough_min=None` and passes it to `_maps`, which already takes it, so the
+  key works from `LOOK` like the other four. **Reach**: every
+  `materials.library('rough_wood')`, which is `buildings.TIMBER` (the hall
+  trusses, every #853 beam, `PLATE_steward-chamber`, the louvre's frame)
+  and the town's frames, joists, king posts, window and door timbers,
+  barrels and crate battens. One material per set, and a castle truss is
+  the same oak as a house post. `MAT_rough_wood_thatch` does not change:
+  `thatch()` builds from `THATCH_SET`'s own look, not `LOOK`, so the
+  stand-in stays exactly #857's. The castle's timber is interior bar the
+  louvre frame and the plate, and interiors re-render under increment 7's
+  sun (#858 (d)), so no castle still is taken for it.
+- **The plaster tints: four, far enough apart, assigned as now (#861).**
+  **What was wrong**: `PLASTER_TINTS` multiplies `LOOK`'s cream, and
+  computed as CIE Lab colours the four #857 values sit 1.6 to 6.1 apart
+  (dE76), the closest pair, 0 (white) and 3 (cool white), at 1.6, which is
+  under what an eye tells apart side by side. **Recommend**:
+  `PLASTER_TINTS = [(1.0, 1.0, 1.0), (1.0, 0.80, 0.48), (0.95, 0.66, 0.58),
+  (0.60, 0.64, 0.66)]`: limewash as passed (luminance 0.157, L* 46.6), a
+  yellow ochre wash (0.130, hue 38, saturation 0.40), a red ochre wash
+  (0.114, hue 22, saturation 0.32) and an unwashed grey daub (0.099, hue 46,
+  saturation 0.10). Pairwise 9.2 to 15.7 dE76, the closest now white and
+  grey at 9.2, which is 5.75 times the old closest; the four also step down
+  in L* (46.6, 42.8, 40.2, 37.7), so they separate in a grey still too.
+  **Four, not six**: the draw is `rng.randrange(4)`, and `randrange(6)`
+  would draw differently and move every later draw, so the increment 5
+  table would change; four already gives six houses no equal neighbour.
+  **Assignment unchanged**: draw, then #857's fix-up going west along each
+  row, so the table's tints stand, n1 3, n2 0, n3 1, s1 0, s2 2, s3 3: no
+  two neighbours in a row share one, the three pairs across the street
+  (n1 and s1, n2 and s2, n3 and s3) differ, and all four are used. From the
+  North-west Tower's roof what shows is the three north gables and the
+  chimneys, grey, white and ochre. Objects other than the houses stay
+  white, so the gate-overs and the three `PLASTER_` rooms do not change.
+  **The rail**: `town.py` gains `TINT_APART = 0.15`, and raises at import
+  if any two `PLASTER_TINTS` are closer than that as RGB triples, naming
+  the closest pair; the new closest is 1 and 2 at 0.179, the old was 1 and
+  2 at 0.089, so the constant sits between them.
+- **Breaks for the fixes** (#34), from green, each restored: rerun (9) and
+  (10), since `materials.py`'s import checks and `thatch()`'s call into
+  `box_material` are what the fixes touch, and quote both unchanged. New
+  (11): set `PLASTER_TINTS` back to #857's four; the build raises on
+  importing `town`, `ValueError: town: PLASTER_TINTS 1 (1.0, 0.92, 0.76) and
+  2 (1.0, 0.88, 0.84) are 0.089 apart, under TINT_APART 0.15`. Breaks
+  (1) to (8) move no vertex and are not rerun. `SWAP_RISE` and `LOOK`'s
+  values get no break: they are looks, and #53 makes the stills the check.
+- **The stills for the fixes.** Six, as #859's were (Cycles OPTIX,
+  1920x1080, 24 mm, 128 samples, denoiser, all exterior). **The castle's
+  pair first**, before `materials.py` is touched: `blocks-inner-before.png`,
+  eye (18, 1.7, 1) at (2, 4, -2), from the inner ward's open ground (no
+  piece's box holds the eye; the garden props stand at z 3.6 and up), of
+  `partial/terrain+walls+towers+gates+buildings.blend`, exposure probed to
+  a median display value near 0.35; it frames `kings-hall-south`'s 20 m
+  face, the cross-wall's east face with the porter gate, and
+  `steward-chamber-north`. After the fixes, `blocks-inner-look.png` from the
+  same eye at the same exposure, so the pair differs by material alone; a
+  Material Preview capture over MCP from that eye before either, to check
+  the frame. **Then the four town stills again**, from #859's cameras at
+  #859's exposures held, not re-probed (-0.5, -0.5, +2.5, -0.5), so Devon
+  compares each against its pair: `town-look-standin.png` (tints on the
+  gables, the chimneys, the walls from above), `town-gate-look-standin.png`
+  (the rise and the tint over the town wall's longest face, where the
+  diagonal was worst), `town-street-look-standin.png` (the timber, the
+  tints, the plinths) and `town-church-look-standin.png` (the church's
+  stone and its recesses). Each still with thatch keeps the "stand-in"
+  label. Not re-rendered: `gates-dressed-5.png` and `buildings-4b-5.png`,
+  which frame no `medieval_blocks_02` face and no timber beyond the
+  louvre's frame; the interiors, which wait for increment 7.
+
 ### Dependencies
 
 - **Gate: none.** Needs Devon's machine with the Steam Blender 5.2 (#840),
@@ -3083,7 +3235,13 @@ interiors' +11 to +11.5 stops, increment 7.
   is caught as those files' fault and the dressing is judged on its own;
   check line 4's counts before and after are quoted, since the dressing now
   loads `stone_pavers`' images where it loaded `medieval_blocks_02`'s; then
-  `town.py`. **The swap, a later increment of its own**: Devon's pick among
+  `town.py`. **The look fixes (#860, #861)**, before increment 5 closes:
+  `blocks-inner-before.png` from the green build first; then
+  `materials.py` (`SWAP_RISE`, the two `LOOK` entries, `box_material`'s
+  `rough_min`) with 4b's two `--only` builds rerun and their line 4 counts
+  quoted; then `town.py`'s `PLASTER_TINTS` and `TINT_APART`; then the full
+  and `--only town` builds, the breaks and the five after-stills. No fetch.
+  **The swap, a later increment of its own**: Devon's pick among
   the three sets; the fetch (5 rows, one download each into scratch,
   refused unless size and md5 equal the API's, then sha256 and `bytes` by
   hand, as increments 2 to 4); `THATCH_SET`, one line; the four town stills

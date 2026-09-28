@@ -11078,3 +11078,69 @@ dressing reads as squared blocks in `gates-dressed-5.png`. The lead's
 call: fix (2) and (3) in increment 5 before it closes, each as a written
 decision first since (2) amends #854's "leave" on (e); (1) waits on
 Devon's thatch pick.
+
+## Castle in Blender increment 5: the town's look fixes, decided before anything is built (2026-09-28)
+
+**A spec, not a build.** `SPECS.md` gains "Increment 5's look fixes" under
+"Castle in Blender", every call recommended, adds a sentence each to the
+scope by file, the increment 5 acceptance and the lane's order, and
+corrects break (5) to #859's 0.700 m at -9.700, which #859 said was done
+and was not. Written as `architect` against `51ec045`, where #859 was the
+last. Measured on the cached 2k maps and on #859's stills; no code, asset or
+data file changed in this entry.
+
+**#860. `medieval_blocks_02` takes a rise of 0.5 and a tint, everywhere the
+set is used, and keeps its 1.5 m; this amends #854's "leave" on #852 (e).**
+**What was wrong**: #852 (e) said brick and blocks "still show a repeat,
+since their courses keep a rise of 0", and Devon ruled *leave* (#854) on the
+castle's faces. On the town wall's 64 m runs and the church, #859's stills
+show a diagonal repeat and a pink cast. The evidence: the map's row means
+vary with a coefficient of 0.125 against 0.080 for its columns, with a dark
+mortar band at 0.02 of the tile at 0.67 of the mean, which is the slates'
+shape (0.154, 0.084, 0.68), and the slates were given rise 0.5 for exactly
+that; `SWAP_RISE` files blocks with brick as coursed on the set's name,
+where #858 found random rubble with no course. At rise 0 `_maps`' B sample
+never moves up, so the bands run unbroken along the whole face and the
+large stones on them read as diagonals. The pink is the set, not its red
+stone: mean sRGB (0.686, 0.547, 0.440), hue 26, saturation 0.36, the render
+at hue 25 and saturation 0.29 to 0.33, and red-orange texels only 0.8%.
+**The fix**: `SWAP_RISE['medieval_blocks_02'] = 0.5` and
+`LOOK['medieval_blocks_02'] = {'tint': {'Hue': 0.52, 'Saturation': 0.6,
+'Value': 0.65}}`, hue 26 to 31, saturation 0.36 to 0.20, luminance 0.180 to
+0.144. The scale stays at the set's real 1.5 m (#849): a simulated face
+under the swap kept a one-tile autocorrelation of 0.61 to 0.76 at 1.5, 2.0
+and 2.5 m alike, so size does not break the grid; 2.5 m is the named
+fallback if `town-gate-look-standin.png` still shows it, as a second
+labelled exception to #849 and after Devon's yes. **It reaches the castle
+too**, because `LOOK` and `SWAP_RISE` act inside `library()` and one slug is
+one material (#854): the cross-wall's two halves, `kings-hall-south`, the
+Steward's chamber's north and east runs and the chapel nave's, as well as
+the town wall, Wykes's yard walls, the church and the houses' plinths and
+chimneys. `blocks-inner-before.png` and `-look.png`, from (18, 1.7, 1) in
+the inner ward, are what Devon judges that by. The recesses' `stone_pavers`
+(#858) do not change and read at 0.75 of the church's wall, where they were
+0.61. Line 4 gains 5 texture nodes and no image in every build holding the
+material.
+
+**#861. Timber darker, warmer and matte, and four plaster tints far enough
+apart to tell the houses apart; model only.** **What was wrong**:
+`rough_wood` is luminance 0.105, hue 34, saturation 0.18 and roughness
+0.51, and the posts in `town-street-standin.png` sample at saturation 0.07 to
+0.13, the sky mirrored off it, so it reads silver-grey. #857's
+`PLASTER_TINTS`, on `LOOK`'s cream, sit 1.6 to 6.1 apart in CIE dE76, the
+closest pair (white and cool white) at 1.6, so a row reads as one terrace.
+**The fix**: `LOOK['rough_wood'] = {'tint': {'Hue': 0.5, 'Saturation':
+1.0, 'Value': 0.5}, 'warm': (1.0, 0.78, 0.55, 1.0), 'rough_min': 0.75}`,
+luminance 0.043, hue 32, saturation 0.41, with `box_material` passing
+`rough_min` through as `_maps` already takes it (0.75 for the reason
+`MUD_ROUGH` is 0.85). It reaches every `rough_wood` in the model, the
+castle's trusses, beams, plate and louvre frame included, and not the
+thatch stand-in, which builds from `THATCH_SET`'s own look. `PLASTER_TINTS
+= [(1.0, 1.0, 1.0), (1.0, 0.80, 0.48), (0.95, 0.66, 0.58), (0.60, 0.64,
+0.66)]`, limewash, yellow ochre, red ochre and unwashed daub, 9.2 to 15.7
+apart and stepping down in L* from 46.6 to 37.7. Four and not six, since
+`randrange(6)` would move every later draw and the increment 5 table with
+it; the draw and #857's fix-up stand, so n1 3, n2 0, n3 1, s1 0, s2 2, s3 3,
+no equal neighbour along a row or across the street. `town.py` gains
+`TINT_APART = 0.15`, raising if two tints are closer as RGB triples, which
+#857's four fail at 0.089 and these pass at 0.179: break (11).
