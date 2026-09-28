@@ -1385,9 +1385,12 @@ leaves open to the sky, model only; #854 is Devon's ruling on the ten open
 look notes, and adds the hall's louvre, dressed openings and a darker
 plaster; #855 corrects 4b from its stills; #856 moves the roof boards to
 `wood_planks`; #857 is Mereford's shape in the model, thatch and jetties,
-ruled by Devon, the thatch on a `rough_wood` stand-in until he picks the
-set; #858 is his picks on 4b's four open notes and moves the dressing to
-`stone_pavers`, amending #854); this section is the `builder`
+ruled by Devon, built first on a `rough_wood` stand-in; #858 is his picks
+on 4b's four open notes and moves the dressing to `stone_pavers`, amending
+#854; #860 and #861 are increment 5's look fixes, `medieval_blocks_02`'s
+rise, tint and 2.5 m scale and `rough_wood`'s warm dark tint, amending
+#854's "leave"; #862 closes increment 5, thatch `reed_roof_04` and the
+stone at 2.5 m by Devon's rulings); this section is the `builder`
 job those decisions leave. Nothing
 under `tools/castle3d/` exists on `e05ac72`. **The game loads none of it**:
 no file under `src/`, `data/`, `assets/` or `test/` changes in any
@@ -1502,7 +1505,7 @@ one shared module, one module per stage.
   rubble's albedo; `LIBRARY` gains nothing and nothing is fetched. See
   increment 4b's open calls. From increment 5 (#857), `THATCH_SET` names the
   thatch's set, size, rise and look in one tuple and `thatch()` builds it,
-  a stand-in from `rough_wood` until Devon picks the set; `DRESSING` moves
+  first a stand-in from `rough_wood`; `DRESSING` moves
   to `stone_pavers` at Value 1.2 (#858, amending #854); `LIBRARY` and
   `SWAP_RISE` gain nothing; and `LOOK`'s `plastered_wall_04` gains
   `object_tint`, a multiply by the object's colour, white on every object
@@ -1511,9 +1514,11 @@ one shared module, one module per stage.
   increment 5's look fixes (#860, #861), `LOOK` gains `medieval_blocks_02`
   (a tint) and `rough_wood` (a tint, a warm and a `rough_min`, which
   `box_material` gains and passes to `_maps`), and `SWAP_RISE` gains
-  `medieval_blocks_02` at 0.5; both reach the castle as well as the town,
-  and `THATCH_SET`'s stand-in does not change. See "Increment 5's look
-  fixes".
+  `medieval_blocks_02` at 0.5; both reach the castle as well as the town.
+  See "Increment 5's look fixes". **Increment 5 closes (#862)**: the thatch
+  is `reed_roof_04`, `THATCH_SET = ('reed_roof_04', 2.5, 0.0, {})`, and the
+  stand-in is retired; `LIBRARY['medieval_blocks_02']` is 2.5 m, #860's
+  named fallback, taken on Devon's yes.
 - **The stage modules**, one per increment 1 to 8: `blueprint.py` (the
   `GUIDE` collection, increment 0), `terrain.py`, `walls.py`, `towers.py`,
   `gates.py`, `buildings.py`, `town.py`, `props.py`, `lighting.py`,
@@ -1626,9 +1631,12 @@ recorded in `HISTORY.md` against the increment (#53).
    floor. Every roof is thatch (#857, the lore's one slate roof is the
    toll-house), and each house draws from `random.Random("town:<id>")`.
    Every number the builder needs is in the increment 5 open calls below.
-   Devon's yes to #857 is given; the thatch is a stand-in, `rough_wood`,
-   until he picks the set (#857), and the dressed stone round every opening
-   moves to `stone_pavers` (#858).
+   Devon's yes to #857 is given; the dressed stone round every opening
+   moves to `stone_pavers` (#858). **Increment 5 closed (#862)**: the
+   thatch, built first on a `rough_wood` stand-in, is `reed_roof_04` at
+   2.5 m, and `medieval_blocks_02` (the town wall, the church, the houses'
+   plinths and chimneys, and the castle faces the same slug reaches) is
+   2.5 m too, rise 0.5 and tinted (#860, #861).
 6. **Props.** The 71 files' meshes appended from the pinned
    `castle_props.blend` by object name (`libraries.load`, #840) and
    re-materialed; each of the 75 rows that name one is placed by its

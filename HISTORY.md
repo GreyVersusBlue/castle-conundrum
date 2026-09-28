@@ -11157,3 +11157,61 @@ it; the draw and #857's fix-up stand, so n1 3, n2 0, n3 1, s1 0, s2 2, s3 3,
 no equal neighbour along a row or across the street. `town.py` gains
 `TINT_APART = 0.15`, raising if two tints are closer as RGB triples, which
 #857's four fail at 0.089 and these pass at 0.179: break (11).
+
+## Castle in Blender increment 5 closes: Devon's verdict, the final stills, and what is left for props (2026-09-28)
+
+**#862. Increment 5 closes: Devon's verdict on the final stills, the swap
+behind them, and what increment 6 opens on.** Devon's verdicts, 2026-09-28,
+quoted exactly: on the `-fix` stills (1.5 m stone, stand-in thatch),
+"-fix stills is fine"; on the thatch set, "Thatch: reed_roof_04"; on the
+stone's named fallback (#860), "yes for stone at 2.5"; on the five final
+stills, "all of those stills look great". The lead flagged that the near
+town wall in `town.png` still shows a faint diamond repeat at 2.5 m; Devon
+did not ask for a change on it, so it stands as accepted by his verdict,
+not open. **The swap** (`96143ce`, `eaa3c45`, `a8f96ac`, `be281eb`):
+`THATCH_SET = ('reed_roof_04', 2.5, 0.0, {})`, the `rough_wood` stand-in
+retired; `reed_roof_04` fetched the #852 way, Poly Haven 2k, 11,072,326
+bytes, five files size and md5 matched the API (diff 2,585,643; nor_gl
+4,381,563; rough 1,263,557; disp 706,592; ao 2,134,971), sha256 recorded in
+`sources.json`; `CREDITS.md` is now 137 files across 26 assets, 406.3 MB.
+`LIBRARY['medieval_blocks_02']` moves from 1.5 to 2.5 m, #860's named
+fallback taken on Devon's yes, with `SWAP_RISE` 0.5 and the tint (0.52,
+0.6, 0.65) standing; it reaches the castle's 7 pieces in the set as well
+as the town's 6 runs, the church and the houses' plinths and chimneys.
+**The builds**: `--only terrain,walls,towers,gates,buildings,town` exits
+0, line 4 212 texture nodes (unchanged) and 132 images (127 before the
+thatch; the stand-in reused `rough_wood`'s images, `reed_roof_04` adds 5),
+line 5 unchanged at 18 rooms and 90 points, line 6 at 240 pieces; `--only
+town` exits 0, line 4 100 texture nodes and 55 images (50 before), line 6
+at 43 pieces; 4b's own two builds rerun unchanged at 202/127. `npm test`
+fifteen of fifteen. **Breaks from green (#34), each restored**: (9)
+`ValueError: materials: DRESSING names 'stone_paver', which is not in
+LIBRARY`; (10) first against `reed_roof_03`, `KeyError: 'sources.json has
+no row reed_roof_03:diff'`, then against the real set, `KeyError:
+'sources.json has no row reed_roof_04:diff'`; (11) `ValueError: town:
+PLASTER_TINTS 1 (1.0, 0.92, 0.76) and 2 (1.0, 0.88, 0.84) are 0.089 apart,
+under TINT_APART 0.15`. **The stills**, Cycles OPTIX, 1920x1080, 24 mm,
+128 samples, denoiser, `still_5.py` in the increment 5 session's
+scratchpad (`review/increment5/`), uncommitted as before, five cameras:
+`town` eye (-38.5, 13.7, -13.6) at (-82, 3, -4); `town-gate` eye (-50,
+1.7, 1.0) at (-64, 3.5, -2); `town-street` eye (-67, 1.7, 0.5) at (-95, 4,
+-1); `town-church` eye (-76, 1.7, -11.5) at (-98, 7, -17.5); `blocks-inner`
+eye (18, 1.7, 1) at (2, 4, -2). At the `-fix` set's own exposures (-0.5,
+-0.5, +2.5, -0.5, 0.0), the final set reads `town.png` median 0.367,
+`town-gate.png` 0.324, `town-street.png` 0.290, `town-church.png` 0.311
+(3.3% crushed), `blocks-inner.png` 0.361, none clipped. Live Material
+Preview captures of the five cameras were also taken against the `-fix`
+build, in Devon's Blender 5.2.2, file not dirty, partial reloaded,
+`GUIDE`/`MARKERS` hidden, overlays off, scene World; Cycles is the colour
+reference, since Material Preview reads the plaster blue-grey under the
+world light. **Read, not ruled on**: the salmon cast is gone and the
+timber reads dark brown; the grey slab on the castle pair in earlier
+stills predates this fix, from a different set; `town.png`, framed from
+the tower roof, shows more roof than plaster, so it cannot by itself show
+#861's six-house separation, which the street and church stills carry.
+**Increment 6 is next: props.** Of #858's four open notes, (b) closed in
+this increment (`stone_pavers` dressing) and (c) and (d) stay where #858
+put them (left; increment 7); increment 6 inherits (a), the tapestry's and
+the watch-bill's backs 5 mm into the plaster, plus the lodge's and Wykes
+shed's floating decks (#848 note (d), #859's stage note). No PR opened;
+Devon says when.
