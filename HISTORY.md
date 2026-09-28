@@ -10546,3 +10546,81 @@ and md5 equalled the API's, then its sha256 written into the row, as
 increment 2 did. `__pycache__/` joins `.gitignore` (Devon, 2026-09-27),
 amending SPECS' "`.gitignore` is unchanged", because Blender's Python
 writes `tools/castle3d/__pycache__/` on every build.
+
+**Increment 3 closes: Devon's verdict and the review cameras.** Devon's
+verdict on `shots/castle3d/gates.png` and `shots/castle3d/gates-outer.png`
+(2026-09-27), quoted exactly: "I think both of those images look good for
+now." The review cameras are `gates_cams.py`, in the increment 3 session's
+scratchpad and uncommitted, as #848's and #850's were: `gates.png` from
+inside the barbican near the spawn eye; `gates-outer.png` from the road at
+game (-70, 2, 0) looking east; `porter.png` from (-14, 1.7, 4) at (0, 2, 0).
+Cycles, 128 samples, denoiser. `gates-outer.png`'s camera departs from
+SPECS' acceptance, which named (-60, 1.7, 3) looking at (-44, 2, 0). Also,
+`b3f2034` ("castle3d increment 3: ...") went to main directly with no PR,
+because the working tree had been switched back to main during a
+subagent's build, so the commit landed on main; increment 4 guards it by
+running `git branch --show-current` before every commit and refusing
+unless it prints the increment's branch. Open, not ruled on by Devon: (a)
+the porter gate-over in `defense_wall` at its 20 m scale reads as a dark
+square on the `medieval_blocks_02` cross-wall; (b) the west gate-over's
+`plastered_wall_04` reads as a flat grey panel; (c) the west arch's soffit
+renders lighter than the wall face; (d) `castle_wall_slates`' pale stones
+still show as scattered dots; (e) brick and blocks still show a repeat,
+since their courses keep a rise of 0; (f) `walls.png`'s "could the walls be
+taller?" (#850).
+
+## Castle in Blender increment 4: the buildings, decided before anything is built (2026-09-27)
+
+**A spec, not a build.** `SPECS.md` gains "Increment 4's open calls" under
+"Castle in Blender", every call recommended, and increment 4's scope line is
+corrected: it said "the castle's 21 non-curtain runs", and on `b3f2034` the
+stage has 11 runs. The 21 was the plan's 33 `curtain: false` wall pieces
+less increment 5's twelve, so it counted the four town-wall runs (`town`'s),
+the two cross-wall runs and `porter-gate-over` (built by `walls` in
+increment 2), and all 14 of this stage's wall pieces, three of which are not
+runs. Written as `architect` against `b3f2034`, where #852 was the last. No
+code, asset or data file changed in this entry.
+
+**#853. The castle3d model covers the rooms the game leaves open to the
+sky, and puts windows in the ones it covers: model only, and the game does
+not change.** **What the game has**: the great hall's covering is seven kit
+`roof.glb` pieces over seven trusses (#527, #656), x -33.7 to -6 and z 6 to
+13.25, which leaves both gable ends open triangles and a 0.75 m slot to the
+south curtain's face at z 14; #657 narrowed bay 1 by 0.3 m and #527 set the
+7.25 m span, both to satisfy `layout.mjs` check 14's body radius. Four more
+rooms, the Clerk's chamber, the dormitory, the royal apartments and the
+chapel nave, have 8 m walls and nothing over them, and the Steward's
+chamber has walls of 8, 8, 8 and 4 m and nothing over it. The only window
+in the rooms is Lady Alys's, 1.2 by 1.4 m at a sill of 5 m in
+`kings-hall-south`. **What was wrong with carrying that into the model**:
+#528's own sentence, "hammerbeams against open sky are a ruin, not
+Stirling", holds for every roofless room in a photographic render, and the
+0.3 m and 0.75 m gaps are fits to a check that has no body to hold in the
+model. **What the model shows**: the hall's roof runs the hall's own x, -34
+to -6, its south slope continues at the trusses' pitch to the curtain's
+face at z 14, it is closed at both ends by boarded gables, and six stone
+corbels carry the trusses' south feet. Flat roofs at 8 m (stone_pavers on
+boards, the plan's flat-roof slug) cover the Clerk's chamber, the dormitory,
+the royal apartments and the chapel nave, and a lean-to from the curtain at
+8 m to the north wall at 4 m covers the Steward's chamber. Beams at the
+tile centres carry every upper floor and flat roof. Ten windows copy
+Lady Alys's (1.2 by 1.4 m at a sill of 5 m, straight through the run), in
+the rooms this entry takes the sky from: five in the hall, two in the nave,
+one in the Clerk's chamber and two in the dormitory. Plaster covers the
+three upper rooms, whose stone the plan chose for the ground room under
+them and never for them (`kings-hall-south`'s `materialComment`). **What is
+refused**: pitched roofs over the ranges, whose ridges would stand beside
+the walks and meet the drums' walk doors at 8 to 10.5 m; splayed reveals,
+since the plan's one window has none; and windows in a room the game
+already roofs (the ground rooms under the plan's upper floors) or already
+windows (the royal apartments). **How coverage stays honest**: every object
+that realises no plan piece carries `modelOnly: "#853"` and no `planId`, so
+check.py line 6 neither counts nor refuses it, as #851's objects do; the
+windows and the hall roof's extents live in objects that carry `planId`s,
+and `buildings.py` records them in named constants citing this entry. No
+`allow.json` entry, for #851's reason. **For the integration row** (#839):
+every #853 surface is at or above 3.3 m or inside stone, but the ten
+windows open the collider's solid stone between 5 and 6.4 m in five runs,
+and that row must collide them or keep today's boxes. #527, #528 and #656
+to #658 stand whole for the game. Devon, 2026-09-27: yes, model roofs for
+the interior rooms.
