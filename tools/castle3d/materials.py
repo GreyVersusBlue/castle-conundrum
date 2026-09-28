@@ -13,8 +13,10 @@
 # near-level face that is the box's top projection, so the two agree.
 #
 # Increment 1: mud, grass and cobble, the ground's grass-mud blend, the road's
-# cobble-mud blend, and world_from_hdri. Later increments add
-# rock, ashlar, iron, timber and the rest here, not in their stage modules.
+# cobble-mud blend, and world_from_hdri. Increment 2: LIBRARY, the nine sets
+# the blueprint's `material` field names for the curtain, the drums, their
+# floors, walks and roofs (#849), through library(slug). Later increments add
+# iron, timber and the rest here, not in their stage modules.
 
 import os
 
@@ -28,6 +30,20 @@ GROUND = {
     'grass': ('sparse_grass', 2.0),
     'mud': ('brown_mud_02', 1.3),
     'cobble': ('cobblestone_large_01', 4.0),
+}
+# slug -> the texture's real-world size in metres, from the API's `dimensions`
+# (api.polyhaven.com/info/<slug>, millimetres). Each is the exact slug a
+# blueprint piece's `material` names, fetched as the same five 2k jpg maps (#849).
+LIBRARY = {
+    'castle_wall_slates': 2.5,
+    'defense_wall': 20.0,
+    'castle_brick_02_red': 1.5,
+    'medieval_blocks_02': 1.5,
+    'plastered_wall_04': 3.2,
+    'stone_pavers': 2.0,
+    'wood_planks': 1.5,
+    'wood_floor_deck': 1.8,
+    'roof_slates_02': 3.0,
 }
 MAPS = ('diff', 'nor_gl', 'rough', 'disp', 'ao')
 BOX_BLEND = 0.2
@@ -82,14 +98,18 @@ GRASS_TINT = {'Hue': 0.62, 'Saturation': 1.0, 'Value': 0.65}
 # angle and reads lilac from any height. The maps stay in the tree.
 MUD_TINT = {'Hue': 0.5, 'Saturation': 1.5, 'Value': 0.7}
 MUD_ROUGH = 0.85
+# Still pinkish-grey after MUD_TINT in the increment 1 still, so the mud's
+# diffuse is multiplied by a warm brown after it: red kept, blue cut most.
+MUD_WARM = (1.0, 0.86, 0.66, 1.0)
+RUT_FEATHER = 0.3  # the road's mud blend, either side of its midpoint
 
 
-def _maps(tree, asset, size, x, y, tint=None, rough_min=None):
+def _maps(tree, asset, size, x, y, tint=None, rough_min=None, warm=None):
     """`asset`'s five maps box-projected on world coordinates at `size` metres
     per repeat, blend 0.2. Returns the sockets a shader reads: the diffuse
-    times AO (after `tint`, a Hue/Saturation/Value dict, when given), the
-    roughness (no lower than `rough_min`, when given), the tangent normal
-    colour and the height."""
+    times AO (after `tint`, a Hue/Saturation/Value dict, and then `warm`, an
+    RGBA multiply, each when given), the roughness (no lower than
+    `rough_min`, when given), the tangent normal colour and the height."""
     rows = {m: common.source(f"{asset}:{m}") for m in MAPS}
     links = tree.links
     geo = _node(tree, 'ShaderNodeNewGeometry', x - 500, y)
@@ -115,7 +135,14 @@ def _maps(tree, asset, size, x, y, tint=None, rough_min=None):
             hsv.inputs[k].default_value = v
         links.new(diff, hsv.inputs['Color'])
         diff = hsv.outputs['Color']
-    ao = _node(tree, 'ShaderNodeMix', x + 450, y + 300, data_type='RGBA', blend_type='MULTIPLY')
+    if warm:
+        mul = _node(tree, 'ShaderNodeMix', x + 250, y + 650, data_type='RGBA', blend_type='MULTIPLY')
+        mul.label = f"{asset} warm"
+        _sock(mul.inputs, 'Factor').default_value = 1.0
+        links.new(diff, _sock(mul.inputs, 'A'))
+        _sock(mul.inputs, 'B').default_value = warm
+        diff = _sock(mul.outputs, 'Result')
+    ao =_node(tree, 'ShaderNodeMix', x + 450, y + 300, data_type='RGBA', blend_type='MULTIPLY')
     _sock(ao.inputs, 'Factor').default_value = 1.0
     links.new(diff, _sock(ao.inputs, 'A'))
     links.new(tex['ao'].outputs['Color'], _sock(ao.inputs, 'B'))
@@ -179,6 +206,19 @@ def ground(name):
     return box_material(f"MAT_{name}", asset, size, GRASS_TINT if name == 'grass' else None)
 
 
+def library(slug):
+    """MAT_<slug>, one of LIBRARY's sets box-projected on world coordinates at
+    its real-world size, blend 0.2, built once per file. A slug that is not in
+    LIBRARY raises, naming it: a piece whose `material` this library cannot
+    dress is a question for the lead, not a flat colour."""
+    if slug not in LIBRARY:
+        raise KeyError(f"materials: no library material {slug!r}; there are {', '.join(LIBRARY)}")
+    have = bpy.data.materials.get(f"MAT_{slug}")
+    if have is not None:
+        return have
+    return box_material(f"MAT_{slug}", slug, LIBRARY[slug])
+
+
 def _blend_factor(tree, attribute, x, y, scale, spread, width=0.12):
     """A 0..1 factor from the mesh's float attribute `attribute`, frayed by a
     world-space Noise Texture of about `scale` metres: a smoothstep of
@@ -218,7 +258,7 @@ def ground_blend():
     mat = _new_material('MAT_ground')
     tree = mat.node_tree
     g = _maps(tree, *GROUND['grass'], -700, 1400, GRASS_TINT)
-    m = _maps(tree, *GROUND['mud'], -700, -200, MUD_TINT, MUD_ROUGH)
+    m = _maps(tree, *GROUND['mud'], -700, -200, MUD_TINT, MUD_ROUGH, MUD_WARM)
     f = _blend_factor(tree, 'mud', -700, -1200, 1.0, 0.9, 0.15)
     return _finish(mat, 600, _mixed(tree, g, m, f))
 
@@ -234,8 +274,11 @@ def road():
     mat = _new_material('MAT_road')
     tree = mat.node_tree
     c = _maps(tree, *GROUND['cobble'], -700, 1400)
-    m = _maps(tree, *GROUND['mud'], -700, -200, MUD_TINT, MUD_ROUGH)
-    f = _blend_factor(tree, 'rut', -700, -1200, 0.8, 0.5)
+    m = _maps(tree, *GROUND['mud'], -700, -200, MUD_TINT, MUD_ROUGH, MUD_WARM)
+    # Feathered: a 0.3 ramp either side of the midpoint and a coarser, stronger
+    # noise, so a rut or a puddle fades into the cobbles instead of ending on
+    # the 0.12 edge increment 1's still showed as a hard-edged patch.
+    f = _blend_factor(tree, 'rut', -700, -1200, 1.6, 0.8, RUT_FEATHER)
     cover = _blend_factor(tree, 'cover', -700, -1800, 0.35, 0.9, 0.08)
 
     def surface(bsdf):

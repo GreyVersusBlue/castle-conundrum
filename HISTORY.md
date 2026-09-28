@@ -10428,3 +10428,33 @@ where the hound stands: Infinity m off". Attempt 2, the control run, passed
 `tools/castle3d/`, docs and one `package.json` script line, and #53 makes a
 real-time failure on software-rendered CI inconclusive rather than
 confirmed.
+
+**#848. Rank 2h increment 1 closes: two notes for later increments.** The
+grass scatter in `terrain.py`, the seeded Geometry Nodes scatter of
+grass_medium_02, realises about 2.4 million instances in a render.
+Increment 9's export (`export.py`, `castle.glb`) must leave the grass out
+or thin it heavily; a glb carrying it whole is not viable. Separately, the
+review camera behind `shots/castle3d/terrain.png` is an uncommitted scratch
+script, not part of `terrain.py`, because cameras belong to increment 7
+(`lighting.py`, the five `CAM_` cameras). `terrain.png` cannot be
+reproduced from committed code until increment 7; increment 7's cameras
+replace it.
+
+**#849. Rank 2h increment 2 fetches nine texture sets, the slugs the game
+already names.** Devon picked the "game-matched" list on 2026-09-27: nine
+Poly Haven sets, all 2k JPG, five maps each (diff, nor_gl, rough, disp,
+ao), CC0, 45 `sources.json` rows, 83.2 MB. Each set is the exact slug the
+game's blueprint already carries: `castle_wall_slates` (10.2 MB, the 16
+curtain runs), `defense_wall` (8.9 MB, the nw, kitchen, sw and prison
+drums), `castle_brick_02_red` (10.0 MB, the stockhouse, kings, bakehouse
+and chapel drums, the four with turrets, red brick on a stone castle
+flagged and kept anyway), `medieval_blocks_02` (9.6 MB, the two cross-wall
+runs), `plastered_wall_04` (4.5 MB, the west and east gate-over runs),
+`stone_pavers` (11.4 MB, the four flat drum roofs at 12 m), `wood_planks`
+(8.1 MB, 15 wall walks and 8 second floors, ahead of increment 3's own
+timber which reuses it), `wood_floor_deck` (12.8 MB, 8 first floors) and
+`roof_slates_02` (7.7 MB, cones over the four turrets). The lean
+alternative, `defense_wall` on all eight drums for 44.5 MB total, was
+offered and declined. Sizes are from `api.polyhaven.com/files/<id>`. This
+makes increment 2 a third increment that adds `sources.json` rows,
+alongside 1 and 6.
