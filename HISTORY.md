@@ -11122,6 +11122,19 @@ the inner ward, are what Devon judges that by. The recesses' `stone_pavers`
 0.61. Line 4 gains 5 texture nodes and no image in every build holding the
 material.
 
+**Correction (2026-09-28, after the build).** The prediction above, that
+line 4 gains exactly 5 texture nodes and no image, was wrong. Measured
+after the fix: 4b builds 202/127 and 115/60 (texture nodes / images),
+full build 212/127, `--only town` 100/50, all unchanged from baseline.
+`medieval_blocks_02` already built with two samples (10 image nodes)
+before this fix, because `SWAP_RISE.get(asset, 0.0)` returned 0.0 for it
+and sample B existed regardless of rise; #860's change only moves sample
+B's Location z from 0 to 0.5, which repositions an existing node and adds
+none. A background-Blender check confirmed the fix landed:
+`MAT_medieval_blocks_02` B location (0.37, 0.61, 0.5), tint (0.52, 0.6,
+0.65); `MAT_rough_wood` tint (0.5, 1.0, 0.5) with a MAXIMUM roughness
+floor at 0.75.
+
 **#861. Timber darker, warmer and matte, and four plaster tints far enough
 apart to tell the houses apart; model only.** **What was wrong**:
 `rough_wood` is luminance 0.105, hue 34, saturation 0.18 and roughness

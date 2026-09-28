@@ -1772,11 +1772,10 @@ turn it red from green (#34). The report quotes the failing line.
   `town-gate.png`, `town-street.png` and `town-church.png`, each with its
   exposure, and Devon's line on each recorded in `HISTORY.md`. **The look
   fixes (#860, #861)**, before increment 5 closes: the same two builds exit
-  0 with line 5 and line 6 unchanged, line 4's image counts unchanged and
-  its texture node counts up by exactly 5 in every build holding
-  `MAT_medieval_blocks_02`; the six house lines unchanged; break (11) red
-  and restored; the six stills in "Increment 5's look fixes", each with
-  its exposure.
+  0 with line 5 and line 6 unchanged, and line 4's image and texture node
+  counts unchanged (#860 moves an existing node, not a new one); the six
+  house lines unchanged; break (11) red and restored; the six stills in
+  "Increment 5's look fixes", each with its exposure.
 - **Increment 7.** Five stills exist, one per camera, and line 4 passes
   with the HDRI in the scene.
 - **Increment 8.** Lines 1, 2 and 3 pass: 48 `ROOM_`, 5 `GATE_` and 4
@@ -3118,10 +3117,14 @@ pick (#857); item (4) needs nothing.
   would give the plan's one slug two looks, and #852 (e) was raised on the
   castle's faces first. `dressing()` is `stone_pavers` (#858) and does not
   change: the church's recesses stay at 0.108 against a wall now at 0.144,
-  0.75 of it where #858 had 0.61, still the darker. **Line 4**: the second
-  sample adds 5 Image Texture nodes and no image, so any build holding
-  `MAT_medieval_blocks_02` goes up by exactly 5 nodes: 212 to 217 and 100
-  to 105 for #859's two builds, 202 to 207 and 115 to 120 for 4b's.
+  0.75 of it where #858 had 0.61, still the darker. **Line 4 does not
+  move**: the second sample already existed before this fix, because
+  `SWAP_RISE.get(asset, 0.0)` returned 0.0 for `medieval_blocks_02` and
+  sample B built regardless of rise; #860 only moves B's Location z from
+  0 to 0.5, repositioning an existing node rather than adding one.
+  Measured after the fix, unchanged from baseline: 4b builds 202/127 and
+  115/60, the full build 212/127, `--only town` 100/50 (texture nodes /
+  images).
 - **Timber: darker, warmer and matte (#861).** **What the maps say**:
   `rough_wood` is diffuse sRGB (0.428, 0.395, 0.352), hue 34, saturation
   0.18, luminance 0.105, roughness mean 0.51; the render's posts and
