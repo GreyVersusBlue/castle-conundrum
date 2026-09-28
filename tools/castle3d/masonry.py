@@ -1,5 +1,5 @@
-# masonry.py - closed solids for the built stages (walls, towers, gates, and
-# later buildings): prisms whose plan polygon may change with height, so a
+# masonry.py - closed solids for the built stages (walls, towers, gates and
+# buildings): prisms whose plan polygon may change with height, so a
 # battered face is one ring per height rather than a modifier, and an opening
 # is a gap between prisms rather than a boolean (#843: the geometry the checks
 # measure is the geometry the build made).
@@ -109,14 +109,41 @@ class Solid:
             return
         self.prism(lambda y: [(x0, z0), (x1, z0), (x1, z1), (x0, z1)], [y0, y1], slot)
 
-    def plate(self, poly, z0, z1, slot=0):
-        """A closed polygon [(x, y), ...] in a vertical plane of constant game
-        z, extruded across it from z0 to z1: a gate leaf's plank, drawn in the
-        leaf's own frame (gates.py). Closed: sides and both faces."""
+    def plate(self, poly, z0, z1, slot=0, axis='z'):
+        """A closed polygon in a vertical plane, extruded across it. With
+        axis 'z' the polygon is [(x, y), ...] in a plane of constant game z,
+        extruded from z0 to z1: a gate leaf's plank, drawn in the leaf's own
+        frame (gates.py). With axis 'x' it is [(z, y), ...] in a plane of
+        constant game x, and z0, z1 are the x it runs between: a truss member
+        (buildings.py). Closed: sides and both faces."""
         if z1 - z0 < 1e-6 or len(poly) < 3:
             return
-        a = [self.bm.verts.new(common.to_blender((x, y, z0))) for x, y in poly]
-        b = [self.bm.verts.new(common.to_blender((x, y, z1))) for x, y in poly]
+        if axis == 'z':
+            def at(u, y, w):
+                return common.to_blender((u, y, w))
+        elif axis == 'x':
+            def at(u, y, w):
+                return common.to_blender((w, y, u))
+        else:
+            raise ValueError(f"masonry.plate: axis {axis!r} is not 'z' or 'x'")
+        a = [self.bm.verts.new(at(u, y, z0)) for u, y in poly]
+        b = [self.bm.verts.new(at(u, y, z1)) for u, y in poly]
+        n = len(poly)
+        faces = [self.bm.faces.new((a[i], a[(i + 1) % n], b[(i + 1) % n], b[i])) for i in range(n)]
+        faces.append(self.bm.faces.new(list(reversed(a))))
+        faces.append(self.bm.faces.new(b))
+        for f in faces:
+            f.material_index = slot
+        self.count += 1
+
+    def slab(self, poly, under, thickness, slot=0):
+        """A plan polygon [(x, z), ...] lifted onto a surface: its underside
+        at under(x, z) and its top `thickness` above that, measured vertically.
+        With a plane for `under`, a roof slope. Closed: sides, underside, top."""
+        if thickness < 1e-6 or len(poly) < 3:
+            return
+        a = [self.bm.verts.new(common.to_blender((x, under(x, z), z))) for x, z in poly]
+        b = [self.bm.verts.new(common.to_blender((x, under(x, z) + thickness, z))) for x, z in poly]
         n = len(poly)
         faces = [self.bm.faces.new((a[i], a[(i + 1) % n], b[(i + 1) % n], b[i])) for i in range(n)]
         faces.append(self.bm.faces.new(list(reversed(a))))
@@ -180,4 +207,98 @@ def colliders_of(bp, piece_id):
            (c['id'].startswith(piece_id + '-') and c['id'][len(piece_id) + 1:].isdigit())]
     if not out:
         raise ValueError(f"masonry: the blueprint has no collider for {piece_id}")
+    return out
+
+
+def minus_discs(rect, discs, max_step=3.75, eps=1e-6):
+    """The plan rectangle (x0, x1, z0, z1) less each disc (cx, cz, r) that
+    cuts one of its edges or one of its corners, as one polygon [(x, z), ...]
+    for Solid.prism or Solid.slab: the outline walked round, and each cut
+    replaced by the disc's arc through the rectangle at `max_step` degrees
+    (arc's own step). A disc that does not reach the rectangle is ignored. One
+    that lies wholly inside it, holds it whole, crosses its outline other than
+    twice, takes more than one corner or overlaps another disc's cut raises,
+    naming it: the result would not be one simple polygon."""
+    x0, x1, z0, z1 = rect
+    corners = [(x0, z0), (x1, z0), (x1, z1), (x0, z1)]
+    lengths = [x1 - x0, z1 - z0, x1 - x0, z1 - z0]
+    starts = [sum(lengths[:i]) for i in range(4)]
+    perimeter = sum(lengths)
+
+    def point(s):
+        s %= perimeter
+        for i in range(4):
+            if s <= starts[i] + lengths[i] + eps or i == 3:
+                t = min(max((s - starts[i]) / lengths[i], 0.0), 1.0)
+                (ax, az), (bx, bz) = corners[i], corners[(i + 1) % 4]
+                return (ax + (bx - ax) * t, az + (bz - az) * t)
+
+    def inside_rect(p):
+        return x0 + eps < p[0] < x1 - eps and z0 + eps < p[1] < z1 - eps
+
+    cuts = []
+    for cx, cz, r in discs:
+        nx, nz = min(max(cx, x0), x1), min(max(cz, z0), z1)
+        if math.hypot(nx - cx, nz - cz) >= r - eps:
+            continue
+        name = f"disc ({cx:g}, {cz:g}) r {r:g}"
+        if all(math.hypot(px - cx, pz - cz) <= r + eps for px, pz in corners):
+            raise ValueError(f"masonry.minus_discs: {name} holds the whole rectangle x {x0:g} to {x1:g}, z {z0:g} to {z1:g}")
+        cross = []
+        for i in range(4):
+            (ax, az), (bx, bz) = corners[i], corners[(i + 1) % 4]
+            dx, dz = bx - ax, bz - az
+            fx, fz = ax - cx, az - cz
+            qa = dx * dx + dz * dz
+            qb = 2 * (fx * dx + fz * dz)
+            qc = fx * fx + fz * fz - r * r
+            disc = qb * qb - 4 * qa * qc
+            if disc <= eps:
+                continue
+            root = math.sqrt(disc)
+            for t in ((-qb - root) / (2 * qa), (-qb + root) / (2 * qa)):
+                if -eps <= t < 1 - eps:
+                    s = starts[i] + max(t, 0.0) * lengths[i]
+                    if not any(abs(s - c) < 1e-5 for c in cross):
+                        cross.append(s)
+        if not cross:
+            raise ValueError(f"masonry.minus_discs: {name} lies wholly inside the rectangle x {x0:g} to {x1:g}, "
+                             f"z {z0:g} to {z1:g}")
+        if len(cross) != 2:
+            raise ValueError(f"masonry.minus_discs: {name} crosses the rectangle's outline {len(cross)} times; "
+                             f"it splits the rectangle")
+        sa, sb = sorted(cross)
+        mx, mz = point((sa + sb) / 2)
+        if math.hypot(mx - cx, mz - cz) < r:
+            a, b = sa, sb
+        else:
+            a, b = sb, sa + perimeter
+        taken = sum(1 for c in starts if a < c < b or a < c + perimeter < b)
+        if taken > 1:
+            raise ValueError(f"masonry.minus_discs: {name} takes {taken} corners of the rectangle; it splits it")
+        cuts.append((a, b, (cx, cz, r)))
+    if not cuts:
+        return list(corners)
+    cuts.sort(key=lambda c: c[0])
+    for (a, b, d), (a2, _b2, d2) in zip(cuts, cuts[1:] + [(cuts[0][0] + perimeter, 0, cuts[0][2])]):
+        if b > a2 + eps:
+            raise ValueError(f"masonry.minus_discs: the cuts of discs {d} and {d2} overlap on the rectangle's outline")
+
+    def bearing(cx, cz, p):
+        return math.degrees(math.atan2(p[0] - cx, p[1] - cz))
+
+    out = []
+    for k, (a, b, (cx, cz, r)) in enumerate(cuts):
+        pa, pb = point(a), point(b)
+        ta, tb = bearing(cx, cz, pa), bearing(cx, cz, pb)
+        up = tb if tb > ta else tb + 360.0
+        down = tb if tb < ta else tb - 360.0
+        mid = ring_point(cx, cz, r, (ta + up) / 2)
+        pts = arc(cx, cz, r, ta, up if inside_rect(mid) else down, max_step)
+        out += [pa] + pts[1:-1] + [pb]
+        nxt = cuts[(k + 1) % len(cuts)][0]
+        if nxt <= b:
+            nxt += perimeter
+        out += [point(cc) for cc in sorted(c + k * perimeter for c in starts for k in range(3))
+                if b + eps < cc < nxt - eps]
     return out

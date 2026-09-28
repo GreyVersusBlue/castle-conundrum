@@ -187,11 +187,13 @@ def returns_of(piece, facing, battered):
 def build_run(solid, piece, cols, facing, batter, returns=None):
     """The run's collider boxes clipped to its piece box; with `batter`, each
     box's face on the run's outer plane splays outward at its foot, and so does
-    a box's end face at one of `returns`' ends (an outside corner)."""
-    axis, sign = facing
+    a box's end face at one of `returns`' ends (an outside corner). Without
+    `batter` the facing is not read and may be None (buildings.py's runs)."""
     b = piece['box']
-    cross = 'z' if axis == 'x' else 'x'
-    outer = b['max' if sign > 0 else 'min'][cross]
+    if batter:
+        axis, sign = facing
+        cross = 'z' if axis == 'x' else 'x'
+        outer = b['max' if sign > 0 else 'min'][cross]
     returns = returns or {}
     for c in cols:
         x0 = max(c['box']['min']['x'], b['min']['x']); x1 = min(c['box']['max']['x'], b['max']['x'])
