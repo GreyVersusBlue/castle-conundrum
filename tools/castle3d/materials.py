@@ -114,7 +114,21 @@ THATCH_SET = ('rough_wood', 2.0, 0.5, {'warm': (1.0, 0.88, 0.66, 1.0)})
 # `object_tint` (#857) multiplies the colour by Object Info's Color after
 # `warm`: Blender's default object colour is white, so every object but the
 # six houses (town.PLASTER_TINTS) renders exactly as before.
+# Increment 5's look fixes: medieval_blocks_02's salmon (hue 26, saturation
+# 0.36, luminance 0.180 on the 2k maps) taken to a grey-buff stone, hue 31,
+# saturation 0.20, luminance 0.144 (#860), on the castle's faces in the set as
+# on the town's; rough_wood darker, warmer and matte (#861), luminance 0.105 to
+# 0.043, its roughness held at 0.75 or more for the reason MUD_ROUGH is: at the
+# map's 0.51 the posts mirrored the sky and read silver-grey.
 LOOK = {
+    'medieval_blocks_02': {
+        'tint': {'Hue': 0.52, 'Saturation': 0.6, 'Value': 0.65},
+    },
+    'rough_wood': {
+        'tint': {'Hue': 0.5, 'Saturation': 1.0, 'Value': 0.5},
+        'warm': (1.0, 0.78, 0.55, 1.0),
+        'rough_min': 0.75,
+    },
     'plastered_wall_04': {
         'tint': {'Hue': 0.5, 'Saturation': 1.0, 'Value': 0.65},
         'warm': (1.0, 0.93, 0.80, 1.0),
@@ -189,7 +203,7 @@ RUT_FEATHER = 0.3  # the road's mud blend, either side of its midpoint
 # castle_wall_slates' few pale stones came back every 2.5 m along a 40 m run in
 # the increment 2 still. So each LIBRARY set is sampled twice, A at the plain
 # mapping and B at the same scale moved by SWAP_OFFSET of a tile along the two
-# horizontal axes. A coursed set (brick, blocks, planks, roof slates) moves no
+# horizontal axes. A coursed set (brick, planks, roof slates) moves no
 # further, so B's courses stay level with A's. An uncoursed one moves SWAP_RISE
 # of a tile up as well: with the sideways shift alone the slates' pale stones
 # in B sat on A's rows and the rows still read as a 2.5 m grid, and rubble has
@@ -204,9 +218,12 @@ RUT_FEATHER = 0.3  # the road's mud blend, either side of its midpoint
 # The ground sets are not doubled: terrain.py already varies them by attribute.
 SWAP_OFFSET = (0.37, 0.61)       # of a tile, Blender x and y (z is up)
 # rough_wood and dirty_carpet (increment 4) are uncoursed too: a 0.5 m grain and a
-# 0.6 m carpet repeat 14 and 33 times along a truss and a 20 m floor.
+# 0.6 m carpet repeat 14 and 33 times along a truss and a 20 m floor. So is
+# medieval_blocks_02 (#860): random rubble with no course (#858), filed with brick
+# above on its name until its 1.5 m mortar bands ran unbroken along the town
+# wall's 64 m and its large stones read as diagonals.
 SWAP_RISE = {'castle_wall_slates': 0.5, 'defense_wall': 0.5, 'plastered_wall_04': 0.5,
-             'rough_wood': 0.5, 'dirty_carpet': 0.5}
+             'rough_wood': 0.5, 'dirty_carpet': 0.5, 'medieval_blocks_02': 0.5}
 SWAP_SCALE = 1.5                 # the A/B noise's feature size, in tiles
 SWAP_EDGE = 0.04                 # the smoothstep's half width, in noise units
 VALUE_SPREAD = 0.08              # brightness moves by up to this, either way
@@ -380,13 +397,14 @@ def _finish(mat, bsdf_x, maps, surface=None, undulate=None):
     return mat
 
 
-def box_material(name, asset, size, tint=None, rise=None, warm=None, grime=None, undulate=None, object_tint=False):
+def box_material(name, asset, size, tint=None, rise=None, warm=None, grime=None, undulate=None, object_tint=False,
+                 rough_min=None):
     """A Principled material from `asset`'s five maps, box-projected on world
     coordinates at `size` metres per repeat, blend 0.2, doubled when `rise`
-    is given (see _maps), with a LOOK's `warm`, `grime`, `undulate` and
-    `object_tint` when given."""
+    is given (see _maps), with a LOOK's `warm`, `grime`, `undulate`,
+    `object_tint` and `rough_min` (#861) when given."""
     mat = _new_material(name)
-    maps = _maps(mat.node_tree, asset, size, -400, 0, tint, warm=warm, rise=rise, grime=grime,
+    maps = _maps(mat.node_tree, asset, size, -400, 0, tint, rough_min=rough_min, warm=warm, rise=rise, grime=grime,
                  object_tint=object_tint)
     return _finish(mat, 600, maps, undulate=undulate)
 

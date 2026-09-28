@@ -11110,13 +11110,13 @@ at hue 25 and saturation 0.29 to 0.33, and red-orange texels only 0.8%.
 0.144. The scale stays at the set's real 1.5 m (#849): a simulated face
 under the swap kept a one-tile autocorrelation of 0.61 to 0.76 at 1.5, 2.0
 and 2.5 m alike, so size does not break the grid; 2.5 m is the named
-fallback if `town-gate-look-standin.png` still shows it, as a second
+fallback if `town-gate-standin-fix.png` still shows it, as a second
 labelled exception to #849 and after Devon's yes. **It reaches the castle
 too**, because `LOOK` and `SWAP_RISE` act inside `library()` and one slug is
 one material (#854): the cross-wall's two halves, `kings-hall-south`, the
 Steward's chamber's north and east runs and the chapel nave's, as well as
 the town wall, Wykes's yard walls, the church and the houses' plinths and
-chimneys. `blocks-inner-before.png` and `-look.png`, from (18, 1.7, 1) in
+chimneys. `blocks-inner-before.png` and `-fix.png`, from (18, 1.7, 1) in
 the inner ward, are what Devon judges that by. The recesses' `stone_pavers`
 (#858) do not change and read at 0.75 of the church's wall, where they were
 0.61. Line 4 gains 5 texture nodes and no image in every build holding the

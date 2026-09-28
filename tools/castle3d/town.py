@@ -104,7 +104,19 @@ WINDOW = {'ground': (0.8, 1.0, 1.8), 'upper': (0.8, 3.4, 4.3), 'gable': (0.6, 3.
 WINDOW_TIMBER = (0.1, 0.2)                   # the sill and head timbers' height, and their width over the opening's
 SHUTTER = (0.005, 0.03)                      # each half the width less this, and out from the plaster
 CHIMNEY = (0.8, 0.9, 1.0)                    # square, its centre in from the gable, over its ridge top
-PLASTER_TINTS = [(1.0, 1.0, 1.0), (1.0, 0.92, 0.76), (1.0, 0.88, 0.84), (0.92, 0.94, 0.96)]
+# The houses' four washes on LOOK's cream (#861): limewash, yellow ochre, red
+# ochre and unwashed grey daub, 9.2 to 15.7 apart in CIE dE76 and stepping down
+# in L* (46.6, 42.8, 40.2, 37.7). Four, since the draw is rng.randrange(4) and six
+# would move every later draw. TINT_APART is the rail: #857's four had their
+# closest pair 0.089 apart as RGB triples and read as one terrace; these, 0.179.
+PLASTER_TINTS = [(1.0, 1.0, 1.0), (1.0, 0.80, 0.48), (0.95, 0.66, 0.58), (0.60, 0.64, 0.66)]
+TINT_APART = 0.15
+_near = min(((math.dist(a, b), i, j) for i, a in enumerate(PLASTER_TINTS)
+             for j, b in enumerate(PLASTER_TINTS) if i < j), default=None)
+if _near is not None and _near[0] < TINT_APART:
+    _d, _i, _j = _near
+    raise ValueError(f"town: PLASTER_TINTS {_i} {PLASTER_TINTS[_i]} and {_j} {PLASTER_TINTS[_j]} are "
+                     f"{_d:.3f} apart, under TINT_APART {TINT_APART}")
 
 # The church (#857): recessed openings, (width, sill, springing, apex).
 RECESS = 0.3

@@ -3106,7 +3106,7 @@ pick (#857); item (4) needs nothing.
   at 2.5) but draws the same banded grid larger, and a simulated 24 by 8 m
   face under `_maps`' swap gave a one-tile autocorrelation of 0.61 to 0.76
   at 1.5, 2.0 and 2.5 m alike, so size is not the lever. The named
-  fallback, if `town-gate-look-standin.png` still shows the diagonal, is
+  fallback, if `town-gate-standin-fix.png` still shows the diagonal, is
   `LIBRARY['medieval_blocks_02'] = 2.5` as a second labelled exception,
   which needs Devon's yes. **It reaches the castle too, on purpose**:
   `LOOK` and `SWAP_RISE` act inside `library()`, and `MAT_medieval_blocks_02`
@@ -3186,16 +3186,16 @@ pick (#857); item (4) needs nothing.
   `partial/terrain+walls+towers+gates+buildings.blend`, exposure probed to
   a median display value near 0.35; it frames `kings-hall-south`'s 20 m
   face, the cross-wall's east face with the porter gate, and
-  `steward-chamber-north`. After the fixes, `blocks-inner-look.png` from the
+  `steward-chamber-north`. After the fixes, `blocks-inner-fix.png` from the
   same eye at the same exposure, so the pair differs by material alone; a
   Material Preview capture over MCP from that eye before either, to check
   the frame. **Then the four town stills again**, from #859's cameras at
   #859's exposures held, not re-probed (-0.5, -0.5, +2.5, -0.5), so Devon
-  compares each against its pair: `town-look-standin.png` (tints on the
-  gables, the chimneys, the walls from above), `town-gate-look-standin.png`
+  compares each against its pair: `town-standin-fix.png` (tints on the
+  gables, the chimneys, the walls from above), `town-gate-standin-fix.png`
   (the rise and the tint over the town wall's longest face, where the
-  diagonal was worst), `town-street-look-standin.png` (the timber, the
-  tints, the plinths) and `town-church-look-standin.png` (the church's
+  diagonal was worst), `town-street-standin-fix.png` (the timber, the
+  tints, the plinths) and `town-church-standin-fix.png` (the church's
   stone and its recesses). Each still with thatch keeps the "stand-in"
   label. Not re-rendered: `gates-dressed-5.png` and `buildings-4b-5.png`,
   which frame no `medieval_blocks_02` face and no timber beyond the
