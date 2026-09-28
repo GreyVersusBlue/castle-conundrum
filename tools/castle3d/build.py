@@ -48,6 +48,9 @@ else:
 
 bp = common.load_blueprint(bp_path)
 scene = common.empty_scene()
+# No .blend1 beside a file of a few hundred megabytes; the saves below are two.
+bpy.context.preferences.filepaths.save_version = 0
+common.OUT = out  # before the first stage, so a stage finds <out>/cache/ (common.cached)
 
 for stage in stages:
     mod_name = common.MODULE[stage]
@@ -60,6 +63,27 @@ for stage in stages:
 scene['castle3d_stages'] = ','.join(stages)
 os.makedirs(os.path.dirname(target), exist_ok=True)
 bpy.ops.wm.save_as_mainfile(filepath=target, check_existing=False)
+
+# Not packed: packing would put the whole cache into every .blend. Every
+# unpacked image's path is made relative to the file just saved, and the file
+# saved again, so the master holds //cache/... and a partial //../cache/...,
+# and survives the output folder moving whole. check.py line 4 resolves either
+# through bpy.path.abspath. The cache is inside the output folder, so relpath
+# cannot cross a drive. Blender 5.2's save_as_mainfile already remaps them
+# under factory settings; this does not lean on that preference.
+relative = 0
+for img in bpy.data.images:
+    if img.packed_file is not None or img.library is not None or img.source not in {'FILE', 'SEQUENCE', 'TILED'}:
+        continue
+    if not img.filepath or img.filepath.startswith('//'):
+        continue
+    img.filepath = bpy.path.relpath(bpy.path.abspath(img.filepath))
+    relative += 1
+if relative:
+    bpy.ops.wm.save_mainfile(check_existing=False)
+unpacked = [i for i in bpy.data.images if i.packed_file is None and i.filepath]
+print(f"castle3d: {sum(i.filepath.startswith('//') for i in unpacked)} of {len(unpacked)} unpacked image paths "
+      f"//-relative ({relative} rewritten after the first save)")
 with open(os.path.join(out, 'last-build.txt'), 'w', encoding='utf-8') as f:
     f.write(target + '\n')
 print(f"castle3d: saved {target} ({', '.join(stages)})")

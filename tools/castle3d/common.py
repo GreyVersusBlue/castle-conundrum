@@ -4,6 +4,7 @@
 # STAGE_OF, the table that gives every blueprint piece to exactly one stage.
 # Imported first by build.py and check.py, so the pin runs before anything else.
 
+import os
 import sys
 import re
 import json
@@ -24,6 +25,8 @@ if bpy.app.version[:2] != (5, 2):
 STAGES = ['guide', 'terrain', 'walls', 'towers', 'gates', 'buildings', 'town', 'props', 'lighting', 'markers']
 # The stages whose objects realise blueprint pieces, which check.py line 6 covers.
 GEOMETRY = ['terrain', 'walls', 'towers', 'gates', 'buildings', 'town', 'props']
+# The terrain stage's height field, which check.py line 5 measures (#844).
+TERRAIN = 'TERRAIN_ground'
 # The module each stage is built by (increment 0 ships only blueprint.py).
 MODULE = {'guide': 'blueprint', 'terrain': 'terrain', 'walls': 'walls', 'towers': 'towers', 'gates': 'gates',
           'buildings': 'buildings', 'town': 'town', 'props': 'props', 'lighting': 'lighting', 'markers': 'markers'}
@@ -40,6 +43,38 @@ def arg(argv, name, default=None):
 def load_blueprint(path):
     with open(path, 'r', encoding='utf-8') as f:
         return json.load(f)
+
+
+# ------------------------------------------------------------------ the cache --
+# The output folder, set by build.py before the first stage runs, so a stage
+# finds <OUT>/cache/. None until then, and cached() refuses to guess.
+OUT = None
+HERE = os.path.dirname(os.path.abspath(__file__))
+_SOURCES = None
+
+
+def sources():
+    """sources.json's rows by id. json.load takes either line ending (#632)."""
+    global _SOURCES
+    if _SOURCES is None:
+        with open(os.path.join(HERE, 'sources.json'), 'r', encoding='utf-8') as f:
+            _SOURCES = {row['id']: row for row in json.load(f)}
+    return _SOURCES
+
+
+def source(row_id):
+    rows = sources()
+    if row_id not in rows:
+        raise KeyError(f"sources.json has no row {row_id}")
+    return rows[row_id]
+
+
+def cached(row):
+    """<OUT>/cache/<asset>/<file>: fetch.mjs's cachePath in one line. If the two
+    drift, the path is not a file and whoever opens it raises naming it."""
+    if OUT is None:
+        raise RuntimeError('common.cached: common.OUT is not set; build.py sets it before the first stage')
+    return os.path.join(OUT, 'cache', row['asset'], *row['file'].split('/'))
 
 
 # ------------------------------------------------------------------ the scene --
