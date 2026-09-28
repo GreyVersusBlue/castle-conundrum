@@ -10624,3 +10624,28 @@ windows open the collider's solid stone between 5 and 6.4 m in five runs,
 and that row must collide them or keep today's boxes. #527, #528 and #656
 to #658 stand whole for the game. Devon, 2026-09-27: yes, model roofs for
 the interior rooms.
+
+**Increment 4a closes: Devon's verdict and the review cameras.** Devon's
+verdict on `shots/castle3d/buildings.png` and
+`shots/castle3d/buildings-hall.png` (2026-09-27), quoted exactly: "I like
+buildings and buildings-hall." The review cameras are `buildings_cams.py`,
+in the increment 4a session's scratchpad and uncommitted, as #848's,
+#850's and #852's were: `buildings.png` eye (-4, 1.7, -5) at (-13, 5.5, 7);
+`buildings-hall.png` eye (-30.5, 1.7, 10) at (-20.5, 10.47, 10), Film
+exposure +7 stops because the interior renders near black at 0. Cycles
+OPTIX, 1920x1080, 128 samples, denoiser. Two live-session Material Preview
+captures also stand: the hall from the outer ward, eye (-8, 1.7, -4.5) at
+(-20, 6.5, 8); the interior, eye (-30.5, 1.7, 10) at (-12, 7.5, 10). Breaks
+from green (#34): skipping `hall-truss-3` gave `FAIL line 6 coverage: 1
+piece(s) nothing realises: hall-truss-3`; deleting `ROOF_great-hall` gave
+`FAIL line 6 coverage: 7 piece(s) nothing realises: hall-roof-1,
+hall-roof-2, hall-roof-3, hall-roof-4, hall-roof-5, hall-roof-6,
+hall-roof-7`; an `allow.json` entry of `{"hall-truss-1": ""}` gave `FAIL
+line 6 coverage: allow.json entries with no reason: hall-truss-1`. The
+green build, `--only terrain,walls,towers,gates,buildings`, passed lines 4,
+5 and 6, 197 pieces covered; `walls.build_run` now accepts `facing None`
+when `batter` is `False`. Open, not ruled on by Devon: (a) the hall roof is
+hidden from the outer ward at standing height by the 8 m north wall; (b)
+door and window reveals read pale and flat; (c) the hall interior is near
+black without +7 stops until 4b's windows, beams and plaster; (d) the
+lodge deck floats until increment 6 places kit poles 73 to 76.
