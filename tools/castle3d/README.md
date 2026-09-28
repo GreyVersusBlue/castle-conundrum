@@ -55,8 +55,8 @@ uncaught Python exception exits 0. Any failure exits the launcher non-zero.
 | --- | --- | --- | --- |
 | `guide` | `blueprint.py` | `GUIDE`: a wireframe box per piece and ramp, a box or 32-sided cylinder per room, a box per open room over its gate band. Always runs. | 0 |
 | `terrain` | `terrain.py` | A 400 m height field on game x -81, z 0, exactly 0 over the pieces plus 10 m and seeded hills outside; the cobbled road to the west gate; 120 trees and 60 rocks from Poly Haven models, each with a seeded yaw, scale, lean and leaf tint; grass by a seeded Geometry Nodes scatter; the World from the HDRI. Mud, grass and cobble come from `materials.py`. | 1 |
-| `walls` | `walls.py` | The curtain, the cross-wall, walks, crenellation. | 2 |
-| `towers` | `towers.py` | The eight drums, their floors and eighteen flights. | 2 |
+| `walls` | `walls.py` | The 21 runs (16 curtain, 2 cross-wall, 3 gate-over) as the plan's collider boxes clipped to each piece's box, so a doorway the plan cuts is an opening; the 15 walks; one crenellation per run carrying its kit merlons in `planIds`, every one of the 61 claimed by exactly one run or the stage raises. Arrow slits through every other merlon. The blueprint's own slugs (#849) from `materials.library`. | 2 |
+| `towers` | `towers.py` | The eight drums from each piece's per-sector `stone` (doors and crown included), hollow to the interior radius, with a 0.4 m plinth over the bottom 2 m and an arrow slit per storey in every third sector not buried in a run; floors and flat roofs as the plan's discs cut to their colliders (the stair wells); the four turrets, capped at 12 m, under roof_slates_02 cones in the drum's own object; the 18 flights as solid steps of about 0.18 m along each ramp's `slope`, in defense_wall. | 2 |
 | `gates` | `gates.py` | Arches, portcullis, leaves on `GATE_<id>_HINGE`, the bars. | 3 |
 | `buildings` | `buildings.py` | The inner rooms with thickness, the hall's trusses and roof. | 4 |
 | `town` | `town.py` | Mereford, the town wall, Wykes's yard. | 5 |
@@ -68,6 +68,14 @@ uncaught Python exception exits 0. Any failure exits the launcher non-zero.
 whose module does not exist yet is an error naming it, not a skip, so a full
 build fails until every stage has shipped. `--only guide` prints `STAGE_OF`,
 the table in `common.py` that gives each blueprint piece to one stage.
+
+The batter and the crenellation (increment 2, the lead's call): a curtain run
+standing on the ground splays its outer face, the one away from the curtain
+box's centre, 0.5 m outward over the bottom 2.5 m, and its inner face stays
+plumb so nothing inside the ward moves; the cross-wall and the gate-over runs
+have none. The parapet takes the kit merlons' band (1.2 m deep, 8 to 9.6 m)
+and alternates merlons and crenels at the drums' `crown` read as widths, 1.5
+and 0.6 m, stretched to fit whole, with the crenel sill 0.9 m over the walk.
 
 The frame, from #843: a game point `(x, y, z)` is Blender `(x, -z, y)`, and
 a game `rotationY` is the same angle about Blender Z, same sign.
@@ -107,6 +115,6 @@ Non-zero on any failure.
 ## Committed here
 
 The scripts, `sources.json` (every input with its URL or path, licence and
-sha256; 52 rows from increment 1), `allow.json` (each departure from the
+sha256; 97 rows from increment 2), `allow.json` (each departure from the
 blueprint with its reason; empty), this file and `CREDITS.md`. No `.blend`,
 no image, no model: those stay in the output folder (#499, #841).

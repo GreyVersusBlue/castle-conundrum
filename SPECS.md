@@ -1521,7 +1521,8 @@ recorded in `HISTORY.md` against the increment (#53).
    with batter, a wall walk at 8 m, crenellations and arrow slits, the 8
    drums at the blueprint's centres and radii with conical or flat roofs,
    their floors at 0, 4, 8 and 12 m, and the 18 flights on the blueprint's
-   ramps. Rock and ashlar materials. The 61 kit merlons are realised by
+   ramps. Rock and ashlar materials, the blueprint's own slugs (#849). The
+   61 kit merlons are realised by
    each run's crenellation, which carries their ids in `planIds`.
 3. **Gatehouses.** The west barbican, the porter gate in the cross-wall
    and the east gate: arches, a portcullis, and timber leaves parented to
@@ -1727,8 +1728,9 @@ walks, in daylight, at the five places the game's own player stands?
 
 - **Gate: none.** Needs Devon's machine with the Steam Blender 5.2 (#840),
   and a network to Poly Haven for each increment that adds a `sources.json`
-  row (1 and 6; the HDRI moved from 7 to 1, #846). The first fetch waited
-  on Devon's yes to the asset list with sizes, given 2026-09-27.
+  row (1, 2 and 6; the HDRI moved from 7 to 1, #846; increment 2's nine
+  sets are #849). The first fetch waited on Devon's yes to the asset list
+  with sizes, given 2026-09-27.
 - **Lane G, `tools/castle3d/`**, this row's alone (#842). It shares no file
   with lane F, so it may run beside a rank 1 or rank 2 session; that is two
   Blenders on one machine and Devon's call. Both add a line to
