@@ -4304,9 +4304,11 @@ already built, and the row's premise was corrected on 2026-09-17** (#582).
 **The map shipped the same day** (#588 to #591). `WISHLIST.md` theme 5.
 **The town's first increment shipped on 2026-09-21** (#725 to #728): a street
 of six houses and a church inside Mereford's wall, west of the town gate, seen
-from the walls and entered by nobody. **What is next is the quay and the
-river**, outside the west gate, specced below in two class-S increments
-(#795 to #798).
+from the walls and entered by nobody. **The quay and the river**, outside the
+west gate, specced below in two class-S increments (#795 to #798), **shipped
+on 2026-09-29, both increments** (#870 to #872): the measured numbers are in
+`HISTORY.md`. What is left of the row is the rock, which has no spec yet, and
+the GPU run's look at the quay (#53).
 
 ### What was measured, and what it changed
 
@@ -4349,7 +4351,17 @@ every outside room seen from somewhere a player can stand (from a wall walk
 or a tower roof, never lower); `test/budget.mjs` gained an `outside` bucket
 summed into both wards' ceiling, 131 meshes. `npm test` fifteen of fifteen.
 
-### What is next: the quay and the river
+### The quay and the river, shipped (#870 to #872)
+
+**Shipped as specced below.** Where the build differed from the prototype:
+check 4f's first seen point is (-155, -3) from `floor-sw-tower-roof` at
+119.7 m after 221 of 1,120 points (the lattice is sorted by distance from the
+curtain's centre); the outside bucket is 161 as estimated, but the outer
+ward's sum is 1181 of 1200, not about 1154, because it started at 1151; and
+`tools/plan-sheet.mjs`, which this section's level -1 grep did not reach
+because it sorts by `y`, now draws everything under the ground storey on the
+ground storey's sheet (#872). The section below is kept as the spec it was
+built from.
 
 **Two increments, both class S, 3a first** (the map and the town were this
 row's first two). Decided before anything is

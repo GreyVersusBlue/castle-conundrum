@@ -96,8 +96,17 @@ export function planSheet(plan, level, { config = null, mystery = null } = {}) {
   // `box` and `boxes` by reference. test/tools.mjs asserts the identity, which
   // is the cheapest possible statement of #500: there is one box, and this is
   // it.
+  //
+  // THE LOWEST STOREY ALSO DRAWS EVERYTHING WHOLLY UNDER IT (#872). The quay's
+  // river, its front and its two banks sit between y -2 and 0, under the
+  // ground floor and on no storey any room declares, so without this they are
+  // on no sheet at all and the review shows a quay with nothing past its edge.
+  const lowest = level === Math.min(...plan.levels);
   const pieces = plan.pieces
-    .filter((p) => storeyOf(plan, p.box, level) === 'on')
+    .filter((p) => {
+      const where = storeyOf(plan, p.box, level);
+      return where === 'on' || (lowest && where === 'below');
+    })
     .map((p) => ({
       id: p.id, kind: p.kind, built: p.built, label: p.label,
       material: p.material, curtain: p.curtain, level: p.level,

@@ -61,7 +61,8 @@ placed in the household's routines (#800); and rank 10, retired into 2c and
 2d (#807); and Devon's own props placed, 70 rows from 69 files dressing
 thirteen rooms and two open-ward stretches (#830 to #834); and the chapel
 nave, a new inner-ward ground room for the pulpit and the rood (#835 to
-#838).
+#838); and rank 9's quay and river, increments 3a and 3b, the toll-house
+under Mereford's one slate gable and the water past it (#870 to #872).
 
 **Open, ranked below.** Devon made Blender-built assets the project's top
 priority on 2026-09-25 and reopened ranks 1 and 2 himself to hold them
@@ -73,7 +74,7 @@ the pipeline (2h, #839 to #844); the GPU run itself, now gated on nothing (rank 
 the retro castle's look, its variety increment superseded by 2h (rank 4,
 #839); the rest of
 the fifty-person populace (rank 6); somebody with speakers to judge the
-soundscape (rank 7); the town's quay and river (rank 9); the feel theme past
+soundscape (rank 7); the rock, the last of rank 9, unspecced; the feel theme past
 its shadow and hand (rank 11); and the floor-plan editor's drag increments
 (rank 13). A session never reuses a retired rank; Devon may, and did, here
 (#802). Rank 10 is retired, with 2c and 2d as its successors (#807). Ranks
@@ -231,13 +232,13 @@ the placement editor, budget suite, move-and-delete and the dialogue format
 | 2b | Blender: an interiors kit: joined sets dressing the kitchen, the great hall and the cell, specced (#813 to #816, #819); the two hearths and the chapel altar went to 2f (#830); nothing built | 2+ | Opus 5 | Local: Blender | after 1, 2a | F, B | | [Blender: an interiors kit](SPECS.md#blender-an-interiors-kit) |
 | 2c | Blender: a shared rig with swappable parts: one rig, one-primitive parts, at most five skinned draws a person against the Quaternius rigs' 12 to 15, specced (#820 to #825); nothing built | 2+ | Opus 5 | Local: Blender, then Container; judged local: GPU (#53) | after 1 | F, C | | [Blender: a shared rig with swappable parts](SPECS.md#blender-a-shared-rig-with-swappable-parts) |
 | 2d | Blender: the animals: pig, goat, sheep, horse, cat and two geese on one quadruped topology plus a bird one for the goose, specced (#826 to #829); nothing built | 1 | Opus 5 | Local: Blender; judged local: GPU (#53) | after 1, 2c increment 1 | F, C | | [Blender: the animals](SPECS.md#blender-the-animals) |
-| 2e | Blender: the countryside beyond the wall: five backdrop pieces cut from one seeded height field, specced (#816 to #819); nothing built | 1 | Opus 5 | Local: Blender | after 1, rank 9's 3b | F, B | | [Blender: the countryside beyond the wall](SPECS.md#blender-the-countryside-beyond-the-wall) |
+| 2e | Blender: the countryside beyond the wall: five backdrop pieces cut from one seeded height field, specced (#816 to #819); nothing built | 1 | Opus 5 | Local: Blender | after 1 (rank 9's 3b shipped, #871) | F, B | | [Blender: the countryside beyond the wall](SPECS.md#blender-the-countryside-beyond-the-wall) |
 | 2h | Castle in Blender: the castle, Mereford and the countryside as a realistic standalone model with Poly Haven PBR, built by committed scripts on Blender 5.2, with gameplay markers, specced (#839 to #844); increments 0 to 5 shipped (#839 to #862, PR #89, 5ffc1e2); increments 6 to 9 (props, lighting and cameras, markers, export) are left; the game loads none of it | 2+ | Opus 5 | Local: Blender (5.2); Local: net for its fetches | — | G | | [Castle in Blender](SPECS.md#castle-in-blender) |
 | 3 | The GPU run: the looks are taken (#711 to #715); the walker holds on a GPU (#734, #736) and the third sitting reached the accusation with the wrong ending (#735 to #741) | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
 | 4 | The retro castle: increment 1 shipped, fifteen sets out and fifteen 128 px textures in (#757 to #766); the look is left; variety per room is superseded by 2h (#839); the props increment moved to 2b (#813) | 2+ | Opus 5 | Container to the look, local: GPU past it | — | B | | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
 | 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #729 to #733); four of the five generated clips placed in the household's routines (#800), `drill` still nobody's; the town and the chatter pool are left | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: somebody listens to the seven beds, the four rings and the first two event sounds (a bed at a point and the rings, #680 to #683; the door and the hound, #696 to #698) | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
-| 9 | A castle to get lost in: the town, the rock and river | 2+ | Opus 5 | Container | — (4c opened it) | B | `claude/rank-9-quay` | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
+| 9 | A castle to get lost in: the town (#725 to #728) and the quay and river (#870 to #872) shipped; the rock is left, unspecced, and the quay's look is the GPU run's | 2+ | Opus 5 | Container | — (4c opened it) | B | | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
 | 11 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 | Container to the Node line, local: GPU past it | **after 3** | D | shadow + hand shipped 2026-09-17 (#650 to #654) | [Feel](SPECS.md#feel) |
 | 13 | The floor plan you can see: the review view shipped (#745 to #749); a way to redraw it is left | 2+ | Opus 5 | Container | — | B | increment 1 shipped 2026-09-21 (#745 to #749) | [The floor plan you can see](SPECS.md#the-floor-plan-you-can-see) |
 
@@ -324,7 +325,7 @@ rise by the animals' own draws. Detail: [Blender: the animals](SPECS.md#blender-
 
 ## Blender: the countryside beyond the wall
 
-*Where: local, Blender. Gate: after rank 1 and rank 9's increment 3b. Lanes:
+*Where: local, Blender. Gate: after rank 1; rank 9's increment 3b shipped (#871). Lanes:
 F and B.*
 
 **Rank 2e, size 1.** Specced whole, decisions #816 to #819. Five backdrop
@@ -332,7 +333,7 @@ pieces cut from one seeded height field, tiling the ground and each other
 edge to edge so nothing seams, placed as `interiorProps` with `backdrop` and
 `noCollide` so they push no collider and no surface. New `test/layout.mjs`
 check 4g holds the seam to the ground's sides and the far edge out to the
-fog's distance (#817, #818). Gated on rank 9's 3b, which sets the ground's
+fog's distance (#817, #818). Was gated on rank 9's 3b, shipped (#871), which set the ground's
 west edge and lifts the eyes check 4g reads. Detail: [Blender: the
 countryside beyond the wall](SPECS.md#blender-the-countryside-beyond-the-wall).
 
@@ -469,12 +470,16 @@ room is worse than no room." **The town's first increment shipped on
 2026-09-21** (#725 to #728): six houses and a church west of Mereford's town
 wall, seen from the North-west Tower's roof, entered by nobody, drawn on a
 map frame of their own and out of the room count (back to 67.6 m, 40 rooms),
-held against both wards' mesh ceiling. **What is next is the quay and the
-river**, outside the west gate, specced on 2026-09-24 (#795 to #798) as two
-`builder` increments: 3a, a stone toll-house under the one slate gable in
-Mereford, which is the only part of the quay the walls can see; then 3b, the
-water, a plan piece with no surface that runs into the fog, with the ground
-cut back to the bank so nothing calls it floor. Filling the nineteen empty
+held against both wards' mesh ceiling. **The quay and the river shipped on
+2026-09-29** (#870 to #872), both increments in one PR, outside the west gate:
+3a, a stone toll-house under a new `gable` built shape, the one slate roof in
+Mereford and the only part of the quay the walls can see (check 4d); 3b, the
+water, a plan piece with no surface running into the fog, with the ground cut
+back to the bank, held by new checks 4e (nothing stands on it) and 4f (it is
+seen, through the west gate, at 119.7 m). The outer ward now draws 1181 of
+its 1200 meshes counting the outside. **What is left** is the rock, which
+nothing specs yet, and the GPU run's word on whether the quay reads through
+the fog (#53). Filling the nineteen empty
 rooms is rank 6's routines and a later lore row's documents.
 
 ## Feel

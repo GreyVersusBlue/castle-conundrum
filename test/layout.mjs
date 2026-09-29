@@ -49,7 +49,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { partsOf } from './gltf.mjs';
-import { makePlan, walkability, collidersWith, moveBody, GRID, HEAD_LOW, HEAD_HIGH, BODY_RADIUS, DAY_SETS, EYE_HEIGHT } from '../src/castle-plan.js';
+import { makePlan, walkability, surfacesAt, collidersWith, moveBody, GRID, HEAD_LOW, HEAD_HIGH, BODY_RADIUS, DAY_SETS, EYE_HEIGHT } from '../src/castle-plan.js';
 import { dayTwoOutcomes, dayTwoCastle, undoDay } from '../src/mystery.js';
 import { stepClassOf, bedOf, bedSources, sourcePoint, audibleFrom, ringOf, CUES, eventOf, cueSound } from '../src/audio.js';
 import { castleNav } from '../src/stations.js';
@@ -166,14 +166,16 @@ console.log('\nthe pieces the player presses E at');
  * rows on a first floor, a top room, a roof and the chapel loft, and a `base`
  * is the same kind of typed number a slab's is: a 4.3 where the floor is 4 is a
  * bed floating 0.3 m over the royal apartments, in the right room and
- * reachable. The rows are found by id in the config, so a row that loses its
+ * reachable. The quay's toll-house roof is a `gable` built prop (#797) and is
+ * held here the same way: its base is the toll-house's height typed a second
+ * time. The rows are found by id in the config, so a row that loses its
  * `base` drops out of this list rather than being guessed at; a `noCollide`
  * row is hung on a wall by its `yOffset` and has nothing under it by design.
  */
 console.log('\nthe built slabs and the props on an upper floor, and what each one rests on');
 {
   const based = new Set((config.interiorProps || []).filter(p => p.base && !p.noCollide).map(p => p.id));
-  const slabs = plan.pieces.filter(p => p.built === 'slab' || (p.kind === 'prop' && based.has(p.id)));
+  const slabs = plan.pieces.filter(p => p.built === 'slab' || p.built === 'gable' || (p.kind === 'prop' && based.has(p.id)));
   if (!slabs.length) fail('the plan builds no slabs at all, so this check tests nothing');
   const onFloor = slabs.filter(p => based.has(p.id)).length;
   if (onFloor !== based.size) fail(`${based.size} interiorProps rows carry a base and ${onFloor} of them were found in the plan by id`);
@@ -696,14 +698,13 @@ console.log('\nthe rooms past the curtain');
  * 20 m: the street and the church behind it go unseen and the yard, east of
  * it, is still seen, so the check tells the rooms apart.
  */
-console.log('\nthe rooms past the curtain, seen from the walls');
-{
-  const t0 = Date.now();
-  const outsideRooms = rooms.filter(isOutside);
+/* THE EYES AND THE SEGMENT TEST, ONCE, for 4d here and 4f below (#798): 4f
+ * asks the same question of the river that 4d asks of a room, and a copy of
+ * the sight test would be two tests that drift. */
+const wallSight = (() => {
   const eyes = walk.cells.filter(c => c.h >= 8).map(c => ({
     x: c.i * GRID + GRID / 2, y: c.h + EYE_HEIGHT, z: c.j * GRID + GRID / 2, surface: c.surface,
   }));
-  if (!eyes.length) fail('no reachable cell stands 8 m up or higher, so nothing sees over the curtain and this check measured nothing');
   const solid = plan.pieces.filter(p => p.kind !== 'ground');
   const occluders = solid.flatMap(p => (p.boxes || [p.box]).map(b => ({ id: p.id, b })));
   const EPS = 1e-9;
@@ -733,6 +734,15 @@ console.log('\nthe rooms past the curtain, seen from the walls');
     }
     return true;
   };
+  return { eyes, solid, clear };
+})();
+
+console.log('\nthe rooms past the curtain, seen from the walls');
+{
+  const t0 = Date.now();
+  const outsideRooms = rooms.filter(isOutside);
+  const { eyes, solid, clear } = wallSight;
+  if (!eyes.length) fail('no reachable cell stands 8 m up or higher, so nothing sees over the curtain and this check measured nothing');
   for (const r of outsideRooms) {
     const targets = solid.filter(p => {
       const x = (p.box.min.x + p.box.max.x) / 2, z = (p.box.min.z + p.box.max.z) / 2;
@@ -755,6 +765,74 @@ console.log('\nthe rooms past the curtain, seen from the walls');
     pass(`${r.id} is seen from ${e.surface} at (${f2(e.x)}, ${f2(e.y)}, ${f2(e.z)}) by ${first.t.id}; ${seen} of its ${targets.length} pieces are seen from somewhere`);
   }
   console.log(`        ${eyes.length} eyes, ${outsideRooms.length} rooms, ${Date.now() - t0} ms`);
+}
+
+/* -------------------- 4e (rank 9, #795): nothing stands on the water ---
+ * The river is a piece and never a surface. What would make it floor is not
+ * the water, which pushes nothing, but whatever lies over it: before 3b,
+ * `outside-ground` ran to x -198 and all 18,240 points of the water's
+ * footprint had ground at y 0 over them. So over every `kind: 'water'` piece,
+ * a 0.5 m grid of its footprint gets nothing at all from `surfacesAt`: no
+ * ground, no road, no floor patch, no prop top. A plan fact, so here and not
+ * in plan-vs-scene.mjs (#529).
+ */
+console.log('\nthe water, and what stands on it');
+{
+  const water = plan.pieces.filter(p => p.kind === 'water');
+  if (!water.length) fail('no piece in the plan is kind "water", so this check measured nothing. Rank 9\'s 3b put the quay\'s river in');
+  const STEP = 0.5;
+  for (const w of water) {
+    let points = 0;
+    const under = new Map();
+    for (let x = w.box.min.x + STEP / 2; x < w.box.max.x; x += STEP) {
+      for (let z = w.box.min.z + STEP / 2; z < w.box.max.z; z += STEP) {
+        points++;
+        for (const f of surfacesAt(plan, x, z)) {
+          const k = `${f.surface} at y ${f2(f.h)}`;
+          under.set(k, (under.get(k) || 0) + 1);
+        }
+      }
+    }
+    if (under.size) fail(`${w.id} has something to stand on over it: ${[...under].map(([k, n]) => `${k} over ${n} of ${points} points`).join('; ')}. Water is never a surface and the ground stops at the bank (#795)`);
+    else pass(`${w.id}: none of the ${points} points of a ${STEP} m grid over x ${f2(w.box.min.x)}..${f2(w.box.max.x)}, z ${f2(w.box.min.z)}..${f2(w.box.max.z)} has a surface`);
+  }
+}
+
+/* ------------------------- 4f (rank 9, #796): the water is seen ---
+ * 4d holds every outside room to being seen from the walls; the river is in
+ * no room, and is held to the same standard inside the fog. Some point of a
+ * 2 m lattice on its top, 0.05 m under the box's top as 4d's points are, has
+ * a clear segment from one of 4d's eyes, no further than `lighting.fog.far`
+ * from it, past every occluder but the water itself. Points are tried nearest
+ * the castle first and the first one seen ends it. The water is seen only
+ * through Mereford's west gate, from the tops of the two west towers (#797),
+ * so the gate's doorway is the break.
+ */
+console.log('\nthe water, seen from the walls');
+{
+  const t0 = Date.now();
+  const { eyes, clear } = wallSight;
+  const far = config.lighting?.fog?.far;
+  if (!(far > 0)) fail('config.lighting.fog.far is not a positive number, so there is no distance to hold the water inside');
+  const water = plan.pieces.filter(p => p.kind === 'water');
+  if (!water.length) fail('no piece in the plan is kind "water", so this check measured nothing');
+  const cx = (plan.curtain.min.x + plan.curtain.max.x) / 2, cz = (plan.curtain.min.z + plan.curtain.max.z) / 2;
+  for (const w of water) {
+    const y = w.box.max.y - 0.05, lattice = [];
+    for (let x = w.box.min.x + 1; x <= w.box.max.x - 1 + 1e-9; x += 2)
+      for (let z = w.box.min.z + 1; z <= w.box.max.z - 1 + 1e-9; z += 2) lattice.push({ x, y, z });
+    lattice.sort((a, b) => Math.hypot(a.x - cx, a.z - cz) - Math.hypot(b.x - cx, b.z - cz));
+    let seen = null, tried = 0;
+    for (const pt of lattice) {
+      tried++;
+      const eye = eyes.find(e => Math.hypot(e.x - pt.x, e.y - pt.y, e.z - pt.z) <= far && clear(e, pt, w.id));
+      if (eye) { seen = { pt, eye }; break; }
+    }
+    if (!seen) { fail(`${w.id} is seen from nowhere: 0 of ${lattice.length} points of a 2 m lattice on its top has a clear line from any of the ${eyes.length} places 8 m up the player can stand, within fog.far ${far} m`); continue; }
+    const { pt, eye } = seen, d = Math.hypot(eye.x - pt.x, eye.y - pt.y, eye.z - pt.z);
+    pass(`${w.id} is seen at (${f2(pt.x)}, ${f2(pt.z)}) from ${eye.surface} at (${f2(eye.x)}, ${f2(eye.y)}, ${f2(eye.z)}), ${d.toFixed(1)} m, after ${tried} of ${lattice.length} points`);
+  }
+  console.log(`        ${eyes.length} eyes, ${Date.now() - t0} ms`);
 }
 
 /* ---------------------------- 4b: two crossings, one logged and one not ---

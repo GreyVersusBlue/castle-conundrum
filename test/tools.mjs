@@ -414,9 +414,12 @@ console.log('the plan sheet');
       notPlans.slice(0, 3).map((p) => p.id).join(', '));
 
     // Weaker than the module's own rule on purpose: a box it lists has at least
-    // to touch the storey's y span.
-    const offStorey = sheet.pieces.filter((p) => p.box.min.y > ceiling + 1e-6 || p.box.max.y < floor - 1e-6);
-    check(offStorey.length === 0, `level ${sheet.level}: and no piece on it is wholly above ${ceiling} m or below ${floor} m`,
+    // to touch the storey's y span. The lowest storey is the one exception, and
+    // only downward: it also draws what lies wholly under it, the quay's river
+    // and its front (#872).
+    const lowest = sheet.level === Math.min(...plan.levels);
+    const offStorey = sheet.pieces.filter((p) => p.box.min.y > ceiling + 1e-6 || (!lowest && p.box.max.y < floor - 1e-6));
+    check(offStorey.length === 0, `level ${sheet.level}: and no piece on it is wholly above ${ceiling} m${lowest ? '' : ` or below ${floor} m`}`,
       offStorey.slice(0, 3).map((p) => `${p.id} [${f3(p.box.min.y)}, ${f3(p.box.max.y)}]`).join('; '));
   }
 

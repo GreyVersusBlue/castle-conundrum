@@ -518,6 +518,61 @@ function buildSlab(box, material) {
 }
 
 /**
+ * A gable roof filling the plan's box (#797): a triangular prism, the two
+ * eaves along the box's bottom edges parallel to `ridge`, the ridge along the
+ * top centre, two sloped faces and two triangular ends, no underside. Built in
+ * world coordinates like a slab, so `Box3` reads the plan's box off it.
+ *
+ * UVs are world-space at `metres` the way `worldUVsOnBox` does it: on a slope
+ * u runs along the ridge and v up the slope's own length, and on an end u runs
+ * across and v up, so the slate courses match the curtain's.
+ */
+function buildGable(box, ridge, material, metres) {
+  const { min, max } = box;
+  const alongX = ridge === 'x';
+  // (a, c) are the along-ridge and across-ridge coordinates; `pt` maps them to world.
+  const a0 = alongX ? min.x : min.z, a1 = alongX ? max.x : max.z;
+  const c0 = alongX ? min.z : min.x, c1 = alongX ? max.z : max.x;
+  const cm = (c0 + c1) / 2, y0 = min.y, y1 = max.y;
+  const pt = (a, y, c) => (alongX ? [a, y, c] : [c, y, a]);
+  const slope = Math.hypot(cm - c0, y1 - y0), len = a1 - a0, span = c1 - c0, rise = y1 - y0;
+  const pos = [], uv = [];
+  const tri = (p, q, r, tp, tq, tr) => {
+    pos.push(...p, ...q, ...r);
+    uv.push(...tp.map(v => v / metres), ...tq.map(v => v / metres), ...tr.map(v => v / metres));
+  };
+  // The two slopes, each a quad from its eave up to the ridge.
+  for (const ce of [c0, c1]) {
+    const e0 = pt(a0, y0, ce), e1 = pt(a1, y0, ce), r0 = pt(a0, y1, cm), r1 = pt(a1, y1, cm);
+    tri(e0, e1, r1, [0, 0], [len, 0], [len, slope]);
+    tri(e0, r1, r0, [0, 0], [len, slope], [0, slope]);
+  }
+  // The two triangular ends.
+  for (const ae of [a0, a1]) {
+    tri(pt(ae, y0, c0), pt(ae, y0, c1), pt(ae, y1, cm), [0, 0], [span, 0], [span / 2, rise]);
+  }
+  // Wind every triangle to face out from the prism's centroid, whichever axis the ridge runs on.
+  const centre = [(min.x + max.x) / 2, y0 + rise / 3, (min.z + max.z) / 2];
+  for (let t = 0; t < pos.length; t += 9) {
+    const p = pos.slice(t, t + 9);
+    const e1 = [p[3] - p[0], p[4] - p[1], p[5] - p[2]], e2 = [p[6] - p[0], p[7] - p[1], p[8] - p[2]];
+    const n = [e1[1] * e2[2] - e1[2] * e2[1], e1[2] * e2[0] - e1[0] * e2[2], e1[0] * e2[1] - e1[1] * e2[0]];
+    const out = [p[0] - centre[0], p[1] - centre[1], p[2] - centre[2]];
+    if (n[0] * out[0] + n[1] * out[1] + n[2] * out[2] < 0) {
+      const u = t / 3 * 2;
+      for (let k = 0; k < 3; k++) [pos[t + 3 + k], pos[t + 6 + k]] = [pos[t + 6 + k], pos[t + 3 + k]];
+      [uv[u + 2], uv[u + 4]] = [uv[u + 4], uv[u + 2]];
+      [uv[u + 3], uv[u + 5]] = [uv[u + 5], uv[u + 3]];
+    }
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  geo.computeVertexNormals();
+  return mesh(secondUV(geo), material);
+}
+
+/**
  * `boundsOf` for the browser: every mesh under a freshly loaded model, as its
  * own `geometry.boundingBox` plus the matrix its node chain gives it, both in
  * the model's own root space.
@@ -572,6 +627,7 @@ export function buildPiece(piece, material, metres) {
   if (piece.built === 'gate-leaf') return buildGateLeaf(piece.leaf, material);
   if (piece.built === 'bars') return buildBars(piece.bars, material);
   if (piece.built === 'slab') return buildSlab(piece.box, material);
+  if (piece.built === 'gable') return buildGable(piece.box, piece.ridge, material, repeat);
   if (piece.built === 'floor') return buildFloor(piece, material, repeat);
   if (piece.built === 'plate') return buildPlate(piece.plate, material);
   return null;
@@ -586,7 +642,7 @@ export function buildPiece(piece, material, metres) {
  */
 export function carriesOwnWorldPosition(piece) {
   return piece.built === 'run' || piece.built === 'drum' || piece.built === 'ground'
-    || piece.built === 'slab' || piece.built === 'floor';
+    || piece.built === 'slab' || piece.built === 'gable' || piece.built === 'floor';
 }
 
 /** Every model path `makePlan` will ask about, once each. */
