@@ -11367,3 +11367,65 @@ the tree template 10/10).
 pushes move four `noCollide` props under a centimetre; the posts, dais and
 kit shapes fill the plan's own boxes; the Poly Haven models are the game's
 own assets at the game's resolution.
+
+## Castle in Blender increment 6 closes: Devon's verdict, the five stills, and what increment 7 opens on (2026-09-28)
+
+**#869. Increment 6 closes: Devon's verdict on all five stills, the swap
+behind them, and what increment 7 opens on.** Devon's verdict, 2026-09-28,
+quoted exactly and applying to each of the five stills: "they all look
+awesome". **The builds** (`e2c18e5` the BACKLOG/ROADMAP row, `c5f9d28` the
+spec, #863 to #868, `06c87f0` the build), all on `claude/castle3d-props`:
+through-build line 4 310 image texture nodes and 189 images, line 5 18
+level-0 rooms and 90 points, line 6 427 pieces; `--only props` line 4 188
+and 122, line 6 187, against #868's recorded baseline and stage split.
+`npm test` fifteen of fifteen. **The fetch**: 9 Poly Haven assets at 1k, 65
+`sources.json` rows, 67,515,544 bytes, every size and md5 matched the API
+(#864). **The stills**, `still_6.py` in `CASTLE3D_OUT\review\increment6\`,
+uncommitted as `still_5.py` was, background Blender 5.2.2, Cycles OPTIX,
+1920x1080, denoiser, exposure auto-probed to a median of 0.35, five
+cameras: `props-hall` eye (-31.5, 1.7, 8.2) at (-19.5, 0.9, 10.6), 24 mm,
+1024 samples, exposure 11.5, median 0.392, clipped 0.26%, crushed 0.17%;
+`props-kings-hall` eye (3.2, 1.7, -8.2) at (15.0, 2.0, -12.4), 24 mm, 1024,
+exposure 11.5, median 0.449, clipped 1.43%, crushed 0.42%; `props-nave` eye
+(10.9, 1.7, 10.25) at (17.4, 2.2, 10.25), 18 mm (the spec's table; 24 mm
+loses the pews or the pulpit), 1024, exposure 11.5, median 0.499, clipped
+0.85%, crushed 0%; `props-lodge` eye (-14.5, 1.7, -1.5) at (-6.0, 2.5,
+-10.0), 24 mm, 128, exposure 2.5, median 0.284, clipped 0%, crushed 0.13%;
+`props-yard` eye (-52.5, 1.7, 1.5) at (-57.5, 2.0, -12.0), 24 mm, 128,
+exposure 0.0, median 0.350, clipped 0%, crushed 0.26%. Coordinates are
+game (x, y, z); Blender is (x, -z, y). **Why +11.5 inside**: no practicals
+until increment 7; every interior probe at exposure 0 read median 0.0, the
+light being window and door spill, and the three interiors ended above
+0.35 because the probe stops at three tries. Increment 7's lights should
+bring interior exposure down; that is the expectation handed on, not a
+ruling. Live Material Preview captures of the same five cameras were also
+taken (scratchpad, not kept); in Material Preview the hall fireplace read
+bluish, in Cycles it reads as stone, and no change was made on the strength
+of that. **Read, not ruled on**: #858 (a) and the lodge's and Wykes shed's
+floating decks, closed in #868, are confirmed by the lodge and yard
+stills. **A difference from spec recorded by the builder**: the
+`royal-cobweb` push landed at 0.00674 m, not 0.00675, and the builder fixed
+its own bug where an appended object not yet linked to the scene read
+`matrix_world` as identity (the cabinet doors measured 0.449 m low until
+it linked and updated the object before reading); no number in HISTORY was
+fitted to it. **Eleven breaks from green (#34), each restored**: deleting
+`PROP_nave-pulpit` (`FAIL line 6 coverage: 1 piece(s) nothing realises:
+nave-pulpit`); a `castle_props.blend` sha256 one digit off #867's row
+(`hashes b212...2062, sources.json says b212...2063`); a bad props path
+(`does not exist`); an `atlas.py` swatch edit (`0.08670 ... over ATLAS_TOL
+0.0025`, grain jitter against a spec near 0.078); rope dropped from the
+region table (`a face of ballista.001 in ballista.glb samples region
+'rope' ... in neither REGION_KIND nor KEEP`); `HANG_GAP` set to -0.006
+(`dormitory-weapon-rack is 0.006 m into the dormitory's plaster ... after
+its push of +0.00099 m`); a `KIT_LOCAL` pole top mismeasured (`does not
+give structure-pole-73's box: off 0.400 m at max y 3.600 against 4.000`);
+a z-sign flip on Devon's roots (`PROP_kitchen-hearth-crane ... off by
+13.540 m at its worst face, max z 7.030 against -6.510`, the spec expecting
+min z and both faces off equally by rounding); an empty `allow.json` reason
+(`entries with no reason: nave-pulpit`); deleting `PROP_structure-pole-126`
+(`1 piece(s) nothing realises: structure-pole-126`); and a Poly Haven asset
+swap (`PROP_WoodenTable_01 ... off by 0.663 m, max y 1.212 against 0.549`).
+**Increment 7 is next**: lighting and cameras, per the spec's scope item 7
+- the HDRI's `world_from_hdri` move, the sun, the three braziers and
+candles as practicals, and the five cameras `CAM_spawn`, `CAM_courtyard`,
+`CAM_hall`, `CAM_chapel`, `CAM_town`. No PR opened; Devon says when.
