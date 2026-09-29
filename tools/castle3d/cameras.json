@@ -1,0 +1,7 @@
+[
+  { "name": "spawn", "eye": "spawn", "fovY": 72, "exposure": 4.0, "samples": 128 },
+  { "name": "courtyard", "eye": [-4, 1.7, -5], "target": [-13, 5.5, 7], "lens": 24, "exposure": 2.5, "samples": 128 },
+  { "name": "hall", "eye": [-31.5, 1.7, 8.2], "target": [-19.5, 0.9, 10.6], "lens": 24, "exposure": 9.75, "samples": 1024 },
+  { "name": "chapel", "eye": [10.9, 1.7, 10.25], "target": [17.4, 2.2, 10.25], "lens": 18, "exposure": 10.0, "samples": 1024 },
+  { "name": "town", "eye": [-37.75, 13.7, -15.25], "target": [-85, 4, 4.3], "lens": 24, "exposure": -0.5, "samples": 128 }
+]

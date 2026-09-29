@@ -20,6 +20,14 @@
 //    and so on, so on walls, drums, arches and floors this field says nothing;
 //    it is for the `PROP_<id>` objects of increment 6. A prefix rule was tried
 //    and rejected: `cloak` would have taken `cloak-crate`'s collider.
+//  - `braziers` (#871): scene-config.json's three, which main.js builds at
+//    runtime through `castle.tileToWorld` and the plan does not carry, each
+//    `position` from castle-plan.js's own `tileToWorld(plan.tile, ...tile)`.
+//  - `cameras` (#872): cameras.json's five, each eye's `stand` from the plan's
+//    `standAt(plan, x, z, eye.y - EYE_HEIGHT)` and `reachable` from
+//    `walkability(plan).reachable(x, z, stand.level)`, the spawn's flood fill.
+//    `"eye": "spawn"` is `plan.spawn`'s position and lookAt. check.py line 8
+//    reads the answer and never re-derives it (#500).
 //  - `openRooms`: data/mystery.json's rooms marked `open`, with their ward,
 //    beside the three gates' x that cut the ground into them. The band each
 //    lies in is src/stations.js line 207's rule, written out below as a table,
@@ -53,13 +61,37 @@ const BAND = {
 const PIECE_FIELDS = ['id', 'kind', 'level', 'curtain', 'material', 'model', 'transform', 'box',
   'drum', 'disc', 'pivot', 'evidence', 'read', 'bell', 'roofs', 'leaf', 'bars'];
 
+/** cameras.json's rows with each eye's stand and reachability, by the plan's own functions (#872). */
+export function camerasOf(plan, rows, { standAt, walkability, EYE_HEIGHT, STEP_UP }) {
+  let walk = null;
+  return rows.map((c) => {
+    const spawn = c.eye === 'spawn';
+    const eye = spawn ? plan.spawn.position.slice() : c.eye;
+    const target = spawn ? plan.spawn.lookAt.slice() : c.target;
+    if (!Array.isArray(eye) || eye.length !== 3 || !Array.isArray(target) || target.length !== 3) {
+      throw new Error(`export-blueprint: camera "${c.name}" needs an eye and a target, each [x, y, z], or "eye": "spawn"`);
+    }
+    if ((c.lens == null) === (c.fovY == null)) {
+      throw new Error(`export-blueprint: camera "${c.name}" needs exactly one of lens and fovY`);
+    }
+    const found = standAt(plan, eye[0], eye[2], eye[1] - EYE_HEIGHT);
+    const stand = found ? { h: found.h, surface: found.surface, level: found.level } : null;
+    if (stand && !walk) walk = walkability(plan);
+    const reachable = stand ? walk.reachable(eye[0], eye[2], stand.level) : false;
+    return { name: c.name, eye, target, lens: c.lens ?? null, fovY: c.fovY ?? null, exposure: c.exposure,
+      samples: c.samples, feet: eye[1] - EYE_HEIGHT, eyeHeight: EYE_HEIGHT, stepUp: STEP_UP, stand, reachable };
+  });
+}
+
 export async function makeBlueprint() {
   const imp = (rel) => import(pathToFileURL(path.join(ROOT, rel)).href);
-  const { makePlan } = await imp('src/castle-plan.js');
+  const plans = await imp('src/castle-plan.js');
+  const { makePlan, tileToWorld } = plans;
   const { partsOf } = await imp('test/gltf.mjs');
   const read = (rel) => JSON.parse(fs.readFileSync(path.join(ROOT, rel), 'utf8'));
   const config = read('data/scene-config.json');
   const mystery = read('data/mystery.json');
+  const cameraRows = JSON.parse(fs.readFileSync(path.join(HERE, 'cameras.json'), 'utf8'));
 
   const measured = new Map();
   const boundsOf = (rel) => {
@@ -85,6 +117,11 @@ export async function makeBlueprint() {
     return { id: r.id, name: r.name ?? null, ward: r.ward ?? null, level: r.level ?? 0, west: band[0], east: band[1] };
   });
 
+  const braziers = (config.braziers || []).map((b, i) => ({
+    id: `brazier-${i + 1}`, tile: b.tile.slice(), position: tileToWorld(plan.tile, ...b.tile), comment: b.comment ?? null,
+  }));
+  const cameras = camerasOf(plan, cameraRows, plans);
+
   return {
     comment: 'Written by tools/castle3d/export-blueprint.mjs from makePlan. Game frame: metres, Y-up. Not committed (#841).',
     tile: plan.tile, storey: plan.storey, slab: plan.slab, levels: plan.levels,
@@ -92,9 +129,12 @@ export async function makeBlueprint() {
     rooms: plan.rooms, gates: plan.gates, ramps: plan.ramps, drums: plan.drums, grounds: plan.grounds,
     pieces, colliders: plan.colliders,
     openRooms: { gateX, rooms: open },
+    braziers, cameras,
     counts: {
       pieces: pieces.length, colliders: plan.colliders.length, rooms: plan.rooms.length,
       open: open.length, gates: plan.gates.length, ramps: plan.ramps.length, drums: plan.drums.length,
+      braziers: braziers.length, cameras: cameras.length,
+      standing: cameras.filter((c) => c.stand && c.reachable).length,
     },
   };
 }
@@ -107,7 +147,8 @@ export async function exportBlueprint(outDir) {
   fs.writeFileSync(file, JSON.stringify(bp));
   const c = bp.counts;
   console.log(`blueprint: ${c.pieces} pieces, ${c.colliders} colliders, ${c.rooms} rooms, ${c.open} open, ` +
-    `${c.gates} gates, ${c.ramps} ramps, ${c.drums} drums -> ${file}`);
+    `${c.gates} gates, ${c.ramps} ramps, ${c.drums} drums, ${c.braziers} braziers, ${c.cameras} cameras, ` +
+    `${c.standing} standing -> ${file}`);
   return file;
 }
 

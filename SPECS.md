@@ -1861,7 +1861,18 @@ turn it red from green (#34). The report quotes the failing line.
   braziers, line 8 at 5 cameras; `--only lighting` exits 0 with lines 4, 7
   and 8 passing, line 7 at 3 practicals, 5 and 6 not run. `blueprint.json`
   prints `3 braziers, 5 cameras, 5 standing`. Line 4 on both builds is
-  measured and recorded with the stages' printed shares, not predicted. The
+  measured and recorded with the stages' printed shares, not predicted.
+  *Measured 2026-09-29*: before `lighting.py`, terrain's call in place, the
+  through build to `props` `ok line 4 images: 311 image texture nodes, 189
+  images` (the stage's share 99 and 57: #869's 98 and 57 plus `MAT_flame`
+  1/0); after the move, the same build 310 and 188, one node and one image
+  lower; through to `lighting` 311 and 189 (`lighting`'s share 1/1, the
+  World; the braziers' append reuses `castle_props`, its atlas and the kind
+  materials); `--only lighting` 43 and 22 (`WORLD_hdri` 1/1, brazier atlas
+  1/1, `MAT_flame` 1/0, `MAT_*_prop` and `_brass` 40/20). The faces per kind
+  print `flame 149, kept 4192`, not 172 and 4,169: the two King's hall
+  sconces share one mesh, and the stage counts each mesh once, so the
+  sconce's 23 flame faces were counted twice in the 172. The
   report quotes line 7's sun angle and energy, each brazier's overlaps, and
   the eleven breaks in increment 7's open calls, each from green. Five
   stills from the `CAM_` objects, each with its exposure inside the bands,
