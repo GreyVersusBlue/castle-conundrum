@@ -1423,8 +1423,12 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
       // south walk. Nothing on the ground says it.
       lift: p.base || 0,
     });
+    // `water` is the quay's river (#795): a piece and never a surface, so
+    // test/layout.mjs check 4e can find it by kind and hold that nothing
+    // stands on it.
     const kind = /^tower/.test(p.model) ? 'tower'
-      : /^(wall|column)/.test(p.model) ? 'wall' : 'decor';
+      : /^(wall|column)/.test(p.model) ? 'wall'
+      : /^water/.test(p.model) ? 'water' : 'decor';
     const id = p.id || `${p.model.replace(/\.glb$/, '')}-${seq++}`;
     addPiece({
       id, kind, model: kBase + p.model, level: levelUnder(p.base || 0), curtain: !!p.curtain,
@@ -1472,8 +1476,16 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
    * and Poly Haven between them have no model of. The cloak is the only one:
    * PLAN.md rules out kite_shield as the wrong shape and no cloth map is on
    * the stone list, so it is a slab in a colour. Axis-aligned, because a rotated
-   * slab would need a matrix to describe a rectangle and buy nothing. --- */
+   * slab would need a matrix to describe a rectangle and buy nothing.
+   *
+   * `shape: "gable"` with `ridge: "x"` or `"z"` is the one other shape (#797):
+   * a triangular prism filling the same box, eaves at its bottom along the
+   * ridge axis and the ridge at its top centre, for the quay's toll-house roof.
+   * Placed and collided exactly as a slab is, because a prism's `Box3` is its
+   * bounding box and plan-vs-scene's diff holds it with no new line. --- */
   for (const b of config.builtProps || []) {
+    if (b.shape !== undefined && b.shape !== 'gable') throw new Error(`[castle-plan] built prop "${b.id}" has shape "${b.shape}"; the only shape a built prop may name is "gable"`);
+    if (b.shape === 'gable' && b.ridge !== 'x' && b.ridge !== 'z') throw new Error(`[castle-plan] built prop "${b.id}" is a gable with ridge ${JSON.stringify(b.ridge)}; a gable's ridge is "x" or "z"`);
     const [bx, , bz] = tileToWorld(tileSize, b.tile[0], b.tile[1]);
     const [w, h, d] = b.size;
     const y0 = b.base || 0;
@@ -1482,7 +1494,8 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
       max: { x: bx + w / 2, y: y0 + h, z: bz + d / 2 },
     };
     addPiece({
-      id: b.id, kind: 'prop', built: 'slab', level: levelUnder(b.base || 0), curtain: false,
+      id: b.id, kind: 'prop', built: b.shape === 'gable' ? 'gable' : 'slab', ridge: b.ridge || null,
+      level: levelUnder(b.base || 0), curtain: false,
       material: b.material, label: b.id, evidence: b.evidence || null, read: b.read || null,
       transform: { position: [0, 0, 0], rotationY: 0, scale: 1 }, box,
     });

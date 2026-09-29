@@ -11429,3 +11429,94 @@ swap (`PROP_WoodenTable_01 ... off by 0.663 m, max y 1.212 against 0.549`).
 - the HDRI's `world_from_hdri` move, the sun, the three braziers and
 candles as practicals, and the five cameras `CAM_spawn`, `CAM_courtyard`,
 `CAM_hall`, `CAM_chapel`, `CAM_town`. No PR opened; Devon says when.
+
+---
+
+## Rank 9, the quay and the river: increments 3a and 3b shipped (2026-09-29)
+
+**Both increments in one PR**, built as `SPECS.md` has them (#795 to #798)
+on `claude/rank-9-quay`. Decisions #870 to #872. What the spec estimated
+and what the suites measured are both below; nothing was fitted to the
+estimate.
+
+**#870. 3a: the toll-house, its gable, the King's quay.** `builtProps` takes
+`shape: "gable"` and `ridge: "x" | "z"`; any other `shape`, or a gable with
+no ridge, throws in `makePlan`, the way a diagonal run does. The piece is
+`built: 'gable'`, placed and collided exactly as a slab. `buildGable` in
+`src/castle-builder.js` is one mesh, six triangles (two slopes, two ends, no
+underside), world-space UVs at the piece's repeat, every triangle wound
+outward from the prism's centroid so the same code serves both ridge axes:
+a Node probe gave the plan's box exactly for `x` and `z` and no inward
+normal on either. `carriesOwnWorldPosition` and `buildPiece` gained the
+branch; check 1d's filter takes gables. Config: `quay-toll-house` (x
+-138..-130, z -11..-5, 6 m), `quay-toll-house-roof` (ridge at 9),
+`mereford-quay` "The King's quay", and `quay-crane`, `quay-barrels`,
+`quay-crate`. Check 4d found the ridge from `west-curtain-north-walk` at
+(-35.75, 9.70, -11.75), the prototype's own first eye. Outside meshes 131 to
+145. **A call made here**: the three props keep the spec's ids although
+Devon's `51735fa` carries a `quay-crane` prop of the same name; none of his
+seven quay props is restored in this row (the spec allows it, does not ask
+it), so the ids cannot collide today, and whoever restores his crane renames
+one of the two.
+
+**#871. 3b: the water, the quay front, the banks, checks 4e and 4f.**
+`^water` is `kind: 'water'` in the placement loop. `outside-ground` and
+`outside-road` stop at x -140, comments rewritten. `quay-water` (x
+-198..-141, z -40..40, y -1.3..-1.1, `noCollide`), six `dock-side` and two
+`dock-corner` at scale 4 (x -144.4..-140, z -16.4..16.4, y -2..0), and the
+two bank runs (x -141..-140, y -2..0) all came out at the spec's boxes to
+0.01 m. 4d's eyes and segment test are now one `wallSight` both checks
+call, not a copy. **Check 4e**: 18,240 points, none with a surface. **Check
+4f**: seen at (-155, -3) from `floor-sw-tower-roof` at 119.7 m after 221 of
+1,120 points, against the prototype's (-155, -7) from `sw-tower-stair-3`
+after 257; the lattice here is sorted by plan distance from the curtain's
+centre, which the spec left open, so its first seen point is a different
+one. **Budget, measured**: outside 131 before, 161
+after, the prototype's figure exactly; the outer ward's sum 1151 before and
+**1181 after, of 1200**; the inner's 845 to 875. The spec's "1124 to about
+1154" was against `ec11009`; the rows merged since added 27 outer-ward
+meshes before this one started. No
+ceiling moved (#798), and 19 meshes of headroom is now the outer ward's
+whole margin: the next row to add anything outside or in the outer ward
+reads this line first.
+
+**Seven breaks from green (#34), each restored**: toll-house 4 m and roof
+base 4 (`mereford-quay is seen from nowhere: none of its 5 pieces ...`);
+toll-house 5 m, roof base 6 (`quay-toll-house-roof has its base at y 6.00
+and nothing under it within 0.05 m of that, so it hangs in the air`); the
+`gable` branch deleted from `buildPiece` (`the plan's piece
+"quay-toll-house-roof" says built: "gable" and castle-builder.js's
+buildPiece has no branch for it`); `shape: "hip"` (`makePlan` throws `built
+prop "quay-toll-house-roof" has shape "hip"`); `outside-ground` back to x
+-198 (`quay-water has something to stand on over it: outside-ground at y
+0.00 over 18240 of 18240 points`, and check 10 names both bank runs sharing
+a top with `outside-ground`, the spec's second net); `town-wall-west`'s
+doorway deleted (`quay-water is seen from nowhere: 0 of 1120 points`); the
+`^water` rule removed (4e and 4f both fail saying no piece is kind water and
+they measured nothing). **Left for the GPU run (#53)**: whether a ridge at
+about 60 % fog and a river at about 84 % read at all; if not, the lever is
+`lighting.fog` (#796). **Rank 9 is left with nothing specced**: the rock,
+and whatever the GPU run says of the quay. Rank 2e's gate on 3b is open.
+
+**#872. The floor-plan sheet's lowest storey draws what lies wholly under
+it.** Found by `npm test`, not by the spec: #795 grepped for code that reads
+a placed piece's `level` and breaks on -1, and found none, but
+`tools/plan-sheet.mjs` (rank 13, #748) sorts pieces onto storeys by their
+`y`, and `plan.levels` comes from rooms, 0 to 3. The water, the eight dock
+pieces and the two banks, all between y -2 and 0, were on no sheet:
+`test/tools.mjs` failed `every one of the plan's 444 pieces is on some
+storey's sheet — 11 on none: quay-bank-north, quay-bank-south, quay-water`.
+**The call**: `planSheet` for the lowest of `plan.levels` also takes a piece
+`storeyOf` calls `below`, so the ground storey's review shows the river past
+the quay's edge; `storeyOf` itself is unchanged, and so is every upper
+storey. The alternative, a storey -1 with no room on it, would be a sheet
+with a river and nothing to name, and would change `plan.levels`, which the
+map and the editor both page through. `test/tools.mjs`'s "no piece on it is
+wholly below the floor" line now excuses the lowest storey only. Broken from
+green by taking the `below` clause out: the same 11-on-none line. A later
+row that puts something under the ground inside the castle (a cellar) will
+draw it on the ground sheet too, and that is right until the cellar is a
+room, when it becomes its own storey by the rooms' own rule.
+
+**Done**: `npm run build` passes and `npm test` is fifteen of fifteen on
+the branch, run in the container after #872.
