@@ -394,6 +394,17 @@ def build_road(g, col):
 _APPENDED = {}
 
 
+def absolute_images(before, folder):
+    """Blender resolves an appended // path against the main file, which is
+    unsaved until the end: make each image not in `before` absolute against
+    the model's `folder`. Returns the new images. props.py calls it too (#864)."""
+    new_images = [im for im in bpy.data.images if im not in before]
+    for im in new_images:
+        if im.filepath.startswith('//'):
+            im.filepath = os.path.normpath(os.path.join(folder, im.filepath[2:]))
+    return new_images
+
+
 def append_model(asset, library):
     """Every object of the asset's cached .blend, appended whole; what is not a
     mesh or not in MODELS is deleted, and the rest go into `library`. A second
@@ -408,13 +419,7 @@ def append_model(asset, library):
     before = set(bpy.data.images)
     with bpy.data.libraries.load(path, link=False) as (src, dst):
         dst.objects = list(src.objects)
-    # Blender resolves an appended // path against the main file, which is
-    # unsaved until the end: make each one absolute against the model's folder.
-    folder = os.path.dirname(path)
-    new_images = [im for im in bpy.data.images if im not in before]
-    for im in new_images:
-        if im.filepath.startswith('//'):
-            im.filepath = os.path.normpath(os.path.join(folder, im.filepath[2:]))
+    new_images = absolute_images(before, os.path.dirname(path))
     if new_images:
         print(f"terrain: {asset} image {new_images[0].name} -> {new_images[0].filepath}")
     pattern = re.compile(MODELS[asset])

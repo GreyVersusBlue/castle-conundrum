@@ -1814,7 +1814,12 @@ turn it red from green (#34). The report quotes the failing line.
   187 and line 5 not run; the fetch prints `203 sources`. Line 4's counts on
   both builds are measured and recorded, not predicted (#860): the report
   quotes both and the stage's printed split, and they are written into this
-  line and `HISTORY.md`. The report also quotes the count by group (80, 12,
+  line and `HISTORY.md`. *Measured 2026-09-28*: the through build `ok line 4
+  images: 310 image texture nodes, 189 images` (the stage's share 98 and 57:
+  the nine Poly Haven assets 57/57, the atlas 2/1, `MAT_*_prop` and `_brass`
+  40/0); `--only props` 188 and 122 (Poly Haven 57/57, atlas 2/1, `library()`
+  sets 80/45, `MAT_*_prop` and `_brass` 40/10, the tree template 10/10).
+  The report also quotes the count by group (80, 12,
   75, 20); the faces per kind (2,572 wood, 545 stone, 2,096 iron, 1,632
   brass, 697 straw, 4,341 kept); the atlas check's difference; the five
   pushes on four props; each Poly Haven asset's objects kept and deleted;

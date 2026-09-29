@@ -11355,7 +11355,13 @@ texture nodes, 132 images`, line 5 `18 level-0 rooms, 90 points, largest
 nodes and 1 image, measured. No after-props total is written: the builder
 quotes check.py's line 4 from the through build and `--only props`, with the
 stage's printed split by source, and those numbers are recorded as
-measured.
+measured. *Measured by the build, 2026-09-28*: `--only
+terrain,walls,towers,gates,buildings,town,props` gave `ok line 4 images: 310
+image texture nodes, 189 images`, 98 and 57 over the baseline, which is the
+stage's printed share (the nine Poly Haven assets 57 nodes and 57 images, the
+atlas 2 and 1, the five prop kinds 40 and 0); `--only props` gave 188 and
+122 (Poly Haven 57/57, atlas 2/1, `library()` sets 80/45, prop kinds 40/10,
+the tree template 10/10).
 
 **For the integration row** (#839): nothing here opens a collider. The
 pushes move four `noCollide` props under a centimetre; the posts, dais and

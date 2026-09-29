@@ -26,6 +26,10 @@
 # labelled stand-in from rough_wood, now reed_roof_04; DRESSING moved to
 # stone_pavers; and LOOK's `object_tint`, the plaster multiplied by the
 # object's colour, white on every object but the six houses. The swap after it fetched reed_roof_04's 5 rows.
+# Increment 6 (#863, #865): ALIAS gains slate, parchment and wool for the built
+# slabs; PROP_KINDS and prop_material(kind), the five PBR kinds Devon's props
+# take, tinted per face by an `atlas_rgb` attribute and box-projected on object
+# coordinates (box_material's `atlas_detail`, `coords` and `metallic`).
 # Later increments add the rest here, not in their stage modules.
 
 import os
@@ -68,7 +72,10 @@ LIBRARY = {
 # (#852, SPECS "The alias"). library() names the material after the set,
 # MAT_<asset>, so `oak` and `wooden_gate` share one material and one set of
 # image loads, and the name says which Poly Haven set is on the object.
-ALIAS = {'iron': 'rusty_metal', 'oak': 'wooden_gate'}
+# Increment 6 (#865): the built slabs' three slugs with no set, each onto the
+# one LIBRARY set that is the thing or reads as it at a slab's size.
+ALIAS = {'iron': 'rusty_metal', 'oak': 'wooden_gate', 'slate': 'roof_slates_02', 'parchment': 'plastered_wall_04',
+         'wool': 'dirty_carpet'}
 # Sets built with no tiling break-up (SPECS "The tiling break-up on timber and
 # iron"): a leaf is 1.9 m, one tile of wooden_gate, and the offset sample would
 # shift boards sideways at a patch seam across it. The two tile floors (increment
@@ -137,7 +144,23 @@ LOOK = {
 for _k in LOOK:
     if _k not in LIBRARY:
         raise ValueError(f"materials: LOOK names {_k!r}, which is not in LIBRARY")
-MAPS = ('diff', 'nor_gl', 'rough', 'disp', 'ao')
+# Devon's props (#863): kind -> (set, metres per repeat, DETAIL, metallic, rough
+# min, material name). DETAIL is the mean over texels of max(R, G, B) of linear
+# diffuse times AO on the cached 2k maps, which is what a Hue/Saturation/Value
+# at Saturation 0 outputs, so Value 1 / DETAIL brings the set's detail to a mean
+# of 1 and the face's `atlas_rgb` (Devon's colour) sets the tone. Rise as
+# library() gives a set; LOOK is not applied, the colour is the atlas's.
+PROP_KINDS = {
+    'wood': ('rough_wood', 0.5, 0.1219, 0.0, 0.75, 'MAT_rough_wood_prop'),
+    'stone': ('stone_pavers', 2.0, 0.1166, 0.0, None, 'MAT_stone_pavers_prop'),
+    'iron': ('rusty_metal', 1.5, 0.2709, 0.0, None, 'MAT_rusty_metal_prop'),
+    'brass': ('rusty_metal', 1.5, 0.2709, 1.0, None, 'MAT_rusty_metal_brass'),
+    'straw': ('reed_roof_04', 2.5, 0.1857, 0.0, None, 'MAT_reed_roof_04_prop'),
+}
+for _k, _v in PROP_KINDS.items():
+    if _v[0] not in LIBRARY and _v[0] != THATCH_SET[0]:
+        raise ValueError(f"materials: PROP_KINDS {_k!r} names {_v[0]!r}, which is neither in LIBRARY nor THATCH_SET's")
+MAPS =('diff', 'nor_gl', 'rough', 'disp', 'ao')
 BOX_BLEND = 0.2
 BUMP_SCALE = 0.05  # metres of displacement at full white, as bump only
 
@@ -251,7 +274,8 @@ def _world_noise(tree, x, y, scale, detail):
     return noise.outputs['Fac']
 
 
-def _maps(tree, asset, size, x, y, tint=None, rough_min=None, warm=None, rise=None, grime=None, object_tint=False):
+def _maps(tree, asset, size, x, y, tint=None, rough_min=None, warm=None, rise=None, grime=None, object_tint=False,
+          atlas_detail=None, coords='world'):
     """`asset`'s five maps box-projected on world coordinates at `size` metres
     per repeat, blend 0.2. Returns the sockets a shader reads: the diffuse
     times AO (after `grime`, a LOOK noise on its Value, then `tint`, a
@@ -260,13 +284,24 @@ def _maps(tree, asset, size, x, y, tint=None, rough_min=None, warm=None, rise=No
     roughness (no lower than `rough_min`, when given), the tangent
     normal colour and the height. With `rise` (a tile fraction, 0 for a
     coursed set), each map is two offset samples swapped by patch and the
-    colour's brightness drifts (SWAP_OFFSET and the constants beside it)."""
+    colour's brightness drifts (SWAP_OFFSET and the constants beside it).
+    With `atlas_detail` (#863), the diffuse times AO is desaturated and divided
+    by it, a detail at a mean of 1, then multiplied by the mesh's `atlas_rgb`
+    attribute. `coords='object'` projects on Texture Coordinate's Object
+    output instead of Geometry's Position, so a turned prop keeps its grain."""
+    if coords not in ('world', 'object'):
+        raise ValueError(f"materials: coords {coords!r} is not 'world' or 'object'")
     rows = {m: common.source(f"{asset}:{m}") for m in MAPS}
     links = tree.links
-    geo = _node(tree, 'ShaderNodeNewGeometry', x - 500, y)
+    if coords == 'object':
+        geo = _node(tree, 'ShaderNodeTexCoord', x - 500, y)
+        where = geo.outputs['Object']
+    else:
+        geo = _node(tree, 'ShaderNodeNewGeometry', x - 500, y)
+        where = geo.outputs['Position']
     mapping = _node(tree, 'ShaderNodeMapping', x - 300, y)
     mapping.inputs['Scale'].default_value = (1.0 / size, 1.0 / size, 1.0 / size)
-    links.new(geo.outputs['Position'], mapping.inputs['Vector'])
+    links.new(where, mapping.inputs['Vector'])
     a = _sample(tree, asset, rows, mapping.outputs['Vector'], x, y)
     tex = {m: a[m].outputs['Color'] for m in MAPS}
 
@@ -274,7 +309,7 @@ def _maps(tree, asset, size, x, y, tint=None, rough_min=None, warm=None, rise=No
         shift = _node(tree, 'ShaderNodeMapping', x - 300, y - 1600)
         shift.inputs['Scale'].default_value = (1.0 / size, 1.0 / size, 1.0 / size)
         shift.inputs['Location'].default_value = (*SWAP_OFFSET, rise)  # added after the scale, so in tiles
-        links.new(geo.outputs['Position'], shift.inputs['Vector'])
+        links.new(where, shift.inputs['Vector'])
         b = _sample(tree, asset, rows, shift.outputs['Vector'], x, y - 1600, ' B')
         fac = _world_noise(tree, x - 300, y - 3100, SWAP_SCALE * size, 2.0)
         edge = _node(tree, 'ShaderNodeMapRange', x - 100, y - 3100, interpolation_type='SMOOTHSTEP', clamp=True)
@@ -339,13 +374,29 @@ def _maps(tree, asset, size, x, y, tint=None, rough_min=None, warm=None, rise=No
     _sock(ao.inputs, 'Factor').default_value = 1.0
     links.new(diff, _sock(ao.inputs, 'A'))
     links.new(tex['ao'], _sock(ao.inputs, 'B'))
+    base = _sock(ao.outputs, 'Result')
+    if atlas_detail is not None:
+        hsv = _node(tree, 'ShaderNodeHueSaturation', x + 650, y + 300)
+        hsv.label = f"{asset} detail at a mean of 1"
+        hsv.inputs['Hue'].default_value = 0.5
+        hsv.inputs['Saturation'].default_value = 0.0
+        hsv.inputs['Value'].default_value = 1.0 / atlas_detail
+        links.new(base, hsv.inputs['Color'])
+        attr = _node(tree, 'ShaderNodeAttribute', x + 650, y + 600, attribute_type='GEOMETRY',
+                     attribute_name='atlas_rgb')
+        mul = _node(tree, 'ShaderNodeMix', x + 850, y + 300, data_type='RGBA', blend_type='MULTIPLY')
+        mul.label = f"{asset} times atlas_rgb"
+        _sock(mul.inputs, 'Factor').default_value = 1.0
+        links.new(hsv.outputs['Color'], _sock(mul.inputs, 'A'))
+        links.new(attr.outputs['Color'], _sock(mul.inputs, 'B'))
+        base = _sock(mul.outputs, 'Result')
     rough = tex['rough']
     if rough_min is not None:
         floor = _node(tree, 'ShaderNodeMath', x + 250, y - 250, operation='MAXIMUM')
         floor.inputs[1].default_value = rough_min
         links.new(rough, floor.inputs[0])
         rough = floor.outputs[0]
-    return {'base': _sock(ao.outputs, 'Result'), 'rough': rough,
+    return {'base': base, 'rough': rough,
             'nor': tex['nor_gl'], 'disp': tex['disp']}
 
 
@@ -356,15 +407,17 @@ def _new_material(name):
     return mat
 
 
-def _finish(mat, bsdf_x, maps, surface=None, undulate=None):
+def _finish(mat, bsdf_x, maps, surface=None, undulate=None, metallic=None):
     """A Principled BSDF from `maps`, a tangent normal map, bump-only
     displacement, and the output. `surface(bsdf_socket)` may wrap the BSDF.
     `undulate`, a LOOK tuple, puts a Bump on a world noise between the normal
-    map and the BSDF."""
+    map and the BSDF. `metallic`, when given, is the BSDF's Metallic (#863)."""
     tree = mat.node_tree
     links = tree.links
     out = _node(tree, 'ShaderNodeOutputMaterial', bsdf_x + 600, 0)
     bsdf = _node(tree, 'ShaderNodeBsdfPrincipled', bsdf_x, 0)
+    if metallic is not None:
+        bsdf.inputs['Metallic'].default_value = metallic
     links.new(maps['base'], bsdf.inputs['Base Color'])
     links.new(maps['rough'], bsdf.inputs['Roughness'])
     nmap = _node(tree, 'ShaderNodeNormalMap', bsdf_x - 300, -300, space='TANGENT', uv_map='UVMap')
@@ -395,15 +448,16 @@ def _finish(mat, bsdf_x, maps, surface=None, undulate=None):
 
 
 def box_material(name, asset, size, tint=None, rise=None, warm=None, grime=None, undulate=None, object_tint=False,
-                 rough_min=None):
+                 rough_min=None, atlas_detail=None, coords='world', metallic=None):
     """A Principled material from `asset`'s five maps, box-projected on world
     coordinates at `size` metres per repeat, blend 0.2, doubled when `rise`
     is given (see _maps), with a LOOK's `warm`, `grime`, `undulate`,
-    `object_tint` and `rough_min` (#861) when given."""
+    `object_tint` and `rough_min` (#861) when given, and a prop kind's
+    `atlas_detail`, `coords` and `metallic` (#863)."""
     mat = _new_material(name)
     maps = _maps(mat.node_tree, asset, size, -400, 0, tint, rough_min=rough_min, warm=warm, rise=rise, grime=grime,
-                 object_tint=object_tint)
-    return _finish(mat, 600, maps, undulate=undulate)
+                 object_tint=object_tint, atlas_detail=atlas_detail, coords=coords)
+    return _finish(mat, 600, maps, undulate=undulate, metallic=metallic)
 
 
 def ground(name):
@@ -462,6 +516,22 @@ def thatch():
     if have is not None:
         return have
     return box_material(name, asset, size, rise=rise, **look)
+
+
+def prop_material(kind):
+    """PROP_KINDS[kind]'s material (#863): the set's detail at a mean of 1
+    times the face's `atlas_rgb`, box-projected on object coordinates, with
+    the kind's metallic and rough floor, rise as library() gives the set, no
+    LOOK. Built once per file; the images load once (check_existing)."""
+    if kind not in PROP_KINDS:
+        raise KeyError(f"materials: no prop kind {kind!r}; there are {', '.join(PROP_KINDS)}")
+    asset, size, detail, metallic, rough_min, name = PROP_KINDS[kind]
+    have = bpy.data.materials.get(name)
+    if have is not None:
+        return have
+    rise = None if asset in PLAIN else SWAP_RISE.get(asset, 0.0)
+    return box_material(name, asset, size, rise=rise, rough_min=rough_min, atlas_detail=detail, coords='object',
+                        metallic=metallic)
 
 
 def _blend_factor(tree, attribute, x, y, scale, spread, width=0.12):
