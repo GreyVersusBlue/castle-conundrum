@@ -11538,6 +11538,30 @@ exists**: line 4 cannot see the HDRI go; deleting the World leaves line 4
 green, one node and one image lower. Eleven breaks are specified, each
 with the text it must print.
 
+**Correction (2026-09-29, after the build).** Three of the spec's texts
+were wrong and one guard-rail stayed green. **Break (6)**, terrain's call
+left in place, was to print `2 worlds (WORLD_hdri, WORLD_hdri.001)`. It
+printed nothing: lighting's World takes `scene.world`, terrain's is left
+with no user, Blender 5.2.2 does not save a zero-user World, and check.py
+saw one World and passed (#34, #147). The builder added two guards and
+both are kept. `lighting.py` raises `the file already has 1 World(s)
+(WORLD_hdri) before this stage` at build time, the only point where both
+Worlds exist and the cause can be named; line 7 (a) also requires the
+survivor be named `WORLD_hdri` and prints `the World is WORLD_hdri.001, not
+WORLD_hdri: a World made before lighting's was dropped on save`, because
+check.py judges the saved file and not the build's word, and with the
+raise commented out that clause is the only thing that goes red. So break
+(6) is two, (6a) and (6b), and the breaks are twelve. **Faces per kind**
+print `flame 149, kept 4192`, not 172 and 4,169: the line counts each
+mesh once and the two King's hall sconces share one torch mesh with 23
+flame faces. #871's 172 is right as faces placed. **Break (10)** names
+`WoodenTable_01 and 2 more (gothic_statue, brass_candleholders)`: the
+table comes first in blueprint order, not the statue. **The through build**
+is `--only terrain,walls,towers,gates,buildings,town,props,lighting`; a
+plain `npm run castle3d:build` exits 1 at `markers` until increment 8
+writes `markers.py`, by design. `SPECS.md` carries all four. No code
+changes.
+
 **#874. #869's expectation that practicals bring the interiors "well below
 +11.5" is measured and corrected; samples stay at #855's 1024 inside and 128
 outside.** **What was wrong**: #869's +11.5 on all three interiors was the

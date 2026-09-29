@@ -1855,8 +1855,9 @@ turn it red from green (#34). The report quotes the failing line.
   before `lighting.py` exists, `--only terrain,walls,towers,gates,buildings,
   town,props` exits 0 with line 5 at 18 and 90 and line 6 at 427, and line
   4 quoted (310 and 189 plus `MAT_flame`'s printed share, terrain's call
-  still in place); the faces per kind print `flame 172` and `KEEP` 4,169. Then `--only terrain,walls,towers,gates,buildings,town,props,
-  lighting` exits 0 with lines 4 to 8 passing, line 5 and 6 unchanged, line
+  still in place); the faces per kind print `flame 149, kept 4192` (per
+  mesh; 172 flame faces are placed, see *Measured* below). Then `--only
+  terrain,walls,towers,gates,buildings,town,props,lighting` exits 0 with lines 4 to 8 passing, line 5 and 6 unchanged, line
   7 at 37 practicals (30 candle, 2 torch, 4 brazier, 1 hearth) and 3
   braziers, line 8 at 5 cameras; `--only lighting` exits 0 with lines 4, 7
   and 8 passing, line 7 at 3 practicals, 5 and 6 not run. `blueprint.json`
@@ -1872,9 +1873,16 @@ turn it red from green (#34). The report quotes the failing line.
   1/1, `MAT_flame` 1/0, `MAT_*_prop` and `_brass` 40/20). The faces per kind
   print `flame 149, kept 4192`, not 172 and 4,169: the two King's hall
   sconces share one mesh, and the stage counts each mesh once, so the
-  sconce's 23 flame faces were counted twice in the 172. The
+  sconce's 23 flame faces were counted twice in the 172. The 172 stays
+  right as faces placed in the scene, which is what #871 says take
+  `MAT_flame`. **A plain `npm run castle3d:build` exits 1 in increment 7 by
+  design**: `build.py` imports a module per stage and `markers.py` is
+  increment 8's, so it stops at `markers` and saves no master; the through
+  build is `--only terrain,walls,towers,gates,buildings,town,props,lighting`
+  and the master `castle.blend` is first written in increment 8. The
   report quotes line 7's sun angle and energy, each brazier's overlaps, and
-  the eleven breaks in increment 7's open calls, each from green. Five
+  the twelve breaks in increment 7's open calls ((6) is two), each from
+  green. Five
   stills from the `CAM_` objects, each with its exposure inside the bands,
   and Devon's line on each recorded in `HISTORY.md`.
 - **Increment 8.** Lines 1, 2 and 3 pass: 48 `ROOM_`, 5 `GATE_` and 4
@@ -3773,7 +3781,9 @@ but this section and `HISTORY.md` changed.
   `--only lighting` builds alone (the World, the sun, the three braziers
   and their three lights, the five cameras), and `--only
   terrain,walls,towers,gates,buildings,town,props,lighting` is the build that
-  lights every practical. **From this increment a build without `lighting`
+  lights every practical, and the through build of this increment: a plain
+  build exits 1 at `markers` until increment 8 writes `markers.py` (#873's
+  correction). **From this increment a build without `lighting`
   has no World and renders a black sky**: `read_factory_settings(use_empty=
   True)` makes no World (measured), and terrain no longer sets one. Every
   review still from here on is taken from a build that ran `lighting`.
@@ -3892,7 +3902,9 @@ but this section and `HISTORY.md` changed.
   and no mesh light adds noise. Measured: 172 faces move, 64 chandelier
   flame, 46 sconce flame and core, 56 brazier coals and ember, 6 hearth
   coals, so `KEEP` is 71 names and 4,169 faces and the faces-per-kind line
-  gains `flame 172`. Poly Haven's `brass_candleholders_flame` is already
+  gains `flame 172`. *Measured after the build*: that line counts each mesh
+  once and prints `flame 149, kept 4192`, since the two King's hall sconces
+  share one torch mesh with 23 flame faces; 172 is faces placed. Poly Haven's `brass_candleholders_flame` is already
   emissive (strength 1, textured) and stays untouched (#864).
 - **The three braziers (#871).** They are `scene-config.json`'s `braziers`,
   which `main.js` builds at runtime through `createBrazier`, and the plan
@@ -4026,7 +4038,8 @@ but this section and `HISTORY.md` changed.
   Line 4 must count the World's Environment Texture on both. Lines 5 and 6
   are unchanged, 18 and 90 and 427, since `lighting` adds no `planId`.
   **Line 7, `light`** (runs when `lighting` ran): (a) `bpy.data.worlds` is
-  exactly one World, `scene.world`, whose tree has exactly one Environment
+  exactly one World, `scene.world`, named `WORLD_hdri` (a zero-user World is
+  not saved, so a second World shows only as the survivor's `.001`), whose tree has exactly one Environment
   Texture, its Vector input unlinked, its image's file name the HDRI row's
   `file`, the Background's Strength 1.0, and a `DARKEN` Mix feeding the
   Background whose B is a grey c over 0; (b) exactly one Sun light, `SUN`,
@@ -4073,8 +4086,17 @@ but this section and `HISTORY.md` changed.
   the scene has no World; lighting builds WORLD_hdri from
   kloofendal_48d_partly_cloudy_puresky:hdri`, and line 4 still passes one
   node and one image lower, which the report quotes as the reason line 7
-  exists. (6) Leave `terrain.py`'s call in place: `FAIL  line 7 light: 2
-  worlds (WORLD_hdri, WORLD_hdri.001); lighting builds the only one`. (7)
+  exists. (6a) Leave `terrain.py`'s call in place: the
+  through build raises `lighting: the file already has 1 World(s)
+  (WORLD_hdri) before this stage; lighting builds the only one (#870), so
+  whatever made that one has kept terrain's old call` and `build.mjs` exits 1
+  before check.py runs. (6b) The same with that raise commented out: the
+  build saves, and `FAIL  line 7 light: the World is WORLD_hdri.001, not
+  WORLD_hdri: a World made before lighting's was dropped on save; lighting
+  builds the only one`. The `2 worlds` text this call first specified never
+  prints: Blender drops terrain's World on save, since lighting's took
+  `scene.world` from it, and check.py saw one World and passed (#873's
+  correction). (7)
   The world with no clamp (`clamp=None`): `FAIL  line 7 light: WORLD_hdri
   has no sun clamp (a DARKEN mix before its Background), so the sun is
   counted twice`. (8) `SUN`'s Blender Z rotation 55.740 to 60.740: `FAIL
@@ -4082,8 +4104,10 @@ but this section and `HISTORY.md` changed.
   3.35 since 5 degrees of azimuth at 47.87 degrees of elevation is that arc.
   (9) Delete `BRAZIER_2`: `FAIL  line 7 light: 2 BRAZIER_ objects for the
   blueprint's 3 braziers; missing brazier-2`. (10) `BRAZIER_CLASH = {}`: the
-  build raises naming `brazier-3` and `gothic_statue`, the first piece it
-  meets in blueprint order. (11) `'coals'` out of `EMIT` and not back in
+  build raises `lighting: brazier-3 (BRAZIER_3) at game (-20, 0, 10)
+  meets WoodenTable_01 and 2 more (gothic_statue, brass_candleholders); a
+  brazier stands clear of every piece unless BRAZIER_CLASH names it (#871)`,
+  the table being first in blueprint order. (11) `'coals'` out of `EMIT` and not back in
   `KEEP`: `props.py` raises naming region `coals`, the first object in build
   order that carries it, and its file (#863's guard, unchanged).
 - **The render budget (9, #874).** Recommend **#855's 1024 samples inside
