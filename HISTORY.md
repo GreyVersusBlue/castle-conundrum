@@ -11215,3 +11215,217 @@ put them (left; increment 7); increment 6 inherits (a), the tapestry's and
 the watch-bill's backs 5 mm into the plaster, plus the lodge's and Wykes
 shed's floating decks (#848 note (d), #859's stage note). No PR opened;
 Devon says when.
+
+## Castle in Blender increment 6: props, decided before anything is built (2026-09-28)
+
+**A spec, not a build.** `SPECS.md` gains "Increment 6's open calls" under
+"Castle in Blender", every call recommended, and corrects increment 6's
+scope line and the acceptance's `PROP_pulpit`. Written as `architect`
+against `5ffc1e2`, where #862 was the last. No code, asset or data file
+changed in this entry; `tools/castle3d/` is as #862 left it.
+
+**Measured before anything was decided.** A fresh `blueprint.json`: 427
+pieces, of which `STAGE_OF` gives `props` 187, 107 `prop` (75 of Devon's
+rows from 71 files, 12 Poly Haven rows from 9 assets, 20 `builtProps`) and
+80 kit `decor` from 14 files; 54 carry `noCollide`. `castle_props.blend`,
+opened by a background Blender 5.2.2 from factory startup: 85 collections,
+each one file with one root empty named as it and its meshes under it; 86
+mesh objects and 11,883 faces across the 71 placed files; one packed 128 px
+atlas that equals `tools/props/atlas.py`'s painted image within 0.00196;
+103 atlas regions in use, every face's UV centroid inside one. Placing the
+75 rows by collection with the blueprint transform put every one within
+0.0001 m of its box on every face. The Kenney files' local bounds, through
+`partsOf`. Diffuse times AO on the cached 2k maps for the five sets the
+props take. The 1k and 2k listings of nine Poly Haven models from
+`api.polyhaven.com/files/<id>`. Three green builds of today's code, line 4
+below. The pulpit's piece id is `nave-pulpit`, not `pulpit`, and the
+`builtProps` in the stage are 20, not 21: `walk-bar` is `gates`'.
+
+**#863. Devon's 75 props are appended by collection and re-materialed per
+face by atlas region, with his colours carried into the PBR materials and
+his drawn tiles kept; this amends SPECS' open call "How the props are
+re-materialed", the scope line's "by object name", and #830's "nothing runs
+these files".** **What was wrong with the old call**: "per face, by the
+atlas region under the face's UV centroid, through a committed table keyed
+on `atlas.py`'s region names" left three things open that decide whether
+the result is Devon's. The atlas's `style` is a noise type, not a material
+(`bread`, `meat` and `cabbage` are `stone` style), so the table has to be by
+name; a PBR set's own colour replaces Devon's, so a red-painted chest would
+come out `rough_wood` brown; and a face's UV points into a 4 px swatch, so a
+2k set needs a projection of its own and a normal map needs tangents that
+agree with it. **What is decided**: 28 region names in five kinds, `wood`
+(`rough_wood`), `stone` (`stone_pavers`), `iron` and `brass` (`rusty_metal`,
+brass metallic) and `straw` (`reed_roof_04`), 7,542 faces; the other 75
+names, 4,341 faces, stay on `castle_props`, which is every cloth (no cloth
+set is fetched, and `dirty_carpet` would print a rug across every banner),
+the food, paper, flames and glass, and every tile Devon drew: crests,
+tapestries, rugs, cobwebs, the stained glass, book spines. Each PBR kind is
+the set's detail at a mean of 1 (desaturated and divided by its measured
+mean) times a per-face `atlas_rgb` attribute, the region's mean colour in
+linear, box-projected on object coordinates with a matching `UVMap`, the
+atlas layer renamed `atlas` and left active for the kept faces. A face in no
+list raises. **Why `props.py` imports `tools/props/atlas.py`**: the region
+names live only there, and a copied table is a second source (#500's
+reason). #830 said nothing runs the copied scripts; this is the one read,
+held by a check that the painted image equals the packed one, so a drifted
+`atlas.py` fails the build rather than renaming a region. Nothing under
+`tools/props/` changes. **By collection, not object name**: `altar` is the
+empty and `altar.001` its mesh, and a stem is what the plan's `model`
+carries. All 187 props-stage objects are `PROP_<piece id>`, one per piece,
+with `planId` and `noCollide` (#843).
+
+**#864. The 12 Poly Haven `interiorProps` are the game's own nine assets,
+fetched at 1k, 65 `sources.json` rows, 67,515,544 bytes; a second departure
+from SPECS' 2k after #845.** At 2k the same nine are 235.3 MB, 3.5 times,
+and 157.9 MB of that is `brass_candleholders` (87.5) and `wooden_lantern_01`
+(70.4). None is over 2.4 m, and at 24 mm on a 1920 px frame a surface 3 m
+off gets 427 px per metre against about 570 from a 1k map across the 1.8 m
+table; the game ships all nine at 1k. Each model's own materials stay, and
+its objects keep their authored offsets under the `PROP_` empty, since the
+cabinet's doors and the three candleholders stand off the origin in the
+gltf the plan measured. The fetch waits on Devon's yes to the list with
+sizes, as every fetch in this row has (#845, #849, #852, #853, #857).
+
+**#865. Three `builtProps` slugs are dressed through `ALIAS`: `slate` as
+`roof_slates_02`, `parchment` as `plastered_wall_04`, `wool` as
+`dirty_carpet`; no fetch.** `library()` raises on all three today, and 11 of
+the 20 slabs carry them. Each target is the one `LIBRARY` set that is the
+thing (slate), or reads as it at a slab's size (the limewash cream, matte
+and jointless, for rolls and letters; the one woven set for a cloak), and
+one slug stays one material (#854). `oak` keeps `wooden_gate` (#852) and
+Wykes's five blocks keep `medieval_blocks_02`.
+
+**#866. The 80 kit decor pieces are generated, all of them, with no fetch;
+this replaces SPECS' open call "The kit decor" (Poly Haven barrels, crates
+and trees).** Mereford's generated barrels and crate (#857) are what Devon
+passed on 2026-09-28, and one look per object kind is the point, so the
+castle's 12 barrel pairs, 7 single barrels and 23 crates are `town.py`'s
+own code drawing into each kit file's local bounds; `wooden_barrels_01`
+alone would be 34.4 MB at 1k. The rest are posts, a dais, ladders, a braced
+frame, a hurdle, brick stacks and two hoists, one with a bell because its
+piece carries `bell: true`, each drawn in the file's local frame to its
+local bounds and placed by the piece's transform, so each is held to its
+box on every face within 0.01 m exactly as the plan computes a box.
+`KIT_LOCAL`, the 14 files' bounds, is checked against every kit piece's
+box on every build, so it cannot drift from the files the plan reads. The
+five shrubs are `tree_small_02`'s cached canopy, leaves only, fitted into
+the kit shrub's bounds: Poly Haven's four shrubs are ground-cover sets 0.28
+to 2.07 m tall by `/info`, none a round bush, and choosing among them would
+need a download to look at.
+
+**#867. `castle_props.blend` is pinned by a `path` row relative to the
+output folder, sha256
+`b212a041fc2f5a119f35c32d9fe265a896b0e588cfb4273f37421d0989ed2062`, 429,037
+bytes.** It is `Claude Files\Blender Projects\Castle\_source\
+castle_props.blend`, saved 2026-09-24 19:39, the sibling of the default
+`CASTLE3D_OUT`, so the row is `"path": "../_source/castle_props.blend"` and
+commits no user folder; `fetch.mjs` resolves a `path` row against the output
+folder instead of the working directory and refuses one that is absolute or
+holds a backslash. The hash is checked in one place, the fetch, before
+Blender starts; a changed file fails there by name until its new hash lands
+in the commit that wants it (#840). Its packed atlas is byte-identical to
+`_source/castle_props_atlas.png`, the `e58ea65f8c61...` #830 recorded, so it
+needs no row of its own.
+
+**#868. #858 (a) is four props, not two, and each is pushed off the plaster
+by under a centimetre; the two floating decks close on the plan's own
+posts.** **What was wrong in #858's note**: it named `royal-tapestry` and
+`dormitory-watch-bill`. Measured against the three plastered rooms' spans,
+`dormitory-weapon-rack` (0.0050 m into the skin) and `royal-cobweb` (0.0050
+and 0.0047, on two faces) are in it too, because the game places every
+wall-hung prop 0.010 m off the stone and 4b's skin is 0.015. **The fix**:
+the prop moves, not the plaster: each is pushed into its room until its back
+stands `HANG_GAP` 0.002 m proud of the plaster, 0.0061 to 0.0073 m, and a
+push over 0.01 raises as a plan fault. A cut behind each would leave a bare
+rim round any prop narrower than its cut, and a thinner skin would change
+three rooms for four props. The rule reads the blueprint and `buildings`'
+constants, so `--only props` needs no `PLASTER_` object. **The decks**: the
+lodge's `structure-pole-73` to `-76` stand 0.4 m square from 0 to 4.0 under
+`DECK_masons-lodge-roof`, and Wykes's `structure-pole-126` to `-129` 0.3 m
+square from 0 to 3.0 under `DECK_wykes-shed-roof`, each its box, so no
+model-only object is needed and a missing post is named by line 6.
+
+**Line 4, measured and not predicted** (#860's correction is the reason).
+Today's builds, `CASTLE3D_OUT` at the default folder, fetch `137 sources,
+137 already held, 0 downloaded`: `--only
+terrain,walls,towers,gates,buildings,town` gave `ok line 4 images: 212 image
+texture nodes, 132 images`, line 5 `18 level-0 rooms, 90 points, largest
+|height| 0.0001 m`, line 6 `240 pieces`; `--only town` 100 and 55, line 6
+43; `--only guide` 0 and 0. The appended props file adds 2 image texture
+nodes and 1 image, measured. No after-props total is written: the builder
+quotes check.py's line 4 from the through build and `--only props`, with the
+stage's printed split by source, and those numbers are recorded as
+measured. *Measured by the build, 2026-09-28*: `--only
+terrain,walls,towers,gates,buildings,town,props` gave `ok line 4 images: 310
+image texture nodes, 189 images`, 98 and 57 over the baseline, which is the
+stage's printed share (the nine Poly Haven assets 57 nodes and 57 images, the
+atlas 2 and 1, the five prop kinds 40 and 0); `--only props` gave 188 and
+122 (Poly Haven 57/57, atlas 2/1, `library()` sets 80/45, prop kinds 40/10,
+the tree template 10/10).
+
+**For the integration row** (#839): nothing here opens a collider. The
+pushes move four `noCollide` props under a centimetre; the posts, dais and
+kit shapes fill the plan's own boxes; the Poly Haven models are the game's
+own assets at the game's resolution.
+
+## Castle in Blender increment 6 closes: Devon's verdict, the five stills, and what increment 7 opens on (2026-09-28)
+
+**#869. Increment 6 closes: Devon's verdict on all five stills, the swap
+behind them, and what increment 7 opens on.** Devon's verdict, 2026-09-28,
+quoted exactly and applying to each of the five stills: "they all look
+awesome". **The builds** (`e2c18e5` the BACKLOG/ROADMAP row, `c5f9d28` the
+spec, #863 to #868, `06c87f0` the build), all on `claude/castle3d-props`:
+through-build line 4 310 image texture nodes and 189 images, line 5 18
+level-0 rooms and 90 points, line 6 427 pieces; `--only props` line 4 188
+and 122, line 6 187, against #868's recorded baseline and stage split.
+`npm test` fifteen of fifteen. **The fetch**: 9 Poly Haven assets at 1k, 65
+`sources.json` rows, 67,515,544 bytes, every size and md5 matched the API
+(#864). **The stills**, `still_6.py` in `CASTLE3D_OUT\review\increment6\`,
+uncommitted as `still_5.py` was, background Blender 5.2.2, Cycles OPTIX,
+1920x1080, denoiser, exposure auto-probed to a median of 0.35, five
+cameras: `props-hall` eye (-31.5, 1.7, 8.2) at (-19.5, 0.9, 10.6), 24 mm,
+1024 samples, exposure 11.5, median 0.392, clipped 0.26%, crushed 0.17%;
+`props-kings-hall` eye (3.2, 1.7, -8.2) at (15.0, 2.0, -12.4), 24 mm, 1024,
+exposure 11.5, median 0.449, clipped 1.43%, crushed 0.42%; `props-nave` eye
+(10.9, 1.7, 10.25) at (17.4, 2.2, 10.25), 18 mm (the spec's table; 24 mm
+loses the pews or the pulpit), 1024, exposure 11.5, median 0.499, clipped
+0.85%, crushed 0%; `props-lodge` eye (-14.5, 1.7, -1.5) at (-6.0, 2.5,
+-10.0), 24 mm, 128, exposure 2.5, median 0.284, clipped 0%, crushed 0.13%;
+`props-yard` eye (-52.5, 1.7, 1.5) at (-57.5, 2.0, -12.0), 24 mm, 128,
+exposure 0.0, median 0.350, clipped 0%, crushed 0.26%. Coordinates are
+game (x, y, z); Blender is (x, -z, y). **Why +11.5 inside**: no practicals
+until increment 7; every interior probe at exposure 0 read median 0.0, the
+light being window and door spill, and the three interiors ended above
+0.35 because the probe stops at three tries. Increment 7's lights should
+bring interior exposure down; that is the expectation handed on, not a
+ruling. Live Material Preview captures of the same five cameras were also
+taken (scratchpad, not kept); in Material Preview the hall fireplace read
+bluish, in Cycles it reads as stone, and no change was made on the strength
+of that. **Read, not ruled on**: #858 (a) and the lodge's and Wykes shed's
+floating decks, closed in #868, are confirmed by the lodge and yard
+stills. **A difference from spec recorded by the builder**: the
+`royal-cobweb` push landed at 0.00674 m, not 0.00675, and the builder fixed
+its own bug where an appended object not yet linked to the scene read
+`matrix_world` as identity (the cabinet doors measured 0.449 m low until
+it linked and updated the object before reading); no number in HISTORY was
+fitted to it. **Eleven breaks from green (#34), each restored**: deleting
+`PROP_nave-pulpit` (`FAIL line 6 coverage: 1 piece(s) nothing realises:
+nave-pulpit`); a `castle_props.blend` sha256 one digit off #867's row
+(`hashes b212...2062, sources.json says b212...2063`); a bad props path
+(`does not exist`); an `atlas.py` swatch edit (`0.08670 ... over ATLAS_TOL
+0.0025`, grain jitter against a spec near 0.078); rope dropped from the
+region table (`a face of ballista.001 in ballista.glb samples region
+'rope' ... in neither REGION_KIND nor KEEP`); `HANG_GAP` set to -0.006
+(`dormitory-weapon-rack is 0.006 m into the dormitory's plaster ... after
+its push of +0.00099 m`); a `KIT_LOCAL` pole top mismeasured (`does not
+give structure-pole-73's box: off 0.400 m at max y 3.600 against 4.000`);
+a z-sign flip on Devon's roots (`PROP_kitchen-hearth-crane ... off by
+13.540 m at its worst face, max z 7.030 against -6.510`, the spec expecting
+min z and both faces off equally by rounding); an empty `allow.json` reason
+(`entries with no reason: nave-pulpit`); deleting `PROP_structure-pole-126`
+(`1 piece(s) nothing realises: structure-pole-126`); and a Poly Haven asset
+swap (`PROP_WoodenTable_01 ... off by 0.663 m, max y 1.212 against 0.549`).
+**Increment 7 is next**: lighting and cameras, per the spec's scope item 7
+- the HDRI's `world_from_hdri` move, the sun, the three braziers and
+candles as practicals, and the five cameras `CAM_spawn`, `CAM_courtyard`,
+`CAM_hall`, `CAM_chapel`, `CAM_town`. No PR opened; Devon says when.

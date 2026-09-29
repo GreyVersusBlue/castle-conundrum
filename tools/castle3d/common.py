@@ -77,6 +77,15 @@ def cached(row):
     return os.path.join(OUT, 'cache', row['asset'], *row['file'].split('/'))
 
 
+def source_path(row):
+    """A `path` row (the props .blend) where it stands, resolved against the
+    output folder: fetch.mjs's path.resolve(outDir, ...row.path.split('/')) in
+    one line (#867). The hash is the fetch's; this only finds the file."""
+    if OUT is None:
+        raise RuntimeError('common.source_path: common.OUT is not set; build.py sets it before the first stage')
+    return os.path.normpath(os.path.join(OUT, *row['path'].split('/')))
+
+
 # ------------------------------------------------------------------ the scene --
 def empty_scene():
     """Factory settings with nothing in them, metric at scale 1."""

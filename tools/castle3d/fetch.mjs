@@ -18,7 +18,8 @@
 // A download that hashes differently is not kept, and a cached file that
 // hashes differently is deleted, and either exits non-zero: a file Poly Haven
 // changed under a stable URL is a failure rather than a different castle. A
-// `path` row (the props .blend) is not copied, only hashed where it stands.
+// `path` row (the props .blend) is not copied, only hashed where it stands,
+// its path resolved against the output folder (#867, sourcePath).
 // This is the only network use in the family: Blender never touches it.
 
 import fs from 'node:fs';
@@ -51,6 +52,20 @@ export function cachePath(outDir, row) {
   return path.join(outDir, 'cache', row.asset, ...row.file.split('/'));
 }
 
+/** A `path` row's file, resolved against the output folder rather than the
+ *  working directory (#867), so `../_source/castle_props.blend` is the
+ *  default output folder's sibling. Refuses a path that is absolute or holds
+ *  a backslash, by row id. common.source_path is the same join in Python. */
+export function sourcePath(outDir, row) {
+  const p = row.path;
+  if (typeof p !== 'string' || p === '') throw new Error(`fetch: ${row.id}: path is missing`);
+  if (p.includes('\\')) throw new Error(`fetch: ${row.id}: path ${JSON.stringify(p)} holds a backslash`);
+  if (p.startsWith('/') || /^[A-Za-z]:/.test(p) || path.isAbsolute(p)) {
+    throw new Error(`fetch: ${row.id}: path ${JSON.stringify(p)} is absolute; it is relative to the output folder`);
+  }
+  return path.resolve(outDir, ...p.split('/'));
+}
+
 /** Resolves when every row is present with its hash; throws naming the row otherwise. */
 export async function fetchSources(outDir, rows = JSON.parse(fs.readFileSync(SOURCES, 'utf8'))) {
   if (!Array.isArray(rows)) throw new Error('fetch: sources.json is not an array');
@@ -63,6 +78,7 @@ export async function fetchSources(outDir, rows = JSON.parse(fs.readFileSync(SOU
     if (!/^[0-9a-f]{64}$/.test(row.sha256 || '')) throw new Error(`fetch: ${row.id} has no sha256`);
     if (!row.licence) throw new Error(`fetch: ${row.id} has no licence`);
     if (!!row.url === !!row.path) throw new Error(`fetch: ${row.id} needs exactly one of url and path`);
+    if (row.path) sourcePath(outDir, row);
     if (row.url) {
       const file = cachePath(outDir, row);
       const key = process.platform === 'win32' ? file.toLowerCase() : file;
@@ -74,9 +90,10 @@ export async function fetchSources(outDir, rows = JSON.parse(fs.readFileSync(SOU
   let fetched = 0, cached = 0;
   for (const row of rows) {
     if (row.path) {
-      if (!fs.existsSync(row.path)) throw new Error(`fetch: ${row.id}: ${row.path} does not exist`);
-      const got = sha256(fs.readFileSync(row.path));
-      if (got !== row.sha256) throw new Error(`fetch: ${row.id}: ${row.path} hashes ${got}, sources.json says ${row.sha256}`);
+      const file = sourcePath(outDir, row);
+      if (!fs.existsSync(file)) throw new Error(`fetch: ${row.id}: ${file} does not exist`);
+      const got = sha256(fs.readFileSync(file));
+      if (got !== row.sha256) throw new Error(`fetch: ${row.id}: ${file} hashes ${got}, sources.json says ${row.sha256}`);
       cached++;
       continue;
     }

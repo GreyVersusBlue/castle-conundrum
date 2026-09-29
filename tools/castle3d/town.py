@@ -582,26 +582,33 @@ def build_cross(s, p):
     s.box(cx - CROSS_ARM / 2, cx + CROSS_ARM / 2, y0 + fy, y0 + ty, cz - depth / 2, cz + depth / 2)
 
 
+def barrel(s, cx, cz, y0, h, belly):
+    """One barrel on (cx, cz) from y0, h tall, `belly` at its widest, BARREL's
+    staves in slot 0 and hoops in slot 1. build_barrels draws two; props.py's
+    detail-barrel one (#866)."""
+    facets, end, rings, hoops = BARREL
+    rim = belly * end
+
+    def radius(t):
+        return rim + (belly - rim) * math.sin(math.pi * t)
+    for t0, t1 in zip(rings, rings[1:]):
+        slot = 1 if any(abs(t0 - a) < EPS and abs(t1 - c) < EPS for a, c in hoops) else 0
+
+        def ring(y):
+            r = radius((y - y0) / h)
+            return [masonry.ring_point(cx, cz, r, 360.0 * i / facets) for i in range(facets)]
+        s.prism(ring, [y0 + t0 * h, y0 + t1 * h], slot)
+
+
 def build_barrels(s, p):
     b = p['box']
-    facets, end, rings, hoops = BARREL
     x0, dx = b['min']['x'], b['max']['x'] - b['min']['x']
     dz = b['max']['z'] - b['min']['z']
     cz = (b['min']['z'] + b['max']['z']) / 2
     y0, h = b['min']['y'], b['max']['y'] - b['min']['y']
     belly = min(dx / 4, dz / 2)
-    rim = belly * end
-
-    def radius(t):
-        return rim + (belly - rim) * math.sin(math.pi * t)
     for cx in (x0 + dx / 4, x0 + 3 * dx / 4):
-        for t0, t1 in zip(rings, rings[1:]):
-            slot = 1 if any(abs(t0 - a) < EPS and abs(t1 - c) < EPS for a, c in hoops) else 0
-
-            def ring(y, cx=cx):
-                r = radius((y - y0) / h)
-                return [masonry.ring_point(cx, cz, r, 360.0 * i / facets) for i in range(facets)]
-            s.prism(ring, [y0 + t0 * h, y0 + t1 * h], slot)
+        barrel(s, cx, cz, y0, h, belly)
     return belly
 
 
