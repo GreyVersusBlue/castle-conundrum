@@ -11674,3 +11674,19 @@ against 0.0156 in the hall; the King's hall and the nave the same). 1024
 stays inside because #855's streaks were seen at 1920 x 1080, which a mean
 difference cannot see, and because every render took 29 to 34 s whatever
 its count. No asset is fetched in increment 7.
+
+## Where Blender runs: huginn for basic work, Windows for the GPU (2026-09-29)
+
+**#878. "Local: Blender" is either of Devon's machines; "Local: Blender
+GPU" is his Windows machine only.** Devon's instruction, 2026-09-29.
+huginn, his Linux box, has had Blender 5.2.2 on PATH since that day, with
+Cycles on the CPU only (no HIP), Eevee on a Vega iGPU and 14 GB of RAM.
+Rank 1's pipeline and the rank 2 packs (2a to 2e) are basic headless work,
+flat-shaded `.glb` built from code, so huginn takes them once Blender 4.5
+LTS sits beside its 5.2.2 at `BLENDER`; the #805 pin is unchanged. Rank
+2h needs the full feature set on a real GPU (Poly Haven PBR, Cycles stills
+at 1920 x 1080 and up), so its `Where` is now "Local: Blender GPU" and
+huginn does not take it, even though its Blender is the right version. A
+`.glb`'s bytes do not depend on the machine; a lit still's do, so a still
+names the machine it came from. `BACKLOG.md`'s "What the three labels
+mean", `ROADMAP.md`, `SPECS.md` and `tools/castle3d/README.md` say so.

@@ -133,18 +133,24 @@ them was written anywhere before: the header said "ranks 2, 3 and 5 need a
 GPU" in a paragraph a reader had to parse, and said nothing at all about which
 two rows would collide.
 
-**Where.** Five values now, and four of them mean this container cannot
+**Where.** Six values now, and five of them mean this container cannot
 finish the row.
 
 - **Container.** A session like this one closes it: data, validators, Node
   suites, headless Chromium.
-- **Local: Blender.** Needs Blender 4.5 LTS on `PATH` (or at `BLENDER`),
-  headless, and only Devon's Windows machine has it (#804, #805). A session
-  without it does not claim the row's build increment; CI runs only the Node
-  check against the committed output. Ranks 1, 2a, 2b, 2c (increment 1), 2d
-  and 2e. Rank 2h, "Castle in Blender", needs Blender 5.2 instead, found at
-  `CASTLE3D_BLENDER` or the Steam path and never at `BLENDER`, and nothing
-  in CI runs or checks it (#840, #842).
+- **Local: Blender.** Basic headless Blender: Blender 4.5 LTS on `PATH`
+  (or at `BLENDER`), on either of Devon's machines, huginn or Windows
+  (#804, #805, #878). huginn's `blender` on PATH is 5.2.2, so there it
+  needs 4.5 LTS beside it (the portable build) with `BLENDER` pointing at
+  it; `render.mjs` refuses anything else. A session without it does not
+  claim the row's build increment; CI runs only the Node check against the
+  committed output. Ranks 1, 2a, 2b, 2c (increment 1), 2d and 2e.
+- **Local: Blender GPU.** Blender's full feature set on a real GPU, and so
+  **Devon's Windows machine only** (#878), even where huginn has the right
+  Blender. Rank 2h, "Castle in Blender": realistic Poly Haven PBR and
+  Cycles stills at 1920 x 1080, on Blender 5.2 found at `CASTLE3D_BLENDER`
+  or the Steam path and never at `BLENDER`, and nothing in CI runs or
+  checks it (#840, #842).
 - **Local: GPU.** Needs `npm run play` on a machine with real compositing, or
   needs somebody to look at a render. This is #53, and #53 cuts both ways: a
   real-time assertion that *fails* under software rendering is inconclusive,
@@ -233,7 +239,7 @@ the placement editor, budget suite, move-and-delete and the dialogue format
 | 2c | Blender: a shared rig with swappable parts: one rig, one-primitive parts, at most five skinned draws a person against the Quaternius rigs' 12 to 15, specced (#820 to #825); nothing built | 2+ | Opus 5 | Local: Blender, then Container; judged local: GPU (#53) | after 1 | F, C | | [Blender: a shared rig with swappable parts](SPECS.md#blender-a-shared-rig-with-swappable-parts) |
 | 2d | Blender: the animals: pig, goat, sheep, horse, cat and two geese on one quadruped topology plus a bird one for the goose, specced (#826 to #829); nothing built | 1 | Opus 5 | Local: Blender; judged local: GPU (#53) | after 1, 2c increment 1 | F, C | | [Blender: the animals](SPECS.md#blender-the-animals) |
 | 2e | Blender: the countryside beyond the wall: five backdrop pieces cut from one seeded height field, specced (#816 to #819); nothing built | 1 | Opus 5 | Local: Blender | after 1 (rank 9's 3b shipped, #871) | F, B | | [Blender: the countryside beyond the wall](SPECS.md#blender-the-countryside-beyond-the-wall) |
-| 2h | Castle in Blender: the castle, Mereford and the countryside as a realistic standalone model with Poly Haven PBR, built by committed scripts on Blender 5.2, with gameplay markers, specced (#839 to #844); increments 0 to 6 shipped (#839 to #869, PR #90, 34357ac); increments 7 to 9 (lighting and cameras, markers, export) are left; the game loads none of it | 2+ | Opus 5 | Local: Blender (5.2); Local: net for its fetches | — | G | | [Castle in Blender](SPECS.md#castle-in-blender) |
+| 2h | Castle in Blender: the castle, Mereford and the countryside as a realistic standalone model with Poly Haven PBR, built by committed scripts on Blender 5.2, with gameplay markers, specced (#839 to #844); increments 0 to 6 shipped (#839 to #869, PR #90, 34357ac); increments 7 to 9 (lighting and cameras, markers, export) are left; the game loads none of it | 2+ | Opus 5 | Local: Blender GPU (5.2, Devon's Windows machine only); Local: net for its fetches | — | G | | [Castle in Blender](SPECS.md#castle-in-blender) |
 | 3 | The GPU run: the looks are taken (#711 to #715); the walker holds on a GPU (#734, #736) and the third sitting reached the accusation with the wrong ending (#735 to #741) | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
 | 4 | The retro castle: increment 1 shipped, fifteen sets out and fifteen 128 px textures in (#757 to #766); the look is left; variety per room is superseded by 2h (#839); the props increment moved to 2b (#813) | 2+ | Opus 5 | Container to the look, local: GPU past it | — | B | | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
 | 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #729 to #733); four of the five generated clips placed in the household's routines (#800), `drill` still nobody's; the town and the chatter pool are left | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
