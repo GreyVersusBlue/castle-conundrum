@@ -29,9 +29,9 @@
 # data. Re-materialed per face by the atlas region under its UV centroid, the
 # region names read from tools/props/atlas.py (checked against the packed
 # atlas within ATLAS_TOL), into one of five PBR kinds (REGION_KIND), MAT_flame
-# (EMIT, #871) or kept on Devon's own atlas material (KEEP). A face in none
+# (EMIT, #874) or kept on Devon's own atlas material (KEEP). A face in none
 # raises. devon_trees() is the append and the re-material in one, which
-# lighting.py calls too for the game's three braziers (#871).
+# lighting.py calls too for the game's three braziers (#874).
 #
 # THE BUILT 20 (#865). Each its blueprint box exactly, materials.library of its
 # slug, three of which (`slate`, `parchment`, `wool`) resolve through ALIAS.
@@ -79,7 +79,7 @@ HANG_MAX = 0.01             # a push larger than this is the plan's fault
 
 # ------------------------------------------------------------ the regions --
 # Region name -> kind (#863): 28 names, 7,542 faces. EMIT is the four flame
-# regions, 172 faces, on MAT_flame (#871). KEEP is the other 71 in use, 4,169
+# regions, 172 faces, on MAT_flame (#874). KEEP is the other 71 in use, 4,169
 # faces, on Devon's own atlas material: cloth, leather, paper, food, clay,
 # glass, and every tile he drew a picture on.
 REGION_KIND = {}
@@ -99,7 +99,7 @@ KEEP = frozenset((
     'flour', 'blood_old', 'spines', 'writing', 'rug_a', 'rug_b', 'rug_c', 'cobweb', 'cobweb_b', 'morris', 'mail', 'bill',
     'roster', 'dial', 'frontal', 'linenfold', 'crest_a', 'crest_b', 'crest_c', 'crest_d', 'tapestry_tree',
     'tapestry_lattice', 'tapestry_stag', 'stained_glass'))
-# The flame regions (#871): emissive, on MAT_flame, slot FLAME_SLOT. lighting.py
+# The flame regions (#874): emissive, on MAT_flame, slot FLAME_SLOT. lighting.py
 # finds its practicals by the same names.
 EMIT = frozenset(('flame', 'flame_core', 'ember', 'coals'))
 for _a, _b in ((set(REGION_KIND), KEEP), (set(REGION_KIND), EMIT), (KEEP, EMIT)):
@@ -594,7 +594,7 @@ def atlas_check(img):
 
 def rematerial(meshes, file_of, atlas_img):
     """Every Devon mesh re-materialed per face by the region under its UV
-    centroid (#863), EMIT's onto MAT_flame (#871). Returns faces per kind (and
+    centroid (#863), EMIT's onto MAT_flame (#874). Returns faces per kind (and
     'flame' and 'kept') and regions in use."""
     kind_mats = [materials.prop_material(k) for k in KINDS] + [materials.flame_material(atlas_img)]
     counts = {k: 0 for k in KINDS + ('flame', 'kept')}
@@ -638,7 +638,7 @@ def rematerial(meshes, file_of, atlas_img):
 
 
 def devon_trees(stems, col):
-    """The append and the re-material of Devon's `stems` in one (#863, #871),
+    """The append and the re-material of Devon's `stems` in one (#863, #874),
     which props.build and lighting.py's braziers both call: append_devon, the
     one atlas the appended materials read, atlas_check, rematerial. Returns
     a dict: roots, meshes (one per mesh data, in stem order), file_of, atlas,

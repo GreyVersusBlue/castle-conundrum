@@ -214,21 +214,21 @@
         "id": "outside-ground",
         "material": "forest_ground_06",
         "box": {
-          "min": [-198, -40],
+          "min": [-140, -40],
           "max": [-48, 40]
         },
         "fallbackColor": "#4a4632",
-        "comment": "Rank 5 (#541). West of the west barbican only, where the walk and the two tower roofs (#523) can see over the parapet. Its east edge is the base box's own west edge (-48, curtain.min.x - margin) so the two touch with no gap; its west edge is 150 m out, the fog's own `far`, because anything past that is bytes drawn for nobody. 40 m north and south of the road's line, z 0."
+        "comment": "Rank 5 (#541). West of the west barbican only, where the walk and the two tower roofs (#523) can see over the parapet. Its east edge is the base box's own west edge (-48, curtain.min.x - margin) so the two touch with no gap. Its west edge is the river bank at x -140 since rank 9's 3b (#795): it used to run to -198, the fog's `far`, and over the river that made all 18,240 points of the water's footprint ground at y 0. The water past the bank is a piece with no surface, and it is the water that runs on into the fog now. 40 m north and south of the road's line, z 0."
       },
       {
         "id": "outside-road",
         "material": "grassy_cobblestone",
         "box": {
-          "min": [-198, -2],
+          "min": [-140, -2],
           "max": [-46, 2]
         },
         "fallbackColor": "#5c6340",
-        "comment": "A cart track, not pavers, which would read as a courtyard this far from one. Starts at the barbican's own west face (-46, the same x as barbican-west's box) and fades into the fog at -198 with outside-ground. Listed after outside-ground so oneFacePerPlane cuts the ground's hole for it (src/castle-plan.js), the same rule outer-ward and chapel-vestibule already use against the base."
+        "comment": "A cart track, not pavers, which would read as a courtyard this far from one. Starts at the barbican's own west face (-46, the same x as barbican-west's box) and runs out through Mereford's west gate to the quay's edge at -140, where outside-ground's bank is (#795). Listed after outside-ground so oneFacePerPlane cuts the ground's hole for it (src/castle-plan.js), the same rule outer-ward and chapel-vestibule already use against the base."
       }
     ],
     "comment": "Two outdoor surfaces plus, since rank 5 (#541), what lies outside the curtain. The base is the curtain's own footprint plus `margin` metres, worked out from the placed pieces rather than typed in, so it cannot drift from the castle; the 140 m plane it replaces ran 50 m past the walls in every direction. Patches lie on the base at the same y, and walkability's cell dedupe (src/castle-plan.js) means a patch adds no second floor height. `outside` entries are further ground pieces at the same y, in world metres rather than tiles because they lie beyond the tile grid the castle itself is drawn on; nothing reaches them on foot (test/layout.mjs's `sealed()`), so they cost surfaces and a wider walkability grid and nothing else."
@@ -1053,6 +1053,59 @@
         }
       ],
       "comment": "Mereford's west wall, rank 9 (#725): x -129.5..-126.5, z -31..27, touching both returns end-on. The west gate is the east gate's own numbers, so `outside-road` runs out through it toward the quay, which is a later increment's and starts here."
+    },
+    {
+      "id": "quay-toll-house",
+      "from": [
+        -34,
+        -2
+      ],
+      "to": [
+        -33,
+        -2
+      ],
+      "height": 6,
+      "thickness": 6,
+      "material": "medieval_blocks_02",
+      "repeatMetres": 3,
+      "interior": true,
+      "comment": "The King's toll-house at the quay's head, rank 9 increment 3a (#797): a solid 8 x 6 x 6 m block, x -138..-130, z -11..-5, north of the road outside Mereford's west gate and 0.5 m clear of `town-wall-west`. Stone, not plaster, because it is the King's and not the town's. Under `quay-toll-house-roof`, the one slate roof in Mereford, whose ridge at 9 m is the only part of the quay any eye on the walls can see (check 4d). Nobody enters it (#703), so it has no door."
+    },
+    {
+      "id": "quay-bank-north",
+      "from": [
+        -35.125,
+        -9.5
+      ],
+      "to": [
+        -35.125,
+        -4.6
+      ],
+      "base": -2,
+      "height": 2,
+      "thickness": 1,
+      "material": "forest_ground_06",
+      "repeatMetres": 3,
+      "interior": true,
+      "comment": "The river bank north of the quay, rank 9 increment 3b (#795): x -141..-140, z -40..-16.4, the earth face from the water up to `outside-ground`'s west edge at y 0. It stops at `quay-dock-corner-north`'s end so the two touch and do not overlap (#513)."
+    },
+    {
+      "id": "quay-bank-south",
+      "from": [
+        -35.125,
+        4.6
+      ],
+      "to": [
+        -35.125,
+        9.5
+      ],
+      "base": -2,
+      "height": 2,
+      "thickness": 1,
+      "material": "forest_ground_06",
+      "repeatMetres": 3,
+      "interior": true,
+      "comment": "The bank south of the quay (#795): x -141..-140, z 16.4..40, as `quay-bank-north`."
     },
     {
       "id": "mereford-house-n1",
@@ -2142,6 +2195,24 @@
         ]
       },
       "comment": "The church and its yard, north of the street (#725). Seen from the North-west Tower's roof over the town wall, entered by nobody; check 4d is what says the first half."
+    },
+    {
+      "id": "mereford-quay",
+      "level": 0,
+      "ward": "outside",
+      "name": "The King's quay",
+      "bounds": {
+        "min": [
+          -140,
+          -16
+        ],
+        "max": [
+          -129.5,
+          16
+        ]
+      },
+      "floor": "stone_pavers",
+      "comment": "Rank 9's quay, increment 3a (#795 to #798): outside Mereford's west gate, from the town wall's outer face to the water's edge at x -140, with the toll-house at its north end. \"The King's quay\" and not Mereford's because `the-quay` in data/lore.json says so, and the map is the one place the player reads the name. Seen from the walls only by the toll-house's slate ridge (check 4d), entered by nobody (#703)."
     }
   ],
   "courtyard": {
@@ -2640,7 +2711,19 @@
       {"id": "mereford-street-barrels", "model": "barrels.glb", "tile": [-18, 0.6], "rotationY": 0, "scale": 2.5, "comment": "Something on the ground in Mereford's street, on the road's south verge, at the yard's own scale: check 11 wants something in every room, and a house is a wall and its pitches stand 5 m up."},
       {"id": "mereford-street-crate", "model": "detail-crate.glb", "tile": [-22, -0.6], "rotationY": -20, "scale": 2.5, "comment": "and a crate on the north verge, further in."},
       {"id": "mereford-churchyard-tree", "model": "tree-large.glb", "tile": [-20.5, -6], "rotationY": 140, "comment": "The churchyard's tree, east of the nave."},
-      {"id": "mereford-churchyard-cross", "model": "column-damaged.glb", "tile": [-23, -3], "rotationY": 0, "comment": "The churchyard cross, south of the nave: the kit has no cross, and a broken column is what a village cross is after a few hundred winters."}
+      {"id": "mereford-churchyard-cross", "model": "column-damaged.glb", "tile": [-23, -3], "rotationY": 0, "comment": "The churchyard cross, south of the nave: the kit has no cross, and a broken column is what a village cross is after a few hundred winters."},
+      {"id": "quay-crane", "model": "pulley-crate.glb", "tile": [-34.6, 1.5], "rotationY": 90, "scale": 2.5, "comment": "The quay (#797): the hoist at the water's edge, the yard's own piece at the yard's own scale. Check 11 wants something in every room, and nobody on the walls sees any of these three."},
+      {"id": "quay-barrels", "model": "barrels.glb", "tile": [-33.5, 1.2], "rotationY": 0, "scale": 2.5},
+      {"id": "quay-crate", "model": "detail-crate.glb", "tile": [-34.2, 2.6], "rotationY": 15, "scale": 2.5},
+      {"id": "quay-water", "model": "water.glb", "tile": [-35.25, -10], "rotationY": 0, "scale": [57, 1, 80], "base": -1.3, "noCollide": true, "comment": "The river (#795, #796): x -198..-141, z -40..40, y -1.3..-1.1, one mesh. water.glb's origin is a CORNER (x -1..0, z 0..1), so this tile is the corner at (-141, -40) and not the centre. A piece and never a surface: `kind` water, no collider, no ground under it, and check 4e holds that. No far bank; it runs into the fog (#796)."},
+      {"id": "quay-dock-side-1", "model": "dock-side.glb", "tile": [-35.5, -2.5], "rotationY": 90, "scale": 4, "base": -2, "comment": "The quay front (#797): six dock sides and two corners at scale 4, a 2 m stone face from the water at -2 to a paved top flush with the road at 0, x -144.4..-140, z -16.4..16.4."},
+      {"id": "quay-dock-side-2", "model": "dock-side.glb", "tile": [-35.5, -1.5], "rotationY": 90, "scale": 4, "base": -2},
+      {"id": "quay-dock-side-3", "model": "dock-side.glb", "tile": [-35.5, -0.5], "rotationY": 90, "scale": 4, "base": -2},
+      {"id": "quay-dock-side-4", "model": "dock-side.glb", "tile": [-35.5, 0.5], "rotationY": 90, "scale": 4, "base": -2},
+      {"id": "quay-dock-side-5", "model": "dock-side.glb", "tile": [-35.5, 1.5], "rotationY": 90, "scale": 4, "base": -2},
+      {"id": "quay-dock-side-6", "model": "dock-side.glb", "tile": [-35.5, 2.5], "rotationY": 90, "scale": 4, "base": -2},
+      {"id": "quay-dock-corner-north", "model": "dock-corner.glb", "tile": [-35.5, -3.5], "rotationY": 0, "scale": 4, "base": -2},
+      {"id": "quay-dock-corner-south", "model": "dock-corner.glb", "tile": [-35.5, 3.5], "rotationY": 90, "scale": 4, "base": -2}
     ]
   },
   "interiorProps": [
@@ -3859,6 +3942,23 @@
         1.2
       ],
       "comment": "One long slab lying out in the open half of the yard, under the hoist, which is where the cart is loaded from."
+    },
+    {
+      "id": "quay-toll-house-roof",
+      "material": "castle_wall_slates",
+      "shape": "gable",
+      "ridge": "x",
+      "tile": [
+        -33.5,
+        -2
+      ],
+      "base": 6,
+      "size": [
+        8,
+        3,
+        6
+      ],
+      "comment": "The toll-house's roof (#797): a gable, ridge along x at 9 m, eaves at 6 on the house's north and south faces. The one slate roof in Mereford (`the-quay` in data/lore.json), in the curtain's own stone. Its base is `quay-toll-house`'s height typed a second time, which is what check 1d holds. At 9 m its ridge is seen from 261 eyes on the walls, at 8 m from 64 and at 7 from none (#797's prototype), and it is the only part of the quay check 4d finds."
     }
   ],
   "drumsComment": "Eight drums. `interior.doors` is every opening in the ring: `base` is the opening's floor (0, 4 or 8, a level's height), `theta` its bearing in three's cylinder angle (0 is +z, south; 90 is +x, east), `arc` its width in degrees, and both have to land on the drum's own vertices. The level-0 door is the room's; the level-1 doors (three of them) lead to the chambers built over the rooms beside those towers; the level-2 doors are where the wall walk passes through the tower's top room, sixty degrees wide because a 2 m deck's cells cross the ring over about thirty degrees and the grid's sector boxes bulge past that. The Stockhouse Tower's west door at level 2 carries `bar`: it is the walk door the porter swears he bars every night, it ships open because he did not, and `bar.closed` is the one thing test/layout.mjs forces shut to prove the wards would separate if he had. `stairs` names the side of the tower the upper flight and its well go on, which is the outer side, away from where the walk crosses. `lowerFlight: false` on the two towers whose ground room is shut leaves them the upper flight only.",

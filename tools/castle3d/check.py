@@ -7,7 +7,7 @@
 # built it: the builder can see an image it loaded but never saved with a path
 # that resolves, and the saved file is what export and Devon open.
 #
-# Eight lines (#844, amended to eight by #873). Each prints its own line, `ok`, `FAIL` or `--` (did not run), and
+# Eight lines (#844, amended to eight by #876). Each prints its own line, `ok`, `FAIL` or `--` (did not run), and
 # why. A line runs when the stage it checks is in scene["castle3d_stages"];
 # a line that did not run says so and passes nothing. A line whose stage ran
 # but whose body is not written yet FAILS, so a stage cannot ship ahead of its
@@ -26,7 +26,7 @@
 #                           each on a floor the spawn reaches; CAM_spawn is the scene's
 # Lines 1, 2 and 3 are frames until increment 8 builds the markers. Lines 5
 # and 6 are live from increment 1, whose terrain is the first geometry stage;
-# 7 and 8 from increment 7 (#873).
+# 7 and 8 from increment 7 (#876).
 
 import os
 import sys
@@ -225,7 +225,7 @@ else:
 # luminance is within ENERGY_TOLERANCE of what the clamp removes; (c) every
 # other light a Point light carrying lightFor and kind, inside its source's
 # box grown by SOURCE_GROW; (d) one BRAZIER_<n> per blueprint brazier, each
-# root within 0.01 m of its position (#873). The measurement in (b) is this
+# root within 0.01 m of its position (#876). The measurement in (b) is this
 # file's own; lighting.py's constants are what it is held against.
 SUN_TOLERANCE = 0.5          # degrees
 ENERGY_TOLERANCE = 0.02      # of the removed luminance
@@ -282,7 +282,7 @@ def file_sun(img, c):
     """(unit Blender direction, removed luminance) of every pixel with a channel
     over c: weight = luminance of the part over c times the pixel's solid
     angle; azimuth 2 pi (0.5 - u), elevation pi (v - 0.5), v from the bottom
-    row (#870's mapping, measured by render)."""
+    row (#873's mapping, measured by render)."""
     import numpy as np
     from mathutils import Vector
     w, h = img.size
@@ -326,7 +326,7 @@ if 'lighting' in stages:
         if len(envs) != 1:
             probs.append(f"{world.name} has {len(envs)} Environment Textures; it needs one, on {fname}")
         elif envs[0].inputs['Vector'].is_linked:
-            probs.append(f"{world.name}'s Environment Texture has its Vector linked; the HDRI is not rotated (#870)")
+            probs.append(f"{world.name}'s Environment Texture has its Vector linked; the HDRI is not rotated (#873)")
         elif envs[0].image is None or os.path.basename(envs[0].image.filepath) != fname:
             probs.append(f"{world.name}'s Environment Texture reads "
                          f"{os.path.basename(envs[0].image.filepath) if envs[0].image else 'no image'}, not {fname}")
@@ -427,7 +427,7 @@ else:
 # One CAM_<name> per blueprint camera and no other CAM_*; each within 0.01 m of
 # its eye and 0.1 degrees of its aim, its lens (or vertical angle) the file's;
 # each camera's blueprint stand not null, reachable, and its eye 1.7 over it
-# within 0.01 m; scene.camera CAM_spawn (#872, #873). Where a player can stand
+# within 0.01 m; scene.camera CAM_spawn (#875, #876). Where a player can stand
 # is export-blueprint.mjs's answer from the plan's own standAt and walkability;
 # this line reads it and never re-derives it (#500).
 AIM_TOLERANCE = 0.1          # degrees

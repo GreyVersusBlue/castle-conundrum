@@ -20,10 +20,10 @@
 //    and so on, so on walls, drums, arches and floors this field says nothing;
 //    it is for the `PROP_<id>` objects of increment 6. A prefix rule was tried
 //    and rejected: `cloak` would have taken `cloak-crate`'s collider.
-//  - `braziers` (#871): scene-config.json's three, which main.js builds at
+//  - `braziers` (#874): scene-config.json's three, which main.js builds at
 //    runtime through `castle.tileToWorld` and the plan does not carry, each
 //    `position` from castle-plan.js's own `tileToWorld(plan.tile, ...tile)`.
-//  - `cameras` (#872): cameras.json's five, each eye's `stand` from the plan's
+//  - `cameras` (#875): cameras.json's five, each eye's `stand` from the plan's
 //    `standAt(plan, x, z, eye.y - EYE_HEIGHT)` and `reachable` from
 //    `walkability(plan).reachable(x, z, stand.level)`, the spawn's flood fill.
 //    `"eye": "spawn"` is `plan.spawn`'s position and lookAt. check.py line 8
@@ -61,7 +61,7 @@ const BAND = {
 const PIECE_FIELDS = ['id', 'kind', 'level', 'curtain', 'material', 'model', 'transform', 'box',
   'drum', 'disc', 'pivot', 'evidence', 'read', 'bell', 'roofs', 'leaf', 'bars'];
 
-/** cameras.json's rows with each eye's stand and reachability, by the plan's own functions (#872). */
+/** cameras.json's rows with each eye's stand and reachability, by the plan's own functions (#875). */
 export function camerasOf(plan, rows, { standAt, walkability, EYE_HEIGHT, STEP_UP }) {
   let walk = null;
   return rows.map((c) => {

@@ -1,25 +1,25 @@
 # lighting.py - the lighting stage: the World, the sun, the practicals, the
-# game's three braziers and the five cameras (increment 7, #870 to #874).
+# game's three braziers and the five cameras (increment 7, #873 to #877).
 #
 # Realises no plan piece, so check.py line 6 never covers it and nothing here
-# carries a planId; check.py lines 7 (light) and 8 (cameras) do (#873). It
+# carries a planId; check.py lines 7 (light) and 8 (cameras) do (#876). It
 # reads the blueprint (its `braziers` and `cameras`, which export-blueprint.mjs
 # writes), the HDRI row, the pinned props .blend for the braziers and, when
 # props ran in the same build, the PROP_ trees' flame faces. It moves no object
 # another stage made, so `--only lighting` builds alone: the World, the sun, the
 # three braziers and their three lights, the five cameras.
 #
-# THE WORLD (#870). The only World, WORLD_hdri, is made here and nowhere else:
+# THE WORLD (#873). The only World, WORLD_hdri, is made here and nowhere else:
 # the HDRI unrotated at strength 1, every channel clamped at SUN_CLAMP for every
 # ray but the camera's. The file's sun is unclipped and is 69% of the map's
 # horizontal irradiance, so without the clamp SUN would light it all twice.
 #
-# THE SUN (#870). One Sun lamp carrying exactly what the clamp removes: the
+# THE SUN (#873). One Sun lamp carrying exactly what the clamp removes: the
 # energy-weighted centroid of the file's disc for its direction, the removed
 # (4.4212, 4.4553, 4.0524) for its strength and colour. check.py line 7
 # measures both again from the saved image, so a drift here is named there.
 #
-# THE PRACTICALS (#871). A Point light wherever the model draws a flame, found
+# THE PRACTICALS (#874). A Point light wherever the model draws a flame, found
 # by a rule over faces and never by a table of piece ids: a Devon face on
 # MAT_flame (props.EMIT's regions) or a face on Poly Haven's
 # brass_candleholders_flame. Per source (a PROP_ or BRAZIER_ tree): with coals,
@@ -28,12 +28,12 @@
 # vertex-connected flame cluster, clusters of one source merged within MERGE,
 # `torch` at TORCH_AREA or more and `candle` under.
 #
-# THE BRAZIERS (#871). scene-config.json's, through the blueprint, each Devon's
+# THE BRAZIERS (#874). scene-config.json's, through the blueprint, each Devon's
 # `brazier` by props.devon_trees at its position, rotation 0, scale 1. A
 # brazier whose box meets a piece's raises unless BRAZIER_CLASH names it, and a
 # BRAZIER_CLASH entry that meets nothing raises too.
 #
-# THE CAMERAS (#872). The blueprint's five, each CAM_<name> at its eye aimed at
+# THE CAMERAS (#875). The blueprint's five, each CAM_<name> at its eye aimed at
 # its target, with its lens or vertical field of view, `exposure` and `samples`
 # as custom properties. scene.camera is CAM_spawn.
 
@@ -46,26 +46,26 @@ import common
 import materials
 
 HDRI = 'kloofendal_48d_partly_cloudy_puresky:hdri'
-SUN_CLAMP = 16.0                          # #870: takes the disc and nothing else (15.25 is the brightest pixel 5 degrees out)
-SUN_STRENGTH = 4.4553                     # #870: the clamp's removal, green channel
-SUN_COLOUR = (0.9924, 1.0, 0.9096)        # #870: the removal per channel over green; luminance x strength 4.4190
-SUN_ANGLE = 0.53                          # #870: degrees, the real sun's; 96.7% of the removal lies within 0.5 degrees
-SUN_ROTATION = (42.129, 0.0, 55.740)      # #870: Blender degrees; +Z at Blender (0.55441, -0.37763, 0.74164)
-LUX_PER_UNIT = 20000.0                    # #871: the file's 4.42 units of sun against about 88,000 lux
-PRACTICAL_GAIN = 32.0                     # #871: firelight equal to daylight in the two rooms with both
-PRACTICAL = {                             # #871: kind -> (lumens, shadow_soft_size m, temperature K)
+SUN_CLAMP = 16.0                          # #873: takes the disc and nothing else (15.25 is the brightest pixel 5 degrees out)
+SUN_STRENGTH = 4.4553                     # #873: the clamp's removal, green channel
+SUN_COLOUR = (0.9924, 1.0, 0.9096)        # #873: the removal per channel over green; luminance x strength 4.4190
+SUN_ANGLE = 0.53                          # #873: degrees, the real sun's; 96.7% of the removal lies within 0.5 degrees
+SUN_ROTATION = (42.129, 0.0, 55.740)      # #873: Blender degrees; +Z at Blender (0.55441, -0.37763, 0.74164)
+LUX_PER_UNIT = 20000.0                    # #874: the file's 4.42 units of sun against about 88,000 lux
+PRACTICAL_GAIN = 32.0                     # #874: firelight equal to daylight in the two rooms with both
+PRACTICAL = {                             # #874: kind -> (lumens, shadow_soft_size m, temperature K)
     'candle': (12.0, 0.01, 1850.0),
     'torch': (200.0, 0.04, 1900.0),
     'brazier': (2500.0, 0.15, 1900.0),
     'hearth': (150.0, 0.25, 1700.0),
 }
-TORCH_AREA = 0.01                         # #871: m2; a cluster this large or larger is a torch
-MERGE = 0.06                              # #871: m; two clusters of one source this close are one flame
-COAL_RAISE = 0.05                         # #871: m over the coals' centroid
-PH_FLAME = 'brass_candleholders_flame'    # #871: Poly Haven's flame material, emissive as shipped (#864)
-BRAZIER_STEM = 'brazier'                  # #871: Devon's collection in the pinned props .blend
-BRAZIER_CLASH = {'brazier-3': "#871: the game's own placement"}
-CLIP = (0.05, 2000.0)                     # #872
+TORCH_AREA = 0.01                         # #874: m2; a cluster this large or larger is a torch
+MERGE = 0.06                              # #874: m; two clusters of one source this close are one flame
+COAL_RAISE = 0.05                         # #874: m over the coals' centroid
+PH_FLAME = 'brass_candleholders_flame'    # #874: Poly Haven's flame material, emissive as shipped (#864)
+BRAZIER_STEM = 'brazier'                  # #874: Devon's collection in the pinned props .blend
+BRAZIER_CLASH = {'brazier-3': "#874: the game's own placement"}
+CLIP = (0.05, 2000.0)                     # #875
 
 
 def game(v):
@@ -158,10 +158,10 @@ def build_braziers(bp, col):
         if meets and b['id'] not in BRAZIER_CLASH:
             raise ValueError(f"lighting: {b['id']} ({root.name}) at game {tuple(b['position'])} meets {meets[0]}"
                              + (f" and {len(meets) - 1} more ({', '.join(meets[1:])})" if len(meets) > 1 else '')
-                             + "; a brazier stands clear of every piece unless BRAZIER_CLASH names it (#871)")
+                             + "; a brazier stands clear of every piece unless BRAZIER_CLASH names it (#874)")
         if not meets and b['id'] in BRAZIER_CLASH:
             raise ValueError(f"lighting: BRAZIER_CLASH names {b['id']}, which meets nothing; the game's fix has "
-                             f"landed, so the entry goes (#871)")
+                             f"landed, so the entry goes (#874)")
         result.append((root, b, meets))
     return result, dv['atlas_diff']
 
@@ -318,7 +318,7 @@ def build(bp):
     if bpy.data.worlds:
         raise RuntimeError(f"lighting: the file already has {len(bpy.data.worlds)} World(s) "
                            f"({', '.join(w.name for w in bpy.data.worlds)}) before this stage; lighting builds the "
-                           f"only one (#870), so whatever made that one has kept terrain's old call")
+                           f"only one (#873), so whatever made that one has kept terrain's old call")
     snap = Snapshot()
     materials.world_from_hdri(common.source(HDRI), clamp=SUN_CLAMP)
     sun = build_sun(col)

@@ -678,7 +678,7 @@ def tint_leaves(mat):
     mat['castle3d_tint'] = True
 
 
-# A flame's emission strength on the World's scale (#871): a candle flame's
+# A flame's emission strength on the World's scale (#874): a candle flame's
 # 10,000 cd/m2 is 0.5 there (LUX_PER_UNIT 20,000), times lighting.py's
 # PRACTICAL_GAIN 32. The flame is seen; lighting.py's point lights do the
 # lighting, so the material's emission sampling is off and nothing counts twice.
@@ -686,7 +686,7 @@ FLAME_EMISSION = 16.0
 
 
 def flame_material(atlas_img):
-    """MAT_flame (#871): props.py's EMIT faces, Devon's atlas as an Emission
+    """MAT_flame (#874): props.py's EMIT faces, Devon's atlas as an Emission
     shader at FLAME_EMISSION through an Image Texture on `atlas_img` (Closest,
     UV map `atlas`), emission sampling NONE. Built once per file."""
     have = bpy.data.materials.get('MAT_flame')
@@ -709,7 +709,7 @@ def flame_material(atlas_img):
 
 def world_from_hdri(row, clamp=None):
     """The scene's World lit by the HDRI row: an Environment Texture, strength 1
-    (#846), called by lighting.py from increment 7 (#870). With `clamp`, every
+    (#846), called by lighting.py from increment 7 (#873). With `clamp`, every
     channel is held at `clamp` for every ray but the camera's: the texture into
     a DARKEN Mix against a grey `clamp`, and a second Mix on Light Path's Is
     Camera Ray, A the clamped colour and B the raw one, into the Background.

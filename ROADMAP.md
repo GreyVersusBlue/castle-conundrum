@@ -87,8 +87,8 @@ Blender.~~ **Shipped** in `01ee3dd`.
 files restored from `51735fa` and encoded, a room, two walls and 14 rows.~~
 **Shipped** in `41457cb`.
 
-**6** populace, **9** the town (its next increment, the quay and the river,
-is specced as two `builder` jobs, #795 to #798), **2c**'s increment 2 (the
+**6** populace, **9** the town (the quay and the river shipped, #870
+to #872; the rock is left and has no spec yet), **2c**'s increment 2 (the
 other 15 populace humans onto `folk.glb`, once increment 1's GPU look has
 passed), **13** the floor-plan editor's remaining increments. Every one is
 data, a validator, a Node suite or a headless DOM assertion.
@@ -168,9 +168,8 @@ the band is 1 the pipeline, then 2a evidence props (lowest risk: it proves
 the encode, manifest and budget paths on real content), then 2b the
 interiors kit, then 2c the shared rig, then 2d the animals, then 2e the
 countryside backdrop. The gates inside the band: 2a after 1; 2b after 2a;
-2d after 2c's increment 1; 2e after rank 9's increment 3b, a container row,
-so rank 9's quay can run while the Blender rows do, lanes permitting, but
-not at the same time as a lane-B Blender row (1, 2a, 2b or 2e). **2h is
+2d after 2c's increment 1; 2e after rank 9's increment 3b, which shipped
+(#871), so that gate is open. **2h is
 not in that order**: it has no gate, goes through nothing of rank 1's, and
 starts whenever Devon's machine is free (#839, #840). The integration row
 that would put its model in the game is not ranked and is gated on 2h's

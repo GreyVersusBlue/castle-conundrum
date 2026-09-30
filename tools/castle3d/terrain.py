@@ -15,7 +15,7 @@
 # from a seeded layout; grass is a Poly Haven model scattered by a seeded
 # Geometry Nodes tree over the whole square, pad included, except the road
 # and every blueprint piece's and room's footprint, where buildings go. The
-# World is lighting.py's from increment 7 (#870); terrain set it from #846 until
+# World is lighting.py's from increment 7 (#873); terrain set it from #846 until
 # then, and a build without `lighting` has none. No river and no moat until rank 9's 3b
 # ships (SPECS.md, open calls).
 #
