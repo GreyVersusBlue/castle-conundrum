@@ -84,8 +84,9 @@ same rail extended to the walking day and the morning after (#792, #793).
 **Rank 1. Size 1. Model Opus 5. Where: Local: Blender. Gate: none; it is
 the gate for every rank 2 pack. Lanes F and B.** Devon's instruction of
 2026-09-25: assets made in Blender are the top priority (#801). Blender runs
-on his Windows machine only, headless, never in a container and never in CI
-(#804). This row builds the pipeline every pack in the rank 2 band (2a
+on his own machines only, huginn or Windows, headless, never in a container
+and never in CI (#804, #878); this row and every rank 2 pack is basic
+headless work, so either machine takes it once Blender 4.5 is at `BLENDER`. This row builds the pipeline every pack in the rank 2 band (2a
 evidence props, 2b an interiors kit, 2c the shared rig, 2d animals, 2e the
 countryside backdrop) goes through, and proves it end to end with one placed
 crate. Decided in `HISTORY.md` as #801 to #808; this section is the
@@ -138,7 +139,7 @@ to the manifest and the manifest to the scripts (#803, #806).
   below. It is a real prop and stays; it is also the file a later session
   reads to write its first pack.
 - **`tools/blender/render.mjs`**, `npm run blender:render [pack ...]`,
-  Devon's machine only. Exits non-zero if `CI` is set (#804). Finds Blender
+  Devon's machines only, huginn or Windows (#878). Exits non-zero if `CI` is set (#804). Finds Blender
   at `BLENDER` or on PATH, runs `blender --version` and refuses anything but
   4.5 before any pack. For each row: `blender -b --factory-startup
   --python-exit-code 1 -P tools/blender/packs/<script> -- --row <json>
@@ -297,7 +298,7 @@ the kit's barrels? Blocks nothing in `npm test`.
 
 ### Dependencies
 
-- **Gate: none to start.** Needs Blender 4.5 and Devon's machine (#804);
+- **Gate: none to start.** Needs Blender 4.5 and one of Devon's machines, huginn or Windows (#804, #878);
   a session without it writes nothing here.
 - **Lanes F and B.** F because this row makes `tools/blender/`; B because
   the crate is spliced into `data/scene-config.json`, so it does not run
@@ -331,7 +332,8 @@ A pack section cites this paragraph instead of restating it. **A pack is
 rows in `tools/blender/packs.json`, one script at
 `tools/blender/packs/<pack>.py` that imports `common.py`, and output under
 `assets/blender/<pack>/`, written by `npm run blender:render <pack>` on
-Devon's machine with Blender 4.5 and nowhere else** (#804, #805). Every
+one of Devon's machines, huginn or Windows, with Blender 4.5 and nowhere
+else** (#804, #805, #878). Every
 asset is a `.glb` in metres, +Y up, its base at y 0, centred, facing +Z,
 seeded by its row, flat-shaded, one material with a palette atlas of at
 most 128 px and 32 colours from the castle's palettes plus at most 8 of its
@@ -1374,7 +1376,7 @@ built west of the water (#796 stands: no far bank).
 
 ## Castle in Blender
 
-**Rank 2h. Size 2+. Model Opus 5. Where: Local: Blender (5.2), plus Local:
+**Rank 2h. Size 2+. Model Opus 5. Where: Local: Blender GPU (5.2, Devon's Windows machine only, #878), plus Local:
 net for the first fetch. Gate: none. Lane G.** Devon, 2026-09-26: rebuild
 the castle, Mereford and the countryside as a realistic standalone Blender
 model with Poly Haven PBR materials, today's layout as the guide, his 71
@@ -4145,7 +4147,9 @@ but this section and `HISTORY.md` changed.
 
 ### Dependencies
 
-- **Gate: none.** Needs Devon's machine with the Steam Blender 5.2 (#840),
+- **Gate: none.** Needs Devon's Windows machine with the Steam Blender 5.2
+  (#840): it is "Local: Blender GPU", the full feature set on a real GPU,
+  and huginn does not take it (#878),
   and a network to Poly Haven for each increment that adds a `sources.json`
   row (1, 2, 3, 4 and 6, and the thatch swap after 5; increment 5 builds
   on a stand-in and fetches nothing, #857; the

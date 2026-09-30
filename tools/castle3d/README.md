@@ -14,7 +14,8 @@ npm run castle3d:build -- --only guide        <out>/partial/guide.blend
 npm run castle3d:build -- --only walls,towers <out>/partial/walls+towers.blend
 ```
 
-On Devon's machine only. The launcher, `build.mjs`, in order:
+On Devon's Windows machine only: this is the full feature set on a real GPU,
+and huginn does not take it (#878). The launcher, `build.mjs`, in order:
 
 1. exits non-zero if `CI` is set (#842);
 2. finds Blender at `CASTLE3D_BLENDER`, else the Steam install at

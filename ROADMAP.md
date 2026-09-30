@@ -25,7 +25,9 @@ A session without `blender` on `PATH` (or at `BLENDER`) skips a Blender
 row's build increment; CI runs only `test/assets.mjs` check 8 against the
 committed output, which needs no Blender (#804, #808). Blender 4.5 LTS is
 pinned; nothing else is accepted (#805). It runs headless, `blender -b -P`,
-on Devon's Windows machine only, never in a container. 2c's and 2d's clips
+on Devon's machines only, huginn or Windows, never in a container (#878);
+huginn needs 4.5 LTS at `BLENDER`, since its `blender` is 5.2.2. Rank 2h
+is "Local: Blender GPU": Devon's Windows machine only (#878). 2c's and 2d's clips
 are also judged under "Local: a GPU" below, once rendered (#53).
 
 **2h is the exception, pinned to Blender 5.2** (#840): the Steam install,
