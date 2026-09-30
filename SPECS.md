@@ -86,7 +86,7 @@ the gate for every rank 2 pack. Lanes F and B.** Devon's instruction of
 2026-09-25: assets made in Blender are the top priority (#801). Blender runs
 on his own machines only, huginn or Windows, headless, never in a container
 and never in CI (#804, #878); this row and every rank 2 pack is basic
-headless work, so either machine takes it once Blender 4.5 is at `BLENDER`. This row builds the pipeline every pack in the rank 2 band (2a
+headless work, so either machine takes it with the Blender 5.2 it already has (#879). This row builds the pipeline every pack in the rank 2 band (2a
 evidence props, 2b an interiors kit, 2c the shared rig, 2d animals, 2e the
 countryside backdrop) goes through, and proves it end to end with one placed
 crate. Decided in `HISTORY.md` as #801 to #808; this section is the
@@ -102,7 +102,7 @@ to the manifest and the manifest to the scripts (#803, #806).
 ### Scope, the pipeline (class S from here)
 
 - **`tools/blender/common.py`**, imported by every pack script. In order:
-  - **The pin** (#805): `if bpy.app.version[:2] != (4, 5):` print the
+  - **The pin** (#805, #879): `if bpy.app.version[:2] != (5, 2):` print the
     version found and `sys.exit(3)`.
   - **An empty scene**: delete every object, mesh, material, image and
     camera the factory startup made, so an asset owes nothing to what was
@@ -141,7 +141,7 @@ to the manifest and the manifest to the scripts (#803, #806).
 - **`tools/blender/render.mjs`**, `npm run blender:render [pack ...]`,
   Devon's machines only, huginn or Windows (#878). Exits non-zero if `CI` is set (#804). Finds Blender
   at `BLENDER` or on PATH, runs `blender --version` and refuses anything but
-  4.5 before any pack. For each row: `blender -b --factory-startup
+  5.2 before any pack. For each row: `blender -b --factory-startup
   --python-exit-code 1 -P tools/blender/packs/<script> -- --row <json>
   --out tools/blender/.staging/<pack>/<name>.glb`, with `PYTHONHASHSEED=0` in
   the environment and `pathToFileURL`/`path.join` for every path, since it
@@ -155,7 +155,7 @@ to the manifest and the manifest to the scripts (#803, #806).
   `{ file, pack, name, bytes, sha256, triangles, images: [[w, h], ...],
   blender, source }`. `render.mjs` writes the `.glb` only if the bytes differ
   from what is on disk, and the manifest only if a row changed.
-- **`tools/blender/manifest.json`**: `{ comment, blender: "4.5", rows }`,
+- **`tools/blender/manifest.json`**: `{ comment, blender: "5.2", rows }`,
   rows sorted by `file`, two-space JSON. **Written in the file's own line
   ending** with `eolOf` from `tools/place.mjs` (#631, #632): CRLF on Devon's
   checkout, LF in CI, and a new file starts LF. `render.mjs` for one pack
@@ -223,8 +223,8 @@ generator: `calibration: { triangles: 300, bytes: 24000 }`. Each line below
 has the break that must turn it red from green (#34); the ones marked
 *local* need a re-render, and so Devon's machine.
 
-1. **The pin.** Every row's `blender` starts `4.5.` Break: edit the crate's
-   row to `4.2.1`.
+1. **The pin.** Every row's `blender` starts `5.2.` Break: edit the crate's
+   row to `4.5.3`.
 2. **The bytes.** Every row's `file` exists, is `bytes` long and hashes to
    `sha256`. **Break, the one the builder quotes in the report: flip one
    byte of `crate.glb`.** Expected: "assets/blender/calibration/crate.glb
@@ -235,7 +235,7 @@ has the break that must turn it red from green (#34); the ones marked
 4. **Not stale.** Each row's `source` equals the hash of today's
    `common.py`, script, `finish.mjs` and table row. Break: change the
    crate's `seed` in `packs.json` without rendering. The failure says to run
-   `npm run blender:render calibration` on a machine with Blender 4.5.
+   `npm run blender:render calibration` on a machine with Blender 5.2.
 5. **Both endings** (#632). The source hash of each input, built once as LF
    and once as CRLF from what is on disk, is the same hash; and
    `manifest.json` has no line ending of the other kind. Break: remove the
@@ -292,13 +292,14 @@ the kit's barrels? Blocks nothing in `npm test`.
   `finish.mjs` and the row**, not `render.mjs`: `render.mjs` only launches,
   and a change to how it launches that moves bytes shows up in line 2 on
   the next render anyway.
-- **If Devon's installed Blender is not 4.5.** Recommend **install 4.5 LTS
-  beside it (the portable zip) and point `BLENDER` at it**; the pin moves
+- **If Devon's installed Blender is not 5.2.** Both machines have 5.2.2
+  LTS (#879). If Steam moves Windows to another line, install 5.2 LTS
+  beside it (the portable zip) and point `BLENDER` at it; the pin moves
   only by a HISTORY entry and a full re-render (#805).
 
 ### Dependencies
 
-- **Gate: none to start.** Needs Blender 4.5 and one of Devon's machines, huginn or Windows (#804, #878);
+- **Gate: none to start.** Needs Blender 5.2 and one of Devon's machines, huginn or Windows (#804, #878);
   a session without it writes nothing here.
 - **Lanes F and B.** F because this row makes `tools/blender/`; B because
   the crate is spliced into `data/scene-config.json`, so it does not run
@@ -332,8 +333,8 @@ A pack section cites this paragraph instead of restating it. **A pack is
 rows in `tools/blender/packs.json`, one script at
 `tools/blender/packs/<pack>.py` that imports `common.py`, and output under
 `assets/blender/<pack>/`, written by `npm run blender:render <pack>` on
-one of Devon's machines, huginn or Windows, with Blender 4.5 and nowhere
-else** (#804, #805, #878). Every
+one of Devon's machines, huginn or Windows, with Blender 5.2 and nowhere
+else** (#804, #805, #878, #879). Every
 asset is a `.glb` in metres, +Y up, its base at y 0, centred, facing +Z,
 seeded by its row, flat-shaded, one material with a palette atlas of at
 most 128 px and 32 colours from the castle's palettes plus at most 8 of its

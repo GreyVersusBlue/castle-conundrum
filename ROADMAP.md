@@ -23,16 +23,16 @@ Four different reasons, and they are not interchangeable (#53).
 
 A session without `blender` on `PATH` (or at `BLENDER`) skips a Blender
 row's build increment; CI runs only `test/assets.mjs` check 8 against the
-committed output, which needs no Blender (#804, #808). Blender 4.5 LTS is
-pinned; nothing else is accepted (#805). It runs headless, `blender -b -P`,
+committed output, which needs no Blender (#804, #808). Blender 5.2 LTS is
+pinned; nothing else is accepted (#879, which moved #805's 4.5). It runs headless, `blender -b -P`,
 on Devon's machines only, huginn or Windows, never in a container (#878);
-huginn needs 4.5 LTS at `BLENDER`, since its `blender` is 5.2.2. Rank 2h
+both machines have 5.2.2 already. Rank 2h
 is "Local: Blender GPU": Devon's Windows machine only (#878). 2c's and 2d's clips
 are also judged under "Local: a GPU" below, once rendered (#53).
 
-**2h is the exception, pinned to Blender 5.2** (#840): the Steam install,
-`5.2.2 LTS`, found at `CASTLE3D_BLENDER` or the Steam path and never at
-`BLENDER`, which rank 1 points at 4.5 (#842). Nothing of it is committed but
+**2h is the exception by machine, not by version** (#840, #879): the
+Steam install, `5.2.2 LTS`, found at `CASTLE3D_BLENDER` or the Steam path
+and never at `BLENDER`, which is rank 1's (#842). Both pin 5.2 now. Nothing of it is committed but
 scripts, so CI neither runs nor checks it. Its increments 1, 6 and 7 also
 need a network that reaches Poly Haven, once each, into a hash-pinned cache.
 

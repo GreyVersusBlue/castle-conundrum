@@ -11690,3 +11690,20 @@ huginn does not take it, even though its Blender is the right version. A
 `.glb`'s bytes do not depend on the machine; a lit still's do, so a still
 names the machine it came from. `BACKLOG.md`'s "What the three labels
 mean", `ROADMAP.md`, `SPECS.md` and `tools/castle3d/README.md` say so.
+
+## Rank 1's pin moves from Blender 4.5 to 5.2, before anything is built (2026-09-30)
+
+**#879. The Blender pipeline pins 5.2 LTS, not 4.5; this replaces #805's
+version and keeps the rest of it.** Devon's call, 2026-09-30. #805 chose 4.5
+because 4.2 had left support, not for anything 4.5 does. Both of Devon's
+machines run 5.2.2 LTS (Windows by Steam, huginn on PATH, the same build
+`d13f752e3b9c`), rank 2h is already on 5.2 (#840), and so are AI_Tools' and
+tools-and-games' pipelines; 4.5 would have been a second install on both
+machines, and its support ends in July 2027. Nothing under `tools/blender/`
+or `assets/blender/` exists, so no output is re-rendered. Checked on huginn:
+5.2.2's `export_scene.gltf` has every option the spec's `export()` sets.
+The pin (`bpy.app.version[:2] != (5, 2)`, exit 3), `render.mjs`'s refusal,
+the manifest's `blender` and check 8's line 1 all read 5.2; the rest of #805
+(`--python-exit-code 1`, a move being a HISTORY entry and a full re-render)
+stands. 2h keeps its own `CASTLE3D_BLENDER` lookup (#842): the two lanes
+share a version now, not a Blender path.
