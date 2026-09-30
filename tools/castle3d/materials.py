@@ -678,21 +678,65 @@ def tint_leaves(mat):
     mat['castle3d_tint'] = True
 
 
-def world_from_hdri(row):
-    """The scene's World lit by the HDRI row: an Environment Texture, strength 1,
-    no sun (#846). Increment 7 moves this call to lighting.py and adds the sun."""
+# A flame's emission strength on the World's scale (#874): a candle flame's
+# 10,000 cd/m2 is 0.5 there (LUX_PER_UNIT 20,000), times lighting.py's
+# PRACTICAL_GAIN 32. The flame is seen; lighting.py's point lights do the
+# lighting, so the material's emission sampling is off and nothing counts twice.
+FLAME_EMISSION = 16.0
+
+
+def flame_material(atlas_img):
+    """MAT_flame (#874): props.py's EMIT faces, Devon's atlas as an Emission
+    shader at FLAME_EMISSION through an Image Texture on `atlas_img` (Closest,
+    UV map `atlas`), emission sampling NONE. Built once per file."""
+    have = bpy.data.materials.get('MAT_flame')
+    if have is not None:
+        return have
+    mat = _new_material('MAT_flame')
+    tree = mat.node_tree
+    uv = _node(tree, 'ShaderNodeUVMap', -700, 0, uv_map='atlas')
+    tex = _node(tree, 'ShaderNodeTexImage', -450, 0, interpolation='Closest')
+    tex.image = atlas_img
+    emit = _node(tree, 'ShaderNodeEmission', -100, 0)
+    emit.inputs['Strength'].default_value = FLAME_EMISSION
+    out = _node(tree, 'ShaderNodeOutputMaterial', 200, 0)
+    tree.links.new(uv.outputs['UV'], tex.inputs['Vector'])
+    tree.links.new(tex.outputs['Color'], emit.inputs['Color'])
+    tree.links.new(emit.outputs['Emission'], out.inputs['Surface'])
+    mat.cycles.emission_sampling = 'NONE'
+    return mat
+
+
+def world_from_hdri(row, clamp=None):
+    """The scene's World lit by the HDRI row: an Environment Texture, strength 1
+    (#846), called by lighting.py from increment 7 (#873). With `clamp`, every
+    channel is held at `clamp` for every ray but the camera's: the texture into
+    a DARKEN Mix against a grey `clamp`, and a second Mix on Light Path's Is
+    Camera Ray, A the clamped colour and B the raw one, into the Background.
+    The camera still sees the sun's disc; lighting.py's SUN carries the energy
+    the clamp takes, so nothing is lit by the sun twice."""
     img = load_image(row, colour=None)
     world = bpy.data.worlds.new('WORLD_hdri')
     world.use_nodes = True
     tree = world.node_tree
     tree.nodes.clear()
-    env = _node(tree, 'ShaderNodeTexEnvironment', -400, 0)
+    env = _node(tree, 'ShaderNodeTexEnvironment', -700, 0)
     env.image = img
     env.label = row['id']
-    bg = _node(tree, 'ShaderNodeBackground', -100, 0)
+    colour = env.outputs['Color']
+    if clamp is not None:
+        dark = _node(tree, 'ShaderNodeMix', -450, 100, data_type='RGBA', blend_type='DARKEN')
+        dark.label = 'sun clamp'
+        _sock(dark.inputs, 'Factor').default_value = 1.0
+        tree.links.new(colour, _sock(dark.inputs, 'A'))
+        _sock(dark.inputs, 'B').default_value = (clamp, clamp, clamp, 1.0)
+        path = _node(tree, 'ShaderNodeLightPath', -450, 400)
+        cam = _mix(tree, 'RGBA', -250, 0, path.outputs['Is Camera Ray'], _sock(dark.outputs, 'Result'), colour)
+        colour = cam
+    bg = _node(tree, 'ShaderNodeBackground', -50, 0)
     bg.inputs['Strength'].default_value = 1.0
     out = _node(tree, 'ShaderNodeOutputWorld', 200, 0)
-    tree.links.new(env.outputs['Color'], bg.inputs['Color'])
+    tree.links.new(colour, bg.inputs['Color'])
     tree.links.new(bg.outputs['Background'], out.inputs['Surface'])
     bpy.context.scene.world = world
     return world

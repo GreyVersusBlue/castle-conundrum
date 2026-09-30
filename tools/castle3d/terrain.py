@@ -15,7 +15,8 @@
 # from a seeded layout; grass is a Poly Haven model scattered by a seeded
 # Geometry Nodes tree over the whole square, pad included, except the road
 # and every blueprint piece's and room's footprint, where buildings go. The
-# World is lit from the HDRI (#846). No river and no moat until rank 9's 3b
+# World is lighting.py's from increment 7 (#873); terrain set it from #846 until
+# then, and a build without `lighting` has none. No river and no moat until rank 9's 3b
 # ships (SPECS.md, open calls).
 #
 # Every number is in the game's frame (x, z in metres, y up) until a vertex is
@@ -86,7 +87,6 @@ GRASS_DENSITY = 20.0              # clumps per square metre on full grass, in a 
 GRASS_VIEW = 0.6                  # clumps per square metre in the viewport (Is Viewport)
 GRASS_UNDER_MUD = 0.3             # the density factor left on full mud
 GRASS_SCALE = (1.3, 2.6)          # the clumps are 0.16 to 0.4 m as modelled
-HDRI = 'kloofendal_48d_partly_cloudy_puresky:hdri'
 
 
 def smoothstep(a, b, v):
@@ -618,6 +618,5 @@ def build(bp):
         place(g, col, f"ROCK_{asset}", models[asset], pts, 0.15, ROCK_SCALE)
 
     build_grass(g, col, terrain, grass_col)
-    materials.world_from_hdri(common.source(HDRI))
     print(f"terrain: {sum(TREES.values())} trees in {GROVES} groves, {min(heights):.2f} to {max(heights):.2f} m tall, "
           f"{sum(ROCKS.values())} rocks, planIds {mine}")

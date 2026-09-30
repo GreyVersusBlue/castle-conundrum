@@ -1391,7 +1391,9 @@ on 4b's four open notes and moves the dressing to `stone_pavers`, amending
 rise, tint and 2.5 m scale and `rough_wood`'s warm dark tint, amending
 #854's "leave"; #862 closes increment 5, thatch `reed_roof_04` and the
 stone at 2.5 m by Devon's rulings; #863 to #868 decide increment 6, the
-props, before anything is built); this section is the `builder`
+props, before anything is built, and #869 closes it; #873 to #877 decide
+increment 7, the light and the five cameras, before anything is built, and
+#876 amends #844 to eight `check.py` lines); this section is the `builder`
 job those decisions leave. Nothing
 under `tools/castle3d/` exists on `e05ac72`. **The game loads none of it**:
 no file under `src/`, `data/`, `assets/` or `test/` changes in any
@@ -1443,7 +1445,14 @@ one shared module, one module per stage.
   `archRadius`, `thickness`, on the four gate leaves) and `bars` (`width`,
   `height`, `thickness`, `count`, on `cell-bars`), copied as the plan returns
   them, so `gates.py` draws the game's round-headed leaf and six bars without
-  a second copy of `scene-config.json`'s numbers (#500).
+  a second copy of `scene-config.json`'s numbers (#500). From increment 7
+  (#874, #875) two more fields are read rather than copied: `braziers`,
+  `scene-config.json`'s three through the plan's own `tileToWorld`, and
+  `cameras`, `cameras.json`'s five with each eye's `stand` (`standAt`) and
+  `reachable` (`walkability`); see increment 7's open calls.
+- **`cameras.json`**, committed, hand-edited, from increment 7 (#875): the
+  five cameras, `{ name, eye, target, lens | fovY, exposure, samples }`,
+  `"eye": "spawn"` for `CAM_spawn`.
 - **`fetch.mjs`**, Node. For each row of `sources.json` not already in
   `<out>/cache/` with the right hash, downloads it and checks its sha256;
   a mismatch deletes the file and exits non-zero (#840). It also hashes
@@ -1529,12 +1538,18 @@ one shared module, one module per stage.
   per face by an `atlas_rgb` attribute and box-projected on object
   coordinates (`box_material` gains `atlas_detail`, `coords` and
   `metallic`); nothing already built changes. See increment 6's open calls.
+  From increment 7 (#873, #874), `world_from_hdri` gains `clamp` and moves
+  from `terrain.py`'s call to `lighting.py`'s, and `flame_material()` builds
+  `MAT_flame`, the atlas as emission for `props.py`'s flame faces. See
+  increment 7's open calls.
 - **The stage modules**, one per increment 1 to 8: `blueprint.py` (the
   `GUIDE` collection, increment 0), `terrain.py`, `walls.py`, `towers.py`,
   `gates.py`, `buildings.py`, `town.py`, `props.py`, `lighting.py`,
   `markers.py`, and `export.py` (increment 9).
 - **`check.py`**: #844's six lines, each printing a line of its own, pass
-  or fail and why, and exiting non-zero when any failed.
+  or fail and why, and exiting non-zero when any failed. From increment 7,
+  eight (#876): line 7 `light` and line 8 `cameras`, both run when
+  `lighting` did.
 - **`README.md`**: how to run it, the two env vars, the output folder, what
   each stage builds. **`CREDITS.md`**: every `sources.json` `asset` by
   name, author and licence, one line per asset rather than per file,
@@ -1669,6 +1684,14 @@ recorded in `HISTORY.md` against the increment (#53).
    the candles as practicals; five cameras, `CAM_spawn` (on `SPAWN`, at
    eye height), `CAM_courtyard`, `CAM_hall`, `CAM_chapel` and `CAM_town`,
    each standing where a player can stand in the game.
+   *Corrected 2026-09-28 (#873 to #877)*: "the three braziers" are
+   `scene-config.json`'s, which the blueprint did not carry and which the
+   model builds from Devon's `brazier`; the practicals are a light wherever
+   the model draws a flame, 37 on the through build (30 candle, 2 torch, 4
+   brazier, 1 hearth), found by a rule; `CAM_town` stands on the North-west
+   Tower's roof, since no player stands in Mereford (`layout.mjs` 4c); and
+   `check.py` gains lines 7 and 8. Every number the builder needs is in
+   increment 7's open calls.
 8. **Markers.** `markers.py` writes every marker in #843 from the
    blueprint into `MARKERS`, then a session adjusts them to the new
    geometry, each departure past 0.5 m with an `allow.json` reason.
@@ -1827,7 +1850,41 @@ turn it red from green (#34). The report quotes the failing line.
   increment 6's open calls, each from green, each quoted. Five stills, each
   with its exposure, and Devon's line on each recorded in `HISTORY.md`.
 - **Increment 7.** Five stills exist, one per camera, and line 4 passes
-  with the HDRI in the scene.
+  with the HDRI in the scene. *In full (#873 to #877)*: `npm test` fifteen
+  of fifteen, unchanged. After the `props.py` and `materials.py` edits and
+  before `lighting.py` exists, `--only terrain,walls,towers,gates,buildings,
+  town,props` exits 0 with line 5 at 18 and 90 and line 6 at 427, and line
+  4 quoted (310 and 189 plus `MAT_flame`'s printed share, terrain's call
+  still in place); the faces per kind print `flame 149, kept 4192` (per
+  mesh; 172 flame faces are placed, see *Measured* below). Then `--only
+  terrain,walls,towers,gates,buildings,town,props,lighting` exits 0 with lines 4 to 8 passing, line 5 and 6 unchanged, line
+  7 at 37 practicals (30 candle, 2 torch, 4 brazier, 1 hearth) and 3
+  braziers, line 8 at 5 cameras; `--only lighting` exits 0 with lines 4, 7
+  and 8 passing, line 7 at 3 practicals, 5 and 6 not run. `blueprint.json`
+  prints `3 braziers, 5 cameras, 5 standing`. Line 4 on both builds is
+  measured and recorded with the stages' printed shares, not predicted.
+  *Measured 2026-09-29*: before `lighting.py`, terrain's call in place, the
+  through build to `props` `ok line 4 images: 311 image texture nodes, 189
+  images` (the stage's share 99 and 57: #869's 98 and 57 plus `MAT_flame`
+  1/0); after the move, the same build 310 and 188, one node and one image
+  lower; through to `lighting` 311 and 189 (`lighting`'s share 1/1, the
+  World; the braziers' append reuses `castle_props`, its atlas and the kind
+  materials); `--only lighting` 43 and 22 (`WORLD_hdri` 1/1, brazier atlas
+  1/1, `MAT_flame` 1/0, `MAT_*_prop` and `_brass` 40/20). The faces per kind
+  print `flame 149, kept 4192`, not 172 and 4,169: the two King's hall
+  sconces share one mesh, and the stage counts each mesh once, so the
+  sconce's 23 flame faces were counted twice in the 172. The 172 stays
+  right as faces placed in the scene, which is what #874 says take
+  `MAT_flame`. **A plain `npm run castle3d:build` exits 1 in increment 7 by
+  design**: `build.py` imports a module per stage and `markers.py` is
+  increment 8's, so it stops at `markers` and saves no master; the through
+  build is `--only terrain,walls,towers,gates,buildings,town,props,lighting`
+  and the master `castle.blend` is first written in increment 8. The
+  report quotes line 7's sun angle and energy, each brazier's overlaps, and
+  the twelve breaks in increment 7's open calls ((6) is two), each from
+  green. Five
+  stills from the `CAM_` objects, each with its exposure inside the bands,
+  and Devon's line on each recorded in `HISTORY.md`.
 - **Increment 8.** Lines 1, 2 and 3 pass: 48 `ROOM_`, 5 `GATE_` and 4
   hinges, 745 `COL_`, 18 `STAIR_`, one `SPAWN`, 11 `EVID_`, 13 `READ_`, one
   `BELL_`. Breaks: delete `ROOM_kitchen` (line 1 names it); delete
@@ -3693,6 +3750,399 @@ piece, so no `modelOnly` and no `allow.json` entry.
   the four pushes; each Poly Haven asset's objects kept and deleted; the
   worst `check_tree` and `check_box` differences; the line 4 share.
 
+**Increment 7's open calls: lighting and cameras, decided before anything is
+built** (architect, 2026-09-28, against `34357ac`, where #869 was the last;
+decided as #873 to #877). Every number is in the game's frame unless it says
+Blender; game (x, y, z) is Blender (x, -z, y). **Measured on this branch, not
+predicted** (#860's correction is the reason): the cached 4k `.hdr` read
+pixel by pixel in a background Blender 5.2.2, and the sun's direction
+confirmed by rendering the bare World through a 400 mm camera (46,664 at
+the measured direction, under 0.5 at its three mirror images); Cycles' point
+and sun normalisation on a white plane (0.3167 and 0.3174 against 1/pi
+0.3183); `castle_props`' atlas regions under every placed prop's faces;
+`makePlan`'s `standAt` and `walkability` in Node for every camera eye; and 78
+probe renders of
+`partial/terrain+walls+towers+gates+buildings+town+props.blend` (the build
+#869 closed on) with a throwaway script that added the sun, the practicals,
+the braziers and the cameras below, 480 x 270 (20 of them 960 x 540, for
+the samples call), 64 samples with adaptive
+sampling and the denoiser, AgX (the factory view transform, which every
+still in this row has used), exposure found by bisection on the saved linear
+EXR to a display median of 0.35 and rounded to 0.25. Nothing in the repo
+but this section and `HISTORY.md` changed.
+
+- **The stage (7).** Recommend **`lighting`, `lighting.py`, already in
+  `common.STAGES` after `props` and in `MODULE`, not in `GEOMETRY`, one
+  collection `LIGHTING`**: it realises no plan piece, so line 6 never covers
+  it and nothing it makes carries a `planId`. It reads the blueprint (its new
+  `braziers` and `cameras`, below), the HDRI row, the pinned props `.blend`
+  (for the three braziers), and, when `props` ran in the same build, the
+  `PROP_` trees' flame faces; it moves no object another stage made. So
+  `--only lighting` builds alone (the World, the sun, the three braziers
+  and their three lights, the five cameras), and `--only
+  terrain,walls,towers,gates,buildings,town,props,lighting` is the build that
+  lights every practical, and the through build of this increment: a plain
+  build exits 1 at `markers` until increment 8 writes `markers.py` (#876's
+  correction). **From this increment a build without `lighting`
+  has no World and renders a black sky**: `read_factory_settings(use_empty=
+  True)` makes no World (measured), and terrain no longer sets one. Every
+  review still from here on is taken from a build that ran `lighting`.
+- **The World (#873).** Recommend **`terrain.py` loses its
+  `world_from_hdri` call and its `HDRI` constant, and `lighting.py` makes the
+  only World, `WORLD_hdri`, through `materials.world_from_hdri(row,
+  clamp=SUN_CLAMP)`, with no rotation and Background strength 1**. The
+  file's sun is unclipped: its brightest pixel, in the disc, reads 74,609,
+  and the disc is 69% of the map's horizontal irradiance by luminance (4.786
+  with it, 1.478 clamped). A lamp on top of that would count the sun twice. So the World clamps every channel at `SUN_CLAMP` 16
+  for every ray but the camera's: an Environment Texture into a Mix (Color,
+  blend `DARKEN`, factor 1, B (16, 16, 16)), and a second Mix whose factor is
+  Light Path's Is Camera Ray, A the clamped colour and B the raw one, into the
+  Background. The camera still sees the sun's disc; nothing is lit by it
+  twice. Measured: the brightest pixel more than 5 degrees from the sun is
+  15.25 on any channel, so 16 takes nothing but the disc (0.00000 of the
+  removed energy lies outside 5 degrees), and it removes (4.4212, 4.4553,
+  4.0524) per channel, 4.4190 by luminance. Refused: a lower clamp (at 10,
+  0.0005 of the removal is cloud) and editing the image (a second file
+  under one hash, #840). **No rotation**: at rotation 0 the file's sun
+  already stands within 4.8 degrees of the game's Terce sun, `lighting.sun`
+  (30, 45, 18) in `scene-config.json`, elevation 47.9 against 52.1 and
+  bearing 124.3 against 120.9 degrees, so the model's sky is the game's
+  morning without a Mapping node.
+- **The sun (1, #873).** Recommend **one Sun light, `SUN`, strength 4.4553,
+  colour (0.9924, 1.0, 0.9096), angle 0.53 degrees, `rotation_euler`
+  (42.129, 0, 55.740) degrees in Blender, so its +Z points at the file's
+  sun: Blender (0.55441, -0.37763, 0.74164), game (0.55441, 0.74164,
+  0.37763), elevation 47.871 and Blender azimuth -34.260 degrees**. The
+  direction is the energy-weighted centroid of every pixel over 50 (937
+  pixels), identical within 0.03 degrees to the brightest pixel's; the
+  strength and colour are exactly what the clamp removes, so strength times
+  colour's luminance is 4.4190, and daylight is unchanged by the move: the
+  eight probe cameras read the same exposure with the file's sun as with the
+  lamp, and their linear medians agree within 0.6% outdoors and 2.6% indoors,
+  which is 64 samples' noise. The angle is the real
+  sun's: 96.7% of the removed energy lies within 0.5 degrees of the centroid,
+  so the file's disc is under a degree across and its spread is camera bloom.
+  **It does not light the hall through its windows, measured**: from a 0.5 m
+  grid at y 0.05, 0 of 896 points in `great-hall` see the sun, 0 of 640 in
+  `kings-hall` and 0 of 256 in `chapel-nave`. The hall's five windows are in
+  `great-hall-north` and face -z; the sun is at +z. No light linking and no
+  exclusion: the sun lights what it reaches.
+- **The practicals (2, #874).** Recommend **a light wherever the model draws
+  a flame, found by a rule over the faces and never by a table of piece
+  ids**. A flame face is one of Devon's faces whose atlas region is `flame`,
+  `flame_core`, `ember` or `coals`, or a face on Poly Haven's
+  `brass_candleholders_flame`. Per source (a `PROP_` or `BRAZIER_` tree): if
+  it has `coals`, one light at the area-weighted centroid of all its coals and
+  ember faces raised 0.05 m, `brazier` if it has `ember` and `hearth` if not;
+  otherwise its flame faces' vertex-connected components, merged when two
+  centroids of one source lie within 0.06 m, each one light at its
+  centroid, `torch` if its area is 0.01 m² or more and `candle` if less
+  (measured: 0.0354 for each sconce, 0.00181 for a chandelier flame, 0.00113
+  and 0.00227 for the candleholders'). Named `LIGHT_<source>-<n>`, n from 1
+  in (x, y, z) order within the source, each carrying `lightFor` (the piece
+  id or `brazier-<n>`) and `kind`. **Measured on the #869 build, 37
+  lights**:
+
+  | Source | Lights | Kind | At (game) |
+  | --- | --- | --- | --- |
+  | `brass_candleholders` | 11 | candle | y 0.90 to 1.37, x -20.79 to -19.85 |
+  | `candles-chapel` | 11 | candle | y 0.36 to 0.82, x 22.31 to 23.26 |
+  | `kings-hall-chandelier` | 8 | candle | y 2.66 to 2.70, a ring of radius 0.60 on (13.5, -10) |
+  | `kings-hall-sconce-west`, `-east` | 1 each | torch | (8.0, 2.173, -13.815), (17.0, 2.173, -13.815) |
+  | `kings-hall-brazier` | 1 | brazier | (17.496, 0.812, -11.2) |
+  | `hall-fireplace` | 1 | hearth | (-27.0, 0.170, 7.03) |
+  | `brazier-1` to `-3` | 1 each | brazier | 0.812 over each position, below |
+
+  So 30 candle, 2 torch, 4 brazier, 1 hearth. The four candles Devon drew
+  without a flame (`nave-altar`'s two, `steward-candlestick`,
+  `kings-tower-sconce`) stay unlit: a light with no flame in frame is light
+  from nowhere, and a flame drawn for them would be model-only geometry
+  nobody ruled on. Measured, it costs nothing in exposure: the nave reads
+  +10.0 with no practicals at all. If Devon's `CAM_chapel` still wants the
+  altar lit, the named fix is a flame on the two altar candle tops at (17.024,
+  1.472, 9.70) and (17.024, 1.472, 10.80), `modelOnly`, and two candle
+  lights.
+- **The practicals' power, colour and size (2, #874).** Recommend **Point
+  lights, `use_temperature` on (it is a Light property in 5.2.2, measured),
+  colour white, power `lumens x PRACTICAL_GAIN / LUX_PER_UNIT`, with
+  `LUX_PER_UNIT` 20,000 and `PRACTICAL_GAIN` 32**:
+
+  | Kind | Lumens | Power (W) | `shadow_soft_size` (m) | Temperature (K) |
+  | --- | --- | --- | --- | --- |
+  | candle | 12 | 0.0192 | 0.01 | 1850 |
+  | torch | 200 | 0.32 | 0.04 | 1900 |
+  | brazier | 2500 | 4.0 | 0.15 | 1900 |
+  | hearth | 150 | 0.24 | 0.25 | 1700 |
+
+  `LUX_PER_UNIT` puts the file on a physical scale: its sun disc is 4.42
+  units of irradiance and direct sun at 48 degrees is about 88,000 lux; the
+  point normalisation (power / (4 pi d²)) was measured equal to the sun's.
+  **Why a gain of 32, measured** (the exposure table below): at the physical
+  1 the practicals move the hall a quarter stop and the nave not at all,
+  since firelight at Terce is about ten stops under daylight; at 1361, the
+  game's own ratio (its brazier is `PointLight(0xff9033, 8, 12, 2)`, 8 cd
+  against a 2.6 sun, 1361 times the physical 199 cd against 88,000 lux), the
+  hall reads +6.25 but its walls go orange, the hall's brazier blows out and
+  the room reads as night, because the model roofs every room the game
+  leaves open to the sky (#853). At 32 the firelight equals the daylight at
+  the median of the two rooms that have both, 1.2 times in the hall and 1.3
+  in the King's hall (linear medians: daylight 5.6e-5 and 8.0e-5, with
+  practicals at 32 1.25e-4 and 1.84e-4), so a still is a daylit room with its
+  fires lit. One gain for every kind keeps a candle a candle beside a
+  brazier.
+- **The flames' material (2, #874).** Recommend **yes, emissive, and the
+  material is `props.py`'s, not `lighting.py`'s**: `props.py` moves `flame`,
+  `flame_core`, `ember` and `coals` out of `KEEP` into `EMIT` and gives those
+  faces a sixth slot, `MAT_flame` (`materials.flame_material()`): an Emission
+  shader whose colour is the atlas through an Image Texture on
+  `castle_props_atlas` (Closest, UV map `atlas`), strength `FLAME_EMISSION`
+  16 (a candle flame's 10,000 cd/m² on the same scale, 0.5, times the gain),
+  `material.cycles.emission_sampling = 'NONE'` (measured to exist), so the
+  flame is seen and the point light alone lights; nothing is counted twice
+  and no mesh light adds noise. Measured: 172 faces move, 64 chandelier
+  flame, 46 sconce flame and core, 56 brazier coals and ember, 6 hearth
+  coals, so `KEEP` is 71 names and 4,169 faces and the faces-per-kind line
+  gains `flame 172`. *Measured after the build*: that line counts each mesh
+  once and prints `flame 149, kept 4192`, since the two King's hall sconces
+  share one torch mesh with 23 flame faces; 172 is faces placed. Poly Haven's `brass_candleholders_flame` is already
+  emissive (strength 1, textured) and stays untouched (#864).
+- **The three braziers (#874).** They are `scene-config.json`'s `braziers`,
+  which `main.js` builds at runtime through `createBrazier`, and the plan
+  does not carry them, so the blueprint has had no brazier. Recommend
+  **`export-blueprint.mjs` writes `braziers`, `[{ id: "brazier-<n>", tile,
+  position, comment }]`, each `position` from `castle-plan.js`'s own
+  `tileToWorld(plan.tile, ...tile)`, the function `main.js` reaches through
+  `castle.tileToWorld`; `lighting.py` builds each as `BRAZIER_<n>`, Devon's
+  `brazier` collection appended from the pinned props `.blend` and
+  re-materialed by the same code `props.py` uses for `kings-hall-brazier`,
+  at `position` with rotation 0 and scale 1, carrying `configId`
+  `braziers[<i>]`, no `planId`, no `modelOnly`**: they are the game's, and
+  one look per object kind (#866) makes them Devon's brazier rather than
+  `scene-setup.js`'s primitive tripod. `props.py` lifts the append and the
+  re-material of one stem into a function both stages call; the through
+  build's line 4 and faces per kind must not move for it. Positions:
+  `brazier-1` (-4.8, 0, -2.4), `brazier-2` (-4.8, 0, 2.4), both in the outer
+  ward flanking the porter gate, and `brazier-3` (-20, 0, 10) in the hall.
+  **`brazier-3` stands in two props, measured**: Devon's brazier box there is
+  x -20.336 to -19.664, z 9.667 to 10.333, y 0 to 0.846, and it meets
+  `gothic_statue` (x -20.69 to -19.22, z 8.73 to 10.29), `WoodenTable_01` (z
+  from 10.17, top 0.55) and `brass_candleholders` (z from 10.25), and the
+  game's colliders of the first two. That is the game's placement, and
+  neither `layout.mjs` nor `plan-vs-scene.mjs` sees a brazier. Recommend
+  **the model places it where the game does, and `lighting.py` raises when a
+  brazier's box meets any piece's box unless the brazier is in
+  `BRAZIER_CLASH = {'brazier-3': '#874: the game's own placement'}`, and
+  raises on an entry that meets nothing**, so the exception dies with the
+  game's fix, a one-tile edit to `scene-config.json` that is a game row and
+  not this one. The build prints each brazier's overlaps by piece id.
+- **The five cameras (3, #875).** Recommend **a committed
+  `tools/castle3d/cameras.json`, read by `export-blueprint.mjs`, which writes
+  `cameras` into the blueprint with where each eye stands, computed by the
+  plan's own functions**: `stand` is `standAt(plan, x, z, eye.y -
+  EYE_HEIGHT)` (`{h, surface, level}` or null) and `reachable` is
+  `walkability(plan).reachable(x, z, stand.level)`, the spawn's flood fill.
+  That is "where a player can stand", in Node, once (#500); `check.py` reads
+  the answer and never re-derives it. `CAM_spawn`'s eye and target are
+  `plan.spawn`'s `position` and `lookAt`, written `"eye": "spawn"` in the
+  file. Every eye is 1.7 m (`EYE_HEIGHT`) over its `stand.h`:
+
+  | Camera | Game eye | Game target | Blender eye | Lens | Stands on | Exposure | Samples |
+  | --- | --- | --- | --- | --- | --- | --- | --- |
+  | `CAM_spawn` | (-40, 1.7, 0) | (0, 1.7, 0) | (-40, 0, 1.7) | 72 degrees vertical | `ground`, level 0 | +4.00 | 128 |
+  | `CAM_courtyard` | (-4, 1.7, -5) | (-13, 5.5, 7) | (-4, 5, 1.7) | 24 mm | `ground`, level 0 | +2.50 | 128 |
+  | `CAM_hall` | (-31.5, 1.7, 8.2) | (-19.5, 0.9, 10.6) | (-31.5, -8.2, 1.7) | 24 mm | `ground`, level 0 | +9.75 | 1024 |
+  | `CAM_chapel` | (10.9, 1.7, 10.25) | (17.4, 2.2, 10.25) | (10.9, -10.25, 1.7) | 18 mm | `ground`, level 0 | +10.00 | 1024 |
+  | `CAM_town` | (-37.75, 13.7, -15.25) | (-85, 4, 4.3) | (-37.75, 15.25, 13.7) | 24 mm | `floor-nw-tower-roof`, level 3 | -0.50 | 128 |
+
+  All five `reachable` true, measured. `CAM_spawn` takes the game's own
+  field of view, `PerspectiveCamera(72, ...)` in `scene-setup.js`, as
+  `sensor_fit` VERTICAL and `angle_y` 72 degrees, so the looking checklist's
+  "the same distance and height the game shows" is a still against a
+  screenshot. The other four are the review cameras Devon has already judged:
+  `CAM_courtyard` is 4a's `buildings.png` eye (the outer ward, the hall's
+  north wall and louvre), `CAM_hall` and `CAM_chapel` are `props-hall` and
+  `props-nave` (#869). **`CAM_town` moved, because no player stands in
+  Mereford**: `layout.mjs` check 4c asserts that no cell of the spawn's fill
+  reaches a room outside the curtain, so every eye increment 5 used for the
+  town (the street, the gate, the church) fails `reachable`, and
+  `town.png`'s (-38.5, 13.7, -13.6) is on top of the North-west Tower's
+  ring, where `standAt` finds no floor. The eye is on the tower's roof, 2.0
+  m from its centre on the axis of crenel sector 19 (285 to 300 degrees),
+  looking through the crenel at the street; the probe frame holds the church
+  tower, Mereford's thatch beyond Wykes's yard, and the crenel's merlons at
+  both edges. The South-west Tower was tried at (-37.25, 13.7, 14.75): one
+  house fills its crenel. Each camera `clip_start` 0.05, `clip_end` 2000,
+  and carries `exposure` and `samples` as custom properties from the file;
+  `scene.camera` is `CAM_spawn`.
+- **The stills come from the cameras (4, #875).** Recommend **yes:
+  `still_7.py` in `CASTLE3D_OUT\review\increment7\`, uncommitted as
+  `still_6.py` was, sets `scene.camera` to each `CAM_` object in turn and
+  makes no camera of its own**, so the stills and line 8 test the same five
+  objects and increment 9's export has nothing new to aim. Five stills,
+  `cam-spawn.png` to `cam-town.png`, Cycles OPTIX (CUDA if not), 1920 x 1080,
+  the denoiser, adaptive sampling at Blender's default, each camera's
+  `samples`. Exposure is found as the probes found it, replacing
+  `still_5.py`'s three-try loop, which stopped short on every interior in
+  #869: one 480 x 270 render at 64 samples to a 32-bit EXR, then
+  `Image.save_render` at trial exposures, 13 bisection steps between -8 and
+  +18, to a display median of 0.35, rounded to 0.25; the report gives each
+  still's exposure, median, clipped and crushed shares.
+- **Exposure, measured, and the bands (5, #877).** Film exposure by camera
+  and light, with the practicals' gain across the top (A is today's World
+  with its own sun and no practicals):
+
+  | Camera | A | Sun lamp | x1 | **x32** | x64 | x256 | x1361 |
+  | --- | --- | --- | --- | --- | --- | --- | --- |
+  | `CAM_spawn` | +4.00 | +4.00 | +4.00 | **+4.00** | +4.00 | +4.00 | +4.00 |
+  | `CAM_courtyard` | +2.50 | +2.50 | +2.50 | **+2.50** | +2.50 | +2.50 | +2.25 |
+  | `CAM_hall` | +11.00 | +11.00 | +10.75 | **+9.75** | +9.50 | +8.25 | +6.25 |
+  | `CAM_chapel` | +10.00 | +10.00 | +10.00 | **+10.00** | | | |
+  | `CAM_town` | | | | **-0.50** | | | |
+  | `props-kings-hall` (#869) | +10.50 | +10.50 | +10.25 | **+9.50** | +8.75 | +7.50 | +5.25 |
+  | `props-lodge` (#869) | +2.75 | +2.75 | +2.75 | **+2.75** | | | |
+  | `props-yard` (#869) | 0.00 | 0.00 | 0.00 | **0.00** | | | |
+
+  At x32, clipped and crushed shares: spawn 0% and 0.03%, courtyard 0% and
+  1.29%, hall 0.01% and 0.46%, chapel 0.72% and 0%, town 0% and 0.06%, King's
+  hall 0.27% and 1.22%. `CAM_chapel`'s +10.00 is the sun-lamp column, with
+  no practical in frame; the x64 to x1361 runs lit the altar's two candles,
+  which this spec does not, so their nave column is left blank. **What #869
+  expected, and what it gets**: "well below +11.5" is not what light at a
+  gain that keeps daylight in the room buys. First, #869's +11.5 on all
+  three interiors was the three-try probe overshooting (#869 says it stopped
+  above 0.35); bisection on the same build gives +11.0, +10.5 and +10.0.
+  Second, the sun cannot help, since no interior floor point sees it. Third,
+  at x32 the hall comes down 1.25 stops and the King's hall 1.0, and the nave
+  none. An interior at +10 is the camera's setting, not a fault, and Devon's
+  #858 (d) is answered by the light's colour and direction in the stills
+  rather than by a number. **The bands**: a still's own probed exposure
+  within 0.5 of the table's x32 column, clipped (display luminance at or
+  over 0.99) at most 1.5% (Devon passed `props-kings-hall` at 1.43%), crushed
+  (at or under 0.01) at most 5%. Outside any band, the builder stops and
+  reports the number; a gain or a camera moved to pass is a second spec.
+- **Check line 4, and lines 7 and 8 (6, #876, amending #844's six lines to
+  eight).** **Line 4, measured today**: in the #869 through build the World
+  is exactly 1 of line 4's 310 image texture nodes and 1 of its 189 images
+  (the `.hdr`; no material reads it); `props.blend` has no World (188 and
+  122) and `terrain.blend` has it (52 and 47). So with terrain's call still
+  in place the through build to `props` prints 310 and 189 plus `MAT_flame`'s
+  share, and after the move any build without `lighting` is exactly one node
+  and one image lower than it was. **No total is written
+  for after**: `MAT_flame` and the braziers' append add nodes that depend on
+  code not yet written (whether the append reuses `castle_props` and the
+  kind materials or duplicates them). `lighting.py` and `props.py` print
+  their line 4 share (image texture nodes and images new in the stage,
+  snapshot before and after, as #868's split); the builder runs the through
+  build to `lighting` and `--only lighting` and quotes check.py's line 4 from
+  both, and the numbers go into `HISTORY.md` and the acceptance as measured.
+  Line 4 must count the World's Environment Texture on both. Lines 5 and 6
+  are unchanged, 18 and 90 and 427, since `lighting` adds no `planId`.
+  **Line 7, `light`** (runs when `lighting` ran): (a) `bpy.data.worlds` is
+  exactly one World, `scene.world`, named `WORLD_hdri` (a zero-user World is
+  not saved, so a second World shows only as the survivor's `.001`), whose tree has exactly one Environment
+  Texture, its Vector input unlinked, its image's file name the HDRI row's
+  `file`, the Background's Strength 1.0, and a `DARKEN` Mix feeding the
+  Background whose B is a grey c over 0; (b) exactly one Sun light, `SUN`,
+  whose world +Z is within `SUN_TOLERANCE` 0.5 degrees of the file's sun,
+  measured by check.py from the World's image (every pixel with a channel
+  over c, weighted by its luminance over c times its solid angle, at
+  azimuth 2 pi (0.5 - u) and elevation pi (v - 0.5), v from the bottom row,
+  which is the mapping measured above), and whose strength times its colour's
+  luminance is within 2% of that removed luminance; (c) every other light is
+  a Point light carrying `lightFor` and `kind`, inside its source's box grown
+  by 0.1 m (the blueprint piece's box, or the `BRAZIER_` tree's world
+  bounds); (d) one `BRAZIER_<n>` per blueprint brazier, each root within
+  0.01 m of its `position`. The measurement in (b) is check.py's own, from the
+  saved file; `lighting.py` holds the numbers as constants, so a sun or an
+  HDRI row that drifts from the other is named. Passing prints `WORLD_hdri
+  from kloofendal_48d_partly_cloudy_puresky_4k.hdr, clamp 16; SUN 0.0x deg
+  from the HDRI's sun, 4.419 against 4.419 removed; 37 practicals (30
+  candle, 2 torch, 4 brazier, 1 hearth); 3 braziers at the blueprint's
+  positions` (on `--only lighting`, `3 practicals (3 brazier)`). **Line 8,
+  `cameras`** (runs when `lighting` ran): one camera object `CAM_<name>` per
+  blueprint camera and no other object named `CAM_*`; each within 0.01 m of
+  its eye and 0.1 degrees of its aim, its `lens` (or `angle_y`) the file's;
+  each blueprint camera's `stand` not null, its `reachable` true and its eye
+  1.7 over `stand.h` within 0.01; `scene.camera` is `CAM_spawn`. Passing
+  prints `5 cameras (spawn, courtyard, hall, chapel, town), each at its
+  blueprint eye and aim, each on a floor the spawn reaches (ground x4,
+  floor-nw-tower-roof x1); scene camera CAM_spawn`. The header comment and
+  `README.md` say eight lines.
+- **The breaks from green (8, #34)**, each restored before the next, each
+  quoted as printed. The texts below are the format `check.py` is written
+  to; where a number is "about", the printed one is the record. (1) Delete
+  `CAM_hall`: `FAIL  line 8 cameras: CAM_hall missing; the blueprint has
+  camera hall at game (-31.5, 1.7, 8.2)`. (2) `cameras.json`'s town eye to
+  (-38.6, 13.7, -14.8), `town.png`'s ring top: `FAIL  line 8 cameras: camera
+  town at game (-38.6, 13.7, -14.8) has no floor a player stands on within
+  0.35 m of feet 12.0` (measured: `standAt` null; only `ground` under it).
+  (3) The hall's eye to (-34.5, 1.7, 8.2), inside the west curtain: `FAIL
+  line 8 cameras: camera hall at game (-34.5, 1.7, 8.2) stands on ground
+  (level 0) at 0.00, which the spawn does not reach` (measured: `standAt`
+  ground, `reachable` false). (4) `CAM_courtyard` moved 0.5 m in x after
+  it is made: `FAIL  line 8 cameras: CAM_courtyard is 0.500 m from its
+  blueprint eye (-4, 1.7, -5)`. (5) Comment out `lighting.py`'s
+  `world_from_hdri` call, which is the HDRI removed: `FAIL  line 7 light:
+  the scene has no World; lighting builds WORLD_hdri from
+  kloofendal_48d_partly_cloudy_puresky:hdri`, and line 4 still passes one
+  node and one image lower, which the report quotes as the reason line 7
+  exists. (6a) Leave `terrain.py`'s call in place: the
+  through build raises `lighting: the file already has 1 World(s)
+  (WORLD_hdri) before this stage; lighting builds the only one (#873), so
+  whatever made that one has kept terrain's old call` and `build.mjs` exits 1
+  before check.py runs. (6b) The same with that raise commented out: the
+  build saves, and `FAIL  line 7 light: the World is WORLD_hdri.001, not
+  WORLD_hdri: a World made before lighting's was dropped on save; lighting
+  builds the only one`. The `2 worlds` text this call first specified never
+  prints: Blender drops terrain's World on save, since lighting's took
+  `scene.world` from it, and check.py saw one World and passed (#876's
+  correction). (7)
+  The world with no clamp (`clamp=None`): `FAIL  line 7 light: WORLD_hdri
+  has no sun clamp (a DARKEN mix before its Background), so the sun is
+  counted twice`. (8) `SUN`'s Blender Z rotation 55.740 to 60.740: `FAIL
+  line 7 light: SUN points 3.35 deg from the HDRI's sun (limit 0.5)`, about
+  3.35 since 5 degrees of azimuth at 47.87 degrees of elevation is that arc.
+  (9) Delete `BRAZIER_2`: `FAIL  line 7 light: 2 BRAZIER_ objects for the
+  blueprint's 3 braziers; missing brazier-2`. (10) `BRAZIER_CLASH = {}`: the
+  build raises `lighting: brazier-3 (BRAZIER_3) at game (-20, 0, 10)
+  meets WoodenTable_01 and 2 more (gothic_statue, brass_candleholders); a
+  brazier stands clear of every piece unless BRAZIER_CLASH names it (#874)`,
+  the table being first in blueprint order. (11) `'coals'` out of `EMIT` and not back in
+  `KEEP`: `props.py` raises naming region `coals`, the first object in build
+  order that carries it, and its file (#863's guard, unchanged).
+- **The render budget (9, #877).** Recommend **#855's 1024 samples inside
+  and 128 outside, unchanged, per camera in `cameras.json`**. Measured at
+  960 x 540 with adaptive sampling on (Blender's default noise threshold),
+  denoised, at each still's exposure: the mean display difference from a
+  1024-sample render was 0.0160 at 128, 0.0152 at 256 and 0.0158 at 512 in
+  the hall at x32, and 0.0156 between two 1024-sample renders with different
+  seeds; the King's hall (0.0161, 0.0161, 0.0161 against 0.0164) and the
+  nave (0.0201, 0.0200, 0.0202 against 0.0198) the same, and today's
+  lighting in the hall too. So at that size 128 is as converged as 1024. It
+  is kept at 1024 because #855's streaks were seen by Devon at 1920 x 1080
+  and a mean difference cannot see a streak, and because it costs nothing
+  worth saving: every one of those renders took 29 to 34 s whatever its
+  sample count, scene sync and texture load being most of it.
+- **New assets (10).** Recommend **none, and nothing is fetched**: the World
+  is the HDRI row increment 1 fetched, the flames are Devon's atlas, the
+  braziers are his `brazier` collection in the pinned `.blend`. `fetch.mjs`
+  still prints 203 sources; `CREDITS.md` does not change.
+- **The module split.** Recommend **`lighting.py` new; `cameras.json` new;
+  `export-blueprint.mjs` gains `braziers` and `cameras` and prints `3
+  braziers, 5 cameras, 5 standing` after its counts; `materials.py`'s
+  `world_from_hdri` gains `clamp` and `flame_material()` is new;
+  `terrain.py` loses its call and `HDRI`; `props.py` gains `EMIT` and slot
+  6 and the one-stem append-and-re-material function; `check.py` gains lines
+  7 and 8; `README.md`'s stage row and the line count**. `build.py`,
+  `build.mjs`, `common.py`, `fetch.mjs`, `sources.json`, `allow.json`,
+  `CREDITS.md`, `STAGE_OF` and every geometry stage but `terrain` and
+  `props` do not change. `lighting.py` holds `SUN_CLAMP`, the sun's four
+  numbers, `LUX_PER_UNIT`, `PRACTICAL_GAIN`, the kinds table and
+  `BRAZIER_CLASH`, and `materials.py` holds `FLAME_EMISSION`, each citing
+  #873 or #874. `lighting.py` prints the practicals by kind and by source, each
+  brazier's overlaps, the five cameras with their `stand`, and its line 4
+  share.
+
 ### Dependencies
 
 - **Gate: none.** Needs Devon's machine with the Steam Blender 5.2 (#840),
@@ -3750,6 +4200,18 @@ piece, so no `modelOnly` and no `allow.json` entry.
   realised; then the fetch and the 12; then the breaks and the stills. One
   `builder` sitting; a look pass after Devon's lines on the stills is its own
   increment, as 4b and #860 were.
+- **Increment 7's order inside the lane** (#873 to #877): no fetch and no
+  Devon yes waits on it. First `export-blueprint.mjs` and `cameras.json`
+  (Node alone; the blueprint prints `3 braziers, 5 cameras, 5 standing`);
+  then `materials.py` and `props.py` (`MAT_flame`, `EMIT`, the one-stem
+  function) with `terrain.py`'s call still in place, the through build to
+  `props` rerun with line 5 and 6 unchanged and line 4 quoted; then
+  `terrain.py` loses the call and `lighting.py` lands, with `check.py`'s
+  lines 7 and 8 in the same commit, since a stage that ran with no body for
+  its lines fails by design; then the two builds, the breaks, and the five
+  stills. One `builder` sitting. The game-side fix for `brazier-3` (a
+  one-tile edit to `scene-config.json`) is not this row's and does not gate
+  it.
 - **Lane G, `tools/castle3d/`**, this row's alone (#842). It shares no file
   with lane F, so it may run beside a rank 1 or rank 2 session; that is two
   Blenders on one machine and Devon's call. Both add a line to
@@ -3792,6 +4254,11 @@ piece, so no `modelOnly` and no `allow.json` entry.
 - #435 and #851: the game's `barbican-west` stays solid and #435 stands for
   the game; the model's outer gate carries no `planId`, no `GATE_` name and
   no `allow.json` entry.
+- #844, amended by #876: eight `check.py` lines, not six; lines 7 and 8 run
+  when `lighting` did, and each has its break.
+- #500 and #843, extended by #874 and #875: the braziers' positions and the
+  cameras' footing are computed in Node by `castle-plan.js`'s own
+  `tileToWorld`, `standAt` and `walkability`, never again in Python.
 
 ### Looking checklist
 
@@ -3820,6 +4287,13 @@ piece, so no `modelOnly` and no `allow.json` entry.
 - [ ] Mereford at `CAM_town`: a town, or one house forty times?
 - [ ] The thatch from the North-west Tower and from the street: thatch, or
       a brown felt? The jetties and the framing: a street, or a stage set?
+- [ ] `CAM_hall` and `CAM_chapel` at +9.75 and +10: a daylit room with its
+      fires lit, or a night scene? The candle flames and the brazier's
+      coals: a flame, or a white blob?
+- [ ] `CAM_spawn` beside a game screenshot from the spawn: the same view?
+      The sun's shadows the same way round?
+- [ ] The hall's brazier (`brazier-3`) against the statue and the table:
+      the game's clash, reproduced; seen?
 
 ---
 

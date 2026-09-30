@@ -28,8 +28,10 @@
 # by the transform; a second row of a file is a copy of the tree sharing mesh
 # data. Re-materialed per face by the atlas region under its UV centroid, the
 # region names read from tools/props/atlas.py (checked against the packed
-# atlas within ATLAS_TOL), into one of five PBR kinds (REGION_KIND) or kept on
-# Devon's own atlas material (KEEP). A face in neither raises.
+# atlas within ATLAS_TOL), into one of five PBR kinds (REGION_KIND), MAT_flame
+# (EMIT, #874) or kept on Devon's own atlas material (KEEP). A face in none
+# raises. devon_trees() is the append and the re-material in one, which
+# lighting.py calls too for the game's three braziers (#874).
 #
 # THE BUILT 20 (#865). Each its blueprint box exactly, materials.library of its
 # slug, three of which (`slate`, `parchment`, `wool`) resolve through ALIAS.
@@ -76,9 +78,10 @@ HANG_GAP = 0.002            # a pushed prop's back this far proud of the plaster
 HANG_MAX = 0.01             # a push larger than this is the plan's fault
 
 # ------------------------------------------------------------ the regions --
-# Region name -> kind (#863): 28 names, 7,542 faces. KEEP is the other 75 in
-# use, 4,341 faces, on Devon's own atlas material: cloth, leather, paper, food,
-# flame, clay, glass, and every tile he drew a picture on.
+# Region name -> kind (#863): 28 names, 7,542 faces. EMIT is the four flame
+# regions, 172 faces, on MAT_flame (#874). KEEP is the other 71 in use, 4,169
+# faces, on Devon's own atlas material: cloth, leather, paper, food, clay,
+# glass, and every tile he drew a picture on.
 REGION_KIND = {}
 for _kind, _names in (
         ('wood', ('wood_light', 'wood', 'wood_dark', 'wood_grey', 'wood_red', 'planks', 'log_end')),
@@ -90,17 +93,22 @@ for _kind, _names in (
         REGION_KIND[_n] = _kind
 KEEP = frozenset((
     'cloth_red', 'cloth_red_dark', 'cloth_blue', 'cloth_blue_dark', 'cloth_green', 'cloth_cream', 'cloth_brown',
-    'cloth_ochre', 'burlap', 'burlap_light', 'paper', 'paper_dark', 'ink', 'wax_red', 'candle', 'flame', 'flame_core',
-    'ember', 'ash', 'bread', 'bread_dark', 'meat', 'meat_roast', 'apple_red', 'apple_green', 'leaf', 'leaf_dark',
+    'cloth_ochre', 'burlap', 'burlap_light', 'paper', 'paper_dark', 'ink', 'wax_red', 'candle', 'ash', 'bread', 'bread_dark', 'meat', 'meat_roast', 'apple_red', 'apple_green', 'leaf', 'leaf_dark',
     'lavender', 'soil', 'mud', 'mud_wet', 'leather', 'leather_dark', 'water', 'glass_green', 'residue', 'dregs', 'wine',
     'bone', 'clay', 'clay_dark', 'glaze_green', 'horn', 'feather', 'void', 'stew', 'cork', 'tar', 'cabbage', 'carrot',
     'flour', 'blood_old', 'spines', 'writing', 'rug_a', 'rug_b', 'rug_c', 'cobweb', 'cobweb_b', 'morris', 'mail', 'bill',
-    'roster', 'dial', 'frontal', 'linenfold', 'coals', 'crest_a', 'crest_b', 'crest_c', 'crest_d', 'tapestry_tree',
+    'roster', 'dial', 'frontal', 'linenfold', 'crest_a', 'crest_b', 'crest_c', 'crest_d', 'tapestry_tree',
     'tapestry_lattice', 'tapestry_stag', 'stained_glass'))
-if set(REGION_KIND) & KEEP:
-    raise ValueError(f"props: REGION_KIND and KEEP share {sorted(set(REGION_KIND) & KEEP)}")
-# The slots on every Devon mesh: 0 its own material, then the kinds in order.
+# The flame regions (#874): emissive, on MAT_flame, slot FLAME_SLOT. lighting.py
+# finds its practicals by the same names.
+EMIT = frozenset(('flame', 'flame_core', 'ember', 'coals'))
+for _a, _b in ((set(REGION_KIND), KEEP), (set(REGION_KIND), EMIT), (KEEP, EMIT)):
+    if _a & _b:
+        raise ValueError(f"props: REGION_KIND, KEEP and EMIT share {sorted(_a & _b)}")
+# The slots on every Devon mesh: 0 its own material, then the kinds in order,
+# then MAT_flame.
 KINDS = ('wood', 'stone', 'iron', 'brass', 'straw')
+FLAME_SLOT = 1 + len(KINDS)
 for _k in KINDS:
     if _k not in materials.PROP_KINDS:
         raise ValueError(f"props: kind {_k!r} is not in materials.PROP_KINDS")
@@ -322,10 +330,13 @@ class Ledger:
                 self.source[m] = label
 
     def label(self, m):
-        if m in self.source:
-            return self.source[m]
+        if m.name == 'MAT_flame':
+            return 'MAT_flame'
+        # by name before by source: devon_trees makes the kinds after the append
         if m.name in {v[5] for v in materials.PROP_KINDS.values()}:
             return 'MAT_*_prop and _brass'
+        if m in self.source:
+            return self.source[m]
         return 'library() sets'
 
     def split(self):
@@ -526,6 +537,19 @@ def shrub(p, col, library):
 
 
 # ------------------------------------------------------------- Devon's 75 --
+def _dedupe(before, datablocks):
+    """Each datablock new since `before` whose name is an earlier one's plus
+    .NNN, which is the same file appended twice (props, then lighting's
+    braziers), remapped onto the earlier one and removed, so line 4 counts the
+    atlas once."""
+    names = {d.name: d for d in before}
+    for d in [d for d in datablocks if d not in before]:
+        base = re.sub(r'\.\d{3}$', '', d.name)
+        if base != d.name and base in names:
+            d.user_remap(names[base])
+            datablocks.remove(d)
+
+
 def append_devon(stems, col):
     """The pinned file's collections named by `stems`, every object moved into
     `col` and the collections removed. Returns {stem: root empty}."""
@@ -533,6 +557,7 @@ def append_devon(stems, col):
     path = common.source_path(row)
     if not os.path.isfile(path):
         raise FileNotFoundError(f"props: {row['id']} is not a file at {path}")
+    mats, imgs = set(bpy.data.materials), set(bpy.data.images)
     with bpy.data.libraries.load(path, link=False) as (src, dst):
         missing = [s for s in stems if s not in src.collections]
         if missing:
@@ -548,6 +573,8 @@ def append_devon(stems, col):
             col.objects.link(o)
         bpy.data.collections.remove(c)
         roots[stem] = top[0]
+    _dedupe(mats, bpy.data.materials)
+    _dedupe(imgs, bpy.data.images)
     return roots
 
 
@@ -565,11 +592,12 @@ def atlas_check(img):
     return diff
 
 
-def rematerial(meshes, file_of):
+def rematerial(meshes, file_of, atlas_img):
     """Every Devon mesh re-materialed per face by the region under its UV
-    centroid (#863). Returns faces per kind (and 'kept') and regions in use."""
-    kind_mats = [materials.prop_material(k) for k in KINDS]
-    counts = {k: 0 for k in KINDS + ('kept',)}
+    centroid (#863), EMIT's onto MAT_flame (#874). Returns faces per kind (and
+    'flame' and 'kept') and regions in use."""
+    kind_mats = [materials.prop_material(k) for k in KINDS] + [materials.flame_material(atlas_img)]
+    counts = {k: 0 for k in KINDS + ('flame', 'kept')}
     used = set()
     for ob in meshes:
         me = ob.data
@@ -584,15 +612,18 @@ def rematerial(meshes, file_of):
             u = sum(uvs[i].uv[0] for i in poly.loop_indices) / poly.loop_total
             v = sum(uvs[i].uv[1] for i in poly.loop_indices) / poly.loop_total
             name = region_at(u, v)
-            if name is None or (name not in REGION_KIND and name not in KEEP):
+            if name is None or (name not in REGION_KIND and name not in KEEP and name not in EMIT):
                 raise ValueError(f"props: a face of {ob.name} in {file_of[ob]} samples region {name!r} (uv {u:.4f}, "
-                                 f"{v:.4f}), in neither REGION_KIND nor KEEP")
+                                 f"{v:.4f}), in none of REGION_KIND, EMIT and KEEP")
             region.append(name)
             used.add(name)
         for poly, name in zip(me.polygons, region):
             if name in REGION_KIND:
                 poly.material_index = 1 + KINDS.index(REGION_KIND[name])
                 counts[REGION_KIND[name]] += 1
+            elif name in EMIT:
+                poly.material_index = FLAME_SLOT
+                counts['flame'] += 1
             else:
                 poly.material_index = 0
                 counts['kept'] += 1
@@ -604,6 +635,31 @@ def rematerial(meshes, file_of):
         me.uv_layers['atlas'].active_render = True
         me.uv_layers.active = me.uv_layers['atlas']
     return counts, used
+
+
+def devon_trees(stems, col):
+    """The append and the re-material of Devon's `stems` in one (#863, #874),
+    which props.build and lighting.py's braziers both call: append_devon, the
+    one atlas the appended materials read, atlas_check, rematerial. Returns
+    a dict: roots, meshes (one per mesh data, in stem order), file_of, atlas,
+    atlas_diff, counts, used."""
+    roots = append_devon(stems, col)
+    meshes, file_of, seen = [], {}, set()
+    for stem in stems:
+        for o in [roots[stem]] + list(roots[stem].children_recursive):
+            if o.type == 'MESH' and o.data not in seen:
+                seen.add(o.data)
+                meshes.append(o)
+                file_of[o] = f"{stem}.glb"
+    imgs = {n.image for o in meshes for m in o.data.materials if m and m.node_tree
+            for n in m.node_tree.nodes if n.type == 'TEX_IMAGE' and n.image}
+    if len(imgs) != 1:
+        raise ValueError(f"props: castle_props.blend brings {len(imgs)} images; its materials read one atlas")
+    atlas_img = imgs.pop()
+    atlas_diff = atlas_check(atlas_img)
+    counts, used = rematerial(meshes, file_of, atlas_img)
+    return {'roots': roots, 'meshes': meshes, 'file_of': file_of, 'atlas': atlas_img, 'atlas_diff': atlas_diff,
+            'counts': counts, 'used': used}
 
 
 def copy_tree(root, col):
@@ -743,7 +799,8 @@ def build(bp):
     # Devon's 75
     before = set(bpy.data.materials)
     stems = sorted({os.path.basename(p['model'])[:-len('.glb')] for p in devon})
-    roots = append_devon(stems, col)
+    dv = devon_trees(stems, col)
+    roots = dv['roots']
     ledger.mark('atlas', before)
     used_roots = set()
     for p in devon:
@@ -754,20 +811,7 @@ def build(bp):
         root.matrix_world = placement(p, pushes[p['id']])
         root.scale = _scale(p)
         placed.append((tag(root, p), p, 'tree'))
-    meshes, file_of, seen = [], {}, set()
-    for stem in stems:
-        for o in [roots[stem]] + list(roots[stem].children_recursive):
-            if o.type == 'MESH' and o.data not in seen:
-                seen.add(o.data)
-                meshes.append(o)
-                file_of[o] = f"{stem}.glb"
-    imgs = {n.image for m in bpy.data.materials if m not in before and m.node_tree
-            for n in m.node_tree.nodes if n.type == 'TEX_IMAGE' and n.image}
-    if len(imgs) != 1:
-        raise ValueError(f"props: castle_props.blend brings {len(imgs)} images; its materials read one atlas")
-    atlas_img = imgs.pop()
-    atlas_diff = atlas_check(atlas_img)
-    counts, used = rematerial(meshes, file_of)
+    meshes, atlas_img, atlas_diff, counts, used = dv['meshes'], dv['atlas'], dv['atlas_diff'], dv['counts'], dv['used']
     faces = sum(len(o.data.polygons) for o in meshes)
 
     # the built 20
@@ -799,7 +843,7 @@ def build(bp):
           f"({len(stems)} files), {len(built)} built; {sum(1 for p in mine if p['noCollide'])} noCollide")
     print(f"props: atlas check {atlas_img.name} against tools/props/atlas.py: {atlas_diff:.5f} (ATLAS_TOL {ATLAS_TOL})")
     print(f"props: Devon's {len(meshes)} meshes, {faces} faces, {len(used)} regions in use; faces per kind: "
-          + ', '.join(f"{k} {counts[k]}" for k in KINDS + ('kept',)))
+          + ', '.join(f"{k} {counts[k]}" for k in KINDS + ('flame', 'kept')))
     print(f"props: pushes off the plaster ({len(push_log)}, HANG_GAP {HANG_GAP}): {'; '.join(push_log) or 'none'}")
     print(f"props: Poly Haven: {'; '.join(ph_log) or 'none'}")
     print(f"props: worst check_tree {worst_tree[0]:.5f} m ({worst_tree[1]}), worst check_box {worst_box[0]:.5f} m "
