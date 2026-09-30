@@ -138,11 +138,10 @@ finish the row.
 
 - **Container.** A session like this one closes it: data, validators, Node
   suites, headless Chromium.
-- **Local: Blender.** Basic headless Blender: Blender 4.5 LTS on `PATH`
+- **Local: Blender.** Basic headless Blender: Blender 5.2 LTS on `PATH`
   (or at `BLENDER`), on either of Devon's machines, huginn or Windows
-  (#804, #805, #878). huginn's `blender` on PATH is 5.2.2, so there it
-  needs 4.5 LTS beside it (the portable build) with `BLENDER` pointing at
-  it; `render.mjs` refuses anything else. A session without it does not
+  (#804, #878, #879). Both have 5.2.2 already: huginn on PATH, Windows as
+  the Steam install; `render.mjs` refuses any other line. A session without it does not
   claim the row's build increment; CI runs only the Node check against the
   committed output. Ranks 1, 2a, 2b, 2c (increment 1), 2d and 2e.
 - **Local: Blender GPU.** Blender's full feature set on a real GPU, and so

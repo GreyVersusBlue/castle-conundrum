@@ -8,7 +8,7 @@
 // In order, and each step exits non-zero on its own failure (#13):
 //  1. refuse under CI (#842). Nothing in `npm test` or CI runs Blender.
 //  2. find Blender at CASTLE3D_BLENDER, then the Steam install. Never at
-//     BLENDER, which rank 1 points at a 4.5 (#805).
+//     BLENDER, which is rank 1's (#805, #879).
 //  3. run `--version` and refuse anything not starting `Blender 5.2` (#840).
 //  4. resolve the output folder, CASTLE3D_OUT or the default below, and
 //     refuse one inside the repo (#841), so assets/ cannot take a byte.

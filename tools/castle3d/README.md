@@ -20,7 +20,7 @@ and huginn does not take it (#878). The launcher, `build.mjs`, in order:
 1. exits non-zero if `CI` is set (#842);
 2. finds Blender at `CASTLE3D_BLENDER`, else the Steam install at
    `C:\Program Files (x86)\Steam\steamapps\common\Blender\blender.exe`. It
-   never reads `BLENDER`, which rank 1 points at a 4.5 (#805);
+   never reads `BLENDER`, which is rank 1's (#805, #879);
 3. refuses any Blender whose `--version` does not start `Blender 5.2` (#840),
    and `common.py` refuses it again from inside, exiting 3;
 4. refuses an output folder inside the repo (#841);
