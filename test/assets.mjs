@@ -29,7 +29,8 @@
 //      config — the point is to catch the two drifting apart — and every pixel
 //      material is one 128 px map, at most 32 colours, wrapping at both edges
 //      and pixel-identical to the row tools/pixel/ draws it from (#742, #743)
-//   4. every byte under assets/poly-haven, assets/NPCs and assets/pixel is
+//   4. every byte under assets/poly-haven, assets/NPCs, assets/pixel,
+//      assets/props and assets/blender is
 //      reachable from one of those references, and everything a reference needs
 //      is there
 //   5. every prop and body is meshopt-encoded (#506)
@@ -37,6 +38,12 @@
 //      are there, loop, move and are byte-equal to their render (#787, #788),
 //      and the cow it builds from nothing is inside #789's four caps, skinned
 //      soundly, loops, reads as four-legged and is byte-equal to its render
+//   8. every file under assets/blender is its tools/blender/manifest.json row
+//      byte for byte, rendered by Blender 5.2 from inputs that have not moved
+//      since, inside its pack's caps, in the castle's palette, and made from
+//      no input file (#803, #806, #808)
+//   9. Devon's props under assets/props are meshopt with one material and one
+//      PNG atlas of 128 px or under (#831)
 //
 // Everything it reads is compressed as of 2026-09-15 (#506 to #508): KTX2/Basis
 // textures and EXT_meshopt_compression geometry. `triangles()` decodes meshopt
@@ -452,8 +459,8 @@ console.log('\nevery built thing names a material that exists');
  * including the two that ARE used, where only the `textures/` beside the ball
  * were ever loaded.
  *
- * The rule, for `assets/poly-haven`, `assets/NPCs`, `assets/pixel` and, since
- * #830, `assets/props`: a file
+ * The rule, for `assets/poly-haven`, `assets/NPCs`, `assets/pixel`, since
+ * #830 `assets/props`, and since #808 `assets/blender`: a file
  * may be there if some entry in data/ names it, or if a .gltf that some entry
  * in data/ names declares it as a buffer or an image. Nothing else. A rendered
  * texture no material wears is in that rule too: tools/pixel/ writes whatever
@@ -507,7 +514,7 @@ console.log('\nnothing on disk that nothing asks for');
   };
 
   let dead = 0, deadBytes = 0;
-  for (const rel of [...walk('assets/poly-haven'), ...walk('assets/NPCs'), ...walk('assets/pixel'), ...walk('assets/props')]) {
+  for (const rel of [...walk('assets/poly-haven'), ...walk('assets/NPCs'), ...walk('assets/pixel'), ...walk('assets/props'), ...walk('assets/blender')]) {
     if (needed.has(rel)) continue;
     dead++;
     deadBytes += fs.statSync(path.join(ROOT, rel)).size;
@@ -515,7 +522,7 @@ console.log('\nnothing on disk that nothing asks for');
   }
   if (dead > 8) fail(`...and ${dead - 8} more unreferenced files`);
   if (dead) fail(`${dead} unreferenced file(s) under assets/, ${(deadBytes / 1048576).toFixed(1)} MB`);
-  else pass(`${needed.size} files under assets/poly-haven, assets/NPCs, assets/pixel and assets/props, every one of them asked for`);
+  else pass(`${needed.size} files under assets/poly-haven, assets/NPCs, assets/pixel, assets/props and assets/blender, every one of them asked for`);
 
   for (const [rel, why] of needed) {
     if (!fs.existsSync(path.join(ROOT, rel))) fail(`${why} needs ${rel}, which is not there`);
@@ -864,6 +871,195 @@ console.log('\nthe generated cow, inside #789\'s caps');
   }
 }
 
+/* ----------------------------------- 8: what Blender made (#803, #806, #808) ---
+ * tools/blender/render.mjs runs Blender on Devon's machine and writes
+ * assets/blender/<pack>/<name>.glb and a row of tools/blender/manifest.json
+ * per file. CI cannot run Blender (#804), so this cannot reproduce a file the
+ * way 3b and 7 do: it proves the committed bytes are the bytes the manifest
+ * recorded and that no input moved since the render, and nothing more (#803
+ * says so out loud). Eight lines, each with the break that turns it red (#34):
+ *
+ *   1. the pin: every row's `blender` starts 5.2. (#805, #879)
+ *   2. the bytes: every row's file exists, is `bytes` long, hashes to `sha256`
+ *   3. both ways: every file under assets/blender/ is a manifest row, and
+ *      every manifest row is a packs.json row and back
+ *   4. not stale: every row's `source` is today's hash of its inputs
+ *   5. both endings (#632): each row's inputs hash the same as LF and as
+ *      CRLF, and manifest.json has one kind of line ending
+ *   6. the shape: meshopt, no basisu, no unlit, no COLOR_0, one material at
+ *      metallic 0, the row's triangles and under the pack's caps, its box on
+ *      y 0 and centred in x and z to 1 mm
+ *   7. the images: PNG, at most 128 px a side and 32 colours, every texel in
+ *      the castle's palettes or the pack's `extraColours` (at most 8, each
+ *      with a `why`)
+ *   8. no input files (#803): no .blend under tools/ or assets/, and nothing
+ *      under tools/blender/ that opens or imports a file or imports `time`
+ *
+ * The caps are one line per pack, held here and never read off the generator
+ * (#34). A pack that adds a line argues it in HISTORY.md (#611).
+ */
+const BLENDER_CAPS = {
+  calibration: { triangles: 300, bytes: 24000 },
+};
+const BLENDER_DIR = 'assets/blender';
+const BLENDER_EXTRA_MAX = 8;
+console.log('\nwhat Blender made: the manifest, the bytes and the inputs');
+{
+  const { sourceOf, sourceTexts, fileOf } = await import('../tools/blender/finish.mjs');
+  const { eolOf } = await import('../tools/place.mjs');
+  const { partsOf } = await import('./gltf.mjs');
+  const bad = [];
+  const say = (line, msg) => bad.push(`check 8 line ${line}: ${msg}`);
+  const manifestFile = path.join(ROOT, 'tools/blender/manifest.json');
+  const manifestText = fs.readFileSync(manifestFile, 'utf8');
+  const manifest = JSON.parse(manifestText);
+  const table = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/blender/packs.json'), 'utf8'));
+  const tableRows = new Map(table.rows.map((r) => [fileOf(r), r]));
+  const crypto = await import('node:crypto');
+  const walk = (rel) => {
+    const abs = path.join(ROOT, rel);
+    if (!fs.existsSync(abs)) return [];
+    return fs.readdirSync(abs, { withFileTypes: true }).flatMap((e) =>
+      e.isDirectory() ? walk(path.posix.join(rel, e.name)) : [path.posix.join(rel, e.name)]);
+  };
+
+  // 1. the pin
+  if (manifest.blender !== '5.2') say(1, `tools/blender/manifest.json says blender ${JSON.stringify(manifest.blender)}, not "5.2" (#879)`);
+  for (const r of manifest.rows) {
+    if (!String(r.blender ?? '').startsWith('5.2.'))
+      say(1, `${r.file} was rendered by Blender ${JSON.stringify(r.blender)}, not 5.2; the pin is 5.2 and moves only by a HISTORY entry and a full re-render (#805, #879)`);
+  }
+
+  // 2. the bytes
+  for (const r of manifest.rows) {
+    const abs = path.join(ROOT, r.file);
+    if (!fs.existsSync(abs)) { say(2, `${r.file} is a manifest row and not on disk`); continue; }
+    const bytes = fs.readFileSync(abs);
+    const sha = crypto.createHash('sha256').update(bytes).digest('hex');
+    if (bytes.length !== r.bytes) say(2, `${r.file} is ${bytes.length} bytes, the manifest says ${r.bytes}: it changed after its render`);
+    if (sha !== r.sha256) say(2, `${r.file} hashes to ${sha}, the manifest says ${r.sha256}: it changed after its render`);
+  }
+
+  // 3. both ways
+  const rowFiles = new Set(manifest.rows.map((r) => r.file));
+  for (const rel of walk(BLENDER_DIR)) if (!rowFiles.has(rel)) say(3, `${rel} is under ${BLENDER_DIR}/ and is no row of tools/blender/manifest.json; only npm run blender:render writes there (#806)`);
+  for (const r of manifest.rows) if (!tableRows.has(r.file)) say(3, `${r.file} is a manifest row and no row of tools/blender/packs.json makes it`);
+  for (const f of tableRows.keys()) if (!rowFiles.has(f)) say(3, `tools/blender/packs.json has a row for ${f} and the manifest does not; run \`npm run blender:render ${tableRows.get(f).pack}\` on a machine with Blender 5.2`);
+  const sorted = [...manifest.rows].map((r) => r.file);
+  if (sorted.join('|') !== [...sorted].sort().join('|')) say(3, 'tools/blender/manifest.json\'s rows are not sorted by file');
+
+  // 4. not stale, and 5's first half
+  for (const r of manifest.rows) {
+    const row = tableRows.get(r.file);
+    if (!row) continue; // line 3 said so
+    let texts;
+    try { texts = sourceTexts(row); } catch (err) { say(4, `${r.file}'s inputs cannot be read: ${err.message}`); continue; }
+    const today = sourceOf(texts, row);
+    if (today !== r.source)
+      say(4, `${r.file}'s source hash is ${today} today and ${r.source} at its render: common.py, ${row.script}, finish.mjs or its packs.json row moved without a render. Run \`npm run blender:render ${row.pack}\` on a machine with Blender 5.2 (#803, #879)`);
+    const lf = Object.fromEntries(Object.entries(texts).map(([k, v]) => [k, v.replace(/\r\n/g, '\n')]));
+    const crlf = Object.fromEntries(Object.entries(lf).map(([k, v]) => [k, v.replace(/\n/g, '\r\n')]));
+    const a = sourceOf(lf, row), b = sourceOf(crlf, row);
+    if (a !== b) say(5, `${r.file}'s inputs hash to ${a} as LF and ${b} as CRLF; the same commit would read stale on one machine (#632)`);
+  }
+
+  // 5's second half
+  const eol = eolOf(manifestText);
+  const other = eol === '\r\n' ? /(^|[^\r])\n/.test(manifestText) : manifestText.includes('\r\n');
+  if (other) say(5, `tools/blender/manifest.json mixes line endings; its first is ${JSON.stringify(eol)} and render.mjs writes the file's own (#632)`);
+
+  // 6. the shape, and 7. the images
+  const palette = new Set(JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/pixel/textures.json'), 'utf8')).rows
+    .flatMap((row) => row.palette.map((h) => h.toLowerCase())));
+  for (const [pack, spec] of Object.entries(table.packs ?? {})) {
+    const extra = spec.extraColours ?? [];
+    if (extra.length > BLENDER_EXTRA_MAX) say(7, `pack ${pack} lists ${extra.length} extraColours, over ${BLENDER_EXTRA_MAX}`);
+    for (const e of extra) if (!/^#[0-9a-f]{6}$/i.test(e?.colour ?? '') || !e.why) say(7, `pack ${pack}'s extraColours entry ${JSON.stringify(e)} is not { colour: "#rrggbb", why }`);
+  }
+  for (const r of manifest.rows) {
+    const abs = path.join(ROOT, r.file);
+    if (!fs.existsSync(abs)) continue; // line 2 said so
+    const caps = BLENDER_CAPS[r.pack];
+    if (!caps) { say(6, `${r.file} is pack ${r.pack}, which has no line in BLENDER_CAPS; a pack argues its caps in HISTORY.md (#611)`); continue; }
+    const g = readGLTF(abs);
+    const { json } = g;
+    const used = json.extensionsUsed || [];
+    if (!used.includes('EXT_meshopt_compression')) say(6, `${r.file} has no EXT_meshopt_compression; finish.mjs writes it (#506, #806)`);
+    for (const ext of ['KHR_texture_basisu', 'KHR_materials_unlit']) if (used.includes(ext)) say(6, `${r.file} declares ${ext}; a Blender asset is lit with one PNG atlas ("The look")`);
+    if ((json.meshes || []).some((m) => m.primitives.some((p) => 'COLOR_0' in p.attributes))) say(6, `${r.file} carries COLOR_0; colour is the atlas, not vertex colours`);
+    const mats = json.materials || [];
+    if (mats.length !== 1) say(6, `${r.file} has ${mats.length} materials, not one`);
+    for (const m of mats) {
+      const metal = m.pbrMetallicRoughness?.metallicFactor ?? 1;
+      if (metal !== 0) say(6, `${r.file}'s material ${m.name} has metallic ${metal}, not 0`);
+    }
+    const tris = triangles(abs).tris.length;
+    if (tris !== r.triangles) say(6, `${r.file} has ${tris} triangles and its manifest row says ${r.triangles}`);
+    if (tris > caps.triangles) say(6, `${r.file} has ${tris} triangles, over pack ${r.pack}'s cap of ${caps.triangles}`);
+    const size = fs.statSync(abs).size;
+    if (size > caps.bytes) say(6, `${r.file} is ${size} bytes, over pack ${r.pack}'s cap of ${caps.bytes}`);
+    const lo = [Infinity, Infinity, Infinity], hi = [-Infinity, -Infinity, -Infinity];
+    for (const part of partsOf(abs).parts) {
+      const m = part.matrix;
+      for (const x of [part.min.x, part.max.x]) for (const y of [part.min.y, part.max.y]) for (const z of [part.min.z, part.max.z]) {
+        for (let k = 0; k < 3; k++) {
+          const v = m[k] * x + m[4 + k] * y + m[8 + k] * z + m[12 + k];
+          lo[k] = Math.min(lo[k], v); hi[k] = Math.max(hi[k], v);
+        }
+      }
+    }
+    if (Math.abs(lo[1]) > 1e-3) say(6, `${r.file}'s box starts at y ${lo[1].toFixed(4)}, not 0 within 1 mm; common.py's frame() puts the base on the floor`);
+    for (const [k, axis] of [[0, 'x'], [2, 'z']]) {
+      const mid = (lo[k] + hi[k]) / 2;
+      if (Math.abs(mid) > 1e-3) say(6, `${r.file}'s box is centred at ${axis} ${mid.toFixed(4)}, not 0 within 1 mm`);
+    }
+
+    // 7
+    const extra = new Set((table.packs?.[r.pack]?.extraColours ?? []).map((e) => String(e.colour).toLowerCase()));
+    for (const [i, img] of (json.images || []).entries()) {
+      const label = `${r.file}'s image ${i}`;
+      if (img.mimeType !== 'image/png') { say(7, `${label} is ${img.mimeType || img.uri || 'untyped'}, not a PNG`); continue; }
+      const bv = json.bufferViews?.[img.bufferView];
+      const buf = bv && g.buffers[bv.buffer];
+      if (!buf) { say(7, `${label} has no bytes this suite can read`); continue; }
+      const png = buf.subarray(bv.byteOffset || 0, (bv.byteOffset || 0) + bv.byteLength);
+      let data, info;
+      try {
+        ({ data, info } = await sharp(png).ensureAlpha().raw().toBuffer({ resolveWithObject: true }));
+      } catch (err) { say(7, `${label} cannot be decoded: ${err.message}`); continue; }
+      if (info.width > PIXEL_PX || info.height > PIXEL_PX) say(7, `${label} is ${info.width} x ${info.height}, over ${PIXEL_PX} px`);
+      const colours = new Set();
+      for (let p = 0; p < data.length; p += 4) colours.add(`#${[data[p], data[p + 1], data[p + 2]].map((c) => c.toString(16).padStart(2, '0')).join('')}`);
+      if (colours.size > PIXEL_MAX_COLOURS) say(7, `${label} holds ${colours.size} colours, over ${PIXEL_MAX_COLOURS}`);
+      const stray = [...colours].filter((c) => !palette.has(c) && !extra.has(c));
+      if (stray.length) say(7, `${label} has texels in ${stray.slice(0, 6).join(', ')}, in no palette of tools/pixel/textures.json and not in pack ${r.pack}'s extraColours`);
+    }
+  }
+
+  // 8. no input files
+  const blends = [...walk('tools'), ...walk('assets')].filter((rel) => /\.blend\d*$/i.test(rel));
+  for (const rel of blends) say(8, `${rel} is a .blend; a Blender asset is built from the factory startup by a committed script, and nothing is opened (#803)`);
+  const INPUTS = [
+    [/\bimport_scene\s*\./, 'import_scene'],
+    [/\bopen_mainfile\b/, 'open_mainfile'],
+    [/\blibraries\s*\.\s*load\b/, 'libraries.load'],
+    [/\bimages\s*\.\s*load\b/, 'images.load'],
+    [/^\s*(?:import\s+(?:[\w.]+\s*,\s*)*time\b|from\s+time\s+import\b)/m, 'import time'],
+  ];
+  for (const rel of walk('tools/blender').filter((f) => !f.startsWith('tools/blender/.staging/'))) {
+    const text = fs.readFileSync(path.join(ROOT, rel), 'utf8');
+    for (const [re, what] of INPUTS) {
+      if (re.test(text)) say(8, `${rel} calls ${what}; a Blender asset is made from nothing but its script and its row (#803)`);
+    }
+  }
+
+  for (const b of bad) fail(b);
+  if (!bad.length) {
+    const t = manifest.rows.map((r) => `${r.file} ${r.triangles} triangles ${r.bytes} bytes`).join('; ');
+    pass(`${manifest.rows.length} Blender file(s), each its manifest row, rendered by 5.2 from today's inputs, meshopt, one lit material, palette texels only, nothing opened: ${t}`);
+  }
+}
+
 /* ------------------------------------------------- 9: Devon's props (#831) ---
  * assets/props/ is a family made outside this repo by Devon's own Blender
  * script (#830; the script is in tools/props/ and nothing runs it). Every file
@@ -874,8 +1070,8 @@ console.log('\nthe generated cow, inside #789\'s caps');
  * `removeAlpha()`, with all fifteen suites green. So this holds the family's
  * shape as it must arrive in a commit: meshopt-encoded (#506), one material,
  * one image, that image a PNG no bigger than PIXEL_PX on either side by its
- * own IHDR, and no KHR_texture_basisu declared. Check 8 is the Blender
- * pipeline's number and stays free.
+ * own IHDR, and no KHR_texture_basisu declared. Check 8, above, is the
+ * Blender pipeline's.
  */
 console.log("\nDevon's props: meshopt, one material, one small PNG atlas");
 {

@@ -203,6 +203,7 @@ file keeps a pointer saying which band left.
 | `npm run assets:encode` | Re-encodes `assets/` in place, KTX2 and meshopt. Hand-run, needs `ktx` (#506). |
 | `npm run pixel:render` | Draws `tools/pixel/textures.json`'s fifteen rows into `assets/pixel/*.png`. Hand-run, deterministic, a second run is a no-op (#742). |
 | `npm run bodies:render` | Writes Sweep, Stir, Hammer, Spar and Drill into the four human bodies from `tools/bodies/clips.json`, and builds `assets/NPCs/Cow.glb` from `tools/bodies/bodies.json`. Hand-run, deterministic, a second run is a no-op (#787, #790, #794). |
+| `npm run blender:render` | Builds `tools/blender/packs.json`'s rows in Blender 5.2 headless into `assets/blender/`, meshopt by `finish.mjs`, and rewrites `tools/blender/manifest.json`. Hand-run on huginn or Windows, refuses CI and any other Blender, deterministic, a second run prints "unchanged" (#880 to #884). `BLENDER_THREADS` caps its threads. |
 | `npm run dialogue:extract` | `data/` out to `dialogue/castle.dlg`. Hand-run (#687). |
 | `npm run dialogue:compile` | `dialogue/castle.dlg` back into `data/npcs.json` and `data/quests/`. Hand-run. |
 | `npm run dialogue:check` | Neither, and exits non-zero if the two have drifted. `test/dialogue.mjs` runs the same check. |

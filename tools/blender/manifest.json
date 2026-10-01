@@ -1,0 +1,22 @@
+{
+  "comment": "Written by `npm run blender:render` and never by hand (#806). One row per file under assets/blender/: its bytes and sha256 as committed, its triangles and images, the Blender that made it, and `source`, the sha256 over common.py, its script, finish.mjs and its packs.json row with every text file normalised to LF. test/assets.mjs check 8 holds every row.",
+  "blender": "5.2",
+  "rows": [
+    {
+      "file": "assets/blender/calibration/crate.glb",
+      "pack": "calibration",
+      "name": "crate",
+      "bytes": 8116,
+      "sha256": "4bb1c8727930fd6e0ed85cc31dbc0453a01fb5ffca9e8246f9c5861ba2d2fa30",
+      "triangles": 216,
+      "images": [
+        [
+          16,
+          16
+        ]
+      ],
+      "blender": "5.2.2 LTS",
+      "source": "82ed8e4c2aa421552056c1b2a4f8aa14e1b40e0eb0b6e4aac089d9bbc3eb2099"
+    }
+  ]
+}

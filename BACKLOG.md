@@ -62,11 +62,13 @@ placed in the household's routines (#800); and rank 10, retired into 2c and
 thirteen rooms and two open-ward stretches (#830 to #834); and the chapel
 nave, a new inner-ward ground room for the pulpit and the rood (#835 to
 #838); and rank 9's quay and river, increments 3a and 3b, the toll-house
-under Mereford's one slate gable and the water past it (#870 to #872).
+under Mereford's one slate gable and the water past it (#870 to #872); and
+the Blender pipeline, `tools/blender/` with its manifest, `test/assets.mjs`
+check 8 and a calibration crate placed in the kitchen (#880 to #884).
 
 **Open, ranked below.** Devon made Blender-built assets the project's top
 priority on 2026-09-25 and reopened ranks 1 and 2 himself to hold them
-(#801). Fourteen rows: the Blender pipeline (rank 1); the Blender pack band,
+(#801). Thirteen rows: the Blender pack band,
 five rows lettered by priority (2a evidence props, 2b an interiors kit, 2c a
 shared rig with swappable parts, 2d the animals, 2e the countryside beyond
 the wall); the castle rebuilt as a realistic standalone Blender model, outside
@@ -143,7 +145,7 @@ finish the row.
   (#804, #878, #879). Both have 5.2.2 already: huginn on PATH, Windows as
   the Steam install; `render.mjs` refuses any other line. A session without it does not
   claim the row's build increment; CI runs only the Node check against the
-  committed output. Ranks 1, 2a, 2b, 2c (increment 1), 2d and 2e.
+  committed output. Ranks 2a, 2b, 2c (increment 1), 2d and 2e.
 - **Local: Blender GPU.** Blender's full feature set on a real GPU, and so
   **Devon's Windows machine only** (#878), even where huginn has the right
   Blender. Rank 2h, "Castle in Blender": realistic Poly Haven PBR and
@@ -182,11 +184,11 @@ together.
 | Lane | The file that decides it | Rows |
 | --- | --- | --- |
 | A | `src/save.js` — the version number and `migrate` | none held |
-| B | `data/scene-config.json` — and `test/tools.mjs`'s byte-exactness rail | 1, 2a, 2b, 2e, 4, 9, 13 (increments 2 and 3 only) |
+| B | `data/scene-config.json` — and `test/tools.mjs`'s byte-exactness rail | 2a, 2b, 2e, 4, 9, 13 (increments 2 and 3 only) |
 | C | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | 2c, 2d, 6 |
 | D | `src/main.js`'s player rig and spawn | 6, 11 |
 | E | `src/audio.js` and `data/sounds.json` | 7 |
-| F | `tools/blender/` and its manifest | 1, 2a, 2b, 2c, 2d, 2e |
+| F | `tools/blender/` and its manifest | 2a, 2b, 2c, 2d, 2e |
 | G | `tools/castle3d/` | 2h |
 
 Lane A last bumped the save version to 6 (#612); the next row that bumps it
@@ -199,14 +201,14 @@ row that adds a state or rewords a line runs `npm run dialogue:extract`
 before it commits (#687). Lane B: rank 4 and rank 9 both write
 `data/scene-config.json` and do not run together; rank 13's increments 2 and 3
 are the same lane and wait behind whichever of the other two is running; the
-Blender rows that place (1, 2a, 2b, 2e) hold it too. Lane F is every Blender
+Blender rows that place (2a, 2b, 2e) hold it too. Lane F is every Blender
 row: one machine renders, so they run one at a time regardless (#804). Lane
 G is 2h's alone and shares no file with F, so 2h may run beside a lane F row;
 that is two Blenders on one machine and Devon's call (#842).
 
 ## The ranked table
 
-Fourteen ranked rows: 1, 2a, 2b, 2c, 2d, 2e, 2h, 3, 4, 6, 7, 9, 11, 13. Devon
+Thirteen ranked rows: 2a, 2b, 2c, 2d, 2e, 2h, 3, 4, 6, 7, 9, 11, 13. Devon
 reopened ranks 1 and 2 himself on 2026-09-25 for the Blender rows, and
 lettered the pack band by priority (#801, #802). 2f, his own props, took
 the next letter the same day, ran first, and shipped the same day
@@ -222,7 +224,8 @@ row is named by title as well as by rank in this file, `SPECS.md` and
 a row is claimed. Rank 1 cycled through four different rows before retiring
 on 2026-09-21 (the fourth body, the castle you could not walk, the walker on
 the stair, then the day-before walking day, #778 to #779) and reopened for
-the Blender pipeline on 2026-09-25; rank 2 was last held by "Sight at the
+the Blender pipeline on 2026-09-25, which shipped and retired it again on
+2026-10-01 (#880 to #884); rank 2 was last held by "Sight at the
 body's own height," which shipped 2026-09-21 (#780 to #782) and opened
 rank 3's gate, and reopened the same day as the Blender pack band. Ranks 5,
 8 and 12 finished rather than being retired part-way: 5 was the hall
@@ -232,12 +235,11 @@ the placement editor, budget suite, move-and-delete and the dialogue format
 
 | Rank | Item | Size | Model | Where | Gate | Lane | Claimed | Detail |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Blender: the pipeline: the empty-scene builder, the manifest, check 8 and one placed calibration crate, specced (#801 to #808); nothing built | 1 | Opus 5 | Local: Blender | — | F, B | `claude/blender-pipeline` | [Blender: the pipeline](SPECS.md#blender-the-pipeline) |
-| 2a | Blender: evidence props: three pinned swaps (the knife, the candle, the ledger) and the aumbry candles, specced (#810 to #812, #816, #819); the goblet, the vial and the seal went to 2f (#830); nothing built | 1 | Opus 5 | Local: Blender | after 1 | F, B | | [Blender: evidence props](SPECS.md#blender-evidence-props) |
-| 2b | Blender: an interiors kit: joined sets dressing the kitchen, the great hall and the cell, specced (#813 to #816, #819); the two hearths and the chapel altar went to 2f (#830); nothing built | 2+ | Opus 5 | Local: Blender | after 1, 2a | F, B | | [Blender: an interiors kit](SPECS.md#blender-an-interiors-kit) |
-| 2c | Blender: a shared rig with swappable parts: one rig, one-primitive parts, at most five skinned draws a person against the Quaternius rigs' 12 to 15, specced (#820 to #825); nothing built | 2+ | Opus 5 | Local: Blender, then Container; judged local: GPU (#53) | after 1 | F, C | | [Blender: a shared rig with swappable parts](SPECS.md#blender-a-shared-rig-with-swappable-parts) |
-| 2d | Blender: the animals: pig, goat, sheep, horse, cat and two geese on one quadruped topology plus a bird one for the goose, specced (#826 to #829); nothing built | 1 | Opus 5 | Local: Blender; judged local: GPU (#53) | after 1, 2c increment 1 | F, C | | [Blender: the animals](SPECS.md#blender-the-animals) |
-| 2e | Blender: the countryside beyond the wall: five backdrop pieces cut from one seeded height field, specced (#816 to #819); nothing built | 1 | Opus 5 | Local: Blender | after 1 (rank 9's 3b shipped, #871) | F, B | | [Blender: the countryside beyond the wall](SPECS.md#blender-the-countryside-beyond-the-wall) |
+| 2a | Blender: evidence props: three pinned swaps (the knife, the candle, the ledger) and the aumbry candles, specced (#810 to #812, #816, #819); the goblet, the vial and the seal went to 2f (#830); nothing built | 1 | Opus 5 | Local: Blender | 1 shipped (#881) | F, B | | [Blender: evidence props](SPECS.md#blender-evidence-props) |
+| 2b | Blender: an interiors kit: joined sets dressing the kitchen, the great hall and the cell, specced (#813 to #816, #819); the two hearths and the chapel altar went to 2f (#830); nothing built | 2+ | Opus 5 | Local: Blender | after 2a (1 shipped, #881) | F, B | | [Blender: an interiors kit](SPECS.md#blender-an-interiors-kit) |
+| 2c | Blender: a shared rig with swappable parts: one rig, one-primitive parts, at most five skinned draws a person against the Quaternius rigs' 12 to 15, specced (#820 to #825); nothing built | 2+ | Opus 5 | Local: Blender, then Container; judged local: GPU (#53) | 1 shipped (#881) | F, C | | [Blender: a shared rig with swappable parts](SPECS.md#blender-a-shared-rig-with-swappable-parts) |
+| 2d | Blender: the animals: pig, goat, sheep, horse, cat and two geese on one quadruped topology plus a bird one for the goose, specced (#826 to #829); nothing built | 1 | Opus 5 | Local: Blender; judged local: GPU (#53) | after 2c increment 1 (1 shipped, #881) | F, C | | [Blender: the animals](SPECS.md#blender-the-animals) |
+| 2e | Blender: the countryside beyond the wall: five backdrop pieces cut from one seeded height field, specced (#816 to #819); nothing built | 1 | Opus 5 | Local: Blender | 1 and rank 9's 3b shipped (#881, #871) | F, B | | [Blender: the countryside beyond the wall](SPECS.md#blender-the-countryside-beyond-the-wall) |
 | 2h | Castle in Blender: the castle, Mereford and the countryside as a realistic standalone model with Poly Haven PBR, built by committed scripts on Blender 5.2, with gameplay markers, specced (#839 to #844); increments 0 to 6 shipped (#839 to #869, PR #90, 34357ac); increments 7 to 9 (lighting and cameras, markers, export) are left; the game loads none of it | 2+ | Opus 5 | Local: Blender GPU (5.2, Devon's Windows machine only); Local: net for its fetches | — | G | | [Castle in Blender](SPECS.md#castle-in-blender) |
 | 3 | The GPU run: the looks are taken (#711 to #715); the walker holds on a GPU (#734, #736) and the third sitting reached the accusation with the wrong ending (#735 to #741) | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
 | 4 | The retro castle: increment 1 shipped, fifteen sets out and fifteen 128 px textures in (#757 to #766); the look is left; variety per room is superseded by 2h (#839); the props increment moved to 2b (#813) | 2+ | Opus 5 | Container to the look, local: GPU past it | — | B | | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
@@ -251,26 +253,9 @@ the placement editor, budget suite, move-and-delete and the dialogue format
 take first, what each one unblocks, and which ones two sessions may hold at
 the same time. This table still ranks; that file sequences (#601).
 
-## Blender: the pipeline
-
-*Where: local, Blender. Gate: none. Lanes: F and B.*
-
-**Rank 1.** Devon's instruction of 2026-09-25: assets made in Blender are the
-new top priority, and he reopened this rank himself to hold it (#801, #802).
-Specced whole, decisions #801 to #808, against `6a279de`: `tools/blender/`
-builds every asset from an empty factory scene out of a seeded script,
-exports it into a staging folder, and a Node step (`finish.mjs`) writes the
-committed bytes, meshopt-encoded, with a manifest row per file; `test/
-assets.mjs` check 8 holds the committed bytes to the manifest and the
-manifest to the scripts. Blender never runs in CI (#804); a session without
-it on `PATH` does not claim this row. One asset ships with the pipeline
-itself, a calibration crate placed in the larder, proving `propPath`, check
-8 and the budget line end to end (#808). Every rank 2 pack is gated on this
-row. Detail: [Blender: the pipeline](SPECS.md#blender-the-pipeline).
-
 ## Blender: evidence props
 
-*Where: local, Blender. Gate: after rank 1. Lanes: F and B.*
+*Where: local, Blender. Gate: rank 1 shipped (#881). Lanes: F and B.*
 
 **Rank 2a, size 1.** Specced whole, decisions #810 to #812, #816 and #819.
 `data/mystery.json`'s eleven evidence rows hold no dagger, goblet, vial or
@@ -285,7 +270,7 @@ evidence props](SPECS.md#blender-evidence-props).
 
 ## Blender: an interiors kit
 
-*Where: local, Blender. Gate: after rank 1 and 2a. Lanes: F and B.*
+*Where: local, Blender. Gate: after 2a; rank 1 shipped (#881). Lanes: F and B.*
 
 **Rank 2b, size 2+.** Specced whole, decisions #813 to #816 and #819. Dresses
 four rooms, the kitchen, the great hall, the chapel, and the cell as the
@@ -300,7 +285,7 @@ moves here as this row's increment 3, gated on rank 4's look (#813). Detail:
 ## Blender: a shared rig with swappable parts
 
 *Where: local, Blender for increment 1, then container; judged local GPU
-(#53). Gate: after rank 1. Lanes: F and C; not B.*
+(#53). Gate: rank 1 shipped (#881). Lanes: F and C; not B.*
 
 **Rank 2c, size 2+.** Specced whole, decisions #820 to #825. Rank 10's
 successor for people (#807): one rig, `folk.glb`, with every wearable part
@@ -316,8 +301,8 @@ shared rig with swappable parts](SPECS.md#blender-a-shared-rig-with-swappable-pa
 
 ## Blender: the animals
 
-*Where: local, Blender; judged local GPU (#53). Gate: after rank 1 and 2c's
-increment 1. Lanes: F and C; not B.*
+*Where: local, Blender; judged local GPU (#53). Gate: after 2c's
+increment 1; rank 1 shipped (#881). Lanes: F and C; not B.*
 
 **Rank 2d, size 1.** Specced whole, decisions #826 to #829. Rank 10's
 successor for animals (#807): pig, goat, sheep, horse and cat on one
@@ -330,7 +315,7 @@ rise by the animals' own draws. Detail: [Blender: the animals](SPECS.md#blender-
 
 ## Blender: the countryside beyond the wall
 
-*Where: local, Blender. Gate: after rank 1; rank 9's increment 3b shipped (#871). Lanes:
+*Where: local, Blender. Gate: rank 1 shipped (#881); rank 9's increment 3b shipped (#871). Lanes:
 F and B.*
 
 **Rank 2e, size 1.** Specced whole, decisions #816 to #819. Five backdrop
@@ -352,7 +337,7 @@ instruction of 2026-09-26. The castle, Mereford and 400 m of countryside
 rebuilt as a realistic standalone Blender model with Poly Haven PBR, today's
 layout as the guide through a `blueprint.json` that `makePlan` writes in
 Node, and his 71 props re-materialed inside it. Committed scripts under
-`tools/castle3d/` build it headless on Blender 5.2, outside rank 1's
+`tools/castle3d/` build it headless on Blender 5.2, outside the Blender pipeline's
 pipeline and exempt from #803 and #805 (#840); the master `.blend`, its
 texture cache and `castle.glb` live outside the repo (#841); a second
 Blender runs `check.py` over the saved file and fails the build (#844).
