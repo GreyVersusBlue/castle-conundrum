@@ -191,6 +191,41 @@ console.log('\nthe built slabs and the props on an upper floor, and what each on
   }
 }
 
+/* ---------------------------- 1e: nothing stands over a pressable (#812) ---
+ * `InteractionSystem.hasLineOfSight` casts from the eye to a target's box
+ * centre against `occluders()`, which is every scene child but the bodies and
+ * the targets. A dressing is neither, so one set on top of or hung over a
+ * pressable is in its sight ray, and the prompt goes away with nothing to say
+ * why: the target is the one object the ray is not tested against.
+ *
+ * So: for every piece carrying `evidence`, `read` or `bell`, no other piece
+ * but the ground overlaps its box in plan by more than 1 cm in x and in z with
+ * its own base at or above the pressable's centre height and below the
+ * pressable's base plus EYE_HEIGHT. That band is the aim point to a standing
+ * eye. A floor slab 4 m over a level-0 pressable is above it, and the crate
+ * under the gaol roll or the cloak is below it. A plan fact, so here and not
+ * in plan-vs-scene.mjs (#529).
+ */
+console.log('\nnothing stands over a pressable');
+{
+  const pressables = plan.pieces.filter(p => p.evidence || p.read || p.bell);
+  if (!pressables.length) fail('no piece in the plan carries evidence, read or bell, so this check tests nothing');
+  const over = [];
+  for (const target of pressables) {
+    const centre = (target.box.min.y + target.box.max.y) / 2;
+    const eye = target.box.min.y + EYE_HEIGHT;
+    for (const o of plan.pieces) {
+      if (o === target || o.kind === 'ground' || !o.box) continue;
+      const ox = Math.min(target.box.max.x, o.box.max.x) - Math.max(target.box.min.x, o.box.min.x);
+      const oz = Math.min(target.box.max.z, o.box.max.z) - Math.max(target.box.min.z, o.box.min.z);
+      if (ox > 0.01 && oz > 0.01 && o.box.min.y >= centre && o.box.min.y < eye)
+        over.push(`${o.id} stands over ${target.id}, which the player presses E at: its base at y ${f2(o.box.min.y)} is between ${target.id}'s centre at ${f2(centre)} and a standing eye at ${f2(eye)}, and it overlaps by ${f2(ox)} x ${f2(oz)} m in plan`);
+    }
+  }
+  for (const line of over) fail(line);
+  if (!over.length) pass(`no piece stands over any of the ${pressables.length} pressables, between its centre and a standing eye`);
+}
+
 /* ------------------------------ 2: the cabinet and the commode stand close ---
  * The other half of the same number. Not being in the wall is the floor; these
  * two are meant to be AGAINST their side walls, and until 2026-09-14 they stood

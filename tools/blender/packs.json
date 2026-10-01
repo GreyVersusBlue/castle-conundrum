@@ -3,6 +3,14 @@
   "packs": {
     "calibration": {
       "extraColours": []
+    },
+    "evidence": {
+      "extraColours": [
+        {
+          "colour": "#e6d9a8",
+          "why": "Tallow. The candle-count quest and the chapel candle clue are tallow candles, and the castle's palettes stop at plaster #cbbfa3, which reads as stone beside a wall of it, not as a candle."
+        }
+      ]
     }
   },
   "rows": [
@@ -16,6 +24,24 @@
       "plank": 0.03,
       "gap": 0.012,
       "batten": 0.09
+    },
+    {
+      "pack": "evidence",
+      "name": "aumbry-candles",
+      "script": "evidence.py",
+      "seed": "evidence/aumbry-candles/2026-10-01",
+      "why": "Dresses the candle-count quest (four tallow in the aumbry at Compline, three at Lauds) and data/lore.json's candle account; the three that are left, at 26, 22 and 18 cm. Not pressable, so no clue (#810).",
+      "width": 0.5,
+      "depth": 0.22,
+      "height": 0.36,
+      "board": 0.025,
+      "candles": [
+        0.26,
+        0.22,
+        0.18
+      ],
+      "candleRadius": 0.013,
+      "sides": 10
     }
   ]
 }

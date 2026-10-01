@@ -17,6 +17,22 @@
       ],
       "blender": "5.2.2 LTS",
       "source": "82ed8e4c2aa421552056c1b2a4f8aa14e1b40e0eb0b6e4aac089d9bbc3eb2099"
+    },
+    {
+      "file": "assets/blender/evidence/aumbry-candles.glb",
+      "pack": "evidence",
+      "name": "aumbry-candles",
+      "bytes": 8924,
+      "sha256": "cde44fe9e473d6cd8b9f33edddd88f195831104b7b41c722b1eb33635749fb64",
+      "triangles": 228,
+      "images": [
+        [
+          16,
+          16
+        ]
+      ],
+      "blender": "5.2.2 LTS",
+      "source": "7b7fe4626a00aa0106466a032c7a8a0c298b729f2b661f6daea563551b6e88e0"
     }
   ]
 }

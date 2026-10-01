@@ -3570,6 +3570,18 @@
         -3.8125,
         -3.3
       ]
+    },
+    {
+      "id": "chapel-aumbry",
+      "model": "assets/blender/evidence/aumbry-candles.glb",
+      "tile": [
+        5.8,
+        3.53125
+      ],
+      "rotationY": 0,
+      "yOffset": 1.2,
+      "noCollide": true,
+      "comment": "The aumbry by the vestry door that has never had a lock on it (data/lore.json), with the three tallow candles the candle-count quest counts at Lauds. Hung in the chapel on the north face, where the east curtain's end stands into the drum at z 14, 0.6 m east of the door arc (theta 210 to 270) and west of the lower flight; its back is 0.005 m off the curtain's box. Clear of every pressable in plan. A dressing, not pressable, so no clue (#810, #812)."
     }
   ],
   "braziers": [
