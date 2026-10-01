@@ -109,7 +109,9 @@ to say what is done.
 column, commit that alone, open a PR, merge it, then start (#283). A claim on a
 branch nobody else can read is not a claim: two sessions in the old repo once
 built the same row in full. Clear the column after your merge is confirmed, in
-the same pass that updates this header.
+the same pass that updates this header. **Single-operator wave mode** (Devon,
+2026-10-01) replaces the claim when one session is the only one working this repo:
+see `CLAUDE.md`, "Single-operator wave mode".
 
 **Read the `Where`, `Gate` and `Lane` columns before you claim** (#600). A row
 marked anything but `Container` cannot be finished from a session like this
