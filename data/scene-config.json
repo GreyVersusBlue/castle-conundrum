@@ -2448,17 +2448,6 @@
         "comment": "the clerk's pouch, in the chapel Moved in Phase 5 to the south crescent beside the foot of the Chapel Tower's lower flight, which it had stood inside (#460)."
       },
       {
-        "id": "knife",
-        "model": "detail-barrel.glb",
-        "tile": [
-          0.125,
-          3.825
-        ],
-        "scale": 2,
-        "evidence": "knife",
-        "comment": "the bakehouse barrel the knife is behind"
-      },
-      {
         "id": "cloak-crate",
         "model": "detail-crate.glb",
         "tile": [
@@ -2824,18 +2813,18 @@
     },
     {
       "id": "candles-chapel",
-      "model": "brass_candleholders_1k.gltf/brass_candleholders_1k.gltf",
+      "model": "assets/blender/evidence/pricket.glb",
       "tile": [
-        5.675,
-        4.325
+        5.69705,
+        4.30765
       ],
-      "rotationY": 10,
+      "rotationY": 0,
       "evidence": "candle",
-      "comment": "Moved in Phase 5 clear of the Chapel Tower's lower flight, which stands in the tower's east half with its foot at the south end (#460): the candles to the south-west quadrant, the lantern beside the foot."
+      "comment": "Moved in Phase 5 clear of the Chapel Tower's lower flight, which stands in the tower's east half with its foot at the south end (#460): the candles to the south-west quadrant, the lantern beside the foot. The brass candleholders swapped for the evidence pack's pricket under #811: the tile is the old box's centre, (22.7882, 17.2306) over 4, so PROP_CLEARANCE measures from the same point; the old tile was the photoscan's origin, 0.114 m off it."
     },
     {
       "id": "table-muniment",
-      "model": "WoodenTable_01_1k.gltf/WoodenTable_01_1k.gltf",
+      "model": "assets/blender/evidence/ledger-desk.glb",
       "tile": [
         6.05,
         -4.15
@@ -3582,6 +3571,16 @@
       "yOffset": 1.2,
       "noCollide": true,
       "comment": "The aumbry by the vestry door that has never had a lock on it (data/lore.json), with the three tallow candles the candle-count quest counts at Lauds. Hung in the chapel on the north face, where the east curtain's end stands into the drum at z 14, 0.6 m east of the door arc (theta 210 to 270) and west of the lower flight; its back is 0.005 m off the curtain's box. Clear of every pressable in plan. A dressing, not pressable, so no clue (#810, #812)."
+    },
+    {
+      "id": "knife",
+      "model": "assets/blender/evidence/knife-barrel.glb",
+      "tile": [
+        0.125,
+        3.825
+      ],
+      "evidence": "knife",
+      "comment": "The bakehouse flour barrel with the kitchen knife stuck in its flour. Was the kit barrel detail-barrel.glb in courtyard.placements; moved here under #811 because propPath is read at the interiorProps sites only. The tile is the kit barrel's box centre, (0.5, 15.3), and the piece is now a prop, so check 1 holds it: 0.86 m from the drum's centre, clear of the stone."
     }
   ],
   "braziers": [

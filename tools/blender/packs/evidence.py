@@ -102,8 +102,129 @@ def aumbry_candles(row):
     return finish(row, bm, coloured)
 
 
+def obox(bm, centre, size, tilt_x=0.0):
+    """A box of `size` about its own centre, tilted `tilt_x` radians about X,
+    then moved to `centre`. Returns its faces."""
+    from mathutils import Matrix
+    m = (Matrix.Translation(centre) @ Matrix.Rotation(tilt_x, 4, 'X')
+         @ Matrix.Diagonal((size[0], size[1], size[2], 1.0)))
+    out = bmesh.ops.create_cube(bm, size=1.0, matrix=m)
+    return list(dict.fromkeys(f for v in out['verts'] for f in v.link_faces))
+
+
+def pricket(row):
+    """An iron floor pricket at the first turn of the Chapel Tower stair, a
+    tallow stub on its pan burnt down to `stub` and the wax pooled on the floor
+    under it (the `candle` evidence). Four feet on a cross, so the asset is
+    symmetric about its stem in x and in y."""
+    h, span, rod, sides = row['stem'], row['feet'], row['rod'], row['sides']
+    pan, stub, sr, pool = row['pan'], row['stub'], row['stubRadius'], row['pool']
+    bm = bmesh.new()
+    coloured = []
+    # the wax on the floor, under the feet
+    bands, caps = lathe(bm, [(pool, 0.0), (pool, 0.003)], sides)
+    coloured.append((bands[0] + caps, TALLOW))
+    # four feet on a cross, each turned up at its toe
+    coloured.append((common.box(bm, (0, 0, rod / 2), (span - 2 * rod, rod, rod)), IRON))
+    coloured.append((common.box(bm, (0, 0, rod / 2), (rod, span - 2 * rod, rod)), IRON))
+    for sx, sy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+        x, y = sx * (span / 2 - rod / 2), sy * (span / 2 - rod / 2)
+        coloured.append((common.box(bm, (x, y, rod * 1.25), (rod, rod, rod * 2.5)), IRON))
+    # the stem, with a knop a third of the way up
+    coloured.append((common.box(bm, (0, 0, h / 2), (rod, rod, h)), IRON))
+    bands, caps = lathe(bm, [(rod * 0.7, h * 0.36), (rod * 1.4, h * 0.38), (rod * 0.7, h * 0.40)], sides)
+    coloured.append((bands[0] + bands[1] + caps, IRON))
+    # the pan, a shallow dish, and the tallow that ran into it
+    bands, caps = lathe(bm, [(rod * 0.6, h - 0.012), (pan, h + 0.004), (pan, h + 0.014)], sides)
+    coloured.append((bands[0] + bands[1] + caps, IRON))
+    bands, caps = lathe(bm, [(pan * 0.82, h + 0.014), (pan * 0.82, h + 0.018)], sides)
+    coloured.append((bands[0] + caps, TALLOW))
+    # the stub, its top slumped, and the wick
+    base = h + 0.018
+    bands, caps = lathe(bm, [(sr * 1.15, base), (sr, base + 0.012), (sr, base + stub - 0.006), (sr * 0.7, base + stub)], sides)
+    coloured.append((bands[0] + bands[1] + bands[2] + caps, TALLOW))
+    coloured.append((common.box(bm, (0, 0, base + stub + 0.005), (0.004, 0.004, 0.01)), WICK))
+    return finish(row, bm, coloured)
+
+
+def knife_barrel(row):
+    """The bakehouse flour barrel the kitchen knife was found in (the `knife`
+    evidence, a herring): staves bellied to `belly`, an iron hoop near each end,
+    flour a little under the rim, and the knife stuck in the flour, leaning
+    toward the front with its handle over the rim. The knife stays inside the
+    barrel's belly in plan, so the box is the barrel's and centred on its axis."""
+    r0, r1, h, sides = row['radius'], row['belly'], row['height'], row['sides']
+    rim, flour = row['rim'], row['flour']
+    bm = bmesh.new()
+    coloured = []
+    mid = (r0 + r1) / 2
+    profile = [(r0, 0.0), (mid, h * 0.15), (r1, h * 0.5), (mid, h * 0.85), (r0, h),
+               (r0 - rim, h), (r0 - rim, h - flour)]
+    bands, caps = lathe(bm, profile, sides)
+    coloured.append((bands[0] + bands[1] + bands[2] + bands[3], WOOD))
+    coloured.append((bands[4], WOOD_LIGHT))
+    coloured.append((bands[5], INTERIOR))
+    coloured.append(([caps[0]], WOOD_DARK))
+    coloured.append(([caps[1]], PARCHMENT))
+    # hoops: a band proud of the staves near each end
+    for z0 in (0.05, h - 0.09):
+        rr = r0 + (mid - r0) * ((z0 + 0.02) / (h * 0.15)) if z0 < h / 2 else r0 + (mid - r0) * ((h - z0 - 0.02) / (h * 0.15))
+        bands, caps = lathe(bm, [(rr + 0.006, z0), (rr + 0.006, z0 + 0.04)], sides)
+        coloured.append((bands[0], IRON))
+    # the knife: blade into the flour at `enter` in front of the axis, leaning
+    # `lean` toward the front (-Y), handle up and over the rim
+    lean = math.radians(row['lean'])
+    blade, handle = row['blade'], row['handle']
+    top = h - flour
+    uy, uz = -math.sin(lean), math.cos(lean)
+
+    def along(t):
+        return (0.0, -row['enter'] + uy * t, top + uz * t)
+    # the blade from 0.06 under the flour to `blade` - 0.06 over it
+    coloured.append((obox(bm, along(blade / 2 - 0.06), (0.024, 0.003, blade), lean), STEEL))
+    coloured.append((obox(bm, along(blade - 0.06 + 0.006), (0.034, 0.012, 0.012), lean), IRON))
+    coloured.append((obox(bm, along(blade - 0.06 + 0.012 + handle / 2), (0.02, 0.016, handle), lean), WOOD_DARK))
+    return finish(row, bm, coloured)
+
+
+def ledger_desk(row):
+    """The muniment room's desk with the works ledger open on it (the `ledger`
+    evidence: 340 sheets received, 212 laid). A flat-topped desk, legs and
+    two stretchers, the ledger open in the middle with ruled lines on both
+    pages and an inkhorn at its right hand. Symmetric about its centre in x
+    and y, but for the inkhorn, which stands inside the top."""
+    w, d, h, top, leg = row['width'], row['depth'], row['height'], row['top'], row['leg']
+    bm = bmesh.new()
+    coloured = []
+    coloured.append((common.box(bm, (0, 0, h - top / 2), (w, d, top)), WOOD_LIGHT))
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            coloured.append((common.box(bm, (sx * (w / 2 - leg), sy * (d / 2 - leg), (h - top) / 2), (leg, leg, h - top)), WOOD))
+        coloured.append((common.box(bm, (sx * (w / 2 - leg), 0, 0.12), (leg * 0.8, d - 2 * leg, leg * 0.8)), WOOD_DARK))
+    coloured.append((common.box(bm, (0, 0, 0.12), (w - 2 * leg, leg * 0.8, leg * 0.8)), WOOD_DARK))
+    # the ledger: a leather cover, two blocks of pages, ruled
+    bw, bd = row['book']
+    z = h
+    coloured.append((common.box(bm, (0, 0, z + 0.003), (bw + 0.02, bd + 0.02, 0.006)), LEATHER))
+    page = (bw - 0.02) / 2
+    for sx in (-1, 1):
+        cx = sx * (page / 2 + 0.01)
+        coloured.append((common.box(bm, (cx, 0, z + 0.006 + 0.01), (page, bd, 0.02)), PARCHMENT))
+        for i in range(row['lines']):
+            y = -bd / 2 + 0.04 + i * (bd - 0.08) / (row['lines'] - 1)
+            coloured.append((common.box(bm, (cx, y, z + 0.0265), (page * 0.75, 0.004, 0.001)), WICK))
+    coloured.append((common.box(bm, (0, 0, z + 0.006 + 0.012), (0.02, bd, 0.024)), LEATHER))
+    # the inkhorn, at the ledger's right hand
+    bands, caps = lathe(bm, [(0.022, 0.0), (0.026, 0.05), (0.014, 0.065)], 8, (bw / 2 + 0.09, -0.04, h))
+    coloured.append((bands[0] + bands[1] + caps, IRON))
+    return finish(row, bm, coloured)
+
+
 BUILDERS = {
     'aumbry-candles': aumbry_candles,
+    'pricket': pricket,
+    'knife-barrel': knife_barrel,
+    'ledger-desk': ledger_desk,
 }
 
 

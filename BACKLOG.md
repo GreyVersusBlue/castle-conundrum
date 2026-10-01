@@ -68,8 +68,8 @@ check 8 and a calibration crate placed in the kitchen (#880 to #884).
 
 **Open, ranked below.** Devon made Blender-built assets the project's top
 priority on 2026-09-25 and reopened ranks 1 and 2 himself to hold them
-(#801). Thirteen rows: the Blender pack band,
-five rows lettered by priority (2a evidence props, 2b an interiors kit, 2c a
+(#801). Twelve rows: the Blender pack band,
+four rows lettered by priority (2b an interiors kit, 2c a
 shared rig with swappable parts, 2d the animals, 2e the countryside beyond
 the wall); the castle rebuilt as a realistic standalone Blender model, outside
 the pipeline (2h, #839 to #844); the GPU run itself, now gated on nothing (rank 3, #780 to #782);
@@ -145,7 +145,7 @@ finish the row.
   (#804, #878, #879). Both have 5.2.2 already: huginn on PATH, Windows as
   the Steam install; `render.mjs` refuses any other line. A session without it does not
   claim the row's build increment; CI runs only the Node check against the
-  committed output. Ranks 2a, 2b, 2c (increment 1), 2d and 2e.
+  committed output. Ranks 2b, 2c (increment 1), 2d and 2e.
 - **Local: Blender GPU.** Blender's full feature set on a real GPU, and so
   **Devon's Windows machine only** (#878), even where huginn has the right
   Blender. Rank 2h, "Castle in Blender": realistic Poly Haven PBR and
@@ -184,11 +184,11 @@ together.
 | Lane | The file that decides it | Rows |
 | --- | --- | --- |
 | A | `src/save.js` — the version number and `migrate` | none held |
-| B | `data/scene-config.json` — and `test/tools.mjs`'s byte-exactness rail | 2a, 2b, 2e, 4, 9, 13 (increments 2 and 3 only) |
+| B | `data/scene-config.json` — and `test/tools.mjs`'s byte-exactness rail | 2b, 2e, 4, 9, 13 (increments 2 and 3 only) |
 | C | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | 2c, 2d, 6 |
 | D | `src/main.js`'s player rig and spawn | 6, 11 |
 | E | `src/audio.js` and `data/sounds.json` | 7 |
-| F | `tools/blender/` and its manifest | 2a, 2b, 2c, 2d, 2e |
+| F | `tools/blender/` and its manifest | 2b, 2c, 2d, 2e |
 | G | `tools/castle3d/` | 2h |
 
 Lane A last bumped the save version to 6 (#612); the next row that bumps it
@@ -201,14 +201,14 @@ row that adds a state or rewords a line runs `npm run dialogue:extract`
 before it commits (#687). Lane B: rank 4 and rank 9 both write
 `data/scene-config.json` and do not run together; rank 13's increments 2 and 3
 are the same lane and wait behind whichever of the other two is running; the
-Blender rows that place (2a, 2b, 2e) hold it too. Lane F is every Blender
+Blender rows that place (2b, 2e) hold it too. Lane F is every Blender
 row: one machine renders, so they run one at a time regardless (#804). Lane
 G is 2h's alone and shares no file with F, so 2h may run beside a lane F row;
 that is two Blenders on one machine and Devon's call (#842).
 
 ## The ranked table
 
-Thirteen ranked rows: 2a, 2b, 2c, 2d, 2e, 2h, 3, 4, 6, 7, 9, 11, 13. Devon
+Twelve ranked rows: 2b, 2c, 2d, 2e, 2h, 3, 4, 6, 7, 9, 11, 13. Devon
 reopened ranks 1 and 2 himself on 2026-09-25 for the Blender rows, and
 lettered the pack band by priority (#801, #802). 2f, his own props, took
 the next letter the same day, ran first, and shipped the same day
@@ -235,8 +235,7 @@ the placement editor, budget suite, move-and-delete and the dialogue format
 
 | Rank | Item | Size | Model | Where | Gate | Lane | Claimed | Detail |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 2a | Blender: evidence props: three pinned swaps (the knife, the candle, the ledger) and the aumbry candles, specced (#810 to #812, #816, #819); the goblet, the vial and the seal went to 2f (#830); nothing built | 1 | Opus 5 | Local: Blender | 1 shipped (#881) | F, B | | [Blender: evidence props](SPECS.md#blender-evidence-props) |
-| 2b | Blender: an interiors kit: joined sets dressing the kitchen, the great hall and the cell, specced (#813 to #816, #819); the two hearths and the chapel altar went to 2f (#830); nothing built | 2+ | Opus 5 | Local: Blender | after 2a (1 shipped, #881) | F, B | | [Blender: an interiors kit](SPECS.md#blender-an-interiors-kit) |
+| 2b | Blender: an interiors kit: joined sets dressing the kitchen, the great hall and the cell, specced (#813 to #816, #819); the two hearths and the chapel altar went to 2f (#830); nothing built | 2+ | Opus 5 | Local: Blender | 1 shipped (#881); 2a shipped (#887) | F, B | | [Blender: an interiors kit](SPECS.md#blender-an-interiors-kit) |
 | 2c | Blender: a shared rig with swappable parts: one rig, one-primitive parts, at most five skinned draws a person against the Quaternius rigs' 12 to 15, specced (#820 to #825); nothing built | 2+ | Opus 5 | Local: Blender, then Container; judged local: GPU (#53) | 1 shipped (#881) | F, C | | [Blender: a shared rig with swappable parts](SPECS.md#blender-a-shared-rig-with-swappable-parts) |
 | 2d | Blender: the animals: pig, goat, sheep, horse, cat and two geese on one quadruped topology plus a bird one for the goose, specced (#826 to #829); nothing built | 1 | Opus 5 | Local: Blender; judged local: GPU (#53) | after 2c increment 1 (1 shipped, #881) | F, C | | [Blender: the animals](SPECS.md#blender-the-animals) |
 | 2e | Blender: the countryside beyond the wall: five backdrop pieces cut from one seeded height field, specced (#816 to #819); nothing built | 1 | Opus 5 | Local: Blender | 1 and rank 9's 3b shipped (#881, #871) | F, B | | [Blender: the countryside beyond the wall](SPECS.md#blender-the-countryside-beyond-the-wall) |
@@ -253,24 +252,9 @@ the placement editor, budget suite, move-and-delete and the dialogue format
 take first, what each one unblocks, and which ones two sessions may hold at
 the same time. This table still ranks; that file sequences (#601).
 
-## Blender: evidence props
-
-*Where: local, Blender. Gate: rank 1 shipped (#881). Lanes: F and B.*
-
-**Rank 2a, size 1.** Specced whole, decisions #810 to #812, #816 and #819.
-`data/mystery.json`'s eleven evidence rows hold no dagger, goblet, vial or
-seal: the brief's six against the data's names three of them wrong. Three
-pinned swaps replace what the player presses (the knife, the candle, the
-ledger), each keeping its piece's id and box centre so no station moves
-(#811); four dressings (the goblet, the vials, the aumbry's three candles,
-the Clerk's seal) stand beside a pressable or in a room with none, and
-dress nothing pressable, so no clue changes. New `test/layout.mjs` check
-1e holds that nothing stands over a pressable (#812). Detail: [Blender:
-evidence props](SPECS.md#blender-evidence-props).
-
 ## Blender: an interiors kit
 
-*Where: local, Blender. Gate: after 2a; rank 1 shipped (#881). Lanes: F and B.*
+*Where: local, Blender. Gate: rank 1 shipped (#881); 2a shipped (#887). Lanes: F and B.*
 
 **Rank 2b, size 2+.** Specced whole, decisions #813 to #816 and #819. Dresses
 four rooms, the kitchen, the great hall, the chapel, and the cell as the

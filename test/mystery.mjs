@@ -38,7 +38,7 @@ import { fileURLToPath } from 'node:url';
 import { validateMystery, createMystery, earliest, shortestPath, freshState, dayTwoOutcomes, dayTwoLines, dayTwoKnew, dayWatchesOf, beforeDayOne } from '../src/mystery.js';
 import { QuestGraph, validateQuest, validateAgainstNpcs } from '../src/quest-graph.js';
 import { QuestManager, MANAGER_PAIRS } from '../src/quest-manager.js';
-import { makePlan, walkability, EYE_HEIGHT } from '../src/castle-plan.js';
+import { makePlan, walkability, EYE_HEIGHT, propPath } from '../src/castle-plan.js';
 import { castleNav } from '../src/stations.js';
 import { validatePopulace, ACTIVITY_CLIPS, populaceDefs, Populace } from '../src/populace.js';
 import { partsOf, readGLTF } from './gltf.mjs';
@@ -107,7 +107,7 @@ console.log('mystery.json validates');
   // Every evidence row names a prop that is already on disk (Phase 1 ships no
   // asset): a kit .glb, or a Poly Haven .gltf under the project's own folder.
   const missing = mystery.evidence.filter((e) => {
-    const rel = e.prop.endsWith('.glb') ? path.join(config.kenneyBase, e.prop) : path.join(config.polyhavenBase, e.prop);
+    const rel = e.prop.startsWith('assets/') ? propPath(config.polyhavenBase, e.prop) : e.prop.endsWith('.glb') ? path.join(config.kenneyBase, e.prop) : path.join(config.polyhavenBase, e.prop);
     return !fs.existsSync(path.join(ROOT, rel));
   }).map((e) => `${e.id}: ${e.prop}`);
   check(missing.length === 0, 'every evidence prop is a model already on disk', missing.join('; '));

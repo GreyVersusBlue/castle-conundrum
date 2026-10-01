@@ -9,9 +9,10 @@ decision. Every "recommendation" below is exactly that, and the session that
 ships the row is the one that records the call with a number.
 
 One section per row still open in `BACKLOG.md`'s ranked table: 3, 4, 6, 7,
-9, 11, 13, and the rank 2 band (2a to 2e, and 2h, "Castle in Blender",
+9, 11, 13, and the rank 2 band (2b to 2e, and 2h, "Castle in Blender",
 which is outside the Blender pipeline, #839). 2f and 2g shipped and their
-sections are deleted (#830 to #838). Rank 1, the pipeline, shipped too
+sections are deleted (#830 to #838); 2a shipped (#887) and its section is cut
+to what 2b cites and its open look. Rank 1, the pipeline, shipped too
 (#880 to #884); its section is cut to the two parts the packs cite. The red suite is closed; its section is a
 stub pointing at `HISTORY.md`. "Bodies" stays until 2c's and 2d's sections
 land, and is then deleted (#807).
@@ -139,230 +140,27 @@ in `npm test` (#53).
 
 ## Blender: evidence props
 
-**Rank 2a. Size 1. Model Opus 5. Where: Local: Blender. Gate: rank 1 shipped
-(#881). Lanes F and B.** The first pack after the calibration crate, and the one
-that proves `finish.mjs`, check 8 and `test/budget.mjs` on content a player
-presses E at. Everything under "What every Blender pack shares" in "Blender:
-what every pack shares" holds here and is not restated. Decided in `HISTORY.md` as
-#810, #811, #812, #816 and #819, against `86c72fb`; this section is the
-`builder` job those leave. Two increments, both class S, each one sitting on
-Devon's machine; a third is conditional on the GPU look.
+**Rank 2a. Shipped (#887), in two increments, against #810 to #812, #816 and
+#819.** Its row is retired from `BACKLOG.md` and `ROADMAP.md`. What other
+sections cite, and what is still open:
 
-**Amended by #830 (2026-09-25).** Increment 1 is now `chapel-aumbry` and
-check 1e only. `hall-goblet`, `clerk-seal` and `larder-vial` (one vial)
-are Devon's files, placed by 2f, "Blender: Devon's props, placed", and the
-#812 id throw ships there. Check 1e is green on 2f's 70 rows (0 hits over
-25 pressables, measured). Increment 2 is unchanged. `coin-pouch.glb` in
-`51735fa` is a candidate for the `pouch` swap in increment 3.
-
-**What the brief asked for, against the data.** The brief named a dagger, a
-goblet, vials, candles at several heights, a ledger and a seal.
-`data/mystery.json` has eleven evidence rows and none of them is a dagger, a
-goblet, a vial or a seal. What each of the six is, measured:
-
-| Brief | What the data has | Stand-in today | This pack |
-| --- | --- | --- | --- |
-| dagger | `knife`, "bakehouse barrel": "The kitchen knife, in the bakehouse, flour on it" (`knife-found`, a herring) | `detail-barrel.glb`, a kit barrel, in `courtyard.placements` | **swap**: `knife-barrel.glb`, a flour barrel with the knife's handle over the rim |
-| candles at several heights | `candle`, "chapel candles": "One tallow candle in a pricket at the first turn of the Chapel Tower stair. Wax pooled on the step below it"; `candle-count` quest: four tallow in the aumbry at Compline, three at Lauds | `brass_candleholders`, a photoscanned 1.08 m spread of three brass candlesticks, 7 primitives, 41,936 triangles | **swap**: `pricket.glb`, an iron floor pricket, a stub burnt to 4 cm, the wax pool; **dress**: `aumbry-candles.glb`, the aumbry with the three at 26, 22 and 18 cm |
-| ledger | `ledger`, "works ledger", behind the word-lock: "340 sheets received, 212 laid" | `WoodenTable_01`, a photoscanned table with nothing on it | **swap**: `ledger-desk.glb`, a desk with the ledger open on it |
-| seal | no evidence; `prisoner-story`: "with the Clerk's seal on the pass" | nothing | **dress**: `seal.glb`, the seal matrix, a stick of red wax and a folded pass, in the Clerk of Works' office |
-| goblet | no evidence; `steward-denies` ("He was drunk") against `hywel-sober` | nothing | **dress**: `goblet.glb`, pewter, on the Great Hall's table |
-| vials | nothing in any clue, quest or document | nothing | **dress**: Devon's `larder-vial` (2f, #830), on the kit crate `detail-crate-93` in the larder; not the calibration crate (`kitchen-crate`), which stands in the kitchen (#880) |
-
-Three swaps replace the thing the player presses; four dressings stand
-beside it or in a room with no evidence at all. No dressing is pressable,
-so no dressing is a clue, and no clue, deduction, press or station changes
-(#810).
-
-### Scope, increment 1: the four dressings (class S)
-
-- **`tools/blender/packs/evidence.py`**, importing `common.py`: one function
-  per asset, dispatched on the row's `name`. Round things (goblet, vials,
-  candles) are lathed at 8 to 12 sides; nothing is subdivided.
-- **`tools/blender/packs.json`**: four rows, pack `evidence`, each with a
-  `why` that names the clue it dresses or says it dresses none. The pack's
-  `extraColours`, at most 8: tallow, sealing wax, brass, pewter, two glass
-  and steel, each with a `why`. The palette union has no bright tallow,
-  wax red, glass or brass.
-- **`assets/blender/evidence/{goblet,vials,aumbry-candles,seal}.glb`** and
-  their `tools/blender/manifest.json` rows.
-- **`data/scene-config.json`, `interiorProps`**, four rows, spliced by
-  `tools/place.mjs` in the file's own ending (#584, #632), each with an
-  explicit `id`:
-  - `hall-goblet` on the Great Hall's `WoodenTable_01`, a free spot on its
-    top clear of the lantern and the candleholders; stacked by
-    `surfaceHeightUnder`, so the row comes after the table's.
-  - `larder-vials` is shipped by 2f as `larder-vial`, one vial on the kit
-    crate `detail-crate-93` in the larder at `yOffset` 0.45 (#830). Rank
-    1's crate stands in the kitchen, not the larder (#880), and nothing in
-    2a stacks on it.
-  - `chapel-aumbry` on the chapel's drum wall, `yOffset` 1.2 and
-    `noCollide`, the way `kite_shield` hangs in the hall. The builder picks
-    the arc, clear of the chapel's door and of every pressable (check 1e
-    below), and writes the tile in `HISTORY.md`.
-  - `clerk-seal` on the roped crate by the barrels in the Clerk of Works'
-    office (tile [-8.1, -1.85]), `yOffset` the crate's top off `partsOf`,
-    `noCollide`. Not on `works-ledger`, which is a pressable.
-- **`src/castle-plan.js`**: an `interiorProps` row whose `model` starts
-  `assets/` and carries no `id` throws, naming the model (#812). Today the
-  id is `p.model.split('/')[0]`, which is `"assets"` for every Blender
-  path, so the second Blender row would share an id with the first. Rank
-  1's crate row carries `id: "kitchen-crate"` (#880).
-- **`test/layout.mjs`, new check 1e, "nothing stands over a pressable"**
-  (#812): for every piece carrying `evidence`, `read` or `bell`, no other
-  non-ground piece overlaps its box in plan by more than 1 cm in x and in z
-  with its own base at or above the pressable's centre height and below
-  the pressable's base plus `EYE_HEIGHT`. That is the band between the
-  prompt's aim point and a standing eye, where
-  `InteractionSystem.hasLineOfSight` would meet it: `occluders()` is every
-  scene child but the bodies and the targets, and a dressing is neither. A
-  floor slab 4 m over a level-0 pressable is above the band, and a crate
-  under the gaol roll or the cloak is below it. A plan fact, so here and
-  not in `plan-vs-scene.mjs` (#529).
-- **`test/assets.mjs`**, check 8's caps block, one line:
-  `evidence: { triangles: 600, bytes: 32000 }` (#819).
-
-### Scope, increment 2: the three pinned swaps (class S)
-
-- **`tools/blender/packs.json`**: three rows, `pricket`, `knife-barrel`,
-  `ledger-desk`. Each asset is symmetric about its origin in x and z to
-  1 mm, so a rotation cannot move its box centre.
-- **`assets/blender/evidence/{pricket,knife-barrel,ledger-desk}.glb`** and
-  their manifest rows.
-- **`data/scene-config.json`**, each swap under #811's rule (same id, box
-  centre to 1 mm, footprint inside the old box):
-  - `candles-chapel`: `model` to `assets/blender/evidence/pricket.glb`, tile
-    **[5.69705, 4.30765]**, rotationY 0. That tile is the old box's centre,
-    (22.7882, 17.2306), over 4. The old tile [5.675, 4.325] was the
-    photoscan's origin, 0.114 m off its box centre, and is not where the
-    rail measures from. Footprint at most 0.4 x 0.4 m inside the old
-    1.08 x 0.43.
-  - `table-muniment`: `model` to `assets/blender/evidence/ledger-desk.glb`,
-    tile and rotationY 90 unchanged, since the table's box centre is its
-    tile (24.2, -16.6). Footprint inside 0.66 x 1.80.
-  - `knife`: the row leaves `courtyard.placements` and becomes an
-    `interiorProps` row, same `id` and `evidence`, `model`
-    `assets/blender/evidence/knife-barrel.glb`, tile [0.125, 3.825] (the
-    kit barrel's centre, (0.5, 15.3)), because `propPath` is read at the
-    `interiorProps` sites only. `tools/place.mjs` does not take
-    `courtyard.placements`, so that one row is cut by hand in the file's own
-    ending (#632). The piece's kind goes from `decor` to `prop`, which puts
-    it under check 1; it stands 0.86 m from the drum's centre and clears
-    the stone. Footprint inside 0.49 x 0.49.
-- **`data/mystery.json`**: the three evidence rows' `prop` become the three
-  new paths. `name`, `clue`, `watches`, `room` and every station unchanged.
-- **`test/mystery.mjs` check 1, one line**: the resolver for "every evidence
-  prop is a model already on disk" tests `e.prop.startsWith('assets/')`
-  before `.endsWith('.glb')` and takes such a path as repo-relative through
-  `propPath`. Today every `.glb` is joined to `kenneyBase`, so
-  `assets/blender/evidence/pricket.glb` reads as missing. **No station line
-  in `test/mystery.mjs` changes** (#529): check 2's four `PROP_CLEARANCE`
-  expectations stay byte-identical, which is the evidence that the pins
-  held.
-- **Untouched**: `data/npcs.json`, `data/populace.json`, `data/quests/`,
-  `src/save.js`, `src/interaction.js`, `test/plan-vs-scene.mjs`,
-  `test/budget.mjs`'s ceilings. The brass candleholders' pack stays on disk:
-  the hall's table still carries a set.
-
-### Acceptance
-
-`npm test` fifteen of fifteen after each increment. Each line names its
-suite and the break that turns it red from green (#34).
-
-1. **Check 8, the pack's lines** (`test/assets.mjs`), over seven new rows,
-   under `evidence`'s cap. **The break the builder quotes for increment 1 is
-   line 2's**: flip one byte of `goblet.glb`, expecting "assets/blender/
-   evidence/goblet.glb hashes to ..., the manifest says ...: it changed after
-   its render". Line 6 (the cap) is *local*: `goblet.py`'s lathe at 64 sides.
-2. **Check 1e** (`test/layout.mjs`), new, green on today's data before any
-   dressing lands; if it is red on today's data, that is a finding for
-   `HISTORY.md` before anything is placed. Break: `hall-goblet`'s tile set
-   onto `table-muniment`'s centre (after increment 2, `ledger-desk`), expecting
-   "hall-goblet stands over table-muniment, which the player presses E at".
-3. **The id rule** (`makePlan`, surfaced by every Node suite). Break: delete
-   `hall-goblet`'s `id`; `makePlan` throws naming
-   `assets/blender/evidence/goblet.glb`.
-4. **`test/mystery.mjs` check 1, the resolver.** Break: take the `assets/`
-   branch out; expecting "every evidence prop is a model already on disk"
-   to fail listing `candle`, `knife` and `ledger`.
-5. **The pins** (`test/mystery.mjs` check 2, unchanged). **The break the
-   builder quotes for increment 2**: `candles-chapel` at the old tile
-   [5.675, 4.325]. The Constable's put-back station at (5.9, 4.2) is then
-   1.03 m from the candle and the rail says nothing, so "the Constable back
-   at the candles at Prime" fails; restore the pinned tile and it prints
-   0.92 m again, as Hywel's line prints 0.34.
-6. **Held with no new line**: `test/layout.mjs` check 3e (each evidence
-   piece's model ends with its `prop`, in its room, base inside 1.5 m of the
-   floor), checks 1, 1b and 11; `validateMystery` and `validatePopulace` with
-   no station moved; `test/plan-vs-scene.mjs` diffing all seven boxes at
-   0.01 m, and its candles beat still finding a cell 0.9 to 2.8 m out that
-   offers the pricket; `test/built.mjs` serving the seven from `dist/`.
-7. **The budget, recorded, not asserted anew** (#816): increment 1 moves
-   the outer ward up 3 (goblet, vials, seal) and the inner up 1 (the
-   aumbry); increment 2 takes the inner ward down 6 (seven primitives of
-   candleholders become one) and removes 41,936 triangles no suite counts.
-   The builder writes the two lines `test/budget.mjs` prints, before and
-   after each increment, in `HISTORY.md`.
-
-### Open calls
-
-- **The brief's six against the data's eleven.** Recommend **three pinned
-  swaps and four dressings, as the table above**: the knife, the candle and
-  the ledger are evidence whose stand-in is the wrong object, and the other
-  three name no evidence, so they dress rooms rather than invent clues.
-- **Swap or dress, for the knife and the ledger.** Recommend **swap**: a
-  dressing on top of a pressable sits in its sight ray, and the target is
-  the one object the ray is not tested against, so what the player sees on
-  it has to be the target itself.
-- **Make the seal, the goblet or the vials pressable.** Recommend **no**: a
-  new pressable is a new clue with a `source`, which is `validateMystery`'s
-  and the mystery's shape, not an asset row's.
-- **Rename "chapel candles".** Recommend **no**: `plan-vs-scene.mjs`'s
-  candles beat and `npm run play`'s `examine('candle', 'chapel candles')`
-  read the name, and it still fits a chapel with an aumbry of three and a
-  stub on a pricket.
-- **Where the vials stand.** **Settled by #830 and #880: where 2f put
-  it**, Devon's one `larder-vial` on the kit crate `detail-crate-93` in the
-  larder. Recommend it stays: the calibration crate (`kitchen-crate`) cannot stand in the larder
-  (#880), a vial already stands on a crate there, and moving it onto the
-  kitchen crate buys nothing a suite or the look asks for.
-- **An `assets/` row with no id: derive or throw.** Recommend **throw**:
-  check 2's messages and `plan-vs-scene.mjs`'s tags name a piece by its id,
-  and a basename rule would give two goblets one id without a word.
-- **The pouch and the tally stick**, both a `detail-crate-small.glb` today.
-  Recommend **a conditional increment 3, only if the GPU look says a crate
-  for a tally stick reads wrong**: both are `courtyard.placements` (the
-  tally at level 2, where `interiorProps` cannot stand, since the plan
-  gives every `interiorProps` row `level: 0`), so it needs `propPath` at the
-  placement loop and at `test/assets.mjs`'s placement reference check
-  (#500), then the same pinned swap. Class S as written here.
-
-### Dependencies
-
-- **Gate: rank 1 shipped (#881).** `common.py`, the manifest and check 8 now
-  exist; `propPath` and the vial are 2f's (#830), and the vial stands on a kit
-  crate, not the calibration crate (`kitchen-crate`, #880).
-- **Lanes F and B.** Not beside another Blender pack (F), nor rank 4, rank 9
-  or rank 13's increments 2 and 3 (B).
-- **Rank 3**: increment 2 changes three things `npm run play` examines.
-  The next GPU run after it is the one that says the pricket, the barrel and
-  the desk still take E on a real screen (#53); run it from a worktree.
-- **2b after 2a**: 2b's increment 3 uses #811's pin, and check 1e is the
-  rail 2b's sets stand under.
-
-### Constraints
-
-- #529: check 1e is `layout.mjs`'s; `mystery.mjs` changes one resolver line
-  and no station line; `plan-vs-scene.mjs` gains nothing.
-- #785, #792: `PROP_CLEARANCE` is measured to a pressable's box centre, so
-  a swap pins the centre and a dressing is not pressable.
-- #500: one `propPath`, read by the resolver too. #390: each asset and its
-  row in one commit. #584, #632: spliced, own line ending, including the
-  hand-cut `knife` row.
-- #611, #816: no ceiling moves. #499: seven files under 32 KB each.
-- #13, #34, #147: every line above has its break.
-- #53: whether the pricket reads as a candle is a GPU look.
-- #801 to #808, #810 to #812, #816, #819.
+- **Check 1e, "nothing stands over a pressable"** (`test/layout.mjs`, #812):
+  for every piece carrying `evidence`, `read` or `bell`, no other non-ground
+  piece overlaps its box in plan by more than 1 cm in x and in z with its own
+  base at or above the pressable's centre height and below the pressable's
+  base plus `EYE_HEIGHT`. Green over 25 pressables. 2b's sets stand under it.
+- **#811's pin**: a swap keeps its piece's id and its box centre to 1 mm, with
+  the new footprint inside the old box, so no station moves. Applied to
+  `candles-chapel` (pricket), `table-muniment` (ledger desk) and `knife`
+  (barrel). 2b's increment 3 uses it.
+- **Open: the GPU look (#53).** It belongs with the next rank 3 GPU run.
+- **Open and conditional: increment 3**, the pouch and the tally stick, both a
+  `detail-crate-small.glb` today in `courtyard.placements` (the tally at level
+  2, where `interiorProps` cannot stand). Built only if the look below says a
+  crate for a tally stick reads wrong; it needs `propPath` at the placement
+  loop and at `test/assets.mjs`'s placement reference check (#500), then the
+  same pinned swap. `coin-pouch.glb` in `51735fa` is a candidate for the
+  `pouch`. Class S.
 
 ### Looking checklist
 
@@ -377,7 +175,7 @@ suite and the break that turns it red from green (#34).
 ## Blender: an interiors kit
 
 **Rank 2b. Size 2+. Model Opus 5. Where: Local: Blender. Gate: rank 1 shipped
-(#881; after 2a, for check 1e and #811's pin). Lanes F and B.** Modular
+(#881; 2a shipped, #887, for check 1e and #811's pin). Lanes F and B.** Modular
 pieces that make the castle's working rooms read as what they are. "What
 every Blender pack shares" holds and is not restated. Decided as #813 to
 #816 and #819. Three increments: two class S, the third gated on rank 4's
@@ -517,7 +315,7 @@ narrower, the increment comes back to `architect` first.
 
 ### Dependencies
 
-- **Gate: rank 1 shipped (#881); 2a shipped** (check 1e, #811).
+- **Gate: rank 1 shipped (#881); 2a shipped (#887)** (check 1e, #811).
 - **Lanes F and B.** Not beside any Blender pack, rank 4, rank 9, or rank
   13's increments 2 and 3.
 - **Increment 3 waits on rank 4's look** (#53), which is rank 3's machine
@@ -799,7 +597,7 @@ clips on the four Quaternius bodies, and the eleven on `folk.glb`.
 - **Gate: rank 1 shipped (#881).** `common.py`, the manifest and check 8
   now exist.
 - **Lanes F and C.** Increment 1 holds both; increment 2 holds C only. Not
-  beside rank 6 (C), 2d (F and C), or 2a, 2b, 2e (F). Beside rank 9 or rank
+  beside rank 6 (C), 2d (F and C), or 2b, 2e (F). Beside rank 9 or rank
   4 (B) and rank 7 (E): yes.
 - **Increment 2 after increment 1**, and only after its look passed.
 - **"Blender: the animals" follows this row** by letter, and uses
@@ -972,7 +770,7 @@ follow, the hens' peck, the cow grazing. One sentence each in the entry.
 - **Gate: rank 1 shipped (#881)**, and 2c's increment 1 for the shared pieces above.
 - **Recommended after 2c's increment 2**, which frees the draw headroom this
   row spends (#828); before it, the argument is 380 to 394 and 205 to 213.
-- **Lanes F and C.** Not beside rank 6, 2c, 2a, 2b or 2e.
+- **Lanes F and C.** Not beside rank 6, 2c, 2b or 2e.
 
 ### Constraints
 

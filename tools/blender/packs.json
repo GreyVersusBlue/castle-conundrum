@@ -42,6 +42,55 @@
       ],
       "candleRadius": 0.013,
       "sides": 10
+    },
+    {
+      "pack": "evidence",
+      "name": "pricket",
+      "script": "evidence.py",
+      "seed": "evidence/pricket/2026-10-01",
+      "why": "Swaps for the `candle` evidence, `candles-chapel` (#811): one tallow candle in a pricket at the first turn of the Chapel Tower stair, wax pooled below it. The photoscanned brass candleholders it replaces were three candlesticks in a 1.08 m spread and 41,936 triangles.",
+      "stem": 0.76,
+      "feet": 0.36,
+      "rod": 0.022,
+      "pan": 0.075,
+      "stub": 0.04,
+      "stubRadius": 0.022,
+      "pool": 0.14,
+      "sides": 10
+    },
+    {
+      "pack": "evidence",
+      "name": "knife-barrel",
+      "script": "evidence.py",
+      "seed": "evidence/knife-barrel/2026-10-01",
+      "why": "Swaps for the `knife` evidence (#811), a herring: the kitchen knife, in the bakehouse, flour on it. A flour barrel with the knife stuck in the flour and its handle over the rim, in place of a kit barrel.",
+      "radius": 0.19,
+      "belly": 0.22,
+      "height": 0.58,
+      "rim": 0.02,
+      "flour": 0.03,
+      "lean": 45,
+      "enter": 0.04,
+      "blade": 0.16,
+      "handle": 0.1,
+      "sides": 12
+    },
+    {
+      "pack": "evidence",
+      "name": "ledger-desk",
+      "script": "evidence.py",
+      "seed": "evidence/ledger-desk/2026-10-01",
+      "why": "Swaps for the `ledger` evidence, `table-muniment` (#811): the works ledger open on a desk in the muniment room, 340 sheets received and 212 laid, in place of a photoscanned table with nothing on it.",
+      "width": 1.2,
+      "depth": 0.6,
+      "height": 0.74,
+      "top": 0.04,
+      "leg": 0.06,
+      "book": [
+        0.44,
+        0.3
+      ],
+      "lines": 7
     }
   ]
 }

@@ -32,7 +32,55 @@
         ]
       ],
       "blender": "5.2.2 LTS",
-      "source": "7b7fe4626a00aa0106466a032c7a8a0c298b729f2b661f6daea563551b6e88e0"
+      "source": "d5ab7d0456126a131e98ebe6a6b475aed98d09d5466b0243fcb672396377102d"
+    },
+    {
+      "file": "assets/blender/evidence/knife-barrel.glb",
+      "pack": "evidence",
+      "name": "knife-barrel",
+      "bytes": 11804,
+      "sha256": "47a8e3e906cf770ef21bd9f7d3f498af7f6b7c20f7858e4db773160445d83a40",
+      "triangles": 288,
+      "images": [
+        [
+          16,
+          16
+        ]
+      ],
+      "blender": "5.2.2 LTS",
+      "source": "4954769feac398cf6f01ec69e9ca3cf46c14c4287c246c7422d46e47ba50bc3c"
+    },
+    {
+      "file": "assets/blender/evidence/ledger-desk.glb",
+      "pack": "evidence",
+      "name": "ledger-desk",
+      "bytes": 11132,
+      "sha256": "51b77779c821f52dc27cb7bb7b59803b9210a96edce6faebc2aa74a9fb5e2846",
+      "triangles": 356,
+      "images": [
+        [
+          16,
+          16
+        ]
+      ],
+      "blender": "5.2.2 LTS",
+      "source": "af4651ea90ca2c8b732897cde3e61f37b58bf722b900641c39b61304a39ef4c3"
+    },
+    {
+      "file": "assets/blender/evidence/pricket.glb",
+      "pack": "evidence",
+      "name": "pricket",
+      "bytes": 12228,
+      "sha256": "461c4b1303a7b3b549bf352ced178e7df079c93c7a5a5b15465288ade417c399",
+      "triangles": 356,
+      "images": [
+        [
+          16,
+          16
+        ]
+      ],
+      "blender": "5.2.2 LTS",
+      "source": "b83c95b7eef368e526612fd640d6135cdc5e189b3ef24ee93b681af7bee24a47"
     }
   ]
 }

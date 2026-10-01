@@ -11828,3 +11828,64 @@ retired into 2c and 2d, #807); `rank-06` and `rank-09` say the town and the
 quay shipped. The local branches `claude/blender-pin-5-2`,
 `claude/blender-huginn-vs-windows` and `claude/rank-9-quay`, all merged on
 GitHub, are deleted; no remote branch is touched.
+
+**#887. Rank 2a, Blender: evidence props, shipped (#810 to #812, #816, #819).**
+Two increments, both on huginn. Increment 1 (7bb593f): `tools/blender/packs/
+evidence.py`, pack `evidence` in `packs.json` with one extraColour (tallow),
+and `assets/blender/evidence/aumbry-candles.glb`, 228 triangles, 8,924 bytes,
+an open aumbry with three tallow candles at 26, 22 and 18 cm. It is placed as
+`chapel-aumbry` on the chapel's north face, tile [5.8, 3.53125], `yOffset` 1.2,
+`noCollide`, 0.6 m east of the door arc (theta 210 to 270) and clear of every
+pressable. New `test/layout.mjs` check 1e, "nothing stands over a pressable"
+(#812), is green over 25 pressables. `test/assets.mjs` check 8's caps gain
+`evidence: { triangles: 600, bytes: 32000 }` (#819). The goblet, the vial and
+the seal were 2f's (#830), so increment 1 was the aumbry and check 1e only.
+
+Increment 2, the three pinned swaps (#811): `pricket.glb` 356 triangles,
+12,228 bytes; `knife-barrel.glb` 288 and 11,804; `ledger-desk.glb` 356 and
+11,132. `candles-chapel` became the pricket at tile [5.69705, 4.30765],
+rotationY 0, the old box's centre (22.7882, 17.2306) over 4; the old tile
+[5.675, 4.325] was the photoscan's origin, 0.114 m off. `table-muniment`
+became the ledger desk, tile and rotationY 90 unchanged. `knife` was cut by
+hand out of `courtyard.placements` into `interiorProps` with model
+`knife-barrel.glb`, tile [0.125, 3.825], kind `decor` to `prop`.
+`data/mystery.json`'s three `prop` paths changed, and `test/mystery.mjs`
+check 1's resolver takes an `assets/` path through `propPath`. No station line
+changed. Measured from `makePlan`, centre (old and new identical) and
+footprint, x by z in metres:
+
+| Piece | Centre | Footprint old | Footprint new |
+| --- | --- | --- | --- |
+| `candles-chapel` | (22.7882, 17.2306) | 1.077 x 0.430 | 0.360 x 0.360 |
+| `table-muniment` | (24.2000, -16.6000) | 0.657 x 1.800 | 0.600 x 1.200 |
+| `knife` | (0.5000, 15.3000) | 0.492 x 0.492 | 0.440 x 0.440 |
+
+Determinism: `BLENDER_THREADS=4 npm run blender:render evidence` run a second
+time on huginn printed "unchanged" for all four glbs and the manifest, and
+`cmp` of all five against the prior bytes was identical.
+
+Budget (`test/budget.mjs`, "where the castle stands"), draw calls outer and
+inner: before 2a (18dad84) 1021 and 714; after increment 1 1021 and 715; after
+increment 2 1021 and 709. Outside 161 throughout; texture 43.9 of 64 MB
+throughout. No ceiling moved (#611, #816). 41,936 photoscanned candleholder
+triangles leave the chapel; the `brass_candleholders` pack stays on disk for
+the Great Hall's set.
+
+Breaks (#34), each from green and each restored to green. (a) `candles-chapel`
+back at [5.675, 4.325]: `test/mystery.mjs` printed "FAIL rejects the Constable
+back at the candles at Prime (`constable stands 0.92 m from candles-chapel at
+prime`) said nothing"; restored, it prints 0.92 m and Hywel's 0.34 m. (b) The
+`assets/` branch taken out of the resolver: "FAIL every evidence prop is a
+model already on disk: candle: assets/blender/evidence/pricket.glb; ledger:
+assets/blender/evidence/ledger-desk.glb; knife:
+assets/blender/evidence/knife-barrel.glb". (c) `hall-goblet`'s tile set to
+[6.05, -4.15]: `test/layout.mjs` printed "FAIL hall-goblet stands over
+table-muniment, which the player presses E at: its base at y 0.81 is between
+table-muniment's centre at 0.40 and a standing eye at 1.70, and it overlaps by
+0.13 x 0.09 m in plan".
+
+Left open: the GPU look. `SPECS.md`'s Looking checklist for 2a (the pricket
+reads as a candle, the aumbry's heights read as a count, E at the barrel, the
+desk and the pricket on a real screen, #53) is not done and belongs with the
+next rank 3 GPU run. The conditional increment 3 (the pouch and the tally
+stick) is built only if that look says so. `npm test` on huginn: fifteen of fifteen, exit 0, with increment 2 in the tree (plan-vs-scene 312 s, built 220 s).
