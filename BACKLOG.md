@@ -232,7 +232,7 @@ the placement editor, budget suite, move-and-delete and the dialogue format
 
 | Rank | Item | Size | Model | Where | Gate | Lane | Claimed | Detail |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Blender: the pipeline: the empty-scene builder, the manifest, check 8 and one placed calibration crate, specced (#801 to #808); nothing built | 1 | Opus 5 | Local: Blender | — | F, B | | [Blender: the pipeline](SPECS.md#blender-the-pipeline) |
+| 1 | Blender: the pipeline: the empty-scene builder, the manifest, check 8 and one placed calibration crate, specced (#801 to #808); nothing built | 1 | Opus 5 | Local: Blender | — | F, B | `claude/blender-pipeline` | [Blender: the pipeline](SPECS.md#blender-the-pipeline) |
 | 2a | Blender: evidence props: three pinned swaps (the knife, the candle, the ledger) and the aumbry candles, specced (#810 to #812, #816, #819); the goblet, the vial and the seal went to 2f (#830); nothing built | 1 | Opus 5 | Local: Blender | after 1 | F, B | | [Blender: evidence props](SPECS.md#blender-evidence-props) |
 | 2b | Blender: an interiors kit: joined sets dressing the kitchen, the great hall and the cell, specced (#813 to #816, #819); the two hearths and the chapel altar went to 2f (#830); nothing built | 2+ | Opus 5 | Local: Blender | after 1, 2a | F, B | | [Blender: an interiors kit](SPECS.md#blender-an-interiors-kit) |
 | 2c | Blender: a shared rig with swappable parts: one rig, one-primitive parts, at most five skinned draws a person against the Quaternius rigs' 12 to 15, specced (#820 to #825); nothing built | 2+ | Opus 5 | Local: Blender, then Container; judged local: GPU (#53) | after 1 | F, C | | [Blender: a shared rig with swappable parts](SPECS.md#blender-a-shared-rig-with-swappable-parts) |
