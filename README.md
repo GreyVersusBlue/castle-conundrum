@@ -141,5 +141,9 @@ by `tools/pixel/`, which is in this repo, from the parameters in
 pixel:render` reproduces every byte of them, and `test/assets.mjs` fails if it
 does not.
 
+The meshes under `assets/blender/` are this project's own: built by
+`tools/blender/`, which is in this repo, from code. There is nobody else to
+credit.
+
 The props under `assets/props/` are Devon's own work, made with his script in
 Blender (#830). The script and its manifest are kept in `tools/props/`.

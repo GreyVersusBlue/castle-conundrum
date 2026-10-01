@@ -5,7 +5,7 @@ what can be done *when*, on *what machine*, and *next to what else*.**
 `SPECS.md` is the spec behind every row and `HISTORY.md` is the only record.
 Nothing here is a locked decision except the lane rule (#600 to #602).
 
-Fourteen open rows: 1, 2a, 2b, 2c, 2d, 2e, 2h, 3, 4, 6, 7, 9, 11, 13, and ~~2f~~
+Thirteen open rows: 2a, 2b, 2c, 2d, 2e, 2h, 3, 4, 6, 7, 9, 11, 13, and ~~2f~~
 and ~~2g~~ shipped (#830 to #838). Rows are named by title as well as by rank
 (#522), because a rank is a priority and gets reused across different rows
 over time, never renumbered mid-table (#619, #491). Devon re-ranked on
@@ -32,13 +32,12 @@ are also judged under "Local: a GPU" below, once rendered (#53).
 
 **2h is the exception by machine, not by version** (#840, #879): the
 Steam install, `5.2.2 LTS`, found at `CASTLE3D_BLENDER` or the Steam path
-and never at `BLENDER`, which is rank 1's (#842). Both pin 5.2 now. Nothing of it is committed but
+and never at `BLENDER`, which is `tools/blender/`'s (#842). Both pin 5.2 now. Nothing of it is committed but
 scripts, so CI neither runs nor checks it. Its increments 1, 6 and 7 also
 need a network that reaches Poly Haven, once each, into a hash-pinned cache.
 
 | Row | Model | Status |
 | --- | --- | --- |
-| **1 Blender: the pipeline** | Opus 5 | Specced 2026-09-25 (#801 to #808), nothing built. Gates every rank 2 pack. |
 | **2a Blender: evidence props** | Opus 5 | Specced 2026-09-25 (#810 to #812, #816, #819), nothing built. |
 | **2b Blender: an interiors kit** | Opus 5 | Specced 2026-09-25 (#813 to #816, #819), nothing built. |
 | **2c Blender: a shared rig with swappable parts** | Opus 5 | Specced 2026-09-25 (#820 to #825), nothing built. Increment 1 is Blender; increment 2 is a container. |
@@ -117,7 +116,7 @@ Every Blender row holds lane F, so only one runs at a time, which matches
 the one machine with Blender anyway (#804). Lane G is 2h's alone and
 shares no file with F, so 2h may run beside a lane F row: two Blenders on
 one machine, which is Devon's call on the day (#842). Both add a line to
-`package.json`'s scripts, a one-line merge. A Blender row in lane B (1, 2a,
+`package.json`'s scripts, a one-line merge. A Blender row in lane B (2a,
 2b, 2e) does not run beside rank 4, rank 9 or rank 13's increments 2 and 3.
 2c and 2d in lane C do not run beside rank 6.
 
@@ -147,7 +146,7 @@ stale view and had to renumber twice. A decision number is picked at the end
 of a row, not the start.
 
 **Startable together right now:** ~~2f (lane B), then 2g (lanes B and
-E)~~, both shipped; rank 1 on Devon's machine (lanes F and B), plus rank 3
+E)~~, both shipped; 2a on Devon's machine (lanes F and B), plus rank 3
 on the same machine in a worktree, plus rank 6 or rank 11 (not both, lane
 D), plus rank 7 in lane E alongside any of them, plus 2h in lane G on the
 same machine if Devon wants two Blenders at once.
@@ -165,14 +164,14 @@ same terms: it is Devon's answer to 2f's pulpit and rood, lane B, no
 Blender, no gate (#835). It also holds lane E for one line of
 `data/sounds.json`, so it does not run beside rank 7 if rank 7 writes that
 file.~~ **Shipped** (#835 to #838), in `41457cb`. **Blender runs first, on
-Devon's own instruction** (#801). The order inside
-the band is 1 the pipeline, then 2a evidence props (lowest risk: it proves
+Devon's own instruction** (#801). The pipeline shipped on 2026-10-01 (#880 to #884). The order inside
+the band is 2a evidence props (lowest risk: it proves
 the encode, manifest and budget paths on real content), then 2b the
 interiors kit, then 2c the shared rig, then 2d the animals, then 2e the
-countryside backdrop. The gates inside the band: 2a after 1; 2b after 2a;
+countryside backdrop. The gates inside the band: 2b after 2a;
 2d after 2c's increment 1; 2e after rank 9's increment 3b, which shipped
 (#871), so that gate is open. **2h is
-not in that order**: it has no gate, goes through nothing of rank 1's, and
+not in that order**: it has no gate, goes through nothing of `tools/blender/`'s, and
 starts whenever Devon's machine is free (#839, #840). The integration row
 that would put its model in the game is not ranked and is gated on 2h's
 increment 9.
