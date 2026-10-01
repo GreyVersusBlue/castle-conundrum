@@ -11690,6 +11690,7 @@ huginn does not take it, even though its Blender is the right version. A
 `.glb`'s bytes do not depend on the machine; a lit still's do, so a still
 names the machine it came from. `BACKLOG.md`'s "What the three labels
 mean", `ROADMAP.md`, `SPECS.md` and `tools/castle3d/README.md` say so.
+**Read with #879, which amends the 4.5 clause above:** the pin is 5.2, huginn's own 5.2.2 satisfies it, and no second Blender is installed.
 
 ## Rank 1's pin moves from Blender 4.5 to 5.2, before anything is built (2026-09-30)
 
@@ -11815,3 +11816,15 @@ on huginn twice on this branch, and #53 makes a real-time failure on
 software-rendered CI inconclusive rather than confirmed. This is the second
 time this line has flaked (#847), which makes it a candidate for its own row
 if it recurs.
+
+**#886. Status text brought up to what shipped; no decision changes.** Rank 2h
+is built through increment 7 (#873 to #877, PR #93), its five stills awaiting
+Devon's verdict, with 8 and 9 left (`BACKLOG.md`, `ROADMAP.md`). `CLAUDE.md`
+says one standing gate and seven lanes, not four and five. `#878` carries a
+pointer to #879 so its "Blender 4.5 beside 5.2.2" clause is not read as live.
+`WISHLIST.md`'s "what the castle is today" counts (bodies, assets, stations,
+GPU) are corrected. `briefs/`: `rank-10-fable-bodies.md` deleted (rank 10
+retired into 2c and 2d, #807); `rank-06` and `rank-09` say the town and the
+quay shipped. The local branches `claude/blender-pin-5-2`,
+`claude/blender-huginn-vs-windows` and `claude/rank-9-quay`, all merged on
+GitHub, are deleted; no remote branch is touched.
