@@ -11803,3 +11803,15 @@ line 7. 8: a `bpy.ops.import_scene.gltf(...)` line in `calibration.py`,
 Blender asset is made from nothing but its script and its row (#803)" (and
 line 4); an empty `.blend` under `tools/blender/`, line 8. After the breaks
 a re-render put `crate.glb` and the manifest back byte for byte.
+
+**#885. A CI flake, PR #98, CI run 36893767102, with its control run.**
+Attempt 1 failed `plan-vs-scene` on "Gelert beside the player cues a bark
+inside 0.6 s plus a margin (1 frames driven): 0 cued" and "it is heard from
+where the hound stands: Infinity m off", the same two lines as #847; 14 of 15
+suites passed. Attempt 2, the control run, passed 15/15 in 11m18s. PR #98
+(rank 1, the Blender pipeline) adds one collidable prop in the kitchen and
+touches nothing in the hound's or the audio's code; `plan-vs-scene` passed
+on huginn twice on this branch, and #53 makes a real-time failure on
+software-rendered CI inconclusive rather than confirmed. This is the second
+time this line has flaked (#847), which makes it a candidate for its own row
+if it recurs.
