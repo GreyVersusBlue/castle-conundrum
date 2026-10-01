@@ -3562,6 +3562,14 @@
       "rotationY": -90,
       "yOffset": 1.7,
       "noCollide": true
+    },
+    {
+      "id": "kitchen-crate",
+      "model": "assets/blender/calibration/crate.glb",
+      "tile": [
+        -3.8125,
+        -3.3
+      ]
     }
   ],
   "braziers": [

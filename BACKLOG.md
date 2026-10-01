@@ -264,7 +264,7 @@ committed bytes, meshopt-encoded, with a manifest row per file; `test/
 assets.mjs` check 8 holds the committed bytes to the manifest and the
 manifest to the scripts. Blender never runs in CI (#804); a session without
 it on `PATH` does not claim this row. One asset ships with the pipeline
-itself, a calibration crate placed in the larder, proving `propPath`, check
+itself, a calibration crate placed in the kitchen (#880), proving `propPath`, check
 8 and the budget line end to end (#808). Every rank 2 pack is gated on this
 row. Detail: [Blender: the pipeline](SPECS.md#blender-the-pipeline).
 

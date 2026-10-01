@@ -1,0 +1,21 @@
+{
+  "comment": "One row per asset Blender makes (#801 to #808). `npm run blender:render <pack>` runs tools/blender/packs/<script> once per row, on one of Devon's machines with Blender 5.2, and writes assets/blender/<pack>/<name>.glb and its tools/blender/manifest.json row. Every key of a row is in its source hash, so editing a row without a render is check 8 line 4. `packs.<pack>.extraColours` is at most 8 colours outside tools/pixel/textures.json's palettes, each with a `why`.",
+  "packs": {
+    "calibration": {
+      "extraColours": []
+    }
+  },
+  "rows": [
+    {
+      "pack": "calibration",
+      "name": "crate",
+      "script": "calibration.py",
+      "seed": "calibration/crate/2026-10-01",
+      "why": "The pipeline's proof end to end (#808): a store crate of planks and two battens, placed once in the larder.",
+      "size": 0.8,
+      "plank": 0.03,
+      "gap": 0.012,
+      "batten": 0.09
+    }
+  ]
+}

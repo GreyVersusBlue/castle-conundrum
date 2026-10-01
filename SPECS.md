@@ -182,9 +182,14 @@ to the manifest and the manifest to the scripts (#803, #806).
   its id, and deriving one from a basename would give two goblets one id in
   silence.
 - **`data/scene-config.json`**: one `interiorProps` row, `"id":
-  "larder-crate"`, `"model": "assets/blender/calibration/crate.glb"`, in
-  the larder, spliced by `tools/place.mjs`'s writer in the file's own
-  ending (#584, #632). Asset and reference in one commit (#390).
+  "kitchen-crate"`, `"model": "assets/blender/calibration/crate.glb"`,
+  `"tile": [-3.8125, -3.3]`, no `rotationY`, no `yOffset`, colliding, in
+  the kitchen's north-east corner (#880, which moved it out of the larder),
+  spliced by `tools/place.mjs`'s `insertRow` in the file's own ending (#584,
+  #632). Its box is x -15.65..-14.85, z -13.62..-12.78, y 0..0.80: 0.35 m
+  off `kitchen-east` and the Kitchen Tower's flank, 0.38 m off
+  `north-curtain-mid`, 1.60 m north of `kitchen-sacks`. Asset and reference
+  in one commit (#390).
 - **`test/assets.mjs`**: check 8 (below), and check 4's sweep gains
   `assets/blender`.
 - **`package.json`**: `"blender:render": "node tools/blender/render.mjs"`.
@@ -268,15 +273,30 @@ its one draw and its atlas, `test/built.mjs` serving it from `dist/`.
 for the crate and `git status` is clean. If it is not, #806's fallback, in
 that order.
 
-**The look, local** (#53): the contact sheet and the crate in the larder on
+**The look, local** (#53): the contact sheet and the crate in the kitchen on
 a GPU, one sentence each: does it read as the kit's kind of object beside
 the kit's barrels? Blocks nothing in `npm test`.
 
 ### Open calls
 
-- **Where the crate stands.** Recommend **the larder**, against a wall, on
-  the ground: a store room already reads as crates, it is indoors so it
-  moves no outside bucket, and one draw call is the whole cost.
+- **Where the crate stands.** **Decided by #880: the kitchen's north-east
+  corner, tile [-3.8125, -3.3], not the larder.** The larder has no room
+  for it: the Kitchen Tower's stair takes x -20..-18.5, the stone reaches in
+  to x -21.44, and the 1.2 to 1.5 m left is the one passage from the
+  kitchen door to the stair foot, where the scullion stops; a 0.9 m body
+  cannot pass a 0.80 x 0.84 m crate in it. Three larder tiles each went
+  red: [-5.5, -3.775] ("inside Conwy's north run"), [-5.395, -3.6625]
+  ("inside Kitchen Tower"), and [-5.215, -4.49] (four rooms "cannot be
+  reached by kitchen-tower's own stairs", the cook stranded, the scullion's
+  terce tile with "no floor to stand on"). A smaller crate was refused: any
+  box in that passage narrows the one way up, and the larder already holds
+  a kit crate (`detail-crate-93`), the apples and `barrels-92`. The kitchen
+  corner is east of the tower's bulge and 4 m from the larder door, on no
+  route; it lines up with the kit crate, barrels and sacks on the kitchen's
+  east wall, which is the look check's "beside the kit's barrels" without
+  a walk. With the row spliced, `npm test layout mystery plan-vs-scene
+  budget` is 4 of 4 green; the outer ward draws 1021 against 1020 without
+  it, and the outer ward plus the outside 1182 against 1200.
 - **Vertex colours or an atlas.** Recommend **the atlas, and `COLOR_0`
   refused**: a float colour through linear-to-sRGB is not checkable against
   a palette without a tolerance, an atlas texel is, and it is the kit's own
@@ -386,7 +406,7 @@ goblet, a vial or a seal. What each of the six is, measured:
 | ledger | `ledger`, "works ledger", behind the word-lock: "340 sheets received, 212 laid" | `WoodenTable_01`, a photoscanned table with nothing on it | **swap**: `ledger-desk.glb`, a desk with the ledger open on it |
 | seal | no evidence; `prisoner-story`: "with the Clerk's seal on the pass" | nothing | **dress**: `seal.glb`, the seal matrix, a stick of red wax and a folded pass, in the Clerk of Works' office |
 | goblet | no evidence; `steward-denies` ("He was drunk") against `hywel-sober` | nothing | **dress**: `goblet.glb`, pewter, on the Great Hall's table |
-| vials | nothing in any clue, quest or document | nothing | **dress**: `vials.glb`, three stoppered vials in a rack, on rank 1's crate in the larder |
+| vials | nothing in any clue, quest or document | nothing | **dress**: Devon's `larder-vial` (2f, #830), on the kit crate `detail-crate-93` in the larder; not rank 1's crate, which stands in the kitchen (#880) |
 
 Three swaps replace the thing the player presses; four dressings stand
 beside it or in a room with no evidence at all. No dressing is pressable,
@@ -411,8 +431,10 @@ so no dressing is a clue, and no clue, deduction, press or station changes
   - `hall-goblet` on the Great Hall's `WoodenTable_01`, a free spot on its
     top clear of the lantern and the candleholders; stacked by
     `surfaceHeightUnder`, so the row comes after the table's.
-  - `larder-vials` on rank 1's crate, stacked the same way. The larder is
-    one of the nineteen empty rooms (#582), and this is its second thing.
+  - `larder-vials` is shipped by 2f as `larder-vial`, one vial on the kit
+    crate `detail-crate-93` in the larder at `yOffset` 0.45 (#830). Rank
+    1's crate stands in the kitchen, not the larder (#880), and nothing in
+    2a stacks on it.
   - `chapel-aumbry` on the chapel's drum wall, `yOffset` 1.2 and
     `noCollide`, the way `kite_shield` hangs in the hall. The builder picks
     the arc, clear of the chapel's door and of every pressable (check 1e
@@ -424,8 +446,7 @@ so no dressing is a clue, and no clue, deduction, press or station changes
   `assets/` and carries no `id` throws, naming the model (#812). Today the
   id is `p.model.split('/')[0]`, which is `"assets"` for every Blender
   path, so the second Blender row would share an id with the first. Rank
-  1's crate row gains `id: "larder-crate"` in this commit if it shipped
-  without one.
+  1's crate row carries `id: "kitchen-crate"` (#880).
 - **`test/layout.mjs`, new check 1e, "nothing stands over a pressable"**
   (#812): for every piece carrying `evidence`, `read` or `bell`, no other
   non-ground piece overlaps its box in plan by more than 1 cm in x and in z
@@ -539,9 +560,11 @@ suite and the break that turns it red from green (#34).
   candles beat and `npm run play`'s `examine('candle', 'chapel candles')`
   read the name, and it still fits a chapel with an aumbry of three and a
   stub on a pricket.
-- **Where the vials stand.** Recommend **on rank 1's crate in the larder**:
-  a store room is where vinegar and verjuice stand, it fills an empty room a
-  little, and it proves stacking on a Blender asset.
+- **Where the vials stand.** **Settled by #830 and #880: where 2f put
+  it**, Devon's one `larder-vial` on the kit crate `detail-crate-93` in the
+  larder. Recommend it stays: rank 1's crate cannot stand in the larder
+  (#880), a vial already stands on a crate there, and moving it onto the
+  kitchen crate buys nothing a suite or the look asks for.
 - **An `assets/` row with no id: derive or throw.** Recommend **throw**:
   check 2's messages and `plan-vs-scene.mjs`'s tags name a piece by its id,
   and a basename rule would give two goblets one id without a word.
@@ -555,8 +578,9 @@ suite and the break that turns it red from green (#34).
 
 ### Dependencies
 
-- **Gate: rank 1 shipped.** `common.py`, the manifest, check 8, `propPath`
-  and the larder crate the vials stand on are all rank 1's.
+- **Gate: rank 1 shipped.** `common.py`, the manifest and check 8 are rank
+  1's; `propPath` and the vial are 2f's (#830), and the vial stands on a kit
+  crate, not rank 1's (#880).
 - **Lanes F and B.** Not beside another Blender pack (F), nor rank 4, rank 9
   or rank 13's increments 2 and 3 (B).
 - **Rank 3**: increment 2 changes three things `npm run play` examines.

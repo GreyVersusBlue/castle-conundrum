@@ -4,3 +4,5 @@ dist/
 shots/
 # Blender compiles each tools/castle3d stage module it imports (#852).
 __pycache__/
+# Blender's own exports, before tools/blender/finish.mjs writes the committed bytes (#806).
+tools/blender/.staging/

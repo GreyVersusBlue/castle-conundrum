@@ -11707,3 +11707,99 @@ the manifest's `blender` and check 8's line 1 all read 5.2; the rest of #805
 (`--python-exit-code 1`, a move being a HISTORY entry and a full re-render)
 stands. 2h keeps its own `CASTLE3D_BLENDER` lookup (#842): the two lanes
 share a version now, not a Blender path.
+
+## Rank 1's crate stands in the kitchen, not the larder (2026-10-01)
+
+**#880. The calibration crate is `kitchen-crate`, at tile [-3.8125, -3.3]
+in the kitchen's north-east corner, with no `rotationY`; this amends #808,
+which placed it in the larder.** What was wrong: #808 and its open call
+chose the larder as a store room without measuring it. The larder is the
+foot of the Kitchen Tower's stair. The flight takes x -20..-18.5 and the
+drum's stone reaches in to x -21.44, so the floor left between them is a
+1.2 to 1.5 m passage from the kitchen door to the stair foot, along which
+the scullion stops and `larder-vial` stands on the kit crate
+`detail-crate-93`. The crate is 0.80 x 0.84 m and a body 0.9 m wide
+(`BODY_RADIUS` 0.45). The evidence is three spliced tiles, each red:
+[-5.5, -3.775] in `layout` ("larder-crate ... is inside Conwy's north
+run"), [-5.395, -3.6625] in `layout` ("inside Kitchen Tower"), and
+[-5.215, -4.49], beside `larder-apples`, in `layout` and `mystery`
+("kitchen-tower-1 and kitchen-tower-2 and kitchen-tower-roof and dormitory
+cannot be reached by kitchen-tower's own stairs", the cook stranded, and
+"scullion at terce ... tile (-5.063,-4.438) on level 0 has no floor to
+stand on"). A smaller crate was refused for the same reason: anything in
+that passage narrows the one way up the tower. Every upper room was
+refused because the plan gives every `interiorProps` row level 0.
+
+The kitchen corner was found by sweeping a 0.80 x 0.84 m box over the
+kitchen's x -26..-14, z -14..-6 at 0.05 m against every plan box from 0.05
+to 0.84 m. Its box is x -15.65..-14.85, z -13.62..-12.78: 0.35 m off
+`kitchen-east` and the tower's flank, 0.38 m off `north-curtain-mid`,
+1.60 m north of `kitchen-sacks`, 4 m east of the larder door. It continues
+the kit crate, barrels and sacks along the kitchen's east wall, so the look
+check (#53) sees it beside the kit's barrels where #808 wanted it. With the
+row spliced by `tools/place.mjs`'s `insertRow` and reverted after, `npm
+test layout mystery plan-vs-scene budget` was 4 of 4 green (5.4 s, 25.3 s,
+256.9 s, 0.6 s, on huginn). Budget, before and after: the outer ward 1020
+then 1021 draw calls against 1200, and the outer ward plus the outside 1181
+then 1182 against 1200. No ceiling moves. 2a's "vials on rank 1's crate in
+the larder" was already overtaken by #830, which shipped Devon's one
+`larder-vial` on the kit crate; `SPECS.md`'s 2a lines now say so, and
+nothing in 2a stacks on rank 1's crate.
+
+## Rank 1 ships: the Blender pipeline and its crate (2026-10-01)
+
+**#881. The pipeline is built as `SPECS.md` scoped it, and the crate is
+inside its caps by a wide margin.** `tools/blender/common.py` (the 5.2 pin
+exiting 3, the emptied factory scene, `seed`, `frame`, `flat`,
+`palette_material`, `swatch_uv`, `export`, `contact_sheet` and a `main(build)`
+every pack ends on), `packs.json`, `packs/calibration.py`, `render.mjs`,
+`finish.mjs` (exports `finish`, `sourceOf`, `sourceHash`) and `manifest.json`;
+`assets/blender/calibration/crate.glb`; `npm run blender:render`;
+`tools/blender/.staging/` ignored; check 8 in `test/assets.mjs` and
+`assets/blender` in check 4's sweep. Three calls the spec left to the
+builder: Blender's version reaches `finish.mjs` in a `<name>.glb.json`
+sidecar that `export()` writes beside the staged file, so the manifest's
+`blender` is `bpy.app.version_string` ("5.2.2 LTS") and not `render.mjs`'s
+reading of `--version`; the contact sheet is one more Blender per pack
+(`--sheet <rows>`) that rebuilds every row and lays them on a row, because
+one Blender per row cannot see its siblings; and the material sets
+backface culling, so the glTF says `doubleSided` false as the kit's pieces
+do. The crate is 18 boxes in one mesh (four sides of three planks, a lid
+of four, two upright battens), five swatches of `wood_planks` in a 16 x 16
+atlas, no `extraColours`: **216 triangles and 8116 bytes against caps of
+300 and 24,000**, one draw call, box 0.80 x 0.80 x 0.84 m on y 0.
+
+**#882. `BLENDER_THREADS=<n>` passes `-t <n>` to every Blender
+`render.mjs` starts; unset passes nothing.** Devon's instruction for huginn
+(14 GB, swap full, other sessions running Chromium). Thread count moves no
+byte of a flat-shaded export, and this row's renders all ran at 4. Not in
+the source hash, as nothing in `render.mjs` is (open call, "What the source
+hash covers").
+
+**#883. Two consecutive renders on huginn are a byte no-op, exporter
+included, so #806's fallback was not needed.** `BLENDER_THREADS=4 npm run
+blender:render` twice: both runs printed
+`assets/blender/calibration/crate.glb: unchanged (8116 bytes, 216
+triangles)` and `tools/blender/manifest.json: unchanged`; `cmp` of the
+committed glb, the staged Blender export and the manifest against copies
+taken between the runs found no difference, and `git status` was the same
+before and after. sha256 `4bb1c8727930fd6e0ed85cc31dbc0453a01fb5ffca9e8246f9c5861ba2d2fa30`.
+Windows has not rendered it yet; a different byte there is a finding
+against #803, not a re-render.
+
+**#884. Check 8's eight lines each went red on their break, from green, and
+came back (#34).** 1: the row's `blender` edited to `4.5.3`, line 1. 2: one
+byte of `crate.glb` flipped, "check 8 line 2:
+assets/blender/calibration/crate.glb hashes to d8ad0f7e…, the manifest says
+4bb1c872…: it changed after its render". 3: the crate's manifest row
+deleted, line 3 both ways. 4: `seed` edited without a render, line 4,
+naming `npm run blender:render calibration`. 5: the LF normalisation
+removed from `sourceOf`, line 5 (and 4); and one CRLF put into an LF
+manifest, line 5. 6, re-rendered on huginn: a 3-segment bevel, 3384
+triangles and 93,576 bytes, line 6 twice; the frame lifted 0.1 m, "box
+starts at y 0.1000", line 6. 7, re-rendered: the batten swatch `#ff00ff`,
+line 7. 8: a `bpy.ops.import_scene.gltf(...)` line in `calibration.py`,
+"check 8 line 8: tools/blender/packs/calibration.py calls import_scene; a
+Blender asset is made from nothing but its script and its row (#803)" (and
+line 4); an empty `.blend` under `tools/blender/`, line 8. After the breaks
+a re-render put `crate.glb` and the manifest back byte for byte.
