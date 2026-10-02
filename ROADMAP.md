@@ -5,8 +5,8 @@ what can be done *when*, on *what machine*, and *next to what else*.**
 `SPECS.md` is the spec behind every row and `HISTORY.md` is the only record.
 Nothing here is a locked decision except the lane rule (#600 to #602).
 
-Ten open rows: 2b, 2c, 2d, 2h, 3, 4, 6, 7, 9, 11, and ~~2a~~ (#887),
-~~2e~~ (#892), ~~13~~ (#893), ~~2f~~ and ~~2g~~ shipped (#830 to #838). Rows are named by title as well as by rank
+Nine open rows: 2b, 2c, 2d, 2h, 3, 4, 6, 7, 11, and ~~2a~~ (#887),
+~~2e~~ (#892), ~~13~~ (#893), ~~9~~ (#894), ~~2f~~ and ~~2g~~ shipped (#830 to #838). Rows are named by title as well as by rank
 (#522), because a rank is a priority and gets reused across different rows
 over time, never renumbered mid-table (#619, #491). Devon re-ranked on
 2026-09-25, reopening ranks 1 and 2 for the Blender rows and retiring rank 10
@@ -53,7 +53,7 @@ cannot trust a pass either.
 
 | Row | Model | Status |
 | --- | --- | --- |
-| **3 The GPU run** | Opus 5 | Its gate shipped 2026-09-21 (#780 to #782). The judgement half is done — the twelve, the Lauds sky, the covered hall are all answered in `HISTORY.md`. What is left is `npm run play` reaching exit 0; the third sitting's second run got to the accusation with the wrong ending before the gate's fix. |
+| **3 The GPU run** | Opus 5 | Its gate shipped 2026-09-21 (#780 to #782). The judgement half is done — the twelve, the Lauds sky, the covered hall are all answered in `HISTORY.md`. What is left is `npm run play` reaching exit 0, and one more shot, the quay through the fog (#894); the third sitting's second run got to the accusation with the wrong ending before the gate's fix. |
 | **4 The retro castle**, past increment 1 | Opus 5 | Increment 1 shipped in a container, no GPU needed (#757 to #766). What is left is the look: the checklist is in `SPECS.md`. Increment 2 is superseded by 2h (#839). |
 | **11 Feel**, past its Node line | Sonnet 5 | The Node half shipped 2026-09-17 (#650 to #654): a shadow decal and a reaching hand, nine assertions in `plan-vs-scene.mjs`. What is left is whether either reads on a GPU. Gated on rank 3 (below). |
 | **2c Blender: a shared rig with swappable parts**, the clips | Opus 5 | Once rendered, the eleven clips and the hen-wife beside a Quaternius body are a GPU look, the gate on committing anything under `assets/blender/folk/` (#824, #53). |
@@ -86,8 +86,7 @@ Blender.~~ **Shipped** in `01ee3dd`.
 files restored from `51735fa` and encoded, a room, two walls and 14 rows.~~
 **Shipped** in `41457cb`.
 
-**6** populace, **9** the town (the quay and the river shipped, #870
-to #872; the rock is left and has no spec yet), **2c**'s increment 2 (the
+**6** populace, **2c**'s increment 2 (the
 other 15 populace humans onto `folk.glb`, once increment 1's GPU look has
 passed). Every one is
 data, a validator, a Node suite or a headless DOM assertion.
@@ -102,7 +101,7 @@ lane at a time** (#602). The lanes are named by the file, not by the theme.
 | Lane | The file that decides it | Rows in it |
 | --- | --- | --- |
 | **A** | `src/save.js` — the version number and `migrate` | none held; next bump is to 7 |
-| **B** | `data/scene-config.json`, and `test/tools.mjs`'s byte-exactness rail | 1, 2b, 4, 9 |
+| **B** | `data/scene-config.json`, and `test/tools.mjs`'s byte-exactness rail | 1, 2b, 4 |
 | **C** | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | 2c, 2d, 6 |
 | **D** | `src/main.js`'s player rig and spawn | 6, 11 |
 | **E** | `src/audio.js` and `data/sounds.json` | 7 |
@@ -115,12 +114,11 @@ the one machine with Blender anyway (#804). Lane G is 2h's alone and
 shares no file with F, so 2h may run beside a lane F row: two Blenders on
 one machine, which is Devon's call on the day (#842). Both add a line to
 `package.json`'s scripts, a one-line merge. The Blender row in lane B (2b)
-does not run beside rank 4 or rank 9.
+does not run beside rank 4.
 2c and 2d in lane C do not run beside rank 6.
 
-Lane B: rank 4 and rank 9 both write `data/scene-config.json` and do not run
-together; rank 9's quay increments also write `src/castle-builder.js`
-(the gable, 3a), a second reason not to run beside rank 4. Lane C and D:
+Lane B: rank 4 and 2b both write `data/scene-config.json` and do not run
+together. Lane C and D:
 rank 6 holds both, so it does not run beside 2c or 2d (lane C) or rank 11
 (lane D) — a clean merge of two lane-C rows is not the same as a correct
 one; nothing in `npm test` would have caught the day rank 1 and rank 6 once
@@ -181,7 +179,7 @@ same machine as the Blender rows, in a `git worktree`, alongside them.
 Node acceptance. Rank 11's own spec says nothing in it goes past a `snap`
 and a sentence until the GPU run has happened. Every other gate this list
 carried has shipped and is retired: rank 4c's yard unlocked rank 9's town on
-2026-09-19 (#703 to #707); the two renders rank 3 and rank 5 once needed
+2026-09-19 (#703 to #707), and rank 9 is retired (#894); the two renders rank 3 and rank 5 once needed
 both arrived without waiting for `npm run play` to reach the end of its day
 (#634, #635, #656 to #658) — the lesson from both: name the render a row
 needs, not the row that happens to produce one; and **do not gate a looking

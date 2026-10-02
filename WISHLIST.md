@@ -236,6 +236,11 @@ the row's next step is the map and the town rather than more floors.
 the plan's 40 rooms drawn a storey at a time and filled in as they are stood
 in. What is left of the row is the town.
 
+**The row closed on 2026-10-02 (#894).** The town and the quay and river
+shipped (#725 to #728, #870 to #872). Devon dropped the rock, the spur over an
+estuary with a postern and a water gate: it would make the outside enterable
+(#703) or move the river, and the outer ward is at 1181 of 1200 meshes.
+
 ### 6. Bodies: the thing every row above waits on
 
 **Moved to `BACKLOG.md` rank 10, `SPECS.md`'s "Bodies" section** (#565).

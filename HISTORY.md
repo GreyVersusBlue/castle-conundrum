@@ -12016,3 +12016,39 @@ Left open: whether the plan reads better is Devon's call, on
 and are not a live row. Found and not fixed: five `interiorProps` rows carry
 `backdrop` and one `builtProps` row carries `shape` and `ridge`, none in
 `PLACEABLE`, so the prop editor's `move` refuses those rows (pre-existing).
+
+## Rank 9 retired: the rock dropped, the quay's look moved (2026-10-02)
+
+**#894. Rank 9, a castle to get lost in, retired: the rock dropped, the quay's
+look moved to rank 3.** Devon's decision on 2026-10-02, recorded by session
+CC-12, answering three questions. Rank 9's shipped parts stand: the map (#588
+to #591), the town (#725 to #728), the quay and the river (#870 to #872).
+
+1. **The rock is dropped, not deferred.** It was the last unbuilt item of rank
+   9: `WISHLIST.md` theme 5's "castle on a spur over an estuary, a view down
+   from the wall walk to water, a postern down the rock to a water gate, and a
+   boat". It will not be specced. Four reasons. Everything built since sits at
+   y 0 on flat ground, and `PLAN.md` already chose "no exposed rock (the spur
+   is a plan shape)". The river is west of the town about 100 m from the
+   curtain and the countryside backdrop (#892) fills x -140..180, so a view
+   down to water means moving the river or raising the castle. A postern and a
+   water gate make the outside enterable, which overturns #703 (check 4,
+   sealed). And the outer ward is at 1181 of 1200 meshes (#871), with 19 meshes
+   of room.
+2. **The quay's look moves to rank 3, the GPU run.** It is a GPU look (#53),
+   not doable on Huginn or in CI. It is one more pinned-camera shot through
+   `tools/shot-yard.mjs`; the spawn does not move, because `validatePopulace`
+   refuses it. The question is whether the toll-house ridge (about 60 % fog at
+   about 98 m) and the river (about 84 % fog, first seen point (-155, -3) from
+   `floor-sw-tower-roof` at 119.7 m through the west gate) read at all. If they
+   do not, the lever is `lighting.fog` (#796), not the town and not the west
+   wall (#725's 8 m wall is why the street reads as a street), and not this
+   row. The GPU run's fourth sitting (#886 to #891, on `origin/main`, not
+   merged here) did not photograph it.
+3. **`briefs/rank-09-opus-a-castle-to-get-lost-in.md` is deleted**, with the
+   row. Its job is done or dropped.
+
+Bookkeeping: rank 9 is out of `BACKLOG.md`'s table and sections, struck through
+in `ROADMAP.md`, cut to a pointer in `SPECS.md`, and theme 5 in `WISHLIST.md`
+says the rock was dropped. Open rows go from ten to nine, and lane B is rank 4
+and 2b. Rank 9 is a retired number and is not reused (#619, #802).

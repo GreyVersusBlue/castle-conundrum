@@ -66,18 +66,19 @@ under Mereford's one slate gable and the water past it (#870 to #872); and
 the Blender pipeline, `tools/blender/` with its manifest, `test/assets.mjs`
 check 8 and a calibration crate placed in the kitchen (#880 to #884); and
 rank 2e, the countryside beyond the wall, five backdrop pieces and check 4g (#892); and
-rank 13, the floor plan you can see, drag rooms, runs and openings (#893).
+rank 13, the floor plan you can see, drag rooms, runs and openings (#893); and
+rank 9, a castle to get lost in, the rock dropped and its last look moved to rank 3 (#894).
 
 **Open, ranked below.** Devon made Blender-built assets the project's top
 priority on 2026-09-25 and reopened ranks 1 and 2 himself to hold them
-(#801). Ten rows: the Blender pack band,
+(#801). Nine rows: the Blender pack band,
 three rows lettered by priority (2b an interiors kit, 2c a
 shared rig with swappable parts, 2d the animals); the castle rebuilt as a realistic standalone Blender model, outside
 the pipeline (2h, #839 to #844); the GPU run itself, now gated on nothing (rank 3, #780 to #782);
 the retro castle's look, its variety increment superseded by 2h (rank 4,
 #839); the rest of
 the fifty-person populace (rank 6); somebody with speakers to judge the
-soundscape (rank 7); the rock, the last of rank 9, unspecced; the feel theme past
+soundscape (rank 7); the feel theme past
 its shadow and hand (rank 11). A session never reuses a retired rank; Devon may, and did, here
 (#802). Rank 10 is retired, with 2c and 2d as its successors (#807). Ranks
 5, 8 and 12 stay retired numbers, not gaps: a rank is a priority, never an
@@ -184,7 +185,7 @@ together.
 | Lane | The file that decides it | Rows |
 | --- | --- | --- |
 | A | `src/save.js` — the version number and `migrate` | none held |
-| B | `data/scene-config.json` — and `test/tools.mjs`'s byte-exactness rail | 2b, 4, 9 |
+| B | `data/scene-config.json` — and `test/tools.mjs`'s byte-exactness rail | 2b, 4 |
 | C | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | 2c, 2d, 6 |
 | D | `src/main.js`'s player rig and spawn | 6, 11 |
 | E | `src/audio.js` and `data/sounds.json` | 7 |
@@ -198,16 +199,15 @@ the whole of `data/npcs.json`: two rows can write per-person `states` and
 writes there next**: every `dialogue` block in that file is also
 `dialogue/castle.dlg`, and `test/dialogue.mjs` fails if the two disagree, so a
 row that adds a state or rewords a line runs `npm run dialogue:extract`
-before it commits (#687). Lane B: rank 4 and rank 9 both write
-`data/scene-config.json` and do not run together; the
-Blender row that places (2b) holds it too. Lane F is every Blender
+before it commits (#687). Lane B: rank 4 and the Blender row that
+places (2b) both write `data/scene-config.json` and do not run together. Lane F is every Blender
 row: one machine renders, so they run one at a time regardless (#804). Lane
 G is 2h's alone and shares no file with F, so 2h may run beside a lane F row;
 that is two Blenders on one machine and Devon's call (#842).
 
 ## The ranked table
 
-Ten ranked rows: 2b, 2c, 2d, 2h, 3, 4, 6, 7, 9, 11. Devon
+Nine ranked rows: 2b, 2c, 2d, 2h, 3, 4, 6, 7, 11. Devon
 reopened ranks 1 and 2 himself on 2026-09-25 for the Blender rows, and
 lettered the pack band by priority (#801, #802). 2f, his own props, took
 the next letter the same day, ran first, and shipped the same day
@@ -242,7 +242,6 @@ the placement editor, budget suite, move-and-delete and the dialogue format
 | 4 | The retro castle: increment 1 shipped, fifteen sets out and fifteen 128 px textures in (#757 to #766); the look is left; variety per room is superseded by 2h (#839); the props increment moved to 2b (#813) | 2+ | Opus 5 | Container to the look, local: GPU past it | — | B | | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
 | 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #729 to #733); four of the five generated clips placed in the household's routines (#800), `drill` still nobody's; the town and the chatter pool are left | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: somebody listens to the seven beds, the four rings and the first two event sounds (a bed at a point and the rings, #680 to #683; the door and the hound, #696 to #698) | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
-| 9 | A castle to get lost in: the town (#725 to #728) and the quay and river (#870 to #872) shipped; the rock is left, unspecced, and the quay's look is the GPU run's | 2+ | Opus 5 | Container | — (4c opened it) | B | | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
 | 11 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 | Container to the Node line, local: GPU past it | **after 3** | D | shadow + hand shipped 2026-09-17 (#650 to #654) | [Feel](SPECS.md#feel) |
 
 **`ROADMAP.md` is these three columns turned into an order**: which row to
@@ -325,7 +324,10 @@ ending: `src/interaction.js` was reading the sentry and the porter from a
 fixed world height instead of their own, and the porter's admission is a
 premise of the ending. That bug shipped its fix as "Sight at the body's own
 height" (#780 to #782), and this row's gate is open. **What is left is the
-run itself**: nobody has confirmed the fix on a GPU yet.
+run itself**: nobody has confirmed the fix on a GPU yet. **One more shot
+moved here from rank 9 (#894)**: the quay through the fog, a pinned camera
+through `tools/shot-yard.mjs`, to say whether the toll-house ridge (about 98 m,
+60 % fog) and the river (first seen at 119.7 m, 84 % fog) read at all.
 
 **Settled and closed by the looking already done** (#711 to #715): the
 compressed textures, the tower roof climb, the gaol roll on the barrel-head,
@@ -383,7 +385,7 @@ owns the validator (#529); `test/budget.mjs` counts the household.
 
 **What is left waits on one other row and one argument.** The rest of the
 fifty, some of it on 2c's rig once it ships (#821), and whether `garden`
-becomes ground, is rank 9's town. The four activities that had no clip,
+becomes ground, which the town (rank 9, shipped) left open. The four activities that had no clip,
 `sweep`, `stir`, `hammer` and `spar`, now do: `tools/bodies/` shipped all
 five clips into the four human bodies (#790, kept as it is under 2c and 2d,
 #807), and this row has placed four of them, twelve stops across both days
@@ -416,28 +418,6 @@ event sounds wait on rank 6's activity clips to sync to. Recorded CC0 audio
 is admitted since #548, named by `data/sounds.json` and run through
 `tools/encode-assets.mjs` like any asset (#506), and none has been looked
 for.
-
-## A castle to get lost in
-
-*Where: container. Gate: none; rank 4c opened it on 2026-09-19. Lane: B.*
-
-**Rank 9, and a 2+.** The castle's own 40 rooms are built and mapped (#582,
-#588 to #591); nineteen are deliberately empty, per `PLAN.md`'s "an empty
-room is worse than no room." **The town's first increment shipped on
-2026-09-21** (#725 to #728): six houses and a church west of Mereford's town
-wall, seen from the North-west Tower's roof, entered by nobody, drawn on a
-map frame of their own and out of the room count (back to 67.6 m, 40 rooms),
-held against both wards' mesh ceiling. **The quay and the river shipped on
-2026-09-29** (#870 to #872), both increments in one PR, outside the west gate:
-3a, a stone toll-house under a new `gable` built shape, the one slate roof in
-Mereford and the only part of the quay the walls can see (check 4d); 3b, the
-water, a plan piece with no surface running into the fog, with the ground cut
-back to the bank, held by new checks 4e (nothing stands on it) and 4f (it is
-seen, through the west gate, at 119.7 m). The outer ward now draws 1181 of
-its 1200 meshes counting the outside. **What is left** is the rock, which
-nothing specs yet, and the GPU run's word on whether the quay reads through
-the fog (#53). Filling the nineteen empty
-rooms is rank 6's routines and a later lore row's documents.
 
 ## Feel
 
