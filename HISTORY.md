@@ -11818,8 +11818,8 @@ time this line has flaked (#847), which makes it a candidate for its own row
 if it recurs.
 
 **#886. Status text brought up to what shipped; no decision changes.** Rank 2h
-is built through increment 7 (#873 to #877, PR #93), its five stills awaiting
-Devon's verdict, with 8 and 9 left (`BACKLOG.md`, `ROADMAP.md`). `CLAUDE.md`
+is built through increment 7 (#873 to #877, PR #93), its five stills approved by
+Devon on 2026-10-02 (#905), with 8 and 9 left (`BACKLOG.md`, `ROADMAP.md`). `CLAUDE.md`
 says one standing gate and seven lanes, not four and five. `#878` carries a
 pointer to #879 so its "Blender 4.5 beside 5.2.2" clause is not read as live.
 `WISHLIST.md`'s "what the castle is today" counts (bodies, assets, stations,
@@ -12052,3 +12052,103 @@ Bookkeeping: rank 9 is out of `BACKLOG.md`'s table and sections, struck through
 in `ROADMAP.md`, cut to a pointer in `SPECS.md`, and theme 5 in `WISHLIST.md`
 says the rock was dropped. Open rows go from ten to nine, and lane B is rank 4
 and 2b. Rank 9 is a retired number and is not reused (#619, #802).
+
+## Castle in Blender, the integration row: its shape, decided before the spec (2026-10-02)
+
+**Shape, not a spec.** Devon, 2026-10-02, in chat, on the row #839 named and
+left unranked: the one that puts rank 2h's `castle.glb` and `markers.json`
+into the game. Written as `architect` (session CC-19) on local `main` at
+`722b3d6`. No code, asset, data, test or other doc file changed in this
+entry. **Numbers start at #900, not #895**: local `main` ends at #894, but
+`origin/claude/castle3d-markers` (`a64ea5e`, unmerged) already claims #892 to
+#899, three of them colliding with this `main`'s #892 to #894. That merge
+renumbers one side; this band stays clear of both.
+
+**#900. The integration row is a skin swap: `castle.glb` replaces the
+visuals and nothing else, and the game never reads `markers.json`.** What it
+replaces is the Kenney kit's castle pieces and the fifteen 128 px textures
+in `assets/pixel/`. `makePlan(scene-config.json)` in `src/castle-plan.js`
+stays the single source for colliders, rooms, spawn and stations, so #500
+stands whole and `test/plan-vs-scene.mjs` keeps diffing tagged objects
+against the plan's boxes. `markers.json` is checked against the plan in
+Node at 0.5 m, each exception an `allow.json` entry with a reason; that is
+the check `check-export.mjs` already specifies on the markers branch (#898
+there). **What this amends**: #839 listed "reading markers into
+`castle-plan.js`" as the row's job and said it would amend #500 by name; it
+does neither now. #843's markers stay, as a contract the model is held to,
+not a source the game reads, so "Blender drives the plan" means the plan
+drives Blender and a Node check proves they agree. Why: a second source for
+colliders is the drift #500 exists to refuse, and the plan already passes
+fifteen suites that a marker-fed plan would have to re-earn.
+
+**#901. The destination is a photographic castle in the game, so #803's
+flat look is re-checked against it before rank 2b is built.** The look 2b's
+spec is written to (`SPECS.md` "The look", #742, #803: flat-shaded, one
+palette atlas, no texture over 128 px) was chosen for a game that wears the
+kit. #839 named the conflict and left it to this row. This is a gate on 2b,
+not an overturning of #803: 2b's increment 1 is not built until an
+`architect` increment on 2b says in `HISTORY.md` whether its look stands.
+**Recommended answer for that re-check**: 2b stands as specced, because
+#902 keeps the interiors on the kit and the pixel textures, and an
+interiors kit is seen there and nowhere else; the re-check confirms that
+in one entry rather than re-opening #803.
+
+**#902. The swap is staged by ward and kind: the curtain wall and towers
+first, then the buildings, then Mereford; interiors keep the kit and the
+pixel textures until a later stage says otherwise.** Each stage is its own
+increment of the row, with its own `plan-vs-scene` diff and its own budget
+numbers. **What this amends**: #839 said the row "would delete every one"
+of the fifteen pixel textures "the day the game takes the model's walls".
+Under staging, a pixel texture leaves the game in the stage that swaps the
+last surface wearing it, and the ones interiors wear stay. Rank 4's looking
+checklist therefore stays live for interiors after the walls swap. Why
+staged: three smaller diffs against #500's 0.01 m net, each one revertable,
+against one swap of 704 nodes (#897 on the markers branch) whose failure
+names nothing.
+
+**#903. The model's shut outer gate (#851) and its four shut drum doors
+(#855) are opened in the model itself, so #435 and #527 stand for the game
+unchanged.** **The drum doors**: `DOOR_prison-tower-1`, `-2`,
+`DOOR_sw-tower-1` and `-2` (`modelOnly: "#855"`) are deleted, and
+`buildings.py` cuts `ROOF_great-hall` back so each door opens onto #527's
+0.75 m slot of sky, as it does in the game today; that is #855's "keep them
+reachable", taken. **The outer gate**: `LEAF_barbican-outer-a` and `-b`
+turn open and `PORT_barbican-outer` rises; the objects keep `modelOnly:
+"#851"`. #851's way out stays shut by #900, not by the model: the plan's
+`barbican-west` box is still the collider at z -2 to 2. **Open call, with a
+recommendation**: the open arch then shows a road behind an invisible wall
+4 m behind the spawn; recommend accepting that at stage 1 and putting the
+view west from `SPAWN` on the row's looking checklist, with the portcullis
+lowered again (leaves open) as the named fallback if the GPU look reads it
+as a way out, since a lowered portcullis reads shut and changes no
+collider. **Who does it**: the row's first increment, in lane G, as a
+change to 2h's scripts after 2h closes, because increments 5 to 7 were
+approved with both shut and increment 9's numbers are measured on that
+model. **`allow.json`**: no entry goes away, because #851, #853, #855 and
+#857 each added none ("for #851's reason") and the markers branch's #895
+ships it `{}`. What goes is the four `#855` objects; check.py line 6 never
+counted them, so its count does not move.
+
+**#904. Shape now, spec later: the integration row is rank 2i, gated on 2h
+increment 9, last in the Blender band.** `SPECS.md` gains its section only
+when increment 9's numbers exist: the glb's size, triangles and texture
+memory (the markers branch's #898 reads them with the pinned
+`@gltf-transform/core`, not `npx`). The spec decides draw-call and memory
+ceilings, LOD and bake, KTX2 through `assets:encode`, and any amendment of
+#499, #506 and #611, each argued from those numbers. Why wait: the only
+measurement so far, #897 on the markers branch over a pre-7b build, is a
+560,243,100-byte glb with 1,756,102,488 bytes of texture memory, 2.8 times
+#499's 200 MB ceiling for the whole repo, and a ceiling argued from a build
+that is about to change is a guess (#611). Size is set by the spec. **Lane,
+recommended**: G, since #903 changes `tools/castle3d/` and 2h will have
+released it; the spec adds whatever lane its file list forces (B only if
+it writes `data/scene-config.json`, which #900 says it does not need to).
+`BACKLOG.md` and `ROADMAP.md` gain the row as 2i, gated on 2h increment 9;
+that is `scribe`'s, from this entry.
+
+**#905. Rank 2h increment 7 closes on Devon's verdict.** Devon, 2026-10-02,
+on the five stills `CAM_spawn`, `CAM_courtyard`, `CAM_hall`, `CAM_chapel`
+and `CAM_town`, quoted exactly: "yes, i approve". The build is PR #93 (#873
+to #877). The same verdict is #892 on `origin/claude/castle3d-markers`, with
+the stills' settings; whichever of the two reaches `main` second drops its
+copy and points at the other.
