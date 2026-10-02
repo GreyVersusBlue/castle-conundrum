@@ -5,8 +5,8 @@ what can be done *when*, on *what machine*, and *next to what else*.**
 `SPECS.md` is the spec behind every row and `HISTORY.md` is the only record.
 Nothing here is a locked decision except the lane rule (#600 to #602).
 
-Ten open rows: 2b, 2c, 2d, 2h, 2i, 3, 4, 6, 7, 11, and ~~2a~~ (#887),
-~~2e~~ (#892), ~~13~~ (#893), ~~9~~ (#894), ~~2f~~ and ~~2g~~ shipped (#830 to #838). Rows are named by title as well as by rank
+Twelve open rows: 2b, 2c, 2d, 2h, 2i, 3, 3a, 3b, 4, 6, 7, 11, and ~~2a~~ (#907),
+~~2e~~ (#908), ~~13~~ (#909), ~~9~~ (#910), ~~2f~~ and ~~2g~~ shipped (#830 to #838). Rows are named by title as well as by rank
 (#522), because a rank is a priority and gets reused across different rows
 over time, never renumbered mid-table (#619, #491). Devon re-ranked on
 2026-09-25, reopening ranks 1 and 2 for the Blender rows and retiring rank 10
@@ -54,7 +54,8 @@ cannot trust a pass either.
 
 | Row | Model | Status |
 | --- | --- | --- |
-| **3 The GPU run** | Opus 5 | Its gate shipped 2026-09-21 (#780 to #782). The judgement half is done — the twelve, the Lauds sky, the covered hall are all answered in `HISTORY.md`. What is left is `npm run play` reaching exit 0, and one more shot, the quay through the fog (#894); the third sitting's second run got to the accusation with the wrong ending before the gate's fix. |
+| **3 The GPU run** | Opus 5 | The fourth sitting confirmed the sight fix on a GPU and walked the whole day and the second day for the first time (#886 to #891). What is left is `npm run play` reaching exit 0, now filed as 3a and 3b, the phone in the room (#530), and one more shot, the quay through the fog (#910). |
+| **3b play-castle's last three failures** | Opus 5 | A wall check that matches nothing, a statue over the hall brazier, and #659's journal walk (#890). Specced, nothing built. (a) is a container deletion; (b) and (c) need a GPU to confirm. |
 | **4 The retro castle**, past increment 1 | Opus 5 | Increment 1 shipped in a container, no GPU needed (#757 to #766). What is left is the look: the checklist is in `SPECS.md`. Increment 2 is superseded by 2h (#839). |
 | **11 Feel**, past its Node line | Sonnet 5 | The Node half shipped 2026-09-17 (#650 to #654): a shadow decal and a reaching hand, nine assertions in `plan-vs-scene.mjs`. What is left is whether either reads on a GPU. Gated on rank 3 (below). |
 | **2c Blender: a shared rig with swappable parts**, the clips | Opus 5 | Once rendered, the eleven clips and the hen-wife beside a Quaternius body are a GPU look, the gate on committing anything under `assets/blender/folk/` (#824, #53). |
@@ -87,7 +88,9 @@ Blender.~~ **Shipped** in `01ee3dd`.
 files restored from `51735fa` and encoded, a room, two walls and 14 rows.~~
 **Shipped** in `41457cb`.
 
-**6** populace, **2c**'s increment 2 (the
+**3a** Play Again starts over (#889), specced, nothing built: `src/gvb-
+save.js`'s `autosave.stop()` and a Node test in `test/save.mjs`. **6**
+populace, **2c**'s increment 2 (the
 other 15 populace humans onto `folk.glb`, once increment 1's GPU look has
 passed). Every one is
 data, a validator, a Node suite or a headless DOM assertion.
@@ -102,9 +105,9 @@ lane at a time** (#602). The lanes are named by the file, not by the theme.
 | Lane | The file that decides it | Rows in it |
 | --- | --- | --- |
 | **A** | `src/save.js` — the version number and `migrate` | none held; next bump is to 7 |
-| **B** | `data/scene-config.json`, and `test/tools.mjs`'s byte-exactness rail | 1, 2b, 4 |
+| **B** | `data/scene-config.json`, and `test/tools.mjs`'s byte-exactness rail | 1, 2b, 3b, 4 |
 | **C** | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | 2c, 2d, 6 |
-| **D** | `src/main.js`'s player rig and spawn | 6, 11 |
+| **D** | `src/main.js`'s player rig and spawn | 3a, 6, 11 |
 | **E** | `src/audio.js` and `data/sounds.json` | 7 |
 | **F** | `tools/blender/` and `tools/blender/manifest.json` | 1, 2b, 2c, 2d |
 | **G** | `tools/castle3d/` | 2h, 2i |
@@ -162,10 +165,10 @@ Blender, no gate (#835). It also holds lane E for one line of
 `data/sounds.json`, so it does not run beside rank 7 if rank 7 writes that
 file.~~ **Shipped** (#835 to #838), in `41457cb`. **Blender runs first, on
 Devon's own instruction** (#801). The pipeline shipped on 2026-10-01 (#880 to #884). The order inside
-the band began with 2a evidence props, which shipped (#887) and proved
+the band began with 2a evidence props, which shipped (#907) and proved
 the encode, manifest and budget paths on real content; then 2b the
 interiors kit, then 2c the shared rig, then 2d the animals; 2e the
-countryside backdrop shipped (#892). The gates inside the band: 2b after 2a, which shipped (#887), so that gate is
+countryside backdrop shipped (#908). The gates inside the band: 2b after 2a, which shipped (#907), so that gate is
 open; 2d after 2c's increment 1. **2h is
 not in that order**: it has no gate, goes through nothing of `tools/blender/`'s, and
 starts whenever Devon's machine is free (#839, #840). The integration row,
@@ -173,15 +176,15 @@ starts whenever Devon's machine is free (#839, #840). The integration row,
 band, in lane G, and is gated on 2h's increment 9: its shape is decided and
 its spec waits for that increment's numbers (#904).
 
-**Rank 3 is still the highest-value hour on a GPU.** Its gate is open
-(#780 to #782) and it unblocks rank 11 past its Node line. It runs on the
-same machine as the Blender rows, in a `git worktree`, alongside them.
+**Rank 3's hour on a GPU is spent: the fourth sitting confirmed the sight
+fix** (#886 to #891). What is left of the row, 3a and 3b, is container
+work; neither needs the worktree the run itself did.
 
 **One gate outside the band stands**: rank 3 before rank 11 ships past its
 Node acceptance. Rank 11's own spec says nothing in it goes past a `snap`
 and a sentence until the GPU run has happened. Every other gate this list
 carried has shipped and is retired: rank 4c's yard unlocked rank 9's town on
-2026-09-19 (#703 to #707), and rank 9 is retired (#894); the two renders rank 3 and rank 5 once needed
+2026-09-19 (#703 to #707), and rank 9 is retired (#910); the two renders rank 3 and rank 5 once needed
 both arrived without waiting for `npm run play` to reach the end of its day
 (#634, #635, #656 to #658) — the lesson from both: name the render a row
 needs, not the row that happens to produce one; and **do not gate a looking

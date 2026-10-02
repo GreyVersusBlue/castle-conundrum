@@ -65,9 +65,9 @@ nave, a new inner-ward ground room for the pulpit and the rood (#835 to
 under Mereford's one slate gable and the water past it (#870 to #872); and
 the Blender pipeline, `tools/blender/` with its manifest, `test/assets.mjs`
 check 8 and a calibration crate placed in the kitchen (#880 to #884); and
-rank 2e, the countryside beyond the wall, five backdrop pieces and check 4g (#892); and
-rank 13, the floor plan you can see, drag rooms, runs and openings (#893); and
-rank 9, a castle to get lost in, the rock dropped and its last look moved to rank 3 (#894).
+rank 2e, the countryside beyond the wall, five backdrop pieces and check 4g (#908); and
+rank 13, the floor plan you can see, drag rooms, runs and openings (#909); and
+rank 9, a castle to get lost in, the rock dropped and its last look moved to rank 3 (#910).
 
 **Open, ranked below.** Devon made Blender-built assets the project's top
 priority on 2026-09-25 and reopened ranks 1 and 2 himself to hold them
@@ -207,7 +207,7 @@ that is two Blenders on one machine and Devon's call (#842).
 
 ## The ranked table
 
-Ten ranked rows: 2b, 2c, 2d, 2h, 2i, 3, 4, 6, 7, 11. Devon
+Twelve ranked rows: 2b, 2c, 2d, 2h, 2i, 3, 3a, 3b, 4, 6, 7, 11. Devon
 reopened ranks 1 and 2 himself on 2026-09-25 for the Blender rows, and
 lettered the pack band by priority (#801, #802). 2f, his own props, took
 the next letter the same day, ran first, and shipped the same day
@@ -234,12 +234,14 @@ the placement editor, budget suite, move-and-delete and the dialogue format
 
 | Rank | Item | Size | Model | Where | Gate | Lane | Claimed | Detail |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 2b | Blender: an interiors kit: joined sets dressing the kitchen, the great hall and the cell, specced (#813 to #816, #819); the two hearths and the chapel altar went to 2f (#830); nothing built | 2+ | Opus 5 | Local: Blender | 1 shipped (#881); 2a shipped (#887) | F, B | | [Blender: an interiors kit](SPECS.md#blender-an-interiors-kit) |
+| 2b | Blender: an interiors kit: joined sets dressing the kitchen, the great hall and the cell, specced (#813 to #816, #819); the two hearths and the chapel altar went to 2f (#830); nothing built | 2+ | Opus 5 | Local: Blender | 1 shipped (#881); 2a shipped (#907) | F, B | | [Blender: an interiors kit](SPECS.md#blender-an-interiors-kit) |
 | 2c | Blender: a shared rig with swappable parts: one rig, one-primitive parts, at most five skinned draws a person against the Quaternius rigs' 12 to 15, specced (#820 to #825); nothing built | 2+ | Opus 5 | Local: Blender, then Container; judged local: GPU (#53) | 1 shipped (#881) | F, C | | [Blender: a shared rig with swappable parts](SPECS.md#blender-a-shared-rig-with-swappable-parts) |
 | 2d | Blender: the animals: pig, goat, sheep, horse, cat and two geese on one quadruped topology plus a bird one for the goose, specced (#826 to #829); nothing built | 1 | Opus 5 | Local: Blender; judged local: GPU (#53) | after 2c increment 1 (1 shipped, #881) | F, C | | [Blender: the animals](SPECS.md#blender-the-animals) |
 | 2h | Castle in Blender: the castle, Mereford and the countryside as a realistic standalone model with Poly Haven PBR, built by committed scripts on Blender 5.2, with gameplay markers, specced (#839 to #844); increments 0 to 7 shipped (#839 to #877, PR #93, 0064a11), the five stills of 7 approved by Devon (#905); increments 8 and 9 (markers, export) are left; the game loads none of it | 2+ | Opus 5 | Local: Blender GPU (5.2, Devon's Windows machine only); Local: net for its fetches | — | G | | [Castle in Blender](SPECS.md#castle-in-blender) |
 | 2i | Castle in Blender, the integration row: the game takes `castle.glb` as a skin swap and never reads `markers.json` (#900), staged curtain wall and towers, then buildings, then Mereford, with the kit indoors meanwhile (#902), the outer gate and drum doors opened in the model (#903); shape decided (#900 to #905), full spec (ceilings, LOD and bake, KTX2, amendments to #499, #506, #611) waits for 2h increment 9's `gltf-transform inspect` numbers (#904); nothing built | Set by the spec | Opus 5 | Local: Blender GPU (5.2, Devon's Windows machine only) | after 2h increment 9 | G | | [Castle in Blender, the integration row](SPECS.md#castle-in-blender-the-integration-row) (no section yet, #904) |
-| 3 | The GPU run: the looks are taken (#711 to #715); the walker holds on a GPU (#734, #736) and the third sitting reached the accusation with the wrong ending (#735 to #741) | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
+| 3 | The GPU run: the fourth sitting confirmed the sight fix on a GPU and walked the whole day and the second day (#886 to #891); exit 1, 6 failures, filed as 3a and 3b; `renderer.info` recorded (#887); the phone (#530) untouched | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
+| 3a | Play Again starts over: `slot.autosave`'s `stop()` leaves the save dirty and the reload's `pagehide` flush writes the ended game back (#889) | ¼ | Opus 5 | Container | — | D | | [Play Again starts over](SPECS.md#play-again-starts-over) |
+| 3b | play-castle's last three failures: a wall check that matches nothing, a statue over the hall brazier, and #659's journal walk (#890) | ¼ | Opus 5 | Container, then local: GPU to confirm | — | B | | [play-castle's last three failures](SPECS.md#play-castles-last-three-failures) |
 | 4 | The retro castle: increment 1 shipped, fifteen sets out and fifteen 128 px textures in (#757 to #766); the look is left; variety per room is superseded by 2h (#839); the props increment moved to 2b (#813) | 2+ | Opus 5 | Container to the look, local: GPU past it | — | B | | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
 | 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #729 to #733); four of the five generated clips placed in the household's routines (#800), `drill` still nobody's; the town and the chatter pool are left | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: somebody listens to the seven beds, the four rings and the first two event sounds (a bed at a point and the rings, #680 to #683; the door and the hound, #696 to #698) | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
@@ -251,7 +253,7 @@ the same time. This table still ranks; that file sequences (#601).
 
 ## Blender: an interiors kit
 
-*Where: local, Blender. Gate: rank 1 shipped (#881); 2a shipped (#887). Lanes: F and B.*
+*Where: local, Blender. Gate: rank 1 shipped (#881); 2a shipped (#907). Lanes: F and B.*
 
 **Rank 2b, size 2+.** Specced whole, decisions #813 to #816 and #819. Dresses
 four rooms, the kitchen, the great hall, the chapel, and the cell as the
@@ -318,35 +320,52 @@ Detail: [Castle in Blender](SPECS.md#castle-in-blender).
 
 *Where: local, GPU. Gate: none. Lane: none.*
 
-**Rank 3.** `npm run play` has run six times across three sittings (#624 to
-#630, #708 to #715, #734 to #741). The third sitting's second run reached the
-accusation for the first time (179 ok, 17 failures) and got the wrong
-ending: `src/interaction.js` was reading the sentry and the porter from a
-fixed world height instead of their own, and the porter's admission is a
-premise of the ending. That bug shipped its fix as "Sight at the body's own
-height" (#780 to #782), and this row's gate is open. **What is left is the
-run itself**: nobody has confirmed the fix on a GPU yet. **One more shot
-moved here from rank 9 (#894)**: the quay through the fog, a pinned camera
+**Rank 3. The sight fix holds on a GPU.** `npm run play` has now run eleven
+times across four sittings (#624 to #630, #708 to #715, #734 to #741, #886
+to #891). The fourth sitting's fifth run walked the whole day and the whole
+second day for the first time: the accusation selects 3 of 3, "Master Robert
+Ferrour hangs," and Play Again's pane. `renderer.info` was read at five
+beats and recorded against rank 2c and 2d's skinned-draw ceiling (#887). Exit
+0 is still owed — the run's six remaining failures are filed as rank 3a
+(Play Again does not start over) and rank 3b (three small suite and data
+bugs) — and the phone (#530) is untouched. **One more shot
+moved here from rank 9 (#910)**: the quay through the fog, a pinned camera
 through `tools/shot-yard.mjs`, to say whether the toll-house ridge (about 98 m,
 60 % fog) and the river (first seen at 119.7 m, 84 % fog) read at all.
 
-**Settled and closed by the looking already done** (#711 to #715): the
-compressed textures, the tower roof climb, the gaol roll on the barrel-head,
-and — the one negative result — two of the twelve do not read as two, the
-Constable and the Steward being one white-haired man told apart only by a
-collar colour past about three metres. The Lauds sky reads flat, 151.2 of
-255 against Prime's 203.4, with no dawn colour in it. The covered hall's
-seven trusses are invisible from the floor, and a sliver of sky shows at its
-south-east corner.
+**Settled and closed by the looking already done** (#711 to #715, #891):
+the compressed textures, the tower roof climb, the gaol roll on the
+barrel-head, and — the one negative result — two of the twelve do not read
+as two, the Constable and the Steward being one white-haired man told apart
+only by a collar colour past about three metres. The Lauds sky reads flat,
+no dawn colour in it. The covered hall's seven trusses are invisible from
+the floor, and a sliver of sky shows at its south-east corner. #715's stray
+prompt naming "the Sir Roger Lestrange" is gone; every prompt now reads
+correctly.
 
-**Three findings still nobody's row, written up in `HISTORY.md`**: a stray
-`Press E to talk to the Sir Roger Lestrange` used as a prompt for every NPC
-(#715); five checks in `test/play-castle.mjs` that are stale or vacuous,
-one of which can only fail on a GPU (#714); and a journal walk assertion
-that reads 0.69 to 1.30 m across separate runs against 3.75 m for an
-unobstructed walk (#708 to #741). A fourth, route pricing near two props
-standing inside a 0.45 m body's width of stone, is worked around in the
-router rather than fixed at the source (#718).
+## Play Again starts over
+
+*Where: container. Gate: none. Lane: D.*
+
+**Rank 3a.** `src/main.js:285`'s restart calls `auto.stop()`, `slot.reset()`,
+then reloads. `src/gvb-save.js`'s `autosave.stop()` clears the timer but
+leaves `dirty` true, and the same autosave flushes on `pagehide`, so the
+reload writes the ended game straight back over the reset (#889). A player
+at the end of the game cannot start a new one without clearing site data by
+hand, and three of the fourth sitting's beats fail on it. Recommended fix:
+`stop()` also clears `dirty`.
+
+## play-castle's last three failures
+
+*Where: container, then local: GPU to confirm. Gate: none. Lane: B.*
+
+**Rank 3b.** Three small, unrelated breaks in `test/play-castle.mjs` and the
+data it reads (#890): a wall-height check that matches zero meshes, because
+no wall is named `wall_` or `wall-half` any more; the Great Hall's brazier
+sealed inside `gothic_statue`'s box after the hall cluster's shift, plus one
+brazier pair inside an unidentified "Scene" root; and #659's journal walk,
+whose ten GPU readings now run 0.51 to 1.30 m against a flat `> 1.0 m`
+threshold.
 
 ## The retro castle
 

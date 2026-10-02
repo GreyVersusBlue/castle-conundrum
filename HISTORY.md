@@ -11817,7 +11817,211 @@ software-rendered CI inconclusive rather than confirmed. This is the second
 time this line has flaked (#847), which makes it a candidate for its own row
 if it recurs.
 
-**#886. Status text brought up to what shipped; no decision changes.** Rank 2h
+## The GPU run, fourth sitting: the sight fix holds, and the day walks to its end (2026-10-01)
+
+**Rank 3, on Devon's machine DEVON-DESKTOP (Windows 10 Home 19045, NVIDIA
+GeForce RTX 3070 Ti, driver 32.0.16.1047), worked by Claude Opus 5.5 as the
+lead in a fresh git worktree off `origin/main` at `fbf203d` (which carries
+#780 to #782), claim PR #99.** `npm run play` ran five times, about 15 to 20
+minutes each, unattended. Window 1200 x 800 at dsf 1. Decisions #886 to #891.
+
+The five runs, as a short list:
+- Run 1, the suite as merged plus the print-only meter: exit 1, 62 ok, 9
+  failures, ABORTED "cannot start the day without the Constable". The body
+  stopped at (7.15, 5.05) on the east leg across the inner ward, pointer
+  lock dropped, and the resume click failed three hikes running with "THREE.
+  PointerLockControls: Unable to use Pointer Lock API".
+- Run 2, the resume fix in: exit 1, 179 ok, 19 failures, ABORTED on
+  `'#restart-button'` not visible: the same wrong ending as #741, this time
+  from the sentry, because the Kitchen Tower climb stopped on the ground
+  floor after a lock loss and the player stood 8 m below him at (-18.9,
+  -14.3), where `STOREY_REACH` (#780) rightly offered nothing. The porter
+  passed.
+- Run 3, the lock watcher in: exit 1, 203 ok, 13 failures. First run ever to
+  reach the full ending and the second day. ABORTED clicking `'#start-
+  mystery'` after Play Again. The inner-ward stop read `locked true` at
+  (7.15, 4.88): a wall, not focus.
+- Run 4, the garden route and the morning-after fixes in: exit 1, 210 ok, 8
+  failures, no abort. The whole day walked to the last beat.
+- Run 5, the texture-check scope fix in: exit 1, 212 ok, 6 failures, no
+  abort, 42 shots. `npm test` 15 of 15 after it.
+
+**#886. The sight fix holds on a GPU.** The two beats #741 lost both pass:
+"walked to the sentry in north-walk 0.63m" and "the sentry, awake at Terce,
+saw fur on the walk" in runs 3, 4 and 5; "walked to the porter in cross-walk
+1.15m" and "the porter, on the cross-wall walk, admits the door" in runs 2 to
+5. With the sighting and the admission held, the accusation selected 3 of 3,
+stage `full`, "Master Robert Ferrour hangs", the lead found in Thomas Wykes's
+yard, and the pane offered "The next morning" (#537). The second day was
+walked by `npm run play` for the first time: Lauds, the inspector standing
+in the King's Hall, the cell's bars off and the player inside them, his four
+lines, "Fraunceys signs", Play Again. Against #741's 17: gone because the
+game is right now, the sentry's two beats, the porter's two, and the six-
+beat ending cascade with its abort; gone because the suite was wrong, three
+of #714's five pre-walk checks (#888); still failing, two of #714's checks
+and #659's journal walk; new, because no run had reached them, Play Again's
+three beats (#889).
+
+**#887. What a frame costs, from `renderer.info` (for rank 6 and 2c/2d's
+`MAX_SKINNED_TOTAL` argument).** `test/play-castle.mjs` gains `cost(label)`,
+print-only like `luma`. It reads `renderer.info` through the scene's own
+`onBeforeRender` / `onAfterRender` (three r169 hands the renderer to both and
+resets `info` between them, so one `onAfterRender` is one whole frame,
+shadow pass included) and counts skinned draws from each `SkinnedMesh`'s
+`onBeforeRender` (main pass) and `onBeforeShadow` (shadow pass). Nothing
+added to `src/`. Median over 60 frames, run 5, with the range over runs 1
+to 5 where it moved:
+
+| Beat | Watch, room | Draw calls | Triangles | Skinned draws, main + shadow | Bodies drawn |
+| --- | --- | --- | --- | --- | --- |
+| first frame of the day | Prime, West barbican | 1638 (same all 5 runs) | 398,502 | 274 + 333 | 25 |
+| inner ward from the wall walk | Prime, Steward's chamber | 535 (528 to 541) | 83,120 (81,778 to 85,968) | 105 (103 to 107) + 333 | 9 (8 to 10) |
+| at the bell | Terce, Chapel Tower | 889 (793 to 952) | 206,369 (202,277 to 223,185) | 81 (64 to 105) + 356 | 10 (6 to 12) |
+| six in frame | Vespers, Great Hall | 1263 (1263 to 1268; one frame 1397) | 370,797 | 248 (to 253; one frame 266) + 333 | 21 (one frame 24) |
+| the morning after | Lauds, Great Hall | 395 (280 to 395) | 24,007 (17,557 to 24,007) | 12 (6 to 12) + 119 | 1 |
+
+Built, every reading: 423 skinned meshes for 34 bodies, 12.4 a body; 1402 to
+1488 geometries, 501 to 546 textures, 25 to 26 programs. What the numbers
+say: a body costs about 11 skinned draws in the main pass (274 from 25);
+the shadow pass draws 333 skinned meshes at every day-one beat whatever the
+camera faces, about 27 bodies' worth, so the shadow pass, not the view, is
+what scales with bodies built; and the Lauds frame, with three of the twelve
+gone and most of the household elsewhere, drops to 119. Rank 2c's "at most
+five skinned draws a person" is measured against 12.4 meshes and about 11
+draws today. No ceiling moves here; this is the evidence #609 and #729
+asked a renegotiation to bring.
+
+**#888. Seven suite bugs, each fixed in `test/play-castle.mjs`** (the only
+file this row may change; commit `1d3d4ae`):
+1. The resume path clicked Start without `page.bringToFront()`, which the
+   first lock of the day already called and documented. An unattended
+   window that lost OS focus could not take the lock back. Now it brings the
+   window forward and asks up to three times a second apart (#661's
+   ration). Run 1 failed on it; runs 2 to 5 recovered every time.
+2. The east leg from the Steward's chamber door (6, 3.5) to (18, 3.5) was a
+   straight line, and the garden that #835 to #838 moved onto that strip
+   stands on it: the sundial at (7.5, 4.0), the scarecrow at (8.5, 3.85), the
+   raised bed at (8.5, 5.0). Three runs out of three stopped at (7.15, 4.9).
+   The leg now goes through `hike`, the router the rest of the file uses.
+   Run 4: "reached east across the inner ward 0.39m".
+3. The morning after expected `clerk,merchant,steward` hidden and read
+   `clerk, hywel, merchant, steward`: #752 made Hywel a body hidden from his
+   death, after this line was written.
+4. "the save on disk says day two" read the key 600 ms after the click
+   against `slot.autosave`'s 4000 ms debounce and read day 1. It now waits
+   up to 6 s. A reload would have come back to day two anyway, through the
+   `pagehide` flush.
+5. "fourteen rigged NPC bodies" found 34 (#714 found 27). It now asserts the
+   cast is 14 and the scene holds exactly cast plus populace: "found 34,
+   cast 14, populace 20".
+6. "every pixel-art texture magnifies NEAREST" and "every texture is at the
+   GPU anisotropy ceiling" (#714) both failed on one texture: a probe on
+   2026-10-01 named it as the 64 px `CanvasTexture` under `player-rig`
+   (`src/player-rig.js`, the shadow under the player's feet, #651), drawn at
+   runtime, never through `tuneTexture`, and meant to magnify LINEAR. Both
+   checks now skip the rig the way the brazier check's stone list already
+   did. Run 5: "129 textures at <=128px" NEAREST, "cap 16, worst 16, 176
+   textures". So the half of #714's question about `tuneTexture`'s comment
+   answers itself: every texture the castle loads is tuned.
+7. The last beat clicked `'#start-mystery'` when it was not on the panel and
+   aborted the run before the page-error and offsite checks could read. It
+   now runs only if the door is shown and fails by name otherwise. Run 5
+   reached "no page/console errors" and "no offsite requests", both ok.
+
+Plus two print-only additions: `cost` (#887) and `watchLock`, which logs any
+pointer-lock loss with no overlay up or with document focus gone. Runs 3 to
+5 logged none.
+
+**#889. Play Again does not start over: the ended game is saved back on the
+way out. Filed as rank 3a.** `src/main.js:285` restart is `auto.stop();
+slot.reset(); window.location.reload();`. `src/gvb-save.js` autosave's
+`stop()` clears the timer and leaves `dirty` true, and the same autosave
+flushes on `pagehide`, so the reload writes the ended game back over the
+reset. The new page resumes it: stage `end`, watch `lauds`, 36 clues, the
+key holding the player at the inspector (5.3, -7.2), the second door hidden,
+and the signed sheet back up with its Play Again button (shots 42 and 43 of
+run 3). A player at the end of the game can never start a new one without
+clearing site data by hand. Three beats fail on it in runs 3 to 5. Not fixed
+here: nothing in `src/`.
+
+**#890. The last three standing failures, filed as rank 3b.** (a) "interior
+hall walls are the same height as the outer walls" matches zero meshes
+("outer m, hall m"): no mesh is named `wall_` or `wall-half` since the walls
+became the castle's own pixel-material boxes (#742), and
+`test/plan-vs-scene.mjs` already holds every wall's live box to the plan at
+0.01 m (#500). (b) "no brazier is sealed inside the stonework" reads all
+three "IN Scene". The Great Hall's is a real overlap in the data: the
+brazier at tile (-5, 2.5), world (-20, 10), stands inside `gothic_statue`'s
+box, the statue at tile (-5, 2.275), world (-20, 9.1), box x -20.7 to -19.2,
+z 8.7 to 10.3, 1.7 m tall, moved there by the hall cluster's +2.0 m shift.
+The porter's-gate pair at (-4.8, -2.4) and (-4.8, 2.4) is inside some root
+named "Scene" this sitting did not identify. (c) #659's journal walk, "and
+W moves the player again", read 0.88, 0.68, 0.70 and 0.82 m in runs 2 to 5;
+the series across all GPU runs is now 0.69, 1.30, 0.51, 0.69, 0.69, 0.83,
+0.88, 0.68, 0.70, 0.82 m against `> 1.0`. What the beat is for is still the
+open call `SPECS.md` left it as.
+
+**#891. What the shots show, and what is still not seen.** One sentence per
+beat, from run 5's 42 shots in `shots/play/` (gitignored, on DEVON-DESKTOP
+only): 01 kitchen-tower-first-floor: the first floor with the scullion by a
+table, the tower's timber wall in front. 02 kitchen-tower-top: the north
+walk and three drum roofs from the top room. 03 a-tower-roof-from-12m: the
+roof's timber merlons from inside, dark against a flat sky. 04 cross-wall-
+walk: inside the Bakehouse Tower drum, the stair opening in the floor. 05
+inner-ward-from-the-walk: the Steward's chamber, bookshelf and rug, its door
+onto the ward on the left. 06 face-constable: Sir Roger in the chapel, his
+first line in the box. 07 constable-at-the-body: the garrison-song caption
+over him and the prompt "Press E to talk to Sir Roger Lestrange". 08 the-
+chapel-at-prime: the Constable from behind, a populace body at the door. 09
+the-pouch-taken: "New clue: The pouch" over the chapel floor. 10 journal:
+five clues listed, What you know. 11 face-cook: Marged in the kitchen. 12
+face-porter: Gwilym at the gate. 13 face-apprentice: Ieuan in the lodge. 14
+and 15 the-gaol-roll-on-the-barrel-head: the roll on the barrel, readable,
+and a body's legs hanging in the air beside it at head height. 16 terce: the
+camera inside the Constable's head at the chapel bell, his hair and crown
+filling the frame. 17 face-merchant and 18 merchant-admits: Thomas Wykes by
+his cart, "The Clerk sells". 19 face-sentry: Dafydd on the north walk, the
+camera inside his hair at 0.63 m. 20 cross-walk-crossing: "The cloak was on
+that stair" at the chapel bell. 21 sext: Lady Alys in the inner ward with
+household walking behind her. 22 to 24: the Steward in the King's Hall,
+Father Anselm in the chapel. 25 pressed-three to 28 word-holds: the word-
+lock door, the riddle box, the door open. 29 reloaded-at-sext and 30 face-
+clerk: Ferrour in his office. 31 clerk-cornered: "A mason's word". 32
+vespers: Father Anselm's office caption at the bell. 33 twelve-at-vespers:
+the hall from its west end with the six standing 10 to 20 m off, too small
+in the frame to tell apart. 34 the-hall-trusses: the covered roof, dark, no
+truss readable. 35 the-hall-floor-open: the floor, luma 39.7 of 255 (runs 2
+to 5: 49.1, 45.4, 39.7; #741 read 72.7), still above `SPECS.md`'s 25. 36
+accusation-panel: thirteen names, the clues, 0 of 3. 37 epilogue: "The Sheet
+Is Signed" with "The next morning". 38 the-morning-after: the empty high
+table at Lauds. 39 the-empty-cell: the camera inside Madoc the smith's hat;
+he is still in the cell at Lauds and goes at noon, so the shot's name is
+wrong, not the game. 40 face-inspector: Master Adam Fraunceys in the King's
+Hall. 41 the-sheet-is-signed: the final pane with Play Again. 42 a-fresh-
+day: the loading screen fading in over the old pane.
+
+Found, not filed: bodies do not stop the player, so three shots (16, 19, 39)
+are taken from inside a head; and the hanging legs in 14 and 15, whose owner
+this sitting did not identify. #715's "the Sir Roger Lestrange" is gone:
+every prompt in run 5 reads "Press E to talk to Sir Roger Lestrange". The
+phone (#530) is untouched: nobody was at the keyboard with a phone, and the
+six constants are still guesses. Twelve-at-Vespers told-apart: no new
+judgement from 33; #711 to #715's stands.
+
+**What this cost.** Five runs of about 15 to 20 minutes on the RTX 3070 Ti,
+plus two one-minute headed probes. `npm test` is 15 of 15. Exit 0 is still
+owed: run 5's six failures are ranks 3a and 3b.
+
+## Status text, and rank 2a ships: evidence props (2026-10-01)
+
+**Numbered #906 and #907, written as #886 and #887.** Both were committed on
+local `main` while `origin/main` claimed #886 to #891 for the GPU run's fourth
+sitting above. The sync merge (CC-sync, 2026-10-02) kept origin's numbers and
+moved local's: #886 to #906, #887 to #907, #892 to #908, #893 to #909, #894 to
+#910. The sections stay in the order they shipped, so #900 to #905 below
+follow #910.
+
+**#906. Status text brought up to what shipped; no decision changes.** Rank 2h
 is built through increment 7 (#873 to #877, PR #93), its five stills approved by
 Devon on 2026-10-02 (#905), with 8 and 9 left (`BACKLOG.md`, `ROADMAP.md`). `CLAUDE.md`
 says one standing gate and seven lanes, not four and five. `#878` carries a
@@ -11829,7 +12033,7 @@ quay shipped. The local branches `claude/blender-pin-5-2`,
 `claude/blender-huginn-vs-windows` and `claude/rank-9-quay`, all merged on
 GitHub, are deleted; no remote branch is touched.
 
-**#887. Rank 2a, Blender: evidence props, shipped (#810 to #812, #816, #819).**
+**#907. Rank 2a, Blender: evidence props, shipped (#810 to #812, #816, #819).**
 Two increments, both on huginn. Increment 1 (7bb593f): `tools/blender/packs/
 evidence.py`, pack `evidence` in `packs.json` with one extraColour (tallow),
 and `assets/blender/evidence/aumbry-candles.glb`, 228 triangles, 8,924 bytes,
@@ -11893,9 +12097,9 @@ stick) is built only if that look says so. `npm test` on huginn: fifteen of fift
 
 ## Rank 2e ships: the countryside beyond the wall (2026-10-02)
 
-**#892. Rank 2e, Blender: the countryside beyond the wall, shipped (#816 to #819).**
-This is #892 and not #888 because `origin/main` has claimed #886 to #891 on
-another branch. `tools/blender/packs/countryside.py` cuts five pieces from one
+**#908. Rank 2e, Blender: the countryside beyond the wall, shipped (#816 to #819).**
+Written as #892 while `origin/main` claimed #886 to #891 on another branch;
+renumbered by the sync merge (#906 above). `tools/blender/packs/countryside.py` cuts five pieces from one
 seeded height field over x -140..180, z -170..170, seed
 "countryside/2026-10-02", with its constants in the script; the `packs.json`
 rows carry only `cut`. Pack `countryside` has three extraColours: wheat
@@ -11960,8 +12164,8 @@ belongs with the next rank 3 GPU run.
 
 ## Rank 13 ships: the floor plan you can see, increments 2 and 3 (2026-10-02)
 
-**#893. Rank 13, the floor plan you can see, shipped (#745 to #749).** This is
-#893 and not #886 because `origin/main` has claimed #886 to #891 on another
+**#909. Rank 13, the floor plan you can see, shipped (#745 to #749).** Written
+as #893 and renumbered by the sync merge (#906 above), because `origin/main` claimed #886 to #891 on another
 branch. Increment 1 was #748; increments 2 and 3 are `c13e1df` and `5228c0b`.
 
 Increment 2, the write path. `tools/place.mjs`'s `PLACEABLE` gains `walls` and
@@ -12019,7 +12223,7 @@ and are not a live row. Found and not fixed: five `interiorProps` rows carry
 
 ## Rank 9 retired: the rock dropped, the quay's look moved (2026-10-02)
 
-**#894. Rank 9, a castle to get lost in, retired: the rock dropped, the quay's
+**#910. Rank 9, a castle to get lost in, retired: the rock dropped, the quay's
 look moved to rank 3.** Devon's decision on 2026-10-02, recorded by session
 CC-12, answering three questions. Rank 9's shipped parts stand: the map (#588
 to #591), the town (#725 to #728), the quay and the river (#870 to #872).
@@ -12030,7 +12234,7 @@ to #591), the town (#725 to #728), the quay and the river (#870 to #872).
    boat". It will not be specced. Four reasons. Everything built since sits at
    y 0 on flat ground, and `PLAN.md` already chose "no exposed rock (the spur
    is a plan shape)". The river is west of the town about 100 m from the
-   curtain and the countryside backdrop (#892) fills x -140..180, so a view
+   curtain and the countryside backdrop (#908) fills x -140..180, so a view
    down to water means moving the river or raising the castle. A postern and a
    water gate make the outside enterable, which overturns #703 (check 4,
    sealed). And the outer ward is at 1181 of 1200 meshes (#871), with 19 meshes
@@ -12059,10 +12263,10 @@ and 2b. Rank 9 is a retired number and is not reused (#619, #802).
 left unranked: the one that puts rank 2h's `castle.glb` and `markers.json`
 into the game. Written as `architect` (session CC-19) on local `main` at
 `722b3d6`. No code, asset, data, test or other doc file changed in this
-entry. **Numbers start at #900, not #895**: local `main` ends at #894, but
+entry. **Numbers start at #900, not #895**: local `main` ended at #894, but
 `origin/claude/castle3d-markers` (`a64ea5e`, unmerged) already claims #892 to
-#899, three of them colliding with this `main`'s #892 to #894. That merge
-renumbers one side; this band stays clear of both.
+#899, three of them colliding with this `main`'s #892 to #894. The sync merge
+moved local's to #908 to #910 (#906 above); this band stays clear of both.
 
 **#900. The integration row is a skin swap: `castle.glb` replaces the
 visuals and nothing else, and the game never reads `markers.json`.** What it

@@ -11,9 +11,9 @@ ships the row is the one that records the call with a number.
 One section per row still open in `BACKLOG.md`'s ranked table: 3, 4, 6, 7,
 9, 11, and the rank 2 band (2b to 2d, and 2h, "Castle in Blender",
 which is outside the Blender pipeline, #839). 2f and 2g shipped and their
-sections are deleted (#830 to #838); 2a shipped (#887) and its section is cut
-to what 2b cites and its open look; 2e shipped (#892) and its section is cut
-to its pointer and its open look; 13 shipped (#893) and its section is cut
+sections are deleted (#830 to #838); 2a shipped (#907) and its section is cut
+to what 2b cites and its open look; 2e shipped (#908) and its section is cut
+to its pointer and its open look; 13 shipped (#909) and its section is cut
 to its pointer. Rank 1, the pipeline, shipped too
 (#880 to #884); its section is cut to the two parts the packs cite. The red suite is closed; its section is a
 stub pointing at `HISTORY.md`. "Bodies" stays until 2c's and 2d's sections
@@ -142,7 +142,7 @@ in `npm test` (#53).
 
 ## Blender: evidence props
 
-**Rank 2a. Shipped (#887), in two increments, against #810 to #812, #816 and
+**Rank 2a. Shipped (#907), in two increments, against #810 to #812, #816 and
 #819.** Its row is retired from `BACKLOG.md` and `ROADMAP.md`. What other
 sections cite, and what is still open:
 
@@ -177,7 +177,7 @@ sections cite, and what is still open:
 ## Blender: an interiors kit
 
 **Rank 2b. Size 2+. Model Opus 5. Where: Local: Blender. Gate: rank 1 shipped
-(#881; 2a shipped, #887, for check 1e and #811's pin). Lanes F and B.** Modular
+(#881; 2a shipped, #907, for check 1e and #811's pin). Lanes F and B.** Modular
 pieces that make the castle's working rooms read as what they are. "What
 every Blender pack shares" holds and is not restated. Decided as #813 to
 #816 and #819. Three increments: two class S, the third gated on rank 4's
@@ -306,7 +306,7 @@ narrower, the increment comes back to `architect` first.
   things for a count a join gets to for nothing. A repeated bench costs a
   few KB of bytes, not a draw.
 - **The smithy and the stables.** Recommend **not in this row** (#814):
-  neither is a room, and a room is a layout call (the floor plan editor, #893), not a kit's; #582 refused new rooms for volume. The
+  neither is a room, and a room is a layout call (the floor plan editor, #909), not a kit's; #582 refused new rooms for volume. The
   lore puts the forge "under the Prison Tower's wall" (year 12), which is
   outside the south curtain; a stable waits on a horse, which is 2d's to
   make or not.
@@ -318,7 +318,7 @@ narrower, the increment comes back to `architect` first.
 
 ### Dependencies
 
-- **Gate: rank 1 shipped (#881); 2a shipped (#887)** (check 1e, #811).
+- **Gate: rank 1 shipped (#881); 2a shipped (#907)** (check 1e, #811).
 - **Lanes F and B.** Not beside any Blender pack, or rank 4.
 - **Increment 3 waits on rank 4's look** (#53), which is rank 3's machine
   and sitting.
@@ -792,7 +792,7 @@ follow, the hens' peck, the cow grazing. One sentence each in the entry.
 
 ## Blender: the countryside beyond the wall
 
-**Rank 2e. Shipped (#892), in one increment, against #816 to #819.** Its row is
+**Rank 2e. Shipped (#908), in one increment, against #816 to #819.** Its row is
 retired from `BACKLOG.md` and `ROADMAP.md`. What other sections cite, and what
 is still open:
 
@@ -3745,14 +3745,16 @@ but this section and `HISTORY.md` changed.
 ## The GPU run
 
 **Rank 3. Size ¼. Its gate, "Sight at the body's own height," shipped
-2026-09-21** (#780 to #782); the gate is open. `npm run play` is 102
-assertions and a numbered screenshot per beat into `shots/play/`. It has run
-on a machine with real compositing six times over three sittings (#624 to
-#630, #708 to #715, #734 to #741), and the third sitting's second run reached
-the accusation for the first time — 179 ok, 17 failures — with the wrong
-ending, because `src/interaction.js` read the sentry and the porter from a
-fixed world height instead of their own. That fix shipped as this row's gate.
-**What is left is the run that confirms it on a GPU.**
+2026-09-21** (#780 to #782); the gate is open. `npm run play` is a numbered
+screenshot per beat into `shots/play/`. It has run on a machine with real
+compositing eleven times over four sittings (#624 to #630, #708 to #715,
+#734 to #741, #886 to #891), and the fourth sitting confirmed the sight fix
+holds: the sentry's and the porter's sighting beats pass, the accusation
+selects 3 of 3, and the whole day and the whole second day have now been
+walked by `npm run play` for the first time. **What is left is exit 0**:
+run 5 of the fourth sitting still ends 212 ok, 6 failures, filed as rank 3a
+(Play Again does not start over) and rank 3b (three small suite and data
+bugs), and the phone in the room (#530) is untouched.
 
 **The judgement half of this row is done.** Every render question this
 section used to list is answered in `HISTORY.md`: the twelve at Vespers
@@ -3760,9 +3762,10 @@ section used to list is answered in `HISTORY.md`: the twelve at Vespers
 white-haired man told apart only by a collar colour), the Lauds sky (flat,
 no dawn colour), the covered hall (its trusses invisible from the floor, a
 sliver of sky at one corner), a tower roof from 12 m, and the gaol roll on
-the barrel-head. One item is still untouched: a phone in the room (#530) —
-the stick throw, sprint threshold, look rate, E button size and two render
-numbers are all still guesses.
+the barrel-head. `renderer.info` was read at five beats and handed to rank
+2c and 2d's skinned-draw argument (#887). One item is still untouched: a
+phone in the room (#530) — the stick throw, sprint threshold, look rate, E
+button size and two render numbers are all still guesses.
 
 ### Scope, the run
 
@@ -3781,7 +3784,7 @@ numbers are all still guesses.
 - No new guard-rail: the run is the check. The `snap` beat is a screenshot,
   not an assertion, and says so in its comment.
 
-**The quay through the fog, moved here from rank 9 (#894).** One more
+**The quay through the fog, moved here from rank 9 (#910).** One more
 pinned-camera shot through `tools/shot-yard.mjs`, spawn untouched
 (`validatePopulace` refuses it): do the toll-house's slate ridge (about
 98 m, 60 % fog) and the river (84 % fog, first seen at (-155, -3) from
@@ -3791,20 +3794,118 @@ the lever is `lighting.fog` (#796), not the town or the west wall.
 ### Dependencies
 
 - **Gated on "Sight at the body's own height," which shipped 2026-09-21**
-  (#780 to #782). Run again from a `main` that carries the fix.
+  (#780 to #782) and confirmed on a GPU 2026-10-01 (#886 to #891).
 - The run needs a machine with a GPU, which is Devon's; a session can add a
   beat and cannot run it. If a session is asked to take the run without one,
   the honest output is the beat and a note, not a claim.
-- The journal beat's walk assertion (#659) has now run on a GPU five times:
-  0.69, 1.30, 0.51, 0.69 and 0.83 m against its `> 1.0` threshold. It is
-  measuring the chapel's geometry more than it is measuring the pointer. What
-  to do about that is a decision about what the beat is for, and it is left
-  open rather than guessed at.
+- **What exit 0 still owes**: rank 3a (Play Again does not start over,
+  #889) and rank 3b (the last three standing failures, #890), both specced
+  below.
 
 ### Constraints
 
 - #53 (the whole point of the row).
 - #34 does not apply: no rail is added.
+
+---
+
+## Play Again starts over
+
+**Rank 3a. Size ¼.** `src/main.js:285`'s restart is `auto.stop();
+slot.reset(); window.location.reload();`. `src/gvb-save.js`'s `autosave`
+`stop()` clears the timer and leaves `dirty` true; the same autosave flushes
+on `pagehide`, so the reload writes the ended game straight back over the
+reset before the fresh page can read it (#889). A player at the end of the
+game cannot start a new one without clearing site data by hand.
+
+### Scope
+
+- `src/gvb-save.js`'s `autosave` function.
+- `src/main.js:285` if the chosen fix needs it.
+- A Node test in `test/save.mjs`, the suite that already imports
+  `gvb-save.js` directly.
+
+### Acceptance
+
+- After `restart()` runs and a `pagehide` fires, the saved key under
+  `castleConundrumSave_v1` is gone, not the ended game.
+- `npm run play`'s three Play Again beats pass on a GPU (#886 to #891).
+- `npm test` fifteen of fifteen.
+
+### Open calls
+
+- **How to stop the write.** Recommend `stop()` also sets `dirty = false`,
+  the smallest change: `slot.reset()` runs before the reload either way, and
+  a `dirty` flag that is already false has nothing left to flush. The two
+  alternatives cost more for no gain — removing the `pagehide` flush breaks
+  the mid-day reload it exists for, and reordering `restart()` still races
+  the same flush on a slow disk.
+
+### Dependencies
+
+- Lane D (`src/main.js`'s player rig and spawn), which rank 6 and rank 11
+  also hold.
+- #34: the break is putting `dirty` back and watching the new test fail.
+
+### Constraints
+
+- #36: the storage key does not change.
+- No `SAVE_VERSION` bump: this is a write-timing bug, not a schema change.
+
+---
+
+## play-castle's last three failures
+
+**Rank 3b. Size ¼.** Three unrelated breaks surfaced by the fourth GPU
+sitting, each in `test/play-castle.mjs` or the data it reads, none of them
+a sight or a walk bug (#890).
+
+### Scope
+
+- `test/play-castle.mjs`.
+- `data/scene-config.json`, for whichever of (b)'s two moves turns out to be
+  the fix.
+
+### Acceptance
+
+- All three beats pass in `npm run play` on a GPU; #53 applies.
+- `npm test` fifteen of fifteen.
+
+### Open calls
+
+- **(a) The wall-height check.** It matches zero meshes: no mesh is named
+  `wall_` or `wall-half` since the walls became the castle's own
+  pixel-material boxes (#742). Recommend **delete the check**:
+  `test/plan-vs-scene.mjs` already holds every wall's live box to the plan
+  at 0.01 m (#500), which is the same fact this check was trying to reach by
+  a name that no longer exists.
+- **(b) The brazier sealed inside the stonework.** The Great Hall's brazier
+  at tile (-5, 2.5) stands inside `gothic_statue`'s box, moved there by the
+  hall cluster's +2.0 m shift. Recommend **move the statue, not the
+  brazier**, about 1.2 m along the hall so its 1.5 m box clears the
+  brazier's bowl: the brazier's position is load-bearing for the chapel-
+  candles aim fix (#721 to #724) and the statue's is not. The porter's-gate
+  pair at (-4.8, -2.4) and (-4.8, 2.4) reads inside some root named "Scene"
+  this sitting did not identify; identify that root before deciding whether
+  that half of the check is right.
+- **(c) #659's journal walk.** Ten GPU readings now run 0.51 to 1.30 m
+  against a flat `> 1.0 m` threshold. Recommend asserting the walk against
+  the same walk measured with no journal opened, as a ratio, rather than
+  against an absolute metre: a ratio holds regardless of which geometry the
+  chapel happens to route the player past that run.
+
+### Dependencies
+
+- Lane B (`data/scene-config.json`), which rank 4 and rank 9's increments
+  also hold.
+- (b) and (c) need a GPU run to confirm; (a) is a deletion a container can
+  make and a Node suite can carry.
+
+### Constraints
+
+- #53 for (b) and (c).
+- #529: no assertion of (a)'s or (b)'s kind moves into `layout.mjs` or
+  `mystery.mjs`; both stay where `plan-vs-scene.mjs`'s seam already is.
 
 ---
 
@@ -4225,9 +4326,9 @@ watch, from the chapel and then from the far ward):
 
 ## A castle to get lost in
 
-**Rank 9. Retired (#894), against #582, #588 to #591, #725 to #728 and #795 to
+**Rank 9. Retired (#910), against #582, #588 to #591, #725 to #728 and #795 to
 #798.** Its row is out of `BACKLOG.md` and struck through in `ROADMAP.md`.
-Devon dropped the rock on 2026-10-02 (#894): it will not be specced. What other
+Devon dropped the rock on 2026-10-02 (#910): it will not be specced. What other
 sections cite, and what is open:
 
 - **The map (#588 to #591)**: the journal's third tab, `nav.rooms()` drawn by
@@ -4241,10 +4342,10 @@ sections cite, and what is open:
   First seen point (-155, -3) from `floor-sw-tower-roof` at 119.7 m; the outer
   ward at 1181 of 1200 meshes. Dropped from the spec: a far bank, a boat, a
   sound, a tide (#796 to #798).
-- **Open: the quay's look (#53)**, moved to rank 3 (#894), under "The GPU run".
+- **Open: the quay's look (#53)**, moved to rank 3 (#910), under "The GPU run".
   If it does not read, the lever is `lighting.fog`, not the town or the west
   wall.
-- **Dropped: the rock** (#894): a postern and water gate would make the outside
+- **Dropped: the rock** (#910): a postern and water gate would make the outside
   enterable, overturning #703, and a view down to water means moving the river
   or raising the castle.
 
@@ -4337,13 +4438,13 @@ ray that was never going to hit anything.
 
 ## The floor plan you can see
 
-**Rank 13. Shipped (#893), in three increments, against #745 to #749.** Its row
+**Rank 13. Shipped (#909), in three increments, against #745 to #749.** Its row
 is retired from `BACKLOG.md` and `ROADMAP.md`. What is cited and what is open:
 
 - **Increment 1 (#748)**: the read-only top-down sheet, `src/edit-layout.js`
   over `tools/plan-sheet.mjs`, with its own sentinel in `test/built.mjs`'s grep
   of `dist/` (#747, #586).
-- **Increments 2 and 3 (#893)**: `walls` and `rooms` are in `tools/place.mjs`'s
+- **Increments 2 and 3 (#909)**: `walls` and `rooms` are in `tools/place.mjs`'s
   `PLACEABLE`; `tools/layout-edit.mjs` holds the pure row edits; the sheet drags
   rooms, run ends and openings and posts the whole row through `/__place`
   `move` after `makePlan` and `walkability` accept it. Held by
