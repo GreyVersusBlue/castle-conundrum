@@ -24,7 +24,7 @@
 // of what is on disk and both are asserted, so neither machine can be the only
 // one that runs the half that breaks.
 //
-// Five parts:
+// Six parts:
 //   1. the splice: it parses, it adds exactly one element, and cutting the new
 //      row back out gives back the original file byte for byte
 //   2. the move and the delete: a row is found by walking the text rather than
@@ -36,6 +36,9 @@
 //      top-down review view draws, against a plan built out of the real
 //      scene-config.json. Its one rail is #500 — every box it hands back is the
 //      object `makePlan` computed and not a second derivation of the same room.
+//   6. tools/layout-edit.mjs: what a drag on the floor plan does to one `walls`
+//      or `rooms` row, and that the row it hands back goes through the same
+//      `move` splice with every byte outside it unchanged, on both endings.
 //
 // Parts 1 to 4 run over all five placeable arrays. `walls` and `rooms` joined
 // the three prop arrays for the floor plan's increment 2 (SPECS.md "The floor
@@ -51,6 +54,9 @@ import {
   formatRow, checkRow, eolOf, PLACEABLE,
 } from '../tools/place.mjs';
 import { planSheet, storeyOf, storeySpan } from '../tools/plan-sheet.mjs';
+import {
+  dragRoom, dragRunEnd, clampOpening, moveOpening, widenOpening, cutOpening, withRow, snapTo, ALL_EDGES,
+} from '../tools/layout-edit.mjs';
 import { makePlan } from '../src/castle-plan.js';
 import { partsOf } from './gltf.mjs';
 
@@ -685,6 +691,145 @@ console.log('the plan sheet');
     // The same rectangle on every storey, or the camera jumps when `[` is
     // pressed and the plan is a different shape on each floor.
     check(sheets.every((s) => JSON.stringify(s.extent) === JSON.stringify(e)), 'and it is the same rectangle on every storey');
+  }
+}
+
+/* ------------------------------------------------- 6: the layout edits --- */
+//
+// WHAT THIS PART IS FOR. tools/layout-edit.mjs is what a drag on the floor plan
+// does to a row before src/edit-layout.js posts it, and the two ways it can go
+// wrong quietly are touching a field the drag was not about, and handing back
+// the row it was given with a change in it — the page then holds an edited
+// copy of the castle it believes is the file. So every function is asserted on
+// the whole row it returns, the input is asserted untouched, and the composed
+// edit is put through `replaceRow` on both endings with the same byte rail as
+// parts 1 and 2. Nothing here re-derives a box: the one world extent used is
+// the plan's own box for the run, as the page uses it (#500).
+console.log('the layout edits');
+{
+  const config = JSON.parse(raw);
+  const frozen = (r) => JSON.stringify(r);
+  const byTiles = config.rooms.find((r) => r.tiles);
+  const byBounds = config.rooms.find((r) => r.bounds);
+  const byDrum = config.rooms.find((r) => r.drum);
+
+  /* --- rooms --- */
+  {
+    const was = frozen(byTiles);
+    const moved = dragRoom(byTiles, { dx: 1, dz: -2 });
+    check(frozen(byTiles) === was, `dragging ${byTiles.id} leaves the row it was handed untouched`);
+    check(frozen(moved.tiles) === frozen({ min: [byTiles.tiles.min[0] + 1, byTiles.tiles.min[1] - 2], max: [byTiles.tiles.max[0] + 1, byTiles.tiles.max[1] - 2] }),
+      `a whole-rectangle drag moves all four edges of ${byTiles.id} by the tiles asked`, frozen(moved.tiles));
+    check(frozen(Object.keys(moved)) === frozen(Object.keys(byTiles)) && frozen({ ...moved, tiles: null }) === frozen({ ...byTiles, tiles: null }),
+      'and every other key is the value it was, in the order it was');
+    const wider = dragRoom(byTiles, { dx: 2, edges: { maxX: true } });
+    check(frozen(wider.tiles) === frozen({ min: byTiles.tiles.min, max: [byTiles.tiles.max[0] + 2, byTiles.tiles.max[1]] }),
+      'an edge drag moves that edge and no other', frozen(wider.tiles));
+    const fine = dragRoom(byTiles, { dx: 0.25 });
+    check(fine.tiles.min[0] === byTiles.tiles.min[0] + 0.25, 'a quarter-tile drag lands a quarter tile over');
+    const metres = dragRoom(byBounds, { dx: 1, dz: 0.25, tile: config.tileSize });
+    check(metres.bounds.min[0] === byBounds.bounds.min[0] + config.tileSize && metres.bounds.max[1] === byBounds.bounds.max[1] + config.tileSize / 4,
+      `a room by bounds (${byBounds.id}) takes the same drag in metres, ${config.tileSize} to the tile`, frozen(metres.bounds));
+    const inside = threw(() => dragRoom(byTiles, { dx: -50, edges: { maxX: true } }));
+    check(/would be inside out/.test(inside || ''), 'an edge dragged past the one opposite is refused', inside || 'it passed');
+    const drum = threw(() => dragRoom(byDrum, { dx: 1 }));
+    check(/is by drum/.test(drum || ''), `a room by drum (${byDrum.id}) has no rectangle to drag and says so`, drum || 'it passed');
+    check(dragRoom(byTiles, { dx: 0.1 + 0.2 - 0.3 }).tiles.min[0] === byTiles.tiles.min[0], 'and float dust is tidied rather than written into the file');
+    check(snapTo(1.37, 1) === 1 && snapTo(1.37, 0.25) === 1.25 && snapTo(-0.13, 0.25) === -0.25 && snapTo(-8.36, 0.025) === -8.35,
+      'snapTo rounds to whole tiles, quarter tiles and the opening step');
+    check(ALL_EDGES.minX && ALL_EDGES.maxX && ALL_EDGES.minZ && ALL_EDGES.maxZ, 'and a drag with no edges named moves the whole rectangle');
+  }
+
+  /* --- run ends --- */
+  const runIndex = config.walls.findIndex((r) => Array.isArray(r.doorways) && r.doorways.length > 1);
+  const run = config.walls[runIndex];
+  {
+    const was = frozen(run);
+    const longer = dragRunEnd(run, 'to', { dx: 1 });
+    check(frozen(run) === was, `dragging an end of ${run.id} leaves the row it was handed untouched`);
+    check(frozen(longer.to) === frozen([run.to[0] + 1, run.to[1]]) && longer.from === run.from,
+      'an end drag moves that end and leaves the other the array it was', `${frozen(longer.from)} to ${frozen(longer.to)}`);
+    check(longer.doorways === run.doorways, 'and the openings are the run\'s own list, not a copy');
+    check(/"from" or "to"/.test(threw(() => dragRunEnd(run, 'middle', { dx: 1 })) || ''), 'an end that is neither is refused');
+  }
+
+  /* --- openings --- */
+  {
+    const was = frozen(run);
+    const n = run.doorways.length;
+    const slid = moveOpening(run, 1, run.doorways[1].at + 0.5);
+    check(frozen(run) === was, 'sliding an opening leaves the run it was handed untouched');
+    check(slid.doorways[1].at === Number((run.doorways[1].at + 0.5).toFixed(6)) && slid.doorways[0] === run.doorways[0],
+      'sliding doorway 1 moves it and leaves doorway 0 the object it was', frozen(slid.doorways.map((d) => d.at)));
+    check(frozen({ ...slid.doorways[1], at: 0 }) === frozen({ ...run.doorways[1], at: 0 }), 'and keeps its width, height and base');
+    const wide = widenOpening(run, 0, 2.4);
+    check(wide.doorways[0].width === 2.4 && frozen({ ...wide.doorways[0], width: 0 }) === frozen({ ...run.doorways[0], width: 0 }),
+      'a typed width is that opening\'s width and nothing else of it changes');
+    for (const bad of [0, -1, NaN, '2']) check(/wider than nothing/.test(threw(() => widenOpening(run, 0, bad)) || ''), `a width of ${JSON.stringify(bad)} is refused`);
+
+    const cut = cutOpening(run, 0);
+    check(frozen(run) === was, 'cutting an opening leaves the run it was handed untouched');
+    check(cut.doorways.length === n - 1 && cut.doorways[0] === run.doorways[1], `cutting doorway 0 of ${n} leaves the other ${n - 1}, in order`);
+    let bare = run;
+    for (let i = 0; i < n; i++) bare = cutOpening(bare, 0);
+    check(!('doorways' in bare), 'the last opening out takes the `doorways` key with it rather than leaving `[]`', frozen(Object.keys(bare)));
+    check(frozen(Object.keys(bare)) === frozen(Object.keys(run).filter((k) => k !== 'doorways')), 'and every other key of the run stays, in its order');
+    for (const [label, index] of [['past the end', n], ['negative', -1], ['not an integer', 0.5]]) {
+      check(/so there is no doorway/.test(threw(() => cutOpening(run, index)) || ''), `cutting a doorway index ${label} throws`);
+      check(/so there is no doorway/.test(threw(() => moveOpening(run, index, 0)) || ''), `sliding a doorway index ${label} throws`);
+    }
+
+    // The clamp works in the run's own unit and is handed the extent: an
+    // opening 1.2 m wide on a run from -34 to -22 m has its centre held
+    // between -8.35 and -5.65 tiles, which is where the file's own nw-tower
+    // doorway already sits, flush with the run's end.
+    check(clampOpening(-20, 1.2, -34, -22) === -8.35 && clampOpening(0, 1.2, -34, -22) === -5.65 && clampOpening(-7, 1.2, -34, -22) === -7,
+      'an opening is held inside its run, flush at either end',
+      `${clampOpening(-20, 1.2, -34, -22)}, ${clampOpening(0, 1.2, -34, -22)}, ${clampOpening(-7, 1.2, -34, -22)}`);
+    check(clampOpening(9, 6, 0, 4) === 0.5, 'and an opening wider than its run is put in the run\'s middle');
+  }
+
+  /* --- the composed edit, through the splice the dev server runs --- */
+  //
+  // The page posts the whole run back through `move`. This is that, on both
+  // endings: the file still parses, the run is the edited row, nothing else in
+  // the file is a different byte, and putting the original row back is the
+  // file it started as.
+  {
+    const edits = [
+      ['walls', runIndex, 'a run with an end dragged', dragRunEnd(run, 'from', { dx: -0.25 })],
+      ['walls', runIndex, 'a run with an opening slid', moveOpening(run, 0, run.doorways[0].at + 0.25)],
+      ['walls', runIndex, 'a run with an opening widened', widenOpening(run, 1, 2)],
+      ['walls', runIndex, 'a run with an opening cut', cutOpening(run, 0)],
+      ['walls', runIndex, 'a run with every opening cut', run.doorways.reduce((r) => cutOpening(r, 0), run)],
+      ['rooms', config.rooms.indexOf(byTiles), 'a room by tiles moved', dragRoom(byTiles, { dx: 1 })],
+      ['rooms', config.rooms.indexOf(byBounds), 'a room by bounds resized', dragRoom(byBounds, { dz: 0.25, edges: { minZ: true }, tile: config.tileSize })],
+    ];
+    for (const [ending, source] of ENDINGS) {
+      const eol = eolOf(source);
+      for (const [key, index, label, row] of edits) {
+        check(!threw(() => checkRow(key, row)), `${ending}: ${label} is a row checkRow passes`, threw(() => checkRow(key, row)) || '');
+        const out = replaceRow(source, key, index, row);
+        let after = null;
+        try { after = JSON.parse(out); } catch (e) { fail(`${ending}: ${label} does not parse — ${e.message}`); continue; }
+        const sp = rowSpans(source, key)[index];
+        const grown = out.length - source.length;
+        check(frozen(after[key][index]) === frozen(row) && frozen(withRow(config, key, index, row)) === frozen(after),
+          `${ending}: ${label} is that row in the file and the file is otherwise the config it was`);
+        check(out.slice(0, sp.start) === source.slice(0, sp.start) && out.slice(sp.end + grown) === source.slice(sp.end),
+          `${ending}: ${label} leaves every byte outside the row the byte it was`);
+        check(strayEndings(out, eol) === 0, `${ending}: ${label} leaves the file ${ending} throughout`, `${strayEndings(out, eol)} of the other kind`);
+        const back = replaceRow(out, key, index, config[key][index]);
+        check(back === source, `${ending}: ${label}, then the row put back, is the file byte for byte`,
+          back === source ? '' : `${source.length} bytes in, ${back.length} back out`);
+      }
+    }
+    // `withRow` swaps one row and shares the rest, so the page's what-if plan
+    // is built from the file's own arrays and not from a copy of them.
+    const swapped = withRow(config, 'walls', runIndex, run);
+    check(swapped.rooms === config.rooms && swapped.walls !== config.walls && swapped.walls[0] === config.walls[0],
+      'withRow replaces one array and shares every other one');
+    check(/has no walls\[999\]/.test(threw(() => withRow(config, 'walls', 999, run)) || ''), 'and a row index the config does not have throws');
   }
 }
 
