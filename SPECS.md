@@ -183,6 +183,8 @@ every Blender pack shares" holds and is not restated. Decided as #813 to
 #816 and #819. Three increments: two class S, the third gated on rank 4's
 look.
 
+> **#901:** this row's build is gated on an `architect` re-check of #803's look against the photographic castle the game is heading for (#900); recommended answer, the look stands, since interiors keep the kit (#902).
+
 **Amended by #830 (2026-09-25).** `kitchen-hearth`, `hall-hearth` and
 `chapel-altar` are dropped, because 2f, "Blender: Devon's props, placed",
 stands Devon's hearth crane, spit, fireplace and altar there. The altar is
@@ -833,6 +835,7 @@ job those decisions leave. Nothing
 under `tools/castle3d/` exists on `e05ac72`. **The game loads none of it**:
 no file under `src/`, `data/`, `assets/` or `test/` changes in any
 increment, `npm test` stays fifteen of fifteen, and the integration row
+(rank 2i, shape decided in #900 to #905, spec after increment 9's numbers)
 that would change that is not this one (#839).
 
 **The shape, in one line**: Node writes `blueprint.json` from `makePlan`;
@@ -1329,7 +1332,7 @@ turn it red from green (#34). The report quotes the failing line.
 - **Increment 9.** A full build writes `castle.blend`, `castle.glb` and
   `markers.json`, and `npx gltf-transform inspect castle.glb`'s size,
   triangle count and texture memory are written into `HISTORY.md`. Those
-  are the numbers the integration row argues from (#611).
+  are the numbers the integration row (2i) argues from (#611, #904).
 
 **The look, local** (#53): one sentence from Devon per still, recorded,
 blocking nothing in `npm test`. Does it read as the same castle the game
@@ -1432,7 +1435,8 @@ walks, in daylight, at the five places the game's own player stands?
 - **Where the markers go on export.** Recommend **`markers.json` in the
   game's frame, and nothing in `castle.glb`**: a marker mesh in the glb is
   something a renderer draws, and a JSON in the blueprint's shape can be
-  diffed against `makePlan` in Node by the integration row.
+  diffed against `makePlan` in Node by the integration row, at 0.5 m with
+  each exception an `allow.json` entry; the game never reads it (#900).
 - **blender-mcp's config.** Recommend **local scope (`claude mcp add
   --scope local`), not a committed `.mcp.json`**: the server's path is
   `C:\Users\devon\.blender-mcp\...`, and a committed absolute Windows path
@@ -3078,7 +3082,7 @@ piece, so no `modelOnly` and no `allow.json` entry.
   prop set deeper into a wall is the plan's fault, for the lead. The skin is
   taken whole along each edge, openings included, so the rule is the
   blueprint's alone and `--only props` needs no `PLASTER_` object. The
-  report prints each push. For the integration row (#839): a push of under
+  report prints each push. For the integration row (#839, 2i): a push of under
   a centimetre on four `noCollide` props moves nothing a body meets.
 - **The floating decks (#868).** They are closed by realising the posts the
   plan already has, as #854's ruling 10 and #859 said, with no model-only
@@ -3655,8 +3659,11 @@ but this section and `HISTORY.md` changed.
   `package.json`'s scripts, a one-line merge.
 - **Rank 9's quay and river**: shipped (#870 to #872), not a gate.
   Increment 1 picks the water up from the blueprint.
-- **The integration row**, unspecced and unranked (#839), is gated on
-  increment 9, whose `gltf-transform inspect` numbers it argues from.
+- **The integration row**, ranked 2i, shape decided in #900 to #905, full
+  spec waits on increment 9's `gltf-transform inspect` numbers, which it
+  argues from (#904). Lane G. It will open the outer gate and the four drum
+  doors in the model (#903), which changes `tools/castle3d/` after this row
+  closes.
 - **Rank 4**: its increment 2 is superseded by this row (#839); its
   looking checklist is unaffected and runs in rank 3's sitting.
 
@@ -3670,7 +3677,8 @@ but this section and `HISTORY.md` changed.
 - #500: `blueprint.json` is `makePlan`'s output, computed once, never
   committed, never re-derived.
 - #506: nothing reaches `assets/`, so nothing is encoded; that is the
-  integration row's.
+  integration row's (2i; ceilings and encode argued from increment 9's
+  numbers, #904).
 - #529, #611: no assertion moves and no ceiling moves; no suite gains a
   line.
 - #13, #34, #147: every `check.py` line and every launcher refusal has its
@@ -3815,8 +3823,8 @@ are below; the second and third increments wait on the look (#53).
 **Increment 2 is superseded by "Castle in Blender" (#839), and nothing
 shipped here is reverted.** The game keeps the fifteen pixel textures,
 `pixelMaterials`, check 3b, `RELIGHT_KIT` and `MAX_TEXTURE_MB` until the
-integration row that puts the realistic model in the game ships; forty
-per-room textures would be deleted that day. What is left of this row is
+stage of the integration row (2i) that swaps the last surface wearing one
+ships (#902); forty per-room textures would be deleted that day. What is left of this row is
 the looking checklist at the end of this section, and a fix if the look
 finds a hole.
 

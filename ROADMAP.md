@@ -5,7 +5,7 @@ what can be done *when*, on *what machine*, and *next to what else*.**
 `SPECS.md` is the spec behind every row and `HISTORY.md` is the only record.
 Nothing here is a locked decision except the lane rule (#600 to #602).
 
-Nine open rows: 2b, 2c, 2d, 2h, 3, 4, 6, 7, 11, and ~~2a~~ (#887),
+Ten open rows: 2b, 2c, 2d, 2h, 2i, 3, 4, 6, 7, 11, and ~~2a~~ (#887),
 ~~2e~~ (#892), ~~13~~ (#893), ~~9~~ (#894), ~~2f~~ and ~~2g~~ shipped (#830 to #838). Rows are named by title as well as by rank
 (#522), because a rank is a priority and gets reused across different rows
 over time, never renumbered mid-table (#619, #491). Devon re-ranked on
@@ -41,7 +41,8 @@ need a network that reaches Poly Haven, once each, into a hash-pinned cache.
 | **2b Blender: an interiors kit** | Opus 5 | Specced 2026-09-25 (#813 to #816, #819), nothing built. |
 | **2c Blender: a shared rig with swappable parts** | Opus 5 | Specced 2026-09-25 (#820 to #825), nothing built. Increment 1 is Blender; increment 2 is a container. |
 | **2d Blender: the animals** | Opus 5 | Specced 2026-09-25 (#826 to #829), nothing built. |
-| **2h Castle in Blender** (Blender 5.2) | Opus 5 | Specced 2026-09-26 (#839 to #844), built through increment 7 (#873 to #877, PR #93, 0064a11): lighting and five cameras, five stills awaiting Devon's verdict. Increments 8 and 9 left: markers, export. The game loads none of it. |
+| **2h Castle in Blender** (Blender 5.2) | Opus 5 | Specced 2026-09-26 (#839 to #844), built through increment 7 (#873 to #877, PR #93, 0064a11): lighting and five cameras, five stills approved by Devon (#905). Increments 8 and 9 left: markers, export. The game loads none of it. |
+| **2i Castle in Blender, the integration row** (Blender 5.2) | Opus 5 | Shape decided 2026-10-02 (#900 to #905): a skin swap, staged curtain wall and towers, then buildings, then Mereford, kit indoors meanwhile, the gate and drum doors opened in the model. Its `SPECS.md` section is not written: it waits for 2h increment 9's numbers (#904). Nothing built. |
 
 ### Local: a GPU
 
@@ -106,12 +107,12 @@ lane at a time** (#602). The lanes are named by the file, not by the theme.
 | **D** | `src/main.js`'s player rig and spawn | 6, 11 |
 | **E** | `src/audio.js` and `data/sounds.json` | 7 |
 | **F** | `tools/blender/` and `tools/blender/manifest.json` | 1, 2b, 2c, 2d |
-| **G** | `tools/castle3d/` | 2h |
+| **G** | `tools/castle3d/` | 2h, 2i |
 | **none** | | 3 |
 
 Every Blender row holds lane F, so only one runs at a time, which matches
-the one machine with Blender anyway (#804). Lane G is 2h's alone and
-shares no file with F, so 2h may run beside a lane F row: two Blenders on
+the one machine with Blender anyway (#804). Lane G is 2h's and 2i's and
+shares no file with F, so either may run beside a lane F row: two Blenders on
 one machine, which is Devon's call on the day (#842). Both add a line to
 `package.json`'s scripts, a one-line merge. The Blender row in lane B (2b)
 does not run beside rank 4.
@@ -144,7 +145,7 @@ of a row, not the start.
 **Startable together right now:** ~~2f (lane B), then 2g (lanes B and
 E)~~, both shipped; 2b on Devon's machine (lanes F and B), plus rank 3
 on the same machine in a worktree, plus rank 6 or rank 11 (not both, lane
-D), plus rank 7 in lane E alongside any of them, plus 2h in lane G on the
+D), plus rank 7 in lane E alongside any of them, plus 2h (then 2i, once 2h's increment 9 ships) in lane G on the
 same machine if Devon wants two Blenders at once.
 
 ---
@@ -167,9 +168,10 @@ interiors kit, then 2c the shared rig, then 2d the animals; 2e the
 countryside backdrop shipped (#892). The gates inside the band: 2b after 2a, which shipped (#887), so that gate is
 open; 2d after 2c's increment 1. **2h is
 not in that order**: it has no gate, goes through nothing of `tools/blender/`'s, and
-starts whenever Devon's machine is free (#839, #840). The integration row
-that would put its model in the game is not ranked and is gated on 2h's
-increment 9.
+starts whenever Devon's machine is free (#839, #840). The integration row,
+**2i** (#900 to #905), puts its model in the game as a skin swap, last in the
+band, in lane G, and is gated on 2h's increment 9: its shape is decided and
+its spec waits for that increment's numbers (#904).
 
 **Rank 3 is still the highest-value hour on a GPU.** Its gate is open
 (#780 to #782) and it unblocks rank 11 past its Node line. It runs on the
