@@ -240,7 +240,7 @@ the placement editor, budget suite, move-and-delete and the dialogue format
 | 2c | Blender: a shared rig with swappable parts: one rig, one-primitive parts, at most five skinned draws a person against the Quaternius rigs' 12 to 15, specced (#820 to #825); nothing built | 2+ | Opus 5 | Local: Blender, then Container; judged local: GPU (#53) | 1 shipped (#881) | F, C | | [Blender: a shared rig with swappable parts](SPECS.md#blender-a-shared-rig-with-swappable-parts) |
 | 2d | Blender: the animals: pig, goat, sheep, horse, cat and two geese on one quadruped topology plus a bird one for the goose, specced (#826 to #829); nothing built | 1 | Opus 5 | Local: Blender; judged local: GPU (#53) | after 2c increment 1 (1 shipped, #881) | F, C | | [Blender: the animals](SPECS.md#blender-the-animals) |
 | 2e | Blender: the countryside beyond the wall: five backdrop pieces cut from one seeded height field, specced (#816 to #819); nothing built | 1 | Opus 5 | Local: Blender | 1 and rank 9's 3b shipped (#881, #871) | F, B | | [Blender: the countryside beyond the wall](SPECS.md#blender-the-countryside-beyond-the-wall) |
-| 2h | Castle in Blender: the castle, Mereford and the countryside as a realistic standalone model with Poly Haven PBR, built by committed scripts on Blender 5.2, with gameplay markers, specced (#839 to #844); increments 0 to 6 shipped (#839 to #869, PR #90, 34357ac); increments 7 to 9 (lighting and cameras, markers, export) are left; the game loads none of it | 2+ | Opus 5 | Local: Blender GPU (5.2, Devon's Windows machine only); Local: net for its fetches | — | G | | [Castle in Blender](SPECS.md#castle-in-blender) |
+| 2h | Castle in Blender: the castle, Mereford and the countryside as a realistic standalone model with Poly Haven PBR, built by committed scripts on Blender 5.2, with gameplay markers, specced (#839 to #844); increments 0 to 7 shipped (#839 to #877, PR #93, 0064a11, closed by #892); increment 8, markers, built (#893 to #899); 7b (the quay and the kitchen crate, needs its architect block) and 9 (export, specced, blocked on 7b) are left; the game loads none of it | 2+ | Opus 5 | Local: Blender GPU (5.2, Devon's Windows machine only); Local: net for its fetches | — | G | | [Castle in Blender](SPECS.md#castle-in-blender) |
 | 3 | The GPU run: the fourth sitting confirmed the sight fix on a GPU and walked the whole day and the second day (#886 to #891); exit 1, 6 failures, filed as 3a and 3b; `renderer.info` recorded (#887); the phone (#530) untouched | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
 | 3a | Play Again starts over: `slot.autosave`'s `stop()` leaves the save dirty and the reload's `pagehide` flush writes the ended game back (#889) | ¼ | Opus 5 | Container | — | D | | [Play Again starts over](SPECS.md#play-again-starts-over) |
 | 3b | play-castle's last three failures: a wall check that matches nothing, a statue over the hall brazier, and #659's journal walk (#890) | ¼ | Opus 5 | Container, then local: GPU to confirm | — | B | | [play-castle's last three failures](SPECS.md#play-castles-last-three-failures) |
@@ -347,6 +347,9 @@ Gameplay is authored as named markers (`ROOM_`, `COL_`, `GATE_` with its
 hinge, `STAIR_`, `SPAWN`, `EVID_`, `READ_`, `BELL_`) so that Blender can
 drive the plan later (#843). The game loads none of it, `npm test` stays
 fifteen suites, and CI never runs it (#842). Ten increments, one stage each.
+Built through increment 8, markers (#893 to #899); increment 7b, the quay
+and the kitchen crate, was found missing from the model and comes before 9
+(#893); increment 9, export, is specced (#897, #898) and blocked on 7b.
 Detail: [Castle in Blender](SPECS.md#castle-in-blender).
 
 ## The GPU run
