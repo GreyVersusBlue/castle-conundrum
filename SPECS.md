@@ -9,11 +9,12 @@ decision. Every "recommendation" below is exactly that, and the session that
 ships the row is the one that records the call with a number.
 
 One section per row still open in `BACKLOG.md`'s ranked table: 3, 4, 6, 7,
-9, 11, 13, and the rank 2 band (2b to 2d, and 2h, "Castle in Blender",
+9, 11, and the rank 2 band (2b to 2d, and 2h, "Castle in Blender",
 which is outside the Blender pipeline, #839). 2f and 2g shipped and their
 sections are deleted (#830 to #838); 2a shipped (#887) and its section is cut
 to what 2b cites and its open look; 2e shipped (#892) and its section is cut
-to its pointer and its open look. Rank 1, the pipeline, shipped too
+to its pointer and its open look; 13 shipped (#893) and its section is cut
+to its pointer. Rank 1, the pipeline, shipped too
 (#880 to #884); its section is cut to the two parts the packs cite. The red suite is closed; its section is a
 stub pointing at `HISTORY.md`. "Bodies" stays until 2c's and 2d's sections
 land, and is then deleted (#807).
@@ -303,7 +304,7 @@ narrower, the increment comes back to `architect` first.
   things for a count a join gets to for nothing. A repeated bench costs a
   few KB of bytes, not a draw.
 - **The smithy and the stables.** Recommend **not in this row** (#814):
-  neither is a room, and a room is a layout call (rank 13's editor or a
+  neither is a room, and a room is a layout call (the floor plan editor, #893, or a
   rank 9 increment), not a kit's; #582 refused new rooms for volume. The
   lore puts the forge "under the Prison Tower's wall" (year 12), which is
   outside the south curtain; a stable waits on a horse, which is 2d's to
@@ -4489,7 +4490,7 @@ Each line names the suite and the break that turns it red from green (#34).
 
 - The town's first increment, shipped (#725 to #728). 3b after 3a: both
   write `data/scene-config.json`, and 3a's room is what 3b's docks stand at.
-- **Lane B.** Not beside rank 4 or rank 13's increments 2 and 3. 3a also
+- **Lane B.** Not beside rank 4. 3a also
   writes `src/castle-builder.js`, which rank 4's later increments may touch;
   another reason not to run beside it.
 - No save bump, no `data/npcs.json`, no `src/audio.js`: lanes A, C, D and E
@@ -4617,206 +4618,22 @@ ray that was never going to hit anything.
 
 ## The floor plan you can see
 
-**Rank 13. Size 2+. Nothing is built; decisions #745 to #749, 2026-09-21.**
-Devon's ask, in his words: the room layout was placed by an AI one room and
-one guess at a time with no way to see the whole floor plan, he is not happy
-with how it reads, and he wants a GUI to lay it out himself, **or at least to
-review and correct it visually**. That last clause is why increment 1 below
-writes nothing.
+**Rank 13. Shipped (#893), in three increments, against #745 to #749.** Its row
+is retired from `BACKLOG.md` and `ROADMAP.md`. What is cited and what is open:
 
-### What the layout is today, measured
-
-**`src/castle-plan.js` holds no coordinate.** It is a pure compiler:
-`makePlan(config, boundsOf)` reads `data/scene-config.json` and returns
-`{tile, pieces, colliders, surfaces, rooms, curtain, spawn}`, and it throws
-rather than warns on a config that does not hang together: `[castle-plan]
-drum "x" has an interior and no room in config.rooms names it`
-(castle-plan.js:999). So the floor plan is **data**: four arrays of
-`data/scene-config.json`, and a fifth that holds what stands on it.
-
-| Array | Rows | What one row is |
-| --- | --- | --- |
-| `walls` | 46: 18 curtain at level 0, 3 at level 1, 25 interior partitions with no `level` at all | a run between two tile centres, carrying `from`, `to`, `material`, `height`, `thickness`, and optionally `axis`, `base`, `walk`, `repeatMetres`, `interior`, `doorways` |
-| `drums` | 8 | a tower, carrying `tile`, `radius`, `height`, `segments`, `turret`, `stairs`, and an `interior` carrying its own `doors` |
-| `gates` | 3 | an arch on a tile with a `leaf` |
-| `rooms` | 43: 23 outer, 17 inner, 3 outside; 9 by `tiles`, 28 by `drum`, 6 by `bounds` | **a name over an extent, with no geometry of its own** |
-| `courtyard.placements` | 123 | a kit model at a tile, which is where the roofs, sheds and trees are |
-
-**Eleven runs carry `doorways`**, each `{ at, width, height, base? }`: an
-opening at a point along a run, which is how two spaces connect. Nothing is
-derived from anything else. A wall is not a room's edge, a room is an
-annotation over ground that runs happen to enclose, a door is a hole in a run,
-a stair is two flags on a drum. An editor here edits four independent lists,
-not one building.
-
-The file is **3113 lines** and every one was hand-typed. `?edit=1`
-(`src/edit-mode.js`, 327 lines; #583 to #587, move-and-delete #636 to #642)
-writes three *other* arrays of the same file (`interiorProps` (12),
-`builtProps` (21), `braziers` (3)) through `tools/place.mjs`'s splice and a
-Vite middleware, and touches none of the four above. It is walked in first
-person, so **the whole plan has never been on a screen at once.**
-
-### Increment 1, shipped
-
-`src/edit-layout.js`, mounted by `src/edit-mode.js` inside `main.js`'s
-`import.meta.env.DEV` branch (#585): an orthographic camera over the real
-scene, not a second drawing (#746), with a storey filter and ghosting.
-`tools/plan-sheet.mjs`, new and pure, draws the labels, room outlines and
-openings off the plan's own boxes, never recomputed (#500). `V` toggles the
-view, `[`/`]` change storey. Nothing else changed: not `src/castle-plan.js`,
-`src/castle-builder.js`, `data/scene-config.json`, `tools/place.mjs` or
-`vite.config.js`.
-
-### Scope, increment 2: rooms and runs become editable
-
-Class S. **Lane B** (`data/scene-config.json` and `test/tools.mjs`'s
-byte-exactness rail).
-
-- **`tools/place.mjs`.** `PLACEABLE` gains `walls` and `rooms` with their key
-  lists. `checkRow` becomes per-key shape rules rather than one shape:
-  today every branch of it demands a `tile`, and a wall row has `from` and
-  `to`. `formatRow` learns two shapes the four arrays have and the three
-  placeable ones do not: an object value (`tiles: { min, max }`) and an array
-  of objects (`doorways`). It writes both on one line today.
-- **`src/edit-layout.js`.** Drag a room's rectangle or a run's end on the
-  sheet; the sheet snaps to whole tiles, `Alt` to a quarter tile. The selected
-  row's whole record is posted through the existing `/__place` `move` verb.
-  No new verb and no change to `vite.config.js`.
-- **`test/tools.mjs`.** Parts 1 and 2 run the two new arrays: insert, then cut
-  the row back out, and the file is the file byte for byte, on an LF copy and
-  a CRLF copy (#632). Part 3's `'an array that is not placeable'` case moves
-  off `rooms`, which is placeable now, onto `materials`, which is an object
-  and never will be. Part 4 covers the nested formatting.
-
-### Scope, increment 3: the openings, which is how rooms connect
-
-Class S, lane B. A `doorways` entry is a field of the run that owns it, so
-editing one is a `move` of that run's row and needs no nested-path splice
-anywhere (#749). Drag an opening along its run, type a width, `Delete` twice
-to cut it, the way the prop editor already arms a delete.
-
-### Acceptance
-
-- **Increment 1, shipped**: `test/built.mjs` greps `dist/` for both dev-tool
-  sentinels, and `test/tools.mjs` holds `planSheet(plan, level)` to the
-  plan's own boxes, never recomputed (#500).
-- **Increments 2 and 3.** `test/tools.mjs`'s headline rail, extended: an
-  insert and a delete of the same `walls` row, and of the same `rooms` row,
-  give back the file byte for byte on both endings, and every byte outside a
-  rewritten row's span is the byte it was. **Break**: hardcode `\n` in
-  `formatRow`'s nested-object branch; the CRLF copy fails by one byte per
-  nested line, which is exactly #631's failure with a new surface under it.
-- **Every increment.** `npm test` is 15 of 15 and `npm run build` is clean.
-  No suite gains or loses an assertion in `layout.mjs`, `plan-vs-scene.mjs`,
-  `mystery.mjs` or `budget.mjs` (#529, #611): a dev tool's rails are
-  `test/tools.mjs`'s and `test/built.mjs`'s.
-- **What no suite can say** is whether the plan reads better afterwards. That
-  is Devon's, on the dev server, with `?edit=1&view=plan`. It is not a GPU
-  question (#53), because an orthographic top-down of a static scene is not a
-  real-time movement assertion, so a container can build and drive it, and
-  only a person can judge the result.
-
-### Open calls
-
-1. **Does the GUI edit `castle-plan.js`, or an intermediate JSON?**
-   **Neither: it edits `data/scene-config.json` directly, through
-   `tools/place.mjs`'s splice** (#745). `castle-plan.js` is a compiler with no
-   coordinate in it, so there is nothing there to round-trip; and the four
-   layout arrays sit in the same file, under the same 3113-line splice rail,
-   as the three the editor already writes. An intermediate format would be a
-   second source of truth for the castle, which is exactly the thing #500
-   exists to forbid. `eolOf` already gives it #632 for free.
-2. **A re-serialise, now that whole rows are being rewritten?** **No** (#584,
-   measured again today): `JSON.stringify(JSON.parse(raw), null, 2)` over the
-   current file is 124924 bytes against 117131, so a round-trip writer puts
-   7.8 KB of churn into every edit's diff, and the diff is the product. The
-   churn a `move` makes inside the one row it rewrites stays the accepted
-   bargain (#639).
-3. **Top-down camera in the engine, or a flat 2D editor that never loads
-   three?** **The camera** (#746). A flat schematic cannot compute anything
-   here: `makePlan` takes `boundsOf(modelPath)`, and the only place that
-   exists is `CastleBuilder.measure()`, which loads every model and measures
-   its parts (castle-builder.js:630). A DOM editor would have to re-derive
-   every box the plan computes, which is `test/layout.mjs`'s old sin written
-   into a tool (castle-plan.js's header, #500). The camera also shows the 123
-   `courtyard.placements`, the ground patches and the drums' own shells, which
-   are the things a schematic would have drawn as nothing. Devon's own school
-   editor landed here after 42 phases: `js/render.js:1522` is an
-   `OrthographicCamera` 200 ft over the real scene with storeys ghosted, not a
-   second canvas.
-4. **Same tool or a new one?** **Same entry point, second module** (#747).
-   `?edit=1` stays the one flag and the one DEV branch to audit;
-   `src/edit-layout.js` is its own file because the data has nothing in
-   common (a prop is a tile, a run is two tiles and eight fields) and
-   because folding it into `edit-mode.js` would double a file whose whole
-   value is that a person can read it in one sitting.
-5. **Live validation, or write and let `npm test` catch it?** **Both, and the
-   live half copies no assertion** (#749). Before it posts, the panel calls
-   `makePlan(edited, boundsOf)` and `walkability`, the same two pure
-   functions the page and every Node suite already call, and refuses to write
-   when `makePlan` throws, showing the throw. It prints the room count, the
-   walkable-cell count and whether the fill still seals, and **those are
-   numbers, not checks**: #13's rule is why they are not allowed to be
-   checks, because a second copy of check 4 living in a panel is a rail nobody
-   runs and nobody maintains. No check from `layout.mjs`, `plan-vs-scene.mjs`
-   or `budget.mjs` is copied, moved or re-implemented (#529, #611).
-6. **A new row or an amendment to the placement editor's?** **New row.** Rank
-   12 retired whole on 2026-09-18 (#687 to #690) and a retired row does not
-   reopen; the scope is different besides: that row was props on a castle
-   that already exists, this one is the castle.
-7. **Which arrays does the write path take, and in what order?** **`rooms`
-   and `walls` first, `doorways` second, `drums` and `gates` not in this row.**
-   A drum is 970 of the castle's 1539 meshes (#609) and eight fields that the
-   crown, the stairs and the turret all read; a gate carries a `leaf` spec
-   with a springline in it. Both are a later increment's, and both stay
-   readable in the review view from increment 1.
-8. **Undo?** **No.** `git diff` is the undo, the write does not commit, and
-   the one module in Devon's school editor most worth lifting (`js/history.js`,
-   a JSON structural diff behind a 100-deep stack) is the one this repo does
-   not need, because that tool's design lives in memory and this one's lives
-   in a file git is already watching.
-9. **Does the room's own record grow anything?** **No.** A room is a name over
-   an extent and the builder works out what is in it; a second answer written
-   beside the builder's is a second answer to drift, which is #583's rule for
-   the prop editor's comment and holds here unchanged.
-10. **Read-only first, as its own increment?** **Yes** (#748), and it is the
-    answer to the half of Devon's sentence that says "or at least to review".
-    It ships without touching `tools/place.mjs`, `PLACEABLE`, `/__place` or
-    the byte-exactness rail, so the first thing anybody looks at costs nothing
-    that could break a file ten suites read.
-
-### Dependencies
-
-- **Increment 1 is in no lane** and may be claimed beside anything, including
-  rank 9. **Increments 2 and 3 are lane B**, which rank 9's town also holds:
-  one row per lane at a time (#602), so they do not run beside it.
-- Nothing gates this row and it gates nothing. It makes rank 9's remaining
-  work and the nineteen empty rooms cheaper, the way the prop editor did for
-  the content rows (#583).
-- `src/edit-mode.js` is the host; a session in this row and a session
-  extending the prop editor would collide on that file.
-
-### Constraints
-
-- **#500.** The sheet reads `plan.pieces` and `plan.rooms` and recomputes no
-  box. A tool that re-derives the castle is the failure `castle-plan.js` was
-  written to end.
-- **#529, #611.** No assertion moves. A dev tool's rails live in
-  `test/tools.mjs` and `test/built.mjs`.
-- **#585, #586.** Two independent halves, neither trusted: the module is
-  reached only from inside `import.meta.env.DEV`, the writer is still a plugin
-  with `apply: 'serve'`, and the check is the grep of `dist/`, now for two
-  sentinels.
-- **#584, #632, #639.** Splice, never re-serialise; every newline from
-  `eolOf(source)`; every byte outside the edited row's span unchanged, on both
-  endings.
-- **#13, #34.** The panel's numbers are not checks. Every rail named above is
-  broken on purpose once, from green, with the FAIL line quoted in
-  `HISTORY.md`.
-- **#493, #494, #506.** No asset, no vendored library. Anything carried over
-  from the school editor arrives as source under `src/` or `tools/`, never as
-  a `libs/` copy.
-- **#53.** An orthographic still of a static scene is not a real-time
-  assertion, so the suite half of this row is a container's. Whether the plan
-  reads better is Devon's.
-
+- **Increment 1 (#748)**: the read-only top-down sheet, `src/edit-layout.js`
+  over `tools/plan-sheet.mjs`, with its own sentinel in `test/built.mjs`'s grep
+  of `dist/` (#747, #586).
+- **Increments 2 and 3 (#893)**: `walls` and `rooms` are in `tools/place.mjs`'s
+  `PLACEABLE`; `tools/layout-edit.mjs` holds the pure row edits; the sheet drags
+  rooms, run ends and openings and posts the whole row through `/__place`
+  `move` after `makePlan` and `walkability` accept it. Held by
+  `test/tools.mjs` on both line endings (#584, #632, #639); no assertion in
+  `layout`, `plan-vs-scene`, `mystery` or `budget` (#529, #611).
+- **Open calls as decided**: edit `data/scene-config.json` through the splice
+  (#745), no re-serialise (#584), no undo, `git diff` is the undo, `drums` and
+  `gates` stay out of the editor (call 7).
+- **Open: the judgement.** Whether the plan reads better is Devon's call on
+  `?edit=1&view=plan` (#53). Not fixed: five `interiorProps` rows with
+  `backdrop` and one `builtProps` row with `shape` and `ridge` are not in
+  `PLACEABLE`, so the prop editor's `move` refuses them.

@@ -65,11 +65,12 @@ nave, a new inner-ward ground room for the pulpit and the rood (#835 to
 under Mereford's one slate gable and the water past it (#870 to #872); and
 the Blender pipeline, `tools/blender/` with its manifest, `test/assets.mjs`
 check 8 and a calibration crate placed in the kitchen (#880 to #884); and
-rank 2e, the countryside beyond the wall, five backdrop pieces and check 4g (#892).
+rank 2e, the countryside beyond the wall, five backdrop pieces and check 4g (#892); and
+rank 13, the floor plan you can see, drag rooms, runs and openings (#893).
 
 **Open, ranked below.** Devon made Blender-built assets the project's top
 priority on 2026-09-25 and reopened ranks 1 and 2 himself to hold them
-(#801). Eleven rows: the Blender pack band,
+(#801). Ten rows: the Blender pack band,
 three rows lettered by priority (2b an interiors kit, 2c a
 shared rig with swappable parts, 2d the animals); the castle rebuilt as a realistic standalone Blender model, outside
 the pipeline (2h, #839 to #844); the GPU run itself, now gated on nothing (rank 3, #780 to #782);
@@ -77,8 +78,7 @@ the retro castle's look, its variety increment superseded by 2h (rank 4,
 #839); the rest of
 the fifty-person populace (rank 6); somebody with speakers to judge the
 soundscape (rank 7); the rock, the last of rank 9, unspecced; the feel theme past
-its shadow and hand (rank 11); and the floor-plan editor's drag increments
-(rank 13). A session never reuses a retired rank; Devon may, and did, here
+its shadow and hand (rank 11). A session never reuses a retired rank; Devon may, and did, here
 (#802). Rank 10 is retired, with 2c and 2d as its successors (#807). Ranks
 5, 8 and 12 stay retired numbers, not gaps: a rank is a priority, never an
 id, and a number a session retires is never reused (#619, #522, #491, #802).
@@ -184,7 +184,7 @@ together.
 | Lane | The file that decides it | Rows |
 | --- | --- | --- |
 | A | `src/save.js` — the version number and `migrate` | none held |
-| B | `data/scene-config.json` — and `test/tools.mjs`'s byte-exactness rail | 2b, 4, 9, 13 (increments 2 and 3 only) |
+| B | `data/scene-config.json` — and `test/tools.mjs`'s byte-exactness rail | 2b, 4, 9 |
 | C | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | 2c, 2d, 6 |
 | D | `src/main.js`'s player rig and spawn | 6, 11 |
 | E | `src/audio.js` and `data/sounds.json` | 7 |
@@ -199,16 +199,15 @@ writes there next**: every `dialogue` block in that file is also
 `dialogue/castle.dlg`, and `test/dialogue.mjs` fails if the two disagree, so a
 row that adds a state or rewords a line runs `npm run dialogue:extract`
 before it commits (#687). Lane B: rank 4 and rank 9 both write
-`data/scene-config.json` and do not run together; rank 13's increments 2 and 3
-are the same lane and wait behind whichever of the other two is running; the
-The Blender row that places (2b) holds it too. Lane F is every Blender
+`data/scene-config.json` and do not run together; the
+Blender row that places (2b) holds it too. Lane F is every Blender
 row: one machine renders, so they run one at a time regardless (#804). Lane
 G is 2h's alone and shares no file with F, so 2h may run beside a lane F row;
 that is two Blenders on one machine and Devon's call (#842).
 
 ## The ranked table
 
-Eleven ranked rows: 2b, 2c, 2d, 2h, 3, 4, 6, 7, 9, 11, 13. Devon
+Ten ranked rows: 2b, 2c, 2d, 2h, 3, 4, 6, 7, 9, 11. Devon
 reopened ranks 1 and 2 himself on 2026-09-25 for the Blender rows, and
 lettered the pack band by priority (#801, #802). 2f, his own props, took
 the next letter the same day, ran first, and shipped the same day
@@ -245,7 +244,6 @@ the placement editor, budget suite, move-and-delete and the dialogue format
 | 7 | Sound: somebody listens to the seven beds, the four rings and the first two event sounds (a bed at a point and the rings, #680 to #683; the door and the hound, #696 to #698) | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
 | 9 | A castle to get lost in: the town (#725 to #728) and the quay and river (#870 to #872) shipped; the rock is left, unspecced, and the quay's look is the GPU run's | 2+ | Opus 5 | Container | — (4c opened it) | B | | [A castle to get lost in](SPECS.md#a-castle-to-get-lost-in) |
 | 11 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 | Container to the Node line, local: GPU past it | **after 3** | D | shadow + hand shipped 2026-09-17 (#650 to #654) | [Feel](SPECS.md#feel) |
-| 13 | The floor plan you can see: the review view shipped (#745 to #749); a way to redraw it is left | 2+ | Opus 5 | Container | — | B | increment 1 shipped 2026-09-21 (#745 to #749) | [The floor plan you can see](SPECS.md#the-floor-plan-you-can-see) |
 
 **`ROADMAP.md` is these three columns turned into an order**: which row to
 take first, what each one unblocks, and which ones two sessions may hold at
@@ -463,40 +461,3 @@ and are unanswered. Nothing else in the theme — weather and sky, fire and its
 point-light budget, examine, doors that open, wear, sitting — starts before that
 pair has been looked at, because they are the ones that say whether the budget
 has room for the rest at all.
-
-## The floor plan you can see
-
-*Where: container. Gate: none. Lane: B, for what is left — increment 1 needed
-none.*
-
-**Rank 13, and a 2+. Decided before anything was built, decisions #745 to
-#749, 2026-09-21.** Devon's ask: the room layout was placed by an AI one room
-and one guess at a time with no way to see the whole floor plan, and he wants
-a GUI to lay it out himself, or at least to review and correct it visually.
-
-**The layout is not in `src/castle-plan.js`.** That file holds no coordinate:
-it is a pure compiler over `data/scene-config.json` and throws on a config
-that does not hang together. The floor plan is four arrays of that file:
-`walls` (46 runs, 25 of them interior partitions), `drums` (8), `gates` (3)
-and `rooms` (43, which are names over extents and own no geometry), plus the
-`doorways` on eleven runs that are how two spaces connect. So the tool writes
-the same 3113-line file the prop editor already writes, through the same
-splice, and there is no new format (#745).
-
-**The first increment shipped the same day** (#748): a top-down orthographic
-view over the real scene, drawn from the plan's own boxes, with a storey
-filter and room labels. A flat 2D editor was refused because `makePlan` needs
-`boundsOf(modelPath)` and only a loaded model gives one, so a schematic would
-have to re-derive every box the plan computes (#746). It is `?edit=1`'s second
-module, `src/edit-layout.js`, with its own sentinel and its own line in
-`test/built.mjs`'s grep of `dist/` (#747, #586); the pure half is
-`tools/plan-sheet.mjs`, held by 29 new assertions in `test/tools.mjs`.
-`npm test` is 15 of 15, 1772 assertions.
-
-**What is left.** Increment 2 makes `rooms` and `walls` draggable and
-increment 3 the openings; `drums` and `gates` are not in this row. Neither
-increment has started. Validation re-runs `makePlan` and `walkability` in the
-page and copies no assertion out of any suite (#749, #529). Both remaining
-increments are lane B, which rank 3 and rank 9's town also hold, so only one
-of the three runs at a time (#602).
-

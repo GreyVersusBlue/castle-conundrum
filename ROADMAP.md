@@ -5,8 +5,8 @@ what can be done *when*, on *what machine*, and *next to what else*.**
 `SPECS.md` is the spec behind every row and `HISTORY.md` is the only record.
 Nothing here is a locked decision except the lane rule (#600 to #602).
 
-Eleven open rows: 2b, 2c, 2d, 2h, 3, 4, 6, 7, 9, 11, 13, and ~~2a~~ (#887),
-~~2e~~ (#892), ~~2f~~ and ~~2g~~ shipped (#830 to #838). Rows are named by title as well as by rank
+Ten open rows: 2b, 2c, 2d, 2h, 3, 4, 6, 7, 9, 11, and ~~2a~~ (#887),
+~~2e~~ (#892), ~~13~~ (#893), ~~2f~~ and ~~2g~~ shipped (#830 to #838). Rows are named by title as well as by rank
 (#522), because a rank is a priority and gets reused across different rows
 over time, never renumbered mid-table (#619, #491). Devon re-ranked on
 2026-09-25, reopening ranks 1 and 2 for the Blender rows and retiring rank 10
@@ -89,7 +89,7 @@ files restored from `51735fa` and encoded, a room, two walls and 14 rows.~~
 **6** populace, **9** the town (the quay and the river shipped, #870
 to #872; the rock is left and has no spec yet), **2c**'s increment 2 (the
 other 15 populace humans onto `folk.glb`, once increment 1's GPU look has
-passed), **13** the floor-plan editor's remaining increments. Every one is
+passed). Every one is
 data, a validator, a Node suite or a headless DOM assertion.
 
 ---
@@ -102,7 +102,7 @@ lane at a time** (#602). The lanes are named by the file, not by the theme.
 | Lane | The file that decides it | Rows in it |
 | --- | --- | --- |
 | **A** | `src/save.js` — the version number and `migrate` | none held; next bump is to 7 |
-| **B** | `data/scene-config.json`, and `test/tools.mjs`'s byte-exactness rail | 1, 2b, 4, 9, 13 (increments 2 and 3 only) |
+| **B** | `data/scene-config.json`, and `test/tools.mjs`'s byte-exactness rail | 1, 2b, 4, 9 |
 | **C** | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | 2c, 2d, 6 |
 | **D** | `src/main.js`'s player rig and spawn | 6, 11 |
 | **E** | `src/audio.js` and `data/sounds.json` | 7 |
@@ -115,7 +115,7 @@ the one machine with Blender anyway (#804). Lane G is 2h's alone and
 shares no file with F, so 2h may run beside a lane F row: two Blenders on
 one machine, which is Devon's call on the day (#842). Both add a line to
 `package.json`'s scripts, a one-line merge. The Blender row in lane B (2b)
-does not run beside rank 4, rank 9 or rank 13's increments 2 and 3.
+does not run beside rank 4 or rank 9.
 2c and 2d in lane C do not run beside rank 6.
 
 Lane B: rank 4 and rank 9 both write `data/scene-config.json` and do not run

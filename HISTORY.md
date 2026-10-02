@@ -11956,3 +11956,63 @@ wall from the north walk, the view from the North-west Tower's roof, a horizon
 in the fog at the four bells, the farms at 60 to 130 m, #53) is not done and
 belongs with the next rank 3 GPU run.
 `npm test` on huginn: fifteen of fifteen, exit 0 (plan-vs-scene 250 s, built 225 s).
+
+
+## Rank 13 ships: the floor plan you can see, increments 2 and 3 (2026-10-02)
+
+**#893. Rank 13, the floor plan you can see, shipped (#745 to #749).** This is
+#893 and not #886 because `origin/main` has claimed #886 to #891 on another
+branch. Increment 1 was #748; increments 2 and 3 are `c13e1df` and `5228c0b`.
+
+Increment 2, the write path. `tools/place.mjs`'s `PLACEABLE` gains `walls` and
+`rooms`. `checkRow` has per-array shape rules: a run has `from` and `to`, a
+room has exactly one extent of `tiles`, `drum` or `bounds`. `formatRow` writes
+an object value and an array of objects multi-line the way the file already
+writes them, every newline from `eolOf` (#632). This departs from SPECS' wording
+that the file writes both on one line today: multi-line is what the file uses,
+and all 51 `walls` rows and 45 `rooms` rows rewritten with their own value come
+back byte for byte. The pure row edits are in the new `tools/layout-edit.mjs`
+(room drag, run-end drag, opening slide, width and cut).
+
+Increment 3, the editor. `src/edit-layout.js` drags rooms, run ends and
+openings on the sheet, snapping to a whole tile, or a quarter tile with Alt;
+types a width; Delete twice cuts an opening. Each edit posts the whole row
+through the existing `/__place` `move`. It runs `makePlan` and `walkability`
+first and refuses on a throw, printing numbers and not checks (#749).
+`src/edit-mode.js`'s prop panel keeps to its three arrays and ignores P, M, N
+and Delete while the plan is open, otherwise Delete would cut a prop too. No
+`vite.config.js` change, no `data/scene-config.json` change, no assertion in
+`layout`, `plan-vs-scene`, `mystery` or `budget` (#529, #611).
+
+`test/tools.mjs` went from 213 ok lines at `36c8e09` to 433. Parts 1 and 2 run
+`walls` and `rooms` on LF and CRLF. Part 3 gains 16 run and room shape rejects,
+moves the not-placeable case to `materials` (the file has no top-level
+`materials`, its object is `pixelMaterials`; the spec's wording was followed and
+the case holds because the array is not placeable), and requires every file row
+to pass `checkRow`. Part 4 covers the nested formats and the own-value rewrite.
+New part 6 covers the layout edits and 7 composes edits through `replaceRow` on
+both endings.
+
+Breaks (#34), each from green and each restored. (1) A hardcoded `\n` in the
+nested-object branch: 9 FAILs, first "FAIL  CRLF rooms: and the file is still
+CRLF throughout: 9 line ending(s) of the other kind" and "FAIL  and in CRLF when
+asked, at every depth: 174 bytes wanted, 165 written". (2) The same in the
+array-of-objects branch: 13 FAILs, e.g. "FAIL  and in CRLF when asked, inside
+every object of it: 194 bytes wanted, 188 written". (3) `cutOpening` leaving
+`[]`: "FAIL  the last opening out takes the `doorways` key with it rather than
+leaving `[]`". (4) `dragRoom` always moving `minX`: "FAIL  an edge drag moves
+that edge and no other: {"min":[-6,-3],"max":[-5,-2]}". (5) `checkRow` allowing
+two extents: "FAIL  checkRow rejects a room by tiles and by drum at once: it
+passed".
+
+Browser check, headless Chromium on the dev server: all four edits wrote the
+file (the kitchen one tile south, a doorway slid 1 m, width 1.6, an opening
+cut). A run-end drag was refused with the file unchanged: "[castle-plan] wall
+run "north-curtain-west" has a doorway at tile -8.35 that starts before the run
+does". The file was restored afterwards.
+
+Left open: whether the plan reads better is Devon's call, on
+`?edit=1&view=plan`. `drums` and `gates` stay out of the editor (open call 7)
+and are not a live row. Found and not fixed: five `interiorProps` rows carry
+`backdrop` and one `builtProps` row carries `shape` and `ridge`, none in
+`PLACEABLE`, so the prop editor's `move` refuses those rows (pre-existing).
