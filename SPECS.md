@@ -4090,14 +4090,16 @@ but this section and `HISTORY.md` changed.
 ## The GPU run
 
 **Rank 3. Size ¼. Its gate, "Sight at the body's own height," shipped
-2026-09-21** (#780 to #782); the gate is open. `npm run play` is 102
-assertions and a numbered screenshot per beat into `shots/play/`. It has run
-on a machine with real compositing six times over three sittings (#624 to
-#630, #708 to #715, #734 to #741), and the third sitting's second run reached
-the accusation for the first time — 179 ok, 17 failures — with the wrong
-ending, because `src/interaction.js` read the sentry and the porter from a
-fixed world height instead of their own. That fix shipped as this row's gate.
-**What is left is the run that confirms it on a GPU.**
+2026-09-21** (#780 to #782); the gate is open. `npm run play` is a numbered
+screenshot per beat into `shots/play/`. It has run on a machine with real
+compositing eleven times over four sittings (#624 to #630, #708 to #715,
+#734 to #741, #886 to #891), and the fourth sitting confirmed the sight fix
+holds: the sentry's and the porter's sighting beats pass, the accusation
+selects 3 of 3, and the whole day and the whole second day have now been
+walked by `npm run play` for the first time. **What is left is exit 0**:
+run 5 of the fourth sitting still ends 212 ok, 6 failures, filed as rank 3a
+(Play Again does not start over) and rank 3b (three small suite and data
+bugs), and the phone in the room (#530) is untouched.
 
 **The judgement half of this row is done.** Every render question this
 section used to list is answered in `HISTORY.md`: the twelve at Vespers
@@ -4105,9 +4107,10 @@ section used to list is answered in `HISTORY.md`: the twelve at Vespers
 white-haired man told apart only by a collar colour), the Lauds sky (flat,
 no dawn colour), the covered hall (its trusses invisible from the floor, a
 sliver of sky at one corner), a tower roof from 12 m, and the gaol roll on
-the barrel-head. One item is still untouched: a phone in the room (#530) —
-the stick throw, sprint threshold, look rate, E button size and two render
-numbers are all still guesses.
+the barrel-head. `renderer.info` was read at five beats and handed to rank
+2c and 2d's skinned-draw argument (#887). One item is still untouched: a
+phone in the room (#530) — the stick throw, sprint threshold, look rate, E
+button size and two render numbers are all still guesses.
 
 ### Scope, the run
 
@@ -4129,20 +4132,118 @@ numbers are all still guesses.
 ### Dependencies
 
 - **Gated on "Sight at the body's own height," which shipped 2026-09-21**
-  (#780 to #782). Run again from a `main` that carries the fix.
+  (#780 to #782) and confirmed on a GPU 2026-10-01 (#886 to #891).
 - The run needs a machine with a GPU, which is Devon's; a session can add a
   beat and cannot run it. If a session is asked to take the run without one,
   the honest output is the beat and a note, not a claim.
-- The journal beat's walk assertion (#659) has now run on a GPU five times:
-  0.69, 1.30, 0.51, 0.69 and 0.83 m against its `> 1.0` threshold. It is
-  measuring the chapel's geometry more than it is measuring the pointer. What
-  to do about that is a decision about what the beat is for, and it is left
-  open rather than guessed at.
+- **What exit 0 still owes**: rank 3a (Play Again does not start over,
+  #889) and rank 3b (the last three standing failures, #890), both specced
+  below.
 
 ### Constraints
 
 - #53 (the whole point of the row).
 - #34 does not apply: no rail is added.
+
+---
+
+## Play Again starts over
+
+**Rank 3a. Size ¼.** `src/main.js:285`'s restart is `auto.stop();
+slot.reset(); window.location.reload();`. `src/gvb-save.js`'s `autosave`
+`stop()` clears the timer and leaves `dirty` true; the same autosave flushes
+on `pagehide`, so the reload writes the ended game straight back over the
+reset before the fresh page can read it (#889). A player at the end of the
+game cannot start a new one without clearing site data by hand.
+
+### Scope
+
+- `src/gvb-save.js`'s `autosave` function.
+- `src/main.js:285` if the chosen fix needs it.
+- A Node test in `test/save.mjs`, the suite that already imports
+  `gvb-save.js` directly.
+
+### Acceptance
+
+- After `restart()` runs and a `pagehide` fires, the saved key under
+  `castleConundrumSave_v1` is gone, not the ended game.
+- `npm run play`'s three Play Again beats pass on a GPU (#886 to #891).
+- `npm test` fifteen of fifteen.
+
+### Open calls
+
+- **How to stop the write.** Recommend `stop()` also sets `dirty = false`,
+  the smallest change: `slot.reset()` runs before the reload either way, and
+  a `dirty` flag that is already false has nothing left to flush. The two
+  alternatives cost more for no gain — removing the `pagehide` flush breaks
+  the mid-day reload it exists for, and reordering `restart()` still races
+  the same flush on a slow disk.
+
+### Dependencies
+
+- Lane D (`src/main.js`'s player rig and spawn), which rank 6 and rank 11
+  also hold.
+- #34: the break is putting `dirty` back and watching the new test fail.
+
+### Constraints
+
+- #36: the storage key does not change.
+- No `SAVE_VERSION` bump: this is a write-timing bug, not a schema change.
+
+---
+
+## play-castle's last three failures
+
+**Rank 3b. Size ¼.** Three unrelated breaks surfaced by the fourth GPU
+sitting, each in `test/play-castle.mjs` or the data it reads, none of them
+a sight or a walk bug (#890).
+
+### Scope
+
+- `test/play-castle.mjs`.
+- `data/scene-config.json`, for whichever of (b)'s two moves turns out to be
+  the fix.
+
+### Acceptance
+
+- All three beats pass in `npm run play` on a GPU; #53 applies.
+- `npm test` fifteen of fifteen.
+
+### Open calls
+
+- **(a) The wall-height check.** It matches zero meshes: no mesh is named
+  `wall_` or `wall-half` since the walls became the castle's own
+  pixel-material boxes (#742). Recommend **delete the check**:
+  `test/plan-vs-scene.mjs` already holds every wall's live box to the plan
+  at 0.01 m (#500), which is the same fact this check was trying to reach by
+  a name that no longer exists.
+- **(b) The brazier sealed inside the stonework.** The Great Hall's brazier
+  at tile (-5, 2.5) stands inside `gothic_statue`'s box, moved there by the
+  hall cluster's +2.0 m shift. Recommend **move the statue, not the
+  brazier**, about 1.2 m along the hall so its 1.5 m box clears the
+  brazier's bowl: the brazier's position is load-bearing for the chapel-
+  candles aim fix (#721 to #724) and the statue's is not. The porter's-gate
+  pair at (-4.8, -2.4) and (-4.8, 2.4) reads inside some root named "Scene"
+  this sitting did not identify; identify that root before deciding whether
+  that half of the check is right.
+- **(c) #659's journal walk.** Ten GPU readings now run 0.51 to 1.30 m
+  against a flat `> 1.0 m` threshold. Recommend asserting the walk against
+  the same walk measured with no journal opened, as a ratio, rather than
+  against an absolute metre: a ratio holds regardless of which geometry the
+  chapel happens to route the player past that run.
+
+### Dependencies
+
+- Lane B (`data/scene-config.json`), which rank 4 and rank 9's increments
+  also hold.
+- (b) and (c) need a GPU run to confirm; (a) is a deletion a container can
+  make and a Node suite can carry.
+
+### Constraints
+
+- #53 for (b) and (c).
+- #529: no assertion of (a)'s or (b)'s kind moves into `layout.mjs` or
+  `mystery.mjs`; both stay where `plan-vs-scene.mjs`'s seam already is.
 
 ---
 

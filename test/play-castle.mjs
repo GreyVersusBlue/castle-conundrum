@@ -182,6 +182,102 @@ const luma = async (label, clip) => {
   return +mean.toFixed(1);
 };
 
+/**
+ * What a frame costs, off the renderer's own counters, over 60 frames.
+ *
+ * `MAX_SKINNED_TOTAL` and the per-ward ceilings in test/budget.mjs are guesses
+ * held as named constants, and #609 and #729 say the row that renegotiates them
+ * brings `renderer.info` from a real GPU rather than a second guess. Nothing in
+ * this repo read it until the fourth sitting. PRINTS, LIKE `luma`: there is no
+ * threshold to hold a frame to yet, only the numbers to write down.
+ *
+ * NO HANDLE ON THE RENDERER IS NEEDED, AND NONE IS ADDED TO `src/`. The scene's
+ * own `onBeforeRender` and `onAfterRender` are handed the renderer every frame
+ * (three r169, `WebGLRenderer.render`), and `info` resets between the two, so
+ * `onAfterRender` reads one whole frame: the shadow pass's draws included,
+ * because `renderBufferDirect` counts them too. A skinned draw is counted from
+ * each SkinnedMesh's own `onBeforeRender` (main pass) and `onBeforeShadow`
+ * (shadow pass). Every hook is the prototype's no-op in `src/` today and is put
+ * back afterwards.
+ */
+const cost = async (label) => {
+  try {
+    const r = await page.evaluate(async (n) => {
+      const s = window.__scene;
+      const skinned = [];
+      s.traverse((o) => { if (o.isSkinnedMesh) skinned.push(o); });
+      const frames = [];
+      let main = 0, shadow = 0, bodies = new Set();
+      const rootOf = (o) => { let p = o; while (p.parent && p.parent !== s) p = p.parent; return p; };
+      for (const m of skinned) {
+        m.onBeforeRender = () => { main++; bodies.add(rootOf(m)); };
+        m.onBeforeShadow = () => { shadow++; };
+      }
+      let renderer = null;
+      s.onBeforeRender = () => { main = 0; shadow = 0; bodies = new Set(); };
+      await new Promise((done) => {
+        setTimeout(done, 10000); // a hidden tab draws nothing; never hang the day on a print
+        s.onAfterRender = (rr) => {
+          renderer = rr;
+          const i = rr.info.render;
+          frames.push({ calls: i.calls, triangles: i.triangles, main, shadow, bodies: bodies.size });
+          if (frames.length >= n) done();
+        };
+      });
+      delete s.onBeforeRender; delete s.onAfterRender;
+      for (const m of skinned) { delete m.onBeforeRender; delete m.onBeforeShadow; }
+      const med = (k) => { const v = frames.map((f) => f[k]).sort((a, b) => a - b); return v[v.length >> 1]; };
+      const max = (k) => Math.max(...frames.map((f) => f[k]));
+      const mem = renderer.info.memory;
+      return {
+        room: document.getElementById('hud-room')?.textContent.trim(),
+        watch: window.__mystery?.watch,
+        calls: [med('calls'), max('calls')], triangles: [med('triangles'), max('triangles')],
+        main: [med('main'), max('main')], shadow: [med('shadow'), max('shadow')], bodies: [med('bodies'), max('bodies')],
+        skinnedMeshes: skinned.length, geometries: mem.geometries, textures: mem.textures,
+        programs: renderer.info.programs?.length ?? null,
+      };
+    }, 60);
+    const mm = ([m, x]) => (m === x ? `${m}` : `${m} (max ${x})`);
+    console.log(`  cost  ${label} [${r.watch}, ${r.room}]  draw calls ${mm(r.calls)}, triangles ${mm(r.triangles)}, `
+      + `skinned draws ${mm(r.main)} main + ${mm(r.shadow)} shadow from ${mm(r.bodies)} bodies drawn; `
+      + `${r.skinnedMeshes} skinned meshes built, ${r.geometries} geometries, ${r.textures} textures, ${r.programs} programs`);
+    return r;
+  } catch (e) {
+    console.log(`  cost  ${label}  could not be read: ${e.message}`);
+    return null;
+  }
+};
+
+/**
+ * Who took the pointer, written down as it happens. PRINTS ONLY.
+ *
+ * The fourth sitting lost the lock at (7.15, 4.9) in the inner ward in two
+ * runs out of two, on a leg with no dialogue, journal or panel in it, and the
+ * suite could say only `locked false` afterwards. Every `pointerlockchange` is
+ * logged with the time, the camera, whether the document still had OS focus
+ * and which overlay was up, so a window losing focus and the castle letting go
+ * read as two different lines. `lockLog()` prints what has piled up.
+ */
+const watchLock = () => page.evaluate(() => {
+  window.__lockLog = [];
+  const t0 = performance.now();
+  document.addEventListener('pointerlockchange', () => {
+    const c = window.__cam;
+    const up = ['start-overlay', 'dialogue-box', 'journal-overlay', 'riddle-overlay', 'accusation-overlay']
+      .filter((id) => { const e = document.getElementById(id); return e && !e.classList.contains('hidden'); });
+    window.__lockLog.push(`${((performance.now() - t0) / 1000).toFixed(1)}s ${document.pointerLockElement ? 'took' : 'LOST'}`
+      + ` at (${c?.position.x.toFixed(2)}, ${c?.position.z.toFixed(2)}) focus ${document.hasFocus()}`
+      + ` visible ${document.visibilityState} overlays [${up.join(', ')}]`);
+  });
+  document.addEventListener('pointerlockerror', () => window.__lockLog.push(`${((performance.now() - t0) / 1000).toFixed(1)}s ERROR focus ${document.hasFocus()}`));
+});
+const lockLog = async () => {
+  const lines = await page.evaluate(() => (window.__lockLog || []).splice(0)).catch(() => []);
+  // A loss with a dialogue or the journal up is the castle doing its job; only the rest print.
+  for (const l of lines) if (/ERROR/.test(l) || (/LOST/.test(l) && (/focus false/.test(l) || /overlays []/.test(l)))) console.log(`  lock  ${l}`);
+};
+
 /** Everything the assertions need, read straight off the live DOM + camera. */
 const state = () => page.evaluate(() => {
   const c = window.__cam;
@@ -354,15 +450,26 @@ const hike = async (target, level = 0) => {
    * `window.__player.lock()`: that is a handle no player has, and using it
    * would hide the very failure #661 designed the panel for. The panel being
    * up is the castle working. Clicking it is the hand this file is supposed
-   * to be. */
-  if (!(await state()).locked) {
+   * to be.
+   *
+   * AND THE WINDOW HAS TO BE IN FRONT FIRST, WHICH THE FIRST LOCK KNEW AND THIS
+   * ONE DID NOT. The fourth sitting, 2026-10-01, ran unattended: the window lost
+   * OS focus mid-walk in the inner ward, the lock went with it, and this click
+   * then failed three hikes running with "Unable to use Pointer Lock API",
+   * because a click into a window that is not in front cannot take the lock.
+   * The start of the day already calls `bringToFront()` for this reason (see
+   * the first `#start-mystery` click). So does this now, and it asks up to
+   * three times, a second apart, for Chrome's ration (#661). */
+  for (let tries = 0; tries < 3 && !(await state()).locked; tries++) {
     const panel = await page.evaluate(() =>
       !document.getElementById('start-overlay').classList.contains('hidden'));
-    if (panel) {
-      await page.click('#start-button');
-      await wait(500);
-      console.log(`  note  the castle asked to be resumed; clicked Start again, locked ${(await state()).locked}`);
-    }
+    if (!panel) break;
+    await page.bringToFront();
+    if (tries) await wait(1000);
+    await page.click('#start-button');
+    await wait(500);
+    await lockLog();
+    console.log(`  note  the castle asked to be resumed; clicked Start again, locked ${(await state()).locked}`);
   }
   /* BOTH ENDS HAVE TO BE SOMETHING TO STAND ON, and neither reliably is.
    *
@@ -514,6 +621,7 @@ try {
   // Object3D.prototype rather than WebGLRenderer.prototype.render.
   await attachSceneProbe(page, THREE_URL);
   await waitForProbe(page);
+  await watchLock();
 
   // --- The twelve NPCs built, and their rigs are actually bound to their own bones.
   // Object3D.clone() on a SkinnedMesh keeps the ORIGINAL skeleton, which leaves the
@@ -538,12 +646,20 @@ try {
     const after = JSON.stringify(hands.map((b) => b.matrixWorld.elements.slice(12, 15)));
     return {
       count: groups.size,
+      cast: (window.__cast || []).length,
+      folk: (window.__populace?.bodies || []).length,
       allRebound: [...groups.values()].every((g) => g.rebound),
       handBones: hands.length,
       animating: before !== after,
     };
   });
-  assert(rigs.count === 14, "fourteen rigged NPC bodies in the scene: the twelve of the day, the King's inspector, who is hidden until the morning after (#534), and Hywel ap Gruffudd, who is hidden from the moment he is dead (#752)", `found ${rigs.count}`);
+  /* EVERY BODY MAIN.JS BUILT, AND NOT A NUMBER TYPED HERE. This said 13, then
+   * 14, while rank 6 put the household in the same scene graph (#714 found 27,
+   * the fourth sitting 34). The cast is fourteen: the twelve of the day, the
+   * King's inspector, hidden until the morning after (#534), and Hywel ap
+   * Gruffudd, hidden from the moment he is dead (#752). */
+  assert(rigs.cast === 14 && rigs.count === rigs.cast + rigs.folk, 'every rigged body in the scene is one main.js built: the cast of fourteen and the populace',
+    `found ${rigs.count}, cast ${rigs.cast}, populace ${rigs.folk}`);
   assert(rigs.allRebound, 'every skeleton rebound into the scene tree (SkeletonUtils clone)');
   assert(rigs.animating, 'rigs are animating', `${rigs.handBones} hand bones tracked`);
 
@@ -556,6 +672,14 @@ try {
   // or smaller. Both halves are asserted because they fail independently: drop
   // setTextureQuality() and anisotropy silently returns to 1 while the walls stay
   // crisp; drop the NEAREST branch and the smear comes back at full anisotropy.
+  //
+  // NOT THE PLAYER'S OWN RIG, which is drawn rather than loaded. #714 read both
+  // halves red on a GPU, and on 2026-10-01 a probe named the one texture behind
+  // both: a 64 px CanvasTexture under `player-rig` (src/player-rig.js, #651),
+  // the soft shadow under the player's feet, a gradient that is meant to
+  // magnify LINEAR and that never goes through `tuneTexture` because nothing
+  // loads it. The brazier check below already leaves the rig out of its stone
+  // for the same reason. Every texture the castle loads was NEAREST and at 16.
   const sampling = await page.evaluate(async () => {
     const THREE = window.__THREE;   // stashed by attachSceneProbe
     const seen = new Set();
@@ -563,6 +687,7 @@ try {
     const SLOTS = ['map', 'normalMap', 'aoMap', 'roughnessMap', 'metalnessMap', 'emissiveMap'];
     window.__scene.traverse((o) => {
       if (!o.isMesh) return;
+      for (let p = o; p; p = p.parent) if (p.userData?.playerRig) return;
       for (const m of [].concat(o.material || [])) {
         for (const k of SLOTS) {
           const t = m?.[k];
@@ -873,6 +998,7 @@ try {
   let s = await state();
   assert(s.locked, 'pointer lock engaged');
   if (!s.locked) throw new Error('without pointer lock there is nothing left to test — is this running headed?');
+  await cost('the first frame of Prime, where the day starts');
 
   // --- The hall brazier now has a collider (it used to have none, same as the
   // bare coal it replaced). Walk straight at its centre and confirm the player
@@ -926,7 +1052,8 @@ try {
     const at = await page.evaluate(() => [+window.__cam.position.x.toFixed(2), +window.__cam.position.z.toFixed(2)]);
     assert(!!r, `reached ${label}`,
       r ? `${r.dist}m after ${r.bursts} bursts, y ${await heightAt()}`
-        : `never got within ${tol} m — stopped at (${at[0]}, ${at[1]}), y ${await heightAt()}, wanted (${target[0]}, ${target[1]})`);
+        : `never got within ${tol} m — stopped at (${at[0]}, ${at[1]}), y ${await heightAt()}, wanted (${target[0]}, ${target[1]}), locked ${(await state()).locked}`);
+    if (!r) await lockLog();
     return !!r;
   };
   const near = (a, b) => Math.abs(a - b) < 0.35;
@@ -1080,6 +1207,7 @@ try {
     if (ok) for (const [t, label] of legs4) { if (!(ok = await goTo(t, label))) break; }
     if (ok) assert(near(await heightAt(), 1.7), 'the camera is back at ground eye height, two flights down', `y ${await heightAt()}`);
     await snap('inner-ward-from-the-walk');
+    await cost('the inner ward from the wall walk');
 
     /* AND OUT OF THE STEWARD'S CHAMBER, WHICH IS WHERE THE BAKEHOUSE DOOR PUTS
      * YOU. The leg above was labelled "the inner ward" and is not in it: the
@@ -1095,14 +1223,26 @@ try {
      * intended path begins with the Constable in the chapel, 20 m east and
      * through two walls, so the day could not start at all. Four legs put the
      * player in open ward first. Walked in Node with `moveBody` before it was
-     * walked here. */
+     * walked here.
+     *
+     * AND THE EAST LEG IS NOW ROUTED, BECAUSE THE GARDEN MOVED ONTO IT. When the
+     * chapel nave took the garden's ground (#835 to #838), the garden went to
+     * the strip south of the nave, and its sundial (7.5, 4.0), scarecrow
+     * (8.5, 3.85) and raised bed (8.5, 5.0) stand on the straight line from
+     * (6, 3.5) to (18, 3.5). The fourth sitting stopped against them at
+     * (7.15, 4.88) in three runs out of three, `locked true` in the third. So
+     * that one leg goes through `hike`, the router every other walk in this
+     * file already uses, before `goTo` holds it to 0.9 m. */
     if (ok) {
       const toWard = [
         ...CHAMBER_OUT,
-        [[18, 3.5], 'east across the inner ward'],
+        [[18, 3.5], 'east across the inner ward', true],
         [[19.3, 13.3], "outside the Chapel Tower's door"],
       ];
-      for (const [t, label] of toWard) { if (!(ok = await goTo(t, label, 0.9))) break; }
+      for (const [t, label, routed] of toWard) {
+        if (routed) await hike(t, 0);
+        if (!(ok = await goTo(t, label, 0.9))) break;
+      }
     }
     if (!ok) bad('the walk over the top did not complete', 'see the legs above; #53 applies on a software renderer');
   }
@@ -1451,6 +1591,7 @@ try {
   };
   assert((await ring(1)) === 'terce', 'the first ring: Terce');
   await snap('terce');
+  await cost('at the bell, Terce');
 
   // ---- Terce --------------------------------------------------------------
   const cart = await examine('cart', 'cart under the sacking');
@@ -1543,6 +1684,7 @@ try {
   await page.waitForSelector('#start-overlay:not(.hidden)', { timeout: 90000 });
   await attachSceneProbe(page, THREE_URL);
   await waitForProbe(page);
+  await watchLock();
   const resumed = await page.evaluate(() => ({
     stage: window.__quest?.stage,
     watch: window.__mystery?.watch,
@@ -1637,6 +1779,7 @@ try {
   await aimAt(page, [-6, 10], 0);
   await wait(400);
   await snap('twelve-at-vespers');
+  await cost('the Great Hall at Vespers, six bodies in frame');
 
   /* SEVEN TRUSSES AT 8 M, AND WHETHER THEY READ AS A ROOF (#527). Each is
    * `structure-cross.glb` stretched to 0.5 x 2.5 x 7.25, and #528 left the
@@ -1769,15 +1912,29 @@ try {
   assert(morning.stage === 'morning' && morning.day === 2, 'the button opens the second day', `${morning.stage}, day ${morning.day}`);
   assert(morning.paneShut, 'the epilogue pane is closed and the castle is walkable again');
   assert(morning.watch === 'Lauds', 'the HUD reads Lauds', String(morning.watch));
-  assert(morning.hidden.join() === 'clerk,merchant,steward',
-    'the Clerk hanged, the Steward is in irons and the merchant is taken: three bodies are gone from the castle',
+  /* HYWEL IS IN THE LIST TOO, AND THIS LINE PREDATED HIM. #752 made the mason a
+   * body on the walking day, hidden from the moment he is dead, so on the
+   * morning after he is the fourth hidden body and not a failure. The first
+   * run to reach this beat, on 2026-10-01, read `clerk, hywel, merchant,
+   * steward`, and the three this beat is about are the other three. */
+  assert(morning.hidden.join() === 'clerk,hywel,merchant,steward',
+    'the Clerk hanged, the Steward is in irons and the merchant is taken: three bodies are gone from the castle, and Hywel is still dead',
     `hidden: ${morning.hidden.join(', ')}`);
   assert(morning.visible.includes('inspector'), "and the King's inspector is standing in it", morning.visible.join(', '));
+  /* THE SAVE IS WRITTEN ON AN AUTOSAVE, NOT ON THE CLICK. `slot.autosave` saves
+   * at most once every 4000 ms and flushes on `pagehide`, so a reload does come
+   * back here, but the key read 600 ms after the click still said day 1 on
+   * 2026-10-01. Read it again until the autosave has had its 4 s. */
+  if (morning.saved !== 2) {
+    morning.saved = await page.waitForFunction(() => JSON.parse(localStorage.getItem('castleConundrumSave_v1') || '{}').day === 2, null, { timeout: 6000 })
+      .then(() => 2, () => page.evaluate(() => JSON.parse(localStorage.getItem('castleConundrumSave_v1') || '{}').day));
+  }
   assert(morning.saved === 2, 'and the save on disk says day two, so a reload comes back here', String(morning.saved));
   assert(morning.bars === false && morning.barsBlock === 0,
     "the cell's bars are off and the player can walk in: Madoc the smith goes home at noon",
     `visible ${morning.bars}, ${morning.barsBlock} collider(s)`);
   await snap('the-morning-after');
+  await cost('the morning after, Lauds');
   /* AND THE PLAYER WALKS INTO THE CELL. It is the one ground room of the
    * fourteen nobody has ever been able to stand in: the bars never opened, and
    * Madoc's whole clue was spoken through them. On the morning he is let out
@@ -1832,11 +1989,18 @@ try {
   await snap('a-fresh-day');
 
   // And the second door still opens on the day of the death from there.
-  await page.click('#start-mystery');
-  await wait(600);
-  const straight = await page.evaluate(() => ({ stage: window.__quest.stage, watch: window.__mystery.watch, day: window.__quest.day }));
-  assert(straight.stage === 'arrive' && straight.watch === 'prime' && straight.day === 1, 'and the second button is the day of the death at Prime', JSON.stringify(straight));
+  // Only when it is on the panel to click: the first run to reach this beat
+  // (2026-10-01) found the save resurrected by `pagehide` and no door, and a
+  // click on a hidden button aborted the run before the error and offsite
+  // checks below could read anything. The missing door is already a FAIL above.
+  if (wiped.door) {
+    await page.click('#start-mystery');
+    await wait(600);
+    const straight = await page.evaluate(() => ({ stage: window.__quest.stage, watch: window.__mystery.watch, day: window.__quest.day }));
+    assert(straight.stage === 'arrive' && straight.watch === 'prime' && straight.day === 1, 'and the second button is the day of the death at Prime', JSON.stringify(straight));
+  } else bad('and the second button is the day of the death at Prime', 'not reached: the second door is not on the panel');
 
+  await lockLog();
   // --- Nothing broke, and nothing reached for a CDN.
   assert(page.__errs.length === 0, 'no page/console errors', page.__errs.slice(0, 4).join(' | '));
   assert(page.__blocked.length === 0, 'no offsite requests', page.__blocked.slice(0, 4).join(' | '));
