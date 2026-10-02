@@ -901,6 +901,7 @@ console.log('\nthe generated cow, inside #789\'s caps');
 const BLENDER_CAPS = {
   calibration: { triangles: 300, bytes: 24000 },
   evidence: { triangles: 600, bytes: 32000 },
+  countryside: { triangles: 6000, bytes: 160000 },
 };
 const BLENDER_DIR = 'assets/blender';
 const BLENDER_EXTRA_MAX = 8;

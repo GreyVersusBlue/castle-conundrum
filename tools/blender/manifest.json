@@ -19,6 +19,86 @@
       "source": "82ed8e4c2aa421552056c1b2a4f8aa14e1b40e0eb0b6e4aac089d9bbc3eb2099"
     },
     {
+      "file": "assets/blender/countryside/backdrop-east.glb",
+      "pack": "countryside",
+      "name": "backdrop-east",
+      "bytes": 15460,
+      "sha256": "8eaf6c4b16ba44c7823a1c703a7e7094ec4029b56cc19690b40037c8acd0e88f",
+      "triangles": 306,
+      "images": [
+        [
+          16,
+          16
+        ]
+      ],
+      "blender": "5.2.2 LTS",
+      "source": "6b9483c28beefda5d999ed9564d1c9e18fb114456344ed7b7e47c58262d3f1c6"
+    },
+    {
+      "file": "assets/blender/countryside/backdrop-north-west.glb",
+      "pack": "countryside",
+      "name": "backdrop-north-west",
+      "bytes": 33776,
+      "sha256": "727317927ce11f05ac656dec8f0e309443aa15dd89e550c770506d626bf7653c",
+      "triangles": 728,
+      "images": [
+        [
+          16,
+          16
+        ]
+      ],
+      "blender": "5.2.2 LTS",
+      "source": "0039b999f87f56d143fc624dc521ec665404eafdb3f9263b7ee75ccbaa546a4f"
+    },
+    {
+      "file": "assets/blender/countryside/backdrop-north.glb",
+      "pack": "countryside",
+      "name": "backdrop-north",
+      "bytes": 127752,
+      "sha256": "4cd1f63eb9ca79db00c6941cfc404c2553a96104ecc774f7d575d55a9959030b",
+      "triangles": 3012,
+      "images": [
+        [
+          16,
+          16
+        ]
+      ],
+      "blender": "5.2.2 LTS",
+      "source": "f30dac6cee9e5b33bc184ff141261a4fb3139caf22fa7cb6240ca323ae605115"
+    },
+    {
+      "file": "assets/blender/countryside/backdrop-south-west.glb",
+      "pack": "countryside",
+      "name": "backdrop-south-west",
+      "bytes": 28576,
+      "sha256": "841f702ff15a96669d8ee9450a870f9c90c47ae79cf41bff899cc9a0476a1601",
+      "triangles": 654,
+      "images": [
+        [
+          16,
+          16
+        ]
+      ],
+      "blender": "5.2.2 LTS",
+      "source": "acca0f54a128c4bb7c152a8b9a91f0469a6f97a86e2d83ca15a11347f3572cd0"
+    },
+    {
+      "file": "assets/blender/countryside/backdrop-south.glb",
+      "pack": "countryside",
+      "name": "backdrop-south",
+      "bytes": 90152,
+      "sha256": "c1c57052029a40ee00e16f03014c1c6d98c3b7f52b8f675ec6793bb11f7ead97",
+      "triangles": 2222,
+      "images": [
+        [
+          16,
+          16
+        ]
+      ],
+      "blender": "5.2.2 LTS",
+      "source": "4e0f93e61ab936356dd6be88f1b7ada60c5721cd18b3480c4f93a7799e8bdc64"
+    },
+    {
       "file": "assets/blender/evidence/aumbry-candles.glb",
       "pack": "evidence",
       "name": "aumbry-candles",

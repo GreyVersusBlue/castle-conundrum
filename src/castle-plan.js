@@ -1451,6 +1451,10 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
     // `assets` would be every such row's id. Refused by name rather than let
     // seventy props all answer to one id (#812, #832).
     if (p.model.startsWith('assets/') && !p.id) throw new Error(`interiorProps: ${p.model} has no id (#812)`);
+    // `backdrop` is the countryside past the walls (#817): a hill is no floor,
+    // and a colliding prop pushes its box top as a surface, so a backdrop that
+    // collides would be a 20 m floor over the land nobody built. Refused by name.
+    if (p.backdrop && !p.noCollide) throw new Error(`interiorProps: ${p.id || p.model} is a backdrop without noCollide; a backdrop pushes no collider and no surface (#817)`);
     const parts = boundsOf(model).parts;
     const flat = place({ parts, tileSize, tile: p.tile, rotationY: p.rotationY || 0, scaleRule: 'native' });
     // `base` stands a prop on an upper floor, read the way a placement reads it
@@ -1464,7 +1468,7 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
       parts, tileSize, tile: p.tile, rotationY: p.rotationY || 0, scaleRule: 'native', lift,
     });
     const id = p.id || p.model.split('/')[0].replace(/_1k\.gltf$/, '');
-    addPiece({ id, kind: 'prop', model, level: lvl, curtain: false, label: id, evidence: p.evidence || null, read: p.read || null, transform, box });
+    addPiece({ id, kind: 'prop', model, level: lvl, curtain: false, label: id, evidence: p.evidence || null, read: p.read || null, backdrop: !!p.backdrop, transform, box });
     if (!p.noCollide) {
       collide(id, box);
       stack.push(box);

@@ -11889,3 +11889,70 @@ reads as a candle, the aumbry's heights read as a count, E at the barrel, the
 desk and the pricket on a real screen, #53) is not done and belongs with the
 next rank 3 GPU run. The conditional increment 3 (the pouch and the tally
 stick) is built only if that look says so. `npm test` on huginn: fifteen of fifteen, exit 0, with increment 2 in the tree (plan-vs-scene 312 s, built 220 s).
+
+
+## Rank 2e ships: the countryside beyond the wall (2026-10-02)
+
+**#892. Rank 2e, Blender: the countryside beyond the wall, shipped (#816 to #819).**
+This is #892 and not #888 because `origin/main` has claimed #886 to #891 on
+another branch. `tools/blender/packs/countryside.py` cuts five pieces from one
+seeded height field over x -140..180, z -170..170, seed
+"countryside/2026-10-02", with its constants in the script; the `packs.json`
+rows carry only `cut`. Pack `countryside` has three extraColours: wheat
+#b89d55, meadow #6b7a3a and thatch #7e6a3e. Five glbs in
+`assets/blender/countryside/`, each one 16x16 image:
+
+| Piece | Triangles | Bytes |
+| --- | --- | --- |
+| `backdrop-north` | 3012 | 127,752 |
+| `backdrop-south` | 2222 | 90,152 |
+| `backdrop-east` | 306 | 15,460 |
+| `backdrop-north-west` | 728 | 33,776 |
+| `backdrop-south-west` | 654 | 28,576 |
+
+That is 6922 triangles against the spec's expected 12,000 and the 30,000 cap.
+They are placed as `interiorProps`: `backdrop-north` [16.5, -24],
+`backdrop-south` [16.5, 24], `backdrop-east` [27, 0], `backdrop-north-west`
+[-23.5, -26.25] and `backdrop-south-west` [-23.5, 26.25], all rotationY 0,
+`noCollide`, `backdrop`. In `src/castle-plan.js` a `backdrop` row without
+`noCollide` throws and the piece carries `backdrop`. `test/layout.mjs` gains
+check 4g, and `test/assets.mjs` check 8 gains
+`countryside: { triangles: 6000, bytes: 160000 }`.
+
+Check 4g prints: 5 pieces on y 0 within 1 mm, no overlap over 0.01 m; all 7
+sides of `ground` and `outside-ground` met (`outside-ground`'s west is the
+river's, #796); far sides past fog.far 150 from the nearest of 1909 eyes:
+north 152.75 in z, south 152.75 in z, east 153.75 in x, north-west 152.75 in
+z, south-west 152.75 in z. These match the spec's measured numbers.
+
+Determinism: `BLENDER_THREADS=4 npm run blender:render countryside` run twice
+on huginn printed "unchanged" for all five glbs and the manifest; peak RSS 513
+MB, 13 s wall.
+
+Budget (`test/budget.mjs`): meshes 1816 to 1821, outside both wards 161 to 166;
+outer ward 1182 to 1187 of 1200, which leaves it 13 under its ceiling; inner
+ward 870 to 875 of 1200; textures 147 to 152, still 43.9 of 64 MB. No ceiling
+moved (#611, #816). Checks 4d and 4f printed the same lines before and after;
+only the props count in check 1 moved, 112 to 117.
+
+Breaks (#34), each from green and each restored. (1) `backdrop-east` tile
+[27.25, 0]: "FAIL ground's east side at x 36 is met by nothing over z -22..22: a
+line of fog colour between the land and the apron". (2) `backdrop-north` tile
+[16.5, -23.75]: "FAIL backdrop-north at x -48..180, z -169..-21 overlaps ground
+at x -48..36, z -22..22 in plan by 1.00 m in z (and 84.00 m in x)", plus the
+overlap with `backdrop-east` and the ground's north-side seam. (3)
+`backdrop-north` cut to z -100..-22 with tile [16.5, -15.25], re-rendered on
+huginn: "FAIL backdrop-north's far side at z -100 is 82.75 m from the nearest eye
+along z, inside fog.far 150"; restoring and re-rendering wrote the original
+127,752 bytes back, `cmp` identical. (4) `noCollide` deleted from
+`backdrop-south`: `makePlan` throws "interiorProps: backdrop-south is a
+backdrop without noCollide; a backdrop pushes no collider and no surface
+(#817)". (5) Check 8's cap lowered to 3000 triangles: "FAIL check 8 line 6:
+assets/blender/countryside/backdrop-north.glb has 3012 triangles, over pack
+countryside's cap of 3000".
+
+Left open: the GPU look. `SPECS.md`'s Looking checklist for 2e (land under the
+wall from the north walk, the view from the North-west Tower's roof, a horizon
+in the fog at the four bells, the farms at 60 to 130 m, #53) is not done and
+belongs with the next rank 3 GPU run.
+`npm test` on huginn: fifteen of fifteen, exit 0 (plan-vs-scene 250 s, built 225 s).

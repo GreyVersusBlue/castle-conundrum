@@ -3581,6 +3581,66 @@
       ],
       "evidence": "knife",
       "comment": "The bakehouse flour barrel with the kitchen knife stuck in its flour. Was the kit barrel detail-barrel.glb in courtyard.placements; moved here under #811 because propPath is read at the interiorProps sites only. The tile is the kit barrel's box centre, (0.5, 15.3), and the piece is now a prop, so check 1 holds it: 0.86 m from the drum's centre, clear of the stone."
+    },
+    {
+      "id": "backdrop-north",
+      "model": "assets/blender/countryside/backdrop-north.glb",
+      "tile": [
+        16.5,
+        -24
+      ],
+      "rotationY": 0,
+      "noCollide": true,
+      "backdrop": true,
+      "comment": "The countryside beyond the wall (#817): x -48..180, z -170..-22: the land north of the base ground and its apron, out to the rim. One of five pieces cut from one height field by tools/blender/packs/countryside.py, so a shared edge shares its heights. A backdrop: noCollide, no surface, nothing reachable (#703, #795). Check 4g holds it to the ground's sides and to fog.far past the eyes (#818)."
+    },
+    {
+      "id": "backdrop-south",
+      "model": "assets/blender/countryside/backdrop-south.glb",
+      "tile": [
+        16.5,
+        24
+      ],
+      "rotationY": 0,
+      "noCollide": true,
+      "backdrop": true,
+      "comment": "The countryside beyond the wall (#817): x -48..180, z 22..170: the land south of the base ground, out to the rim. One of five pieces cut from one height field by tools/blender/packs/countryside.py, so a shared edge shares its heights. A backdrop: noCollide, no surface, nothing reachable (#703, #795). Check 4g holds it to the ground's sides and to fog.far past the eyes (#818)."
+    },
+    {
+      "id": "backdrop-east",
+      "model": "assets/blender/countryside/backdrop-east.glb",
+      "tile": [
+        27,
+        0
+      ],
+      "rotationY": 0,
+      "noCollide": true,
+      "backdrop": true,
+      "comment": "The countryside beyond the wall (#817): x 36..180, z -22..22: the land east of the base ground, between the north and south pieces. One of five pieces cut from one height field by tools/blender/packs/countryside.py, so a shared edge shares its heights. A backdrop: noCollide, no surface, nothing reachable (#703, #795). Check 4g holds it to the ground's sides and to fog.far past the eyes (#818)."
+    },
+    {
+      "id": "backdrop-north-west",
+      "model": "assets/blender/countryside/backdrop-north-west.glb",
+      "tile": [
+        -23.5,
+        -26.25
+      ],
+      "rotationY": 0,
+      "noCollide": true,
+      "backdrop": true,
+      "comment": "The countryside beyond the wall (#817): x -140..-48, z -170..-40: north of outside-ground, cut at the river's line x -140 (#796). One of five pieces cut from one height field by tools/blender/packs/countryside.py, so a shared edge shares its heights. A backdrop: noCollide, no surface, nothing reachable (#703, #795). Check 4g holds it to the ground's sides and to fog.far past the eyes (#818)."
+    },
+    {
+      "id": "backdrop-south-west",
+      "model": "assets/blender/countryside/backdrop-south-west.glb",
+      "tile": [
+        -23.5,
+        26.25
+      ],
+      "rotationY": 0,
+      "noCollide": true,
+      "backdrop": true,
+      "comment": "The countryside beyond the wall (#817): x -140..-48, z 40..170: south of outside-ground, cut at the river's line x -140 (#796). One of five pieces cut from one height field by tools/blender/packs/countryside.py, so a shared edge shares its heights. A backdrop: noCollide, no surface, nothing reachable (#703, #795). Check 4g holds it to the ground's sides and to fog.far past the eyes (#818)."
     }
   ],
   "braziers": [

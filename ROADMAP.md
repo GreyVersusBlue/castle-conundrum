@@ -5,8 +5,8 @@ what can be done *when*, on *what machine*, and *next to what else*.**
 `SPECS.md` is the spec behind every row and `HISTORY.md` is the only record.
 Nothing here is a locked decision except the lane rule (#600 to #602).
 
-Twelve open rows: 2b, 2c, 2d, 2e, 2h, 3, 4, 6, 7, 9, 11, 13, and ~~2a~~ (#887),
-~~2f~~ and ~~2g~~ shipped (#830 to #838). Rows are named by title as well as by rank
+Eleven open rows: 2b, 2c, 2d, 2h, 3, 4, 6, 7, 9, 11, 13, and ~~2a~~ (#887),
+~~2e~~ (#892), ~~2f~~ and ~~2g~~ shipped (#830 to #838). Rows are named by title as well as by rank
 (#522), because a rank is a priority and gets reused across different rows
 over time, never renumbered mid-table (#619, #491). Devon re-ranked on
 2026-09-25, reopening ranks 1 and 2 for the Blender rows and retiring rank 10
@@ -41,7 +41,6 @@ need a network that reaches Poly Haven, once each, into a hash-pinned cache.
 | **2b Blender: an interiors kit** | Opus 5 | Specced 2026-09-25 (#813 to #816, #819), nothing built. |
 | **2c Blender: a shared rig with swappable parts** | Opus 5 | Specced 2026-09-25 (#820 to #825), nothing built. Increment 1 is Blender; increment 2 is a container. |
 | **2d Blender: the animals** | Opus 5 | Specced 2026-09-25 (#826 to #829), nothing built. |
-| **2e Blender: the countryside beyond the wall** | Opus 5 | Specced 2026-09-25 (#816 to #819), nothing built. |
 | **2h Castle in Blender** (Blender 5.2) | Opus 5 | Specced 2026-09-26 (#839 to #844), built through increment 7 (#873 to #877, PR #93, 0064a11): lighting and five cameras, five stills awaiting Devon's verdict. Increments 8 and 9 left: markers, export. The game loads none of it. |
 
 ### Local: a GPU
@@ -103,11 +102,11 @@ lane at a time** (#602). The lanes are named by the file, not by the theme.
 | Lane | The file that decides it | Rows in it |
 | --- | --- | --- |
 | **A** | `src/save.js` — the version number and `migrate` | none held; next bump is to 7 |
-| **B** | `data/scene-config.json`, and `test/tools.mjs`'s byte-exactness rail | 1, 2b, 2e, 4, 9, 13 (increments 2 and 3 only) |
+| **B** | `data/scene-config.json`, and `test/tools.mjs`'s byte-exactness rail | 1, 2b, 4, 9, 13 (increments 2 and 3 only) |
 | **C** | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | 2c, 2d, 6 |
 | **D** | `src/main.js`'s player rig and spawn | 6, 11 |
 | **E** | `src/audio.js` and `data/sounds.json` | 7 |
-| **F** | `tools/blender/` and `tools/blender/manifest.json` | 1, 2b, 2c, 2d, 2e |
+| **F** | `tools/blender/` and `tools/blender/manifest.json` | 1, 2b, 2c, 2d |
 | **G** | `tools/castle3d/` | 2h |
 | **none** | | 3 |
 
@@ -115,8 +114,8 @@ Every Blender row holds lane F, so only one runs at a time, which matches
 the one machine with Blender anyway (#804). Lane G is 2h's alone and
 shares no file with F, so 2h may run beside a lane F row: two Blenders on
 one machine, which is Devon's call on the day (#842). Both add a line to
-`package.json`'s scripts, a one-line merge. A Blender row in lane B (2b,
-2e) does not run beside rank 4, rank 9 or rank 13's increments 2 and 3.
+`package.json`'s scripts, a one-line merge. The Blender row in lane B (2b)
+does not run beside rank 4, rank 9 or rank 13's increments 2 and 3.
 2c and 2d in lane C do not run beside rank 6.
 
 Lane B: rank 4 and rank 9 both write `data/scene-config.json` and do not run
@@ -166,10 +165,9 @@ file.~~ **Shipped** (#835 to #838), in `41457cb`. **Blender runs first, on
 Devon's own instruction** (#801). The pipeline shipped on 2026-10-01 (#880 to #884). The order inside
 the band began with 2a evidence props, which shipped (#887) and proved
 the encode, manifest and budget paths on real content; then 2b the
-interiors kit, then 2c the shared rig, then 2d the animals, then 2e the
-countryside backdrop. The gates inside the band: 2b after 2a, which shipped (#887), so that gate is
-open; 2d after 2c's increment 1; 2e after rank 9's increment 3b, which shipped
-(#871), so that gate is open. **2h is
+interiors kit, then 2c the shared rig, then 2d the animals; 2e the
+countryside backdrop shipped (#892). The gates inside the band: 2b after 2a, which shipped (#887), so that gate is
+open; 2d after 2c's increment 1. **2h is
 not in that order**: it has no gate, goes through nothing of `tools/blender/`'s, and
 starts whenever Devon's machine is free (#839, #840). The integration row
 that would put its model in the game is not ranked and is gated on 2h's

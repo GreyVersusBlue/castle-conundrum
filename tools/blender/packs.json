@@ -11,6 +11,22 @@
           "why": "Tallow. The candle-count quest and the chapel candle clue are tallow candles, and the castle's palettes stop at plaster #cbbfa3, which reads as stone beside a wall of it, not as a candle."
         }
       ]
+    },
+    "countryside": {
+      "extraColours": [
+        {
+          "colour": "#b89d55",
+          "why": "Wheat, and the rick. The castle's palettes have no yellow above plaster #cbbfa3 and wooden_gate's browns, so a field of standing corn at 60 m in the fog would read as bare earth or as stone."
+        },
+        {
+          "colour": "#6b7a3a",
+          "why": "Meadow. Every green in tools/pixel/textures.json is forest_ground_06 or grassy_cobblestone, moss and shade at most #5b6a36, and a hay meadow beside a ploughed strip needs one green lighter than the slopes behind it, or the fields are one colour under fog."
+        },
+        {
+          "colour": "#7e6a3e",
+          "why": "Thatch, for the longhouse and barn roofs. The castle roofs are slate and tile, and a farm under a slate roof reads as a second castle at 100 m."
+        }
+      ]
     }
   },
   "rows": [
@@ -91,6 +107,91 @@
         0.3
       ],
       "lines": 7
+    },
+    {
+      "pack": "countryside",
+      "name": "backdrop-north",
+      "script": "countryside.py",
+      "seed": "countryside/2026-10-02",
+      "why": "North of the base ground, the whole north walk's view: fields under the wall, two farmsteads, woods on the slopes and the rim at z -170. One of five pieces cut from one height field (#817); placed as interiorProps `backdrop-north`, backdrop and noCollide.",
+      "cut": {
+        "min": [
+          -48,
+          -170
+        ],
+        "max": [
+          180,
+          -22
+        ]
+      }
+    },
+    {
+      "pack": "countryside",
+      "name": "backdrop-south",
+      "script": "countryside.py",
+      "seed": "countryside/2026-10-02",
+      "why": "South of the base ground: fields, two farmsteads and the rim at z 170. One of five pieces cut from one height field (#817); placed as interiorProps `backdrop-south`, backdrop and noCollide.",
+      "cut": {
+        "min": [
+          -48,
+          22
+        ],
+        "max": [
+          180,
+          170
+        ]
+      }
+    },
+    {
+      "pack": "countryside",
+      "name": "backdrop-east",
+      "script": "countryside.py",
+      "seed": "countryside/2026-10-02",
+      "why": "East of the base ground, between the north and south pieces: fields running out to the rim at x 180. One of five pieces cut from one height field (#817); placed as interiorProps `backdrop-east`, backdrop and noCollide.",
+      "cut": {
+        "min": [
+          36,
+          -22
+        ],
+        "max": [
+          180,
+          22
+        ]
+      }
+    },
+    {
+      "pack": "countryside",
+      "name": "backdrop-north-west",
+      "script": "countryside.py",
+      "seed": "countryside/2026-10-02",
+      "why": "North of outside-ground, beside the town: woods and the rim along the river's line at x -140, so the north end of the river runs under a hill and not into nothing. One of five pieces cut from one height field (#817); placed as interiorProps `backdrop-north-west`, backdrop and noCollide.",
+      "cut": {
+        "min": [
+          -140,
+          -170
+        ],
+        "max": [
+          -48,
+          -40
+        ]
+      }
+    },
+    {
+      "pack": "countryside",
+      "name": "backdrop-south-west",
+      "script": "countryside.py",
+      "seed": "countryside/2026-10-02",
+      "why": "South of outside-ground: one farmstead and the rim, as the north-west piece. One of five pieces cut from one height field (#817); placed as interiorProps `backdrop-south-west`, backdrop and noCollide.",
+      "cut": {
+        "min": [
+          -140,
+          40
+        ],
+        "max": [
+          -48,
+          170
+        ]
+      }
     }
   ]
 }

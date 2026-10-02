@@ -9,10 +9,11 @@ decision. Every "recommendation" below is exactly that, and the session that
 ships the row is the one that records the call with a number.
 
 One section per row still open in `BACKLOG.md`'s ranked table: 3, 4, 6, 7,
-9, 11, 13, and the rank 2 band (2b to 2e, and 2h, "Castle in Blender",
+9, 11, 13, and the rank 2 band (2b to 2d, and 2h, "Castle in Blender",
 which is outside the Blender pipeline, #839). 2f and 2g shipped and their
 sections are deleted (#830 to #838); 2a shipped (#887) and its section is cut
-to what 2b cites and its open look. Rank 1, the pipeline, shipped too
+to what 2b cites and its open look; 2e shipped (#892) and its section is cut
+to its pointer and its open look. Rank 1, the pipeline, shipped too
 (#880 to #884); its section is cut to the two parts the packs cite. The red suite is closed; its section is a
 stub pointing at `HISTORY.md`. "Bodies" stays until 2c's and 2d's sections
 land, and is then deleted (#807).
@@ -597,7 +598,7 @@ clips on the four Quaternius bodies, and the eleven on `folk.glb`.
 - **Gate: rank 1 shipped (#881).** `common.py`, the manifest and check 8
   now exist.
 - **Lanes F and C.** Increment 1 holds both; increment 2 holds C only. Not
-  beside rank 6 (C), 2d (F and C), or 2b, 2e (F). Beside rank 9 or rank
+  beside rank 6 (C), 2d (F and C), or 2b (F). Beside rank 9 or rank
   4 (B) and rank 7 (E): yes.
 - **Increment 2 after increment 1**, and only after its look passed.
 - **"Blender: the animals" follows this row** by letter, and uses
@@ -770,7 +771,7 @@ follow, the hens' peck, the cow grazing. One sentence each in the entry.
 - **Gate: rank 1 shipped (#881)**, and 2c's increment 1 for the shared pieces above.
 - **Recommended after 2c's increment 2**, which frees the draw headroom this
   row spends (#828); before it, the argument is 380 to 394 and 205 to 213.
-- **Lanes F and C.** Not beside rank 6, 2c, 2b or 2e.
+- **Lanes F and C.** Not beside rank 6, 2c or 2b.
 
 ### Constraints
 
@@ -791,165 +792,15 @@ follow, the hens' peck, the cow grazing. One sentence each in the entry.
 
 ## Blender: the countryside beyond the wall
 
-**Rank 2e. Size 1. Model Opus 5. Where: Local: Blender. Gate: rank 1 shipped (#881)
-and after rank 9's increment 3b. Lanes F and B.** Hills, fields, tree lines
-and distant farms on every side the walls look out on, so that what lies
-past the curtain is land and not the fog's colour. "What every Blender pack
-shares" holds and is not restated. Decided as #816 to #819. One increment,
-class S.
+**Rank 2e. Shipped (#892), in one increment, against #816 to #819.** Its row is
+retired from `BACKLOG.md` and `ROADMAP.md`. What other sections cite, and what
+is still open:
 
-**What is there now, measured on `86c72fb`.** The base ground is x -48..36,
-z -22..22, the curtain plus 2 m. `outside-ground` is x -198..-48, z -40..40,
-west only, and rank 9's 3b cuts its west edge to -140 for the river. North,
-south and east of the base's 2 m apron there is nothing: `scene.background`
-is the fog colour, so from the north walk the land stops two metres out.
-The eyes (every reachable cell 8 m up, 4d's set) run x -38.25..26.25, z
--17.25..17.25, and the highest stands at 12 m, an eye at 13.7. Fog is
-`smoothstep(30, 150, depth)`, the camera's far plane 300. The town's walls
-reach z -34..30.
-
-**The shape** (#817). One seeded height field over **x -140..180, z
--170..170**, cut into **five backdrop pieces** that, with the two grounds,
-tile that rectangle edge to edge:
-
-| Piece | Box in plan | Tile (centre / 4) |
-| --- | --- | --- |
-| `backdrop-north` | x -48..180, z -170..-22 | [16.5, -24] |
-| `backdrop-south` | x -48..180, z 22..170 | [16.5, 24] |
-| `backdrop-east` | x 36..180, z -22..22 | [27, 0] |
-| `backdrop-north-west` | x -140..-48, z -170..-40 | [-23.5, -26.25] |
-| `backdrop-south-west` | x -140..-48, z 40..170 | [-23.5, 26.25] |
-
-Cut from one field, two pieces sharing an edge share its heights by
-construction. No piece crosses the river's line at x -140, and nothing is
-built west of the water (#796 stands: no far bank).
-
-### Scope (class S)
-
-- **`tools/blender/packs/countryside.py`**, importing `common.py`. The
-  field's constants live in the script; each row carries only its `cut`.
-  Heights: 0 within 10 m of either ground rectangle; rising through fields
-  and slopes; a crest of at least 20 m along every edge that touches nothing
-  (the rim, #818). Fields are swatch-coloured faces of the field in its low
-  ground; tree lines are low-poly clumps along field edges; woods on the
-  slopes; four to six farmsteads (a longhouse, a barn, a fence, a rick) at 60
-  to 130 m from the curtain, none nearer than 40 m. All of a piece is joined
-  into one mesh: one draw.
-- **`tools/blender/packs.json`**: five rows, pack `countryside`, one shared
-  seed, `extraColours` at most 8 (wheat, meadow, thatch, each with a `why`).
-- **`assets/blender/countryside/*.glb`**, five files; manifest rows.
-- **`src/castle-plan.js`**: an `interiorProps` row may carry `backdrop:
-  true`, and the piece carries `backdrop: true`. A `backdrop` row without
-  `noCollide` throws, because a colliding prop pushes its box top as a
-  surface and a 20 m surface over the countryside is a floor nobody built.
-  Nothing else changes: with `noCollide` a prop pushes no collider and no
-  surface, so the fill, `surfacesAt`, check 4e and check 12 never see it.
-- **`data/scene-config.json`, `interiorProps`**: five rows, ids and tiles as
-  the table, rotationY 0, `noCollide`, `backdrop`. Spliced (#584, #632).
-- **`test/layout.mjs`, new check 4g, "the countryside meets the ground and
-  runs into the fog"** (#818), over every `backdrop` piece:
-  - its box's min y is 0 within 1 mm;
-  - in plan it overlaps no ground piece and no other backdrop piece;
-  - every side of `ground` and `outside-ground` (read by id, and the check
-    stops if either id is missing, as `budget.mjs` does for the cross-wall)
-    is met along its whole length by a backdrop piece's side or another
-    ground piece's, except `outside-ground`'s west side, which is the
-    river's (#796). That is the seam rule: a gap is a line of fog colour
-    between the land and the apron;
-  - for each axis in which its box lies wholly beyond the base ground, its
-    far side is at least `config.lighting.fog.far` from the nearest of 4d's
-    eyes along that axis, except a side on `outside-ground`'s min x, which
-    #796 gives to the fog. Measured today: north 152.75, south 152.75, east
-    153.75, north-west and south-west 152.75 in z.
-  - If no piece is a backdrop, it fails saying it measured nothing.
-
-  4d's eyes come from the one function 3b lifted for 4d and 4f, not a copy.
-- **`test/assets.mjs`**, check 8's caps block, one line:
-  `countryside: { triangles: 6000, bytes: 160000 }` (#819).
-
-### Acceptance
-
-`npm test` fifteen of fifteen. Each line has its break (#34).
-
-1. **Check 4g, the seam.** **The break the builder quotes**:
-   `backdrop-east`'s tile to [27.25, 0], 1 m east, expecting "ground's east
-   side at x 36 is met by nothing over z -22..22". (A rule that only asked
-   each piece to touch something stays green here, because the moved piece
-   still touches the north and south pieces along z -22 and 22; that is why
-   the rule is written from the ground's sides.)
-2. **Check 4g, overlap.** Break: `backdrop-north`'s tile to [16.5, -23.75],
-   1 m south: it overlaps `ground` by 1.00 m in z.
-3. **Check 4g, the far side.** Break: `backdrop-north`'s `cut` to z
-   -100..-22 and a re-render, *local*: the far side is 82.75 m from the
-   nearest eye, inside 150.
-4. **The throw.** Break: delete `noCollide` from `backdrop-south`; `makePlan`
-   throws naming it.
-5. **Checks 4d and 4f, unchanged**, with the five boxes among their
-   occluders, which only makes them harder to pass. Every box lies at
-   |z| >= 22 east of x -48 and |z| >= 40 west of it; the lines 4d and 4f
-   print today (the quay's ridge from `west-curtain-north-walk`, the water
-   from `sw-tower-stair-3`, the yard from the North-west Tower's roof) run
-   at z -17..16 and meet none of them. The builder records the printed lines
-   as unchanged; if one moves, it is still a pass and the new line goes in
-   `HISTORY.md`; if one fails, the piece is lowered near the castle, and the
-   town is not moved.
-6. **Checks 1, 4, 4c, 4e, 10, 11, unchanged**: the backdrop is clear of
-   stone, the castle is still sealed, no surface lies over the water, and no
-   room has a backdrop piece's centre in it.
-7. **`test/budget.mjs`, unchanged** (#816): five meshes, all outside both
-   wards, so five more in each ward's sum. The builder records the printed
-   lines before and after.
-8. **Check 8** over five rows under `countryside`'s cap; line 6 is *local*:
-   the field at a 1 m grid.
-
-### Open calls
-
-- **Pieces or ground.** Recommend **pieces with `backdrop` and
-  `noCollide`** (#817): a `ground.outside` box is a flat walkable surface
-  that check 10 and the rank-5 check hold, and a hill is neither.
-- **One mesh, five, or many.** Recommend **five, cut from one field**: five
-  draws, and the edges match without a rule to hold them.
-- **How far.** Recommend **to `fog.far` past the nearest eye** (170 north
-  and south, 180 east): short of it, the land ends in a line against the
-  background; past it, it is bytes nobody sees.
-- **The rim.** Recommend **a crest of at least 20 m on every edge that
-  touches nothing** (#818): the highest eye is 13.7 m, so a crest above it
-  hides the field's back edge the way a horizon does.
-- **West of the river.** Recommend **nothing** (#796 stands).
-- **The forge under the Prison Tower** (lore year 12). Recommend **not
-  here**: it is a building by a wall, not country, and 2b's #814 names it.
-- **Beasts in the fields.** Recommend **none**: a body is 2d's and costs a
-  skinned draw and an `AnimationMixer` against a per-ward ceiling at 20 of
-  20 on the walking day.
-- **Shadows.** Recommend **as the builder does now**: the sun's shadow
-  camera is 80 m square (`scene-setup.js`, -40..40), so at most each piece's
-  inner 18 m is ever drawn into the shadow map.
-- **A triangle ceiling.** Recommend **none** (#816): the five cap at 30,000
-  and are expected near 12,000, against about 234,000 in the castle's static
-  pieces, of which the two photoscanned candlestick sets are 83,872.
-
-### Dependencies
-
-- **Gate: rank 1 shipped (#881), and rank 9's 3b shipped.** 3b sets the ground's
-  west edge at -140 that the two west pieces are cut to, and lifts 4d's eyes
-  into the function 4g calls.
-- **Lanes F and B.** Not beside any Blender pack, rank 4, rank 9, or rank
-  13's increments 2 and 3.
-- A later rank 9 increment that moves `outside-ground` breaks check 4g by
-  name; it re-cuts the field in the same commit.
-
-### Constraints
-
-- #796: no far bank; the water runs into the fog. #795: nothing here is a
-  surface. #703, #704: nothing out there is reachable.
-- #500: the field's ground rectangles are typed in the script and check 4g
-  is what holds them to the plan, the way check 1d holds a roof's base.
-- #529: 4g is plan arithmetic and `layout.mjs`'s; `plan-vs-scene.mjs` gains
-  nothing.
-- #611, #727, #816: every piece is paid in both wards; no ceiling moves.
-- #390, #499, #506, #584, #632. #13, #34, #147.
-- #53: whether it reads as land at each bell is the GPU's.
-- #801 to #808, #816 to #819.
+- **Check 4g** (`test/layout.mjs`, #817, #818): the five backdrop pieces sit on
+  y 0, overlap nothing, meet every side of `ground` and `outside-ground`, and
+  their far sides lie past `fog.far` from the nearest eye. A `backdrop` row
+  without `noCollide` throws in `src/castle-plan.js`.
+- **Open: the GPU look (#53).** It belongs with the next rank 3 GPU run.
 
 ### Looking checklist
 
