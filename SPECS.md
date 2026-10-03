@@ -345,11 +345,13 @@ narrower, the increment comes back to `architect` first.
 
 ## Blender: a shared rig with swappable parts
 
-**Rank 2c. Size 2+. Model Opus 5. Where: Local: Blender (increment 1, whose
-GPU look is on the same machine); Container (increment 2). Gate: rank 1
+**Rank 2c. Size 2+. Model Opus 5. Where: Local: Blender (increment 1, built
+and committed on huginn; its GPU look is a later Windows sitting, #939);
+Container (increment 2, after that look says Yes). Gate: rank 1
 shipped (#881). Lanes F and C; not B.** Decided in `HISTORY.md`
-as #820 to #825; this section is the `builder` job those decisions leave.
-Nothing under `assets/blender/` exists on `86c72fb`. **Rank 10 is retired**
+as #820 to #825, amended by #939 and #940; this section is the `builder` job
+those decisions leave.
+**Status: increment 1 shipped on huginn (#941). Left: the Windows GPU look (#939) and increment 2.** Before it, nothing under `assets/blender/folk/` existed. **Rank 10 is retired**
 (#807): its "shared low-poly rig for the fifty" is this row, and the Bodies
 section is deleted once this one and "Blender: the animals" land. **This row
 does not duplicate rank 6**: it makes bodies and writes a person's body
@@ -439,14 +441,19 @@ bodies, the peaks are **outer 205 at `terce-eve`, inner 183 at `terce` and
     would scale a bare-headed person by the tallest hat in the file.
   - Nothing else: tint, `boneScale`, `clips`, `speed`, `heldProp` and
     `heldPropFit` already read the def and work on this rig by its names.
+- **`src/populace.js`** (lane C, #940): `populaceDefs` gains one line,
+  `parts: p.parts,`, beside `hideMaterials`. It copies body fields by name,
+  so without it `def.parts` never reaches `npc.js` for a populace person.
+  No `?? []`: `npc.js` branches on `def.parts` being set, and an empty list
+  would hide every mesh on a Quaternius body. Nothing else in the file.
 - **`data/populace.json`** (lane C, body fields only, #821):
   - **The first wearer is the hen-wife**: `modelPath` to
     `assets/blender/folk/folk.glb`, `parts` e.g. `["skin-old-woman",
     "garment-gown", "over-apron", "hat-wimple"]`, her tint kept,
     `hideNodes` and `hideMaterials` removed. Her ring is untouched: `tend`
     and `wait`, `Idle_Neutral` and `Idle`, both in the file. This is the
-    reference #390 needs for `folk.glb`, and it is written only after the
-    GPU look below passes.
+    reference #390 needs for `folk.glb`, so it is written in the commit
+    `folk.glb` lands in, before the GPU look below (#939).
   - **The carter** gains `heldProp: "assets/blender/held/mallet.glb"` and a
     `heldPropFit`, on his Farmer body; the reference #390 needs for the
     mallet.
@@ -456,13 +463,18 @@ bodies, the peaks are **outer 205 at `terce-eve`, inner 183 at `terce` and
   (Acceptance), the `materials` and `frame` amendments of line 6 (#820),
   and a skinned half for `folk`.
 - **`test/mystery.mjs`**: the parts rail, and the silhouette tuple gains
-  `parts` sorted.
+  `parts` sorted. The existing household-bodies check (#644, "N bodies, N
+  of them the cast's and N the household's own") accepts a body under
+  `assets/NPCs/` or `assets/blender/` (#940): both `startsWith` tests in
+  it become the pair, and its comment names check 8 as what holds the
+  second prefix.
 - **`test/budget.mjs`** section 3: skinned draws, per ward and in total,
   beside skinned bodies, with two new ceilings (#825).
 - **`test/plan-vs-scene.mjs`**: one beat, the live seam only.
 - **Untouched**: `tools/bodies/` and every file it writes (#807),
   `assets/NPCs/`, `data/npcs.json`'s cast, `src/populace.js`'s
-  `ACTIVITY_CLIPS` (the eleven names are the values it already maps to),
+  `ACTIVITY_CLIPS` (the eleven names are the values it already maps to;
+  the file's one change is `populaceDefs`' line above, #940),
   `src/save.js` (bodies are not saved; `SAVE_VERSION` stays 6),
   `data/scene-config.json`, `MAX_SKINNED_TOTAL` and `MAX_SKINNED_PER_WARD`.
 
@@ -531,10 +543,16 @@ show all 22 of them".
 the skinned primitives of their file left visible by `hideNodes`,
 `hideMaterials` and `parts`; a body counts in every ward it counts in for
 bodies. `MAX_SKINNED_DRAWS_PER_WARD = 205` and `MAX_SKINNED_DRAWS_TOTAL =
-380` in the ceilings block, with #825 beside them. Increment 1 prints about
-373 and 198; increment 2 lowers both ceilings to what it prints. Break:
-delete the baker's `hideNodes: ["Sword"]`; expected "381 skinned draws,
-over the ceiling of 380".
+380` in the ceilings block, with #825 beside them. Increment 1 prints 372
+in total and 197 in the outer ward at `terce-eve` (#940: the hen-wife goes
+from 12 to her 4 parts); increment 2 lowers both ceilings to what it prints.
+Break (#940): drop `"Gold"` from the baker's `hideMaterials`; expected "381
+skinned draws, over the ceiling of 380". Deleting her `hideNodes:
+["Sword"]` is not a break and leaves 380: `Sword` in `Woman.glb` is a rigid
+mesh on the joint `Middle1.R`, not a skinned primitive. A rigid mesh held
+by a joint is outside this count on purpose, baked in or a `heldProp`: it
+is an ordinary draw that no section of `budget.mjs` counts as one (section
+1 counts plan pieces), and section 4 prices its texture.
 
 **`test/plan-vs-scene.mjs`, one beat, the seam and nothing Node can prove**
 (#529): for every live body whose def has `parts`, the visible meshes under
@@ -542,7 +560,9 @@ it are exactly those names; its `Bare` material's colour is `ffffff`, so the
 tint missed it; its `skin-*` node's live box top is its `modelHeight` (1.8
 if none) within 0.02 m. **Break, the one increment 1's builder quotes:
 delete the hide branch for `parts` in `npc.js`.** Expected: "hen-wife shows
-22 meshes; her parts name 4", and the height line goes red with it.
+22 meshes; her parts name 4", and the height line goes red with it. Deleting
+`parts: p.parts,` from `populaceDefs` reads the same, and is the only rail
+on that line (#940).
 
 **Held by what exists**: check 1 and check 4 (both files resolve and are
 referenced), check 5 (meshopt, `finish.mjs`'s), check 8 lines 1 to 8,
@@ -550,14 +570,19 @@ referenced), check 5 (meshopt, `finish.mjs`'s), check 8 lines 1 to 8,
 in increment 2, all sixteen do resolves in `folk.glb`), section 4 of
 `test/budget.mjs` pricing the embedded atlas, `test/built.mjs` serving both.
 
-**The GPU look, local, and it gates the wearer** (#807, #53). On Devon's
-machine, before `populace.json` is touched: `npm run dev`, a line-up on the
+**The GPU look, on Windows, after the commit, and it gates increment 2**
+(#939, amending #824; #807, #53). Increment 1 is committed on huginn with
+the hen-wife on `folk.glb` and `npm test` green; the look is its own later
+sitting on the Windows machine: `npm run dev`, a line-up on the
 grey background #606 and #643 used, the hen-wife's parts on `folk.glb` at
 1.65 m beside the baker on `Woman.glb`, both tinted, both in `Idle`, then
-both in `Walk`. One sentence in the increment's `HISTORY.md` entry: does the
-2c woman read as the same game as the Quaternius one? **Yes**: the hen-wife
-moves in this commit. **No**: nothing under `assets/blender/folk/` is
-committed, and the row comes back to `architect` with what read wrong.
+both in `Walk`. One sentence in a `HISTORY.md` entry of its own: does the
+2c woman read as the same game as the Quaternius one? **Yes**: increment 2
+may start. **No**: one data commit puts the hen-wife's body fields back on
+`Woman.glb`; `folk.glb` stays only if `data/` still names it (#390),
+otherwise it and its manifest and `packs.json` rows leave in that commit;
+and the row comes back to `architect` with what read wrong. Until the
+verdict the published page shows one unjudged body, which #939 accepts.
 Rank 10's inherited look goes on the same sitting's checklist and blocks
 nothing: the girl at running speed, the spear on the garrison, the five
 clips on the four Quaternius bodies, and the eleven on `folk.glb`.
@@ -603,12 +628,15 @@ clips on the four Quaternius bodies, and the eleven on `folk.glb`.
 - **Increment 2 after increment 1**, and only after its look passed.
 - **"Blender: the animals" follows this row** by letter, and uses
   increment 1's `/^bare$/i`, check 8's `materials` and `frame` amendment
-  and the draw count.
+  and the draw count. Recommend **2d may start once increment 1 is
+  committed, without the look's verdict** (#939): all three are source the
+  commit carries and a No does not remove.
 
 ### Constraints
 
 - #807: bodies from Blender only, never from `tools/bodies/`; no file it
-  writes is touched; the Quaternius rigs keep every body until the look.
+  writes is touched; the Quaternius rigs keep every body until the look,
+  the hen-wife excepted (#939).
 - #803, #805, #806, #808: the pipeline's rules as "What every Blender pack
   shares" states them.
 - #390: `folk.glb` and the hen-wife, `mallet.glb` and the carter, one commit
@@ -625,7 +653,7 @@ clips on the four Quaternius bodies, and the eleven on `folk.glb`.
   its break is not shipped.
 - #53: the line-up and every clip's look are a GPU's; a real-time assertion
   failing under software Chromium is inconclusive.
-- #820 to #825.
+- #820 to #825, #939, #940.
 
 ---
 
@@ -761,7 +789,7 @@ follow, the hens' peck, the cow grazing. One sentence each in the entry.
 - **The cat's job.** Recommend **`wait` and `eat` in the bakehouse**, no
   new activity: `ACTIVITY_CLIPS` is shared with rank 6 and a mouser needs
   no clip the table lacks.
-- **If 2c's look fails and its increment 1 never lands.** Recommend
+- **If 2c's look fails and its increment 1 never lands** (cannot occur as written, since increment 1 landed first, #939). Recommend
   **2d's increment 1 carries the three shared pieces itself** (the
   `/^bare$/i` line, check 8's `materials` and `frame`, section 3's draw
   count at 380 and 205) and argues its own draws on top in its entry.

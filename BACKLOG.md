@@ -235,8 +235,8 @@ the placement editor, budget suite, move-and-delete and the dialogue format
 | Rank | Item | Size | Model | Where | Gate | Lane | Claimed | Detail |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 2b | Blender: an interiors kit: joined sets dressing the kitchen, the great hall and the cell, specced (#813 to #816, #819); the two hearths and the chapel altar went to 2f (#830); nothing built | 2+ | Opus 5 | Local: Blender | 1 shipped (#881); 2a shipped (#907) | F, B | | [Blender: an interiors kit](SPECS.md#blender-an-interiors-kit) |
-| 2c | Blender: a shared rig with swappable parts: one rig, one-primitive parts, at most five skinned draws a person against the Quaternius rigs' 12 to 15, specced (#820 to #825); nothing built | 2+ | Opus 5 | Local: Blender, then Container; judged local: GPU (#53) | 1 shipped (#881) | F, C | | [Blender: a shared rig with swappable parts](SPECS.md#blender-a-shared-rig-with-swappable-parts) |
-| 2d | Blender: the animals: pig, goat, sheep, horse, cat and two geese on one quadruped topology plus a bird one for the goose, specced (#826 to #829); nothing built | 1 | Opus 5 | Local: Blender; judged local: GPU (#53) | after 2c increment 1 (1 shipped, #881) | F, C | | [Blender: the animals](SPECS.md#blender-the-animals) |
+| 2c | Blender: a shared rig with swappable parts: one rig, one-primitive parts, at most five skinned draws a person against the Quaternius rigs' 12 to 15, specced (#820 to #825); increment 1 shipped on huginn (#939 to #941); left: the Windows GPU look, which gates increment 2, the other 15 populace humans (container) | 2+ | Opus 5 | Windows: GPU look (#53), then Container | 1 shipped (#881) | F, C | | [Blender: a shared rig with swappable parts](SPECS.md#blender-a-shared-rig-with-swappable-parts) |
+| 2d | Blender: the animals: pig, goat, sheep, horse, cat and two geese on one quadruped topology plus a bird one for the goose, specced (#826 to #829); nothing built | 1 | Opus 5 | Local: Blender; judged local: GPU (#53) | 2c increment 1 committed (#941); 1 shipped (#881) | F, C | | [Blender: the animals](SPECS.md#blender-the-animals) |
 | 2h | Castle in Blender: the castle, Mereford and the countryside as a realistic standalone model with Poly Haven PBR, built by committed scripts on Blender 5.2, with gameplay markers, specced (#839 to #844); increments 0 to 7 shipped (#839 to #877, PR #93, 0064a11, closed by #892); increment 8, markers, built (#893 to #899); 7b built (#955 to #960) and 9 built (#961); the game loads none of it; left: Devon's lines on 7b's nine look calls and the stills of 7b and 9, which close the row | 2+ | Opus 5 | Local: Blender GPU (5.2, Devon's Windows machine only); Local: net for its fetches | — | G | | [Castle in Blender](SPECS.md#castle-in-blender) |
 | 2i | Castle in Blender, the integration row: the game takes `castle.glb` as a skin swap and never reads `markers.json` (#919), staged curtain wall and towers, then buildings, then Mereford, with the kit indoors meanwhile (#921), the outer gate and drum doors opened in the model (#922); shape decided (#919 to #924), full spec (ceilings, LOD and bake, KTX2, amendments to #499, #506, #611) waits for 2h increment 9's `gltf-transform inspect` numbers, now in #961; nothing built | Set by the spec | Opus 5 | Local: Blender GPU (5.2, Devon's Windows machine only) | after 2h increment 9 | G | | [Castle in Blender, the integration row](SPECS.md#castle-in-blender-the-integration-row) (no section yet, #923) |
 | 3 | The GPU run: the fourth sitting confirmed the sight fix on a GPU and walked the whole day and the second day (#886 to #891); exit 1, 6 failures, 3a (#916) and 3b (#917) shipped, one more GPU run owed; the quay look's stills taken (#900, `looks/2026-10-03/`), Devon's verdict owed; `renderer.info` recorded (#887); the phone (#530) untouched | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
@@ -272,18 +272,19 @@ moves here as this row's increment 3, gated on rank 4's look (#813). Detail:
 successor for people (#807): one rig, `folk.glb`, with every wearable part
 its own one-primitive mesh node, so a person names the parts they wear in
 `data/populace.json` and draws at most five skinned primitives where a
-Quaternius body draws 12 to 15. Increment 1 renders the rig and moves one
-wearer, the hen-wife, gated on a GPU look beside a Quaternius body before
-anything else is committed; increment 2, a container job, moves the other
-15 populace humans. The 14 cast stay on the Quaternius rigs (#824). Makes
+Quaternius body draws 12 to 15. Increment 1 shipped on huginn (#939 to #941): the
+rig, the mallet and the hen-wife, committed before their GPU look (#939).
+Left: that look on Windows (the hen-wife beside the baker, the eleven
+clips, the carter's mallet fit), which gates increment 2, a container job
+that moves the other 15 populace humans. The 14 cast stay on the Quaternius rigs (#824). Makes
 bodies and writes a person's first body fields only; "Life: a populace"
 still owns every ring and every later change (#821). Detail: [Blender: a
 shared rig with swappable parts](SPECS.md#blender-a-shared-rig-with-swappable-parts).
 
 ## Blender: the animals
 
-*Where: local, Blender; judged local GPU (#53). Gate: after 2c's
-increment 1; rank 1 shipped (#881). Lanes: F and C; not B.*
+*Where: local, Blender; judged local GPU (#53). Gate: 2c's
+increment 1, committed (#941); rank 1 shipped (#881). Lanes: F and C; not B.*
 
 **Rank 2d, size 1.** Specced whole, decisions #826 to #829. Rank 10's
 successor for animals (#807): pig, goat, sheep, horse and cat on one

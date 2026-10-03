@@ -38,8 +38,10 @@ const DEFAULT_HEIGHT = 1.8; // metres; player eye height is 1.7, so npcs read as
 // What the tint does not touch. A nose is the hound's (#644): black on every
 // dog there is, and a tawny nose is the same wrong species a green face is.
 // A horn is the cow's (#789): tools/bodies/ draws it bone-cream, and a horn
-// in the hide's own brown reads as a second pair of ears.
-const BARE_MATERIALS = [/^skin$/i, /^eye/i, /^eyebrow/i, /^hair/i, /^nose$/i, /^horn$/i];
+// in the hide's own brown reads as a second pair of ears. `Bare` is the shared
+// rig's (#820): one material for everything on it the tint leaves alone, skin,
+// hair, eyes, mail and a helm, beside the `Cloth` the tint multiplies.
+const BARE_MATERIALS = [/^skin$/i, /^eye/i, /^eyebrow/i, /^hair/i, /^nose$/i, /^horn$/i, /^bare$/i];
 
 // Clip-name preferences, most-wanted first. Matched case-insensitively against whatever
 // the loaded file happens to ship, so a model with a different animation set still finds
@@ -138,11 +140,43 @@ export class NPC {
   async _buildModelBody() {
     const { scene: model, animations } = await loadGLTF(this.def.modelPath);
 
+    /* A PERSON ON THE SHARED RIG WEARS THE PARTS THEY NAME (#820, #821). The
+     * file carries every part there is, each its own one-primitive mesh named
+     * `<slot>-<variant>`, and `def.parts` is the handful this person has on:
+     * every other mesh under the model is hidden. It is `hideNodes` turned
+     * round, a list of what stays rather than of what goes, because a file of
+     * 22 parts worn four at a time would otherwise name 18 per person. It
+     * runs before anything is measured, and the held prop is attached after
+     * this returns, so it is never in the list and never hidden by it. */
+    const parts = this.def.parts;
+    let skin = null;
+    if (parts) {
+      model.traverse((obj) => {
+        if (!obj.isMesh) return;
+        if (!parts.includes(obj.name)) obj.visible = false;
+        else if (!skin && /^skin-/.test(obj.name)) skin = obj;
+      });
+    }
+
     // Normalise height so any model dropped into modelPath lands at the same scale,
     // whatever unit its author worked in.
-    const size = new THREE.Box3().setFromObject(model).getSize(new THREE.Vector3());
     const target = this.def.modelHeight || DEFAULT_HEIGHT;
-    if (size.y > 0.0001) model.scale.setScalar(target / size.y);
+    if (skin) {
+      /* A PARTS BODY IS AS TALL AS ITS SKIN, NOT AS ITS FILE (#821).
+       * `Box3.setFromObject` counts hidden meshes, so the model's own box is
+       * the union of all 22 parts and a bare-headed person would be scaled
+       * by the tallest hat in the file. The `skin-*` part is the one every
+       * person wears exactly one of, and the rig stands with its `Root` at
+       * the origin and its feet on y 0 (#820), so the top of that part's
+       * box is the person's height whether or not the part reaches the
+       * feet. */
+      model.updateMatrixWorld(true);
+      const top = new THREE.Box3().setFromObject(skin).max.y;
+      if (top > 0.0001) model.scale.setScalar(target / top);
+    } else {
+      const size = new THREE.Box3().setFromObject(model).getSize(new THREE.Vector3());
+      if (size.y > 0.0001) model.scale.setScalar(target / size.y);
+    }
 
     // Optional: drop bits of the model that don't suit the character it's been cast as.
     // hideMaterials targets a single glTF primitive (three splits a multi-material mesh

@@ -13403,4 +13403,228 @@ to the quay; spawn and courtyard foreground grass to the terrain change
 under the grass scatter (attributed, not isolated). Twice-render of the
 master: all five inside the judge. Stills await Devon's lines.
 
+## Rank 2c increment 1: the rig is committed on huginn and the GPU look follows it (2026-10-03)
+
+**#939. #824's order is amended in one clause: increment 1 is committed
+before its GPU look, not after it, and the look gates increment 2 instead of
+the commit.** A decision, no code and no asset; written as `architect` from
+Devon's session brief of 2026-10-03 (CC-09 in `BACKLOG-AUDIT-2026-10-01.md`:
+"Increment 1 is the rig plus the hen-wife (Huginn), then a GPU look
+(Windows)").
+
+**What #824 said.** Increment 1 "renders on Devon's machine and, before
+`populace.json` is touched," lines the hen-wife up beside the baker; a pass
+moves her "in the same commit", and on a fail "nothing under
+`assets/blender/folk/` is committed".
+
+**Why it cannot hold.** It assumed one machine. Since #878 there are two:
+huginn builds (Blender 5.2.2, Cycles on the CPU, a Vega iGPU) and the Windows
+machine looks (#53). `folk.glb` reaches Windows only through git, and #390
+fails any committed asset that `data/` does not name, so `folk.glb` cannot
+be committed without the hen-wife's `modelPath` in the same commit. The look
+therefore cannot come before the commit it was meant to gate.
+
+**The new order.**
+
+1. **huginn commits increment 1 whole**: `assets/blender/folk/folk.glb`,
+   `assets/blender/held/mallet.glb`, their packs and manifest rows, the
+   hen-wife's body fields on `folk.glb`, the carter's `heldProp`, and every
+   rail in the section's Acceptance (`test/assets.mjs` check 8,
+   `test/mystery.mjs`'s parts rail, `test/budget.mjs` section 3's draw
+   count, the `test/plan-vs-scene.mjs` beat). `npm test` fifteen of fifteen
+   is the gate on that commit, and nothing else is.
+2. **The GPU look is its own sitting on Windows**, after a pull. The same
+   line-up #824 named: the grey background #606 and #643 used, the
+   hen-wife's parts at 1.65 m beside the baker on `Woman.glb`, both tinted,
+   in `Idle` then `Walk`. The same verdict: one sentence in this file, does
+   the 2c woman read as the same game as the Quaternius one, Yes or No. It
+   takes its own number when it is written.
+
+**What the look still gates.** Increment 2, the other 15 populace humans,
+does not start until the verdict is Yes. Nothing else waits on it.
+**Recommended for 2d: it may start once increment 1 is committed, without
+the verdict**, because what it takes from 2c is `/^bare$/i`, check 8's
+`materials` and `frame` amendments and section 3's draw count, and all three
+are source that the commit carries and a No does not remove. 2d's section
+does not contradict this: its gate reads "2c's increment 1 for the shared
+pieces above". Its open call "If 2c's look fails and its increment 1 never
+lands" can no longer happen as written, since increment 1 lands before the
+look; its recommendation (2d carries the three pieces itself) is now needed
+only if increment 1 is never committed at all.
+
+**What No now means.** One data commit: the hen-wife's body fields go back
+to what they were on `Woman.glb`, `hideNodes` and `hideMaterials` restored.
+`folk.glb` stays only if something in `data/` still names it (#390);
+otherwise it, its manifest row and its `packs.json` row leave in that same
+commit, with whatever check 8 and the parts-body beat then need to stay
+green rather than hold nothing (#34). The mallet and the carter's `heldProp`
+stay: the look does not judge them. The row returns to `architect` with what
+read wrong.
+
+**#807 moves with it, by one body.** #807 keeps every body on its Quaternius
+rig "until a GPU look (#53) passes a 2c human standing beside a Quaternius
+one". Under this entry one body, the hen-wife, moves before that look; the
+other 15 populace humans and the 14 cast are held to #807 as written.
+
+**The cost, accepted.** `pages.yml` publishes every push to `main`, so
+between increment 1's commit and the verdict the published page shows an
+unjudged body on 1 of 16 populace humans. A No costs one revert commit and
+one render's worth of work; #824's order cost nothing on a No but needed a
+machine that both builds and looks, and this session does not have one.
+
+**#940. Three places where 2c's increment 1 could not be built as written:
+#825's break and its two numbers, `populaceDefs` and `parts`, and where a
+household body may live.** A decision, no code; written as `architect` from
+the builder's report while increment 1 was being built, each point checked
+against the files in Node first.
+
+**1. #825's break was wrong, and so were its two predictions.** #825 and the
+section's Acceptance said deleting the baker's `hideNodes: ["Sword"]` "makes
+381". It makes 380 and the rail stays green. The evidence: in
+`assets/NPCs/Woman.glb` the node `Sword` has no `skin`; it is a rigid mesh of
+three primitives (`Metal_Dark`, `Brown2`, `Metal`) parented to the finger
+joint `Middle1.R` under `Wrist.R`. The file's 14 skinned primitives are on
+`Medieval_Body` (6), `Medieval_Feet` (2), `Medieval_Head` (5) and
+`Medieval_Legs` (1), and the baker's `hideMaterials: ["Metal", "Gold"]` takes
+two of the body's, leaving 12. Section 3's count, run over the data with
+`hideNodes` deleted from the baker, prints 380. This is #147: the count was
+right and the sentence describing its break was not. **The break is now:
+drop `"Gold"` from the baker's `hideMaterials`**, which leaves 13 on her and
+prints "381 skinned draws, over the ceiling of 380". Checked the same way.
+
+The two numbers: #825 said "about 373 and 198" after increment 1, which
+priced the hen-wife at five parts. She wears four (`skin-old-woman`,
+`garment-gown`, `over-apron`, `hat-wimple`), each one skinned primitive in
+`folk.glb`, so she goes from 12 to 4 and the suite prints **372 in total and
+197 in the outer ward at `terce-eve`**. Before: 380 and 205. The ceilings do
+not move in increment 1; increment 2 lowers them as #825 says. #825's "about
+256 and 143" for increment 2 was the same kind of estimate and is whatever
+the suite prints then.
+
+**A rigid mesh held by a joint is outside this count on purpose.** #825
+counts skinned primitives, which is the cost a mixer's body adds that
+nothing else in `test/budget.mjs` saw. A rigid child of a joint is an
+ordinary draw. It is not priced as a draw anywhere in `budget.mjs`: section 1
+counts the meshes of `plan.pieces` and a person is not a plan piece (#500),
+and section 3's own comment says "A held prop is rigid and is not counted
+here". What `budget.mjs` does price of it is its texture, in section 4,
+which lists every body file and every `heldProp`. That holds for a baked-in
+`Sword` and for the `held` pack's mallet alike, and it is why #820 made held
+tools rigid. If rigid draws on bodies ever need a ceiling it is a new count
+with its own argument, not a wider reading of this one.
+
+**2. `src/populace.js` changes by one line.** #822 said "`src/populace.js`
+does not change" and the section listed it untouched. Both were about
+`ACTIVITY_CLIPS`, and that part holds. But `populaceDefs` builds each def by
+copying body fields by name (`modelPath`, `modelHeight`, `tint`, `hideNodes`,
+`hideMaterials`, `boneScale`, `clips`, `speed`, `heldProp`, `heldPropFit`)
+and #821 added `parts` to that list without adding it here, so `def.parts`
+is undefined in `npc.js` for every populace person and the hen-wife would
+wear all the parts in the file. **`populaceDefs` gains `parts: p.parts,`**
+beside `hideMaterials`, lane C, which increment 1 already holds. Passed
+through as it is, with no `?? []`: `npc.js` branches on `def.parts` being
+set, and an empty list would hide every mesh on a Quaternius body. The
+`plan-vs-scene.mjs` beat is what holds it: with the line deleted it reads
+"hen-wife shows 22 meshes; her parts name 4", the same message as deleting
+the hide branch, because both breaks are the same seam.
+
+**3. A household body is under `assets/NPCs/` or `assets/blender/`.**
+`test/mystery.mjs` holds #644's rule in the words its comment gives it:
+every body a populace person wears "is either the cast's or is under
+assets/NPCs, where test/assets.mjs's checks 4 and 5 hold it to being
+referenced and being meshopt-encoded". `assets/blender/folk/folk.glb` turns
+it red, and #820 put that file there. What the check was for is that a
+household body lives somewhere `assets.mjs` holds it, and `assets/blender/`
+is such a place: check 4 walks it for references (#808) and check 8 holds
+every file in it to its manifest row and to meshopt (line 6), which is more
+than check 5 asks of `assets/NPCs/`. **#644's rule as that check states it
+is amended by one prefix**: the predicate accepts `assets/NPCs/` or
+`assets/blender/` and nothing else, and the comment names check 8 for the
+second. A body under `assets/props/` or `assets/poly-haven/` still fails.
+The count in its message goes from "8 bodies, 4 of them the cast's and 4
+the household's own" to 9 and 5 with `folk.glb` in the list.
+
+**#941. Rank 2c, Blender: a shared rig with swappable parts, increment 1 shipped (#820 to #825, #939, #940).**
+One increment, on huginn, measured 2026-10-03. `tools/blender/packs/folk.py`
+and `held.py`; pack `folk` (one row: the rig, a 22-part catalogue and the clip
+table; 3 `extraColours`: skin, old skin, linen) and pack `held` (row `mallet`).
+
+`assets/blender/folk/folk.glb`: 3,448 triangles of 12,000; 229,172 bytes of
+400,000; one skin, 20 joints (#823's names); 22 parts, one primitive each;
+`Cloth` and `Bare` over one 16 px atlas. The heaviest part per slot is skin
+236, garment 300, hair 80, over 160, hat 136: 912 of a person's 1,500. Eleven
+clips, each 2.00 s, 49 keys at 24 fps. sha256
+b32cbe2817526cefec3c8e77045bf1ccd21ea30ad57f8a7ab87ad1d591d6e37e.
+`assets/blender/held/mallet.glb`: 76 triangles of 300, 5,136 bytes of 16,000,
+0.45 m. sha256
+4f860eaa887777e6e58cb3a530a1ed930f03e3d159c1b65464095cbf5ee4a790. Every bone
+points straight up, so rest rotations are identity and the row's `rig` carries
+`name`, `parent` and `head` only.
+
+Determinism (#883): a second `BLENDER_THREADS=4 npm run blender:render folk
+held` printed "unchanged" for both files and the manifest, sha256 identical.
+`tools/blender/finish.mjs` changed: gltf-transform's quantize clones the skin
+once per mesh (23 skins), so a file with a skin is quantized over the scene
+volume, then deduped and pruned; a file without one takes the old path. Every
+row's `source` hash moved; the ten existing `.glb` re-rendered "unchanged"
+with identical sha256.
+
+Code and data. `src/npc.js`: `/^bare$/i`, the `parts` hide before measuring,
+height from the `skin-*` box top. `src/populace.js`: `parts: p.parts` (#940).
+`data/populace.json`: hen-wife on `folk.glb` with parts `skin-old-woman`,
+`garment-gown`, `over-apron`, `hat-wimple`, `modelHeight` 1.65 and tint kept,
+`hideNodes` and `hideMaterials` removed, ring untouched. The carter gets
+`heldProp` `assets/blender/held/mallet.glb` and `heldPropFit` `{ length: 0.45,
+grip: 0.1, tipUp: false }`, derived from `_attachHeldProp`'s geometry and
+unjudged.
+
+Check 8 (`test/assets.mjs`) caps lines `folk` and `held` as specced, line 6's
+`materials` and `frame`, skinned lines 1 to 5. Breaks (#34), each red from
+green. Rig, `Fingers.R` dropped: "Wrist.R has no child joint, so a held prop
+would be aimed back up the arm (#823)". Parts, `hat-helm` joined into
+`hat-coif`: "hat-coif is 2 primitives, not one: a part is one draw (#820)".
+Person, `garment-robe` subdivided: 2736 over 1500. Clips, `cycles: 1.5` on
+Sweep: "Sweep's Chest rotation turns back at the loop". Materials, `Bare`
+renamed `Skin`: "has 2 material(s), Cloth, Skin, not Cloth and Bare (#820)".
+Frame, armature moved 5 cm: "Root joint is at x 0.0500, not 0 within 1 mm".
+Skin is not a re-render, because Blender's exporter cannot write a joint index
+outside the skin; `hat-cap`'s `JOINTS_0` patched to 20 in the file: "hat-cap
+vertex 0 is weighted to joint 20, and the skin has 20 (0 to 19)". Known
+weakness, inherited from check 7: meshopt's quaternion filter flips sign
+inside Hammer, Spar and Drill (4, 8 and 4 keys), so `seamOf`'s kink half is
+lenient on those channels; the ends check holds.
+
+`test/budget.mjs` (#825, #611, #940): section 3's ceilings were uncounted at
+380 and 205 and are now `MAX_SKINNED_DRAWS_TOTAL` 380 and
+`MAX_SKINNED_DRAWS_PER_WARD` 205, printing 372 (165 cast, 207 household) and
+outer 197 at `terce-eve`, inner 183. `MAX_SKINNED_TOTAL` 34 and
+`MAX_SKINNED_PER_WARD` 20 are untouched. Break: `"Gold"` dropped from the
+baker's `hideMaterials`: "381 skinned draws, over the ceiling of 380"; the
+per-ward line: "206 skinned primitives at terce-eve, over the ceiling of 205".
+
+`test/mystery.mjs`'s parts rail prints "1 parts bodies checked, wearing 4
+parts between them off 1 parts file(s)". Breaks: no parts, "hen-wife wears
+assets/blender/folk/folk.glb with no parts, and would show all 22 of them"; a
+typo in a part name; no skin part; two garments; two hats; parts beside
+`hideNodes`; `parts` on `Woman.glb`. Silhouettes are 16 off 8 files (15 off 7
+before). The household-body check takes `assets/blender/` (#940): 9 bodies, 4
+cast and 5 household.
+
+`test/plan-vs-scene.mjs`, one beat. Breaks: (a) the hide branch deleted from
+`npc.js`: "hen-wife shows 22 meshes; her parts name 4" and "skin part tops out
+1.609 m above her feet, for a modelHeight of 1.65 m"; (b) `parts: p.parts`
+deleted: the same two; (c) `/^bare$/i` removed: "hen-wife's `Bare` material
+is 6b7a4a". Not broken on their own: the count line, the reworded `Bare`
+message, budget's zero-draw line and the silhouette tuple.
+
+`npm test` on huginn, software Chromium: 15 of 15. One inconclusive flake
+(#53): during break (a) only, the hound-bark beat printed "0 cued"; green in
+the baseline, in (b), in (c) and in the full run.
+
+Left open: the Windows GPU look (#939, #53): the hen-wife beside the baker in
+`Idle` and `Walk`, the eleven clips (sine moves, rotation only, no hip bob,
+feet slide), the carter's mallet fit, and rank 10's inherited checklist. Its
+verdict gates increment 2, the other 15 populace humans, a container job. The
+contact sheet at `shots/blender/folk.png` is untracked (ignored).
+
 **#954. Reserved: #925 to #954 are held for sessions on Huginn (the Selector loop); anyone else numbers from #955.**

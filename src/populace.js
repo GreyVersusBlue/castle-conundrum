@@ -155,6 +155,10 @@ export function populaceDefs(populace) {
     tint: p.tint,
     hideNodes: p.hideNodes ?? [],
     hideMaterials: p.hideMaterials ?? [],
+    // The parts a person on the shared rig wears (#821, #940). Passed through
+    // as it is, with no `?? []`: npc.js branches on `def.parts` being set,
+    // and an empty list would hide every mesh on a Quaternius body.
+    parts: p.parts,
     // The three fields BACKLOG.md rank 10 added (#643), all optional and all
     // npc.js's: a bone scaled after the height, a clip named ahead of the
     // body's own list, and a pace. The child and the hound are what use them.
