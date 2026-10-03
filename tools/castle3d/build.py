@@ -15,9 +15,10 @@
 # A stage whose module does not exist yet is an error, named, not a skip, so a
 # build never saves a castle.blend that silently lacks one (#13). From
 # increment 8 every stage has its module, `guide` to `markers`, and `export`
-# is never a stage (#896). What stops a full build now is the plan moving
-# under the model: until increment 7b, `town` raises naming the quay's 14
-# pieces it has no rule for, and the master is not saved (#893).
+# is never a stage (#896). From increment 7b (#955 to #960) the model has
+# caught up with the plan's 451 pieces and a full build saves the master; a
+# piece the plan gains later that no stage's rule takes raises in that stage,
+# naming it, and the master is not saved (#893).
 
 import os
 import sys

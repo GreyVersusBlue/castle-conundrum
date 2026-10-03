@@ -832,7 +832,9 @@ props, before anything is built, and #869 closes it; #873 to #877 decide
 increment 7, the light and the five cameras, before anything is built, and
 #876 amends #844 to eight `check.py` lines; #893 to #898 decide
 increments 8 and 9 before anything is built, put increment 7b, the quay and
-the crate, between them, and amend #843 and #844 to nine lines); this
+the crate, between them, and amend #843 and #844 to nine lines; #955 to
+#960 decide 7b before anything is built, widen it to rank 2a's and 2e's
+new props, and amend line 6 and #898's call 9b); this
 section is the `builder` job those decisions leave. Nothing
 under `tools/castle3d/` exists on `e05ac72`. **The game loads none of it**:
 no file under `src/`, `data/`, `assets/` or `test/` changes in any
@@ -892,7 +894,9 @@ one shared module, one module per stage.
   (#874, #875) two more fields are read rather than copied: `braziers`,
   `scene-config.json`'s three through the plan's own `tileToWorld`, and
   `cameras`, `cameras.json`'s five with each eye's `stand` (`standAt`) and
-  `reachable` (`walkability`); see increment 7's open calls.
+  `reachable` (`walkability`); see increment 7's open calls. From 7b
+  (#957, #960) the piece fields gain `built`, `ridge` and `backdrop`, copied
+  as the plan returns them, null where it gives none.
 - **`cameras.json`**, committed, hand-edited, from increment 7 (#875): the
   five cameras, `{ name, eye, target, lens | fovY, exposure, samples }`,
   `"eye": "spawn"` for `CAM_spawn`.
@@ -926,7 +930,10 @@ one shared module, one module per stage.
   *Amended 2026-10-02 (#895)*: from increment 8 a marker's entry is keyed
   by its object name (`ROOM_<id>`, `COL_<id>`, `EVID_<id>` and so on), line
   3 reads it and line 6 skips it, and one for a marker within 0.5 m fails as
-  stale. See increment 8's open calls.
+  stale. See increment 8's open calls. From 7b (#960) it holds five
+  piece-id entries, the backdrops, and line 6 fails a piece-id entry whose
+  piece something realises (stale) and a key that names nothing; see
+  increment 7b's open calls.
 - **`build.py`**: pins through `common.py`, parses `--only`, runs `guide`
   and then the requested stages in the fixed order below, records the
   stage list in `scene["castle3d_stages"]`, and saves. A full build saves
@@ -1189,6 +1196,15 @@ which carries no shape field), the banks' `forest_ground_06` (not in
 `mooring-bollard.glb`, `net-rack.glb`, `fish-crates.glb` and
 `toll-house-sign.glb` beside his placed props; whether the model takes any
 of them is that block's first question.
+*Decided 2026-10-03 (#955 to #960)*: the open calls are written, in
+"Increment 7b's open calls" below. Measured first: the plan moved again
+under the model (451 pieces), so every build that runs `terrain` exits 1 on
+HEAD at the pad, and `props` meets ten pieces no group takes, not one:
+`kitchen-crate`, rank 2a's four evidence props and rank 2e's five backdrops.
+7b takes all ten. Corrected: the seven quay files are not in `_source/`;
+they stand in the folder above it, and all seven are collections in the
+pinned `castle_props.blend`. The model takes none of them (#958). Nothing
+is fetched. Every number the builder needs is in that block.
 
 ### Acceptance
 
@@ -1425,6 +1441,90 @@ turn it red from green (#34). The report quotes the failing line.
   (at most 1/255, mean 0.000035 and 0.000036); with every marker's flag
   False too, the control, 99.99% and 99.98% of pixels changed, so the
   comparison sees a marker when one renders and none does.
+- **Increment 7b (#955 to #960).** `npm test` fifteen of fifteen, unchanged.
+  `--only guide` prints `town 59` and `props 195`; `--only terrain`,
+  `--only town` and `--only props` exit 0 with line 6 at 5, 59 and 195 (5
+  allowed); **a plain `npm run castle3d:build` exits 0 for the first time,
+  writes the master `castle.blend` and passes all nine lines**, line 3 at 899
+  and 43 realised, line 5 at 19 and 95, line 6 at 451 with 446 named and 5
+  allowed, line 4 measured and recorded. The eleven breaks and four stills in
+  increment 7b's open calls, each quoted, and Devon's line on each still and
+  on the nine look calls recorded. No fetch.
+  *Measured 2026-10-03*: on Blender 5.2.2 against the 451-piece blueprint
+  (`451 pieces, 761 colliders, 45 rooms, 4 open, 5 gates, 18 ramps, 8 drums,
+  3 braziers, 5 cameras, 5 standing`), the fetch `203 sources, 203 already
+  held, 0 downloaded`. `--only guide` printed `town 59 (36 decor, 2 ground, 1
+  prop, 19 wall, 1 water)` and `props 195 (80 decor, 115 prop)`, total 451.
+  `--only terrain`: line 4 `51 image texture nodes, 46 images`, line 5 `19
+  level-0 rooms, 95 points, largest |height| 0.0001 m`, line 6 `5 pieces of
+  terrain`; the stage printed `river channel foot x -141, lip x -140, bed y -2
+  (quay-bank-north); water y -1.3 to -1.10 (quay-water); estuary slabs x -281
+  to -198, z -200 to 200; x -198 to -140.5, z -200 to -40; x -198 to -140.5,
+  z 40 to 200; road x -129.5 to -36; 74 dropped west of x -134 (boulder_01
+  13, rock_moss_set_02 12, island_tree_01 15, tree_small_02 34)`, so 71 trees
+  and 35 rocks stand. Corrected: the road starts at `outside-road`'s min x,
+  which is -129.5, not the -140 call 1 wrote; the rule was built as written.
+  `--only town`: line 4 `115 image texture nodes, 65 images`, line 6 `59
+  pieces of town`; `45 objects, 42 carrying 59 planIds of 59 pieces; boxes
+  held within 0.0050 m`; `DOCK_quay-front x -144.4 to -140, y -2 to 0, z -16.4
+  to 16.4, 144.32 m2 tiled by 8 pieces; 1 top face in MAT_stone_pavers`;
+  `ROOF_quay-toll-house-roof gable, ridge x at y 9, foot y 6, x -138 to -130,
+  z -11 to -5`; `DOOR_quay-toll-house x -134.5 to -133.5, y 0 to 2, z -5 to
+  -4.97, 2 straps`. `--only props`: line 4 `191 image texture nodes, 124
+  images`, line 6 `195 pieces of props; 190 named by a planId or planIds, 5
+  allowed by allow.json (backdrop-north, backdrop-south, backdrop-east,
+  backdrop-north-west, backdrop-south-west)`; by group `80 kit, 10 Poly Haven,
+  75 Devon (71 files), 20 built, 5 packs, 5 backdrops (not drawn)`; packs `5
+  files, 1444 faces: wood 602, iron 312, kept 530`, baked from z 0.4140
+  (pricket), 0.4025 (ledger desk), 0.4000 (crate), 0.1950 (aumbry), 0.3528
+  (knife barrel). **The plain `npm run castle3d:build` exited 0 and wrote
+  `castle.blend`**, all nine lines passing: line 1 `49 ROOM_ (45 blueprint
+  rooms, 28 of them discs, and 4 open places); the 27 mystery rooms each have
+  one`; line 2 `5 GATE_ ..., 4 hinges at their pivots, each holding its
+  LEAF_`; line 3 `899 markers within 0.5 m of the blueprint (worst room 0.000
+  m, box 0.000, point 0.000), 4 open places in their bands; 43 on the objects
+  that realise them (worst 0.000 m); 0 allowed`; line 4 `318 image texture
+  nodes, 191 images` (props' share 101 and 59, packs 2/2; lighting's 1 and 1;
+  the stages before props, which print no share, 216 and 131 by difference);
+  line 5 as `--only terrain`; line 6 `451 pieces of terrain, walls, towers,
+  gates, buildings, town, props; 446 named by a planId or planIds, 5 allowed
+  by allow.json (...)`, call 6's text; line 7 `26 practicals (19 candle, 2
+  torch, 4 brazier, 1 hearth)` and 3 braziers, **not #877's 37**: the 11
+  chapel candles left with `candles-chapel`'s swap from `brass_candleholders`
+  to `pricket.glb` (#907), which has no flame face; call 9 expected 37; line 8
+  5 cameras; line 9 `899 in MARKERS (49 ROOM_, 761 COL_, 18 STAIR_ and 36
+  ends, 5 GATE_, 4 hinges, SPAWN, 11 EVID_, 13 READ_, 1 BELL_), none renders,
+  SPAWN aimed at (0, 1.7, 0)`. Increment 8's castle build exited 0 with line 5
+  at 19 and 95, line 6 at 197 and line 3's realised count at 20. The eleven
+  breaks each went red as call 10 gives them, except (9),
+  which printed `PROP_candles-chapel (piece candles-chapel) is off its
+  blueprint box by 1.000 m at its worst face, min y -1.000 against 0.000`, not
+  about 0.414: the glb node carries the quantization scale as well as the
+  translation, so the unbaked mesh is in the glb's normalised units, -1 to 1;
+  (2) on `--only terrain` stayed green, since `props` did not run; (11)
+  printed `room mereford-quay corner at game x -140, z -16 has height -1.000
+  m`. With the placement filter off, `--only terrain` stayed green by design.
+  The four stills (`still_7b.py`, `review\increment7b\`, OPTIX on the RTX 3070
+  Ti, 1920 x 1080): `quay.png` at 128 samples, exposure -0.75; `town-7b.png`
+  -0.50 (table -0.50); `chapel-7b.png` +10.00 (table +10.00); `kitchen-crate.png`
+  at 1024 samples, +11.00; each inside the clip and crush bands. Twice each at
+  960 x 540: quay at most 1/255, mean 0.000038 of a step; kitchen-crate 1/255,
+  0.000053; chapel 1/255, 0.000036; **`CAM_town` outside #898's judge, at
+  most 2/255, mean 0.000124, on 0.0351% of pixels**, reported and not
+  re-rendered. **Finding**: call 11's quay camera at (-118, 9, 14) looks into
+  the inner face of `town-wall-west`, with only the toll-house roof over it;
+  the dock, a bank and the estuary are out of frame, and moving the camera is
+  an open call for the lead.
+  *Corrected 2026-10-03*: the lead re-aimed the quay camera as a correction to
+  call 11, not a new decision. The old eye (-118, 9, 14) looking at (-140, 1,
+  -6) stood inside the town and saw `town-wall-west`'s inner face; the new eye
+  (-162, 7, 22) over the estuary, outside the wall, looks at (-141, -0.5, 0),
+  24 mm, 128 samples, not adjusted. The new `quay.png`: exposure +0.75, in
+  band (median 0.342, clipped 0.00%, crushed 0.00%), holding the water, the
+  dock face and its paved top, both banks, the crane and the toll-house with
+  its slate gable. Twice at 960 x 540, **outside #898's judge, at most 5/255,
+  mean 0.000129 of a step, on 0.0363% of pixels**, reported and not
+  re-rendered. The 1/255 and 0.000038 above are the old camera's.
 - **Increment 9.** A full build writes `castle.blend`, `castle.glb` and
   `markers.json`, and `npx gltf-transform inspect castle.glb`'s size,
   triangle count and texture memory are written into `HISTORY.md`. Those
@@ -3935,6 +4035,359 @@ repo but this section and `HISTORY.md` changed.
   `gates.py` made, and nothing else, so `--only markers` builds alone.
   Nothing is fetched.
 
+**Increment 7b's open calls: the quay, the crate and the plan's other new
+props, decided before anything is built** (architect, 2026-10-03, against
+`6889322`; decided as #955 to #960). Every number is in the game's frame
+unless it says Blender. **Measured on this branch, not predicted**: `npm run
+castle3d:build -- --only guide`, `--only terrain`, `--only town`, `--only
+props` and a plain build, each on Blender 5.2.2 into the default output
+folder (the plain build raised before its save, so no master was written);
+the blueprint's pieces read in Node; Blender 5.2.2's glTF importer over the
+five `assets/blender/` files the props stage now meets, with every face's
+palette colour sampled; `_source/castle_props.blend`'s collections listed.
+Nothing in the repo but this section, `HISTORY.md` and the `BACKLOG.md` row
+changed.
+
+- **The plan moved again, and today every build that runs `terrain` exits 1
+  (0, #955).** HEAD's blueprint prints `451 pieces, 761 colliders, 45 rooms,
+  4 open, 5 gates, 18 ramps, 8 drums, 3 braziers, 5 cameras, 5 standing`, six
+  pieces more than the 445 increment 8 was built on. `--only guide` prints
+  `terrain 5, walls 97, towers 46, gates 9, buildings 40, town 60 (37
+  decor, 2 ground, 1 prop, 19 wall, 1 water), props 194 (79 decor, 115
+  prop), total 451`. The six are rank 2e's five `backdrop-*` (#908) and rank
+  2a's `chapel-aumbry` (#907); 2a also moved `knife` from kit decor to a
+  `prop` on `knife-barrel.glb` and swapped `candles-chapel` to `pricket.glb`
+  and `table-muniment` to `ledger-desk.glb`. Measured reds: `--only
+  terrain` and the plain build raise `terrain: the pad (-208.0, 190.0,
+  -180.00067140720847, 180.00067140720847) does not fit inside the 400.0 m
+  square on (-81.0, 0.0)`, because `Ground` takes its pad from every
+  piece's box and the backdrops span x -140 to 180, z -170 to 170; `--only
+  town` raises naming the same 14 quay pieces as #893; `--only props` raises
+  `props: candles-chapel is assets/blender/evidence/pricket.glb, which no
+  group takes`, the first of **ten** pieces no group takes, not the one
+  #893 counted: `kitchen-crate`, the four 2a pieces and the five backdrops.
+  So increment 8's castle build, `--only
+  terrain,walls,towers,gates,buildings,lighting,markers`, is red on HEAD
+  too, and a plain build stops at `terrain`, not `town`. **7b's scope is
+  therefore 7b plus 2a's four and 2e's five**, all of them the model catching
+  up with the plan, and every call below is needed before a plain build can
+  exit 0. **The `_source/` claim is corrected**: Devon's seven quay files are
+  not in `_source/`; they stand in the folder above it, `Claude
+  Files\Blender Projects\Castle\` (`quay-crane.glb` 63,780 bytes,
+  `rowboat.glb` 50,524, `net-rack.glb` 52,912, `mooring-post.glb` 44,568,
+  `fish-crates.glb` 41,060, `mooring-bollard.glb` 38,948,
+  `toll-house-sign.glb` 35,704, all dated 2026-09-24), beside his other 78
+  `.glb`, and all seven are collections in the pinned
+  `_source/castle_props.blend` (85 collections), so the model could take
+  them with no fetch and no hash change. Call 4 says why it does not.
+- **The river (1, #956).** Recommend **a channel and an estuary in
+  `terrain.py`, the plan's water slab in `town.py`, one procedural water
+  material, and no fetch**. Every number is read from two blueprint pieces,
+  none computed (#500): `RIVER = 'quay-water'` gives the surface `SURFACE`
+  (its box's max y, -1.1) and the slab's foot `BOTTOM` (min y, -1.3);
+  `BANK = 'quay-bank-north'` gives the channel's foot `FOOT` (its box's min
+  x, -141), the lip `LIP` (max x, -140) and the bed `BED` (min y, -2).
+  `Ground` raises naming either piece if it is missing, and naming
+  `quay-bank-south` if its x span or y span differs from the north bank's.
+  **The height**: `BED` at x at or west of `FOOT`; a straight slope from
+  `BED` to `PAD_HEIGHT` between `FOOT` and `LIP` (one 1 m grid step, the
+  vertices at -141 and -140 being exactly grid points of the 400 m square);
+  east of `LIP` today's height with its rise over `PAD_HEIGHT` multiplied by
+  `smoothstep(LIP, LIP + PAD_BAND, x)`, so the hills ease down to the shore
+  over 25 m where `|z| > 50` and the pad, unchanged at x -208 to 46 and z -50
+  to 50 once the backdrops are left out (call 6), is untouched. The bed at
+  -2 is the dock's and the banks' foot, so nothing stands in air under the
+  water. **The shore is the game's coastline**: x -140 for the whole of the
+  model's z, where the game's `outside-ground` and both western backdrops
+  stop, and west of it is water to the model's west edge with no far bank
+  (#796, `data/lore.json`'s estuary). **The water**: `WATER_quay-water`
+  (`town.py`, `planId` `quay-water`, `noCollide` as the blueprint says) is a
+  `masonry.Solid` box exactly the piece's box, held by `check_box` on every
+  face; `WATER_estuary` (`terrain.py`, `modelOnly` `"#956"`, no `planId`) is
+  three boxes from `BOTTOM` to `SURFACE`: x -281 to -198 over the whole z,
+  and x -198 to -140.5 for z -200 to -40 and 40 to 200. Its east edge, -140.5,
+  is halfway down the slope, where the ground stands at -1.0, 0.1 m over the
+  surface, so its edge is under the land and no gap shows; for `|z| < 40`
+  the plan's own slab, the banks and the dock meet the water instead.
+  `materials.water()` builds `MAT_water` once per file, used by both:
+  Principled BSDF, base colour linear (0.018, 0.030, 0.026), roughness 0.06,
+  IOR 1.33, no transmission (the estuary is murky and the bed is never
+  seen), a Bump of strength 0.12 and distance 0.04 m on a world-coordinate
+  Noise of 1.2 m feature size and detail 4, named `WATER` in one tuple. No
+  image, so line 4's counts gain no node and no image for it. This is not
+  #846's "never a flat colour" fallback: there is no map to miss. **What
+  else in `terrain.py` follows**: every vertex west of `LIP` is mud 1 and
+  every face west of it grass 0, so no clump grows under water; the road
+  runs from `outside-road`'s box's min x (-140), not from the square's west
+  edge, to the gate, so it ends at the quay; a tree or rock whose point lies
+  west of `LIP + KEEP_OFF` (-134) is not placed, filtered at `place()` only,
+  never inside `scatter()` or the `placed` list, and no `Lattice` is added
+  or removed, so every random draw and every tree and rock east of -134
+  stands exactly where #892's build stood it. The stage prints one line:
+  the channel's foot, lip and bed, the estuary's slabs, the road's x span,
+  and the trees and rocks dropped, by asset.
+- **The quay front and the banks (2, #957).** Recommend **the eight dock
+  pieces as one object and the banks in the terrain's mud; `forest_ground_06`
+  is neither fetched nor aliased**. `DOCK_quay-front` (`town.py`) carries
+  the eight `quay-dock-side-1` to `-6` and `quay-dock-corner-north` and
+  `-south` in `planIds` and is one `masonry.Solid` box over their union, x
+  -144.4 to -140, y -2 to 0, z -16.4 to 16.4, held by `check_box` to that
+  union on every face. `town.py` raises unless the eight boxes tile their
+  union: their plan areas sum to its 144.32 m² within 0.01 and no two overlap
+  by more than 0.01 m, measured true today (six sides of 4.4 by 4, two
+  corners of 4.4 by 4.4). Its faces are `medieval_blocks_02`, the
+  toll-house's stone, and its top, painted by `Solid.paint`, is
+  `stone_pavers`, the quay floor's own slug, so the paving runs out to the
+  water's edge as the game's paved top does. One object, not eight, because
+  eight boxes of one stone would draw seven seams the game's kit pieces do
+  not read as. `BANK_quay-bank-north` and `-south` are boxes exactly their
+  pieces' boxes, `planId` each, in `materials.ground('mud')`, the terrain's
+  `brown_mud_02` at 1.3 m, already cached. **Why not `forest_ground_06`**:
+  it is the game's 128 px stand-in for ground, and the model already
+  realises the one other piece wearing it, `outside-ground`, with the
+  terrain's grass and mud, not with that set; a bank is that same ground
+  cut by the river. An `ALIAS` entry cannot do it, since `ALIAS` maps onto
+  `LIBRARY` and the mud is in `GROUND`, and a fetch would buy one 1 m-wide
+  face a set no other surface wears. Named `BANK_GROUND = 'mud'` in
+  `town.py`.
+- **The toll-house and its slate gable (3, #957).** Recommend
+  **`export-blueprint.mjs` copies the plan's `built` and `ridge` onto every
+  piece, and `town.py` draws the gable the plan says**. The plan returns
+  `built: 'gable'` and `ridge: 'x'` on `quay-toll-house-roof`
+  (`castle-plan.js` line 1501) and `built: 'slab'`, `ridge: null` on the
+  other 21 built props; the blueprint drops both, because `PIECE_FIELDS`
+  does not list them. Reading the ridge from the box's longer side would be
+  Python computing what `scene-config.json` says (#500), so both are added
+  to `PIECE_FIELDS`, null on every piece that lacks them. `town.py`'s
+  `ROOF_quay-toll-house-roof` (`planId` the roof's id) is the game's prism
+  (#870, `buildGable`) and nothing more: the triangle (z -11, 6), (z -8, 9),
+  (z -5, 6) through x -138 to -130 by `Solid.plate(..., axis='x')`, ridge
+  along x at the box's top, no eave, no verge, held by `check_box` on every
+  face. It raises unless `built` is `'gable'` and `ridge` is `'x'` or `'z'`,
+  naming the piece. **Slopes in `roof_slates_02` through `ALIAS['slate']`,
+  the two gable ends in `medieval_blocks_02`**: the plan's
+  `castle_wall_slates` is the curtain's coursed stone and the game's 128 px
+  stand-in for "the one slate roof in Mereford" (#797); a roof of it in the
+  model would read as a wall laid flat, and `roof_slates_02` is the set the
+  model already puts on every slate roof. Named `TOLL_ROOF = ('slate',
+  'medieval_blocks_02')`. `TOLL_quay-toll-house` is a box solid exactly the
+  piece's box in `medieval_blocks_02`, `planId` its id, `check_box` on every
+  face; `DOOR_quay-toll-house`, `modelOnly` `"#957"`, no `planId`, is one
+  shut oak leaf on the road face, `town.DOOR`'s 1.0 by 2.0 m, x -134.5 to
+  -133.5, y 0 to 2, z -5 to -4.97 (`DOOR[2]` proud of the stone), with
+  `town.DOOR_STRAP`'s iron straps, as #857's houses carry shut doors on
+  solids. No window: the game's toll-house has none, and nobody enters it
+  (#703).
+- **The crane, and Devon's seven quay files (4, #958).** Recommend **one
+  `STAGE_RULES` rule, `('props', {'decor'}, r'^quay-crane$')`, before the
+  quay rule, so the kit hoist is drawn by `props.py`'s existing
+  `pulley-crate.glb` generator; and the model takes none of the seven**.
+  `quay-crane` is the kit's `pulley-crate.glb` at scale 2.5, the file
+  `cart` and `pulley-crate-134` already are, and `KIT_LOCAL` and `HOIST`
+  already draw it;
+  the alternative, `town.py` calling `props.kit_solid`, is a circular import
+  (`props.py` imports `town`). `STAGE_OF` then gives `town` 59 and `props`
+  195. **The seven**: the game placed none of them (#833 deleted them from
+  `assets/props/`, #870 restored none), so they are no blueprint piece, and
+  a model-only quay prop would be a second placement source for a thing the
+  game does not have, which #500 and the skin swap (#919) both refuse. The
+  route that keeps one source is the game's: a row that restores a file with
+  `git checkout 51735fa -- assets/props/<file>` and places it as an
+  `interiorProps` row makes it a blueprint piece on `assets/props/`, which
+  `props.py`'s Devon group takes with no `tools/castle3d/` edit, since its
+  collection is already in the pinned blend. Whoever restores `quay-crane`
+  renames one of the two ids first (#870's note). Whether he wants that row
+  is Devon's (look call 7), and it is lane B's, not this one's.
+- **The crate and 2a's four (5, #959).** Recommend **a fifth group in
+  `props.py`, the packs: `PACK_MODEL = r'^assets/blender/(calibration|
+  evidence)/[a-z0-9-]+\.glb$'`, each file imported from the committed glb by
+  Blender's own importer and re-materialed per face by its palette colour,
+  as #863 does Devon's atlas regions**. Five pieces: `candles-chapel`
+  (`pricket.glb`), `table-muniment` (`ledger-desk.glb`), `kitchen-crate`
+  (`calibration/crate.glb`), `chapel-aumbry` (`aumbry-candles.glb`) and
+  `knife` (`knife-barrel.glb`). Measured: Blender 5.2.2's
+  `bpy.ops.import_scene.gltf` reads all five under `--factory-startup`,
+  meshopt and quantization included, one mesh object each (216, 356, 356,
+  228 and 288 faces), but **leaves each object at its glb node's
+  translation**, Blender z 0.4, 0.414, 0.4025, 0.195 and 0.3528, half each
+  prop's height, with the mesh centred on it. So each object's
+  `matrix_world` is applied into its mesh and reset to identity before
+  `placement(p)`; without that every pack prop sits half sunk and
+  `check_tree` names it. The path is the repo's (`common.HERE` up two, then
+  `p['model']` split on `/`), read only; git pins the file, so no
+  `sources.json` row. The faces' colours, sampled from each glb's 16 x 16
+  palette at the face's UV centroid, are exactly twelve: **`PACK_KIND`**
+  wood `#553a22`, `#6d4a2e`, `#795234`, `#855a3a`, `#916240`, `#463d33`
+  (602 faces) and iron `#343b40`, `#7e898d` (312), onto
+  `materials.prop_material`; **`PACK_KEEP`** `#e6d9a8` tallow, `#1c1410`
+  wick and ink, `#cbbfa3` parchment and flour, `#5a352e` leather (530),
+  left on the glb's own palette material in slot 0. A colour in neither
+  raises, naming the piece, the file and the hex. Each kind face carries the
+  `atlas_rgb` of its hex in linear and `write_uvmap`'s box UVs, exactly as a
+  Devon face does. The four `evidence` files each import an `evidence`
+  material and an `evidence-palette` image; `_dedupe` folds the `.001` to
+  `.003` copies onto the first, as it folds the braziers' second append. The
+  object is `PROP_<id>` with `tag()`'s `planId` and `noCollide`, placed in
+  blueprint order after the built 20, checked by `check_tree`. Why import
+  and not generate: the crate is one box, but the pricket, the desk, the
+  aumbry and the barrel with a knife in it are lathes and joinery that
+  `tools/blender/packs/` already made once; a second generator in this
+  family would be a second source for the same shapes.
+- **The five backdrops, and line 6 (6, #960).** Recommend **not drawn: the
+  model's countryside is `terrain.py`'s height field, groves, rocks and
+  grass (increment 1, #845, #846), and `allow.json` gains five piece-id
+  entries saying so**: `"backdrop-north"`, `"backdrop-south"`,
+  `"backdrop-east"`, `"backdrop-north-west"`, `"backdrop-south-west"`, each
+  `"#960: the countryside past the walls is terrain.py's height field, trees
+  and grass; the game's low-poly backdrop is not drawn in the model"`. Drawn,
+  they would be 35 m hills of a 16 x 16 palette standing in the model's own
+  displaced hills, and `backdrop-north`, `-south` and `-east` run to x 180,
+  61 m past the model's square. `export-blueprint.mjs` copies the plan's
+  `backdrop` (`castle-plan.js` line 1471, `!!p.backdrop` on every
+  `interiorProps` piece, null elsewhere) into `PIECE_FIELDS`; `terrain.py`
+  leaves every piece with `backdrop` true out of `Ground`'s pad and out of
+  `footprints()`, without which no grass grows on two thirds of the square;
+  `props.py`'s sixth group takes them and builds nothing, and its
+  object-count check counts the groups it builds. **Line 6 gains two
+  clauses** (amending #844's line 6 and #895's split), because today it
+  cannot tell a reason that still holds from one that has gone stale: (a) a
+  piece-id entry whose piece's stage ran and which some object names fails
+  as stale; (b) a key that is no blueprint piece id, under no marker prefix
+  and not `model:<file>` fails as naming nothing. Its pass text gains the
+  allowed count and ids when any entry applied, and is unchanged when none
+  did, so every line quoted in earlier increments still reads true: `ok
+  line 6 coverage: 451 pieces of terrain, walls, towers, gates, buildings,
+  town, props; 446 named by a planId or planIds, 5 allowed by allow.json
+  (backdrop-north, backdrop-south, backdrop-east, backdrop-north-west,
+  backdrop-south-west)`. Increment 9's `check-export.mjs` already excuses
+  what `allow.json` names (#898 call 7), so it names 446.
+- **A fetch (7).** **None.** The water is procedural, the banks are the
+  terrain's cached mud, the roof's slates and every stone are `LIBRARY` sets
+  already cached, the pack props are committed glbs, and the hoist is the
+  kit generator. `sources.json`, `fetch.mjs` and `CREDITS.md` do not change;
+  the fetch still prints `203 sources`.
+- **The module split (8).** `export-blueprint.mjs`: `PIECE_FIELDS` gains
+  `built`, `ridge` and `backdrop`; the counts line is unchanged.
+  `common.py`: the crane rule and its line in the table's comment.
+  `materials.py`: `WATER` and `water()`. `terrain.py`: `RIVER`, `BANK`,
+  the channel, the shore's ease, the backdrops out of the pad and
+  footprints, the mud and grass west of `LIP`, the road's start, the
+  placement filter, `WATER_estuary`, the print. `town.py`: the quay's
+  rules (`TOLL`, `TOLL_ROOF`, `DOCK`, `BANK_GROUND`, `RIVER`), the tiling
+  check, `TOLL_`, `DOOR_`, `ROOF_`, `DOCK_`, `BANK_` and `WATER_` objects,
+  the header's piece count. `props.py`: the packs (`PACK_MODEL`,
+  `PACK_KIND`, `PACK_KEEP`, the import and bake) and the backdrops, the
+  print by group, the header. `check.py`: line 6's two clauses and pass
+  text. `allow.json`: the five entries. `build.py`: the header comment's
+  "until increment 7b" sentence. `README.md`: the stages' rows, line 6,
+  `allow.json`. **Unchanged**: `build.mjs`, `fetch.mjs`, `sources.json`,
+  `cameras.json`, `CREDITS.md`, `gates.py`, `walls.py`, `towers.py`,
+  `buildings.py`, `lighting.py`, `markers.py`, every file outside
+  `tools/castle3d/`.
+- **The acceptance (9, #960).** `npm test` fifteen of fifteen, unchanged.
+  The blueprint prints the counts in call 0. `--only guide` prints
+  `STAGE_OF` with `town 59 (36 decor, 2 ground, 1 prop, 19 wall, 1 water)`
+  and `props 195 (80 decor, 115 prop)`, total 451. `--only terrain` exits 0
+  with lines 4, 5 and 6 passing, line 5 `19 level-0 rooms, 95 points,
+  largest |height| 0.0001 m` (`mereford-quay`'s corners at x -140 are the
+  lip, at 0), line 6 at 5. `--only town` exits 0 with lines 4 and 6, line 6
+  at 59. `--only props` exits 0 with lines 4 and 6, line 6 at 195, 190
+  named and 5 allowed; the print by group `80 kit, 10 Poly Haven, 75 Devon,
+  20 built, 5 packs, 5 backdrops (not drawn)`, and the packs' line `5 files,
+  1444 faces: wood 602, iron 312, kept 530`. **A plain `npm run
+  castle3d:build` exits 0 for the first time and writes `<out>\castle.blend`,
+  the first master**, with all nine lines passing: line 1 `49 ROOM_ (45
+  blueprint rooms, 28 of them discs, and 4 open places); the 27 mystery
+  rooms each have one`; line 2 `5 GATE_ ..., 4 hinges at their pivots, each
+  holding its LEAF_`; line 3 `899 markers within 0.5 m of the blueprint
+  ..., 4 open places in their bands; 43 on the objects that realise them`
+  (the 18 `STAIR_` and the 25 `EVID_`, `READ_` and `BELL_`, all now built),
+  `0 allowed`; line 4 measured and recorded with each stage's printed share,
+  not predicted (#860); line 5 as `--only terrain`; line 6 the text in call
+  6; line 7 `37 practicals (30 candle, 2 torch, 4 brazier, 1 hearth)` and 3
+  braziers as #877, measured by the builder, since no pack face is flame;
+  line 8 5 cameras; line 9 `899 in MARKERS (49 ROOM_, 761 COL_, 18 STAIR_
+  and 36 ends, 5 GATE_, 4 hinges, SPAWN, 11 EVID_, 13 READ_, 1 BELL_), none
+  renders, SPAWN aimed at (0, 1.7, 0)`. Increment 8's castle build, `--only
+  terrain,walls,towers,gates,buildings,lighting,markers`, exits 0 again with
+  line 5 at 19 and 95 and line 6 at 197. The report quotes the terrain line,
+  the town's object and `planIds` count, the pack and group lines, and every
+  line of the plain build.
+- **The breaks (10, #34)**, each from green, restored before the next,
+  quoted as printed; where a number is "about", the printed one is the
+  record. (1) `allow.json` without `backdrop-east`, `--only props`: `FAIL
+  line 6 coverage: 1 piece(s) nothing realises: backdrop-east`. (2)
+  `allow.json` gains `{"kitchen-crate": "#960 break"}`, `--only props`
+  (clause a): `FAIL  line 6 coverage: allow.json's kitchen-crate is stale:
+  PROP_kitchen-crate realises it; delete the entry`; the same entry on
+  `--only terrain` stays green, since `props` did not run, and the report
+  says so in one line. (3) `{"no-such-piece": "#960 break"}` (clause b):
+  `FAIL  line 6 coverage: allow.json's no-such-piece names no blueprint
+  piece, marker or model:<file>`. (4) The crane rule taken out of
+  `STAGE_RULES`: `--only town` raises `town: STAGE_OF gives this stage
+  pieces no rule takes: ['quay-crane']`. (5) `built` and `ridge` taken out
+  of `PIECE_FIELDS`: `--only town` raises naming `quay-toll-house-roof`,
+  `built` None and `ridge` None. (6) A temporary line at the end of
+  `town.build` removing `WATER_quay-water`: line 6 names `quay-water`. (7)
+  The same for `DOCK_quay-front`: line 6 names the eight dock ids. (8)
+  `#343b40` out of `PACK_KIND`: `--only props` raises naming
+  `candles-chapel`, `pricket.glb` and `#343b40`. (9) The bake taken out:
+  `--only props` raises in `check_tree`, `PROP_candles-chapel` off its box
+  by about 0.414 m at min y. (10) The backdrops put back into the pad:
+  `--only terrain` raises the pad line quoted in call 0, today's red. (11)
+  `LIP` read as the bank's max x plus 1 (the slope from -141 to -139):
+  line 5 fails naming `mereford-quay` and its corner at x -140, about -1.0
+  m. None may stay green; one that does is a finding, and its comment is
+  checked first (#147). Removing the placement filter leaves every check
+  green by design, and the report says so in one line: trees in the water
+  are held by the stills, as the arrow slits are.
+- **The stills (11, #53).** Recommend **four, by `still_7b.py` in
+  `CASTLE3D_OUT\review\increment7b\`, uncommitted, `still_9.py`'s settings
+  (#898 call 9), over the new master**: `shots/castle3d/quay.png` from a
+  review camera at game (-162, 7, 22) looking at (-141, -0.5, 0), 24 mm,
+  128 samples, over the estuary at the dock front, a bank, the crane and the
+  toll-house (*Corrected 2026-10-03*, the lead: the first eye, (-118, 9, 14)
+  looking at (-140, 1, -6), stood inside the town and saw only
+  `town-wall-west`'s inner face);
+  `town-7b.png` from `CAM_town`; `chapel-7b.png` from `CAM_chapel`; and
+  `kitchen-crate.png` from (-20, 1.7, -8) looking at (-15.25, 0.4, -13.2).
+  Each with its exposure inside #877's bands and Devon's line on each
+  recorded in `HISTORY.md`. A review camera is no `CAM_`, so line 8 and
+  increment 9's five do not change. Devon's look calls, for the lead to ask
+  in one message, each with the recommendation the builder builds:
+  1. **The water**: `MAT_water` as call 1, dark green-grey, still, opaque.
+     Fallback: lighter, or a little transmission over the bed.
+  2. **The estuary**: open water from the shore to the model's west edge, no
+     far bank, as the game's fog shows it (#796). Fallback: a far bank.
+  3. **The toll-house roof**: `roof_slates_02` slopes, flush, no eave, as
+     the game's prism. Fallbacks: the plan's `castle_wall_slates`; a 0.3 m
+     eave, which moves `check_box` off the roof's min y.
+  4. **The toll-house door**: one shut oak door on the road face. Fallback:
+     blank stone, as the game.
+  5. **The quay front**: `medieval_blocks_02` faces, `stone_pavers` top.
+     Fallback: `castle_wall_slates` faces.
+  6. **The banks**: the terrain's mud; no `forest_ground_06` fetch.
+  7. **Devon's seven quay files**: the model takes none; restoring any to
+     the game is a lane B row the model then follows with no `castle3d`
+     edit. Does he want that row?
+  8. **The backdrops**: not drawn; the model's own countryside stands in.
+  9. **The pack props**: wood and iron faces onto the PBR kinds, tallow,
+     wick, parchment and leather kept on their flat palette, as Devon's
+     props are. Fallback: all five on their palette as imported.
+- **What changes in increment 9 (12, #960, amending #898 call 9b).** The
+  comparison against #892's build expects `CAM_spawn`, `CAM_courtyard` and
+  `CAM_hall` within (a)'s judge, since every tree and rock east of x -134
+  stands where it stood and no 7b object is in their frames; **`CAM_chapel`
+  within the judge or changed only where `chapel-aumbry` or `candles-chapel`
+  shows** (2a's swaps, #907, landed after #892's build; the aumbry at (23.2,
+  1.2 to 1.59, 14.1) is 17 degrees off that camera's axis, inside its 18 mm
+  lens), the report saying which; and **`CAM_town` changed where the quay,
+  the toll-house ridge, the river and the eased shore show, and where trees
+  west of x -134 were dropped**. #898's "no quay or crate is in their frames"
+  held for four cameras on the 445-piece plan and holds for three on 451.
+  `check-export.mjs`'s pass line names 446 pieces, the five backdrops
+  allowed. Everything else in increment 9's calls stands.
+
 **Increment 9's open calls: export, decided before anything is built**
 (architect, 2026-10-02, against `1fb06f1`; decided as #897 and #898). The
 master does not exist yet (increment 8's call 0), so every glb number below
@@ -4220,7 +4673,15 @@ rendered twice each on the RTX 3070 Ti.
   (`architect`) and Devon's lines on its look calls; then 7b's build, the
   first plain build to exit 0 and so the first master; then 9. 7b's spec can
   be written while 8 is built; 7b's build follows 8 because both edit
-  `common.py`.
+  `common.py`. **7b's own order** (#955 to #960), one `builder` sitting, no
+  fetch, and no Devon yes before building (his nine look calls are answered
+  on the stills, as increment 5's were): `export-blueprint.mjs`'s three
+  fields and the crane rule first, `--only guide` printing `town 59` and
+  `props 195`; then `check.py`'s line 6 clauses with `allow.json`'s five
+  entries; then `materials.water()` and `terrain.py`, `--only terrain`
+  green; then `town.py`, `--only town` green; then `props.py`, `--only
+  props` green; then the plain build, the breaks and the stills. Increment
+  9 starts from that master.
 - **Lane G, `tools/castle3d/`**, this row's alone (#842). It shares no file
   with lane F, so it may run beside a rank 1 or rank 2 session; that is two
   Blenders on one machine and Devon's call. Both add a line to

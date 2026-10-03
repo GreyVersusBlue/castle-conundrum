@@ -152,7 +152,8 @@ def box_to_blender(box):
 # a new kind in the plan cannot fall through silently. `--only guide` prints it.
 #
 #   gates      the leaves, the arches, the cell bars and the Stockhouse walk bar
-#   town       the quay, every kind (#893)
+#   props      the quay's kit hoist, drawn by props.py's pulley-crate generator (#958)
+#   town       the quay, every other kind (#893)
 #   props      every interior prop and built prop (Poly Haven, Devon's, slabs)
 #   town       Mereford, the town wall and trees, Wykes's yard
 #   terrain    the ground patches that are not a room's floor
@@ -164,6 +165,10 @@ def box_to_blender(box):
 STAGE_RULES = [
     ('gates', {'gate-leaf', 'gate-arch', 'fixture'}, None),
     ('gates', {'prop'}, r'^walk-bar$'),
+    # The quay's crane is the kit's pulley-crate.glb at 2.5, which props.py's
+    # KIT_LOCAL and HOIST already draw; town.py calling props would be a
+    # circular import (#958).
+    ('props', {'decor'}, r'^quay-crane$'),
     # Rank 9's quay (#870, #871), every kind, before props takes its barrels
     # and crate: town's, so a terrain-stage id cannot pass line 6 undrawn (#893).
     ('town', None, r'^(quay-|floor-mereford-quay$)'),
