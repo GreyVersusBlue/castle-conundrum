@@ -721,13 +721,13 @@ try {
   assert(sampling.allAtCap, 'every texture is at the GPU anisotropy ceiling',
     `cap ${sampling.cap}, worst ${sampling.worstAniso}, ${sampling.total} textures`);
 
-  // --- The interior hall walls are the same height as every outer wall, and the
-  // hall columns reach the ceiling. normalizeToTile used to scale wall-half.glb
-  // off its own X size (0.5, the one dimension that's deliberately NOT 1 unit for
-  // a half-width piece), which doubled its height and depth to 8m instead of 4m.
-  // castle-builder now scales off Z, the dimension that actually is 1 unit on
-  // every piece in the kit. Separately, column.glb had no scale branch at all and
-  // sat at its native 1m/20cm-thick size, invisible in every screenshot.
+  // --- The hall columns reach the ceiling. column.glb had no scale branch at
+  // all and sat at its native 1m/20cm-thick size, invisible in every screenshot.
+  // This block used to open with a wall half as well: `wall_` and `wall-half`
+  // meshes held to 4 m. It matched zero meshes once the walls became the
+  // castle's own pixel-material boxes (#742) and printed "outer m, hall m" at
+  // every GPU sitting (#890). It is deleted, not renamed: test/plan-vs-scene.mjs
+  // holds every wall's live box to the plan at 0.01 m (#500), which is the fact.
   const geometry = await page.evaluate(async () => {
     const THREE = window.__THREE;   // stashed by attachSceneProbe
     const s = window.__scene;
@@ -740,18 +740,10 @@ try {
       });
       return out;
     };
-    const outerWalls = heights(/^wall_/);
-    const hallWalls = heights(/^wall-half/);
-    const columns = heights(/^column/);
-    return { outerWalls, hallWalls, columns };
+    return { columns: heights(/^column/) };
   });
-  const wallHeightsMatch = geometry.outerWalls.length > 0 && geometry.hallWalls.length > 0
-    && geometry.outerWalls.every((h) => Math.abs(h - 4) < 0.05)
-    && geometry.hallWalls.every((h) => Math.abs(h - 4) < 0.05);
-  assert(wallHeightsMatch, 'interior hall walls are the same height as the outer walls',
-    `outer ${[...new Set(geometry.outerWalls)]}m, hall ${[...new Set(geometry.hallWalls)]}m`);
-  // Each column mesh has multiple material slots (separate submeshes per name,
-  // like the wall pieces above), so this counts distinct heights, not meshes.
+  // Each column mesh has multiple material slots (a separate submesh per
+  // material), so this counts distinct heights, not meshes.
   assert(geometry.columns.length > 0 && geometry.columns.every((h) => Math.abs(h - 4) < 0.05),
     'hall columns reach the same height as the walls, not a 1m stub',
     `${[...new Set(geometry.columns)]}m across ${geometry.columns.length} submeshes`);
