@@ -13214,3 +13214,5 @@ wall) in 6889322; chapel to 2a's `candles-chapel` swap to `pricket.glb`; town
 to the quay; spawn and courtyard foreground grass to the terrain change
 under the grass scatter (attributed, not isolated). Twice-render of the
 master: all five inside the judge. Stills await Devon's lines.
+
+**#954. Reserved: #925 to #954 are held for sessions on Huginn (the Selector loop); anyone else numbers from #955.**
