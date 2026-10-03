@@ -12994,3 +12994,30 @@ and `CAM_hall` within its judge against #892's build, `CAM_chapel` within it
 or changed only where the aumbry or the pricket shows, and `CAM_town`
 changed where the quay, the river and the eased shore show and where trees
 west of -134 were dropped. Nothing is fetched in 7b.
+
+## Castle in Blender increment 9: export (2026-10-03)
+
+**#961. Increment 9 built; the master's glb numbers beside #897's baseline,
+and they are what rank 2i argues from (#923).** `castle.glb` 569,711,256
+bytes (baseline 560,243,100), sha256
+`06f3911007b095e4d9523560c889434f7eb1e84fb53a51d77901bae0b12101c7`;
+3,637,759 triangles unique (baseline 3,691,299), 41,821,350 placed (baseline
+67,473,845; fewer because 7b's placement filter dropped 74 trees and rocks
+west of x -134, each tree 519,809 triangles); 441 meshes (429); 640 nodes
+(704); 54 materials (51); 130 images, 51 JPEG and 79 PNG (126: 49 and 77),
+360,841,444 image bytes (350,322,491); texture memory 1,823,212,712 bytes,
+1,738.8 MB (1,674.7 MB), 9.1 times #499's 200 MB repo ceiling. `markers.json`
+899 markers, 176,753 bytes, sha256
+`c87bb7d79dd81ed51fe78a3b47fefd786b00f52abbad294cba29253727d09399`.
+**Determinism**: `--export-only` twice and a second full build all gave
+byte-identical glb and `markers.json`. **Correction to #897 call 2**: Blender
+5.2.2 appends `.glb` to `castle.glb.part`, so `export.py` writes
+`castle.part.glb` then replaces. **Finding against #960's amendment of #898
+call 9b**: all five cameras are outside the judge against #892's build
+(share of pixels more than 2/255 apart: spawn 0.56%, courtyard 0.95%, hall
+24.30%, chapel 0.44%, town 3.47%), attributed: hall to the nightly's plan
+move of `gothic_statue_1k` from tile x -5 to -5.3 (1.2 m, out of the north
+wall) in 6889322; chapel to 2a's `candles-chapel` swap to `pricket.glb`; town
+to the quay; spawn and courtyard foreground grass to the terrain change
+under the grass scatter (attributed, not isolated). Twice-render of the
+master: all five inside the judge. Stills await Devon's lines.

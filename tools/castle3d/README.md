@@ -12,6 +12,7 @@ under `src/`, `data/`, `assets/` or `test/`, and no suite reads this folder.
 npm run castle3d:build                        a full build, <out>/castle.blend
 npm run castle3d:build -- --only guide        <out>/partial/guide.blend
 npm run castle3d:build -- --only walls,towers <out>/partial/walls+towers.blend
+npm run castle3d:build -- --export-only       castle.glb and markers.json from the existing master
 ```
 
 On Devon's Windows machine only: this is the full feature set on a real GPU,
@@ -28,7 +29,15 @@ and huginn does not take it (#878). The launcher, `build.mjs`, in order:
 6. fetches and hashes every `sources.json` row into `<out>/cache/`
    (`fetch.mjs`, the only network use);
 7. runs `build.py` in a factory-startup Blender with `PYTHONHASHSEED=0`;
-8. runs `check.py` in a second Blender over the file it saved (#844).
+8. runs `check.py` in a second Blender over the file it saved (#844);
+9. on a full build only, never on `--only`, runs `export.py` in a third
+   Blender over the master, which writes `castle.glb` and `markers.json` and
+   never saves the `.blend` (#897);
+10. runs `check-export.mjs` over those two files (#898).
+
+`--export-only` writes the blueprint fresh, skips the fetch, the build and
+`check.py`, refuses when `<out>/castle.blend` is missing, and runs 9 and 10
+over the master as it stands.
 
 Every Blender launch carries `--python-exit-code 1`, because without it an
 uncaught Python exception exits 0. Any failure exits the launcher non-zero.
@@ -47,6 +56,8 @@ uncaught Python exception exits 0. Any failure exits the launcher non-zero.
 | `blueprint.json` | `makePlan`'s output in the game's frame, rewritten every build, never committed (#500, #841). |
 | `cache/<asset>/<file>` | The hash-pinned Poly Haven inputs, one folder per `sources.json` `asset`. See below. |
 | `castle.blend` | The master, from a full build only. Always output, never input: an MCP adjustment goes back into a script or it is lost (#841). |
+| `castle.glb` | `export.py`'s glb of the master, from a full build or `--export-only`. About 570 MB; see "The export" below. |
+| `markers.json` | `MARKERS` read back from the master in the game's frame and the blueprint's shape, about 177 KB. |
 | `partial/<stages>.blend` | An `--only` build. Never overwrites the master. |
 | `last-build.txt` | The path `build.py` saved, which the launcher hands to `check.py`. |
 
@@ -66,7 +77,8 @@ uncaught Python exception exits 0. Any failure exits the launcher non-zero.
 | `markers` | `markers.py` | `MARKERS`, #843's contract, from the blueprint (#893 to #896): a wire `ROOM_` per blueprint room and open place, a CUBE empty `COL_` per collider and `STAIR_` per ramp with `_LOW` and `_HIGH` ends, a `GATE_` per gate, `gates.py`'s four `GATE_<id>_HINGE` adopted (made here when `gates` did not run), `SPAWN` aimed at `lookAt`, and an `EVID_`, `READ_` or `BELL_` at each carrying piece's box centre; 899 objects on the 445-piece plan, each tagged `marker` and hidden from render. `ADJUST` moves a marker off the blueprint with a reason, and ships empty. | 8 |
 
 `export.py` (increment 9) writes `castle.glb` and `markers.json`, in a third
-Blender over the saved master, and is not a stage (#896, #897). A stage whose
+Blender over the saved master, and is not a stage (#896, #897); see "The
+export" below. A stage whose
 module does not exist yet is an error naming it, not a skip. Every stage has
 its module from increment 8, and from 7b (#955 to #960) a plain build exits 0
 and writes the master over the 451-piece plan. `--only guide` prints `STAGE_OF`,
@@ -120,7 +132,40 @@ reason, and the ones a geometry stage realises within 0.5 m of that object, whic
 nothing names, unless `allow.json` names it with a reason; from 7b (#960) it
 also fails on a piece-id entry some object realises (stale) and on a key that
 is no piece, marker or `model:<file>`, and its pass line counts the allowed
-ids when any applied. Non-zero on any failure.
+ids when any applied. From increment 9 (#898) line 9 also holds, when `props`
+ran, each `PROP_<id>`'s `noCollide` to its blueprint piece's. Non-zero on any
+failure.
+
+## The export
+
+`export.py` opens `castle.blend` (a full build's, or it refuses) and runs
+Blender's glTF exporter: GLB, Draco off, images embedded (`AUTO`, so a cached
+JPEG goes in byte for byte), renderable objects only, which is the whole
+exclusion of `GUIDE` and `MARKERS`, modifiers applied, custom properties as
+node extras (`planId`, `planIds`, `noCollide`), no cameras, lights or
+animation, Y-up, so the glb is in the game's frame. The four gate hinges are
+dropped and each `LEAF_` becomes a root node on its pivot. It writes
+`castle.part.glb` and moves it onto `castle.glb` (the exporter appends `.glb`
+to any other name), so a failed export leaves no half file. `markers.json` is
+`MARKERS` read back from each object's world matrix through
+`common.to_game`, never copied from the blueprint, every float to 4 decimals,
+LF. Each file's bytes and sha256 are printed, and two `--export-only` runs
+over one master print the same.
+
+`check-export.mjs` then holds both files and prints one `ok    export:` line
+with the glb's numbers, computed with the pinned `@gltf-transform/core`:
+glTF 2, no Draco, every image embedded, no camera or light, no node named
+`GUIDE_` or as a marker, every blueprint piece named by a node's extras unless
+`allow.json` names it, each `LEAF_` within 0.01 m and 0.1 degree of its
+pivot; `markers.json`'s ids the blueprint's, list by list, and each marker
+within 0.5 m of the blueprint unless `allowed` names it. Runnable alone:
+`node tools/castle3d/check-export.mjs --out <dir> [--glb <file>]`.
+
+The sizes, on 7b's master: the glb about 570 MB, about 3.6 million
+triangles in 441 meshes and about 42 million placed (the 71 terrain trees on
+one shared mesh are most of it), 130 images, about 1.7 GB of texture memory
+uncompressed. That is the integration row's (2i) to argue down; nothing
+here bites, since the glb lives outside the repo (#841).
 
 ## Committed here
 

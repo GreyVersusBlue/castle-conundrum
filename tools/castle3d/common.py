@@ -135,6 +135,12 @@ def to_blender(p):
     return (x, -z, y)
 
 
+def to_game(v):
+    """The inverse of to_blender: Blender (x, y, z) is game (x, z, -y). Moved
+    here from check.py so export.py's markers.json reads the same frame (#898)."""
+    return (v[0], v[2], -v[1])
+
+
 def rotation_z(rotation_y_degrees):
     import math
     return math.radians(rotation_y_degrees)
