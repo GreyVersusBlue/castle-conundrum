@@ -12356,3 +12356,110 @@ and `CAM_town`, quoted exactly: "yes, i approve". The build is PR #93 (#873
 to #877). The same verdict is #892 on `origin/claude/castle3d-markers`, with
 the stills' settings; whichever of the two reaches `main` second drops its
 copy and points at the other.
+
+---
+
+## Rank 6, increment 3: the twelve's chatter held to the schedule, and `drill` dropped (2026-10-02)
+
+**A spec, then a build.** Written as `architect` on local `main` at
+`0971a51`, then built (below). `SPECS.md`
+"Life: a populace" gains the increment's subsection. **Numbers start at
+#911**: local `main` ends at #910, and #892 to #899 belong to PR #101. Devon's
+limits for the session, taken as given: no schedule station moves (they are
+the mystery's alibis), no pair is recast and no line rewritten, no new body,
+`MAX_SKINNED_TOTAL` and `SAVE_VERSION` untouched, the town out of scope.
+
+**What was measured.** A Node read of `data/mystery.json`'s `schedule`,
+`day0.schedule` and `day2.schedule` against all 27 pairs in
+`data/npcs.json`'s `chatter`: 5 pairs have both speakers in one room at the
+pair's own watch, 5 more share a room at another day-one bell, and 17 share
+a room at no bell on any day, day one's four, the walking day's four `-eve`
+bells or `lauds`. That is #731's "5 in the same room" confirmed, and its "the
+other 22 need a room and a bell somebody authors" corrected to 12 that the
+schedule already gives a room and a bell, and 17 it gives neither.
+
+**#911. A chatter pair is placed by a `room` field, and its watch is the
+watch key it sits under; ids do not change.** A placed pair moves to the
+watch key it is said at and keeps its `id`, because `data/lore.json`'s
+`sources` cite pairs by id and an id is a name, not a bell. Only day one's
+four bells: every one of the 10 placeable pairs has one, and allowing a
+`-eve` bell or `lauds` would bring #592's day-two absence enumeration into
+the pool for no pair that uses it. The ward key keeps #554's meaning, the
+speakers' own `ward` field, and is not the room's ward; no placed pair
+crosses that line anyway. The ten, every line re-read at its new bell:
+
+| Pair | Speakers | Room | Watch | Moves from |
+| --- | --- | --- | --- | --- |
+| `outer-terce-1` | clerk, merchant | `outer-ward` | terce | stays |
+| `outer-vespers-1` | sentry, cook | `great-hall` | vespers | stays |
+| `outer-vespers-2` | laundress, clerk | `great-hall` | vespers | stays |
+| `outer-vespers-3` | cook, laundress | `great-hall` | vespers | stays |
+| `inner-sext-1` | constable, steward | `kings-hall` | sext | stays |
+| `outer-prime-1` | cook, laundress | `great-hall` | vespers | `outer.prime` |
+| `outer-terce-4` | cook, sentry | `great-hall` | vespers | `outer.terce` |
+| `outer-sext-2` | sentry, cook | `great-hall` | vespers | `outer.sext` |
+| `inner-terce-1` | steward, constable | `kings-hall` | sext | `inner.terce` |
+| `inner-terce-4` | constable, chaplain | `chapel` | prime | `inner.terce` |
+
+`inner-terce-1` had two bells, Sext in the King's Hall and Vespers in the
+Great Hall; it takes Sext, because talk of the King's coin belongs at the
+Constable's own board and the hall at Vespers already holds six pairs and
+the sentry's song (#593). No line names a bell it is now wrong for: the one
+that does, "the day is not half over", is `inner-sext-2`, which stays
+unplaced.
+
+**#912. The rail is #592's, in `src/lore.js`, held by `test/lore.mjs`; an
+unplaced pair is a report, not a failure.** A pair with a `room` must name a
+room in `mystery.rooms`, and each speaker's `mystery.schedule[npc][watch]`
+must exist, be in that room and not be asleep, with the performance check's
+messages ("stands in X at W, not in R", "is not in the castle at W", "is
+asleep at W"). A pair with no `room` passes, and `unplacedChatter(chatter)`
+lists it, in the shape of `untoldFacts` (#13: the suite asserts the list is
+exactly the 17, so the report is a ratchet rather than a print). A room at a
+bell may hold several pairs, in file order; refusing that would leave the
+hall's six unplaceable, and their order is the playback increment's to use.
+No distance rail: the room is the unit, as it is for a performance, and the
+schedule's `tile`s are room-local. Inside #529: every one of these is a fact
+about two data files, provable in Node, so none of it goes near
+`plan-vs-scene.mjs`.
+
+**#913. Playback is not wired in this increment.** `QuestManager`'s overhear
+band (#732) plays populace pairs by two settled bodies 1.5 to 3 m apart, and
+the twelve stand on stations, not on one-stop rings; teaching it a second
+trigger, with an order against the song in the hall at Vespers, is its own
+increment with its own browser beat. What is left is named in `SPECS.md`.
+
+**#914. The 17 pairs the schedule cannot hold are Devon's call, and stay
+unplaced.** Options: (a) move a speaker's station, (b) recast the pair onto
+two of the twelve the schedule puts together and rewrite its lines to fit,
+(c) retire the pair. **Recommended: never (a), (b) for the nine pairs that
+are the only teller of a fact, (c) for the other eight**, because a station
+is an alibi and a retired sole teller leaves a fact told by nothing. The nine
+and the fact each alone tells: `outer-prime-3` `cadeyrn-cross-count`,
+`outer-terce-2` `saint-cadeyrn-miracle`, `outer-cell-1`
+`prison-tower-scratching`, `outer-sext-3` `sentry-grandfather`,
+`inner-prime-3` `aldous-heart`, `inner-terce-2` `sir-walter-debt-rumour`,
+`inner-terce-3` `town-debt-rumour`, `inner-sext-3` `lady-alys-brother`,
+`inner-vespers-1` `chapel-relic`. The eight: `outer-prime-2`,
+`outer-terce-3`, `outer-sext-1`, `inner-prime-1`, `inner-prime-2`,
+`inner-sext-2`, `inner-sext-4`, `inner-vespers-2`.
+
+**#915. `drill` is dropped as an activity** (Devon, 2026-10-01). It goes out
+of `ACTIVITY_CLIPS` in `src/populace.js` and out of `data/populace.json`'s
+`activityComment`, so `validatePopulace` refuses a routine that names it. The
+`Drill` clip stays in the four human bodies, in `tools/bodies/clips.json` and
+in `test/assets.mjs`'s `GENERATED_CLIPS`: taking it out is a re-render of the
+bodies, which belongs to rank 2c and 2d's bodies (#807), and a clip no
+activity maps is never bound to a mixer. This amends #800's "`drill`
+remains in none": it is in none by decision, not by waiting.
+
+**Built the same day** (session CC-06, `builder`). `data/npcs.json` gives the
+ten pairs their `room` and moves five to the watch they are said at;
+`src/lore.js` holds them to the schedule and exports `unplacedChatter`;
+`test/lore.mjs` section 7 asserts the table and that the unplaced list is
+exactly the 17; `test/mystery.mjs` 8b refuses `drill`. Broken on purpose
+twice (#34): deleting the room check in `indexChatter` failed `a placed pair
+in a room its speaker is not in at that bell -- said nothing`, and moving
+`inner-terce-4` back under `inner.terce` failed `validates clean` with
+`chatter pair inner-terce-4: constable stands in kings-hall at terce, not in
+chapel`. Both restored. Not wired on the page (#913).

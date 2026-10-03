@@ -4137,13 +4137,137 @@ this row is below.
   the kitchen at Prime and stirs at Terce, the carter hammers at his cart in
   the outer ward at Terce, and the serjeant and the man-at-arms spar in the
   yard at Terce, facing each other, where they mustered. Same tiles, so no
-  ward count moved. `drill` is still in no routine, and `muster` is now in
-  none either.
-- **The twelve's 27-pair chatter pool stays unspent.** Recommend a later
-  lore or dialogue increment hold each pair to the schedule the way #592
-  holds a performance, which is the pass #554 named and skipped: 5 of the
-  27 survive a same-room rule as written, and the other 22 need a room and
-  a bell somebody authors (#731).
+  ward count moved. `muster` is in no routine, and `drill` is dropped
+  (#915), below.
+- **The twelve's 27-pair chatter pool is held to the schedule by increment
+  3, below** (#911 to #914): 10 pairs placed, 17 left for Devon.
+
+### Increment 3: the twelve's chatter held to the schedule, and `drill` dropped
+
+**Specified 2026-10-02** (#911 to #915). Class S from here: every open call
+below carries a recommendation, no save bump, no assertion crosses a suite
+line. Devon's limits hold: no schedule station moves, no pair is recast or
+rewritten, no body added, `MAX_SKINNED_TOTAL` and `SAVE_VERSION` (6)
+untouched.
+
+**Scope, by file.**
+
+- **`data/npcs.json` `chatter`.** Ten pairs gain `room`, and five of them
+  move to the watch key they are said at, keeping their `id` (#911). Moved
+  pairs are appended after the pairs already under that key, in the order
+  of this table. The other 17 are not touched.
+
+  | Pair | Room | Watch key | Moves from |
+  | --- | --- | --- | --- |
+  | `outer-terce-1` | `outer-ward` | `outer.terce` | stays |
+  | `outer-vespers-1` | `great-hall` | `outer.vespers` | stays |
+  | `outer-vespers-2` | `great-hall` | `outer.vespers` | stays |
+  | `outer-vespers-3` | `great-hall` | `outer.vespers` | stays |
+  | `inner-sext-1` | `kings-hall` | `inner.sext` | stays |
+  | `outer-prime-1` | `great-hall` | `outer.vespers` | `outer.prime` |
+  | `outer-terce-4` | `great-hall` | `outer.vespers` | `outer.terce` |
+  | `outer-sext-2` | `great-hall` | `outer.vespers` | `outer.sext` |
+  | `inner-terce-1` | `kings-hall` | `inner.sext` | `inner.terce` |
+  | `inner-terce-4` | `chapel` | `inner.prime` | `inner.terce` |
+
+- **`data/npcs.json` `chatterComment`** says what a `room` is, that the
+  watch key is the bell a pair is said at and an id no longer spells it, and
+  that a pair with no `room` is unplaced and listed by `unplacedChatter`. It
+  drops "not one pair has its two speakers within 3 m" in favour of the
+  room rule. `performancesComment`'s "a chatter pair names neither" becomes
+  "a placed chatter pair names its room, and its watch key is its bell".
+- **`src/lore.js`.** `indexChatter` gains #592's station check for a pair
+  with a `room` (#912), with these messages, `where` being `chatter pair
+  <id>`: `${where}: in no room (${JSON.stringify(room)})`, `${where}: ${npc}
+  is not in the castle at ${watch}`, `${where}: ${npc} stands in ${st.room}
+  at ${watch}, not in ${room}`, `${where}: ${npc} is asleep at ${watch}`.
+  The `n.ward !== ward` check stays as it is. New export
+  `unplacedChatter(chatter)`: the ids of pairs with no `room`, in file
+  order, a report and never folded into `validateLore`'s list, as
+  `untoldFacts` is.
+- **`test/lore.mjs`** section 7, in that suite and no other (#529). The
+  existing `badChatter.outer.prime[0]` breaks keep working: that slot is
+  `outer-prime-2` after the move.
+- **`src/populace.js`**: `drill: 'Drill'` leaves `ACTIVITY_CLIPS`, and the
+  two comments that say "`drill` is nobody's yet" and "`drill` is the
+  garrison's" say it was dropped (#915). **`data/populace.json`
+  `activityComment`**: "`sweep`, `stir`, `hammer`, `spar` and `drill`
+  resolve to" names the four, and "`drill` is still nobody's" becomes a
+  sentence citing #915.
+- **Not touched**: `data/lore.json` (ids are kept), `dialogue/castle.dlg`
+  and `tools/dialogue.mjs` (the chatter pool is not in the `.dlg`; 0 hits
+  for any pair id), `tools/bodies/clips.json`, the four `.glb` bodies,
+  `test/assets.mjs`'s `GENERATED_CLIPS`, `src/quest-manager.js`,
+  `src/main.js`, `data/mystery.json`, `test/budget.mjs`.
+
+**Acceptance, all in `test/lore.mjs` except 8.**
+
+1. As shipped, `validateLore` is clean, and `unplacedChatter` is exactly
+   the 17 of #914, compared sorted against a literal list, so a pair placed
+   or unplaced without this list moving is a failure.
+2. Ten pairs carry a `room`, and they are the table above, by id, room and
+   watch key.
+3. `outer-terce-1` given `room: "great-hall"` fails with "clerk stands in
+   outer-ward at terce, not in great-hall".
+4. `inner-prime-1` given `room: "porter-lodge"` fails with "steward stands
+   in kings-hall at prime, not in porter-lodge".
+5. `outer-prime-3` given `room: "guardroom"` fails with "sentry is asleep
+   at prime".
+6. A pair naming `merchant` under `outer.prime` with `room: "outer-ward"`
+   fails with "merchant is not in the castle at prime".
+7. A pair given `room: "nowhere-at-all"` fails with "in no room".
+8. `test/mystery.mjs` still passes with `drill` gone, and a routine stop
+   given `activity: "drill"` is refused by `validatePopulace`; the builder
+   quotes the message it prints.
+
+**The #34 break.** From green, delete the `st.room !== room` comparison in
+the new chatter check; assertions 3 and 4 must go red and the report quotes
+what each said. Then restore it and move `inner-terce-4` back under
+`inner.terce` with its `room` kept: the shipped baseline must go red with
+"constable stands in kings-hall at terce, not in chapel". #632: every new
+assertion reads data through `JSON.parse`, so no line ending reaches it; one
+that reads a data file's text builds both endings.
+
+**Open calls, each with a recommendation.**
+
+- **Which day's bells may hold a pair.** Recommended: day one's four only
+  (#911), because all ten placeable pairs have one and a `-eve` or `lauds`
+  pair would need #592's day-two absence rail for no pair that uses it.
+- **Does the ward key still have to match both speakers' `ward`.**
+  Recommended: yes, as #554 set it, because the key says who is talking and
+  the room says where; no placed pair puts an inner pair in an outer room.
+- **Several pairs in one room at one bell.** Recommended: allowed, in file
+  order (#912), because refusing it leaves the hall at Vespers one of its
+  six pairs.
+- **`inner-terce-1`'s bell, Sext in the King's Hall or Vespers in the
+  Great Hall.** Recommended: Sext, because the Constable's board is where
+  the coin is argued and the hall at Vespers already holds six pairs and a
+  song.
+- **Playback.** Recommended: not in this increment (#913), because it is a
+  second trigger in `QuestManager` with its own browser beat. What is left
+  for that increment: the twelve's pairs heard by room and bell rather than
+  by #732's 1.5 to 3 m between settled bodies; a performance first, then
+  the room's pairs in file order, one at a time, each once per page and
+  never saved (#39); the beat in `quest.mjs` and the wire in
+  `plan-vs-scene.mjs`, nothing Node can prove.
+- **The 17 unplaced pairs.** Devon's call (#914), options: move a station,
+  recast and rewrite, retire. Recommended: never move a station; recast and
+  rewrite the nine that are a fact's only teller (`outer-prime-3`,
+  `outer-terce-2`, `outer-cell-1`, `outer-sext-3`, `inner-prime-3`,
+  `inner-terce-2`, `inner-terce-3`, `inner-sext-3`, `inner-vespers-1`);
+  retire the other eight, because a station is an alibi and a retired sole
+  teller leaves a fact told by nothing. They stay unplaced here.
+- **`Drill` in the bodies.** Recommended: kept until rank 2c and 2d
+  re-render the bodies (#807, #915), because taking it out now is a
+  re-render for a clip nothing binds.
+
+**Dependencies.** None. Lanes C and D, as this row's earlier increments.
+`src/lore.js` and `test/lore.mjs` are in no other open row's scope.
+
+**House rules that bite.** #529 (the chatter rail in `lore.mjs`, the
+`drill` refusal in `mystery.mjs`), #13 (the unplaced list is asserted, not
+printed), #34 (the break above), #36 and #39 (no save field, `SAVE_VERSION`
+stays 6), #632 (above), #592 (the messages are its messages).
 
 ### Dependencies
 
