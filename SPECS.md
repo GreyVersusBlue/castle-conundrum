@@ -3752,9 +3752,9 @@ compositing eleven times over four sittings (#624 to #630, #708 to #715,
 holds: the sentry's and the porter's sighting beats pass, the accusation
 selects 3 of 3, and the whole day and the whole second day have now been
 walked by `npm run play` for the first time. **What is left is exit 0**:
-run 5 of the fourth sitting still ends 212 ok, 6 failures, filed as rank 3a
-(Play Again does not start over) and rank 3b (three small suite and data
-bugs), and the phone in the room (#530) is untouched.
+run 5 of the fourth sitting still ends 212 ok, 6 failures, rank 3a (Play Again
+does not start over) has since shipped (#916), leaving rank 3b (three small
+suite and data bugs), and the phone in the room (#530) is untouched.
 
 **The judgement half of this row is done.** Every render question this
 section used to list is answered in `HISTORY.md`: the twelve at Vespers
@@ -3798,9 +3798,8 @@ the lever is `lighting.fog` (#796), not the town or the west wall.
 - The run needs a machine with a GPU, which is Devon's; a session can add a
   beat and cannot run it. If a session is asked to take the run without one,
   the honest output is the beat and a note, not a claim.
-- **What exit 0 still owes**: rank 3a (Play Again does not start over,
-  #889) and rank 3b (the last three standing failures, #890), both specced
-  below.
+- **What exit 0 still owes**: rank 3a (Play Again, #889) shipped (#916); rank 3b (the last three
+  standing failures, #890) is specced below, and then one more GPU run.
 
 ### Constraints
 
@@ -3811,46 +3810,19 @@ the lever is `lighting.fog` (#796), not the town or the west wall.
 
 ## Play Again starts over
 
-**Rank 3a. Size ¼.** `src/main.js:285`'s restart is `auto.stop();
-slot.reset(); window.location.reload();`. `src/gvb-save.js`'s `autosave`
-`stop()` clears the timer and leaves `dirty` true; the same autosave flushes
-on `pagehide`, so the reload writes the ended game straight back over the
-reset before the fresh page can read it (#889). A player at the end of the
-game cannot start a new one without clearing site data by hand.
+**Rank 3a. Shipped (#916), in one increment, against #889.** Its row is
+retired from `BACKLOG.md` and `ROADMAP.md`. What other sections cite, and what
+is still open:
 
-### Scope
-
-- `src/gvb-save.js`'s `autosave` function.
-- `src/main.js:285` if the chosen fix needs it.
-- A Node test in `test/save.mjs`, the suite that already imports
-  `gvb-save.js` directly.
-
-### Acceptance
-
-- After `restart()` runs and a `pagehide` fires, the saved key under
-  `castleConundrumSave_v1` is gone, not the ended game.
-- `npm run play`'s three Play Again beats pass on a GPU (#886 to #891).
-- `npm test` fifteen of fifteen.
-
-### Open calls
-
-- **How to stop the write.** Recommend `stop()` also sets `dirty = false`,
-  the smallest change: `slot.reset()` runs before the reload either way, and
-  a `dirty` flag that is already false has nothing left to flush. The two
-  alternatives cost more for no gain — removing the `pagehide` flush breaks
-  the mid-day reload it exists for, and reordering `restart()` still races
-  the same flush on a slow disk.
-
-### Dependencies
-
-- Lane D (`src/main.js`'s player rig and spawn), which rank 6 and rank 11
-  also hold.
-- #34: the break is putting `dirty` back and watching the new test fail.
-
-### Constraints
-
-- #36: the storage key does not change.
-- No `SAVE_VERSION` bump: this is a write-timing bug, not a schema change.
+- **The fix**: `src/gvb-save.js`'s `autosave` `stop()` sets `dirty = false` as
+  well as clearing the timer, so `restart()`'s `slot.reset()` is not written
+  back by the `pagehide` flush. `src/main.js` is unchanged; no `SAVE_VERSION`
+  bump (#36).
+- **Held by** `test/save.mjs` section 6, 8 assertions, with a control that
+  shows a mark then `pagehide` does write.
+- **Open**: the three Play Again beats in `npm run play` need a GPU run (#53),
+  which stays with rank 3. The fix is not carried back to tools-and-games'
+  `assets/js/gvb-save.js`.
 
 ---
 

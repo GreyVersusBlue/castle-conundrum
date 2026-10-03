@@ -6,7 +6,9 @@
 // and `src/save.js`'s `../../../assets/js/gvb-save.js` stopped resolving. It is
 // a fork: a fix to the shared copy will not reach this one, and a fix made here
 // is worth carrying back by hand. Everything below this block is that file
-// unedited, including the adopter list, which is the other repo's.
+// unedited, including the adopter list, which is the other repo's, with one
+// exception: `autosave`'s `stop()` also clears `dirty` here (#916), so a
+// stopped autosave has nothing left for its `pagehide` flush to write.
 //
 // Generalized from the Fourth Quarter's campaign save: a namespaced key, a
 // schema version, a migration hook, and a validator that refuses to load
@@ -207,7 +209,10 @@ export function createSaveSlot(options) {
       });
       window.addEventListener("pagehide", flush);
     }
-    return { mark, flush, stop() { if (timer) clearTimeout(timer); timer = null; } };
+    // #916: stop() drops the pending write as well as the timer. Leaving
+    // `dirty` true let the `pagehide` flush save the state back after the
+    // caller had reset the slot, which is how Play Again resumed the ended game.
+    return { mark, flush, stop() { if (timer) clearTimeout(timer); timer = null; dirty = false; } };
   }
 
   function filename() {

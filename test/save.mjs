@@ -531,5 +531,67 @@ console.log('the second day, through the save');
   qm.handleInteract(npcs.find((n) => n.id === 'laundress'));
   check(ui.dialogue && /hanged my husband/.test(ui.dialogue.lines.join(' ')), 'and Nest, at the laundry, says what that morning made of her', ui.dialogue?.lines?.[0]?.slice(0, 48));
 }
+
+/* ------------------------------------------- 6: Play Again starts over --- */
+console.log('Play Again starts over (#889, #916)');
+{
+  /* `src/main.js`'s restart is `auto.stop(); slot.reset(); reload()`, and the
+   * reload fires `pagehide`, which the same autosave flushes on. This drives
+   * the real `autosave` in src/gvb-save.js through the real slot: it registers
+   * its listeners only where `document` and `window` exist, so both are stubbed
+   * for the length of this block, the `pagehide` listener is captured, and the
+   * stubs are taken off again in the `finally`. The timer never gets to fire:
+   * every autosave here is stopped before the block ends. */
+  const had = { document: 'document' in globalThis, window: 'window' in globalThis };
+  const was = { document: globalThis.document, window: globalThis.window };
+  const listeners = { pagehide: [], visibilitychange: [] };
+  globalThis.document = { visibilityState: 'visible', addEventListener: (type, fn) => { (listeners[type] ??= []).push(fn); } };
+  globalThis.window = { addEventListener: (type, fn) => { (listeners[type] ??= []).push(fn); } };
+  const pagehide = (from) => listeners.pagehide.slice(from).forEach((fn) => fn());
+  try {
+    const verdict = [{ who: 'nobody', clues: [], verdict: 'fall', watch: 'vespers' }];
+    const ended = () => repaired({ stage: 'fall', watch: 3, accusations: verdict });
+
+    // THE CONTROL: with no stop(), a mark and a pagehide do write. This is the
+    // mid-day reload the flush exists for, and the fix must not cost it.
+    {
+      const { slot, storage } = slotWith();
+      const from = listeners.pagehide.length;
+      const state = ended();
+      const auto = slot.autosave(() => state, 60000);
+      check(listeners.pagehide.length === from + 1, 'autosave registers one pagehide listener where there is a window', String(listeners.pagehide.length - from));
+      auto.mark();
+      check(storage.getItem(SAVE_KEY) === null, 'a mark alone has written nothing yet');
+      pagehide(from);
+      check(slot.load()?.stage === 'fall', 'without stop(): a mark then a pagehide writes the state, so a mid-day reload still saves', JSON.stringify(slot.load()?.stage));
+      auto.stop();
+    }
+
+    // THE BUG (#889): the ended game is on disk and dirty, restart runs, the
+    // page hides. The key has to be gone, not the ended game written back.
+    {
+      const { slot, storage } = slotWith();
+      const from = listeners.pagehide.length;
+      const state = ended();
+      const auto = slot.autosave(() => state, 60000);
+      slot.save(state);
+      auto.mark();
+      auto.stop(); slot.reset(); // main.js's restart, less the reload
+      check(storage.getItem(SAVE_KEY) === null, 'restart erases the key');
+      pagehide(from);
+      check(storage.getItem(SAVE_KEY) === null && storage.keys().length === 0,
+        'after stop() and reset(), a pagehide leaves castleConundrumSave_v1 gone: the ended game is not written back (#916)',
+        `the store holds ${storage.getItem(SAVE_KEY)?.slice(0, 60)}`);
+      check(slot.load() === null, 'and the next page loads no save, which is a new game');
+      auto.flush();
+      check(storage.getItem(SAVE_KEY) === null, 'a direct flush() after stop() has nothing to write either');
+      auto.stop();
+    }
+  } finally {
+    if (had.document) globalThis.document = was.document; else delete globalThis.document;
+    if (had.window) globalThis.window = was.window; else delete globalThis.window;
+  }
+  check(typeof document === 'undefined' && typeof window === 'undefined', 'the document and window stubs are gone again');
+}
 console.log(failures ? `\n${failures} failure(s)` : '\nall good');
 process.exit(failures ? 1 : 0);

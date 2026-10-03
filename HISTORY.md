@@ -12463,3 +12463,28 @@ in a room its speaker is not in at that bell -- said nothing`, and moving
 `inner-terce-4` back under `inner.terce` failed `validates clean` with
 `chatter pair inner-terce-4: constable stands in kings-hall at terce, not in
 chapel`. Both restored. Not wired on the page (#913).
+
+**#916. `autosave`'s `stop()` clears `dirty`, so Play Again starts over.**
+Rank 3a shipped (2026-10-02, session CC-04, `builder`). SPECS's
+recommendation is taken: `stop()` in `src/gvb-save.js` now sets `dirty =
+false` as well as clearing the timer, so the `pagehide` flush after
+`restart()`'s `slot.reset()` has nothing to write (#889). The two
+alternatives lose: removing the `pagehide` flush breaks the mid-day reload it
+exists for, and reordering `restart()` still races the same flush.
+`src/main.js` is unchanged. No save version change (#36).
+
+**Built the same day.** The #502 header of `src/gvb-save.js` now names this
+one difference from the tools-and-games copy; the fix has not been carried
+back to tools-and-games' `assets/js/gvb-save.js`. `test/save.mjs` gains
+section 6, 8 assertions, driving the real `slot.autosave` through
+`createCastleSlot` with an injected memory store and a stubbed
+`document`/`window` that capture the `pagehide` listener. Control: without
+`stop()`, a mark then `pagehide` does write. After save, `mark()`, `stop()`,
+`reset()` and `pagehide`, the key `castleConundrumSave_v1` is gone and
+`slot.load()` is null. Broken on purpose (#34): with `dirty = false` removed,
+`npm test save` went red with 3 failures, the first `after stop() and reset(),
+a pagehide leaves castleConundrumSave_v1 gone: the ended game is not written
+back (#916) -- the store holds {"stage":"fall",...`; the control stayed green.
+Restored, green. Checks on huginn: `npm test` 15 of 15, `npm run build` ok.
+Not confirmed: the three Play Again beats in `npm run play` need a GPU run on
+Windows (#53). That stays with rank 3.
