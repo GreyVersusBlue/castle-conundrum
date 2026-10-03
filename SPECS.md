@@ -664,7 +664,8 @@ clips on the four Quaternius bodies, and the eleven on `folk.glb`.
 **Rank 2d. Size 1. Model Opus 5. Where: Local: Blender. Gate: rank 1 shipped (#881)
 and after "Blender: a shared rig with swappable parts" increment 1;
 recommended after its increment 2. Lanes F and C; not B.** Decided in
-`HISTORY.md` as #826 to #829, on #820's and #825's shape. **Rank 10 is
+`HISTORY.md` as #826 to #829, on #820's and #825's shape, corrected by #942.
+**Status: increment 1 shipped on huginn (#942, #943): five quadrupeds, 206,032 bytes, bodies 39, outer 22 at `terce-eve`, inner 18, draw ceilings 390 and 209. Left: the Windows GPU look, which blocks nothing (#53), and increment 2, the goose.** **Rank 10 is
 retired** (#807): its "pig, then a goat" is this row, and its GPU look at
 the hound, the hens and the cow moves into this row's checklist. **This row
 does not duplicate rank 6**: it makes the animals and writes each one's
@@ -711,10 +712,10 @@ adds kinds; it replaces none.
 
   | Kind | Ward | Room | `modelHeight` |
   | --- | --- | --- | --- |
-  | pig | outer | `outer-ward`, by the hen-wife's patch | 0.8 |
+  | pig | outer | `outer-ward`, by the hen-wife's patch, (-5.438, -0.938) (#942) | 0.8 |
   | sheep | outer | `outer-ward`, beside the cow | 0.9 |
   | goose x2 | outer | `outer-ward`, by the hens | 0.75 |
-  | horse | inner | `inner-ward`, by the porter's lodge | 1.65 |
+  | horse | inner | `inner-ward`, south-west corner (#942) | 1.65 |
   | goat | inner | `inner-ward` | 0.95 |
   | cat | inner | `bakehouse` | 0.3 |
 
@@ -755,7 +756,7 @@ six files, each with its break:
    Break, *local*: `cycles: 1.5` on the horse's `Walk`.
 5. **Reads as four-legged.** A quadruped's bind-pose box is at least 1.15
    times as long (z) as it is tall (y): the cow's 1.3 less the goat's horns.
-   Break, *local*: swap the sheep body's y and z.
+   Break, *local* (#942): swap y and z on every part and every joint of the sheep and set it back on the floor, a sheep stood on its tail. Swapping only the body's one prism leaves the rail green, since the neck, head and tail still make the box 1.44 m long. Expected: "0.89 m long and 1.45 m tall, under 1.15 to 1".
 
 **`test/budget.mjs`** (#828): increment 1 prints 39 bodies, outer 22 at
 `terce-eve`, inner 18; increment 2 prints 41 and outer 24. The draw ceilings

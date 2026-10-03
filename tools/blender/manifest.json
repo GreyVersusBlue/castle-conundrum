@@ -3,6 +3,86 @@
   "blender": "5.2",
   "rows": [
     {
+      "file": "assets/blender/animals/cat.glb",
+      "pack": "animals",
+      "name": "cat",
+      "bytes": 41112,
+      "sha256": "d07765950e5a4731ccf7191369039118e794ce4f71ef8a970a6748941ad855db",
+      "triangles": 296,
+      "images": [
+        [
+          16,
+          16
+        ]
+      ],
+      "blender": "5.2.2 LTS",
+      "source": "ab7c36baf3e2355c174f8fe2a26f4b1403a67dec900b68a9fd2f0827b8046fd5"
+    },
+    {
+      "file": "assets/blender/animals/goat.glb",
+      "pack": "animals",
+      "name": "goat",
+      "bytes": 41624,
+      "sha256": "d289f0bb402c6d4383f746000dc6fbd402a8614d9338a259d3b6d7016dd089b0",
+      "triangles": 332,
+      "images": [
+        [
+          16,
+          16
+        ]
+      ],
+      "blender": "5.2.2 LTS",
+      "source": "70b6e1f5294c2f3d80f958186c62b910233cac752dbb720da72216024bcfc47a"
+    },
+    {
+      "file": "assets/blender/animals/horse.glb",
+      "pack": "animals",
+      "name": "horse",
+      "bytes": 41572,
+      "sha256": "dfe8bc4b4f6b5b956ba673fb7a3f8bde2d4fa6159248eaea018b0bf099f0170a",
+      "triangles": 304,
+      "images": [
+        [
+          16,
+          16
+        ]
+      ],
+      "blender": "5.2.2 LTS",
+      "source": "23f785a951d2a832bbe2a92fd96e61542c1a0f2e7c585e29d2d16cf2a749a0fb"
+    },
+    {
+      "file": "assets/blender/animals/pig.glb",
+      "pack": "animals",
+      "name": "pig",
+      "bytes": 40812,
+      "sha256": "34b9dbc728a057f1b657c8d5bf69b645672d952a3fb03f971a4a4a689ebb78d7",
+      "triangles": 296,
+      "images": [
+        [
+          16,
+          16
+        ]
+      ],
+      "blender": "5.2.2 LTS",
+      "source": "98778bec9b0e53584a3213a000bc72fd6ffbe8b4b5516220e0cd42937b95e946"
+    },
+    {
+      "file": "assets/blender/animals/sheep.glb",
+      "pack": "animals",
+      "name": "sheep",
+      "bytes": 40912,
+      "sha256": "3e379d283a80fb9cec81c4f0b6d3b04ae02984c613f8686e507b0745d4c74473",
+      "triangles": 316,
+      "images": [
+        [
+          16,
+          16
+        ]
+      ],
+      "blender": "5.2.2 LTS",
+      "source": "945dc54ee0380f63aa4b5941b877a9e55fd7f72d7ab8f9de1f04172a19abfdf6"
+    },
+    {
       "file": "assets/blender/calibration/crate.glb",
       "pack": "calibration",
       "name": "crate",
@@ -16,7 +96,7 @@
         ]
       ],
       "blender": "5.2.2 LTS",
-      "source": "f50a0d0fed4c5424355e6d83b29c6c74a3c5128d6d64be141dcc70ffa2519707"
+      "source": "ad866b5333b624c1037cb21e5577f6fd97992249b779c8d7d7b9af313a4bf068"
     },
     {
       "file": "assets/blender/countryside/backdrop-east.glb",
@@ -32,7 +112,7 @@
         ]
       ],
       "blender": "5.2.2 LTS",
-      "source": "a651650e51c28ae096a846de2af06d2839cc1a19bd8e18e62f8a2b0a53d36b69"
+      "source": "14bfd68b86e0cf0a6720cf0a13cff90ae028ac2dc235ebc769d5073416dadb41"
     },
     {
       "file": "assets/blender/countryside/backdrop-north-west.glb",
@@ -48,7 +128,7 @@
         ]
       ],
       "blender": "5.2.2 LTS",
-      "source": "a04d9c754b2aab6646c5182034c2369239579f1125ef3c12573482f44bc08f37"
+      "source": "f0c43be49faa82cfa00ddb3db30d648d7179b344e5f82e411a4851ff3bd65296"
     },
     {
       "file": "assets/blender/countryside/backdrop-north.glb",
@@ -64,7 +144,7 @@
         ]
       ],
       "blender": "5.2.2 LTS",
-      "source": "40cd9f96bf3f8ece086e181ce7da01cdda627640ae1a8d86f6255372df43530c"
+      "source": "b7add6b5158d3d076dd9dfebd37b785d58778a7c83f3468f8fbc9073d28913c0"
     },
     {
       "file": "assets/blender/countryside/backdrop-south-west.glb",
@@ -80,7 +160,7 @@
         ]
       ],
       "blender": "5.2.2 LTS",
-      "source": "8e345fe3c191cc28ed7096be74cf11cda0272e33726be0b8e2402333aa93ef18"
+      "source": "1e68d037210ce09581cbd051f569f5ec75d7c8b5a9354dbdaa456a8502684a09"
     },
     {
       "file": "assets/blender/countryside/backdrop-south.glb",
@@ -96,7 +176,7 @@
         ]
       ],
       "blender": "5.2.2 LTS",
-      "source": "73343d2873966b52815d603b297b6debc29b17cc864042dd968d5f08a75d9550"
+      "source": "323af2026338dbb5e33ac6eea13159769e71541800cab0b1fa22ab00a0111054"
     },
     {
       "file": "assets/blender/evidence/aumbry-candles.glb",
@@ -112,7 +192,7 @@
         ]
       ],
       "blender": "5.2.2 LTS",
-      "source": "75067396e1b6aaa32d2be29875f45ea3702c795d65bb570b0ca7387858614dcd"
+      "source": "39959a58169d9bf024cfb99e1d6ea8ed6f8d344875640b99280a784ced32f8d5"
     },
     {
       "file": "assets/blender/evidence/knife-barrel.glb",
@@ -128,7 +208,7 @@
         ]
       ],
       "blender": "5.2.2 LTS",
-      "source": "a4a9189c8df510adea8befa09de152c23aff057ab38bdaeeb2a9ba6b136bb6e2"
+      "source": "2a5e6fe22414288b458d70f7096495d39d2bd8e744b26685b1c16f31a91157d2"
     },
     {
       "file": "assets/blender/evidence/ledger-desk.glb",
@@ -144,7 +224,7 @@
         ]
       ],
       "blender": "5.2.2 LTS",
-      "source": "16696d3981d8aec09de744ee6d759695eb01c84c2fb5287b6e6c73edcec56e47"
+      "source": "866adeabaa0a94399fbaa71c6d00502ce67c2b2b1999ab74d9cafd9f3afa8461"
     },
     {
       "file": "assets/blender/evidence/pricket.glb",
@@ -160,7 +240,7 @@
         ]
       ],
       "blender": "5.2.2 LTS",
-      "source": "31f203809e528cb00ad719e65fccdad3f907683a4bf20b6b50f3ae5c10cf5f16"
+      "source": "38a90a0b4bb4d82818d895cfc9bd538b3461cdee3461b7cdf5c8bf2bda2f15b1"
     },
     {
       "file": "assets/blender/folk/folk.glb",
@@ -176,7 +256,7 @@
         ]
       ],
       "blender": "5.2.2 LTS",
-      "source": "2bd51ecd013c85e301a6e7392036aada145afe36819f0a6c685fa52adf60fd29"
+      "source": "5b5af22bcedf052af4c8677f30203fa13007db9ed4dc83addf1239c57b3afce1"
     },
     {
       "file": "assets/blender/held/mallet.glb",
@@ -192,7 +272,7 @@
         ]
       ],
       "blender": "5.2.2 LTS",
-      "source": "eb24148c75d16f3ce8ccbc4d83ccc06bff9ddac6178d64ae215dab04e4d15990"
+      "source": "e7511ee1b5345e9d0afb013d189a16659d3b62d72d18c8c3618306cf6f359b67"
     }
   ]
 }
