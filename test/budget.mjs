@@ -109,8 +109,8 @@ const MAX_POINT_LIGHTS_TOTAL = 8;
  * inner ward is paid for while standing in the outer one. Three today. */
 
 /** Skinned bodies standing in one ward at one watch, and in the whole cast. */
-const MAX_SKINNED_PER_WARD = 20;
-const MAX_SKINNED_TOTAL = 34;
+const MAX_SKINNED_PER_WARD = 22;
+const MAX_SKINNED_TOTAL = 39;
 /* Anchored on rank 6 rather than on hardware, because rank 6 is what is about
  * to spend it: twelve cast plus its first ten populace is 22, which fits 32
  * with room left for somebody to be standing in rank 4c's yard. The "7 today"
@@ -137,11 +137,22 @@ const MAX_SKINNED_TOTAL = 34;
  * held by test/assets.mjs check 7, so what it adds is one AnimationMixer and
  * at most four skinned draws. It stands in the outer ward all day, and that
  * ward's walking-day peak goes from 19 to 20 of `MAX_SKINNED_PER_WARD`, which
- * stays 20. A pig or a goat after it costs its own argument, 34 to 35. */
+ * stays 20. A pig or a goat after it costs its own argument, 34 to 35.
+ * 34 TO 39 AND 20 TO 22 ARE THAT ARGUMENT, MADE FIVE TIMES (#828, rank 2d's
+ * increment 1): the pig, the sheep, the horse, the goat and the cat, each a
+ * Blender file inside #827's caps, 16 joints, under 1,000 triangles in 2
+ * primitives and 80 KB, held by test/assets.mjs check 8's animal half. One
+ * body each, no cheap-animal count beside this one (#789's refusal holds).
+ * The pig and the sheep stand in the outer ward all day, so its walking-day
+ * peak goes from 20 to 22 at `terce-eve`; the horse, the goat and the cat
+ * never leave the inner ward, which goes from 15 to 18 and has room under 22.
+ * What lets a per-ward body ceiling move at all is that the draw ceilings
+ * below now count what a body costs, and an animal costs 2. The two geese
+ * are increment 2's and their own two: 39 to 41, 22 to 24. */
 
 /** Skinned primitives drawn by the bodies in one ward at one watch, and by every body built. */
-const MAX_SKINNED_DRAWS_PER_WARD = 205;
-const MAX_SKINNED_DRAWS_TOTAL = 380;
+const MAX_SKINNED_DRAWS_PER_WARD = 209;
+const MAX_SKINNED_DRAWS_TOTAL = 390;
 /* SET AT WHAT THE CASTLE DREW THE DAY THEY WERE WRITTEN (#825), and not a
  * guess the way the rest of this block is: 380 in total, and 205 in the outer
  * ward at `terce-eve`. The two body ceilings above count mixers; these count
@@ -153,7 +164,13 @@ const MAX_SKINNED_DRAWS_TOTAL = 380;
  * because a ceiling with room in it is a ceiling nobody argues about (#756):
  * a row that moves people onto the shared rig lowers both to what this suite
  * then prints, and a row that adds a body argues for its draws in HISTORY.md
- * beside its argument for the body. */
+ * beside its argument for the body. 380 TO 390 AND 205 TO 209 ARE THE FIVE
+ * ANIMALS' OWN DRAWS AND NOTHING ELSE (#828): 2 each, `Coat` and `Bare`, so
+ * 10 in total and 4 in the outer ward, where the pig and the sheep stand at
+ * the bell that ward peaks. The suite printed 372 and 197 before them and
+ * prints 382 and 201 with them, so the 8 of room under each ceiling is the
+ * hen-wife's (#940), unspent, and is not new room: rank 2c's increment 2
+ * still lowers both to what it prints. */
 
 /** Every image the page can load, decoded, in megabytes of video memory. */
 const MAX_TEXTURE_MB = 64;

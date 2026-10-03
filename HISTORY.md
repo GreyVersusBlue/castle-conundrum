@@ -13873,3 +13873,199 @@ under 0.0001). `skin.mjs` records its inputs' sha256 in
 `tools/castle3d/skin-manifest.json` and prints "unchanged", writing nothing,
 when they have not moved, as `blender:render` does (#880 to #884). No Cycles stills
 of the skin: the renderer that judges it is the game's, on a GPU (#53).
+
+## Rank 2d increment 1: five animals on one quadruped topology, committed on huginn before the look (2026-10-03)
+
+**#942. Three places where 2d's increment 1 could not be built as written:
+the sheep's break, the horse's tile, and where the skinned helpers live.**
+Written by `builder` from the build, each point measured first. None overturns
+#826 to #829.
+
+**1. The fifth break as worded leaves the rail green (#147).** The section's
+Acceptance says "Break, *local*: swap the sheep body's y and z". Swapping the
+y and z of the body's one prism, 0.56 by 0.48 by 0.98 m, and re-rendering
+left `test/assets.mjs` with one failure, the horse's from the break run
+beside it, and nothing about the sheep. The box is the whole animal's: the
+neck, head and tail still reach 1.44 m in z, and a barrel stood on end tops
+out at 1.09 m, which is 1.32 to 1 against the 1.15 the line asks. The rail is
+right and the sentence describing its break was not. **The break is: swap y
+and z on every part and every joint of the sheep and set it back on the
+floor**, a sheep stood on its tail, which prints "sheep.glb's bind pose is
+0.89 m long and 1.45 m tall, under 1.15 to 1: that is not a thing on four
+legs (#827)".
+
+**2. The horse is not by the porter's lodge, because no courtyard floor
+is.** #829 puts the horse "by the porter's lodge". The porter stands at tile
+(0.1, -4) in the Stockhouse Tower, and `validatePopulace` reads every
+`inner-ward` tile tried between there and z -1.9 as `kings-hall` and (0.688,
+-1.438) as having no floor. The section's fallback is "the same ward's
+courtyard", so the horse stands at (0.688, -1.188) and (1.188, -1.188), the
+inner ward's south-west corner and the nearest courtyard floor to the lodge,
+about 11 m north of it. The pig is at (-5.438, -0.938) and (-5.563, -1.313),
+2.5 m from the brown hen's nearest stop and 5.9 m from the hen-wife's, because
+the first tiles tried, at z 1.688, are the Great Hall. The sheep, the goat
+and the cat stand where the table says; the cat's two tiles are the two in
+the bakehouse that are 1.5 m from the baker's three stops, the lad's one and
+the cook's station at `sext-eve`.
+
+**3. The skinned helpers moved from `folk.py` to `common.py`, so every
+row's `source` hash moved and no byte did.** `animals.py` needs what
+`folk.py` made for 2c: `to_blender`, the `Part` mesh builder, the two
+materials over one image, `build_rig`, `key_clips`, `check_frame` and the
+skinned export. `folk.py` ends on an unguarded `main()`, so it cannot be
+imported, and a row's source hash is `common.py`, its own script and
+`finish.mjs` (#806): a helper imported out of `folk.py` would be an input to
+five files that check 8 line 4 cannot see. A second copy in `animals.py` is
+two implementations of one rig. So the seven moved to `common.py` under "a
+skinned pack", and `folk.py` calls them there. Three things were added in the
+move, each defaulting to what `folk.py` did: `Part` takes its default weights
+as an argument and has a `material` slot and a `hull` of eight corners;
+`key_clips` takes a clip's own `seconds` and a move's `rate`
+(`tools/bodies/clips.json`'s grammar); and a row may say `onIdle: false`, so
+a clip is its own moves and not Idle's underneath. `folk.py` lost 210 lines and gained 7.
+A full `BLENDER_THREADS=4 npm run blender:render` printed "unchanged" for all
+twelve existing files, sha256 identical to before the move, and rewrote their
+twelve `source` hashes in `manifest.json`, as #941's `finish.mjs` change did.
+
+**#943. Rank 2d, Blender: the animals, increment 1 shipped (#826 to #829,
+#942).** One increment, on huginn, Blender 5.2.2 LTS, measured 2026-10-03.
+`tools/blender/packs/animals.py`; pack `animals`, five rows, one
+`extraColours` entry (`#d49a8c`, the pig's snout). The goose, its 12-joint
+bird topology and the two geese are increment 2's and are not built:
+`animals.py` holds its topologies and their clip names in two tables, and a
+goose is a line in each and a row.
+
+| File | Triangles of 1,000 | Bytes of 80,000 | Joints of 16 | Primitives of 2 | Long by tall, m | sha256 |
+| --- | --- | --- | --- | --- | --- | --- |
+| `assets/blender/animals/pig.glb` | 296 | 40,812 | 16 | 2 | 1.59 by 0.77, 2.07 to 1 | 34b9dbc728a057f1b657c8d5bf69b645672d952a3fb03f971a4a4a689ebb78d7 |
+| `assets/blender/animals/goat.glb` | 332 | 41,624 | 16 | 2 | 1.50 by 0.94, 1.59 to 1 | d289f0bb402c6d4383f746000dc6fbd402a8614d9338a259d3b6d7016dd089b0 |
+| `assets/blender/animals/sheep.glb` | 316 | 40,912 | 16 | 2 | 1.44 by 0.89, 1.62 to 1 | 3e379d283a80fb9cec81c4f0b6d3b04ae02984c613f8686e507b0745d4c74473 |
+| `assets/blender/animals/horse.glb` | 304 | 41,572 | 16 | 2 | 2.37 by 1.66, 1.43 to 1 | dfe8bc4b4f6b5b956ba673fb7a3f8bde2d4fa6159248eaea018b0bf099f0170a |
+| `assets/blender/animals/cat.glb` | 296 | 41,112 | 16 | 2 | 0.81 by 0.30, 2.69 to 1 | d07765950e5a4731ccf7191369039118e794ce4f71ef8a970a6748941ad855db |
+
+206,032 bytes between the five (#499). Each is one mesh of 24 to 27 parts,
+boxes and one six- or eight-sided barrel, flat-shaded, every part rigid on
+one joint, in `Coat` and `Bare` over one 16 px atlas of eleven colours. `Bare`
+is the eyes, noses and hooves, the pig's snout, the goat's horns, the horse's
+mane and tail and the sheep's face and legs, so a tint on the fleece makes a
+white sheep or a dark one off one file (#684). Three clips each: `Idle` 3.00
+s, `Eating` 3.00 s, `Walk` 1.00 s (the horse 1.50, the cat 0.75), at 24 fps,
+a key on every joint at every frame. **The clips are procedural sine moves,
+rotation only, in the cow's grammar and with the cow's numbers scaled per
+kind: no body bob, the feet slide, and nothing here was looked at in
+motion.** `animals.py` refuses a part whose face is wound inwards, and it
+refused the first prism it was given.
+
+Determinism (#883): a second `BLENDER_THREADS=4 npm run blender:render
+animals` printed "unchanged" five times and "manifest.json: unchanged",
+sha256 of the five identical before and after. After every break below the
+restore re-rendered to the same five hashes and a byte-identical manifest.
+
+`data/populace.json`, 20 people to 25, and `rank2dComment`:
+
+| Id | Name | Room | `modelHeight` | Tint | Ring at all eight bells |
+| --- | --- | --- | --- | --- | --- |
+| `pig` | Hwch | `outer-ward` | 0.8 | `#d9a79a` | `eat`, `wait` |
+| `sheep` | Dafad | `outer-ward` | 0.9 | `#e9e4d4` | `eat`, `wait` |
+| `horse` | Brenin | `inner-ward` | 1.65 | `#6e4a30` | `wait`, `eat` |
+| `goat` | Bwch | `inner-ward` | 0.95 | `#a8a195` | `eat`, `wait` |
+| `cat` | Titw | `bakehouse` | 0.3 | `#7f7a70` | `wait`, `eat` |
+
+`src/` is untouched: `/^bare$/i` (#941) covers `Bare`, and `npc.js` scales a
+body with no `parts` by its whole box, which is what `modelHeight` means for
+the cow.
+
+Check 8 (`test/assets.mjs`): the caps line `animals: { triangles: 1000,
+bytes: 80000, joints: 16, primitives: 2, materials: ['Coat', 'Bare'] }`, and
+an animal half of five lines over a caps line with `primitives`, sharing the
+parts half's skin walk, clip walk and frame line and not its hand, slots or
+person lines. `ANIMAL_TOPOLOGIES` holds the quadruped's 16 names, three clip
+names and 1.15; the goose's 12 are one more entry. Breaks (#34), each red from
+a green `assets.mjs`, each a re-render but the third:
+
+1. Caps, a third material `Snout` on the pig's snout: "check 8 animal line 1:
+   assets/blender/animals/pig.glb has 3 primitives, over 2", with "has a
+   primitive in material Snout, not Coat or Bare (#827)" and line 6's "has 3
+   material(s), Coat, Bare, Snout, not Coat and Bare (#820)".
+2. Topology, the goat's `Tail1` renamed `Tail`: "goat.glb's joints are not the
+   quadruped's 16: it lacks Tail1 and it adds Tail (#826)". `animals.py`'s
+   own `check_row` refuses that row first and had to be taken out of
+   `build` for the file to exist.
+3. Skin, the cat's `Ear.L` vertices set to joint 16 in the file, since
+   Blender's exporter cannot write an index outside the skin (#941): "cat.glb's
+   cat vertex 132 is weighted to joint 16, and the skin has 16 (0 to 15)".
+4. Clips, `cycles: 1.5` on the horse's `Walk`: "horse.glb's Walk's Body
+   rotation turns back at the loop: its speed changes by 1.13e-2 across the
+   seam against 1.53e-3 at most inside the clip".
+5. Four-legged, the whole sheep stood on end (#942): "0.89 m long and 1.45 m
+   tall, under 1.15 to 1".
+
+Not broken on their own: Idle under 2.0 s, a channel off the skin, and
+`Eating`'s `Head` under 20 degrees off Idle, which are the parts half's code
+(#941) under the animal's line number.
+
+`test/budget.mjs` (#828, #611), the four ceilings before and after:
+
+| Ceiling | Before | After | The suite prints |
+| --- | --- | --- | --- |
+| `MAX_SKINNED_TOTAL` | 34 | 39 | 39 bodies, 14 cast and 25 household |
+| `MAX_SKINNED_PER_WARD` | 20 | 22 | outer 22 at `terce-eve` (21 at `terce`), inner 18 |
+| `MAX_SKINNED_DRAWS_TOTAL` | 380 | 390 | 382, 165 the cast's and 217 the household's |
+| `MAX_SKINNED_DRAWS_PER_WARD` | 205 | 209 | outer 201 at `terce-eve`, inner 189 |
+
+The bodies are #828's numbers exactly: 39, outer 22, inner 18. The argument
+is #828's and #789's refusal holds: five bodies, each one argued, each inside
+#827's caps, and no second count for animals. What an animal costs is on the
+draw lines: 2 skinned primitives each, so 10 in total and 4 in the outer
+ward, where the pig and the sheep stand at the bell that ward peaks; the
+inner ward's three add 6 and it goes from 183 to 189. The draw ceilings rise
+by exactly those, 380 to 390 and 205 to 209, on the base #828 names for 2c's
+increment 2 not having shipped. The 8 under each is the room #940 left when
+the hen-wife went from 12 draws to 4 and is not new room; 2c's increment 2
+still lowers both to what it prints. Breaks. With the five placed and the old
+ceilings: "the outer ward holds 22 skinned bodies at terce-eve, over the
+ceiling of 20", "39 bodies built, over the ceiling of 34 (14 cast and 25
+household)" and "382 skinned draws, over the ceiling of 380". From the new
+ceilings, a sixth animal: "40 bodies built, over the ceiling of 39" and
+"holds 23 skinned bodies at terce-eve, over the ceiling of 22"; five more
+sheep: "the outer ward's bodies draw 211 skinned primitives at terce-eve,
+over the ceiling of 209 (#825)"; `hideMaterials` dropped from eight people:
+"396 skinned draws, over the ceiling of 390".
+
+`test/mystery.mjs`: the household count 20 to 25. With the cat taken out of
+`populace.json`: "24 of them", and `assets.mjs` says "nothing references
+assets/blender/animals/cat.glb" (#390). The per-person clip check, with one
+of the cat's stops made `peck`: "cat does "peck" in
+assets/blender/animals/cat.glb, which ships no clip called Idle_Peck". It
+prints 55 person-and-job pairs, 13 bodies (4 cast, 9 household) and 22
+silhouettes off 13 body files (17 off 8 before); the silhouette line needed
+no change. Nothing was added to `test/layout.mjs` or `test/plan-vs-scene.mjs`
+(#529).
+
+`npm run build` then `npm test` on huginn, software Chromium: **14 of 15 in
+the one full run, and `built` green on a rerun alone.** The fourteen passed in
+order, `plan-vs-scene` in 331.9 s. `built` went red first and last, after
+332.4 s, before any assertion of its own: "Waiting for selector
+`#start-overlay:not(.hidden)` failed", cause "DOM.describeNode timed out".
+`free -m` showed 7,236 MB available during it, so memory was not the reason.
+The load average was 12 to 14 on this box through the run, with another
+session's software-rendered Chromium (not this increment's, pid 479891) at
+441% CPU. `npm test built` on its own then passed in 263.0 s against the same
+`dist/`. That reads as a load timeout and is not proved to be one: nobody has
+seen fifteen of fifteen in a single run with the five animals in the castle,
+and the next quiet run on huginn or CI's is what settles it (#53 covers a
+real-time assertion, and this was a page load). **The quiet run settled it:**
+the lead ran `npm run build` then `npm test` again at 17:02 ET with the load
+average at 2.4, on the tree as committed, and it printed "all 15 suites
+passed", `built` in 199.5 s.
+
+Left open. **The GPU look is owed on Windows and blocks nothing (#53); this
+commit comes before it, as #939 put 2c's.** Each kind at 10 m in the castle
+reads as its kind; the pig and the sheep beside the cow read as one farm;
+the three clips on each, which are sine moves nobody has watched; the five
+tints, which were chosen in Node; and rank 10's inherited three: the hound's
+follow, the hens' peck, the cow grazing. One sentence each in an entry of its
+own. The contact sheet at `shots/blender/animals.png` is untracked (ignored).
+Increment 2 is the goose: the bird topology, `Idle_Peck`, two placed, 39 to
+41 and 22 to 24. `SPECS.md`'s fifth break and the horse's place are corrected
+in this commit by a `scribe` pass.

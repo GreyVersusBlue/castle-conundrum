@@ -8,7 +8,7 @@
 #
 # Built Z-up with the front at -Y, so the body's left is +X. The row's `rig`
 # and `clips` speak the model frame the page sees (+x left, +y up, +z the way
-# it faces); `to_blender` is the one place the two meet.
+# it faces); common.py's `to_blender` is the one place the two meet.
 #
 # What this script does that common.main() does not, and why it has its own
 # entry (#820): the frame is the Root joint at the origin and the soles on
@@ -39,7 +39,6 @@ import common  # noqa: E402  (the pin runs on import)
 
 import bpy  # noqa: E402
 import bmesh  # noqa: E402
-from mathutils import Quaternion, Vector  # noqa: E402
 
 SLOTS = ('skin', 'garment', 'hair', 'over', 'hat')
 MATERIALS = ('Cloth', 'Bare')
@@ -59,11 +58,6 @@ HEAD = [(1.52, 0.085, 0.085), (1.57, 0.098, 0.105), (1.63, 0.105, 0.11),
 # Which eighths of a ring are which side of the head, with the ring's first
 # vertex at 22.5 degrees from +X: eighth k faces (k + 1) * 45 degrees.
 BACK, SIDES, TEMPLES, FRONT = (0, 1, 2), (3, 7), (4, 6), (5,)
-
-
-def to_blender(p):
-    """Model frame (+x left, +y up, +z facing) to Blender's (+x, -y facing, +z up)."""
-    return Vector((p[0], -p[2], p[1]))
 
 
 def body_w(z, x):
@@ -86,76 +80,6 @@ def body_w(z, x):
         return {f'UpperLeg.{s}': 1.0}
     t = min(1.0, (0.50 - z) / 0.25) * 0.8
     return {f'UpperLeg.{s}': 1.0 - t, f'LowerLeg.{s}': t}
-
-
-class Part:
-    """One part's mesh as it is built: vertices with their joint weights,
-    faces with their swatch."""
-
-    def __init__(self, joints, dx):
-        self.bm = bmesh.new()
-        self.dl = self.bm.verts.layers.deform.verify()
-        self.joints = joints
-        self.dx = dx
-
-    def v(self, x, y, z, w):
-        vert = self.bm.verts.new((x + self.dx, y, z))
-        if w is None:
-            w = body_w(z, x)
-        w = {k: val for k, val in w.items() if val > 0}
-        total = sum(w.values())
-        for name, val in w.items():
-            if name not in self.joints:
-                raise ValueError(f'a vertex is weighted to {name}, which is no joint of the row\'s rig')
-            vert[self.dl][self.joints[name]] = val / total
-        return vert
-
-    def f(self, verts, colour):
-        face = self.bm.faces.new(verts)
-        common.swatch_uv(self.bm, face, colour)
-        return face
-
-    def ring(self, centre, rx, ry, n, w):
-        cx, cy, cz = centre
-        out = []
-        for k in range(n):
-            a = 2 * math.pi * (k + 0.5) / n
-            out.append(self.v(cx + rx * math.cos(a), cy + ry * math.sin(a), cz, w))
-        return out
-
-    def tube(self, rings, n, colour, bottom=False, top=False, cover=None, inside=False):
-        """`rings` is [(centre, rx, ry, weights)], bottom up. `colour` is one
-        swatch or one per band. `cover[i]` is the eighths of band i that are
-        faces (all of them if None). `inside` winds the faces to be seen from
-        within, which is the lining of a cloak."""
-        made = [self.ring(c, rx, ry, n, w) for c, rx, ry, w in rings]
-        for i, (a, b) in enumerate(zip(made, made[1:])):
-            col = colour[i] if isinstance(colour, (list, tuple)) else colour
-            for k in range(n):
-                if cover is not None and k not in cover[i]:
-                    continue
-                quad = (a[k], a[(k + 1) % n], b[(k + 1) % n], b[k])
-                self.f(tuple(reversed(quad)) if inside else quad, col)
-        first = colour[0] if isinstance(colour, (list, tuple)) else colour
-        last = colour[-1] if isinstance(colour, (list, tuple)) else colour
-        if bottom:
-            self.f(list(reversed(made[0])), first)
-        if top:
-            self.f(made[-1], last)
-        return made
-
-    def box(self, centre, size, colour, w):
-        cx, cy, cz = centre
-        hx, hy, hz = size[0] / 2, size[1] / 2, size[2] / 2
-        p = [[[self.v(cx + (2 * i - 1) * hx, cy + (2 * j - 1) * hy, cz + (2 * k - 1) * hz, w)
-               for k in (0, 1)] for j in (0, 1)] for i in (0, 1)]
-        for quad in ((p[0][0][0], p[0][0][1], p[0][1][1], p[0][1][0]),
-                     (p[1][0][0], p[1][1][0], p[1][1][1], p[1][0][1]),
-                     (p[0][0][0], p[1][0][0], p[1][0][1], p[0][0][1]),
-                     (p[0][1][0], p[0][1][1], p[1][1][1], p[1][1][0]),
-                     (p[0][0][0], p[0][1][0], p[1][1][0], p[1][0][0]),
-                     (p[0][0][1], p[1][0][1], p[1][1][1], p[0][1][1])):
-            self.f(quad, colour)
 
 
 # ------------------------------------------------------------------ the shapes --
@@ -267,11 +191,7 @@ SHAPES = {'skin': skin, 'garment': garment, 'shell': shell, 'crown': crown, 'ove
 
 # ------------------------------------------------------------------- the parts --
 def materials(row):
-    cloth = common.palette_material(row['pack'], PALETTE)
-    cloth.name = 'Cloth'
-    bare = cloth.copy()
-    bare.name = 'Bare'
-    return {'Cloth': cloth, 'Bare': bare}
+    return common.pair_materials(row['pack'], PALETTE, 'Cloth')
 
 
 def build_parts(row, mats, names=None, dx=0.0, suffix=''):
@@ -294,7 +214,7 @@ def build_parts(row, mats, names=None, dx=0.0, suffix=''):
             raise ValueError(f'{name}\'s shape is {spec["shape"]}, and folk.py has {", ".join(SHAPES)}')
         if names is not None and name not in names:
             continue
-        part = Part(joints, dx)
+        part = common.Part(joints, dx, body_w)
         SHAPES[spec['shape']](part, spec)
         loose = [v for v in part.bm.verts if not v.link_faces]
         if loose:
@@ -316,140 +236,17 @@ def build_parts(row, mats, names=None, dx=0.0, suffix=''):
     return objects
 
 
-# --------------------------------------------------------------------- the rig --
-def build_rig(row):
-    arm = bpy.data.armatures.new('Armature')
-    obj = bpy.data.objects.new('Armature', arm)
-    bpy.context.scene.collection.objects.link(obj)
-    bpy.context.view_layer.objects.active = obj
-    bpy.ops.object.mode_set(mode='EDIT')
-    for j in row['rig']:
-        bone = arm.edit_bones.new(j['name'])
-        # Every bone points straight up, 8 cm: a joint is a place, and with
-        # one orientation for all of them every joint's rest rotation in the
-        # file is none, so a clip's quaternions are its moves and stay clear
-        # of the half turn where a sampled quaternion's sign flips.
-        bone.head = to_blender(j['head'])
-        bone.tail = bone.head + Vector((0.0, 0.0, 0.08))
-        bone.roll = 0.0
-        bone.use_connect = False
-        if j['parent'] is not None:
-            bone.parent = arm.edit_bones[j['parent']]
-    bpy.ops.object.mode_set(mode='OBJECT')
-    return obj
-
-
-# ------------------------------------------------------------------- the clips --
-AXES = {'x': Vector((1, 0, 0)), 'y': Vector((0, 0, 1)), 'z': Vector((0, -1, 0))}
-
-
-def turn(clip, bone, k, keys):
-    """What `clip`'s moves make of `bone` at key k: a rotation in the model
-    frame, the row's moves applied in the order they are listed."""
-    q = Quaternion()
-    for m in clip['moves']:
-        if m['bone'] != bone:
-            continue
-        angle = m['rest'] + m['amp'] * math.sin(2 * math.pi * (clip['cycles'] * k / keys + m['phase']))
-        q = Quaternion(AXES[m['axis']], math.radians(angle)) @ q
-    return q
-
-
-def key_clips(row, arm):
-    """One action per clip, a key on every joint at every frame, each pushed
-    to an NLA track of the clip's name, which is what the exporter names the
-    animation after. Every clip but Idle is composed on Idle's pose at the
-    same key, so a clip that moves nothing is Idle."""
-    scene = bpy.context.scene
-    keys = row['keys']
-    scene.render.fps = row['fps']
-    scene.frame_start = 0
-    scene.frame_end = keys
-    names = {j['name'] for j in row['rig']}
-    idle = next((c for c in row['clips'] if c['name'] == 'Idle'), None)
-    if idle is None:
-        raise ValueError('the clips table has no Idle to compose the others on')
-    rest = {pb.name: pb.bone.matrix_local.to_quaternion() for pb in arm.pose.bones}
-    for pb in arm.pose.bones:
-        pb.rotation_mode = 'QUATERNION'
-    data = arm.animation_data_create()
-    for clip in row['clips']:
-        for m in clip['moves']:
-            if m['bone'] not in names:
-                raise ValueError(f'{clip["name"]} moves {m["bone"]}, which is no joint of the row\'s rig')
-            if m['axis'] not in AXES:
-                raise ValueError(f'{clip["name"]}: axis {m["axis"]} is not x, y or z')
-        action = bpy.data.actions.new(clip['name'])
-        data.action = action
-        for k in range(keys + 1):
-            for pb in arm.pose.bones:
-                d = turn(idle, pb.name, k, keys)
-                if clip is not idle:
-                    d = turn(clip, pb.name, k, keys) @ d
-                q = rest[pb.name].inverted() @ d @ rest[pb.name]
-                pb.rotation_quaternion = q
-                pb.keyframe_insert('rotation_quaternion', frame=k)
-        slot = data.action_slot
-        data.action = None
-        track = data.nla_tracks.new()
-        track.name = clip['name']
-        strip = track.strips.new(clip['name'], 0, action)
-        if strip.action_slot is None and slot is not None:
-            strip.action_slot = slot
-    for pb in arm.pose.bones:
-        pb.rotation_quaternion = Quaternion()
-
-
-# ------------------------------------------------------------------- the frame --
-def check_frame(arm, objects):
-    """#820: the Root joint at the origin and the soles on z 0, by
-    construction. Nothing is moved here; a body built anywhere else is an
-    error in the row, not something to shift."""
-    root = arm.data.bones['Root'].head_local
-    if root.length > 1e-6:
-        raise ValueError(f'Root is at {tuple(root)}, not the origin')
-    low = min(v.co.z for o in objects for v in o.data.vertices)
-    if abs(low) > 1e-6:
-        raise ValueError(f'the lowest vertex is at z {low}, not 0: the soles stand on the floor')
-
-
 def build(row):
     mats = materials(row)
-    arm = build_rig(row)
+    arm = common.build_rig(row['rig'])
     objects = build_parts(row, mats)
     for obj in objects:
         obj.parent = arm
         mod = obj.modifiers.new('Armature', 'ARMATURE')
         mod.object = arm
-    check_frame(arm, objects)
-    key_clips(row, arm)
+    common.check_frame(arm, objects)
+    common.key_clips(row, arm)
     return arm, objects
-
-
-def export(path):
-    """common.export() with a skin and animations: one glTF animation per NLA
-    track, sampled at every frame, every joint keyed."""
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    bpy.ops.export_scene.gltf(
-        filepath=path,
-        export_format='GLB',
-        export_yup=True,
-        export_apply=False,
-        export_extras=False,
-        export_cameras=False,
-        export_lights=False,
-        export_skins=True,
-        export_animations=True,
-        export_animation_mode='NLA_TRACKS',
-        export_force_sampling=True,
-        export_frame_range=False,
-        export_optimize_animation_size=False,
-        export_anim_slide_to_zero=True,
-        export_morph=False,
-    )
-    with open(path + '.json', 'w', encoding='utf-8', newline='\n') as f:
-        json.dump({'blender': bpy.app.version_string}, f)
-        f.write('\n')
 
 
 def main():
@@ -472,7 +269,7 @@ def main():
     common.empty_scene()
     common.seed(row)
     build(row)
-    export(out)
+    common.export_skinned(out)
     print(f'blender: exported {out}')
 
 
