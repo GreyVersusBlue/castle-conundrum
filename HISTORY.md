@@ -13078,6 +13078,194 @@ ward; the band going dark on the hall's threshold; the band over the dialogue
 panel and the journal. Also not watched on a page: a performance cut at a
 door onto a ward (#926), which `test/quest.mjs` holds in Node only.
 
+## Rank 6, increment 5: nine pairs recast, eight retired (2026-10-03)
+
+**A spec, then a build.** Written as `architect` on local `main` at
+`8e47496`. `SPECS.md` "Life: a populace" gains "Increment 5". No code, data
+or test changed in the spec. **Numbers #932 to #938**, from Huginn's block
+(#954). The limits, taken as given: no station moved, no body added,
+`MAX_SKINNED_TOTAL` and `SAVE_VERSION` untouched, the town's share out of
+scope, nothing that needs `npm run play`.
+
+**What was measured.** `data/mystery.json`'s day-one `schedule`, by Node:
+two of the twelve from one ward stand awake in one room at four places and
+no others. `chapel` at Prime, constable and chaplain. `outer-ward` at Terce,
+clerk and merchant. `kings-hall` at Sext, constable and steward.
+`great-hall` at Vespers, any two of clerk, cook, sentry and laundress, or
+constable and steward. The porter, the lady, the apprentice and the prisoner
+share a room with nobody of their own ward at any bell. The recast pool was
+built in a scratch script and run through `validateLore` before this was
+written: clean, 19 pairs, 39 lines, `untoldFacts` still `the-well` and
+`prison-tower-origin`. The same pool against the unedited `data/lore.json`
+drew seven "unknown source, no chatter pair" problems, one per `sources` row
+that names a retired pair.
+
+**#932. #914 is decided: never move a station, recast the nine sole
+tellers, retire the other eight** (Devon, 2026-10-03, as #914 recommended).
+The pool goes from 27 pairs to 19 and every pair has a `room`. Retired:
+`outer-prime-2`, `outer-terce-3`, `outer-sext-1`, `inner-prime-1`,
+`inner-prime-2`, `inner-sext-2`, `inner-sext-4`, `inner-vespers-2`. Their
+lines are in git and nowhere else. This closes #914 and nothing in the pool
+waits on Devon.
+
+**#933. The casting.** A recast pair keeps its id and its `cites` (#911) and
+takes two speakers the schedule puts together. The lines are in `SPECS.md`
+in full.
+
+| Pair | Was | Is, in speaking order | Room | Bell | Fact it alone tells |
+| --- | --- | --- | --- | --- | --- |
+| `outer-sext-3` | sentry, merchant | sentry, clerk | `great-hall` | vespers | `sentry-grandfather` |
+| `outer-prime-3` | sentry, apprentice | sentry, clerk | `great-hall` | vespers | `cadeyrn-cross-count` |
+| `outer-cell-1` | prisoner, laundress | cook, laundress | `great-hall` | vespers | `prison-tower-scratching` |
+| `outer-terce-2` | apprentice, merchant | clerk, merchant | `outer-ward` | terce | `saint-cadeyrn-miracle` |
+| `inner-prime-3` | porter, chaplain | constable, chaplain | `chapel` | prime | `aldous-heart` |
+| `inner-terce-2` | porter, chaplain | constable, chaplain | `chapel` | prime | `sir-walter-debt-rumour` |
+| `inner-vespers-1` | chaplain, lady | chaplain, constable | `chapel` | prime | `chapel-relic` |
+| `inner-sext-3` | lady, chaplain | constable, steward | `kings-hall` | sext | `lady-alys-brother` |
+| `inner-terce-3` | steward, porter | steward, constable | `kings-hall` | sext | `town-debt-rumour` |
+
+The rule was to change as few words as the new mouth needs, and to check
+each line against the fact's `text`, the room and the bell, and what the
+speaker is on record as knowing. Twelve of the nineteen lines change a
+name, a vocative or one contraction, or nothing at all. The seven that
+change more, in five pairs, and why:
+
+- `outer-sext-3`, line 2. Wykes had "heard the garrison sing it over the
+  wall at Michaelmas for twenty years". The clerk sits at the high table
+  (`hall-high-table`), which the song's own last line says has none of the
+  words, so he has "sat at the high table and heard the garrison sing it
+  every Michaelmas I have kept the works". No number of years: the file
+  gives him none.
+- `outer-cell-1`, both lines. Madoc cannot be in the hall, so Marged
+  reports him, in the fact's own words, "tells whoever stands at his bars",
+  and Nest's answer is her old line turned from "you" to "him". Nest keeps
+  the answer because she is his wife (`dialogue.wife`) and the line is the
+  one that believes him.
+- `outer-terce-2`, line 1. Ieuan told it as a believer. Master Robert, who
+  elsewhere says Cadeyrn "keeps nothing but a mason's conscience", reports
+  it: "The lodge has it that".
+- `inner-sext-3`, line 1. Lady Alys said it of her husband; Sir Roger says
+  it of himself, "I had twelve men at Bryn Adda and thought myself a
+  Constable". Line 2 goes from "he" to "you" and from the chaplain to the
+  Steward.
+- `inner-terce-3`, line 2. Gwilym's "I only ask because I keep a roll
+  myself" was the porter's. Sir Roger's is "I ask it in this hall, and I
+  would not have it asked past the door", which is the fact's "said in the
+  King's Hall, never past it" said aloud, and the pair now stands in that
+  hall.
+
+`inner-terce-2` goes to the chapel and not the King's Hall because the
+answer, "I have read his accounts", is the stance `sir-walter-esturmy` and
+the Vespers sermon give Father Anselm, and Sir Walter lies under that floor.
+`inner-sext-3` goes to the King's Hall so each room holds four pairs
+instead of five and three. The ward rule (#554, #911) is unchanged, and it
+is why four of the twelve now speak in no pair.
+
+**#934. Four rooms hold the pool, and the hall at Vespers is 193.3 s.**
+`great-hall` at Vespers 9 pairs, `chapel` at Prime 4, `kings-hall` at Sext
+4, `outer-ward` at Terce 2. By `captionMs` with the names split off: the
+hall's nine are 120.3 s, so with 37.0 s of song and nine 4 s gaps the hall
+is 193.3 s from the first note, up from #925's 138.3. The chapel walked
+into is 52.0 s and three gaps, 64.0 s; the King's Hall 51.5 s and three
+gaps, 63.5 s; the outer ward 23.2 s and one gap, 27.2 s. No constant moves:
+`CHATTER_GAP_MS` stays 4000. Whether three minutes of supper is too much is
+a looking question under #53, and the fallback is named: `outer-prime-3`
+to clerk and merchant in the outer ward at Terce, which takes the hall to
+eight.
+
+**#935. File order: `outer-sext-3` is said first in the hall, every other
+recast pair after the pairs #911 placed, and an empty watch key is
+deleted.** `outer-sext-3`'s second line is "And the song, I suppose", and
+the song is what the hall says first (#927); appended, it would be said 105
+s after the last note. It costs one edit in `test/quest.mjs`, the id in the
+assertion on the first step after the song. Everywhere else a room's first
+pair is the one it had, so `test/plan-vs-scene.mjs`'s beat on
+`inner-terce-4` and `quest.mjs`'s assertions on the King's Hall, the chapel
+and the outer ward stand unedited. `outer.prime`, `outer.sext`,
+`inner.terce` and `inner.vespers` have no pair left and leave the file: the
+key is the bell a pair is said at (#911), and both readers walk
+`Object.entries`. This amends #911's "moved pairs are appended" for one
+pair.
+
+**#936. `data/lore.json` loses seven `sources` rows and nothing else; both
+second cites hold.** The rows name the retired pairs: `inner-sext-4` under
+`the-cross-wall`, `inner-vespers-2` under `gwilym-porter` and
+`household-and-works`, `inner-prime-1` under `kings-debt-wages`,
+`outer-sext-1` under `hywel-rise`, `outer-terce-3` under `madoc-smith`,
+`outer-prime-2` under `saint-cadeyrn`. Each fact keeps a source, so the
+untold list does not move. `outer-sext-3` still cites `march-song`: the
+garrison sings it and a King's man has never been told the words.
+`inner-sext-3` still cites `sir-roger-lestrange`: eight years here, twelve
+men at Bryn Adda. No fact's `text` changes.
+
+**#937. A pair with no `room` is a failure, and `unplacedChatter` is
+deleted.** This overturns #912's "an unplaced pair is a report, not a
+failure" and #928's "unplaced pairs are not held to it". Neither was wrong
+when written: both existed so the rail would constrain nothing Devon had
+yet to decide, and #932 is that decision. Left as it was, the report would
+have to be asserted empty for ever, which is the failure said a second way,
+and a pair added without a `room` would validate clean and never be heard.
+`indexChatter` says `chatter pair <id>: names no room`, and the name rail
+runs for every pair. `QuestManager` keeps its skip of a pair with no `room`,
+because it is also built with pools no validator has read.
+
+**#938. Who holds what.** `test/lore.mjs` holds the table of 19 in both
+directions, the refusal of a pair with no `room`, the station and name
+fixtures re-pointed off the deleted keys, and the name rail on a third
+line, which `inner-vespers-1` is the first played pair to have.
+`test/quest.mjs` holds the order in each of the four rooms and a sweep that
+hears exactly the nineteen. `test/plan-vs-scene.mjs` gains nothing and is
+not edited: every fact here is about two data files or about the manager on
+a rig, so all of it is provable in Node (#529). `src/quest-manager.js`,
+`src/populace.js` and `src/lore.js` change comments; `src/lore.js` also
+changes the rail; `src/main.js` changes nothing. **Left to `npm run play`
+on a GPU (#53)**: #934's four rooms, and the chapel's four pairs between
+the same two men.
+
+**Built the same day** (session CC-06, `builder`). `data/npcs.json`'s
+`chatter` is 19 pairs and 39 lines under four keys, `outer.terce` (2),
+`outer.vespers` (9), `inner.prime` (4) and `inner.sext` (4), in #935's order;
+the nine recast pairs' lines were written by a script out of `SPECS.md` and
+diffed back against it, and no line of the pool has an em dash.
+`chatterComment` and `performancesComment` changed text only.
+`data/lore.json` lost the seven `sources` rows of #936 and nothing else.
+`src/lore.js`: `indexChatter` says `names no room`, the name rail runs for
+every pair, `unplacedChatter` is deleted. `src/quest-manager.js` and
+`src/populace.js`: one comment each. `test/lore.mjs` stays at 99 assertions:
+4 deleted (the seventeen, "a report, never a problem", the two fixtures on
+`inner-prime-1` and unplaced `outer-prime-2`), 4 added (every pair in the
+pool has a row in the table of 19, `names no room`, `inner-terce-3` in
+`steward-chamber`, line 3 of `inner-vespers-1`), and the seven fixtures on
+`outer.prime[0]` moved to `outer.terce[0]`. `test/quest.mjs` goes from 557
+to 562: 5b (2), 5c (1) and 8b (2) added, 2, 3 and 10 re-pointed.
+`test/plan-vs-scene.mjs` is not edited and no number was claimed.
+
+**Broken on purpose (#34), four times, each from green and each restored.**
+(a) The `names no room` line deleted from `indexChatter`: `npm test lore` 98
+green, 1 red, `a pair with its room deleted -- said nothing`. (b)
+`outer-sext-3` given `["sentry", "merchant"]`: `validates clean` red with
+`chatter pair outer-sext-3: merchant is not in the castle at vespers` and
+`line 2 does not open with merchant's name`. (c) `{ "kind": "chatter", "id":
+"outer-prime-2" }` put back under `saint-cadeyrn`: `validates clean` red
+with `saint-cadeyrn: unknown source, no chatter pair "outer-prime-2"`. (d)
+`outer-sext-3` moved to the end of `outer.vespers`: `npm test lore` all
+green, `npm test quest` 2 red with `that step shows outer-sext-3's first
+line under "Dafydd", with the name split off the line -- Dafydd: Not one man
+of the watch will draw from the south-west well after dark...` and 3 red
+with `the captions after the song are the eighteen lines of ..., in that
+order`, so the order is `quest.mjs`'s and not the rail's.
+
+**Checks on huginn.** `npm run dialogue:check`: `dialogue/castle.dlg and
+data/ agree`. `npm run build` ok. `npm test`, once, at load average 10 to 14
+from another project's browser suites and 8.5 GB available: all 15 suites
+passed, `plan-vs-scene` in 196.7 s and `built` in 244.1 s, neither rerun. The
+household talk beat's "band dark before" read did not go red with four pairs
+in the chapel at Prime, so the fix `SPECS.md` allowed was not needed.
+`grep -rn unplacedChatter src test` returns nothing.
+
+**Not confirmed: the looking list (#934) needs `npm run play` on a GPU
+(#53). Nobody ran it.**
+
 ## Castle in Blender increment 7b: the quay, the crate and the plan's other new props, decided before anything is built (2026-10-03)
 
 Written as `architect` on `claude/castle3d-7b` at `6889322`. Numbered from

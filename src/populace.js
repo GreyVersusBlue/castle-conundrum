@@ -129,8 +129,8 @@ export const DWELL = 9;
  * the pair's midpoint the player may stand and still hear it. Both in metres.
  *
  * THE POOL IS THE HOUSEHOLD'S OWN, and not data/npcs.json's `chatter`. That
- * pool is the twelve's: every line opens with one of their names and not one
- * of its 27 pairs has its speakers within 3 m at the pair's own watch (#731).
+ * pool is the twelve's: every line opens with one of their names and it is
+ * played by room and bell, not by the 3 m between two bodies (#731, #925).
  */
 export const TALK_RADIUS = 3;
 export const EARSHOT = 6;

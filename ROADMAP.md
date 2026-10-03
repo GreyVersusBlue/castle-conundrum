@@ -89,7 +89,7 @@ files restored from `51735fa` and encoded, a room, two walls and 14 rows.~~
 
 ~~**3a** Play Again starts over (#889): `src/gvb-save.js`'s `autosave.stop()`
 and a Node test in `test/save.mjs`.~~ **Shipped** (#916). **6**
-populace (10 chatter pairs placed, #911; playback and the town's share left), **2c**'s increment 2 (the
+populace (19 chatter pairs placed and played, #911 to #938; the GPU look and the town's share left), **2c**'s increment 2 (the
 other 15 populace humans onto `folk.glb`, once increment 1's GPU look has
 passed). Every one is
 data, a validator, a Node suite or a headless DOM assertion.
