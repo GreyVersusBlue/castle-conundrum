@@ -41,7 +41,7 @@ a network that reaches Poly Haven, once each, into a hash-pinned cache.
 | **2b Blender: an interiors kit** | Opus 5 | Specced 2026-09-25 (#813 to #816, #819), nothing built. |
 | **2c Blender: a shared rig with swappable parts** | Opus 5 | Specced 2026-09-25 (#820 to #825), nothing built. Increment 1 is Blender; increment 2 is a container. |
 | **2d Blender: the animals** | Opus 5 | Specced 2026-09-25 (#826 to #829), nothing built. |
-| **2i Castle in Blender, the integration row** (Blender 5.2) | Opus 5 | Shape decided 2026-10-02 (#919 to #924); specced 2026-10-03 (#963 to #968), argued from #961's master: one skin file cut by stage, `curtain`, `buildings`, `town`, `land`, the ceilings moved in #966. Next is increment 1, #922's open gate in the model, a `builder` job on Devon's Windows machine. Nothing built. |
+| **2i Castle in Blender, the integration row** (Blender 5.2) | Opus 5 | Shape decided 2026-10-02 (#919 to #924); specced 2026-10-03 (#963 to #968), argued from #961's master: one skin file cut by stage, `curtain`, `buildings`, `town`, `land`, the ceilings moved in #966. Increment 1, #922's open gate in the model, built (#970), its still awaiting Devon's line. Increment 2, the skin, next, a `builder` job on Devon's Windows machine. |
 
 ### Local: a GPU
 
