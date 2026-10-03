@@ -511,6 +511,8 @@ else:
 # names an id the blueprint lacks. The exceptions are allow.json entries keyed
 # by piece id (or model:<file>), each with a reason; one with no reason fails.
 # An entry under a marker prefix is line 3's, and this line skips it (#895).
+# From 7b (#960) a piece-id entry something realises fails as stale, and a key
+# that names nothing fails; the pass text gains the allowed ids when any applied.
 ran =[s for s in common.GEOMETRY if s in stages]
 if ran:
     table = common.STAGE_OF(bp)
@@ -534,6 +536,13 @@ if ran:
     want = [pid for pid, s in table.items() if s in ran]
     missing = [pid for pid in want if pid not in named and pid not in allow]
     unknown = sorted(f"{i} (on {o})" for i, o in named.items() if i not in table)
+    # Two clauses from 7b (#960), so a reason that has gone stale cannot sit in
+    # allow.json for ever: (a) a piece-id entry whose stage ran and which some
+    # object names; (b) a key that is no piece id, under no marker prefix and
+    # not model:<file>, which names nothing.
+    stale = [pid for pid in want if pid in allow and pid in named]
+    nothing = [k for k in allow if k not in table and not is_marker_name(k) and not k.startswith('model:')]
+    allowed = [pid for pid in want if pid in allow and pid not in named]
     why = []
     if missing:
         why.append(f"{len(missing)} piece(s) nothing realises: {', '.join(missing[:12])}" + (' ...' if len(missing) > 12 else ''))
@@ -541,8 +550,15 @@ if ran:
         why.append(f"object(s) name ids the blueprint lacks: {', '.join(unknown[:12])}")
     if unreasoned:
         why.append(f"allow.json entries with no reason: {', '.join(unreasoned)}")
+    for pid in stale:
+        why.append(f"allow.json's {pid} is stale: {named[pid]} realises it; delete the entry")
+    for k in nothing:
+        why.append(f"allow.json's {k} names no blueprint piece, marker or model:<file>")
     if why:
         report(6, 'coverage', False, '; '.join(why))
+    elif allowed:
+        report(6, 'coverage', True, f"{len(want)} pieces of {', '.join(ran)}; {len(want) - len(allowed)} named by a "
+               f"planId or planIds, {len(allowed)} allowed by allow.json ({', '.join(allowed)})")
     else:
         report(6, 'coverage', True, f"{len(want)} pieces of {', '.join(ran)} each named by a planId or planIds")
 else:

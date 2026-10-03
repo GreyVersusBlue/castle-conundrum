@@ -16,8 +16,20 @@
 # Geometry Nodes tree over the whole square, pad included, except the road
 # and every blueprint piece's and room's footprint, where buildings go. The
 # World is lighting.py's from increment 7 (#873); terrain set it from #846 until
-# then, and a build without `lighting` has none. No river and no moat until rank 9's 3b
-# ships (SPECS.md, open calls).
+# then, and a build without `lighting` has none. No moat.
+#
+# THE RIVER (7b, #956). Read from two blueprint pieces, none computed (#500):
+# RIVER's box gives the water's SURFACE and BOTTOM, BANK's its FOOT, LIP and
+# BED. West of FOOT the ground is BED; from FOOT to LIP a straight slope up to
+# PAD_HEIGHT; east of LIP the hills' rise is eased by a smoothstep over
+# PAD_BAND from the shore, so they come down to the water. West of LIP every
+# vertex is mud and no grass grows; WATER_estuary (modelOnly "#956") fills the
+# rest of the square west of the shore from BOTTOM to SURFACE, its east edge
+# halfway down the slope, under the land. The road starts at the outside-road
+# box's west end. A tree or rock west of LIP + KEEP_OFF is not placed, filtered
+# in place() after its draws, so every other stands where it stood. The
+# backdrops (#960) are left out of the pad and the footprints: the model's
+# countryside is this stage's, and allow.json says so.
 #
 # Every number is in the game's frame (x, z in metres, y up) until a vertex is
 # written, where common.to_blender turns it into Blender's (x, -z, y) (#843).
@@ -33,6 +45,7 @@ import bpy
 from mathutils import Matrix, Vector
 
 import common
+import masonry
 import materials
 
 SIZE = 400.0
@@ -59,6 +72,10 @@ GRASS_OFF_ROAD = 1.0       # grass stays this far off the road's edge
 GRASS_ROAD_RAMP = (0.5, 3.0)  # then thickens to full over this many metres, by a 3.5 m noise
 MUD_SHARE = 0.30           # of the ground's vertices, mud
 SLOPE_MUD = (0.30, 0.50)   # rise over run: grass below the first, mud above the second
+RIVER = 'quay-water'       # its box: max y the SURFACE, min y the BOTTOM (#956)
+BANK = 'quay-bank-north'   # its box: min x the FOOT, max x the LIP, min y the BED (#956)
+BANK_TWIN = 'quay-bank-south'  # must span the north bank's x and y
+ESTUARY_ONLY = '#956'
 
 # The meshes placed from each model's .blend; every other appended object is
 # deleted. A pattern that matches nothing raises.
@@ -125,8 +142,10 @@ class Ground:
     """The height field as a function of game (x, z), and the regions on it."""
 
     def __init__(self, bp):
-        xs = [c for p in bp['pieces'] for c in (p['box']['min']['x'], p['box']['max']['x'])]
-        zs = [c for p in bp['pieces'] for c in (p['box']['min']['z'], p['box']['max']['z'])]
+        # The backdrops are the game's countryside, not a footprint (#960).
+        kept = [p for p in bp['pieces'] if not p.get('backdrop')]
+        xs = [c for p in kept for c in (p['box']['min']['x'], p['box']['max']['x'])]
+        zs = [c for p in kept for c in (p['box']['min']['z'], p['box']['max']['z'])]
         self.pad = (min(xs) - PAD_MARGIN, max(xs) + PAD_MARGIN, min(zs) - PAD_MARGIN, max(zs) + PAD_MARGIN)
         self.x0, self.x1 = CENTRE[0] - SIZE / 2, CENTRE[0] + SIZE / 2
         self.z0, self.z1 = CENTRE[1] - SIZE / 2, CENTRE[1] + SIZE / 2
@@ -145,6 +164,20 @@ class Ground:
         rb = road['box']
         self.road_x0 = rb['min']['x']
         self.road_z = (rb['min']['z'] + rb['max']['z']) / 2
+
+        # The river (#956), from two pieces' boxes and nothing else.
+        by = {p['id']: p for p in bp['pieces']}
+        for pid in (RIVER, BANK, BANK_TWIN):
+            if pid not in by:
+                raise ValueError(f"terrain: the blueprint has no {pid} piece; the river reads its box (#956)")
+        nb, sb = by[BANK]['box'], by[BANK_TWIN]['box']
+        if any(abs(nb[e][k] - sb[e][k]) > 1e-9 for e in ('min', 'max') for k in 'xy'):
+            raise ValueError(f"terrain: {BANK_TWIN}'s x and y span (x {sb['min']['x']} to {sb['max']['x']}, y "
+                             f"{sb['min']['y']} to {sb['max']['y']}) differs from {BANK}'s (x {nb['min']['x']} to "
+                             f"{nb['max']['x']}, y {nb['min']['y']} to {nb['max']['y']})")
+        self.river = by[RIVER]['box']
+        self.surface, self.bottom = self.river['max']['y'], self.river['min']['y']
+        self.foot, self.lip, self.bed = nb['min']['x'], nb['max']['x'], nb['min']['y']
 
         # Value-noise lattices, drawn once in a fixed order: the hills first.
         self.hills = [(amp, Lattice(self, wave)) for wave, amp in OCTAVES]
@@ -192,10 +225,16 @@ class Ground:
         return sum(amp * lat.at(x, z) for amp, lat in self.hills)
 
     def height(self, x, z):
+        # The channel (#956): the bed west of the foot, a straight slope to the lip.
+        if x <= self.foot:
+            return self.bed
+        if x < self.lip:
+            return self.bed + (PAD_HEIGHT - self.bed) * (x - self.foot) / (self.lip - self.foot)
         if self.in_pad(x, z):
             return PAD_HEIGHT
         start = PAD_WOBBLE[0] * (self.wobble.at(x, z) + 1) / 2
         rise = smoothstep(0.0, PAD_BAND, self.pad_distance(x, z) - start)
+        rise *= smoothstep(self.lip, self.lip + PAD_BAND, x)  # the hills ease down to the shore
         if rise == 0.0:
             return PAD_HEIGHT
         half = self.road_half(min(x, self.gate_x))
@@ -233,7 +272,7 @@ def footprints(bp):
     (x0, x1, z0, z1); disc rooms as ('disc', cx, cz, r)."""
     out = []
     for p in bp['pieces']:
-        if p['kind'] == 'ground':
+        if p['kind'] == 'ground' or p.get('backdrop'):  # no grass under a backdrop the model does not draw (#960)
             continue
         b = p['box']
         out.append((b['min']['x'], b['max']['x'], b['min']['z'], b['max']['z']))
@@ -278,6 +317,9 @@ def build_ground(g, bp, col, plan_ids):
     want = max(0, int(MUD_SHARE * len(base)) - already)
     q = rest[len(rest) - want] if 0 < want < len(rest) else (rest[-1] + 1 if want == 0 else rest[0] - 1)
     mud = [max(b, smoothstep(q - 0.12, q + 0.12, p)) for b, p in zip(base, patch)]
+    for i, x in enumerate(xs):  # the channel's bed and slope are mud (#956)
+        if x < g.lip:
+            mud[i * N:(i + 1) * N] = [1.0] * N
     share = sum(1 for m in mud if m > 0.5) / len(mud)
 
     # Grass, per face, 0 to 1: none on the road plus GRASS_OFF_ROAD or on any
@@ -320,7 +362,7 @@ def build_ground(g, bp, col, plan_ids):
         fx = g.x0 + (i + 0.5) * STEP
         start = g.road_half(min(fx, g.gate_x)) + GRASS_OFF_ROAD
         for j in range(n):
-            if blocked[i * n + j]:
+            if blocked[i * n + j] or fx < g.lip:  # no clump grows under water (#956)
                 grass.append(0.0)
                 continue
             fz = g.z0 + (j + 0.5) * STEP
@@ -348,7 +390,7 @@ def build_ground(g, bp, col, plan_ids):
 
 
 def build_road(g, col):
-    x0, x1 = g.x0, g.gate_x
+    x0, x1 = g.road_x0, g.gate_x  # from the outside-road box's west end, so it ends at the quay (#956)
     n = int(math.ceil((x1 - x0) / ROAD_ROW))
     K = ROAD_ACROSS
     verts, uvs, cover, rut = [], [], [], []
@@ -384,6 +426,23 @@ def build_road(g, col):
     print(f"terrain: road x {x0} to {x1}, cobbles {min(widths):.2f} to {max(widths):.2f} m wide, on z {g.road_z} "
           f"east of x {g.road_x0}, drifting up to {drift:.2f} m west of it")
     return ob
+
+
+def build_estuary(g, col):
+    """WATER_estuary (modelOnly "#956", no planId): the water west of the shore
+    that the plan's slab does not cover, three boxes from BOTTOM to SURFACE.
+    Its east edge is halfway down the channel's slope, under the land."""
+    r = g.river
+    edge = (g.foot + g.lip) / 2
+    slabs = [(g.x0, r['min']['x'], g.z0, g.z1),
+             (r['min']['x'], edge, g.z0, r['min']['z']),
+             (r['min']['x'], edge, r['max']['z'], g.z1)]
+    s = masonry.Solid()
+    for x0, x1, z0, z1 in slabs:
+        s.box(x0, x1, g.bottom, g.surface, z0, z1)
+    ob = s.finish('WATER_estuary', col, [materials.water()])
+    ob['modelOnly'] = ESTUARY_ONLY
+    return slabs
 
 
 # append_model's memo, {asset: its templates} (#857): a second append of the
@@ -467,12 +526,14 @@ def scatter(g, n, spacing, placed, centres=None):
     return out
 
 
-def place(g, col, prefix, templates, points, sink, scale, height=(1.0, 1.0), lean=0.0, native=None):
+def place(g, col, prefix, templates, points, sink, scale, height=(1.0, 1.0), lean=0.0, native=None, dropped=None):
     """One object per point, sharing its template's mesh (no new meshes). The
     draws are in a fixed order per object, so a rebuild repeats every one.
     With `native` ({template name: its height}), `scale` is in metres of
     height and becomes a scale by the template's own height. Returns each
-    object's height before its lean."""
+    object's height before its lean. A point west of LIP + KEEP_OFF (#956)
+    makes its draws and is then not placed, counted into `dropped[prefix]`,
+    so every later object draws what it drew before and keeps its name."""
     heights = []
     for k, (x, z) in enumerate(points):
         t = random.choice(templates)
@@ -483,6 +544,10 @@ def place(g, col, prefix, templates, points, sink, scale, height=(1.0, 1.0), lea
         hz = random.uniform(*height)
         tilt = math.radians(random.uniform(0.0, lean))
         towards = random.uniform(0.0, 2 * math.pi)
+        if x < g.lip + KEEP_OFF:
+            if dropped is not None:
+                dropped[prefix] = dropped.get(prefix, 0) + 1
+            continue
         axis = Vector((-math.sin(towards), math.cos(towards), 0.0))  # the top leans along `towards`
         rot = Matrix.Rotation(tilt, 3, axis) @ Matrix.Rotation(yaw, 3, 'Z')
         at = Vector(common.to_blender((x, g.height(x, z) - sink, z)))
@@ -585,6 +650,7 @@ def build(bp):
         raise ValueError(f"terrain: {ROAD_PIECE} is not a terrain piece in STAGE_OF")
     terrain = build_ground(g, bp, col, [p for p in mine if p != ROAD_PIECE])
     build_road(g, col)
+    estuary = build_estuary(g, col)
 
     # The models, appended into a library collection that is not in the scene
     # (a fake user keeps it); the placed objects share its meshes.
@@ -607,16 +673,25 @@ def build(bp):
     native = {t.name: native_height(t) for asset in TREES for t in models[asset]}
     print('terrain: tree models as modelled, ' + ', '.join(f"{k} {v:.2f} m" for k, v in sorted(native.items())))
     centres = scatter(g, GROVES, 30.0, [])
-    placed, heights = [], []
+    placed, heights, dropped = [], [], {}
     for asset, n in TREES.items():
         pts = scatter(g, n, TREE_SPACING, placed, centres)
         placed += pts
-        heights += place(g, col, f"TREE_{asset}", models[asset], pts, 0.05, TREE_METRES, TREE_HEIGHT, TREE_LEAN, native)
+        heights += place(g, col, f"TREE_{asset}", models[asset], pts, 0.05, TREE_METRES, TREE_HEIGHT, TREE_LEAN, native,
+                         dropped)
     for asset, n in ROCKS.items():
         pts = scatter(g, n, ROCK_SPACING, placed)
         placed += pts
-        place(g, col, f"ROCK_{asset}", models[asset], pts, 0.15, ROCK_SCALE)
+        place(g, col, f"ROCK_{asset}", models[asset], pts, 0.15, ROCK_SCALE, dropped=dropped)
 
     build_grass(g, col, terrain, grass_col)
-    print(f"terrain: {sum(TREES.values())} trees in {GROVES} groves, {min(heights):.2f} to {max(heights):.2f} m tall, "
-          f"{sum(ROCKS.values())} rocks, planIds {mine}")
+    gone = sum(dropped.values())
+    print(f"terrain: {sum(TREES.values()) - sum(dropped.get(f'TREE_{a}', 0) for a in TREES)} trees in {GROVES} groves, "
+          f"{min(heights):.2f} to {max(heights):.2f} m tall, "
+          f"{sum(ROCKS.values()) - sum(dropped.get(f'ROCK_{a}', 0) for a in ROCKS)} rocks, planIds {mine}")
+    print(f"terrain: river channel foot x {g.foot:g}, lip x {g.lip:g}, bed y {g.bed:g} ({BANK}); water y {g.bottom:g} "
+          f"to {g.surface:.2f} ({RIVER}); estuary slabs "
+          + '; '.join(f"x {a:g} to {b:g}, z {c:g} to {d:g}" for a, b, c, d in estuary)
+          + f"; road x {g.road_x0:g} to {g.gate_x:g}; {gone} dropped west of x {g.lip + KEEP_OFF:g}"
+          + (' (' + ', '.join(f"{k[len('TREE_') if k.startswith('TREE_') else len('ROCK_'):]} {v}"
+                             for k, v in sorted(dropped.items())) + ')' if dropped else ''))

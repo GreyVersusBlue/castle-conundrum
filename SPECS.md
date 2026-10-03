@@ -1450,6 +1450,81 @@ turn it red from green (#34). The report quotes the failing line.
   allowed, line 4 measured and recorded. The eleven breaks and four stills in
   increment 7b's open calls, each quoted, and Devon's line on each still and
   on the nine look calls recorded. No fetch.
+  *Measured 2026-10-03*: on Blender 5.2.2 against the 451-piece blueprint
+  (`451 pieces, 761 colliders, 45 rooms, 4 open, 5 gates, 18 ramps, 8 drums,
+  3 braziers, 5 cameras, 5 standing`), the fetch `203 sources, 203 already
+  held, 0 downloaded`. `--only guide` printed `town 59 (36 decor, 2 ground, 1
+  prop, 19 wall, 1 water)` and `props 195 (80 decor, 115 prop)`, total 451.
+  `--only terrain`: line 4 `51 image texture nodes, 46 images`, line 5 `19
+  level-0 rooms, 95 points, largest |height| 0.0001 m`, line 6 `5 pieces of
+  terrain`; the stage printed `river channel foot x -141, lip x -140, bed y -2
+  (quay-bank-north); water y -1.3 to -1.10 (quay-water); estuary slabs x -281
+  to -198, z -200 to 200; x -198 to -140.5, z -200 to -40; x -198 to -140.5,
+  z 40 to 200; road x -129.5 to -36; 74 dropped west of x -134 (boulder_01
+  13, rock_moss_set_02 12, island_tree_01 15, tree_small_02 34)`, so 71 trees
+  and 35 rocks stand. Corrected: the road starts at `outside-road`'s min x,
+  which is -129.5, not the -140 call 1 wrote; the rule was built as written.
+  `--only town`: line 4 `115 image texture nodes, 65 images`, line 6 `59
+  pieces of town`; `45 objects, 42 carrying 59 planIds of 59 pieces; boxes
+  held within 0.0050 m`; `DOCK_quay-front x -144.4 to -140, y -2 to 0, z -16.4
+  to 16.4, 144.32 m2 tiled by 8 pieces; 1 top face in MAT_stone_pavers`;
+  `ROOF_quay-toll-house-roof gable, ridge x at y 9, foot y 6, x -138 to -130,
+  z -11 to -5`; `DOOR_quay-toll-house x -134.5 to -133.5, y 0 to 2, z -5 to
+  -4.97, 2 straps`. `--only props`: line 4 `191 image texture nodes, 124
+  images`, line 6 `195 pieces of props; 190 named by a planId or planIds, 5
+  allowed by allow.json (backdrop-north, backdrop-south, backdrop-east,
+  backdrop-north-west, backdrop-south-west)`; by group `80 kit, 10 Poly Haven,
+  75 Devon (71 files), 20 built, 5 packs, 5 backdrops (not drawn)`; packs `5
+  files, 1444 faces: wood 602, iron 312, kept 530`, baked from z 0.4140
+  (pricket), 0.4025 (ledger desk), 0.4000 (crate), 0.1950 (aumbry), 0.3528
+  (knife barrel). **The plain `npm run castle3d:build` exited 0 and wrote
+  `castle.blend`**, all nine lines passing: line 1 `49 ROOM_ (45 blueprint
+  rooms, 28 of them discs, and 4 open places); the 27 mystery rooms each have
+  one`; line 2 `5 GATE_ ..., 4 hinges at their pivots, each holding its
+  LEAF_`; line 3 `899 markers within 0.5 m of the blueprint (worst room 0.000
+  m, box 0.000, point 0.000), 4 open places in their bands; 43 on the objects
+  that realise them (worst 0.000 m); 0 allowed`; line 4 `318 image texture
+  nodes, 191 images` (props' share 101 and 59, packs 2/2; lighting's 1 and 1;
+  the stages before props, which print no share, 216 and 131 by difference);
+  line 5 as `--only terrain`; line 6 `451 pieces of terrain, walls, towers,
+  gates, buildings, town, props; 446 named by a planId or planIds, 5 allowed
+  by allow.json (...)`, call 6's text; line 7 `26 practicals (19 candle, 2
+  torch, 4 brazier, 1 hearth)` and 3 braziers, **not #877's 37**: the 11
+  chapel candles left with `candles-chapel`'s swap from `brass_candleholders`
+  to `pricket.glb` (#907), which has no flame face; call 9 expected 37; line 8
+  5 cameras; line 9 `899 in MARKERS (49 ROOM_, 761 COL_, 18 STAIR_ and 36
+  ends, 5 GATE_, 4 hinges, SPAWN, 11 EVID_, 13 READ_, 1 BELL_), none renders,
+  SPAWN aimed at (0, 1.7, 0)`. Increment 8's castle build exited 0 with line 5
+  at 19 and 95, line 6 at 197 and line 3's realised count at 20. The eleven
+  breaks each went red as call 10 gives them, except (9),
+  which printed `PROP_candles-chapel (piece candles-chapel) is off its
+  blueprint box by 1.000 m at its worst face, min y -1.000 against 0.000`, not
+  about 0.414: the glb node carries the quantization scale as well as the
+  translation, so the unbaked mesh is in the glb's normalised units, -1 to 1;
+  (2) on `--only terrain` stayed green, since `props` did not run; (11)
+  printed `room mereford-quay corner at game x -140, z -16 has height -1.000
+  m`. With the placement filter off, `--only terrain` stayed green by design.
+  The four stills (`still_7b.py`, `review\increment7b\`, OPTIX on the RTX 3070
+  Ti, 1920 x 1080): `quay.png` at 128 samples, exposure -0.75; `town-7b.png`
+  -0.50 (table -0.50); `chapel-7b.png` +10.00 (table +10.00); `kitchen-crate.png`
+  at 1024 samples, +11.00; each inside the clip and crush bands. Twice each at
+  960 x 540: quay at most 1/255, mean 0.000038 of a step; kitchen-crate 1/255,
+  0.000053; chapel 1/255, 0.000036; **`CAM_town` outside #898's judge, at
+  most 2/255, mean 0.000124, on 0.0351% of pixels**, reported and not
+  re-rendered. **Finding**: call 11's quay camera at (-118, 9, 14) looks into
+  the inner face of `town-wall-west`, with only the toll-house roof over it;
+  the dock, a bank and the estuary are out of frame, and moving the camera is
+  an open call for the lead.
+  *Corrected 2026-10-03*: the lead re-aimed the quay camera as a correction to
+  call 11, not a new decision. The old eye (-118, 9, 14) looking at (-140, 1,
+  -6) stood inside the town and saw `town-wall-west`'s inner face; the new eye
+  (-162, 7, 22) over the estuary, outside the wall, looks at (-141, -0.5, 0),
+  24 mm, 128 samples, not adjusted. The new `quay.png`: exposure +0.75, in
+  band (median 0.342, clipped 0.00%, crushed 0.00%), holding the water, the
+  dock face and its paved top, both banks, the crane and the toll-house with
+  its slate gable. Twice at 960 x 540, **outside #898's judge, at most 5/255,
+  mean 0.000129 of a step, on 0.0363% of pixels**, reported and not
+  re-rendered. The 1/255 and 0.000038 above are the old camera's.
 - **Increment 9.** A full build writes `castle.blend`, `castle.glb` and
   `markers.json`, and `npx gltf-transform inspect castle.glb`'s size,
   triangle count and texture memory are written into `HISTORY.md`. Those
@@ -4269,8 +4344,11 @@ changed.
 - **The stills (11, #53).** Recommend **four, by `still_7b.py` in
   `CASTLE3D_OUT\review\increment7b\`, uncommitted, `still_9.py`'s settings
   (#898 call 9), over the new master**: `shots/castle3d/quay.png` from a
-  review camera at game (-118, 9, 14) looking at (-140, 1, -6), over the
-  town's west gate at the toll-house, the dock, a bank and the estuary;
+  review camera at game (-162, 7, 22) looking at (-141, -0.5, 0), 24 mm,
+  128 samples, over the estuary at the dock front, a bank, the crane and the
+  toll-house (*Corrected 2026-10-03*, the lead: the first eye, (-118, 9, 14)
+  looking at (-140, 1, -6), stood inside the town and saw only
+  `town-wall-west`'s inner face);
   `town-7b.png` from `CAM_town`; `chapel-7b.png` from `CAM_chapel`; and
   `kitchen-crate.png` from (-20, 1.7, -8) looking at (-15.25, 0.4, -13.2).
   Each with its exposure inside #877's bands and Devon's line on each
