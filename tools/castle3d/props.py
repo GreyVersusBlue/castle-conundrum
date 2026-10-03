@@ -3,11 +3,18 @@
 #
 # Snapped to the blueprint (#500), and reading nothing else: never another
 # stage's objects, which is what lets `--only props` build alone. STAGE_OF
-# gives this stage 187 pieces, 107 `prop` and 80 `decor`, and each is realised
-# by exactly one object, PROP_<piece id>, carrying `planId` and `noCollide`
-# from the blueprint (#843), in the PROPS collection, built and checked in
-# blueprint order (kit 80, Poly Haven 12, Devon 75, built 20), so a break names
-# the first piece in that order. Nothing here is model-only.
+# gives this stage 195 pieces from 7b (#958 to #960), 115 `prop` and 80
+# `decor`, and each but the five backdrops is realised by exactly one object,
+# PROP_<piece id>, carrying `planId` and `noCollide` from the blueprint (#843),
+# in the PROPS collection, built and checked in blueprint order (kit 80, Poly
+# Haven 10, Devon 75, built 20, packs 5), so a break names the first piece in
+# that order. Nothing here is model-only.
+#
+# THE PACKS (5, #959). PACK_MODEL's committed glbs, imported by Blender's glTF
+# importer, the node translation baked into the mesh, each face re-materialed
+# by its palette colour (PACK_KIND onto the prop kinds, PACK_KEEP on the glb's
+# own material). THE BACKDROPS (5, #960) are taken and not drawn: the model's
+# countryside is terrain.py's, and allow.json names each one.
 #
 # THE KIT (80, #866). Generated, no fetch. Each is drawn in its kit file's
 # local frame (x across, y up, z toward its front) so its local bounds are
@@ -154,6 +161,22 @@ SHRUB_ASSET = 'tree_small_02'
 # ------------------------------------------------------------- Poly Haven --
 PH_MODEL = r'^assets/poly-haven/(.+)_1k\.gltf/'
 LOD_DROP = r'_LOD[1-9]$'
+
+# -------------------------------------------------------------- the packs --
+# The committed glbs rank 1's Blender packs made (#959): imported by Blender's
+# own glTF importer from the repo, read only (git pins them, so no sources.json
+# row), the import's node translation baked into the mesh, and each face
+# re-materialed by its palette colour at its UV centroid, as Devon's faces are
+# by atlas region. A colour in neither table raises.
+PACK_MODEL = r'^assets/blender/(calibration|evidence)/[a-z0-9-]+\.glb$'
+PACK_KIND = {}
+for _kind, _hexes in (('wood', ('#553a22', '#6d4a2e', '#795234', '#855a3a', '#916240', '#463d33')),
+                      ('iron', ('#343b40', '#7e898d'))):
+    for _h in _hexes:
+        PACK_KIND[_h] = _kind
+PACK_KEEP = frozenset(('#e6d9a8', '#1c1410', '#cbbfa3', '#5a352e'))  # tallow, wick and ink, parchment and flour, leather
+if set(PACK_KIND) & PACK_KEEP:
+    raise ValueError(f"props: PACK_KIND and PACK_KEEP share {sorted(set(PACK_KIND) & PACK_KEEP)}")
 
 
 # ------------------------------------------------------------------ helpers --
@@ -735,15 +758,110 @@ def place_asset(p, meshes, col, first):
     return root
 
 
+# ------------------------------------------------------------------ the packs --
+def _palette(img, cache):
+    """The image's pixels as an (h, w, 4) array, rows bottom up, as stored."""
+    if img not in cache:
+        w, h = img.size
+        pix = np.empty(w * h * 4, np.float32)
+        img.pixels.foreach_get(pix)
+        cache[img] = pix.reshape(h, w, 4)
+    return cache[img]
+
+
+def _hex(rgb):
+    return '#' + ''.join(f"{int(round(float(c) * 255)):02x}" for c in rgb[:3])
+
+
+def import_pack(p, col):
+    """The piece's committed glb through bpy.ops.import_scene.gltf: one mesh
+    object, moved into `col`, its matrix_world baked into the mesh and reset to
+    identity (#959; the importer leaves it at the glb node's translation)."""
+    path = os.path.join(common.HERE, '..', '..', *p['model'].split('/'))
+    path = os.path.normpath(path)
+    if not os.path.isfile(path):
+        raise FileNotFoundError(f"props: {p['id']} is {p['model']}, which is not a file at {path}")
+    before_obs = set(bpy.data.objects)
+    mats, imgs = set(bpy.data.materials), set(bpy.data.images)
+    bpy.ops.import_scene.gltf(filepath=path)
+    new = [o for o in bpy.data.objects if o not in before_obs]
+    meshes = [o for o in new if o.type == 'MESH']
+    if len(meshes) != 1:
+        raise ValueError(f"props: {p['model']} imports {len(meshes)} mesh objects ({[o.name for o in new]}); a pack prop is one")
+    ob = meshes[0]
+    for o in new:
+        if o is not ob:
+            bpy.data.objects.remove(o)
+    for c in list(ob.users_collection):
+        c.objects.unlink(ob)
+    col.objects.link(ob)
+    bpy.context.view_layer.update()
+    lift = ob.matrix_world.translation.z
+    ob.data.transform(ob.matrix_world)
+    ob.matrix_world = Matrix.Identity(4)
+    _dedupe(mats, bpy.data.materials)
+    _dedupe(imgs, bpy.data.images)
+    return ob, lift
+
+
+def rematerial_pack(p, ob, cache):
+    """Each face by its palette colour at its UV centroid (#959): PACK_KIND's
+    onto materials.prop_material in Devon's slot order, PACK_KEEP's left on the
+    glb's own material in slot 0. Raises on a colour in neither, naming the
+    piece, the file and the hex. Returns {kind or 'kept': faces}."""
+    me = ob.data
+    name = os.path.basename(p['model'])
+    if len(me.materials) != 1 or len(me.uv_layers) != 1:
+        raise ValueError(f"props: {p['id']} ({name}) has {len(me.materials)} materials and {len(me.uv_layers)} UV "
+                         f"layers; a pack prop has one of each")
+    own = me.materials[0]
+    imgs = [n.image for n in own.node_tree.nodes if n.type == 'TEX_IMAGE' and n.image] if own.node_tree else []
+    if len(imgs) != 1:
+        raise ValueError(f"props: {p['id']} ({name})'s material {own.name} reads {len(imgs)} images; a pack reads its palette")
+    pal = _palette(imgs[0], cache)
+    h, w = pal.shape[:2]
+    layer = me.uv_layers[0]
+    layer.name = 'atlas'
+    uvs = layer.data
+    counts = {}
+    hexes = []
+    for poly in me.polygons:
+        u = sum(uvs[i].uv[0] for i in poly.loop_indices) / poly.loop_total
+        v = sum(uvs[i].uv[1] for i in poly.loop_indices) / poly.loop_total
+        px = min(max(int(math.floor(u * w)), 0), w - 1)
+        py = min(max(int(math.floor(v * h)), 0), h - 1)
+        hx = _hex(pal[py, px])
+        if hx in PACK_KIND:
+            poly.material_index = 1 + KINDS.index(PACK_KIND[hx])
+            counts[PACK_KIND[hx]] = counts.get(PACK_KIND[hx], 0) + 1
+        elif hx in PACK_KEEP:
+            poly.material_index = 0
+            counts['kept'] = counts.get('kept', 0) + 1
+        else:
+            raise ValueError(f"props: a face of {p['id']} ({name}) samples palette colour {hx}, in neither PACK_KIND "
+                             f"nor PACK_KEEP")
+        hexes.append(hx)
+    for k in KINDS:
+        me.materials.append(materials.prop_material(k))
+    linear = {hx: tuple(srgb_to_linear(int(hx[i:i + 2], 16) / 255) for i in (1, 3, 5)) + (1.0,) for hx in set(hexes)}
+    write_atlas_rgb(me, lambda poly: linear[hexes[poly.index]])
+    write_uvmap(me)
+    me.uv_layers['atlas'].active_render = True
+    me.uv_layers.active = me.uv_layers['atlas']
+    return counts
+
+
 # ------------------------------------------------------------------- build --
 def build(bp):
     col = common.stage_collection('props')
     table = common.STAGE_OF(bp)
     mine = [p for p in bp['pieces'] if table[p['id']] == 'props']
-    kit, ph, devon, built = [], [], [], []
+    kit, ph, devon, built, packs, backdrops = [], [], [], [], [], []
     for p in mine:
         model = p.get('model') or ''
-        if p['kind'] == 'decor':
+        if p.get('backdrop'):
+            backdrops.append(p)       # not drawn: allow.json says why (#960)
+        elif p['kind'] == 'decor':
             if os.path.basename(model) not in KIT_LOCAL:
                 raise ValueError(f"props: kit piece {p['id']} is {model}, which KIT_LOCAL has no row for")
             kit.append(p)
@@ -751,6 +869,8 @@ def build(bp):
             ph.append(p)
         elif model.startswith('assets/props/'):
             devon.append(p)
+        elif re.search(PACK_MODEL, model):
+            packs.append(p)
         elif not model:
             built.append(p)
         else:
@@ -822,6 +942,26 @@ def build(bp):
         ob = s.finish(f"PROP_{p['id']}", col, [materials.library(p['material'])])
         placed.append((tag(ob, p), p, 'built'))
 
+    # the packs (#959), one import per file, a second row of a file a linked copy
+    before = set(bpy.data.materials)
+    pack_obs, pack_counts, pack_log, cache = {}, {}, [], {}
+    for p in packs:
+        name = os.path.basename(p['model'])
+        if p['model'] not in pack_obs:
+            ob, lift = import_pack(p, col)
+            for k, n in rematerial_pack(p, ob, cache).items():
+                pack_counts[k] = pack_counts.get(k, 0) + n
+            pack_obs[p['model']] = ob
+            pack_log.append(f"{p['id']} {name} {len(ob.data.polygons)} faces, baked from z {lift:.4f}")
+        else:
+            ob = pack_obs[p['model']].copy()
+            col.objects.link(ob)
+        ob.name = f"PROP_{p['id']}"
+        ob.matrix_world = placement(p, pushes[p['id']])
+        ob.scale = _scale(p)
+        placed.append((tag(ob, p), p, 'tree'))
+    ledger.mark('packs', before)
+
     # every object on its (pushed) box, in blueprint order
     bpy.context.view_layer.update()
     worst_tree, worst_box = (0.0, None), (0.0, None)
@@ -835,12 +975,17 @@ def build(bp):
             w = check_box(ob, moved, EVERY_FACE, stage='props')
             if w >= worst_box[0]:
                 worst_box = (w, ob.name)
-    if len(placed) != len(mine) or len({ob.name for ob, _p, _h in placed}) != len(mine):
-        raise ValueError(f"props: {len(placed)} objects for {len(mine)} pieces")
+    drawn = len(mine) - len(backdrops)
+    if len(placed) != drawn or len({ob.name for ob, _p, _h in placed}) != drawn:
+        raise ValueError(f"props: {len(placed)} objects for the {drawn} pieces the groups build")
 
     order, nodes, images = ledger.split()
     print(f"props: {len(mine)} pieces by group: {len(kit)} kit, {len(ph)} Poly Haven, {len(devon)} Devon "
-          f"({len(stems)} files), {len(built)} built; {sum(1 for p in mine if p['noCollide'])} noCollide")
+          f"({len(stems)} files), {len(built)} built, {len(packs)} packs, {len(backdrops)} backdrops (not drawn); "
+          f"{sum(1 for p in mine if p['noCollide'])} noCollide")
+    print(f"props: packs: {len(pack_obs)} files, {sum(pack_counts.values())} faces: "
+          + ', '.join(f"{k} {pack_counts[k]}" for k in KINDS + ('kept',) if k in pack_counts)
+          + f" ({'; '.join(pack_log) or 'none'})")
     print(f"props: atlas check {atlas_img.name} against tools/props/atlas.py: {atlas_diff:.5f} (ATLAS_TOL {ATLAS_TOL})")
     print(f"props: Devon's {len(meshes)} meshes, {faces} faces, {len(used)} regions in use; faces per kind: "
           + ', '.join(f"{k} {counts[k]}" for k in KINDS + ('flame', 'kept')))

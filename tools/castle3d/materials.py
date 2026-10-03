@@ -30,6 +30,7 @@
 # slabs; PROP_KINDS and prop_material(kind), the five PBR kinds Devon's props
 # take, tinted per face by an `atlas_rgb` attribute and box-projected on object
 # coordinates (box_material's `atlas_detail`, `coords` and `metallic`).
+# 7b (#956): WATER and water(), the river's one procedural material, no image.
 # Later increments add the rest here, not in their stage modules.
 
 import os
@@ -676,6 +677,40 @@ def tint_leaves(mat):
     for sock in targets:
         L.new(hsv.outputs['Color'], sock)
     mat['castle3d_tint'] = True
+
+
+# The river and the estuary (#956), one tuple: base colour (linear), roughness,
+# IOR, Bump strength and distance (metres), and the world Noise's feature size
+# (metres) and detail. Murky and opaque, no transmission, since the bed is never
+# seen. No image, so check.py line 4 gains no node and no image for it; and not
+# #846's "never a flat colour" fallback, since there is no map to miss.
+WATER = ((0.018, 0.030, 0.026), 0.06, 1.33, 0.12, 0.04, 1.2, 4.0)
+
+
+def water():
+    """MAT_water (#956): WATER's Principled BSDF with a Bump on a world Noise,
+    used by terrain.py's WATER_estuary and town.py's WATER_quay-water. Built
+    once per file."""
+    have = bpy.data.materials.get('MAT_water')
+    if have is not None:
+        return have
+    colour, rough, ior, strength, distance, scale, detail = WATER
+    mat = _new_material('MAT_water')
+    tree = mat.node_tree
+    bsdf = _node(tree, 'ShaderNodeBsdfPrincipled', 0, 0)
+    bsdf.inputs['Base Color'].default_value = (*colour, 1.0)
+    bsdf.inputs['Roughness'].default_value = rough
+    bsdf.inputs['IOR'].default_value = ior
+    height = _world_noise(tree, -500, -300, scale, detail)
+    bump = _node(tree, 'ShaderNodeBump', -200, -300)
+    bump.label = 'ripple'
+    bump.inputs['Strength'].default_value = strength
+    bump.inputs['Distance'].default_value = distance
+    tree.links.new(height, bump.inputs['Height'])
+    tree.links.new(bump.outputs['Normal'], bsdf.inputs['Normal'])
+    out = _node(tree, 'ShaderNodeOutputMaterial', 300, 0)
+    tree.links.new(bsdf.outputs[0], out.inputs['Surface'])
+    return mat
 
 
 # A flame's emission strength on the World's scale (#874): a candle flame's

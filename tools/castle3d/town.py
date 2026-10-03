@@ -4,8 +4,8 @@
 # Snapped to the blueprint (#500), and reading nothing else: never another
 # stage's objects, which is what lets `--only town` build alone. Every number
 # is the blueprint's or a named constant below, from SPECS.md's increment 5
-# open calls, in the game's frame. The 43 pieces STAGE_OF gives this stage are
-# carried by 33 objects' planId or planIds. What departs from a piece's box
+# open calls, in the game's frame. The 59 pieces STAGE_OF gives this stage
+# from 7b (#957, #958) are carried by 42 objects' planId or planIds. What departs from a piece's box
 # inside an object that carries its planId (a jetty, a chimney, a roof above
 # its pitch boxes) is held in a named constant citing #857; what realises no
 # piece (the town gates' leaves) carries modelOnly "#857" and no planId.
@@ -41,6 +41,15 @@
 # barrels and the crate generated to their boxes; the trees are terrain's
 # tree_small_02 template (terrain._APPENDED), TOWN_TREE_METRES tall, and a
 # tree's box meeting any other object's the stage built raises.
+#
+# THE QUAY (7b, #956, #957). TOLL_quay-toll-house, a box solid in its own
+# stone, with DOOR_quay-toll-house (modelOnly "#957") on its road face;
+# ROOF_quay-toll-house-roof, the plan's gable (`built`, `ridge`) and nothing
+# more, slopes in TOLL_ROOF's slate and its ends in its stone; DOCK_quay-front,
+# one box over the eight dock pieces, which must tile it, its top in the quay
+# floor's paving; BANK_quay-bank-north and -south in the terrain's mud; and
+# WATER_quay-water, the plan's slab in materials.water(). Each is held to its
+# box (the dock to the union) on every face. The crane is props.py's (#958).
 
 import math
 import os
@@ -55,7 +64,7 @@ import masonry
 import materials
 import terrain
 import walls
-from buildings import (BOX_TOLERANCE, GABLE, GROUND_Y, ROOF_BOARDS, TIMBER, check_box, openings)
+from buildings import (BOX_TOLERANCE, EVERY_FACE, GABLE, GROUND_Y, ROOF_BOARDS, TIMBER, check_box, openings)
 from materials import DRESSED
 
 EPS = 1e-6
@@ -148,6 +157,19 @@ CRATE = (0.06, 0.02)                         # the battens' square, the panels' 
 TREE_ASSET = 'tree_small_02'
 TOWN_TREE_METRES = (4.0, 4.6)
 TREE_SINK = 0.05                             # as terrain's trees
+
+# The quay (7b, #956, #957), each piece by id; a quay piece no rule takes falls
+# to `other` and raises, as every town piece does.
+TOLL = 'quay-toll-house'                     # a box solid in its own material
+TOLL_ROOF = ('slate', 'medieval_blocks_02')  # the gable's slopes, through ALIAS, and its two ends (#957)
+TOLL_DOOR = 'max z'                          # the road face, where DOOR's shut leaf stands (#957)
+TOLL_ONLY = '#957'
+DOCK = r'^quay-dock-(side-\d+|corner-(north|south))$'
+DOCK_STONE = ('medieval_blocks_02', 'stone_pavers')  # its faces, the toll-house's stone; its top, the quay floor's
+DOCK_TILE = 0.01                             # m2 on the area sum, and metres of overlap, the eight may differ by
+BANK = r'^quay-bank-(north|south)$'
+BANK_GROUND = 'mud'                          # materials.GROUND's, the terrain's mud; no forest_ground_06 (#957)
+RIVER = 'quay-water'                         # the plan's water slab, MAT_water (#956)
 
 
 # ------------------------------------------------------------------ helpers --
@@ -638,6 +660,105 @@ def build_crate(s, p):
     return side
 
 
+# ------------------------------------------------------------------- the quay --
+def _box_solid(b, slot=0):
+    s = masonry.Solid()
+    s.box(b['min']['x'], b['max']['x'], b['min']['y'], b['max']['y'], b['min']['z'], b['max']['z'], slot)
+    return s
+
+
+def dock_union(dock):
+    """The eight dock pieces' union box, raising unless they tile it: their plan
+    areas sum to its area within DOCK_TILE and no two overlap by more (#957)."""
+    if len(dock) != 8:
+        raise ValueError(f"town: the quay front is {len(dock)} dock pieces, not 8: {[p['id'] for p in dock]}")
+    union = _box(*(f(p['box'][e][k] for p in dock) for k in 'xyz' for e, f in (('min', min), ('max', max))))
+    area = (union['max']['x'] - union['min']['x']) * (union['max']['z'] - union['min']['z'])
+    total = sum((p['box']['max']['x'] - p['box']['min']['x']) * (p['box']['max']['z'] - p['box']['min']['z'])
+                for p in dock)
+    if abs(total - area) > DOCK_TILE:
+        raise ValueError(f"town: the dock pieces' plan areas sum to {total:.3f} m2, not their union's {area:.3f}; "
+                         f"they do not tile it")
+    for i, a in enumerate(dock):
+        for b in dock[i + 1:]:
+            over = min(min(a['box']['max'][k], b['box']['max'][k]) - max(a['box']['min'][k], b['box']['min'][k])
+                       for k in 'xz')
+            if over > DOCK_TILE:
+                raise ValueError(f"town: {a['id']} and {b['id']} overlap by {over:.3f} m; the dock pieces tile")
+    return union, area
+
+
+def build_quay(col, toll, toll_roof, dock, banks, river, done_, checked):
+    """TOLL_, DOOR_ and ROOF_ for the toll-house, DOCK_quay-front, the BANK_s and
+    WATER_quay-water (#956, #957). Returns the print lines."""
+    log = []
+    for p in toll:
+        ob = done_(_box_solid(p['box']).finish(f"TOLL_{p['id']}", col, [materials.library(p['material'])],
+                                               plan_id=p['id']))
+        checked.append((ob, p, EVERY_FACE))
+        # the shut door on the road face, town.DOOR's leaf with DOOR_STRAP's straps
+        b = p['box']
+        if TOLL_DOOR != 'max z':
+            raise ValueError(f"town: TOLL_DOOR {TOLL_DOOR!r}; the toll-house's road face is its max z")
+        face = Face('z', b['max']['z'], -1, b['min']['x'], b['max']['x'])
+        w, h, out = DOOR
+        c = (b['min']['x'] + b['max']['x']) / 2
+        lo, hi = c - w / 2, c + w / 2
+        y0 = b['min']['y']
+        s = masonry.Solid()
+        face.box(s, lo, hi, y0, y0 + h, -out, 0.0, 0)
+        tall, proud, ats, part = DOOR_STRAP
+        for at in ats:
+            face.box(s, lo, lo + w * part, y0 + at - tall / 2, y0 + at + tall / 2, -out - proud, -out, 1)
+        ob = done_(s.finish(f"DOOR_{p['id']}", col, [materials.library(OAK), materials.library(IRON)]))
+        ob['modelOnly'] = TOLL_ONLY
+        log.append(f"town: {ob.name} (modelOnly {TOLL_ONLY}) x {lo:g} to {hi:g}, y {y0:g} to {y0 + h:g}, "
+                   f"z {b['max']['z']:g} to {b['max']['z'] + out:g}, {len(ats)} straps")
+    for p in toll_roof:
+        if p.get('built') != 'gable' or p.get('ridge') not in ('x', 'z'):
+            raise ValueError(f"town: {p['id']} is built {p.get('built')!r} with ridge {p.get('ridge')!r}; the toll-house "
+                             f"roof is the plan's gable, built 'gable' with ridge 'x' or 'z' (#957)")
+        b = p['box']
+        x0, x1, y0, y1, z0, z1 = (b[e][k] for k in 'xyz' for e in ('min', 'max'))
+        s = masonry.Solid()
+        if p['ridge'] == 'x':
+            s.plate([(z0, y0), ((z0 + z1) / 2, y1), (z1, y0)], x0, x1, slot=0, axis='x')
+            ends = s.paint(lambda x, y, z: abs(x - x0) < 1e-4 or abs(x - x1) < 1e-4 or abs(y - y0) < 1e-4, 1)
+        else:
+            s.plate([(x0, y0), ((x0 + x1) / 2, y1), (x1, y0)], z0, z1, slot=0, axis='z')
+            ends = s.paint(lambda x, y, z: abs(z - z0) < 1e-4 or abs(z - z1) < 1e-4 or abs(y - y0) < 1e-4, 1)
+        ob = done_(s.finish(f"ROOF_{p['id']}", col, [materials.library(TOLL_ROOF[0]), materials.library(TOLL_ROOF[1])],
+                            plan_id=p['id'], smooth_angle=5.0))
+        checked.append((ob, p, EVERY_FACE))
+        log.append(f"town: {ob.name} gable, ridge {p['ridge']} at y {y1:g}, foot y {y0:g}, x {x0:g} to {x1:g}, "
+                   f"z {z0:g} to {z1:g}; slopes {materials.library(TOLL_ROOF[0]).name}, {ends} faces (ends and "
+                   f"underside) {materials.library(TOLL_ROOF[1]).name}")
+    if dock:
+        union, area = dock_union(dock)
+        s = _box_solid(union)
+        top = s.paint(lambda x, y, z: abs(y - union['max']['y']) < 1e-4, 1)
+        ids = sorted(p['id'] for p in dock)
+        ob = done_(s.finish('DOCK_quay-front', col, [materials.library(DOCK_STONE[0]), materials.library(DOCK_STONE[1])],
+                            plan_ids=ids))
+        checked.append((ob, {'id': 'the quay front (' + ', '.join(ids) + ')', 'box': union}, EVERY_FACE))
+        log.append(f"town: {ob.name} x {union['min']['x']:g} to {union['max']['x']:g}, y {union['min']['y']:g} to "
+                   f"{union['max']['y']:g}, z {union['min']['z']:g} to {union['max']['z']:g}, {area:.2f} m2 tiled by "
+                   f"{len(ids)} pieces; {top} top face in {materials.library(DOCK_STONE[1]).name}")
+    for p in banks:
+        ob = done_(_box_solid(p['box']).finish(f"BANK_{p['id']}", col, [materials.ground(BANK_GROUND)],
+                                               plan_id=p['id']))
+        checked.append((ob, p, EVERY_FACE))
+    for p in river:
+        ob = done_(_box_solid(p['box']).finish(f"WATER_{p['id']}", col, [materials.water()], plan_id=p['id']))
+        ob['noCollide'] = bool(p.get('noCollide'))
+        checked.append((ob, p, EVERY_FACE))
+        b = p['box']
+        log.append(f"town: {ob.name} x {b['min']['x']:g} to {b['max']['x']:g}, y {b['min']['y']:g} to "
+                   f"{b['max']['y']:.2f}, z {b['min']['z']:g} to {b['max']['z']:g}; banks "
+                   + ', '.join(f"BANK_{q['id']}" for q in banks) + f" in {materials.ground(BANK_GROUND).name}")
+    return log
+
+
 # ------------------------------------------------------------------- build --
 def build(bp):
     col = common.stage_collection('town')
@@ -661,7 +782,15 @@ def build(bp):
             if what:
                 modelled.setdefault(what, []).append(p)
     floors = [p for p in mine if p['kind'] == 'ground']
-    done = runs + houses + church + cross + decks + pitches + floors + [q for v in modelled.values() for q in v]
+    toll = [p for p in mine if p['id'] == TOLL]
+    toll_roof = [p for p in mine if p['kind'] == 'prop']
+    dock = [p for p in mine if re.search(DOCK, p['id'])]
+    banks = [p for p in mine if re.search(BANK, p['id'])]
+    river = [p for p in mine if p['id'] == RIVER]
+    quay = toll + toll_roof + dock + banks + river
+    decks = [p for p in decks if p not in quay]
+    done = (runs + houses + church + cross + decks + pitches + floors + quay
+            + [q for v in modelled.values() for q in v])
     other = [p['id'] for p in mine if p not in done]
     if other:
         raise ValueError(f"town: STAGE_OF gives this stage pieces no rule takes: {other}")
@@ -829,6 +958,10 @@ def build(bp):
                             plan_id=p['id'], smooth_angle=5.0))
         checked.append((ob, p, [f"{e} {k}" for e in ('min', 'max') for k in 'xyz']))
 
+    # the quay (7b): the toll-house, its door and gable, the dock front, the
+    # banks and the plan's water slab, each held to its box on every face
+    quay_log = build_quay(col, toll, toll_roof, dock, banks, river, done_, checked)
+
     # the trees: terrain's template (appended here only when terrain did not run)
     trees = modelled.get('tree', [])
     tree_log = []
@@ -889,6 +1022,8 @@ def build(bp):
     for line in lines:
         print(line)
     for line in church_log:
+        print(line)
+    for line in quay_log:
         print(line)
     print(f"town: leaves (modelOnly {MODEL_ONLY}): {'; '.join(leaf_log)}")
     print(f"town: trees ({TREE_ASSET}, native {native:.3f} m): {'; '.join(tree_log)}" if trees else 'town: no trees')

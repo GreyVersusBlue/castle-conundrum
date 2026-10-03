@@ -29,7 +29,8 @@
 #                           each on a floor the spawn reaches; CAM_spawn is the scene's
 #   9 markers   (markers)   one COL_ per collider, a STAIR_ and both ends per LIVE
 #                           ramp, SPAWN aimed, each EVID_, READ_, BELL_; every
-#                           marker hidden from render and nothing else in MARKERS
+#                           marker hidden from render and nothing else in MARKERS;
+#                           when props ran, each PROP_ its piece's noCollide (#898)
 # Lines 5 and 6 are live from increment 1, whose terrain is the first geometry
 # stage; 7 and 8 from increment 7 (#876); 1, 2, 3 and 9 from increment 8
 # (#895). Line 9 is last so no line renumbers.
@@ -87,8 +88,7 @@ def g(v):
     return '(' + ', '.join(f"{float(c):g}" for c in v) + ')'
 
 
-def to_game(v):
-    return (v[0], v[2], -v[1])
+from common import to_game  # the inverse of to_blender, shared with export.py (#898)
 
 
 def tree_bounds(root):
@@ -511,6 +511,8 @@ else:
 # names an id the blueprint lacks. The exceptions are allow.json entries keyed
 # by piece id (or model:<file>), each with a reason; one with no reason fails.
 # An entry under a marker prefix is line 3's, and this line skips it (#895).
+# From 7b (#960) a piece-id entry something realises fails as stale, and a key
+# that names nothing fails; the pass text gains the allowed ids when any applied.
 ran =[s for s in common.GEOMETRY if s in stages]
 if ran:
     table = common.STAGE_OF(bp)
@@ -534,6 +536,13 @@ if ran:
     want = [pid for pid, s in table.items() if s in ran]
     missing = [pid for pid in want if pid not in named and pid not in allow]
     unknown = sorted(f"{i} (on {o})" for i, o in named.items() if i not in table)
+    # Two clauses from 7b (#960), so a reason that has gone stale cannot sit in
+    # allow.json for ever: (a) a piece-id entry whose stage ran and which some
+    # object names; (b) a key that is no piece id, under no marker prefix and
+    # not model:<file>, which names nothing.
+    stale = [pid for pid in want if pid in allow and pid in named]
+    nothing = [k for k in allow if k not in table and not is_marker_name(k) and not k.startswith('model:')]
+    allowed = [pid for pid in want if pid in allow and pid not in named]
     why = []
     if missing:
         why.append(f"{len(missing)} piece(s) nothing realises: {', '.join(missing[:12])}" + (' ...' if len(missing) > 12 else ''))
@@ -541,8 +550,15 @@ if ran:
         why.append(f"object(s) name ids the blueprint lacks: {', '.join(unknown[:12])}")
     if unreasoned:
         why.append(f"allow.json entries with no reason: {', '.join(unreasoned)}")
+    for pid in stale:
+        why.append(f"allow.json's {pid} is stale: {named[pid]} realises it; delete the entry")
+    for k in nothing:
+        why.append(f"allow.json's {k} names no blueprint piece, marker or model:<file>")
     if why:
         report(6, 'coverage', False, '; '.join(why))
+    elif allowed:
+        report(6, 'coverage', True, f"{len(want)} pieces of {', '.join(ran)}; {len(want) - len(allowed)} named by a "
+               f"planId or planIds, {len(allowed)} allowed by allow.json ({', '.join(allowed)})")
     else:
         report(6, 'coverage', True, f"{len(want)} pieces of {', '.join(ran)} each named by a planId or planIds")
 else:
@@ -842,6 +858,27 @@ if 'markers' in stages:
     for ob in bpy.data.objects:
         if ob not in in_markers and is_marker_name(ob.name):
             probs.append(f"{ob.name} is named as a marker and is outside MARKERS")
+    # #894's deferred clause (#898 call 8): when props ran, each PROP_<id>
+    # carries noCollide equal to its blueprint piece's. A piece props does not
+    # draw (the backdrops) has no PROP_, and line 6 names a missing one.
+    nc_text = ''
+    if 'props' in stages:
+        nc_bad, nc_seen, nc_true = [], 0, 0
+        for p in bp['pieces']:
+            ob = obj(f"PROP_{p['id']}")
+            if ob is None:
+                continue
+            nc_seen += 1
+            want_nc = bool(p.get('noCollide'))
+            nc_true += want_nc
+            have_nc = bool(ob['noCollide']) if 'noCollide' in ob.keys() else None
+            if have_nc is not want_nc:
+                nc_bad.append((ob.name, have_nc, want_nc))
+        if nc_bad:
+            name0, have0, want0 = nc_bad[0]
+            probs.append(f"{len(nc_bad)} of {nc_seen} PROP_ carry a noCollide other than their blueprint piece's; first "
+                         f"{name0}, {'missing' if have0 is None else have0} against the blueprint's {want0}")
+        nc_text = f"; {nc_seen} PROP_ carrying their blueprint noCollide ({nc_true} true)"
     if probs:
         report(9, 'markers', False, '; '.join(probs[:12]) + (' ...' if len(probs) > 12 else ''))
     else:
@@ -851,7 +888,8 @@ if 'markers' in stages:
         report(9, 'markers', True, f"{len(in_markers)} in MARKERS ({n.get('room', 0)} ROOM_, {n.get('collider', 0)} COL_, "
                f"{n.get('stair', 0)} STAIR_ and {n.get('stair-low', 0) + n.get('stair-high', 0)} ends, "
                f"{n.get('gate', 0)} GATE_, {n.get('hinge', 0)} hinges, SPAWN, {n.get('evidence', 0)} EVID_, "
-               f"{n.get('read', 0)} READ_, {n.get('bell', 0)} BELL_), none renders, SPAWN aimed at {g(look)}")
+               f"{n.get('read', 0)} READ_, {n.get('bell', 0)} BELL_), none renders, SPAWN aimed at {g(look)}"
+               + nc_text)
 else:
     skipped(9, 'markers', 'markers was not built')
 

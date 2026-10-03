@@ -4,6 +4,7 @@
 //
 //   npm run castle3d:build                    a full build, <out>/castle.blend
 //   npm run castle3d:build -- --only guide    <out>/partial/guide.blend
+//   npm run castle3d:build -- --export-only   castle.glb and markers.json from the existing master
 //
 // In order, and each step exits non-zero on its own failure (#13):
 //  1. refuse under CI (#842). Nothing in `npm test` or CI runs Blender.
@@ -16,6 +17,12 @@
 //  6. fetch and hash every sources.json row (fetch.mjs).
 //  7. build: a factory-startup Blender runs build.py, PYTHONHASHSEED=0.
 //  8. check: a second Blender opens the saved file and runs check.py (#844).
+//  9. export, on a full build only, never on --only: a third Blender opens the
+//     master and runs export.py, which writes castle.glb and markers.json and
+//     never saves the .blend (#897).
+// 10. the export check, check-export.mjs, over those two files (#898).
+// --export-only writes the blueprint fresh (#841), skips 6 to 8, refuses when
+// <out>/castle.blend is missing, and runs 9 and 10 over it (#897).
 // Every Blender launch carries --python-exit-code 1: without it an uncaught
 // Python exception exits 0 (#805's reason, #842).
 
@@ -25,6 +32,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { exportBlueprint } from './export-blueprint.mjs';
 import { fetchSources } from './fetch.mjs';
+import { checkExport } from './check-export.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..', '..');
@@ -41,13 +49,15 @@ export function insideRepo(dir, root = ROOT) {
 }
 
 function parseArgs(argv) {
-  const out = { only: null };
+  const out = { only: null, exportOnly: false };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === '--only') {
       out.only = argv[++i];
       if (!out.only) refuse('--only needs a comma-separated stage list');
-    } else refuse(`unknown argument ${argv[i]}`);
+    } else if (argv[i] === '--export-only') out.exportOnly = true;
+    else refuse(`unknown argument ${argv[i]}`);
   }
+  if (out.only && out.exportOnly) refuse('--only and --export-only do not go together; export runs over the master only (#897)');
   return out;
 }
 
@@ -84,13 +94,30 @@ async function main() {
   if (insideRepo(out)) refuse(`output folder ${out} is inside the repo ${ROOT}; the model lives outside it (#841)`);
   fs.mkdirSync(out, { recursive: true });
 
-  // 5, 6. the blueprint and the inputs, before Blender starts
+  // 5. the blueprint, fresh on every run, --export-only included (#841)
   const blueprint = await exportBlueprint(out);
+  const script = (name) => path.join(HERE, name);
+  const env = { ...process.env, PYTHONHASHSEED: '0' };
+  const master = path.join(out, 'castle.blend');
+
+  // 9, 10. export in a third Blender over the master, then the export check
+  const exportMaster = async () => {
+    const exported = blender(exe, ['-b', master, '--factory-startup', '--python-exit-code', '1', '--python',
+      script('export.py'), '--', '--out', out, '--blueprint', blueprint], env);
+    if (exported !== 0) refuse(`export.py exited ${exported} over ${master}`);
+    if (!(await checkExport({ out, blueprint }))) refuse(`the export check failed over ${out}`);
+    console.log(`castle3d: exported and checked ${path.join(out, 'castle.glb')} and ${path.join(out, 'markers.json')}`);
+  };
+  if (args.exportOnly) {
+    if (!fs.existsSync(master)) refuse(`--export-only needs the master ${master}, which does not exist; run a full build`);
+    await exportMaster();
+    return;
+  }
+
+  // 6. the inputs, before Blender starts
   await fetchSources(out);
 
   // 7. build
-  const script = (name) => path.join(HERE, name);
-  const env = { ...process.env, PYTHONHASHSEED: '0' };
   const buildArgs = ['-b', '--factory-startup', '--python-exit-code', '1', '--python', script('build.py'),
     '--', '--out', out, '--blueprint', blueprint];
   if (args.only) buildArgs.push('--only', args.only);
@@ -110,6 +137,9 @@ async function main() {
     '--', '--blueprint', blueprint], env);
   if (checked !== 0) refuse(`check.py exited ${checked} over ${saved}`);
   console.log(`castle3d: built and checked ${saved}`);
+
+  // 9, 10. a full build only; an --only build never exports (#897)
+  if (!args.only) await exportMaster();
 }
 
 main().catch((e) => refuse(e.stack || String(e)));

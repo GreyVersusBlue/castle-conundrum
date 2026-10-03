@@ -57,9 +57,14 @@ const BAND = {
 /* `leaf` (width, springline, archRadius, thickness; the four gate leaves) and
  * `bars` (width, height, thickness, count; cell-bars) from increment 3, copied
  * as the plan returns them, so gates.py draws the game's round-headed leaf and
- * six bars without a second copy of scene-config.json's numbers (#500). */
+ * six bars without a second copy of scene-config.json's numbers (#500).
+ * `built` and `ridge` from 7b (#957): the toll-house roof is `built: 'gable'`
+ * with `ridge: 'x'`, and town.py draws the gable the plan says rather than
+ * reading a ridge off the box. `backdrop` from 7b (#960): true on the five
+ * countryside props, which terrain.py leaves out of the pad and props.py does
+ * not draw. Null where the plan gives none. */
 const PIECE_FIELDS = ['id', 'kind', 'level', 'curtain', 'material', 'model', 'transform', 'box',
-  'drum', 'disc', 'pivot', 'evidence', 'read', 'bell', 'roofs', 'leaf', 'bars'];
+  'drum', 'disc', 'pivot', 'evidence', 'read', 'bell', 'roofs', 'leaf', 'bars', 'built', 'ridge', 'backdrop'];
 
 /** cameras.json's rows with each eye's stand and reachability, by the plan's own functions (#875). */
 export function camerasOf(plan, rows, { standAt, walkability, EYE_HEIGHT, STEP_UP }) {
