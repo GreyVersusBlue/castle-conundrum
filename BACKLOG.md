@@ -67,14 +67,19 @@ the Blender pipeline, `tools/blender/` with its manifest, `test/assets.mjs`
 check 8 and a calibration crate placed in the kitchen (#880 to #884); and
 rank 2e, the countryside beyond the wall, five backdrop pieces and check 4g (#908); and
 rank 13, the floor plan you can see, drag rooms, runs and openings (#909); and
-rank 9, a castle to get lost in, the rock dropped and its last look moved to rank 3 (#910).
+rank 9, a castle to get lost in, the rock dropped and its last look moved to rank 3 (#910); and
+rank 2h, the castle in Blender, Mereford and the countryside as a realistic
+standalone model with Poly Haven PBR, all ten increments and Devon's closing
+verdict on the nine review stills (#839 to #844, #892, #893 to #899, #955 to
+#961, #962).
 
 **Open, ranked below.** Devon made Blender-built assets the project's top
 priority on 2026-09-25 and reopened ranks 1 and 2 himself to hold them
-(#801). Ten rows: the Blender pack band,
+(#801). Nine rows: the Blender pack band,
 three rows lettered by priority (2b an interiors kit, 2c a
-shared rig with swappable parts, 2d the animals); the castle rebuilt as a realistic standalone Blender model, outside
-the pipeline (2h, #839 to #844), then its integration row (2i, #919 to #924); the GPU run itself, now gated on nothing (rank 3, #780 to #782);
+shared rig with swappable parts, 2d the animals); the castle's integration
+row, after 2h shipped as a realistic standalone Blender model (#962) (2i,
+#919 to #924, specced #963 to #968); the GPU run itself, now gated on nothing (rank 3, #780 to #782);
 the retro castle's look, its variety increment superseded by 2h (rank 4,
 #839); the rest of
 the fifty-person populace (rank 6); somebody with speakers to judge the
@@ -149,10 +154,11 @@ finish the row.
   committed output. Ranks 2b, 2c (increment 1) and 2d.
 - **Local: Blender GPU.** Blender's full feature set on a real GPU, and so
   **Devon's Windows machine only** (#878), even where huginn has the right
-  Blender. Rank 2h, "Castle in Blender": realistic Poly Haven PBR and
-  Cycles stills at 1920 x 1080, on Blender 5.2 found at `CASTLE3D_BLENDER`
-  or the Steam path and never at `BLENDER`, and nothing in CI runs or
-  checks it (#840, #842).
+  Blender. Rank 2h, "Castle in Blender" (shipped, #962), used it for
+  realistic Poly Haven PBR and Cycles stills at 1920 x 1080, on Blender 5.2
+  found at `CASTLE3D_BLENDER` or the Steam path and never at `BLENDER`, and
+  nothing in CI runs or checks it (#840, #842). Rank 2i needs the same
+  machine.
 - **Local: GPU.** Needs `npm run play` on a machine with real compositing, or
   needs somebody to look at a render. This is #53, and #53 cuts both ways: a
   real-time assertion that *fails* under software rendering is inconclusive,
@@ -190,7 +196,7 @@ together.
 | D | `src/main.js`'s player rig and spawn | 6, 11 |
 | E | `src/audio.js` and `data/sounds.json` | 7 |
 | F | `tools/blender/` and its manifest | 2b, 2c, 2d |
-| G | `tools/castle3d/` | 2h, 2i |
+| G | `tools/castle3d/`, and `data/castle-skin.json` (#963) | 2i |
 
 Lane A last bumped the save version to 6 (#612); the next row that bumps it
 takes that lane and bumps to 7. Lane C is the `cast` block specifically, not
@@ -202,18 +208,19 @@ row that adds a state or rewords a line runs `npm run dialogue:extract`
 before it commits (#687). Lane B: rank 4 and the Blender row that
 places (2b) both write `data/scene-config.json` and do not run together. Lane F is every Blender
 row: one machine renders, so they run one at a time regardless (#804). Lane
-G is 2h's and 2i's and shares no file with F, so either may run beside a lane F row;
+G is 2i's and shares no file with F, so it may run beside a lane F row;
 that is two Blenders on one machine and Devon's call (#842).
 
 ## The ranked table
 
-Ten ranked rows: 2b, 2c, 2d, 2h, 2i, 3, 4, 6, 7, 11. Devon
+Nine ranked rows: 2b, 2c, 2d, 2i, 3, 4, 6, 7, 11. Devon
 reopened ranks 1 and 2 himself on 2026-09-25 for the Blender rows, and
 lettered the pack band by priority (#801, #802). 2f, his own props, took
 the next letter the same day, ran first, and shipped the same day
 (#830 to #834); 2g, the chapel nave, his answer to one of 2f's open
 questions, followed it and shipped the same day too (#835 to #838). 2h,
-the castle as a realistic Blender model, is his of 2026-09-26 (#839).
+the castle as a realistic Blender model, is his of 2026-09-26 (#839), and
+shipped 2026-10-03 (#962).
 **A session never reuses a retired rank; Devon may, and did, here** (#802).
 Rank 10 is retired, with
 2c and 2d as its successors (#807). Ranks 5, 8 and 12 stay retired numbers,
@@ -237,8 +244,7 @@ the placement editor, budget suite, move-and-delete and the dialogue format
 | 2b | Blender: an interiors kit: joined sets dressing the kitchen, the great hall and the cell, specced (#813 to #816, #819); the two hearths and the chapel altar went to 2f (#830); nothing built | 2+ | Opus 5 | Local: Blender | 1 shipped (#881); 2a shipped (#907) | F, B | | [Blender: an interiors kit](SPECS.md#blender-an-interiors-kit) |
 | 2c | Blender: a shared rig with swappable parts: one rig, one-primitive parts, at most five skinned draws a person against the Quaternius rigs' 12 to 15, specced (#820 to #825); increment 1 shipped on huginn (#939 to #941); left: the Windows GPU look, which gates increment 2, the other 15 populace humans (container) | 2+ | Opus 5 | Windows: GPU look (#53), then Container | 1 shipped (#881) | F, C | | [Blender: a shared rig with swappable parts](SPECS.md#blender-a-shared-rig-with-swappable-parts) |
 | 2d | Blender: the animals: pig, goat, sheep, horse, cat and two geese on one quadruped topology plus a bird one for the goose, specced (#826 to #829); nothing built | 1 | Opus 5 | Local: Blender; judged local: GPU (#53) | 2c increment 1 committed (#941); 1 shipped (#881) | F, C | | [Blender: the animals](SPECS.md#blender-the-animals) |
-| 2h | Castle in Blender: the castle, Mereford and the countryside as a realistic standalone model with Poly Haven PBR, built by committed scripts on Blender 5.2, with gameplay markers, specced (#839 to #844); increments 0 to 7 shipped (#839 to #877, PR #93, 0064a11, closed by #892); increment 8, markers, built (#893 to #899); 7b built (#955 to #960) and 9 built (#961); the game loads none of it; left: Devon's lines on 7b's nine look calls and the stills of 7b and 9, which close the row | 2+ | Opus 5 | Local: Blender GPU (5.2, Devon's Windows machine only); Local: net for its fetches | — | G | | [Castle in Blender](SPECS.md#castle-in-blender) |
-| 2i | Castle in Blender, the integration row: the game takes `castle.glb` as a skin swap and never reads `markers.json` (#919), staged curtain wall and towers, then buildings, then Mereford, with the kit indoors meanwhile (#921), the outer gate and drum doors opened in the model (#922); shape decided (#919 to #924), full spec (ceilings, LOD and bake, KTX2, amendments to #499, #506, #611) waits for 2h increment 9's `gltf-transform inspect` numbers, now in #961; nothing built | Set by the spec | Opus 5 | Local: Blender GPU (5.2, Devon's Windows machine only) | after 2h increment 9 | G | | [Castle in Blender, the integration row](SPECS.md#castle-in-blender-the-integration-row) (no section yet, #923) |
+| 2i | Castle in Blender, the integration row: the game takes the model as a skin and never reads `markers.json` (#919); specced (#963 to #968): one `assets/castle3d/skin.glb` cut from the master by stage (`curtain`, `buildings`, `town`, `land`), about 25 MB and 37.3 MB of texture memory against the master's 570 MB and 1,738.8 MB, trees decimated to 2,000 triangles, KTX2 through `assets:encode`; draw ceiling 1200 to 600, a new 500,000-triangle ceiling, texture 64 to 76 to 84 (#966); #499 and #506 stand (#967); six increments, the first #922's open gate in the model; nothing built | 2+ | Opus 5 | Local: Blender GPU (5.2, Devon's Windows machine only), plus `ktx`; judged local: GPU (#53) | 2h shipped (#962) | G | | [Castle in Blender: the integration row](SPECS.md#castle-in-blender-the-integration-row) |
 | 3 | The GPU run: the fourth sitting confirmed the sight fix on a GPU and walked the whole day and the second day (#886 to #891); exit 1, 6 failures, 3a (#916) and 3b (#917) shipped, one more GPU run owed; the quay look's stills taken (#900, `looks/2026-10-03/`), Devon's verdict owed; `renderer.info` recorded (#887); the phone (#530) untouched | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
 | 4 | The retro castle: increment 1 shipped, fifteen sets out and fifteen 128 px textures in (#757 to #766); the look is left; variety per room is superseded by 2h (#839); the props increment moved to 2b (#813) | 2+ | Opus 5 | Container to the look, local: GPU past it | — | B | | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
 | 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #729 to #733); four generated clips placed in the household's routines (#800), `drill` dropped (#915); the twelve's chatter pool placed and played by room and bell, 19 pairs after nine were recast and eight retired (#911, #925 to #938); left: the town's share of the fifty, the GPU look at playback (`npm run play`, #53, the looking list in #931) | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
@@ -294,29 +300,6 @@ topology of its own, each its own file, two materials (`Coat`, tinted, and
 are (#807). Placed in the two wards beside the hen-wife's patch and the
 cow, no stable and no yard (#829); the two skinned-draw ceilings #825 sets
 rise by the animals' own draws. Detail: [Blender: the animals](SPECS.md#blender-the-animals).
-
-## Castle in Blender
-
-*Where: local, Blender 5.2, and a network for its fetches. Gate: none.
-Lane: G.*
-
-**Rank 2h, size 2+.** Specced whole, decisions #839 to #844, from Devon's
-instruction of 2026-09-26. The castle, Mereford and 400 m of countryside
-rebuilt as a realistic standalone Blender model with Poly Haven PBR, today's
-layout as the guide through a `blueprint.json` that `makePlan` writes in
-Node, and his 71 props re-materialed inside it. Committed scripts under
-`tools/castle3d/` build it headless on Blender 5.2, outside the Blender pipeline's
-pipeline and exempt from #803 and #805 (#840); the master `.blend`, its
-texture cache and `castle.glb` live outside the repo (#841); a second
-Blender runs `check.py` over the saved file and fails the build (#844).
-Gameplay is authored as named markers (`ROOM_`, `COL_`, `GATE_` with its
-hinge, `STAIR_`, `SPAWN`, `EVID_`, `READ_`, `BELL_`) so that Blender can
-drive the plan later (#843). The game loads none of it, `npm test` stays
-fifteen suites, and CI never runs it (#842). Ten increments, one stage each.
-Built through increment 8, markers (#893 to #899); increment 7b, the quay
-and the kitchen crate, was found missing from the model and comes before 9
-(#893); increment 9, export, is specced (#897, #898) and blocked on 7b.
-Detail: [Castle in Blender](SPECS.md#castle-in-blender).
 
 ## The GPU run
 

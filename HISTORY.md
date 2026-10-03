@@ -13628,3 +13628,248 @@ verdict gates increment 2, the other 15 populace humans, a container job. The
 contact sheet at `shots/blender/folk.png` is untracked (ignored).
 
 **#954. Reserved: #925 to #954 are held for sessions on Huginn (the Selector loop); anyone else numbers from #955.**
+
+## Castle in Blender closed: Devon's lines on 7b and 9 (2026-10-03)
+
+**#962. Devon's verdict on all nine review stills closes rank 2h.** Recorded
+by session CC-12, answering the stills and the nine look calls left open by
+#955 to #961.
+
+On the nine stills (7b's four in `CASTLE3D_OUT\review\increment7b\`, the
+toll-house still, `town-7b.png`, `chapel-7b.png` and `kitchen-crate.png`; and
+9's five in `CASTLE3D_OUT\review\increment9\`, `CAM_spawn`, `CAM_courtyard`,
+`CAM_hall`, `CAM_chapel` and `CAM_town`), Devon, as he typed: "the stills look
+fine." This also accepts #961's finding that all five of increment 9's
+cameras changed against #892's build, with the attributions #961 gives: hall
+to the nightly's plan move of `gothic_statue_1k` (6889322); chapel to 2a's
+`candles-chapel` swap to `pricket.glb`; town to the quay; spawn and
+courtyard to the terrain change under the grass scatter.
+
+On 7b's nine look calls (SPECS.md, "Castle in Blender"'s nine look calls,
+2026-10-03), Devon, as he typed: "all as built." Each stands as the builder
+built it: the water dark green-grey and opaque; the estuary open with no far
+bank; the toll-house roof `roof_slates_02`, flush, no eave; one shut oak
+door on the toll-house; the quay front `medieval_blocks_02` with a
+`stone_pavers` top; the banks the terrain's mud, no `forest_ground_06`
+fetch; the backdrops not drawn; the pack props' wood and iron faces onto the
+PBR kinds, the rest kept on their palette. For call 7, Devon's seven quay
+files: "as built" means the model takes none of them and no row is opened to
+restore any to the game. A later row restoring them is Devon's to open, not
+this one.
+
+Rank 2h is complete with this decision: increments 0 to 9 and 7b shipped
+(#839 to #844 spec; #892 baseline; #893 to #899; #955 to #961), CI green on
+`b608906` (run 37136625060: "build and the fifteen suites: success"). The CI
+run on `35f9eb8`, #104's merge, was cancelled by #105's merge landing
+on top of it, so `b608906`'s run is the only `main` run covering both. Next
+is rank 2i.
+
+## Castle in Blender, the integration row: the spec, decided before anything is built (2026-10-03)
+
+**Written as `architect` on `claude/castle3d-2i-spec` off `6f4cafa`, against
+#961's master; the spec #923 waited for.** No code, asset, data or test file
+changed in this entry. `SPECS.md` gains "Castle in Blender: the integration
+row", and the 2i rows in `BACKLOG.md` and `ROADMAP.md` point at it. Every
+call below carries a recommendation there; this entry is what they rest on.
+
+**Measured, not guessed.** In Node on DEVON-DESKTOP, by scratch scripts not
+committed: the master `castle.glb` in the default `CASTLE3D_OUT`, 569,711,256
+bytes, #961's file; its JSON chunk, every node's world box, and every
+embedded image's header; the plan through `makePlan`, and `common.py`'s
+`STAGE_RULES` ported line for line to give every node its stage; the game's
+draws and triangles through `buildPiece` and `partsOf` on `test/budget.mjs`'s
+two rectangles (its draw totals land within 22 of the suite's own); and
+`node test/budget.mjs` on `6f4cafa`. **The calibration**: RGBA8 with full
+mips over the 130 images gives 1,738.8 MB, #961's number to the decimal, so
+the KTX2 projections below use the same pixels at `budget.mjs`'s own
+`fromKTX2` rates (ETC1S 0.5 and UASTC 1 byte a pixel, full chain). KTX2 disk
+sizes are the medians of the 46 `.ktx2` files under `assets/` today: ETC1S at
+1024, 188 KB; UASTC at 512, 242 KB. Geometry bytes after meshopt are
+estimated, not measured.
+
+**What the master is, by what the game would take.** 959 draws over 551 mesh
+nodes. The trees are 76 nodes and 38,388,788 of the 41,821,350 placed
+triangles (92%): two meshes, `island_tree_01` at 519,809 (30 uses) and
+`tree_small_02` at 495,533 (46 uses), 71 on the land and 5 in Mereford. Rocks
+are 35 nodes and 924,286; `TERRAIN_ground` is 320,000. The castle proper is
+small: walls 57 nodes, 57 draws, 5,656 triangles; towers 46, 50, 30,712;
+gates 9, 15, 2,276; buildings 34, 39, 6,184; Mereford less its trees 37 nodes
+and 18,096 triangles. Images: 66 at 2048, 62 at 1024, one at 128, one at 16;
+52 base colour, 48 normal, 48 metal-roughness, 2 emissive. The game today, by
+the same stages: walls 97 pieces and 227 draws, towers 46 and 1,044, gates 9
+and 22, buildings 40 and 88, town 59 and 131, terrain 5 and 38, props 195 and
+271. `budget.mjs` prints outer 1021, inner 709, outside 166 draws, so outer
+plus outside 1187 of 1200; 43.9 of 64 MB of texture memory. **The skin's
+UVs need no rewrite**: sampled on `WALL_barbican-north`, `DRUM_kings-tower`
+and `HOUSE_mereford-house-n1`, every vertex's UV is its world position in
+metres on the face's two other axes, V flipped as glTF flips it, and each
+material's `KHR_texture_transform` scale is one over its set's size (0.4 on
+`MAT_castle_wall_slates`, 2.5 m). **The leaves are alpha**:
+`island_tree_01_leaves` and `tree_small_02_leaves` are `BLEND`, and
+`tools/encode-assets.mjs`'s `toKTX2` calls `removeAlpha()` and writes
+`R8G8B8`, so the encoder as it stands would turn every leaf card opaque.
+
+**#963. The master never ships; the game ships one file,
+`assets/castle3d/skin.glb`, cut from it by stage, and at the last stage it
+is about 4% of the master's bytes and 2% of its texture memory.** Projected
+at the fourth stage: about 25 MB (18.4 MB of KTX2, measured medians, and
+about 6.5 MB of meshopt geometry, estimated), 37.3 MB of texture memory from
+84 of the 130 images, about 295,000 triangles and about 280 draws. Blender
+5.2 opens the master and writes `<out>/skin/skin-full.glb`
+(`tools/castle3d/skin.py`, a fourth Blender, never saving the master); Node
+cuts it to the stages `data/castle-skin.json` lists and writes
+`assets/castle3d/skin.glb` (`tools/castle3d/skin.mjs`); `npm run
+assets:encode` then encodes it in place. **One file, not one a stage**:
+stages share materials, and three files with embedded images would price
+the curtain's, the buildings' and Mereford's sets at 46.7 MB where their
+union is 28.0 MB, measured. `data/castle-skin.json` is new and only this row
+writes it, so lane G extends to it and the row never takes lane B (#923).
+The game reads it from `castle-builder.js`'s `build()` through `loadJSON`,
+so `src/main.js` (lane D) is not touched. Why: a 570 MB file cannot be
+committed at all (GitHub refuses a file over 100 MB), and everything the
+master carries past the castle (Devon's props re-materialed, 41.8 million
+triangles of trees, 2048 px maps) is either the game's already or too dear
+for it.
+
+**#964. The stages, and what each admits (amends #921 three ways).** Four
+stages, each its own increment, each named in `data/castle-skin.json`'s
+`stages`: `curtain` (`STAGE_OF`'s walls, towers and gates: 152 plan pieces,
+132 draws, about 40,000 triangles), `buildings` (40), `town` (59) and `land`
+(terrain's 5, with the trees and rocks no piece names). **Amended, first**:
+#921 put the gates nowhere; they go with the curtain, since every arch
+stands in a curtain run and a photographic arch round a pixel leaf would be
+two castles in one opening. **Second**: #921 had three stages; the land is a
+fourth, last, because it is where 99% of the triangles are and the only
+stage that needs LOD to ship at all. **Third**: "interiors keep the kit and
+the pixel textures" holds for what a room holds (props, the kit, 2b's sets,
+the built props), not for the faces of a wall that stands round it. A
+swapped piece is swapped on every face: a curtain run's inner face is the
+kitchen's wall, and a drum's inner face is the Prison Tower's cell. Splitting
+a mesh by which room a face looks into needs a second geometry per piece and
+a rule for who owns a face, and `plan-vs-scene`'s net is per piece. The
+fallback is a `keep` list in `data/castle-skin.json`: a plan id there keeps
+its built object drawn and its skin node is cut. And a pixel texture no
+unswapped piece wears does not leave in the stage that swaps it, as #921
+said: deleting a `pixelMaterials` row writes `data/scene-config.json`, lane
+B, for 0.085 MB a texture; one lane-B clean-up after stage 4 does it.
+**Model-only objects admitted**: #851's outer gate (`ARCH_`, `LEAF_` and
+`PORT_barbican-outer`) and `PORT_west-gate` with the curtain; #854's louvre
+with the buildings; #857's leaves, #956's estuary and #957's toll-house door
+with the town. **Never admitted**: the `props` stage (the game's props are
+the game's), `BRAZIER_` (the game builds its braziers with their lights),
+#853's roofs, beams, corbels and plaster (the game leaves those rooms open
+by design), #855's plate, and #855's four drum doors, which #922 deletes.
+
+**#965. The swap: every plan piece is still built, tagged and diffed; a
+swapped piece's built object is hidden, and its skin node drawn in its place
+(#500 stands; #529 places the new assertions).** The builder builds every
+piece as today, then loads the skin and, for each node whose `extras`
+carries a `planId` or `planIds`, sets that built object's `visible` false and
+adds the node at its glb world transform; a `LEAF_<gate>` node goes under its
+gate's pivot with an identity transform, since the export writes it with the
+hinge's world transform (#897, #898), so the pivot swings both. Colliders,
+rooms, stations and `castle-plan.js` do not change. `Box3.setFromObject` in
+three r169 does not read `visible`, so `plan-vs-scene`'s 0.01 m diff runs on
+the hidden built objects unchanged, and `Raycaster` does not read it either,
+so a lock or bell target is the same object it is today. `setPieceVisible`
+acts on the skin where there is one, which is how the second day's `gone` on
+`cell-bars` and `open`/`shut` on `muniment` reach it. Under `?edit=1` the
+skin is not loaded: it is a picture of the plan it was cut from, and the
+editor moves the plan. **Which suite**: the skin against the plan in Node
+(every piece of a listed stage named by a node; each node's box covering its
+plan box) is `test/layout.mjs`'s; the file's format, caps and hash are
+`test/assets.mjs`' new check 10; its cost is `test/budget.mjs`'s; and only
+what a page proves goes in `plan-vs-scene.mjs`: the skin node standing where
+the glb says, its built object hidden, a leaf following its pivot, and
+`gone` reaching the skin. **Box tolerance, measured**: of the 190 plan-named
+nodes outside `props`, every one in `curtain` and `buildings` but
+`ROOF_great-hall` (0.80 m of eave) is within 0.5 m of its plan box on x and
+z, and the battered faces (`WALL_barbican-west`, the west and east arches)
+are out by exactly 0.5000; the drums rise 3.2 m over theirs; Mereford's five
+trees are 2.3 m wider than their boxes, six of its roofs 0.7 to 1.0 m by
+their eaves, `HOUSE_mereford-house-n1` 0.6 m and the church tower's roof 0.6
+m below its box. So the rule is "each face of the skin's box is within 0.55
+m of the plan box's, except that the skin may rise above it", 0.05 m being
+float slack over the batter, with an `allow` entry and a reason for each
+named departure: none at `curtain`, one at `buildings`, thirteen at `town`,
+two at `land`.
+**Save**: none. The skin follows a piece's state, which the save already
+carries through `applyDay` and the gates; `castleConundrumSave_v1` and
+version 6 stand and lane A is not touched.
+
+**#966. #611's ceilings, argued from #961 and the game today.** Three
+moves, each applied by the increment named, each by a `builder` only if the
+measured number lands within 2 MB or 10% of the projection here; otherwise
+it comes back to `architect`.
+- **`MAX_DRAW_CALLS_PER_WARD` 1200 to 600, at the curtain stage.** Stage 1
+  hides 790 outer and 573 inner built draws (the drums are 1,044 of them,
+  #611's own "merge a drum's sectors") and adds 91 and 62, so outer plus
+  outside goes from 1187 to about 488 and inner plus outside from 875 to
+  about 364; the next three stages leave it near 411. Left at 1200 it would
+  be a ceiling met by doing nothing for the rest of the project, which
+  `budget.mjs` itself says is not a ceiling; 600 leaves the busier ward 112,
+  room for 2b's 8 and more.
+- **`MAX_TRIANGLES_PER_WARD`, new, 500,000, at the curtain stage**, counted
+  as draws are (#727: a ward's plus the outside's). There was no triangle
+  ceiling because nothing the game loads came near one; the master is 41.8
+  million. Today outer plus outside is 185,805 and inner plus outside
+  51,913. Projected: about 199,000 after the curtain, 202,000 after the
+  buildings, 227,000 after Mereford, 448,000 after the land, at #968's caps.
+  A guess anchored on what is there, held as the block's others are.
+- **`MAX_TEXTURE_MB` 64 to 76 at the buildings stage, and 76 to 84 at the
+  land stage.** 43.9 today; plus the skin at #968's caps the castle is 58.6
+  after the curtain (no move), 65.2 after the buildings, 71.9 after Mereford
+  and 81.2 after the land. Still one number for the castle, not per ward,
+  for `budget.mjs`'s own reason: three keeps every texture it has uploaded.
+  If 2b's increment 1 has freed the prop packs' 35.1 MB first, the moves
+  are smaller by what it freed, and the increment says so with the number.
+  The first answer when the land fails 84 is its maps at 512, not a fourth
+  move.
+
+**#967. #499 and #506 are not amended.** **#499**: 200 MB is `dist/`'s and
+`dist/` is 34 MB; the skin takes it to about 59. What #499 does not see is
+history: every committed cut of `skin.glb` stays in `.git` (189.7 MiB packed
+today) at its full size, since KTX2 does not delta, so a cut is committed
+once a stage, about 8, 11, 15 and 25 MB, and check 10 holds the file to 32
+MB, a third of the size GitHub refuses. **#506**: the skin is a family the
+existing encoder walks, the one `data/castle-skin.json` names, as the props
+and bodies are families; KTX2 by slot (#507), meshopt with `cleanup: false`,
+#831's small-PNG exemption. No second KTX2 path in `tools/castle3d/`,
+because two encoders are two rails for one rule. **The encoder's one
+change**: a base colour whose material is not `OPAQUE` keeps its alpha
+(`R8G8B8A8_SRGB`, ETC1S), which is a bug fix #506's rule always needed and
+nothing until the leaves exercised. Not an amendment: the rule is unchanged,
+its code was narrower than it.
+
+**#968. LOD, the bake and the caps run in Blender 5.2 on Devon's Windows
+machine, before commit, never in `dist/`.** `skin.py` on the Steam Blender
+(`CASTLE3D_BLENDER` or the Steam path, never `BLENDER`, refusing CI, #840,
+#842). **Caps**: base colour at most 1024 (ETC1S), normal and
+metal-roughness at most 512 (UASTC), which is 410 texels a metre on a 2.5 m
+set against the game's 43 (128 px over `repeatMetres` 3); 1024 everywhere
+would be 93.3 MB at the land, 2048 313.3. **LOD**: decimation, not
+impostors: each tree at most 2,000 triangles (trunk by `Decimate`, leaves by
+seeded card thinning with the kept cards scaled to hold cover), each rock at
+most 1,000, the ground at most 40,000. A cross impostor (6 triangles, baked
+in Cycles) is the named fallback if a GPU look calls a tree a blob.
+**Joining, not instancing**: the land's trees join to one node per species,
+its rocks to one per mesh, as #815 chose for 2b, because
+`EXT_mesh_gpu_instancing` is a second draw path for `budget.mjs` to count;
+the five Mereford trees are plan pieces and keep a node each, sharing one
+mesh. **The bake is arithmetic**: `LOOK`'s per-material tints and warm
+multiplies go into the base colour pixels in `skin.py` through `numpy`,
+#857's per-house `object_tint` into `COLOR_0`, and the grime noise, the
+undulation and #850's break-up are dropped (glTF has no field for them and
+the exporter already samples the first set, #897). No per-object bake and
+no atlas: either would cost a texture per mesh and break the tiling the
+UVs already carry. `skin.mjs` drops `KHR_materials_specular` and `_ior`, so
+three makes the game's `MeshStandardMaterial`, and sets the leaves to
+`MASK` at 0.5, since 76 sorted `BLEND` trees are a sorting problem `MASK`
+does not have. **Determinism**: nothing in `skin.py` renders unless the
+impostor fallback is taken, so two runs over one master give a byte-identical
+`skin-full.glb` (#961 measured the exporter so); an impostor bake is
+rendered twice and held to #898's judge (every pixel within 1/255, mean
+under 0.0001). `skin.mjs` records its inputs' sha256 in
+`tools/castle3d/skin-manifest.json` and prints "unchanged", writing nothing,
+when they have not moved, as `blender:render` does (#880 to #884). No Cycles stills
+of the skin: the renderer that judges it is the game's, on a GPU (#53).
