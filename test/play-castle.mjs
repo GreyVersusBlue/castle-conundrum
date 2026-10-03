@@ -1455,6 +1455,33 @@ try {
   assert(pouchGone, 'and it leaves the world, because take:true means the player has it');
   await snap('the-pouch-taken');
 
+  /* THE SAME WALK, BEFORE THE JOURNAL IS EVER OPENED (#890). The beat below
+   * asserts that W moves the player after J and J again, and it used to hold
+   * that walk to a flat `> 1.0 m`. Ten GPU readings ran 0.51 to 1.30 m, because
+   * how far 700 ms of W carries a body depends on what the chapel puts in front
+   * of it that run. So the walk is measured here first, with no journal in its
+   * past, and the one after the journal is held to a share of this one.
+   *
+   * S for the same 700 ms walks it back, so the second walk starts from about
+   * where this one did and meets the same stonework. "About": if W was stopped
+   * short by a wall, S overshoots, and the offset is printed with the result so
+   * a reading can be judged. This is after `the-pouch-taken` is shot and takes
+   * no clue, so no earlier beat and no journal row can see it. */
+  const walk700 = async (key = 'KeyW') => {
+    const from = await playerAt();
+    await page.keyboard.down(key);
+    await wait(700);
+    await page.keyboard.up(key);
+    await wait(150);
+    const to = await playerAt();
+    return { from, to, moved: Math.hypot(to.x - from.x, to.z - from.z) };
+  };
+  const baselineWalk = await walk700();
+  await walk700('KeyS');
+  // The floor under the ratio: 0 m against 0 m must not pass as "the same".
+  assert(baselineWalk.moved > 0.25, 'W moves the player before the journal is opened, the walk the next one is held to',
+    `${baselineWalk.moved.toFixed(2)} m in 700 ms`);
+
   // The journal, on J.
   await page.keyboard.press('KeyJ');
   await wait(300);
@@ -1481,20 +1508,22 @@ try {
    * THE WALK UNDER IT IS THE HALF A HEADLESS PAGE CANNOT ANSWER (#53).
    * test/overlays.mjs asserts who holds the pointer, which is the cause and is
    * the same in a software rasteriser; this asserts that the body then moves,
-   * which is real-time and is not. */
+   * which is real-time and is not.
+   *
+   * HELD TO HALF OF THE WALK MEASURED BEFORE THE JOURNAL, NOT TO A METRE
+   * (#659, #890). The bug read 0.00 m, so a half catches it and leaves room for
+   * the run-to-run spread a real compositor has. */
   const afterJournal = await page.evaluate(() => !!document.pointerLockElement);
   assert(afterJournal, 'shutting the journal gives the player back the castle',
     afterJournal ? '' : 'pointer lock is gone, no resume panel is offered, and W does nothing — the player can only reload');
   {
-    const before = await playerAt();
-    await page.keyboard.down('KeyW');
-    await wait(700);
-    await page.keyboard.up('KeyW');
-    await wait(150);
-    const after = await playerAt();
-    const moved = Math.hypot(after.x - before.x, after.z - before.z);
-    assert(moved > 1.0, 'and W moves the player again, from the same standing start',
-      `${moved.toFixed(2)} m in 700 ms`);
+    const again = await walk700();
+    const startOff = Math.hypot(again.from.x - baselineWalk.from.x, again.from.z - baselineWalk.from.z);
+    const ratio = baselineWalk.moved > 0 ? again.moved / baselineWalk.moved : 0;
+    assert(again.moved >= 0.5 * baselineWalk.moved && baselineWalk.moved > 0.25,
+      'and W moves the player again, from the same standing start',
+      `${again.moved.toFixed(2)} m in 700 ms against ${baselineWalk.moved.toFixed(2)} m before the journal, `
+      + `ratio ${ratio.toFixed(2)}, floor 0.50; the two starts are ${startOff.toFixed(2)} m apart`);
   }
 
   // The rest of Prime.
