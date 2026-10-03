@@ -63,11 +63,13 @@ uncaught Python exception exits 0. Any failure exits the launcher non-zero.
 | `town` | `town.py` | Mereford, the town wall, Wykes's yard. | 5 |
 | `props` | `props.py` | The 187 pieces `STAGE_OF` gives it, one `PROP_<piece id>` each with `planId` and `noCollide` (#863 to #868), in blueprint order: the 80 kit decor pieces generated in each kit file's local bounds (`KIT_LOCAL`, checked against every kit box), Mereford's crates and barrels among them, posts under the lodge's and Wykes's decks, a timber dais, ladders, a braced frame, a hurdle, brick stacks, two hoists (a bell on `bell: true`) and five shrubs from `tree_small_02`'s canopy; the 12 Poly Haven `interiorProps`, the game's own nine models at 1k, under an empty at their authored offsets with their own materials; Devon's 75 appended by collection from the pinned `castle_props.blend` (#867) and re-materialed per face by the atlas region under its UV centroid, 28 regions into five PBR kinds (`materials.PROP_KINDS`, tinted by an `atlas_rgb` attribute) and the other 71 kept on his atlas, the region names read from `tools/props/atlas.py`; the four flame regions (`EMIT`) emissive on `MAT_flame` (#874); the 20 `builtProps` as their boxes, `slate`, `parchment` and `wool` through `materials.ALIAS`. Four wall-hung props are pushed under a centimetre off the plaster (`HANG_GAP`). Each object is held to its box within 0.01 m. | 6 |
 | `lighting` | `lighting.py` | `LIGHTING`, no `planId` (#873 to #875): the only World, `WORLD_hdri`, the HDRI unrotated with its sun clamped at 16 for every ray but the camera's; `SUN`, the Sun lamp carrying what the clamp removes; the game's three braziers, `BRAZIER_<n>`, Devon's `brazier` at `scene-config.json`'s positions through the blueprint, raising on a clash unless `BRAZIER_CLASH` names it; a Point light wherever the model draws a flame, found by a rule over faces (37 on the through build: 30 candle, 2 torch, 4 brazier, 1 hearth); the five cameras from `cameras.json` through the blueprint, `CAM_spawn` the scene's. A build without it has no World. | 7 |
-| `markers` | `markers.py` | `MARKERS`, #843's contract. | 8 |
+| `markers` | `markers.py` | `MARKERS`, #843's contract, from the blueprint (#893 to #896): a wire `ROOM_` per blueprint room and open place, a CUBE empty `COL_` per collider and `STAIR_` per ramp with `_LOW` and `_HIGH` ends, a `GATE_` per gate, `gates.py`'s four `GATE_<id>_HINGE` adopted (made here when `gates` did not run), `SPAWN` aimed at `lookAt`, and an `EVID_`, `READ_` or `BELL_` at each carrying piece's box centre; 899 objects on the 445-piece plan, each tagged `marker` and hidden from render. `ADJUST` moves a marker off the blueprint with a reason, and ships empty. | 8 |
 
-`export.py` (increment 9) writes `castle.glb` and `markers.json`. A stage
-whose module does not exist yet is an error naming it, not a skip, so a full
-build fails until every stage has shipped. `--only guide` prints `STAGE_OF`,
+`export.py` (increment 9) writes `castle.glb` and `markers.json`, in a third
+Blender over the saved master, and is not a stage (#896, #897). A stage whose
+module does not exist yet is an error naming it, not a skip. Every stage has
+its module from increment 8, and a full build still exits 1 at `town` until
+increment 7b builds the quay the plan gained (#893). `--only guide` prints `STAGE_OF`,
 the table in `common.py` that gives each blueprint piece to one stage.
 
 The batter and the crenellation (increment 2, the lead's call): a curtain run
@@ -107,15 +109,18 @@ the whole output folder and it still opens whole; move a `.blend` without its
 
 ## check.py
 
-Eight lines (#844, amended by #876), each printed `ok`, `FAIL` or `--` (did not run). Line 4,
+Nine lines (#844, amended by #876 and #895), each printed `ok`, `FAIL` or `--` (did not run). Line 4,
 images, runs on every build; the rest run when their stage did, and a line
 whose stage ran before its body was written fails. Lines 5 (level ground) and
-6 (coverage) are live from increment 1, and 7 (light) and 8 (cameras) from increment 7, when `lighting` ran; lines 1 to 3 wait for the markers.
-Non-zero on any failure.
+6 (coverage) are live from increment 1, and 7 (light) and 8 (cameras) from increment 7, when `lighting` ran;
+lines 1 (rooms), 2 (gates), 3 (where) and 9 (markers) from increment 8, when `markers` ran.
+Line 3 holds every marker within 0.5 m of the blueprint unless `allow.json` names it with a
+reason, and the ones a geometry stage realises within 0.5 m of that object, which
+`allow.json` cannot excuse. Non-zero on any failure.
 
 ## Committed here
 
 The scripts, `cameras.json` (the five cameras, #875), `sources.json` (every input with its URL or path, licence and
 sha256; 132 rows from increment 4), `allow.json` (each departure from the
-blueprint with its reason; empty), this file and `CREDITS.md`. No `.blend`,
+blueprint with its reason, a marker's keyed by its object name; empty), this file and `CREDITS.md`. No `.blend`,
 no image, no model: those stay in the output folder (#499, #841).

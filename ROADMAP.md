@@ -43,7 +43,7 @@ need a network that reaches Poly Haven, once each, into a hash-pinned cache.
 | **2c Blender: a shared rig with swappable parts** | Opus 5 | Specced 2026-09-25 (#820 to #825), nothing built. Increment 1 is Blender; increment 2 is a container. |
 | **2d Blender: the animals** | Opus 5 | Specced 2026-09-25 (#826 to #829), nothing built. |
 | **2e Blender: the countryside beyond the wall** | Opus 5 | Specced 2026-09-25 (#816 to #819), nothing built. |
-| **2h Castle in Blender** (Blender 5.2) | Opus 5 | Specced 2026-09-26 (#839 to #844), built through increment 6 (#863 to #869, PR #90, 34357ac, closed by #869). Increments 7 to 9 left: lighting and cameras, markers, export. The game loads none of it. |
+| **2h Castle in Blender** (Blender 5.2) | Opus 5 | Specced 2026-09-26 (#839 to #844), built through increment 8, markers (#893 to #899). Increment 7b, the quay and the kitchen crate, and increment 9, export, are left; 9 is blocked on 7b. The game loads none of it. |
 
 ### Local: a GPU
 

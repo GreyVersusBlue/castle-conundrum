@@ -7,15 +7,18 @@
 # built it: the builder can see an image it loaded but never saved with a path
 # that resolves, and the saved file is what export and Devon open.
 #
-# Eight lines (#844, amended to eight by #876). Each prints its own line, `ok`, `FAIL` or `--` (did not run), and
+# Nine lines (#844, amended to eight by #876 and to nine by #895). Each prints its own line, `ok`, `FAIL` or `--` (did not run), and
 # why. A line runs when the stage it checks is in scene["castle3d_stages"];
 # a line that did not run says so and passes nothing. A line whose stage ran
 # but whose body is not written yet FAILS, so a stage cannot ship ahead of its
 # net. Exits 1 when any line failed (#13).
 #
-#   1 rooms     (markers)   every mystery and blueprint room has one ROOM_
-#   2 gates     (markers)   every gate a GATE_, a _HINGE where it has a pivot
-#   3 where     (markers)   each ROOM_ within 0.5 m of its box, allow.json aside
+#   1 rooms     (markers)   one ROOM_ per blueprint room and open place;      LIVE
+#                           every mystery room has one
+#   2 gates     (markers)   every gate a GATE_ with the blueprint's fields,   LIVE
+#                           a _HINGE on each pivot holding its LEAF_
+#   3 where     (markers)   every marker within 0.5 m of the blueprint,       LIVE
+#                           allow.json aside, and of the object realising it
 #   4 images    (always)    every Image Texture node resolves and loads   LIVE
 #   5 ground    (terrain)   level-0 room corners and centres at 0 +- 0.02 m  LIVE
 #   6 coverage  (geometry)  each piece of a stage that ran is named by a      LIVE
@@ -24,13 +27,17 @@
 #                           each practical in its source, each BRAZIER_ placed
 #   8 cameras   (lighting)  one CAM_ per blueprint camera at its eye and aim, LIVE
 #                           each on a floor the spawn reaches; CAM_spawn is the scene's
-# Lines 1, 2 and 3 are frames until increment 8 builds the markers. Lines 5
-# and 6 are live from increment 1, whose terrain is the first geometry stage;
-# 7 and 8 from increment 7 (#876).
+#   9 markers   (markers)   one COL_ per collider, a STAIR_ and both ends per LIVE
+#                           ramp, SPAWN aimed, each EVID_, READ_, BELL_; every
+#                           marker hidden from render and nothing else in MARKERS
+# Lines 5 and 6 are live from increment 1, whose terrain is the first geometry
+# stage; 7 and 8 from increment 7 (#876); 1, 2, 3 and 9 from increment 8
+# (#895). Line 9 is last so no line renumbers.
 
 import os
 import sys
 import json
+import math
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.dont_write_bytecode = True  # no __pycache__ in the repo; .gitignore stays as it is
@@ -71,12 +78,336 @@ def not_written(n, name, stage):
     report(n, name, False, f"{stage} was built but this line has no body yet; write it with the stage")
 
 
-# ------------------------------------------------------------ 1, 2, 3: markers --
-for n, name in ((1, 'rooms'), (2, 'gates'), (3, 'where the rooms are')):
-    if 'markers' in stages:
-        not_written(n, name, 'markers')
+# ------------------------------------------------------------------ helpers --
+from mathutils import Vector
+
+
+def g(v):
+    """A game point, printed as the spec writes it."""
+    return '(' + ', '.join(f"{float(c):g}" for c in v) + ')'
+
+
+def to_game(v):
+    return (v[0], v[2], -v[1])
+
+
+def tree_bounds(root):
+    """A root and its descendants' meshes' world bounds, as a game box."""
+    pts = []
+    for o in [root] + list(root.children_recursive):
+        if o.type == 'MESH':
+            pts += [to_game(o.matrix_world @ Vector(c)) for c in o.bound_box]
+    if not pts:
+        return None
+    return {'min': {k: min(p[i] for p in pts) for i, k in enumerate('xyz')},
+            'max': {k: max(p[i] for p in pts) for i, k in enumerate('xyz')}}
+
+
+def box_centre(box):
+    return tuple((box['min'][k] + box['max'][k]) / 2 for k in 'xyz')
+
+
+def worst_face(a, b):
+    """The largest of the six face differences between two game boxes."""
+    return max(abs(a[e][k] - b[e][k]) for e in ('min', 'max') for k in 'xyz')
+
+
+def empty_box(ob):
+    """A CUBE empty's world box, location +- its scale, as a game box."""
+    t = ob.matrix_world.translation
+    s = ob.matrix_world.to_scale() * ob.empty_display_size
+    lo, hi = t - s, t + s
+    return {'min': {'x': lo.x, 'y': lo.z, 'z': -hi.y}, 'max': {'x': hi.x, 'y': hi.z, 'z': -lo.y}}
+
+
+def is_marker_name(name):
+    return name.startswith(common.MARKER_PREFIXES)
+
+
+# ---------------------------------------------- what each marker should be --
+# Built here from the blueprint alone, never from markers.py's placement, so a
+# placement bug there is a difference here rather than the same bug twice (#34).
+WHERE_TOLERANCE = 0.5        # metres, line 3 (#895)
+HINGE_TOLERANCE = 0.01       # metres, line 2
+TURN_TOLERANCE = 0.1         # degrees, lines 2 and 9
+GATE_FIELDS = ('closed', 'shutAngle', 'openAngle', 'bar', 'blocks', 'quest', 'lock', 'evidence')
+
+expect = {}   # marker name -> what the blueprint says it is
+for r in bp['rooms']:
+    b, shape = r['bounds'], r.get('shape')
+    expect[f"ROOM_{r['id']}"] = {
+        'kind': 'room', 'id': r['id'], 'level': r['level'], 'open': False, 'top': r['top'],
+        'shape': 'disc' if shape and shape.get('kind') == 'disc' else 'box',
+        'cx': (b['min']['x'] + b['max']['x']) / 2, 'cz': (b['min']['z'] + b['max']['z']) / 2}
+_cur, _gx = bp['curtain'], bp['openRooms']['gateX']
+for o in bp['openRooms']['rooms']:
+    expect[f"ROOM_{o['id']}"] = {
+        'kind': 'room', 'id': o['id'], 'level': o['level'], 'open': True, 'top': 0, 'shape': 'box',
+        'band': (_gx[o['west']] if o['west'] else _cur['min']['x'], _gx[o['east']] if o['east'] else _cur['max']['x']),
+        'zs': (_cur['min']['z'], _cur['max']['z'])}
+for c in bp['colliders']:
+    expect[f"COL_{c['id']}"] = {'kind': 'collider', 'id': c['id'], 'box': c['box']}
+_bp_rooms = {r['id']: r for r in bp['rooms']}
+_pieces = {p['id']: p for p in bp['pieces']}
+for gt in bp['gates']:
+    if 'x' in gt and 'z' in gt:
+        at, pt = 'opening', (gt['x'], 0, gt['z'])
+    elif gt.get('centre') is not None:
+        at, pt = 'centre', tuple(gt['centre'])
     else:
-        skipped(n, name, 'markers was not built')
+        rm = _bp_rooms.get(gt['id'])
+        at = 'room'
+        pt = (rm['shape']['cx'], rm['top'], rm['shape']['cz']) if rm and rm.get('shape') else None
+    expect[f"GATE_{gt['id']}"] = {'kind': 'gate', 'id': gt['id'], 'at': at, 'point': pt, 'row': gt}
+for p in bp['pieces']:
+    if p.get('pivot'):
+        expect[f"GATE_{p['id']}_HINGE"] = {'kind': 'hinge', 'id': p['id'], 'point': tuple(p['pivot']['position']),
+                                           'turn': p['pivot']['rotationY']}
+for r in bp['ramps']:
+    expect[f"STAIR_{r['id']}"] = {'kind': 'stair', 'id': r['id'], 'box': r['box']}
+    for end, a in (('LOW', r['slope']['from']), ('HIGH', r['slope']['to'])):
+        expect[f"STAIR_{r['id']}_{end}"] = {'kind': f"stair-{end.lower()}", 'id': r['id'], 'point': (a[0], a[2], a[1])}
+expect['SPAWN'] = {'kind': 'spawn', 'id': 'spawn', 'point': tuple(bp['spawn']['position'])}
+for p in bp['pieces']:
+    for key, prefix, kind in (('evidence', 'EVID_', 'evidence'), ('read', 'READ_', 'read')):
+        if p.get(key) is not None:
+            expect[f"{prefix}{p[key]}"] = {'kind': kind, 'id': p[key], 'planId': p['id'], 'point': box_centre(p['box'])}
+    if p.get('bell') is True:
+        expect[f"BELL_{p['id']}"] = {'kind': 'bell', 'id': p['id'], 'planId': p['id'], 'point': box_centre(p['box'])}
+
+_mcol = bpy.data.collections.get('MARKERS')
+in_markers = set(_mcol.all_objects) if _mcol else set()
+obj = bpy.data.objects.get
+
+# ----------------------------------------------------------------- 1: rooms --
+# One ROOM_ per blueprint room and open place, each a mesh in MARKERS with
+# marker, roomId, level, shape and open; every data/mystery.json room among
+# them; no ROOM_ naming neither (#894).
+if 'markers' in stages:
+    with open(os.path.join(HERE, '..', '..', 'data', 'mystery.json'), 'r', encoding='utf-8') as f:
+        mystery = [r['id'] for r in json.load(f)['rooms']]
+    probs = []
+    rooms_want = {k: e for k, e in expect.items() if e['kind'] == 'room'}
+    for name, e in rooms_want.items():
+        ob = obj(name)
+        if ob is None:
+            what = f"{e['id']} is {'an open place' if e['open'] else 'a blueprint room'} (level {e['level']})"
+            probs.append(f"{name} missing; {what}" + (' and a mystery room' if e['id'] in mystery else ''))
+            continue
+        if ob.type != 'MESH' or ob not in in_markers:
+            probs.append(f"{name} is a {ob.type}{'' if ob in in_markers else ' outside MARKERS'}; a ROOM_ is a mesh in MARKERS")
+        for k, v in (('marker', 'room'), ('roomId', e['id']), ('level', e['level']), ('shape', e['shape']),
+                     ('open', e['open'])):
+            if k not in ob.keys() or ob[k] != v:
+                probs.append(f"{name}'s {k} is {ob[k] if k in ob.keys() else 'missing'}, not {v}")
+    for m in mystery:
+        if f"ROOM_{m}" not in rooms_want:
+            probs.append(f"mystery room {m} is neither a blueprint room nor an open place")
+    for ob in bpy.data.objects:
+        if ob.name.startswith('ROOM_') and ob.name not in rooms_want:
+            probs.append(f"{ob.name} names neither a blueprint room nor an open place")
+    if probs:
+        report(1, 'rooms', False, '; '.join(probs[:12]) + (' ...' if len(probs) > 12 else ''))
+    else:
+        nb = len(bp['rooms'])
+        nd = sum(1 for e in rooms_want.values() if not e['open'] and e['shape'] == 'disc')
+        report(1, 'rooms', True, f"{len(rooms_want)} ROOM_ ({nb} blueprint rooms, {nd} of them discs, and "
+               f"{len(rooms_want) - nb} open places); the {len(mystery)} mystery rooms each have one")
+else:
+    skipped(1, 'rooms', 'markers was not built')
+
+# ----------------------------------------------------------------- 2: gates --
+# One GATE_ per blueprint gate, gateId, `at` and every mirrored field equal to
+# the blueprint's (a null field absent); one _HINGE per pivot, on it within
+# HINGE_TOLERANCE and turned to its rotationY within TURN_TOLERANCE; `bar`
+# True on a gate with no hinge; and when gates ran, each hinge parents exactly
+# LEAF_<gate id>, whose origin is on it (#894, #895).
+if 'markers' in stages:
+    probs = []
+    gates_ran = 'gates' in stages
+    hinged = {e['id'] for e in expect.values() if e['kind'] == 'hinge'}
+    for name, e in expect.items():
+        if e['kind'] != 'gate':
+            continue
+        ob, row = obj(name), e['row']
+        if ob is None:
+            probs.append(f"{name} missing; the blueprint has gate {e['id']}")
+            continue
+        for k, v in (('marker', 'gate'), ('gateId', e['id']), ('at', e['at'])):
+            if k not in ob.keys() or ob[k] != v:
+                probs.append(f"{name}'s {k} is {ob[k] if k in ob.keys() else 'missing'}, not {v}")
+        for k in GATE_FIELDS:
+            v = row.get(k)
+            have = ob.get(k)
+            if hasattr(have, 'to_list'):
+                have = have.to_list()
+            elif have is not None and not isinstance(have, (str, int, float, bool)):
+                have = list(have)
+            if v is None and k in ob.keys():
+                probs.append(f"{name} carries {k} {have}, which the blueprint leaves null")
+            elif v is not None and (k not in ob.keys() or have != v):
+                probs.append(f"{name}'s {k} is {have if k in ob.keys() else 'missing'}, not the blueprint's {v}")
+        if e['id'] not in hinged and row.get('bar') is not True:
+            probs.append(f"gate {e['id']} has no hinge and is no bar")
+    for name, e in expect.items():
+        if e['kind'] != 'hinge':
+            continue
+        h = obj(name)
+        leaf = obj(f"LEAF_{e['id']}") if gates_ran else None
+        if h is None:
+            msg = f"{name} missing; {e['id']} has a pivot at game {g(round(c, 4) for c in e['point'])}"
+            if gates_ran:
+                msg += (f"; LEAF_{e['id']}'s parent is {leaf.parent.name if leaf and leaf.parent else 'none'}, "
+                        f"not {name}")
+            probs.append(msg)
+            continue
+        if h.get('gateId') != e['id']:
+            probs.append(f"{name}'s gateId is {h.get('gateId')}, not {e['id']}")
+        d = (h.matrix_world.translation - Vector(common.to_blender(e['point']))).length
+        if d > HINGE_TOLERANCE:
+            probs.append(f"{name} is {d:.3f} m from {e['id']}'s pivot {g(round(c, 4) for c in e['point'])}")
+        m = h.matrix_world.to_3x3()
+        turn = math.degrees(math.atan2(m[1][0], m[0][0]))
+        off = abs((turn - e['turn'] + 180) % 360 - 180)
+        if off > TURN_TOLERANCE:
+            probs.append(f"{name} is turned {turn % 360:.2f} deg, {off:.2f} off {e['id']}'s rotationY {e['turn']:g}")
+        if gates_ran:
+            kids = sorted(c.name for c in h.children)
+            if kids != [f"LEAF_{e['id']}"]:
+                probs.append(f"{name} holds {', '.join(kids) or 'nothing'}, not LEAF_{e['id']} alone")
+            elif (leaf.matrix_world.translation - h.matrix_world.translation).length > HINGE_TOLERANCE:
+                probs.append(f"LEAF_{e['id']}'s origin is off {name}")
+    if probs:
+        report(2, 'gates', False, '; '.join(probs))
+    else:
+        gs = [e for e in expect.values() if e['kind'] == 'gate']
+        parts = []
+        for at, words in (('opening', 'at the opening'), ('centre', 'at its centre'), ('room', 'at its room')):
+            ids = [e['id'] for e in gs if e['at'] == at]
+            if ids:
+                bars = [e['id'] for e in gs if e['at'] == at and e['id'] not in hinged and e['row'].get('bar')]
+                parts.append(f"{', '.join(ids)} {words}" + (', bar' if bars else ''))
+        nh = len(hinged)
+        tail = 'each holding its LEAF_' if gates_ran else 'made by markers (gates did not run)'
+        report(2, 'gates', True, f"{len(gs)} GATE_ ({', '.join(parts)}), {nh} hinges at their pivots, {tail}")
+else:
+    skipped(2, 'gates', 'markers was not built')
+
+# ----------------------------------------------------------------- 3: where --
+# (a) Against the blueprint, every marker in `expect` that exists: a ROOM_'s
+# plan-view centre against its bounds' centre and its lowest vertex against
+# `top`; an open place's centre strictly inside its band and the curtain; a
+# COL_ or STAIR_ box by its worst face; every point marker by its distance.
+# Past WHERE_TOLERANCE fails unless allow.json names the marker with a reason;
+# an entry with no reason, one for a marker within the tolerance (stale), and
+# one under a marker prefix naming no marker, each fail. (b) Against the model:
+# a STAIR_, EVID_, READ_ or BELL_ whose item exactly one object outside GUIDE
+# and MARKERS realises by planId, its point against that object's bounds'
+# centre or its box by the worst face. Past WHERE_TOLERANCE fails and
+# allow.json cannot excuse it: an entry records a departure from the plan,
+# never from the model the marker describes (#895, amending #844).
+if 'markers' in stages:
+    probs, allowed = [], []
+    marker_allow = {k: v for k, v in allow.items() if is_marker_name(k)}
+    worst = {'room': 0.0, 'box': 0.0, 'point': 0.0}
+    within, open_ok, measured = 0, 0, {}
+    for name, e in expect.items():
+        ob = obj(name)
+        if ob is None:
+            continue
+        if e['kind'] == 'room':
+            vs = [ob.matrix_world @ v.co for v in ob.data.vertices] if ob.type == 'MESH' else [ob.matrix_world.translation]
+            cx = (min(v.x for v in vs) + max(v.x for v in vs)) / 2
+            cz = -(min(v.y for v in vs) + max(v.y for v in vs)) / 2
+            low = min(v.z for v in vs)
+            if ob.get('level') != e['level']:
+                probs.append(f"{name}'s level is {ob.get('level')}, not {e['level']}")
+            if e['open']:
+                (x0, x1), (z0, z1) = e['band'], e['zs']
+                inside = x0 < cx < x1 and z0 < cz < z1
+                d = 0.0 if inside else WHERE_TOLERANCE + 1
+                why = f"{name}'s centre game ({cx:g}, {cz:g}) is outside its band x {x0:g}..{x1:g}, z {z0:g}..{z1:g}"
+                kind = None
+            else:
+                dc, df = math.hypot(cx - e['cx'], cz - e['cz']), abs(low - e['top'])
+                d, kind = max(dc, df), 'room'
+                why = (f"{name}'s centre is {dc:.3f} m from {e['id']}'s ({e['cx']:g}, {e['cz']:g}) in plan"
+                       if dc >= df else f"{name}'s floor is {df:.3f} m from {e['id']}'s top {e['top']:g}")
+                why += f" (limit {WHERE_TOLERANCE:g})"
+        elif 'box' in e:
+            d, kind = worst_face(empty_box(ob), e['box']), 'box'
+            why = f"{name}'s box is {d:.3f} m from {e['kind']} {e['id']}'s at its worst face (limit {WHERE_TOLERANCE:g})"
+        else:
+            if e['point'] is None:
+                probs.append(f"{name}: the blueprint gives gate {e['id']} no point")
+                continue
+            d = (ob.matrix_world.translation - Vector(common.to_blender(e['point']))).length
+            kind = 'point'
+            why = f"{name} is {d:.3f} m from {g(round(c, 4) for c in e['point'])} (limit {WHERE_TOLERANCE:g})"
+        measured[name] = d
+        reason = marker_allow.get(name)
+        if name in marker_allow and not (isinstance(reason, str) and reason.strip()):
+            continue  # named below as having no reason
+        if d > WHERE_TOLERANCE:
+            if name in marker_allow:
+                allowed.append(f"{name} {d:.3f} m ({reason})")
+            else:
+                probs.append(f"{why} and allow.json has no {name}")
+        elif name in marker_allow:
+            probs.append(f"allow.json's {name} is stale: {name} is {d:.3f} m from the blueprint, "
+                         f"within {WHERE_TOLERANCE:g}; delete the entry")
+        else:
+            within += 1
+            if kind is None:
+                open_ok += 1
+            else:
+                worst[kind] = max(worst[kind], d)
+    for k, v in marker_allow.items():
+        if not (isinstance(v, str) and v.strip()):
+            probs.append(f"allow.json's {k} has no reason")
+        elif k not in measured:
+            probs.append(f"allow.json's {k} names no marker in the file")
+    # (b) the model
+    realised, model_worst, model_text = 0, 0.0, None
+    if any(s in stages for s in common.GEOMETRY):
+        outside = set(in_markers)
+        gcol = bpy.data.collections.get('GUIDE')
+        if gcol:
+            outside |= set(gcol.all_objects)
+        by_plan = {}
+        for o in bpy.data.objects:
+            if o not in outside and 'planId' in o.keys():
+                by_plan.setdefault(str(o['planId']), []).append(o)
+        for name, e in expect.items():
+            pid = e['id'] if e['kind'] == 'stair' else e.get('planId')
+            ob = obj(name)
+            if pid is None or ob is None or len(by_plan.get(pid, [])) != 1:
+                continue
+            real = by_plan[pid][0]
+            tb = tree_bounds(real)
+            if tb is None:
+                continue
+            if e['kind'] == 'stair':
+                d = worst_face(empty_box(ob), tb)
+            else:
+                c = box_centre(tb)
+                d = math.dist(to_game(ob.matrix_world.translation), c)
+            realised += 1
+            model_worst = max(model_worst, d)
+            if d > WHERE_TOLERANCE:
+                probs.append(f"{name} is {d:.3f} m from {real.name}, which realises {pid}; allow.json excuses a "
+                             f"marker from the blueprint, never from the model")
+        model_text = f"{realised} on the objects that realise them (worst {model_worst:.3f} m)"
+    else:
+        model_text = 'no realising objects (no geometry stage ran)'
+    if probs:
+        report(3, 'where', False, '; '.join(probs[:12]) + (' ...' if len(probs) > 12 else ''))
+    else:
+        report(3, 'where', True, f"{within} markers within {WHERE_TOLERANCE:g} m of the blueprint (worst room "
+               f"{worst['room']:.3f} m, box {worst['box']:.3f}, point {worst['point']:.3f}), {open_ok} open places "
+               f"in their bands; {model_text}; {len(allowed)} allowed" + (': ' + ', '.join(allowed) if allowed else ''))
+else:
+    skipped(3, 'where', 'markers was not built')
 
 
 # --------------------------------------------------------------- 4: images --
@@ -179,7 +510,8 @@ else:
 # least one object's planId or planIds outside GUIDE and MARKERS, and no object
 # names an id the blueprint lacks. The exceptions are allow.json entries keyed
 # by piece id (or model:<file>), each with a reason; one with no reason fails.
-ran = [s for s in common.GEOMETRY if s in stages]
+# An entry under a marker prefix is line 3's, and this line skips it (#895).
+ran =[s for s in common.GEOMETRY if s in stages]
 if ran:
     table = common.STAGE_OF(bp)
     outside = set()
@@ -198,7 +530,7 @@ if ran:
             ids += [str(i) for i in ob['planIds']]
         for i in ids:
             named.setdefault(i, ob.name)
-    unreasoned = sorted(k for k, v in allow.items() if not k.startswith('ROOM_') and not (isinstance(v, str) and v.strip()))
+    unreasoned = sorted(k for k, v in allow.items() if not is_marker_name(k) and not (isinstance(v, str) and v.strip()))
     want = [pid for pid, s in table.items() if s in ran]
     missing = [pid for pid in want if pid not in named and pid not in allow]
     unknown = sorted(f"{i} (on {o})" for i, o in named.items() if i not in table)
@@ -232,28 +564,6 @@ ENERGY_TOLERANCE = 0.02      # of the removed luminance
 SOURCE_GROW = 0.1            # metres
 PLACE_TOLERANCE = 0.01       # metres
 LUMA = (0.2126, 0.7152, 0.0722)
-
-
-def g(v):
-    """A game point, printed as the spec writes it."""
-    return '(' + ', '.join(f"{float(c):g}" for c in v) + ')'
-
-
-def to_game(v):
-    return (v[0], v[2], -v[1])
-
-
-def tree_bounds(root):
-    """A root and its descendants' meshes' world bounds, as a game box."""
-    from mathutils import Vector
-    pts = []
-    for o in [root] + list(root.children_recursive):
-        if o.type == 'MESH':
-            pts += [to_game(o.matrix_world @ Vector(c)) for c in o.bound_box]
-    if not pts:
-        return None
-    return {'min': {k: min(p[i] for p in pts) for i, k in enumerate('xyz')},
-            'max': {k: max(p[i] for p in pts) for i, k in enumerate('xyz')}}
 
 
 def feeds(node, target, seen=None):
@@ -486,7 +796,66 @@ if 'lighting' in stages:
 else:
     skipped(8, 'cameras', 'lighting was not built')
 
-print(f"check: stages {', '.join(stages)}; " + (f"FAILED line(s) {', '.join(map(str, failed))}" if failed else 'every line that ran passed'))
+# ---------------------------------------------------------------- 9: markers --
+# One COL_ per collider; a STAIR_ and both ends per ramp; SPAWN with the
+# blueprint's lookAt and its -Z on it within TURN_TOLERANCE; an EVID_, READ_
+# and BELL_ per carrying piece with its planId; COL_ and STAIR_ unrotated;
+# every object in MARKERS a marker (a name the blueprint gives, carrying
+# `marker`) and hidden from render; no marker-named object outside MARKERS
+# (#843, #894, #895). Rooms, gates and hinges are lines 1 and 2's.
+if 'markers' in stages:
+    probs = []
+    for name, e in expect.items():
+        k = e['kind']
+        if k not in ('collider', 'stair', 'stair-low', 'stair-high', 'spawn', 'evidence', 'read', 'bell'):
+            continue
+        ob = obj(name)
+        if ob is None:
+            what = {'collider': 'collider', 'stair': 'ramp', 'stair-low': 'ramp', 'stair-high': 'ramp',
+                    'spawn': 'spawn', 'evidence': 'evidence', 'read': 'read', 'bell': 'bell on'}[k]
+            probs.append(f"{name} missing; the blueprint has {what} {e['id']}")
+            continue
+        idk = {'collider': 'colliderId', 'stair': 'rampId', 'stair-low': 'rampId', 'stair-high': 'rampId',
+               'evidence': 'evidenceId', 'read': 'readId'}.get(k)
+        if idk and ob.get(idk) != e['id']:
+            probs.append(f"{name}'s {idk} is {ob.get(idk)}, not {e['id']}")
+        if 'planId' in e and ob.get('planId') != e['planId']:
+            probs.append(f"{name}'s planId is {ob.get('planId')}, not {e['planId']}")
+        if k in ('collider', 'stair') and ob.matrix_world.to_quaternion().angle > 1e-6:
+            probs.append(f"{name} is turned; a COL_ or STAIR_ box is never rotated")
+    sp = obj('SPAWN')
+    look = tuple(bp['spawn']['lookAt'])
+    if sp is not None:
+        have = tuple(sp['lookAt']) if 'lookAt' in sp.keys() else None
+        if have is None or any(abs(a - b) > 1e-9 for a, b in zip(have, look)):
+            probs.append(f"SPAWN's lookAt is {have}, not the blueprint's {g(look)}")
+        fwd = (sp.matrix_world.to_3x3() @ Vector((0.0, 0.0, -1.0))).normalized()
+        to = (Vector(common.to_blender(look)) - sp.matrix_world.translation).normalized()
+        off = math.degrees(math.acos(max(-1.0, min(1.0, fwd.dot(to)))))
+        if off > TURN_TOLERANCE:
+            probs.append(f"SPAWN aims {off:.2f} deg off {g(look)}")
+    for ob in sorted(in_markers, key=lambda o: o.name):
+        if ob.name not in expect or 'marker' not in ob.keys():
+            probs.append(f"{ob.name} in MARKERS is no marker")
+        elif not ob.hide_render:
+            probs.append(f"{ob.name} renders; every marker is hidden from render (#843)")
+    for ob in bpy.data.objects:
+        if ob not in in_markers and is_marker_name(ob.name):
+            probs.append(f"{ob.name} is named as a marker and is outside MARKERS")
+    if probs:
+        report(9, 'markers', False, '; '.join(probs[:12]) + (' ...' if len(probs) > 12 else ''))
+    else:
+        n = {}
+        for ob in in_markers:
+            n[ob['marker']] = n.get(ob['marker'], 0) + 1
+        report(9, 'markers', True, f"{len(in_markers)} in MARKERS ({n.get('room', 0)} ROOM_, {n.get('collider', 0)} COL_, "
+               f"{n.get('stair', 0)} STAIR_ and {n.get('stair-low', 0) + n.get('stair-high', 0)} ends, "
+               f"{n.get('gate', 0)} GATE_, {n.get('hinge', 0)} hinges, SPAWN, {n.get('evidence', 0)} EVID_, "
+               f"{n.get('read', 0)} READ_, {n.get('bell', 0)} BELL_), none renders, SPAWN aimed at {g(look)}")
+else:
+    skipped(9, 'markers', 'markers was not built')
+
+print(f"check: stages {', '.join(stages)}; " +(f"FAILED line(s) {', '.join(map(str, failed))}" if failed else 'every line that ran passed'))
 sys.stdout.flush()
 if failed:
     sys.exit(1)

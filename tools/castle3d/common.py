@@ -98,6 +98,11 @@ def empty_scene():
     return scene
 
 
+# The marker kinds' name prefixes (#843, #894). check.py line 3 reads an
+# allow.json entry under one of these, and line 6 leaves it to line 3 (#895).
+MARKER_PREFIXES = ('ROOM_', 'COL_', 'GATE_', 'STAIR_', 'SPAWN', 'EVID_', 'READ_', 'BELL_')
+
+
 def collection(name, hide_render=False):
     """The one collection a stage (or GUIDE, or MARKERS) writes into."""
     col = bpy.data.collections.get(name)
@@ -147,6 +152,7 @@ def box_to_blender(box):
 # a new kind in the plan cannot fall through silently. `--only guide` prints it.
 #
 #   gates      the leaves, the arches, the cell bars and the Stockhouse walk bar
+#   town       the quay, every kind (#893)
 #   props      every interior prop and built prop (Poly Haven, Devon's, slabs)
 #   town       Mereford, the town wall and trees, Wykes's yard
 #   terrain    the ground patches that are not a room's floor
@@ -158,6 +164,9 @@ def box_to_blender(box):
 STAGE_RULES = [
     ('gates', {'gate-leaf', 'gate-arch', 'fixture'}, None),
     ('gates', {'prop'}, r'^walk-bar$'),
+    # Rank 9's quay (#870, #871), every kind, before props takes its barrels
+    # and crate: town's, so a terrain-stage id cannot pass line 6 undrawn (#893).
+    ('town', None, r'^(quay-|floor-mereford-quay$)'),
     ('props', {'prop'}, None),
     ('town', None, r'^(mereford-|town-|wykes-|floor-wykes-yard$)'),
     ('terrain', {'ground'}, r'^(?!floor-)'),
