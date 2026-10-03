@@ -79,7 +79,7 @@ priority on 2026-09-25 and reopened ranks 1 and 2 himself to hold them
 three rows lettered by priority (2b an interiors kit, 2c a
 shared rig with swappable parts, 2d the animals); the castle's integration
 row, after 2h shipped as a realistic standalone Blender model (#962) (2i,
-#919 to #924); the GPU run itself, now gated on nothing (rank 3, #780 to #782);
+#919 to #924, specced #963 to #968); the GPU run itself, now gated on nothing (rank 3, #780 to #782);
 the retro castle's look, its variety increment superseded by 2h (rank 4,
 #839); the rest of
 the fifty-person populace (rank 6); somebody with speakers to judge the
@@ -196,7 +196,7 @@ together.
 | D | `src/main.js`'s player rig and spawn | 6, 11 |
 | E | `src/audio.js` and `data/sounds.json` | 7 |
 | F | `tools/blender/` and its manifest | 2b, 2c, 2d |
-| G | `tools/castle3d/` | 2i |
+| G | `tools/castle3d/`, and `data/castle-skin.json` (#963) | 2i |
 
 Lane A last bumped the save version to 6 (#612); the next row that bumps it
 takes that lane and bumps to 7. Lane C is the `cast` block specifically, not
@@ -244,7 +244,7 @@ the placement editor, budget suite, move-and-delete and the dialogue format
 | 2b | Blender: an interiors kit: joined sets dressing the kitchen, the great hall and the cell, specced (#813 to #816, #819); the two hearths and the chapel altar went to 2f (#830); nothing built | 2+ | Opus 5 | Local: Blender | 1 shipped (#881); 2a shipped (#907) | F, B | | [Blender: an interiors kit](SPECS.md#blender-an-interiors-kit) |
 | 2c | Blender: a shared rig with swappable parts: one rig, one-primitive parts, at most five skinned draws a person against the Quaternius rigs' 12 to 15, specced (#820 to #825); nothing built | 2+ | Opus 5 | Local: Blender, then Container; judged local: GPU (#53) | 1 shipped (#881) | F, C | | [Blender: a shared rig with swappable parts](SPECS.md#blender-a-shared-rig-with-swappable-parts) |
 | 2d | Blender: the animals: pig, goat, sheep, horse, cat and two geese on one quadruped topology plus a bird one for the goose, specced (#826 to #829); nothing built | 1 | Opus 5 | Local: Blender; judged local: GPU (#53) | after 2c increment 1 (1 shipped, #881) | F, C | | [Blender: the animals](SPECS.md#blender-the-animals) |
-| 2i | Castle in Blender, the integration row: the game takes `castle.glb` as a skin swap and never reads `markers.json` (#919), staged curtain wall and towers, then buildings, then Mereford, with the kit indoors meanwhile (#921), the outer gate and drum doors opened in the model (#922); shape decided (#919 to #924), full spec (ceilings, LOD and bake, KTX2, amendments to #499, #506, #611) waits for 2h increment 9's `gltf-transform inspect` numbers, in #961, and 2h is closed (#962); nothing built | Set by the spec | Opus 5 | Local: Blender GPU (5.2, Devon's Windows machine only) | 2h shipped (#962) | G | | [HISTORY.md](HISTORY.md#castle-in-blender-closed-devons-lines-on-7b-and-9-2026-10-03) (no `SPECS.md` section yet, #923) |
+| 2i | Castle in Blender, the integration row: the game takes the model as a skin and never reads `markers.json` (#919); specced (#963 to #968): one `assets/castle3d/skin.glb` cut from the master by stage (`curtain`, `buildings`, `town`, `land`), about 25 MB and 37.3 MB of texture memory against the master's 570 MB and 1,738.8 MB, trees decimated to 2,000 triangles, KTX2 through `assets:encode`; draw ceiling 1200 to 600, a new 500,000-triangle ceiling, texture 64 to 76 to 84 (#966); #499 and #506 stand (#967); six increments, the first #922's open gate in the model; nothing built | 2+ | Opus 5 | Local: Blender GPU (5.2, Devon's Windows machine only), plus `ktx`; judged local: GPU (#53) | 2h shipped (#962) | G | | [Castle in Blender: the integration row](SPECS.md#castle-in-blender-the-integration-row) |
 | 3 | The GPU run: the fourth sitting confirmed the sight fix on a GPU and walked the whole day and the second day (#886 to #891); exit 1, 6 failures, 3a (#916) and 3b (#917) shipped, one more GPU run owed; the quay look's stills taken (#900, `looks/2026-10-03/`), Devon's verdict owed; `renderer.info` recorded (#887); the phone (#530) untouched | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
 | 4 | The retro castle: increment 1 shipped, fifteen sets out and fifteen 128 px textures in (#757 to #766); the look is left; variety per room is superseded by 2h (#839); the props increment moved to 2b (#813) | 2+ | Opus 5 | Container to the look, local: GPU past it | — | B | | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
 | 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #729 to #733); four generated clips placed in the household's routines (#800), `drill` dropped (#915); 10 of the twelve's 27 chatter pairs placed by room and bell (#911, #912); left: playback of those 10 (#913), the 17 that wait on Devon (#914), the town's share of the fifty | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |

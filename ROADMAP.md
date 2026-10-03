@@ -41,7 +41,7 @@ a network that reaches Poly Haven, once each, into a hash-pinned cache.
 | **2b Blender: an interiors kit** | Opus 5 | Specced 2026-09-25 (#813 to #816, #819), nothing built. |
 | **2c Blender: a shared rig with swappable parts** | Opus 5 | Specced 2026-09-25 (#820 to #825), nothing built. Increment 1 is Blender; increment 2 is a container. |
 | **2d Blender: the animals** | Opus 5 | Specced 2026-09-25 (#826 to #829), nothing built. |
-| **2i Castle in Blender, the integration row** (Blender 5.2) | Opus 5 | Shape decided 2026-10-02 (#919 to #924): a skin swap, staged curtain wall and towers, then buildings, then Mereford, kit indoors meanwhile, the gate and drum doors opened in the model. Its `SPECS.md` section is not written: 2h shipped and closed (#962), its increment 9 numbers are in #961, so the spec is unblocked. Nothing built. |
+| **2i Castle in Blender, the integration row** (Blender 5.2) | Opus 5 | Shape decided 2026-10-02 (#919 to #924); specced 2026-10-03 (#963 to #968), argued from #961's master: one skin file cut by stage, `curtain`, `buildings`, `town`, `land`, the ceilings moved in #966. Next is increment 1, #922's open gate in the model, a `builder` job on Devon's Windows machine. Nothing built. |
 
 ### Local: a GPU
 
@@ -108,7 +108,7 @@ lane at a time** (#602). The lanes are named by the file, not by the theme.
 | **D** | `src/main.js`'s player rig and spawn | 6, 11 |
 | **E** | `src/audio.js` and `data/sounds.json` | 7 |
 | **F** | `tools/blender/` and `tools/blender/manifest.json` | 1, 2b, 2c, 2d |
-| **G** | `tools/castle3d/` | 2i |
+| **G** | `tools/castle3d/`, and `data/castle-skin.json` (#963) | 2i |
 | **none** | | 3 |
 
 Every Blender row holds lane F, so only one runs at a time, which matches
@@ -173,9 +173,10 @@ gate, went through nothing of `tools/blender/`'s, and started whenever
 Devon's machine was free (#839, #840); it shipped and closed 2026-10-03
 (#962). The integration row,
 **2i** (#919 to #924), puts its model in the game as a skin swap, last in the
-band, in lane G; its gate, 2h's increment 9, has shipped (#961), so its shape
-is decided and its spec, which waited on that increment's numbers (#923), is
-unblocked.
+band, in lane G; its gate, 2h's increment 9, has shipped (#961), and its
+spec, which waited on that increment's numbers (#923), is written (#963 to
+#968). Its six increments run in order, each stage's GPU look before the
+next stage.
 
 **Rank 3's hour on a GPU is spent: the fourth sitting confirmed the sight
 fix** (#886 to #891). What is left of the row, 3a (#916) and 3b (#917) having shipped, is one more

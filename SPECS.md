@@ -10,7 +10,8 @@ ships the row is the one that records the call with a number.
 
 One section per row still open in `BACKLOG.md`'s ranked table: 3, 4, 6, 7,
 9, 11, and the rank 2 band (2b to 2d, and 2h, "Castle in Blender",
-which is outside the Blender pipeline, #839). 2f and 2g shipped and their
+which is outside the Blender pipeline, #839, and 2i, its integration row,
+#963 to #968). 2f and 2g shipped and their
 sections are deleted (#830 to #838); 2a shipped (#907) and its section is cut
 to what 2b cites and its open look; 2e shipped (#908) and its section is cut
 to its pointer and its open look; 13 shipped (#909) and its section is cut
@@ -822,12 +823,370 @@ was built, all shipped; Devon's verdict on the nine review stills and the
 nine look calls, all "as built," closes the row (#962). What depends on it:
 
 - **The integration row (2i, #919 to #924)**: the game takes `castle.glb`
-  as a skin swap and never reads `markers.json`; its full spec (ceilings,
-  LOD and bake, KTX2, amendments to #499, #506, #611) waits on increment
-  9's `gltf-transform inspect` numbers, in #961, which it argues from
-  (#923). Its `SPECS.md` section is not written yet.
+  as a skin swap and never reads `markers.json`; its spec, argued from
+  #961's numbers (#923), is "Castle in Blender: the integration row" below
+  (#963 to #968).
 - **Rank 4**: its increment 2 was superseded by this row (#839); its
   looking checklist is unaffected.
+
+---
+
+## Castle in Blender: the integration row
+
+**Rank 2i. Size 2+ (six increments). Model Opus 5. Where: Local: Blender
+GPU (5.2, Devon's Windows machine only, #878) with KTX-Software's `ktx` on
+PATH (#506) for every increment that cuts; judged local: GPU (#53). Gate:
+none (2h shipped, #962). Lane G, extended to `data/castle-skin.json`
+(#963).** Shape decided in #919 to #924; spec decided in #963 to #968,
+argued from #961's master and measured in Node against it (#963's entry
+says how; the KTX2 projection is calibrated by reproducing #961's 1,738.8 MB
+to the decimal). The game takes the model as a skin: the plan stays the
+single source for every collider, room, station and box (#500, #919), and
+the model replaces what is drawn, a stage at a time (#921, as #964 amends
+it).
+
+**The shape, in one line**: `skin.py`, a fourth Blender over the master,
+writes `<out>/skin/skin-full.glb` with props, markers and the excluded
+model-only objects gone, trees and rocks decimated and joined, tints baked
+into pixels and images capped; `skin.mjs` cuts it to the stages
+`data/castle-skin.json` lists and writes `assets/castle3d/skin.glb`; `npm run
+assets:encode` makes it KTX2 and meshopt; the builder builds every plan
+piece as today, hides each one a skin node names, and draws the node in its
+place.
+
+**What ships of the master** (#963, #966, #968):
+
+| | The master (#961) | The skin, all four stages, projected |
+| --- | --- | --- |
+| File | 569,711,256 bytes | about 25 MB: 18.4 MB of KTX2 (measured medians), about 6.5 MB of meshopt geometry (estimated) |
+| Texture memory | 1,738.8 MB, 130 images | 37.3 MB, 84 images |
+| Triangles placed | 41,821,350 | about 295,000 |
+| Draws | 959 | about 280 |
+
+| Stage | Plan pieces | Skin draws | Skin triangles | Texture memory, cumulative | Castle's texture bill (43.9 today) | Outer + outside draws (1187 today) |
+| --- | --- | --- | --- | --- | --- | --- |
+| `curtain` | 152 | 132 | 40,000 | 14.7 MB, 33 images | 58.6 MB | about 488 |
+| `buildings` | 40 | 42 | 6,472 | 21.3 MB, 48 | 65.2 | about 454 |
+| `town` | 59 | about 93 | about 28,000 | 28.0 MB, 63 | 71.9 | about 416 |
+| `land` | 5 | about 15 | about 221,000 | 37.3 MB, 84 | 81.2 | about 411 |
+
+### Scope, by file
+
+- **`tools/castle3d/gates.py` and `buildings.py`** (increment 1, #922):
+  `LEAF_barbican-outer-a` and `-b` open, `PORT_barbican-outer` raised, both
+  keeping `modelOnly: "#851"`; the four `#855` drum doors deleted and
+  `ROOF_great-hall` cut back to #527's 0.75 m slot of sky. `check.py`'s nine
+  lines and `check-export.mjs` stay as they are and pass.
+- **`tools/castle3d/skin.py`**, new: a fourth Blender, `blender -b
+  <out>/castle.blend --factory-startup --python-exit-code 1 --python
+  tools/castle3d/skin.py -- --out <out>`, which never saves the master. In
+  order: delete the `props` stage's objects, `BRAZIER_`, every `#853` and
+  `#855` object, `GUIDE` and `MARKERS`; decimate (each tree at most 2,000
+  triangles, each rock 1,000, `TERRAIN_ground` 40,000); join the land's trees
+  to one object per species and its rocks to one per mesh; multiply `LOOK`'s
+  constant tints into the base colour pixels with `numpy`, and #857's
+  per-house `object_tint` into a `COLOR_0` attribute; scale every image to its
+  cap (base colour 1024, normal and metal-roughness 512); set each object's
+  `stage` custom property from `common.STAGE_OF` and the admit table in #964;
+  export `<out>/skin/skin-full.glb` with 2h's export options (#897), Draco
+  off. Refuses `CI` and any Blender but 5.2, as `build.mjs` does (#840,
+  #842).
+- **`tools/castle3d/skin.mjs`**, new, Node, `npm run castle3d:skin`: launches
+  `skin.py` (or `--cut-only` over an existing `skin-full.glb`), then with the
+  pinned `@gltf-transform/core` keeps the nodes whose `extras.stage` is in
+  `data/castle-skin.json`'s `stages` and whose plan id is not in its `keep`,
+  prunes, drops `KHR_materials_specular` and `KHR_materials_ior`, sets the
+  leaf materials to `MASK` at 0.5, and writes `assets/castle3d/skin.glb` raw.
+  `--drop <stage>` removes a stage from the committed, encoded file on any
+  machine, which is the revert. It records every input's sha256 (the master
+  glb, `skin.py`, `blueprint.json`, `data/castle-skin.json`) and the written
+  file's in `tools/castle3d/skin-manifest.json`, and prints "unchanged" and
+  writes nothing when the inputs have not moved. It writes a repo file, so it
+  takes the file's newline from the file (#632, `eolOf`).
+- **`tools/castle3d/skin-manifest.json`**, new, committed: per stage, the
+  numbers `skin.mjs` printed; the inputs' sha256; the encoded file's sha256
+  and bytes, re-recorded by `skin.mjs --record` after `assets:encode`.
+- **`tools/encode-assets.mjs`**: a third family, "the castle skin", the file
+  `data/castle-skin.json` names, textures by slot (#507) and meshopt with
+  `cleanup: false`; and `toKTX2` keeps alpha (`R8G8B8A8_SRGB`, ETC1S) for a
+  base colour whose material is not `OPAQUE`, where it calls `removeAlpha()`
+  today (#967).
+- **`data/castle-skin.json`**, new: `{ comment, file:
+  "assets/castle3d/skin.glb", stages: [], keep: [], allow: { "<skin node
+  name>": "<reason>" } }`, `allow` keyed by node name as #895 keyed
+  `allow.json`, since one node may name several pieces. Only this row
+  writes it.
+- **`assets/castle3d/skin.glb`**, new from increment 3.
+- **`src/castle-builder.js`**: `build()` loads `data/castle-skin.json`
+  through `assets.js`'s `loadJSON` and, when `stages` is not empty and the
+  page does not carry `?edit=1`, the skin through `loadModel`. For each node
+  carrying `extras.planId` or `extras.planIds`: every built object it names
+  gets `visible = false` and stays in `this.objects` with its tag; the node
+  goes in a new `this.skins` map under each id, added at its glb world
+  transform, or for a `LEAF_<gate>` node under that gate's pivot with an
+  identity transform. A node with no plan id (#851's outer gate, the
+  louvre, the land) is added untagged with `userData.skin = true`.
+  `setPieceVisible` sets a skin's `visible` where one exists and leaves the
+  hidden built object hidden. Shadows as the builder's own pieces.
+- **`test/assets.mjs`**: check 4's sweep gains `assets/castle3d`, reachable
+  from `data/castle-skin.json`; new check 10, below.
+- **`test/layout.mjs`**: a new check, "the skin against the plan", below.
+- **`test/budget.mjs`**: sections 1 and 4 learn the skin; a new section 5,
+  triangles; the ceilings move as #966 says, in the increments it names.
+- **`test/plan-vs-scene.mjs`**: four seams, below.
+- **`package.json`**: `"castle3d:skin": "node tools/castle3d/skin.mjs"`.
+- **Untouched**: `src/castle-plan.js`, `src/main.js`, `src/save.js` (no
+  version bump), `data/scene-config.json`, `data/mystery.json`,
+  `tools/blender/`, `test/built.mjs` (its served-set diff and the 200 MB
+  line already cover a new file under `assets/`), and `markers.json`, which
+  stays outside the repo and is read by nothing in the game (#919).
+
+### Scope, by increment
+
+1. **#922 in the model.** The two script edits above; a full `npm run
+   castle3d:build`; nine `check.py` lines and the export check green; one
+   Cycles still from `CAM_spawn` of the open arch, rendered twice and held
+   to #898's judge, for Devon. `builder`, Local: Blender GPU. Every cut
+   reads this master, so it goes first.
+2. **The skin, outside the repo.** `skin.py` and `skin.mjs`; `skin-full.glb`
+   and a `curtain` cut written to `<out>/skin/`, nothing under `assets/`.
+   The report quotes, per stage, draws, triangles, images and the KTX2
+   projection beside the table above; a number past 2 MB or 10% of its
+   projection sends the row back to `architect` (#966). Two runs over one
+   master, the `skin-full.glb` sha256 of each quoted and equal. `builder`,
+   Local: Blender GPU.
+3. **Stage `curtain` in the game.** The encoder family and alpha path;
+   `data/castle-skin.json` with `stages: ["curtain"]`;
+   `assets/castle3d/skin.glb` cut, encoded, recorded and committed; the
+   builder's skin path; check 10, the layout check, the budget changes
+   (`MAX_DRAW_CALLS_PER_WARD` 600, `MAX_TRIANGLES_PER_WARD` 500,000) and the
+   four seams, each with its break. `npm test` fifteen of fifteen. Then the
+   GPU look below, Devon's line recorded. `builder`, Local: Blender GPU for
+   the cut, any machine past it.
+4. **Stage `buildings`.** Re-cut; one `allow` entry (`ROOF_great-hall`,
+   the seven `hall-roof` pieces, 0.80 m of eave); `MAX_TEXTURE_MB` 64 to 76.
+   Look, line recorded.
+5. **Stage `town`.** Re-cut; thirteen `allow` entries (five `TREE_`, six
+   house `ROOF_`, `HOUSE_mereford-house-n1`, `ROOF_mereford-church-tower`);
+   the five trees on
+   one decimated mesh. Look, line recorded.
+6. **Stage `land`.** Re-cut; two `allow` entries (the ground and the road);
+   `MAX_TEXTURE_MB` 76 to 84. Look, line recorded. Then a lane-B clean-up,
+   not this row's, deletes the `pixelMaterials` rows no unswapped piece
+   wears (#964).
+
+Each of 4 to 6 is a `builder` job against this section; one whose measured
+numbers miss the projection by more than #966's margin, or whose look calls
+for a `keep` entry, comes back to `architect` first.
+
+### Acceptance
+
+Every increment: `npm test` fifteen of fifteen, and each new assertion's
+break run from green, the failing line quoted (#34). Nothing below is in
+CI's reach that a container cannot run, except the cut itself.
+
+1. **`test/assets.mjs` check 10, the castle skin** (format, caps, hash; an
+   asset fact, as check 8 is for `tools/blender/`). The file exists for a
+   non-empty `stages`, is at most 32 MB, carries `EXT_meshopt_compression`
+   and `KHR_texture_basisu`, and every image is `image/ktx2` or a PNG of 128
+   px or under (#831); no base colour over 1024 and no normal or
+   metal-roughness over 512, read off the KTX2 header; every base colour of
+   a `MASK` or `BLEND` material carries alpha in its DFD; no Draco, no
+   `KHR_materials_specular` or `_ior`, no camera, no light; the set of
+   `extras.stage` values equals `stages`; no mesh over 40,000 triangles and
+   no mesh named by two or more nodes over 2,000; the file's sha256 is
+   `skin-manifest.json`'s. **Breaks**: a scratch copy with one image put back
+   as its 1024 PNG (a fixture, as #884's flipped byte was): `FAIL  skin:
+   image <n> is image/png 1024x1024; every image over 128 px is KTX2 (#506)`;
+   `skin.py`'s base cap at 2048; the encoder's alpha path removed, naming
+   `island_tree_01_leaves`; `"buildings"` added to `stages` without a re-cut;
+   one tree's cap at 5,000; one flipped byte against the manifest.
+2. **`test/layout.mjs`, the skin against the plan** (a fact derivable in
+   Node from the plan and a file, #529). Every plan piece whose stage is
+   listed and whose id is not in `keep` is named by exactly one skin node's
+   `planId` or `planIds`; every id a node names is a plan piece; each node's
+   world box, read as `partsOf` reads a model, has every face within 0.55 m
+   of its plan box's (the union, for a node naming several), except that it
+   may rise above the top (#965: the batter is exactly 0.5000 m, and the
+   drums' roofs rise 3.2 m); an `allow` key that is within that rule fails
+   as stale, and one naming no node fails. **Breaks**:
+   `WALL_north-curtain-mid` pruned from a scratch copy: `FAIL  skin: plan
+   piece north-curtain-mid of stage curtain is named by no skin node`; a
+   scratch copy with that node moved 1 m in x; an `allow` entry for
+   `WALL_north-curtain-mid`, which fits.
+3. **`test/budget.mjs`** (cost, #611). Section 1: a piece a skin node names
+   counts the node's primitives, not its built meshes, bucketed by the
+   node's world box; untagged skin nodes count too; so outer plus outside
+   prints about 488 at `curtain` against 600. Section 4: the skin's embedded
+   KTX2 are priced by the existing `fromKTX2` under `skin.glb#<i>`. Section
+   5, new: triangles per ward on the same rectangles, the game's built and
+   loaded meshes plus the skin's, ward plus outside against
+   `MAX_TRIANGLES_PER_WARD`, failing with the three biggest. **Breaks**: the
+   section 1 skip removed, so the hidden built drums are counted again:
+   outer over 600 naming the drums; a scratch skin with one undecimated tree
+   (519,809): outside over 500,000 naming it; the skin's images priced as
+   RGBA8: the texture line over its ceiling.
+4. **`test/plan-vs-scene.mjs`, four seams** (nothing provable in Node; each
+   compares a live object against a box Node computes from the file, as the
+   existing diff does against the plan). (a) Every skin node stands where
+   the glb says, its live `Box3` within 0.01 m of its world box. (b) Every
+   built object a skin node names has `visible` false, and its 0.01 m diff
+   against the plan still passes, unchanged. (c) Each of the four leaves'
+   skins is within 0.01 m of its pivot's `matrixWorld` times its local box,
+   shut and after the page opens it. (d) After the second day's `gone` on
+   `cell-bars`, its skin is not visible. **Breaks**: the builder adds the
+   node with an identity transform (a); the hide line commented out: `FAIL
+   north-curtain-mid is drawn beside its skin` (b); the leaf added to the
+   scene rather than its pivot, failing once the leaf swings (c);
+   `setPieceVisible` left on the built object alone (d).
+5. **`test/built.mjs`, unchanged**: `dist/` about 42 MB at `curtain`, 59 at
+   `land`, against 200; the served-set diff fails if `skin.glb` is missing
+   from `dist/`, which the report shows by deleting it there once.
+6. **The look (#53), local: GPU, after each stage**, from the checklist
+   below; Devon's line recorded against the increment. It blocks the next
+   stage, not `npm test`.
+
+### Open calls
+
+Each is decided in #963 to #968; the recommendation is that decision.
+
+- **What ships (#963).** Recommend **one file, `assets/castle3d/skin.glb`,
+  holding exactly the listed stages, never the master**: 570 MB cannot be
+  committed (GitHub refuses a file over 100 MB), and separate stage files
+  would price shared materials twice, 46.7 MB against a 28.0 MB union.
+- **Where the game learns the stages (#963).** Recommend **a new
+  `data/castle-skin.json`, read by `castle-builder.js`, not
+  `scene-config.json` and not `main.js`**, because the first would put the
+  row in lane B and the second in lane D for a list only this row writes.
+- **The stages (#964).** Recommend **four: `curtain` (walls, towers and
+  gates), `buildings`, `town`, `land`**, amending #921, because the gates'
+  arches stand in curtain runs and the land is the one stage that needs LOD
+  to ship.
+- **What a stage admits that has no plan id (#964).** Recommend **#851's
+  outer gate and `PORT_west-gate` with the curtain, #854's louvre with the
+  buildings, #857's leaves and #956's and #957's water and door with the
+  town; never `props`, `BRAZIER_`, #853 or #855**, because the game owns its
+  props and braziers and leaves #853's rooms open by design.
+- **Interiors (#964).** Recommend **a swapped piece is swapped on every
+  face; what a room holds stays the game's, and `keep` is the fallback**,
+  amending #921, because a face split needs a second geometry per piece
+  and a rule for who owns a face, where `keep` costs one line.
+- **Pixel textures (#964).** Recommend **none deleted in this row; one
+  lane-B clean-up after `land`**, because deleting a row writes
+  `scene-config.json` for 0.085 MB a texture.
+- **The swap mechanism (#965).** Recommend **built objects stay built,
+  tagged and hidden; skin nodes drawn by plan id; leaves under their
+  pivots**, because `plan-vs-scene`'s net then runs on the plan unchanged
+  and three's `Box3` and `Raycaster` ignore `visible`.
+- **The box rule (#965).** Recommend **every face within 0.55 m, the top
+  free, `allow` for the rest (0, 1, 13 and 2 entries by stage)**, because
+  0.5 is the batter exactly and a skin taller than its collider (a roof, a
+  drum's cone) shows no invisible wall.
+- **The editor (#965).** Recommend **no skin under `?edit=1`**, because the
+  editor moves the plan and the skin is a picture of an older one.
+- **Draw ceiling (#966).** Recommend **`MAX_DRAW_CALLS_PER_WARD` 1200 to 600
+  at `curtain`**, because the drums' 1,044 draws leave with the curtain and
+  a ceiling met by doing nothing is not one.
+- **Triangle ceiling (#966).** Recommend **a new `MAX_TRIANGLES_PER_WARD`,
+  500,000, ward plus outside, at `curtain`**, because the master is 41.8
+  million and nothing counted triangles; the land projects 448,000.
+- **Texture ceiling (#966).** Recommend **`MAX_TEXTURE_MB` 64 to 76 at
+  `buildings`, 76 to 84 at `land`, whole castle, not per ward**, because the
+  projections are 65.2 and 81.2 and three keeps whatever it uploaded.
+- **#499 (#967).** Recommend **not amended: 200 MB stands, and check 10
+  holds the file to 32 MB**, because `dist/` goes 34 to about 59 MB and the
+  cost #499 cannot see is history, one commit a stage.
+- **#506 (#967).** Recommend **not amended; the skin is a family the
+  existing encoder walks, and `toKTX2` keeps alpha for a non-opaque base
+  colour**, because two KTX2 paths are two rails for one rule and the leaves
+  would otherwise go opaque.
+- **Resolution (#968).** Recommend **base colour 1024 ETC1S, normal and
+  metal-roughness 512 UASTC**: 410 texels a metre against the game's 43, and
+  37.3 MB at `land` where 1024 throughout is 93.3.
+- **LOD (#968).** Recommend **decimation: trees 2,000, rocks 1,000, ground
+  40,000; a 6-triangle cross impostor as the named fallback**, because an
+  impostor needs a Cycles bake and a look, and decimation needs neither.
+- **Instancing (#968).** Recommend **join, not `EXT_mesh_gpu_instancing`**,
+  as #815 chose for 2b, because instancing is a second draw path for
+  `budget.mjs` to learn.
+- **The bake (#968).** Recommend **tints into pixels with `numpy`,
+  `object_tint` into `COLOR_0`, noise dropped; no per-object bake, no atlas;
+  no UV rewrite**, because the UVs already are the box projection in metres
+  (sampled on three nodes) and an atlas breaks the tiling they carry.
+- **Leaves (#968).** Recommend **`MASK` at 0.5**, because 76 sorted `BLEND`
+  trees are a sorting problem `MASK` does not have.
+- **Determinism (#968).** Recommend **byte-identical `skin-full.glb` on two
+  runs; #898's judge only for an impostor bake; "unchanged" on a second
+  `skin.mjs`; no Cycles stills of the skin**, because the renderer that
+  judges it is the game's.
+- **The open arch (#922).** Recommend, as #922 did, **accept the road behind
+  the collider at `curtain` and look west from `SPAWN`; the portcullis
+  lowered, leaves open, is the fallback**, since a lowered portcullis reads
+  shut and moves no collider.
+- **Lane (#963).** Recommend **G, extended to `data/castle-skin.json`**;
+  `castle-builder.js` and `encode-assets.mjs` belong to no lane and the
+  edits are additive.
+
+### Dependencies
+
+- **Gate: none.** 2h shipped (#962). Increment 1 before any cut, since every
+  cut reads its master.
+- **Devon's Windows machine**: the Steam Blender 5.2 at `CASTLE3D_BLENDER`
+  or the Steam path, never `BLENDER` (#840); `ktx` 4.3 or newer on PATH for
+  `assets:encode`. Nothing is fetched: every input is in `CASTLE3D_OUT`.
+- **Lane G**, with `data/castle-skin.json`. It may run beside a lane F row,
+  two Blenders on one machine, Devon's call (#842). `package.json` gains a
+  script line, a one-line merge.
+- **After `curtain` lands, a lane-B row that moves a swapped piece** (rank
+  4, 2b, the editor) fails the layout skin check by name until this row
+  re-cuts. 2b adds props, which are never swapped, so it does not trip it.
+- **2b's look re-check (#920)** is independent of this section and is not
+  gated by it. If 2b's increment 1 frees the prop packs first, #966's
+  texture moves shrink by what it freed.
+- **Rank 3's GPU sitting** is where each stage's look can ride.
+
+### Constraints
+
+- #36, #37: no save change; version 6 and `castleConundrumSave_v1` stand;
+  lane A untouched (#965).
+- #493: the skin is under `assets/` and its decoders are the transcoder and
+  `MeshoptDecoder` the page already ships.
+- #499, #506, #507, #508, #831: as #967 says.
+- #500: the plan computes every transform and collider; the skin draws and
+  computes nothing the plan reads. #919: `markers.json` is never read.
+- #529, #611: each new assertion on the side #965 places it; ceilings move
+  only as #966 says.
+- #13, #34, #147: every new line has its break; one that stays green on it
+  is not shipped.
+- #53: every look is a GPU look; no stage is judged in a container.
+- #586: the editor never loads the skin; `test/built.mjs`'s grep is
+  unaffected.
+- #632: `skin.mjs` writes `skin-manifest.json` with the file's own newline;
+  every reader uses `JSON.parse`.
+- #840 to #842: the master stays outside the repo; `skin.py` refuses CI and
+  any Blender but 5.2.
+- Windows: `pathToFileURL` for every absolute `import()`, no brace
+  expansion in anything `skin.mjs` shells.
+
+### Looking checklist
+
+- [ ] West from `SPAWN` through the open outer gate: a road, or a way out
+      the game will not give?
+- [ ] The curtain from the outer ward at 10 m and at 1 m: stone at 1024, or
+      a blur? The batter and crenellations against the game's sun: the same
+      castle as `CAM_courtyard`, or a darker one?
+- [ ] A room against the curtain (the kitchen) and a drum's cell: a
+      photographic wall over a pixel floor and a flat prop, one room or
+      two? If two, which pieces go on `keep`?
+- [ ] The west and porter leaves opening and the muniment's: planks on
+      their hinges, or planks through the jamb?
+- [ ] The hall's roof and louvre from the outer ward, at `buildings`.
+- [ ] Mereford from the North-west Tower, at `town`: a 2,000-triangle tree,
+      or a blob? Six roofs' eaves over their walls?
+- [ ] The land from the wall walk, at `land`: joined trees and decimated
+      rocks at 50 m and 150 m; the ground's edge.
+- [ ] `renderer.info.memory` beside `budget.mjs`'s texture line on the
+      same build, written down, as #611 asks of the first GPU sitting.
 
 ---
 
