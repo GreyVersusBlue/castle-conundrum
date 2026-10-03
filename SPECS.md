@@ -183,7 +183,8 @@ sections cite, and what is still open:
 pieces that make the castle's working rooms read as what they are. "What
 every Blender pack shares" holds and is not restated. Decided as #813 to
 #816 and #819. Three increments: two class S, the third gated on rank 4's
-look.
+look. **Increment 1 shipped on huginn (#947)**: four sets, five placed, the
+GPU look still owed.
 
 > **#920, discharged by #946 (2026-10-03):** the gate is open and #803's flat look stands for this row. #920's own reason was overtaken: #964 swaps the wall faces round all four rooms, so the sets will stand against photographic walls. The look stands because #964 names 2b's sets among what a room keeps, #813 gives this row no wall to cover, and #803's pipeline takes no image input. A flat set against a swapped wall is a line on the integration row's looking checklist, and its remedy is that row's `keep` list.
 
@@ -223,18 +224,19 @@ call. Modularity lives where it costs nothing and the draw count stays flat.
 - **`tools/blender/packs/interiors.py`**, importing `common.py`: the piece
   functions and `build_set(row)`, which places `row.pieces` (each `[piece,
   x, y, z, rotationY]` in the set's own metres) and joins them.
-- **`tools/blender/packs.json`**, six rows, pack `interiors`, each with a
-  `why`; `extraColours` at most 8 (linen, straw, ember, each with a `why`):
-  - `kitchen-hearth`: a raised hearth, its hood, a spit and a cauldron on a
-    chain, about 2.4 m wide, against a wall.
+- **`tools/blender/packs.json`**, four rows since #830 (six before it),
+  pack `interiors`, each with a `why`; `extraColours` at most 8, each with a
+  `why`, and only those a set uses (linen is the one increment 1 uses):
+  - ~~`kitchen-hearth`~~: dropped by #830; 2f's hearth crane and spit stand
+    there.
   - `kitchen-worktable`: a board on trestles, a trough, two pots.
   - `kitchen-shelves`: a rack of crocks.
   - `hall-trestle`: a trestle board and two benches, used twice.
   - `hall-high-table`: a board and a bench on the dais, where
     `data/lore.json` seats the Constable and his lady.
-  - `hall-hearth`: an open hearth with a stone kerb, mid-hall.
-- **`assets/blender/interiors/*.glb`**, six files, and their manifest rows.
-- **`data/scene-config.json`, `interiorProps`**: seven rows, each with an
+  - ~~`hall-hearth`~~: dropped by #830; 2f's stone fireplace stands there.
+- **`assets/blender/interiors/*.glb`**, four files, and their manifest rows.
+- **`data/scene-config.json`, `interiorProps`**: five rows, each with an
   `id`, spliced (#584, #632). Every set collides (no `noCollide`), so the nav
   rails hold it; `kitchen-shelves` may hang by `yOffset` and `noCollide` if
   it stands above head height.
@@ -278,17 +280,18 @@ narrower, the increment comes back to `architect` first.
 1. **Check 8** over the new rows, under `interiors`' cap. Line 6's break is
    *local*: `hall-trestle` with its benches' legs bevelled at 8 segments.
 2. **Check 1, "no interior prop is in a wall"** (`test/layout.mjs`,
-   unchanged). **The break the builder quotes**: `kitchen-hearth` moved 0.5 m
-   into the kitchen's north wall, expecting "kitchen-hearth at x ... is inside
-   <that run's label>".
+   unchanged). **The break the builder quotes**: `kitchen-shelves` (`kitchen-hearth`
+   before #830 dropped it) moved 0.5 m into the kitchen's south wall, where
+   it stands, expecting "kitchen-shelves at x ... is inside <that run's
+   label>".
 3. **Check 1e** (2a's): no set stands over a pressable. Break: `hall-high-
    table` over `cooks-accounts`' tile.
 4. **Checks 1b, 11, 14, unchanged**; `validateMystery` and
    `validatePopulace` with no station moved: a set on a Vespers station fails
    `nav.standable` by name, and the fix is the set's tile, never the
    station (#814).
-5. **`test/budget.mjs`, unchanged** (#816): increment 1 adds 7 draws to the
-   outer ward, increment 2 one to each ward. The builder writes the printed
+5. **`test/budget.mjs`, unchanged** (#816): increment 1 adds 5 draws to the
+   outer ward (7 before #830), increment 2 one to each ward. The builder writes the printed
    lines before and after in `HISTORY.md`.
 6. **`plan-vs-scene.mjs`**, unchanged: one tagged mesh per set, diffed.
 

@@ -14244,4 +14244,128 @@ that is #803 reopened by an `architect` increment with the stills as
 evidence, and 2b's sets, being `packs.json` rows a script builds, are what
 gets rebuilt.
 
+## Rank 2b increment 1: the kitchen and the great hall, four sets, five placed, committed on huginn before the look (2026-10-03)
+
+**#947. Rank 2b's increment 1 shipped, and it is not the increment the
+spec was written as (#813 to #816, #819, #830, #946).** What the spec could
+not be built as written, and what was built instead:
+
+1. **Four rows, four files, five placements and 5 outer-ward draws, not six,
+   six, seven and 7.** #830 dropped `kitchen-hearth` and `hall-hearth` to 2f
+   after the scope was written, so `packs.json` gains `kitchen-worktable`,
+   `kitchen-shelves`, `hall-trestle` and `hall-high-table`, and
+   `interiorProps` gains five rows (`hall-trestle` is placed twice).
+2. **Acceptance break 2 named `kitchen-hearth`, which does not exist.**
+   `kitchen-shelves` moved 0.5 m into `kitchen-south` stands in for it.
+3. **`kitchen-shelves` stands on the floor and collides.** It is 1.60 m
+   tall and 0.36 m deep against the wall, so the spec's allowance to hang it
+   by `yOffset` and `noCollide` was not taken.
+4. **One `extraColour`, linen `#ebe5d6`, of the 8 allowed.** The spec named
+   linen, straw and ember for six sets; four sets use linen only.
+
+Written by session CC-11, built on huginn with Blender 5.2.2 LTS at `-t 4`,
+measured 2026-10-03. Every figure below is from `tools/blender/manifest.json`
+and the suites' own output.
+
+Files, against the cap `interiors: { triangles: 2500, bytes: 96000 }`
+(#819), which is the one added line in `test/assets.mjs`:
+
+| File | Triangles | Bytes | sha256 |
+| --- | --- | --- | --- |
+| `hall-high-table.glb` | 240 | 9,036 | 2fc15544ba2fe26fd9681bb4057e4c32df8ea0beff58746c1af3210f2fd3d779 |
+| `hall-trestle.glb` | 288 | 9,980 | cc72d6bf44f8b11c538c4afcc293041b2dd588713e43afdc0f0cd9d6ad0e2109 |
+| `kitchen-shelves.glb` | 808 | 25,576 | 62e43450221d98d7b673daec436114114276adce1d01a20c91ff5f31053183b8 |
+| `kitchen-worktable.glb` | 376 | 12,528 | cd0edca83ace4e2816d695c7dea325db4092402b838addc7daefbd0cc558314b |
+
+Four files, 1,712 triangles and 57,120 bytes between them; the largest is
+808 of 2,500 and 25,576 of 96,000. All in `assets/blender/interiors/`.
+
+Placements, all five colliding. The plan boxes are from `src/castle-plan.js`:
+
+| Id | Tile | rotationY | yOffset | x | z | y |
+| --- | --- | --- | --- | --- | --- | --- |
+| `kitchen-worktable` | (-4.75, -2) | 0 | 0 | -20.00..-18.00 | -8.40..-7.60 | 0.00..1.10 |
+| `kitchen-shelves` | (-5.375, -1.6725) | 180 | 0 | -22.20..-20.80 | -6.87..-6.51 | 0.00..1.60 |
+| `hall-trestle-west` | (-7.5, 2.5) | 0 | 0 | -31.20..-28.80 | 9.24..10.76 | 0.00..0.74 |
+| `hall-trestle-east` | (-3.75, 2.15) | 0 | 0 | -16.20..-13.80 | 7.84..9.36 | 0.00..0.74 |
+| `hall-high-table` | (-2.645, 2.5) | -90 | 0.32 | -11.20..-9.96 | 8.59..11.41 | 0.32..1.11 |
+
+No 2f row moved and no station moved.
+
+Budget (`test/budget.mjs`, unchanged, #816), before then after:
+
+```
+  ok    the outer ward draws 1021 meshes, 179 under the ceiling of 1200
+  ok    the outer ward draws 1026 meshes, 174 under the ceiling of 1200
+  ok    1821 meshes in the castle, 166 of them outside both wards
+  ok    1826 meshes in the castle, 166 of them outside both wards
+  ok    the outer ward's 1021 and the outside's 166 come to 1187, 13 under the ceiling of 1200
+  ok    the outer ward's 1026 and the outside's 166 come to 1192, 8 under the ceiling of 1200
+  ok    160 textures come to 43.9 MB of video memory, 20.1 under the ceiling of 64
+  ok    164 textures come to 43.9 MB of video memory, 20.1 under the ceiling of 64
+  outer    1021 / 1200 draw calls    ->    outer    1026 / 1200 draw calls
+  outside   166   counted in each ward (#727): outer 1187 / 1200, inner 875 / 1200
+  outside   166   counted in each ward (#727): outer 1192 / 1200, inner 875 / 1200
+```
+
+Outer plus outside is now 1192, 8 under 1200. Increment 2's cell draw comes
+out of those 8. The inner ward is unchanged at 875.
+
+Breaks (#34), each from green. The files were not yet committed, so each
+restore was `cmp`-checked against a saved green copy:
+
+1. `hall-trestle`'s `sizes.bench.bevel` at 8: "check 8 line 6:
+   assets/blender/interiors/hall-trestle.glb has 7072 triangles, over pack
+   interiors's cap of 2500", and "is 194420 bytes, over pack interiors's cap
+   of 96000".
+2. `kitchen-shelves`' tile z -1.6725 to -1.5475 (check 1 of `test/layout.mjs`):
+   "kitchen-shelves at x -22.20..-20.80, y 0.00..1.60, z -6.37..-6.01 is
+   inside kitchen-south".
+3. `hall-high-table`'s tile moved to `cooks-accounts`' (-6.35, -3.1), layout
+   1e: "hall-high-table at x -26.02..-24.78, y 0.32..1.11, z -13.81..-10.99 is
+   inside CL/KI", and "hall-high-table stands over cooks-accounts, which the
+   player presses E at: its base at y 0.32 is between cooks-accounts's centre
+   at 0.30 and a standing eye at 1.70, and it overlaps by 0.06 x 0.50 m in
+   plan".
+4. `hall-trestle-east`'s tile moved to the clerk's Vespers station (-4.4,
+   2.3), `test/mystery.mjs`: "validateMystery finds nothing wrong, the castle
+   included" followed by "clerk: station at vespers is at tile (-4.4, 2.3) in
+   GH, which the player cannot walk to" and five more clerk lines of the same
+   two kinds ("no path from CL at sext to GH at vespers", and the `-eve`
+   pair). The spec expected `nav.standable` to name the set; it fails as
+   "which the player cannot walk to" instead, and the fix is the same, the
+   set's tile.
+
+Determinism (#883): a second render printed "unchanged" for all four files
+and the manifest, and a third after break 1's restore did too.
+
+Suites on the final tree, huginn, software Chromium, load 9 to 14: fourteen
+of fifteen green. `layout`, `assets`, `budget`, `mystery` and `tools` 5 of 5;
+`gltf`, `quest`, `save`, `lore` and `dialogue` 5 of 5; `built` green in
+223.4 s; `touch`, `map` and `overlays` green. `plan-vs-scene` was red on run
+1 and run 2 on the hound-bark beat only: "Gelert beside the player cues a
+bark inside 0.6 s plus a margin (1 frames driven) -- 0 cued" and "and it is
+heard from where the hound stands -- Infinity m off". The control, HEAD's
+`data/scene-config.json`, was green with 1 frame driven (451 pieces). Run 3
+on the new tree was green with 2 frames driven (456 pieces). That beat
+runs in real time at about 1 frame a second under this load, so it is
+inconclusive under #53, and it is the same beat #939 to #941's entry
+recorded. A fourth run alone, at load 6 to 10, passed in 174.3 s with 3
+frames driven. So two green and two red on the new tree, on that beat only.
+
+Not verified: no GPU look (#53). The only thing seen is the contact sheet
+`shots/blender/interiors.png`. Whether the high table's bench, between the
+board and the Constable's high chair, reads as a bench is a look item.
+
+Left on the row:
+
+- **Increment 2**, the cell's `cell-pallet`. `chapel-altar` went to 2f under
+  #830, so increment 2 is one row unless a later spec says otherwise.
+  `SPECS.md`'s increment 2 scope and its acceptance line 5 still list the
+  altar. That is stale and owed to an `architect` pass; it was not fixed
+  here.
+- **Increment 3**, the photographed props, gated on rank 4's look (#813).
+- **The Windows GPU look** at the five sets, against the swapped walls
+  (#946).
+
 **#1000. Reserved: #971 to #1000 are held for sessions on Huginn (the Selector loop); anyone else numbers from #1001.**

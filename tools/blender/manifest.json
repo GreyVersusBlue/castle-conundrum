@@ -289,6 +289,70 @@
       ],
       "blender": "5.2.2 LTS",
       "source": "e7511ee1b5345e9d0afb013d189a16659d3b62d72d18c8c3618306cf6f359b67"
+    },
+    {
+      "file": "assets/blender/interiors/hall-high-table.glb",
+      "pack": "interiors",
+      "name": "hall-high-table",
+      "bytes": 9036,
+      "sha256": "2fc15544ba2fe26fd9681bb4057e4c32df8ea0beff58746c1af3210f2fd3d779",
+      "triangles": 240,
+      "images": [
+        [
+          16,
+          16
+        ]
+      ],
+      "blender": "5.2.2 LTS",
+      "source": "ca39ba4513e759031f65102dd75a754380c4de6eb4452914f2948cf152cbb050"
+    },
+    {
+      "file": "assets/blender/interiors/hall-trestle.glb",
+      "pack": "interiors",
+      "name": "hall-trestle",
+      "bytes": 9980,
+      "sha256": "cc72d6bf44f8b11c538c4afcc293041b2dd588713e43afdc0f0cd9d6ad0e2109",
+      "triangles": 288,
+      "images": [
+        [
+          16,
+          16
+        ]
+      ],
+      "blender": "5.2.2 LTS",
+      "source": "6810fd75d5f04f92e0baa484588e606ae01b30b4d5759c23846fa28c09f35e06"
+    },
+    {
+      "file": "assets/blender/interiors/kitchen-shelves.glb",
+      "pack": "interiors",
+      "name": "kitchen-shelves",
+      "bytes": 25576,
+      "sha256": "62e43450221d98d7b673daec436114114276adce1d01a20c91ff5f31053183b8",
+      "triangles": 808,
+      "images": [
+        [
+          16,
+          16
+        ]
+      ],
+      "blender": "5.2.2 LTS",
+      "source": "992262cec8fdbd5313cc79817672d78a750871d76670cbcd42f3d7fe2fb98418"
+    },
+    {
+      "file": "assets/blender/interiors/kitchen-worktable.glb",
+      "pack": "interiors",
+      "name": "kitchen-worktable",
+      "bytes": 12528,
+      "sha256": "cd0edca83ace4e2816d695c7dea325db4092402b838addc7daefbd0cc558314b",
+      "triangles": 376,
+      "images": [
+        [
+          16,
+          16
+        ]
+      ],
+      "blender": "5.2.2 LTS",
+      "source": "992bdb1be1d6fd707a8e1454fe71858a86c41288f6c15a070cbbc9360c2549b2"
     }
   ]
 }

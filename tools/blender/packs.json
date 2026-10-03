@@ -54,6 +54,14 @@
           "why": "The pig's snout, and the geese's bills and feet. The castle's palettes have no pink: the nearest are castle_brick_02_red's #9a4430, which reads as a wound, and plaster #cbbfa3, which is the coat it has to stand out from. `Bare`, so a tint on the coat never touches it (#827)."
         }
       ]
+    },
+    "interiors": {
+      "extraColours": [
+        {
+          "colour": "#ebe5d6",
+          "why": "Linen, the cloth on the high table. It is what tells the Constable's board from the household's trestles down the hall, and the castle's palettes stop at plaster #cbbfa3, which on a table reads as a second, paler wood. The same undyed linen the folk pack wears."
+        }
+      ]
     }
   },
   "rows": [
@@ -6356,6 +6364,262 @@
           ]
         }
       ]
+    },
+    {
+      "pack": "interiors",
+      "name": "kitchen-worktable",
+      "script": "interiors.py",
+      "seed": "interiors/kitchen-worktable/2026-10-03",
+      "why": "The kitchen's working board (#814): a board on trestles with a dough trough and two pots on it, so the room the cook stands in reads as where the castle's bread and pottage are made. Devon's hearth crane, spit and oven are the fire (#830); this is the table between them.",
+      "pieces": [
+        [
+          "trestle-board",
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          "trough",
+          -0.45,
+          0.86,
+          0,
+          0
+        ],
+        [
+          "pot",
+          0.45,
+          0.86,
+          0.12,
+          0
+        ],
+        [
+          "pot",
+          0.78,
+          0.86,
+          -0.14,
+          0
+        ]
+      ],
+      "sizes": {
+        "trestle-board": {
+          "length": 2,
+          "depth": 0.8,
+          "height": 0.86,
+          "top": 0.05,
+          "leg": 0.07,
+          "inset": 0.35,
+          "stretcher": 0.22
+        },
+        "trough": {
+          "length": 0.8,
+          "depth": 0.42,
+          "height": 0.18,
+          "wall": 0.025,
+          "dough": 0.09
+        },
+        "pot": {
+          "radius": 0.13,
+          "height": 0.24,
+          "sides": 8
+        }
+      }
+    },
+    {
+      "pack": "interiors",
+      "name": "kitchen-shelves",
+      "script": "interiors.py",
+      "seed": "interiors/kitchen-shelves/2026-10-03",
+      "why": "A standing rack of crocks against the kitchen wall (#814): three shelves, eight crocks, the stores a kitchen keeps to hand. It stands on the floor and collides; a shelf hung clear of a head would be at 1.9 m, where nobody could reach a crock.",
+      "pieces": [
+        [
+          "rack",
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          "crock",
+          -0.35,
+          0.3,
+          0,
+          0
+        ],
+        [
+          "crock",
+          0.35,
+          0.3,
+          0,
+          0
+        ],
+        [
+          "crock",
+          -0.42,
+          0.75,
+          0,
+          0
+        ],
+        [
+          "crock",
+          0,
+          0.75,
+          0,
+          0
+        ],
+        [
+          "crock",
+          0.42,
+          0.75,
+          0,
+          0
+        ],
+        [
+          "crock",
+          -0.42,
+          1.2,
+          0,
+          0
+        ],
+        [
+          "crock",
+          0,
+          1.2,
+          0,
+          0
+        ],
+        [
+          "crock",
+          0.42,
+          1.2,
+          0,
+          0
+        ]
+      ],
+      "sizes": {
+        "rack": {
+          "width": 1.4,
+          "depth": 0.36,
+          "height": 1.6,
+          "board": 0.03,
+          "shelves": [
+            0.3,
+            0.75,
+            1.2
+          ]
+        },
+        "crock": {
+          "radius": 0.12,
+          "height": 0.3,
+          "sides": 8
+        }
+      }
+    },
+    {
+      "pack": "interiors",
+      "name": "hall-trestle",
+      "script": "interiors.py",
+      "seed": "interiors/hall-trestle/2026-10-03",
+      "why": "The household's table in the great hall (#814): a trestle board and a bench down each side, placed twice. data/lore.json seats the household in the hall at Vespers, and the hall had one photographed table for all of them.",
+      "pieces": [
+        [
+          "trestle-board",
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          "bench",
+          0,
+          0,
+          0.62,
+          0
+        ],
+        [
+          "bench",
+          0,
+          0,
+          -0.62,
+          0
+        ]
+      ],
+      "sizes": {
+        "trestle-board": {
+          "length": 2.4,
+          "depth": 0.75,
+          "height": 0.74,
+          "top": 0.05,
+          "leg": 0.07,
+          "inset": 0.35,
+          "stretcher": 0.22
+        },
+        "bench": {
+          "length": 2.2,
+          "depth": 0.28,
+          "height": 0.45,
+          "seat": 0.04,
+          "leg": 0.05,
+          "inset": 0.2,
+          "bevel": 0
+        }
+      }
+    },
+    {
+      "pack": "interiors",
+      "name": "hall-high-table",
+      "script": "interiors.py",
+      "seed": "interiors/hall-high-table/2026-10-03",
+      "why": "The high table on the dais, where data/lore.json seats the Constable and his lady (#814): a longer board under a linen cloth and one bench behind it, so whoever sits there faces down the hall.",
+      "pieces": [
+        [
+          "trestle-board",
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          "cloth",
+          0,
+          0.78,
+          0,
+          0
+        ],
+        [
+          "bench",
+          0,
+          0,
+          -0.68,
+          0
+        ]
+      ],
+      "sizes": {
+        "trestle-board": {
+          "length": 2.8,
+          "depth": 0.85,
+          "height": 0.78,
+          "top": 0.05,
+          "leg": 0.07,
+          "inset": 0.35,
+          "stretcher": 0.22
+        },
+        "cloth": {
+          "length": 2.8,
+          "depth": 0.5,
+          "drop": 0.3,
+          "thickness": 0.012
+        },
+        "bench": {
+          "length": 2.4,
+          "depth": 0.28,
+          "height": 0.45,
+          "seat": 0.04,
+          "leg": 0.05,
+          "inset": 0.2,
+          "bevel": 0
+        }
+      }
     }
   ]
 }
