@@ -14180,4 +14180,68 @@ the pig and the sheep beside the cow, the geese beside the hens, the clips,
 the tints, and rank 10's inherited three (the hound's follow, the hens'
 peck, the cow grazing).
 
+## Rank 2b: #920's re-check, the look stands and the gate is open (2026-10-03)
+
+**#946. #803's flat look stands for rank 2b against the photographic castle,
+so #920's gate is discharged and 2b's increment 1 is a `builder` job.**
+Written as `architect` (session CC-11) on huginn. No code, asset, data or
+test changed; `HISTORY.md` and `SPECS.md` only.
+
+**What #920's reason got wrong, after the fact.** #920 recommended "the look
+stands, because #921 keeps the interiors on the kit and the pixel textures,
+and an interiors kit is seen there and nowhere else". #964 was written after
+it and amends #921 a third way: that sentence holds for what a room holds
+and not for the faces of the wall round it, because a swapped piece is
+swapped on every face. All four rooms 2b dresses (#814) are behind a swapped
+wall once the stages ship: the kitchen's wall is a curtain run's inner face
+and the chapel and the cell are drums' inner faces, all stage `curtain`; the
+great hall is stage `buildings`. So 2b's sets will not be seen only against
+the kit and the pixel textures, and #920's reason does not carry the answer
+any more.
+
+**The reason that replaces it**, four parts:
+
+1. **#964 names 2b's sets among what stays.** Its list of what a room holds
+   is "props, the kit, 2b's sets, the built props", and its `props` stage is
+   never admitted: "the game's props are the game's". The integration row
+   was decided with 2b's sets standing in the rooms as specced.
+2. **2b never owned a wall.** #813 splits by surface and volume: 2b makes no
+   piece whose job is to cover a face. The wall's look was rank 4's and is
+   now 2i's; a set is furniture in front of it either way.
+3. **This pipeline cannot make a photographic set.** #803 refuses
+   `images.load` and every input file, and "The look" caps a texture at 128
+   px and 32 colours with no normal or ORM map. A photographic 2b is not a
+   re-check of #803's look; it is #803 overturned, and nothing found here
+   argues for that.
+4. **The rooms are not one look today and will not be after.** The great
+   hall holds nine photographed Poly Haven props (29 draws) beside a kit
+   dais; 2f's props are flat low-poly on Devon's atlas, which #830 measured
+   at 1789 colours over #803's; 2a's evidence props, the crate, 2c's folk
+   and 2d's animals are #803's flat look. 2b's sets join the largest group.
+   Flat beside photographed is already a line on 2a's and 2b's looking
+   checklists, and 2b's increment 3 is already gated on its answer.
+
+**What this amends.** #920: its gate is discharged and its recommended
+answer is kept with the reason above in place of its own. #803: not
+reopened. #921 and #964: untouched. 2b's spec is unchanged but for the note
+at its head; increments 1 and 2 stay class S and increment 3 stays gated on
+rank 4's look (#813).
+
+**The look item this hands to 2i.** A flat set against a photographic wall
+is a GPU look at the `curtain` and `buildings` stages, and it is not a
+reason to hold 2b. If it reads as two rooms, the remedy is already #964's:
+the wall's plan id goes on `keep` in `data/castle-skin.json` and its built
+object stays drawn. The set is not rebuilt. 2i's looking checklist already
+asked this of "a flat prop" in the kitchen and a drum's cell; it gains one
+line naming 2b's sets, with the chapel at `curtain` and the hall at
+`buildings`.
+
+**Not verified.** Nobody has seen a flat set against a photographic wall:
+no 2b set exists and no stage has shipped. This entry is an argument from
+the decisions and the files, and the look itself is Devon's on a GPU (#53).
+If that look says the sets themselves are wrong and `keep` does not mend it,
+that is #803 reopened by an `architect` increment with the stills as
+evidence, and 2b's sets, being `packs.json` rows a script builds, are what
+gets rebuilt.
+
 **#1000. Reserved: #971 to #1000 are held for sessions on Huginn (the Selector loop); anyone else numbers from #1001.**

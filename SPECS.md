@@ -185,7 +185,7 @@ every Blender pack shares" holds and is not restated. Decided as #813 to
 #816 and #819. Three increments: two class S, the third gated on rank 4's
 look.
 
-> **#920:** this row's build is gated on an `architect` re-check of #803's look against the photographic castle the game is heading for (#919); recommended answer, the look stands, since interiors keep the kit (#921).
+> **#920, discharged by #946 (2026-10-03):** the gate is open and #803's flat look stands for this row. #920's own reason was overtaken: #964 swaps the wall faces round all four rooms, so the sets will stand against photographic walls. The look stands because #964 names 2b's sets among what a room keeps, #813 gives this row no wall to cover, and #803's pipeline takes no image input. A flat set against a swapped wall is a line on the integration row's looking checklist, and its remedy is that row's `keep` list.
 
 **Amended by #830 (2026-09-25).** `kitchen-hearth`, `hall-hearth` and
 `chapel-altar` are dropped, because 2f, "Blender: Devon's props, placed",
@@ -1209,6 +1209,9 @@ Each is decided in #963 to #968; the recommendation is that decision.
       two? If two, which pieces go on `keep`?
 - [ ] The west and porter leaves opening and the muniment's: planks on
       their hinges, or planks through the jamb?
+- [ ] 2b's flat sets against the swapped walls (#946): the kitchen, the
+      chapel and the cell at `curtain`, the great hall at `buildings`. One
+      room or two? If two, the wall goes on `keep`; the set is not rebuilt.
 - [ ] The hall's roof and louvre from the outer ward, at `buildings`.
 - [ ] Mereford from the North-west Tower, at `town`: a 2,000-triangle tree,
       or a blob? Six roofs' eaves over their walls?
