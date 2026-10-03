@@ -151,7 +151,7 @@ finish the row.
   (#804, #878, #879). Both have 5.2.2 already: huginn on PATH, Windows as
   the Steam install; `render.mjs` refuses any other line. A session without it does not
   claim the row's build increment; CI runs only the Node check against the
-  committed output. Ranks 2b, 2c (increment 1) and 2d.
+  committed output. Ranks 2b and 2c (increment 1).
 - **Local: Blender GPU.** Blender's full feature set on a real GPU, and so
   **Devon's Windows machine only** (#878), even where huginn has the right
   Blender. Rank 2h, "Castle in Blender" (shipped, #962), used it for
@@ -243,7 +243,7 @@ the placement editor, budget suite, move-and-delete and the dialogue format
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 2b | Blender: an interiors kit: joined sets dressing the kitchen, the great hall and the cell, specced (#813 to #816, #819); the two hearths and the chapel altar went to 2f (#830); nothing built | 2+ | Opus 5 | Local: Blender | 1 shipped (#881); 2a shipped (#907) | F, B | | [Blender: an interiors kit](SPECS.md#blender-an-interiors-kit) |
 | 2c | Blender: a shared rig with swappable parts: one rig, one-primitive parts, at most five skinned draws a person against the Quaternius rigs' 12 to 15, specced (#820 to #825); increment 1 shipped on huginn (#939 to #941); left: the Windows GPU look, which gates increment 2, the other 15 populace humans (container) | 2+ | Opus 5 | Windows: GPU look (#53), then Container | 1 shipped (#881) | F, C | | [Blender: a shared rig with swappable parts](SPECS.md#blender-a-shared-rig-with-swappable-parts) |
-| 2d | Blender: the animals: pig, goat, sheep, horse, cat and two geese on one quadruped topology plus a bird one for the goose, specced (#826 to #829); increment 1 shipped on huginn (#942, #943): pig, goat, sheep, horse and cat on the quadruped topology, placed; left: the Windows GPU look, which blocks nothing (#53), and increment 2, the goose's 12-joint bird topology and two geese | 1 | Opus 5 | Local: Blender (increment 2); Windows: GPU look (#53) | 2c increment 1 committed (#941); 1 shipped (#881) | F, C | CC-10 on huginn, local `main` | [Blender: the animals](SPECS.md#blender-the-animals) |
+| 2d | Blender: the animals: pig, goat, sheep, horse, cat and two geese on one quadruped topology plus a bird one for the goose, specced (#826 to #829); both increments shipped on huginn (#942 to #945): six files, seven animals placed (pig, goat, sheep, horse and cat on the quadruped topology, the goose on a 12-joint bird topology, two geese); left: the Windows GPU look, which blocks nothing (#53) | 1 | Opus 5 | Windows: GPU look (#53) | 2c increment 1 committed (#941); 1 shipped (#881) | F, C | | [Blender: the animals](SPECS.md#blender-the-animals) |
 | 2i | Castle in Blender, the integration row: the game takes the model as a skin and never reads `markers.json` (#919); specced (#963 to #968): one `assets/castle3d/skin.glb` cut from the master by stage (`curtain`, `buildings`, `town`, `land`), about 25 MB and 37.3 MB of texture memory against the master's 570 MB and 1,738.8 MB, trees decimated to 2,000 triangles, KTX2 through `assets:encode`; draw ceiling 1200 to 600, a new 500,000-triangle ceiling, texture 64 to 76 to 84 (#966); #499 and #506 stand (#967); six increments, the first #922's open gate in the model; nothing built | 2+ | Opus 5 | Local: Blender GPU (5.2, Devon's Windows machine only), plus `ktx`; judged local: GPU (#53) | 2h shipped (#962) | G | | [Castle in Blender: the integration row](SPECS.md#castle-in-blender-the-integration-row) |
 | 3 | The GPU run: the fourth sitting confirmed the sight fix on a GPU and walked the whole day and the second day (#886 to #891); exit 1, 6 failures, 3a (#916) and 3b (#917) shipped, one more GPU run owed; the quay look's stills taken (#900, `looks/2026-10-03/`), Devon's verdict owed; `renderer.info` recorded (#887); the phone (#530) untouched | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
 | 4 | The retro castle: increment 1 shipped, fifteen sets out and fifteen 128 px textures in (#757 to #766); the look is left; variety per room is superseded by 2h (#839); the props increment moved to 2b (#813) | 2+ | Opus 5 | Container to the look, local: GPU past it | — | B | | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
@@ -302,9 +302,11 @@ cow, no stable and no yard (#829); the two skinned-draw ceilings #825 sets
 rise by the animals' own draws. Increment 1 shipped on huginn (#942, #943): the five quadrupeds
 placed, 25 household people, bodies 34 to 39 (`MAX_SKINNED_TOTAL` 39,
 `MAX_SKINNED_PER_WARD` 22), the draw ceilings 380 to 390 and 205 to 209, 206,032
-bytes between the five files. Left: the Windows GPU look, which blocks nothing
-(#53), and increment 2, the goose's bird topology and two geese (39 to 41
-bodies). Detail: [Blender: the animals](SPECS.md#blender-the-animals).
+bytes between the five files. Increment 2 shipped on huginn (#944, #945): the
+goose's bird topology and two geese, 27 household people, bodies 39 to 41
+(`MAX_SKINNED_TOTAL` 41, `MAX_SKINNED_PER_WARD` 24), the draw ceilings 394 and
+213, 240,748 bytes between six files. Left: the Windows GPU look, which blocks
+nothing (#53). Detail: [Blender: the animals](SPECS.md#blender-the-animals).
 
 ## The GPU run
 
@@ -397,7 +399,7 @@ end to end at 193.3 s, the chapel's four pairs at Prime between the same two
 men, `outer-terce-1` from the east end of the outer ward,
 the band over the panel and the journal). (2) The town's share of the fifty, and whether
 `garden` becomes ground, which waits on the skinned-draw budget:
-`MAX_SKINNED_TOTAL` is 39 since 2d's increment 1 (#943) and 2c's increment 2 or the goose renegotiates it again (#825, #828), and
+`MAX_SKINNED_TOTAL` is 41 since 2d's increment 2 (#945) and 2c's increment 2 renegotiates it again (#825), and
 CC-04.
 
 ## Sound: a soundscape

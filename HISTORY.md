@@ -14069,3 +14069,113 @@ own. The contact sheet at `shots/blender/animals.png` is untracked (ignored).
 Increment 2 is the goose: the bird topology, `Idle_Peck`, two placed, 39 to
 41 and 22 to 24. `SPECS.md`'s fifth break and the horse's place are corrected
 in this commit by a `scribe` pass.
+
+## Rank 2d increment 2: the goose on a 12-joint bird topology, two placed, committed on huginn before the look (2026-10-03)
+
+**#944. Three places where 2d's increment 2 differs from the spec as
+written, and two tiles the validator moved.** Written by `builder` from the
+build, each point measured first (the #942 pattern). None overturns #826 to
+#829.
+
+**(a) The white goose's `modelHeight` is 0.72, not the table's 0.75.** Two
+geese at one height are one silhouette, and the acceptance asks for two more
+shapes; the hens' 0.45 and 0.42 are the precedent (#684). At 0.75
+`test/mystery.mjs` counts 23 silhouettes, at 0.72 it counts 24.
+
+**(b) The goose adds no palette colour.** A twelfth swatch moves the atlas
+and so the bytes of the five quadruped files. Bill and feet take the pig's
+`#d49a8c`, the bill tip `#7a473c`.
+
+**(c) The draw ceilings move 390 to 394 and 209 to 213 by #828's arithmetic,
+2 draws a goose, and not because a red forced them.** Left at 390 and 209 the
+suite stays green: 386 and 205 fit inside the 8 of headroom the hen-wife's
+increment left. They go red at 385 and 204. Recorded so nobody reads 394 and
+213 as measured needs (#147).
+
+**The validator moved two tiles.** Two first-try tiles were refused by
+`validatePopulace` and moved within `outer-ward`, with no courtyard fallback
+needed: (-4.188, 0.438) and (-3.938, 0.188) stood 1.00 m from the baker-lad
+at sext, and (-4.563, -0.438) "has no floor to stand on".
+
+**#945. Rank 2d, Blender: the animals, increment 2 shipped (#826 to #829,
+#944).** One increment, on huginn, Blender 5.2.2, `-t 4`, measured
+2026-10-03. `assets/blender/animals/goose.glb`: 12 joints (`Root`, `Body`,
+`Neck1`, `Neck2`, `Head`, `Wing.L`, `Wing.R`, `UpperLeg.L`, `UpperLeg.R`,
+`LowerLeg.L`, `LowerLeg.R`, `Tail1`), 256 triangles, 34,716 bytes, 2
+primitives (`Coat`, `Bare`), bind pose 0.71 m long by 0.74 m tall, clips
+`Idle` 3.00 s, `Walk` 1.00 s, `Idle_Peck` 3.00 s. sha256
+e4b4bdb2e7601c27e81ab25a4cbdd8e4940e4d2182ac2b0e05d8ca0808e6defb. Six
+animal files now, 240,748 bytes between them (206,032 + 34,716), under
+#499's 480 KB. The five quadrupeds are byte-identical to #943; their
+manifest `source` hashes are re-stamped because `animals.py` changed.
+`common.py` is untouched. `animals.py` gains a `bird` line in `TOPOLOGIES`
+and `CLIPS`; `packs.json` gains a `goose` row with `topology: "bird"`.
+
+`data/populace.json`, 25 people to 27, both in `outer-ward`, role "one of the
+hen-wife's geese", speed 0.8, the same two stops at all eight bells:
+
+| Id | Name | Tint | `modelHeight` | Peck | Wait |
+| --- | --- | --- | --- | --- | --- |
+| `goose-grey` | Llwyd | `#9c9486` | 0.75 | (-4.938, -0.313) | (-4.563, -0.188) |
+| `goose-white` | Cannaid | `#f0efe6` | 0.72 | (-4.438, 0.313) | (-4.063, -0.063) |
+
+Rails. `ANIMAL_TOPOLOGIES` in `test/assets.mjs` takes `bird` as one more
+entry; the goose gets check 8's animal lines 1 to 4 and 6, and line 5 (reads
+as four-legged) stays a quadruped rail. `test/budget.mjs`:
+`MAX_SKINNED_TOTAL` 39 to 41, `MAX_SKINNED_PER_WARD` 22 to 24, the draw
+ceilings 394 and 213 (#828). It prints 41 bodies (14 cast, 27 household, 0
+under 41); 386 skinned draws (165 cast, 221 household, 8 under 394); outer
+24 at `terce-eve` drawing 205; inner 18 drawing 189. `test/mystery.mjs`: 27
+household, 24 silhouettes off 14 body files, 59 person-and-job pairs.
+
+Breaks (#34), each from green, each goose break a re-render, each restored
+to the committed bytes by `cmp`:
+
+1. A third material `Bill`: "check 8 animal line 1:
+   assets/blender/animals/goose.glb has 3 primitives, over 2".
+2. `Wing.L` renamed `Wing`: "check 8 animal line 2:
+   assets/blender/animals/goose.glb's joints are not the bird's 12: it lacks
+   Wing.L and it adds Wing (#826)". `check_row` in the build refused it first
+   and had to be taken out to reach the rail.
+3. `cycles: 1.5` on `Walk`: "check 8 animal line 4:
+   assets/blender/animals/goose.glb's Walk's Body rotation ends 2286.0 int16
+   steps from where it starts, over 2, so the clip jumps at every loop".
+4. `Idle_Peck` with its `Head` moves removed: "check 8 animal line 4:
+   assets/blender/animals/goose.glb's Idle_Peck's driver Head never gets more
+   than 16.0 degrees from Idle, under 20: the clip is Idle with a new name".
+5. `MAX_SKINNED_TOTAL` at 39: "41 bodies built, over the ceiling of 39 (14
+   cast and 27 household)"; `MAX_SKINNED_PER_WARD` at 22: "on the walking day
+   the outer ward holds 24 skinned bodies at terce-eve, over the ceiling of
+   22".
+6. A goose given an `eat` stop: "goose-grey does "eat" in
+   assets/blender/animals/goose.glb, which ships no clip called Eating".
+
+Not broken on their own, as in #943: `Idle`'s length line and the
+channel-off-the-skin line.
+
+Determinism (#883): a second `BLENDER_THREADS=4 npm run blender:render
+animals` printed "unchanged" six times and "manifest.json: unchanged",
+sha256 identical.
+
+`npm test`: 14 of 15 in one full run on huginn (software Chromium), `built` the
+one red, and not verified with the goose in. Its bundle half passed ("the
+castle finished building"); the source-page load then threw "Waiting for
+selector `#start-overlay:not(.hidden)` failed", cause "DOM.describeNode timed
+out", three times running, at load average 16 to 17 from other sessions'
+headless Chromium and 8.4 to 8.9 GB of memory available. The control: an
+export of the commit before this one (`git archive`, no goose) failed
+`npm test built` at the same line with the same message at load 17.0. So the
+red is the machine's and says nothing about the goose either way (#53); CI's
+run of `built` is the check that counts. `layout`, `assets`, `budget`,
+`mystery`, `plan-vs-scene`, `touch`, `map` and `overlays` passed with the
+geese in.
+
+Not verified: nothing was watched in motion. The clips are procedural sine
+moves; by arithmetic the peck brings the head to 2.4 cm off the floor, and
+`Walk`'s soles travel -2 cm to +4.4 cm. Committed before the Windows GPU
+look, as #939 and #943 were; the look blocks nothing (#53).
+
+Left on the row: only the Windows GPU look. Each of the six kinds at 10 m,
+the pig and the sheep beside the cow, the geese beside the hens, the clips,
+the tints, and rank 10's inherited three (the hound's follow, the hens'
+peck, the cow grazing).

@@ -664,8 +664,8 @@ clips on the four Quaternius bodies, and the eleven on `folk.glb`.
 **Rank 2d. Size 1. Model Opus 5. Where: Local: Blender. Gate: rank 1 shipped (#881)
 and after "Blender: a shared rig with swappable parts" increment 1;
 recommended after its increment 2. Lanes F and C; not B.** Decided in
-`HISTORY.md` as #826 to #829, on #820's and #825's shape, corrected by #942.
-**Status: increment 1 shipped on huginn (#942, #943): five quadrupeds, 206,032 bytes, bodies 39, outer 22 at `terce-eve`, inner 18, draw ceilings 390 and 209. Left: the Windows GPU look, which blocks nothing (#53), and increment 2, the goose.** **Rank 10 is
+`HISTORY.md` as #826 to #829, on #820's and #825's shape, corrected by #942 and #944.
+**Status: both increments shipped on huginn (#942 to #945): six files, 240,748 bytes, bodies 41, outer 24 at `terce-eve`, inner 18, draw ceilings 394 and 213. Left: the Windows GPU look only, which blocks nothing (#53).** **Rank 10 is
 retired** (#807): its "pig, then a goat" is this row, and its GPU look at
 the hound, the hens and the cow moves into this row's checklist. **This row
 does not duplicate rank 6**: it makes the animals and writes each one's
@@ -714,7 +714,7 @@ adds kinds; it replaces none.
   | --- | --- | --- | --- |
   | pig | outer | `outer-ward`, by the hen-wife's patch, (-5.438, -0.938) (#942) | 0.8 |
   | sheep | outer | `outer-ward`, beside the cow | 0.9 |
-  | goose x2 | outer | `outer-ward`, by the hens | 0.75 |
+  | goose x2 | outer | `outer-ward`, by the hens | 0.75 and 0.72 (#944) |
   | horse | inner | `inner-ward`, south-west corner (#942) | 1.65 |
   | goat | inner | `inner-ward` | 0.95 |
   | cat | inner | `bakehouse` | 0.3 |

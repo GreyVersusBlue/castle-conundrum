@@ -16,7 +16,7 @@
         ]
       ],
       "blender": "5.2.2 LTS",
-      "source": "ab7c36baf3e2355c174f8fe2a26f4b1403a67dec900b68a9fd2f0827b8046fd5"
+      "source": "feceeec94293b4b927ebde38e1c56472020c6e7e54770d8b7483f14bc344e795"
     },
     {
       "file": "assets/blender/animals/goat.glb",
@@ -32,7 +32,23 @@
         ]
       ],
       "blender": "5.2.2 LTS",
-      "source": "70b6e1f5294c2f3d80f958186c62b910233cac752dbb720da72216024bcfc47a"
+      "source": "73e1b1c2f25a7021980b90bbb3ac665d0092b98945575a2add63aa8920794ce6"
+    },
+    {
+      "file": "assets/blender/animals/goose.glb",
+      "pack": "animals",
+      "name": "goose",
+      "bytes": 34716,
+      "sha256": "e4b4bdb2e7601c27e81ab25a4cbdd8e4940e4d2182ac2b0e05d8ca0808e6defb",
+      "triangles": 256,
+      "images": [
+        [
+          16,
+          16
+        ]
+      ],
+      "blender": "5.2.2 LTS",
+      "source": "f60be647d9a0b9b600be942224de8274d97fd87d4b9737e03b5ebfde615de77f"
     },
     {
       "file": "assets/blender/animals/horse.glb",
@@ -48,7 +64,7 @@
         ]
       ],
       "blender": "5.2.2 LTS",
-      "source": "23f785a951d2a832bbe2a92fd96e61542c1a0f2e7c585e29d2d16cf2a749a0fb"
+      "source": "ec3429efcf78de282aae99d97e3d46e2836a92bdea1c81106a3bceddc57fcf87"
     },
     {
       "file": "assets/blender/animals/pig.glb",
@@ -64,7 +80,7 @@
         ]
       ],
       "blender": "5.2.2 LTS",
-      "source": "98778bec9b0e53584a3213a000bc72fd6ffbe8b4b5516220e0cd42937b95e946"
+      "source": "dd163db80ec4fe7339fc7fd1d44f12c79eeeb94ff7f3cb7f5efc2b70a5c7b67e"
     },
     {
       "file": "assets/blender/animals/sheep.glb",
@@ -80,7 +96,7 @@
         ]
       ],
       "blender": "5.2.2 LTS",
-      "source": "945dc54ee0380f63aa4b5941b877a9e55fd7f72d7ab8f9de1f04172a19abfdf6"
+      "source": "2a722fafc4382f1f16b0ca38212c215c2ddd0ab6e3a63fbcf4db44e3cd5bb4e4"
     },
     {
       "file": "assets/blender/calibration/crate.glb",

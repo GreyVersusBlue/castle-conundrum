@@ -1270,7 +1270,7 @@ console.log('\nthe household in data/populace.json');
       `all ${people.length} of the household are in the castle on the walking day too, over ${stops} stops at its four bells`,
       `nobody at any of ${W0.join(', ')}: ${empty.join(', ')}`);
   }
-  check(people.length === 25, `${people.length} of them: the first increment's ten (SPECS.md, "Life: a populace"), the child and the hound (#643, #644), two hens (#684), the inner ward's five (#729), the generated cow (#789) and Blender's five animals, the pig, the sheep, the horse, the goat and the cat (#826 to #829)`);
+  check(people.length === 27, `${people.length} of them: the first increment's ten (SPECS.md, "Life: a populace"), the child and the hound (#643, #644), two hens (#684), the inner ward's five (#729), the generated cow (#789) and Blender's seven animals off six files, the pig, the sheep, the horse, the goat, the cat and two geese (#826 to #829)`);
   /* THE TALK LIST (#731), counted beside the people because a validator that
    * found nothing in an empty list would pass the same as one that found
    * nothing in three. */
