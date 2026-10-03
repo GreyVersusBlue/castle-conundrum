@@ -136,6 +136,34 @@ The project lived in `GreyVersusBlue/tools-and-games` under
   That is the line between `npm test`, which CI runs, and `npm run play`, which
   it does not.
 
+## Single-operator wave mode
+
+Added 2026-10-01 at Devon's direction. CI took 12m44s on this change (the `ci.yml` header's "about four
+minutes" is stale), so each avoided PR round saves about that, plus the claim PR and the
+closeout per row. The local `npm test` also takes over ten minutes. **It applies whenever one session is the only one working this repo**:
+check the `Claimed` column and `git branch -r` for branches from other sessions in the last
+24 hours, and if there are none, you are the only operator. It relaxes the claim rule; it
+does not relax the lane rule.
+
+- **One branch per wave**, named `claude/wave-<date>-<code>`, pushed to `origin` after every
+  row or every hour. A branch push without a PR opens no CI run, and it is the backup for
+  work that otherwise lives only on Huginn.
+- **No claim PRs.** List the wave's rows in the PR description. If another session's branch
+  or a claim appears, stop and fall back to the normal claim.
+- **One row per lane in a wave, and never two lane-C rows** (#600, #602): a clean merge of
+  two lane-C rows is not a correct one (rank 1 and rank 6 once left five of ten people in
+  the wrong body). Up to the number of lanes, as many rows as fit one PR.
+- **While you work run the suites for the lane you touched** (`npm test <suite> ...`). Run
+  the full `npm test` once before the PR, in the background, with no Blender render running:
+  Huginn has about 14 GB, so one heavy job at a time.
+- **One PR per wave**, with `HISTORY.md` and this file's header and `Claimed` column already
+  updated in it (they are never left for a later session; this repo already does it before
+  finishing). Rebase on `origin/main` first and re-read the next `HISTORY.md` number.
+- **Keep GPU rows out of the wave** (`npm run play`, Blender GPU, rank 3, rank 11's looks,
+  rank 7's listening pass).
+- **Do not use wave mode** for a row that touches `save.js`'s version or `migrate`
+  (lane A), or any row of class O (decide).
+
 ## Which model does what
 
 The three subagents live in `.claude/agents/`: `scribe` (Sonnet), `builder`
