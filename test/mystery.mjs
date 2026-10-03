@@ -1414,6 +1414,11 @@ console.log('\nthe household validator rejects');
   expect('an activity no clip in npc.js answers to',
     (f, people) => { of(people, 'baker').routine.terce[0].activity = 'juggle'; },
     /^baker at terce, stop 1: activity "juggle" is one src\/npc\.js has no clip for/);
+  /* `drill` WAS DROPPED (#915). Its clip is still in the four human bodies,
+   * so the only thing that refuses it is ACTIVITY_CLIPS no longer naming it. */
+  expect('`drill`, dropped as an activity though its clip is still in the bodies (#915)',
+    (f, people) => { of(people, 'serjeant').routine.terce[0].activity = 'drill'; },
+    /^serjeant at terce, stop 1: activity "drill" is one src\/npc\.js has no clip for/);
   expect('a stop with no floor under it',
     (f, people) => { of(people, 'baker').routine.terce[0].tile = [0.313, 6.5]; },
     /^baker at terce, stop 1: .*no floor to stand on$/);

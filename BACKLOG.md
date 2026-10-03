@@ -243,7 +243,7 @@ the placement editor, budget suite, move-and-delete and the dialogue format
 | 3a | Play Again starts over: `slot.autosave`'s `stop()` leaves the save dirty and the reload's `pagehide` flush writes the ended game back (#889) | ¼ | Opus 5 | Container | — | D | | [Play Again starts over](SPECS.md#play-again-starts-over) |
 | 3b | play-castle's last three failures: a wall check that matches nothing, a statue over the hall brazier, and #659's journal walk (#890) | ¼ | Opus 5 | Container, then local: GPU to confirm | — | B | | [play-castle's last three failures](SPECS.md#play-castles-last-three-failures) |
 | 4 | The retro castle: increment 1 shipped, fifteen sets out and fifteen 128 px textures in (#757 to #766); the look is left; variety per room is superseded by 2h (#839); the props increment moved to 2b (#813) | 2+ | Opus 5 | Container to the look, local: GPU past it | — | B | | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
-| 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #729 to #733); four of the five generated clips placed in the household's routines (#800), `drill` still nobody's; the town and the chatter pool are left | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
+| 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #729 to #733); four generated clips placed in the household's routines (#800), `drill` dropped (#915); 10 of the twelve's 27 chatter pairs placed by room and bell (#911, #912); left: playback of those 10 (#913), the 17 that wait on Devon (#914), the town's share of the fifty | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: somebody listens to the seven beds, the four rings and the first two event sounds (a bed at a point and the rings, #680 to #683; the door and the hound, #696 to #698) | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
 | 11 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 | Container to the Node line, local: GPU past it | **after 3** | D | shadow + hand shipped 2026-09-17 (#650 to #654) | [Feel](SPECS.md#feel) |
 
@@ -403,19 +403,26 @@ gossip pairs, bringing the page to 32 of 32 bodies built — 13 cast plus 19
 populace, exactly `MAX_SKINNED_TOTAL` (#729 to #733). `test/mystery.mjs`
 owns the validator (#529); `test/budget.mjs` counts the household.
 
-**What is left waits on one other row and one argument.** The rest of the
-fifty, some of it on 2c's rig once it ships (#821), and whether `garden`
-becomes ground, which the town (rank 9, shipped) left open. The four activities that had no clip,
-`sweep`, `stir`, `hammer` and `spar`, now do: `tools/bodies/` shipped all
-five clips into the four human bodies (#790, kept as it is under 2c and 2d,
-#807), and this row has placed four of them, twelve stops across both days
-(#800): the scullion sweeps and stirs in the kitchen, the carter hammers at
-his cart, and the serjeant and the man-at-arms spar in the yard where they
-used to muster. `drill` is still nobody's. `MAX_SKINNED_TOTAL` stays 34
-until 2c or 2d renegotiates it (#825, #828). And the twelve's 27-pair
-chatter pool is still unspent by proximity; a later lore or dialogue
-increment is recommended to hold each pair to the schedule the way #592
-holds a performance.
+**Three increments shipped, and what is left waits on playback, one answer and one budget.**
+The third held the twelve's chatter pool to the schedule (#911, #912): 10 of
+27 pairs carry a `room` at a day-one bell where both speakers stand, with the
+rail in `src/lore.js` and its tests in `test/lore.mjs`; the other 17 cannot be
+placed without moving a station or recasting, and `unplacedChatter` lists
+them as a ratchet. The generated clips are placed as before: `tools/bodies/`
+shipped five (#790, kept under 2c and 2d, #807), and this row placed four
+across twelve stops over both days (#800). `drill` is dropped as an activity
+(#915, amending #800): it is out of `ACTIVITY_CLIPS`, and the Drill clip
+stays in the bodies until 2c or 2d re-renders them.
+
+**Left, in the order it can happen.** (1) Playback of the 10 placed pairs
+(#913): `QuestManager`'s overhear band (#732) needs a second trigger for
+the twelve on stations, an order against the Vespers song in the hall, and a
+browser beat. (2) The 17 unplaced pairs, Devon's call (#914); recommended
+recast and rewrite for the 9 that are the only teller of a fact, retire the
+other 8, never move a station. (3) The town's share of the fifty, and whether
+`garden` becomes ground, which waits on the skinned-draw budget:
+`MAX_SKINNED_TOTAL` stays 34 until 2c or 2d renegotiates it (#825, #828), and
+CC-04.
 
 ## Sound: a soundscape
 
