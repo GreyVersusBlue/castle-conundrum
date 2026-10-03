@@ -12237,3 +12237,59 @@ new increment before 9; increment 8 having no review still; a 560 MB glb and
 117 MB master in the OneDrive output folder per full build; the glb not
 matching the stills' look. Increment 9 is specced (#897, #898) and blocked
 on 7b, whose open calls are not yet written.
+
+## Looks, 2026-10-03: GPU stills for Devon to judge (2026-10-03)
+
+**#900. Thirty-four stills in `looks/2026-10-03/`, one per checklist item
+or more, and no game file changed.** Taken on DEVON-DESKTOP (RTX 3070 Ti,
+driver 610.47) off `main` at `3bc8ace`, by Claude Opus 5.5 as the lead,
+headed Chrome at 1600 x 900. The camera is pinned the way
+`tools/shot-yard.mjs` pins it, the sky is set through
+`window.__quest._onWatch(sky, { walk: false, sky })`, and the four Feel
+shots on a floor call `__player.settle()` and `__rig.settle()` first, the
+plan-vs-scene shadow beat's own move, so the disc sits on the floor under
+the eye. The script stayed in the session's scratchpad; `shots.log` beside
+the PNGs gives every shot's eye, target, pitch, sky, the prompt on screen,
+the shadow's and the hand's world position and `renderer.info.memory`. Every
+shot but the two `f4` is on day 0, "Prime, the eve", HUD up. These are
+pictures, not verdicts: Devon closes each item after judging them.
+
+**The gate this was asked behind.** The brief said "after the rank 3 GPU run
+has passed". Rank 3's fourth sitting (#886 to #891) walked the whole day and
+the second day but ended exit 1 with six failures, filed as 3a and 3b; none
+of the six is a look, so the stills were taken. **The brief also cited #887
+for the evidence props. #887 is the `renderer.info` meter.** The props are
+rank 2a, and 2a has built nothing: there is no `assets/blender/evidence/`.
+So `e1` to `e4` are the four spots as they stand today, a "before" for 2a's
+checklist, and not the props.
+
+| Shot | Answers |
+| --- | --- |
+| `e1-pricket-spot-chapel-tower` | 2a: "The pricket in the chapel at Prime". The stand-in, `brass_candleholders`, at the stair foot, the Constable over it. From here the prompt is "Press E to ring the bell", not the candle. |
+| `e2-aumbry-wall-chapel-tower` | 2a: "The aumbry's three beside it". The drum wall where `chapel-aumbry` would hang; nothing hangs there. |
+| `e3-knife-barrel-spot-bakehouse` | 2a: "E at the barrel". The kit barrel, a populace body in front of it; the prompt reads "Press E to examine the bakehouse barrel". |
+| `e4-ledger-desk-spot-muniment` | 2a: "E at ... the desk". `WoodenTable_01`, bare; the prompt from here is the writ's, not the ledger's. |
+| `r4-1-one-castle-nw-roof-east`, `-se` | Rank 4: "One castle or two", from the North-west Tower's roof. |
+| `r4-2-shadowed-cross-wall-west-face` | Rank 4: "The shadowed faces", the cross-wall's west face, from inside the mason's lodge (the brown wall, right). |
+| `r4-2-shadowed-hall-north-wall` | Rank 4: the same item, the Great Hall's north wall from the outer ward. |
+| `r4-3-grazing-one-metre` | Rank 4: "A metre from a wall at a grazing angle", along the cross-wall at 1 m. |
+| `r4-4-sky-prime`, `-terce`, `-sext`, `-vespers`, `-lauds` | Rank 4: "The four skies and Lauds", one view of the outer ward at five skies. |
+| `r4-5-eight-tints-nw-roof`, `-chapel-roof` | Rank 4: "The eight tints", across the castle from two corner roofs. |
+| `r4-6-floor-ward-cobbles`, `-hall-tiles`, `-walk-decking`, `-tower-boards` | Rank 4: "Under foot", one shot a floor. |
+| `r4-7-cabinet-in-pixel-hall` | Rank 4: "The props", `GothicCabinet_01` in the Great Hall. |
+| none | Rank 4: "The number". `renderer.info.memory.textures` read 507 to 546 across the session (in `shots.log`), against `test/budget.mjs`'s 143 textures and 43.9 MB from image headers. The two count different things: three counts texture objects, clones included; budget counts images. |
+| none | Rank 4: "The two knobs". A judgement over the shots above, not a shot. |
+| `q1-quay-from-nw-roof`, `q2-quay-from-sw-roof` | Rank 9, the quay through the fog (#53), from the two west tower roofs toward the west gate, Terce. |
+| `q1z-...-west-gate-x3`, `q2z-...-west-gate-x3` | The same, cropped to the gate and enlarged 3.33x nearest. Through the gate is fog colour; the toll-house ridge shows over the town wall as a small grey point; no water can be told apart. |
+| `q3-toll-ridge-from-west-walk` | The same, from the first eye `SPECS.md` names on the ridge, (-35.75, 9.70, -11.75). |
+| `q4-quay-from-nw-roof-prime`, `q5-...-vespers` | The same view at Prime and Vespers. |
+| `f1-blob-on-stone-inner-ward` | Rank 11: "the shadow on stone", inner ward pavers. |
+| `f2-blob-on-grass-outer-ward` | Rank 11: "on grass", the outer ward's grassy cobbles. |
+| `f3-stair-disc-nw-flight-north`, `-south` | Rank 11: the disc on a stair, the North-west Tower's first flight, shadow at y 1.97 on a stepped flight. |
+| `f4-word-lock-hand` | Rank 11: "the hand visibly reaching", at the word-lock pose (21, 1.7, -12), prompt "Press E to read the word-lock", hand at (21.09, 1.63, -12.77). |
+| `f4-word-lock-no-hand-turned-away` | The control: the same pose turned away, no prompt, the hand down at y 1.16. |
+
+**Found, not filed.** A doubled article on four prompts: "Press E to read
+the The lodge's ordinances", "the The King's writ", "the The watch-bill",
+"Press E to read the A gravestone in the chapel floor". #715's fix for
+"the Sir Roger Lestrange" did not reach readables.
