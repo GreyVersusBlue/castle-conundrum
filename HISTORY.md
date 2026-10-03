@@ -14179,3 +14179,5 @@ Left on the row: only the Windows GPU look. Each of the six kinds at 10 m,
 the pig and the sheep beside the cow, the geese beside the hens, the clips,
 the tints, and rank 10's inherited three (the hound's follow, the hens'
 peck, the cow grazing).
+
+**#1000. Reserved: #971 to #1000 are held for sessions on Huginn (the Selector loop); anyone else numbers from #1001.**
