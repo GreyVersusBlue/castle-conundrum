@@ -39,7 +39,7 @@ a network that reaches Poly Haven, once each, into a hash-pinned cache.
 | Row | Model | Status |
 | --- | --- | --- |
 | **2b Blender: an interiors kit** | Opus 5 | Specced 2026-09-25 (#813 to #816, #819), nothing built. |
-| **2c Blender: a shared rig with swappable parts** | Opus 5 | Specced 2026-09-25 (#820 to #825), nothing built. Increment 1 is Blender; increment 2 is a container. |
+| **2c Blender: a shared rig with swappable parts** | Opus 5 | Specced 2026-09-25 (#820 to #825). Increment 1 shipped on huginn (#939 to #941). Left: the Windows GPU look, then increment 2, a container job. |
 | **2d Blender: the animals** | Opus 5 | Specced 2026-09-25 (#826 to #829), nothing built. |
 | **2i Castle in Blender, the integration row** (Blender 5.2) | Opus 5 | Shape decided 2026-10-02 (#919 to #924); specced 2026-10-03 (#963 to #968), argued from #961's master: one skin file cut by stage, `curtain`, `buildings`, `town`, `land`, the ceilings moved in #966. Next is increment 1, #922's open gate in the model, a `builder` job on Devon's Windows machine. Nothing built. |
 
@@ -56,7 +56,7 @@ cannot trust a pass either.
 | **3 The GPU run** | Opus 5 | The fourth sitting confirmed the sight fix on a GPU and walked the whole day and the second day for the first time (#886 to #891). What is left is `npm run play` reaching exit 0: 3a (#916) and 3b (#917) shipped, so one more GPU run, which also confirms 3b's three beats and the three Play Again beats, the phone in the room (#530), and a shot, the quay through the fog (#910): seven stills of it are in `looks/2026-10-03/` (#900) and Devon's verdict on them is owed. |
 | **4 The retro castle**, past increment 1 | Opus 5 | Increment 1 shipped in a container, no GPU needed (#757 to #766). What is left is the look: the checklist is in `SPECS.md`. Increment 2 is superseded by 2h (#839). |
 | **11 Feel**, past its Node line | Sonnet 5 | The Node half shipped 2026-09-17 (#650 to #654): a shadow decal and a reaching hand, nine assertions in `plan-vs-scene.mjs`. What is left is whether either reads on a GPU. Gated on rank 3 (below). |
-| **2c Blender: a shared rig with swappable parts**, the clips | Opus 5 | Once rendered, the eleven clips and the hen-wife beside a Quaternius body are a GPU look, the gate on committing anything under `assets/blender/folk/` (#824, #53). |
+| **2c Blender: a shared rig with swappable parts**, the clips | Opus 5 | The eleven clips and the hen-wife beside a Quaternius body are a GPU look, the gate on increment 2 (#939, #53). Increment 1 is committed (#941). |
 | **2d Blender: the animals**, the clips | Opus 5 | Once rendered, each kind at 10 m and its clips are a GPU look; blocks nothing in `npm test` (#53). |
 
 ### Local: a network that reaches the asset hosts
@@ -88,7 +88,7 @@ files restored from `51735fa` and encoded, a room, two walls and 14 rows.~~
 
 ~~**3a** Play Again starts over (#889): `src/gvb-save.js`'s `autosave.stop()`
 and a Node test in `test/save.mjs`.~~ **Shipped** (#916). **6**
-populace (10 chatter pairs placed, #911; playback and the town's share left), **2c**'s increment 2 (the
+populace (19 chatter pairs placed and played, #911 to #938; the GPU look and the town's share left), **2c**'s increment 2 (the
 other 15 populace humans onto `folk.glb`, once increment 1's GPU look has
 passed). Every one is
 data, a validator, a Node suite or a headless DOM assertion.

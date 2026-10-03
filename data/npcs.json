@@ -645,29 +645,9 @@
       }
     }
   ],
-  "chatterComment": "WISHLIST.md theme 3 (#554, expanded #558): ambient talk, for the existing twelve only, no new bodies. Twenty-seven pairs. The ten placed pairs are played by QuestManager on the caption band, by room and bell (#925), and the name on the band is the name the line opens with (#928); the unplaced 17 are validated by src/lore.js and not played. It is the twelve's and the populace does not spend it (#731): every line opens with one of their names, so data/populace.json carries a `talk` list of its own. Keyed by ward (both npcs' own `ward` field, above) then watch, and the watch key is the bell a pair is said at: a pair keeps its `id` when it moves to the bell it is said at, so an id no longer spells its bell (#911). A pair with a `room` is placed: `room` is one of data/mystery.json's `rooms`, and src/lore.js holds both speakers to the schedule, each standing in that room at that bell and awake, the same station check a performance gets (#912). Several pairs may share one room at one bell, in file order. A pair with no `room` is unplaced, waiting on a recast or a retirement (#914), and src/lore.js's `unplacedChatter` lists it. Each pair carries the two speakers by id (order is speaking order), the two lines, and an optional `cites`: the lore ids the exchange tells, which data/lore.json's `sources` point back at by this pair's own id.",
+  "chatterComment": "WISHLIST.md theme 3 (#554, expanded #558): ambient talk, for the existing twelve only, no new bodies. Nineteen pairs, every one with a `room` (#932): of the first twenty-seven, eight were retired and nine recast onto two speakers the schedule puts in one room. QuestManager plays them on the caption band, by room and bell (#925), and the name on the band is the name the line opens with (#928). It is the twelve's and the populace does not spend it (#731): every line opens with one of their names, so data/populace.json carries a `talk` list of its own. Keyed by ward (both npcs' own `ward` field, above) then watch, and the watch key is the bell a pair is said at: a pair keeps its `id` when it moves to the bell it is said at, so an id no longer spells its bell (#911), nor its room or its speakers: `outer-cell-1` is said in the Great Hall by the cook and the laundress (#933). Every pair names a `room`, one of data/mystery.json's `rooms`, and src/lore.js holds both speakers to the schedule, each standing in that room at that bell and awake, the same station check a performance gets (#912). Several pairs may share one room at one bell, in file order. A pair with no `room` is refused by src/lore.js (#937). A watch key with no pair under it is left out (#935). Each pair carries the two speakers by id (order is speaking order), the two lines, and an optional `cites`: the lore ids the exchange tells, which data/lore.json's `sources` point back at by this pair's own id.",
   "chatter": {
     "outer": {
-      "prime": [
-        {
-          "id": "outer-prime-2",
-          "npcs": ["apprentice", "clerk"],
-          "lines": [
-            "Ieuan: Hywel cuts a little cross at the springing of every arch. Cadeyrn's mark, he calls it, same as his father did.",
-            "Master Robert: Saint Osyth keeps this chapel, Ieuan. Saint Cadeyrn keeps nothing but a mason's conscience, and a light one at that."
-          ],
-          "cites": ["saint-cadeyrn"]
-        },
-        {
-          "id": "outer-prime-3",
-          "npcs": ["sentry", "apprentice"],
-          "lines": [
-            "Dafydd: There is a cross cut in the stone for every man who died building this place. Count them and you have the priest's roll without the Latin.",
-            "Ieuan: A cross goes at the springing of an arch, Dafydd, and it means the arch. The watch has counted them twice and got two numbers, and neither of them was the roll."
-          ],
-          "cites": ["cadeyrn-cross-count"]
-        }
-      ],
       "terce": [
         {
           "id": "outer-terce-1",
@@ -681,53 +661,26 @@
         },
         {
           "id": "outer-terce-2",
-          "npcs": ["apprentice", "merchant"],
+          "npcs": ["clerk", "merchant"],
+          "room": "outer-ward",
           "lines": [
-            "Ieuan: A hod-carrier went off the Bakehouse Tower's scaffold in the ninth year and stood up laughing, they say, for calling on Cadeyrn on the way down.",
+            "Master Robert: The lodge has it that a hod-carrier went off the Bakehouse Tower's scaffold in the ninth year and stood up laughing, for calling on Cadeyrn on the way down.",
             "Thomas Wykes: They also say it was a load of straw broke his fall and not the saint. I have hauled that straw. It was a great deal of straw."
           ],
           "cites": ["saint-cadeyrn-miracle"]
-        },
-        {
-          "id": "outer-terce-3",
-          "npcs": ["laundress", "apprentice"],
-          "lines": [
-            "Nest: Madoc drew out every chisel in that lodge at Lady Day and took a jug of ale for it, and the Steward wrote the jug down as a loss.",
-            "Ieuan: Twice a year, Lady Day and Michaelmas, his father before him at the same forge under the Prison Tower wall. Hywel called it the one custom in this castle the King had not paid for."
-          ],
-          "cites": ["madoc-smith"]
-        }
-      ],
-      "sext": [
-        {
-          "id": "outer-sext-1",
-          "npcs": ["apprentice", "laundress"],
-          "lines": [
-            "Ieuan: Hywel was carrying stone up this castle at nine years old. Nine, Nest, the year his own father died on the scaffold.",
-            "Nest: And keeps a tally stick at his belt to this day for it, so nobody ever tells him at the week's end that he wasn't paid for what he carried."
-          ],
-          "cites": ["hywel-rise"]
-        },
-        {
-          "id": "outer-cell-1",
-          "npcs": ["prisoner", "laundress"],
-          "lines": [
-            "Madoc: Something moves under this floor at night. Slow. A drag, then a stop, same as it has since before they put me in to hear it.",
-            "Nest: You have said that every day this week, Madoc, and I have believed you every day this week, and neither of those has got you out."
-          ],
-          "cites": ["prison-tower-scratching"]
-        },
-        {
-          "id": "outer-sext-3",
-          "npcs": ["sentry", "merchant"],
-          "lines": [
-            "Dafydd: My grandfather stood on the other bank of this river against the old King for nine years, Wykes, and was sworn at the end of it, and kept his word and his opinions both. I stand the King's watch and I have the opinions.",
-            "Thomas Wykes: And the song, I suppose. I have heard the garrison sing it over the wall at Michaelmas for twenty years and never been told a word of what it says."
-          ],
-          "cites": ["sentry-grandfather", "march-song"]
         }
       ],
       "vespers": [
+        {
+          "id": "outer-sext-3",
+          "npcs": ["sentry", "clerk"],
+          "room": "great-hall",
+          "lines": [
+            "Dafydd: My grandfather stood on the other bank of this river against the old King for nine years, Master Robert, and was sworn at the end of it, and kept his word and his opinions both. I stand the King's watch and I have the opinions.",
+            "Master Robert: And the song, I suppose. I have sat at the high table and heard the garrison sing it every Michaelmas I have kept the works, and never been told a word of what it says."
+          ],
+          "cites": ["sentry-grandfather", "march-song"]
+        },
         {
           "id": "outer-vespers-1",
           "npcs": ["sentry", "cook"],
@@ -787,37 +740,31 @@
             "Marged: Your grandfather swore a great many things, Dafydd ap Rhys, and I never saw him show me the shrine."
           ],
           "cites": ["bell-recast-rumour"]
+        },
+        {
+          "id": "outer-prime-3",
+          "npcs": ["sentry", "clerk"],
+          "room": "great-hall",
+          "lines": [
+            "Dafydd: There is a cross cut in the stone for every man who died building this place. Count them and you have the priest's roll without the Latin.",
+            "Master Robert: A cross goes at the springing of an arch, Dafydd, and it means the arch. The watch has counted them twice and got two numbers, and neither of them was the roll."
+          ],
+          "cites": ["cadeyrn-cross-count"]
+        },
+        {
+          "id": "outer-cell-1",
+          "npcs": ["cook", "laundress"],
+          "room": "great-hall",
+          "lines": [
+            "Marged: Madoc tells whoever stands at his bars that something moves under the Prison Tower's floor at night. Slow. A drag, then a stop, same as it has since before they put him in to hear it.",
+            "Nest: He has said that every day this week, Marged, and I have believed him every day this week, and neither of those has got him out."
+          ],
+          "cites": ["prison-tower-scratching"]
         }
       ]
     },
     "inner": {
       "prime": [
-        {
-          "id": "inner-prime-1",
-          "npcs": ["porter", "steward"],
-          "lines": [
-            "Gwilym: Three months owed again, Master Piers, same as the last time and the time before that.",
-            "Piers Marrable: The King's coin goes where the King is fighting, Gwilym. It is paid in the end. It is always paid in the end."
-          ],
-          "cites": ["kings-debt-wages"]
-        },
-        {
-          "id": "inner-prime-2",
-          "npcs": ["chaplain", "lady"],
-          "lines": [
-            "Father Anselm: A cold night for the walk, my lady.",
-            "Lady Alys: Every night is a cold night on that walk, Father. I have stopped remarking on it."
-          ]
-        },
-        {
-          "id": "inner-prime-3",
-          "npcs": ["porter", "chaplain"],
-          "lines": [
-            "Gwilym: They say the old King's heart is under your altar stone, Father, in a lead box sent up from Vantry the year he died, so that some part of him should see the place finished.",
-            "Father Anselm: I have had a bar under that stone once, Gwilym, and I will not tell you what I found, because whichever way it went it is a scandal, and I have enough of those."
-          ],
-          "cites": ["aldous-heart"]
-        },
         {
           "id": "inner-terce-4",
           "npcs": ["constable", "chaplain"],
@@ -827,26 +774,37 @@
             "Father Anselm: A younger son with good Latin and no living, Sir Roger. The justiciar's chapel has a dozen of those. This one has a roll nobody else can read and a stair nobody else sleeps over."
           ],
           "cites": ["father-anselm"]
-        }
-      ],
-      "terce": [
+        },
+        {
+          "id": "inner-prime-3",
+          "npcs": ["constable", "chaplain"],
+          "room": "chapel",
+          "lines": [
+            "Sir Roger: They say the old King's heart is under your altar stone, Father, in a lead box sent up from Vantry the year he died, so that some part of him should see the place finished.",
+            "Father Anselm: I have had a bar under that stone once, Sir Roger, and I will not tell you what I found, because whichever way it went it is a scandal, and I have enough of those."
+          ],
+          "cites": ["aldous-heart"]
+        },
         {
           "id": "inner-terce-2",
-          "npcs": ["porter", "chaplain"],
+          "npcs": ["constable", "chaplain"],
+          "room": "chapel",
           "lines": [
-            "Gwilym: They say Sir Walter's own coffer covered what the works had lost, before he died, and that's the whole reason his books balanced.",
-            "Father Anselm: I have read his accounts, Gwilym. I have also heard what you just said from three other mouths, each swearing he had it from a fourth."
+            "Sir Roger: They say Sir Walter's own coffer covered what the works had lost, before he died, and that is the whole reason his books balanced.",
+            "Father Anselm: I have read his accounts, Sir Roger. I have also heard what you just said from three other mouths, each swearing he had it from a fourth."
           ],
           "cites": ["sir-walter-debt-rumour"]
         },
         {
-          "id": "inner-terce-3",
-          "npcs": ["steward", "porter"],
+          "id": "inner-vespers-1",
+          "npcs": ["chaplain", "constable"],
+          "room": "chapel",
           "lines": [
-            "Piers Marrable: There is an alderman's family in Mereford that has not paid its wall-tax in a decade, if the roll were ever made to say so.",
-            "Gwilym: And whose hand keeps the roll from saying so, Master Piers? I only ask because I keep a roll myself."
+            "Father Anselm: I keep a knuckle of bone under glass on the north sill, Sir Roger, and call it Saint Osyth's own.",
+            "Sir Roger: And do you believe that, Father, or only say it?",
+            "Father Anselm: On my better days, both."
           ],
-          "cites": ["town-debt-rumour"]
+          "cites": ["chapel-relic"]
         }
       ],
       "sext": [
@@ -861,32 +819,6 @@
           "cites": ["inner-ward-view"]
         },
         {
-          "id": "inner-sext-2",
-          "npcs": ["lady", "chaplain"],
-          "lines": [
-            "Lady Alys: You look tired, Father.",
-            "Father Anselm: I have a deal of praying still to do today, my lady, and the day is not half over."
-          ]
-        },
-        {
-          "id": "inner-sext-3",
-          "npcs": ["lady", "chaplain"],
-          "lines": [
-            "Lady Alys: Eleven years married, Father, and eight of them here. Sir Roger had twelve men at Bryn Adda and thought himself a Constable. He has eight now and a wall, and thinks himself less of one.",
-            "Father Anselm: And a wife whose brother sits among the justiciar's clerks, my lady, which he has never once mentioned and never once forgotten."
-          ],
-          "cites": ["sir-roger-lestrange", "lady-alys-brother"]
-        },
-        {
-          "id": "inner-sext-4",
-          "npcs": ["constable", "porter"],
-          "lines": [
-            "Sir Roger: That wall of yours was not in the engineer's drawing, Gwilym. He put it in the fourth year, after a muster showed him five March men in the yard to every one of the King's.",
-            "Gwilym: And my father kept the gate in it from the day it stood, Sir Roger, and I have kept it since. A castle inside a castle, the engineer called it. A wall with a door in it, my father called it."
-          ],
-          "cites": ["the-cross-wall"]
-        },
-        {
           "id": "inner-terce-1",
           "npcs": ["steward", "constable"],
           "room": "kings-hall",
@@ -895,32 +827,31 @@
             "Sir Roger: When Caernarfon says it does. I have stopped asking twice a year and started asking once."
           ],
           "cites": ["sunder-war", "caernarfon-seat"]
-        }
-      ],
-      "vespers": [
-        {
-          "id": "inner-vespers-1",
-          "npcs": ["chaplain", "lady"],
-          "lines": [
-            "Father Anselm: I keep a knuckle of bone under glass on the north sill, my lady, and call it Saint Osyth's own.",
-            "Lady Alys: And do you believe that, Father, or only say it?",
-            "Father Anselm: On my better days, both."
-          ],
-          "cites": ["chapel-relic"]
         },
         {
-          "id": "inner-vespers-2",
-          "npcs": ["steward", "porter"],
+          "id": "inner-sext-3",
+          "npcs": ["constable", "steward"],
+          "room": "kings-hall",
           "lines": [
-            "Piers Marrable: Two offices, two men, two rings of keys, since the day they opened Sir Walter's books. The exchequer's man ordered it standing in that chamber and Sir Roger has kept to it as if he thought of it.",
-            "Gwilym: One man held both for two and thirty years and nobody could check him. My father said Sir Walter never once locked the household's door, because there was no one to lock it against but himself."
+            "Sir Roger: Eleven years married, Piers, and eight of them here. I had twelve men at Bryn Adda and thought myself a Constable. I have eight now and a wall, and think myself less of one.",
+            "Piers Marrable: And a wife whose brother sits among the justiciar's clerks, Sir Roger, which you have never once mentioned and never once forgotten."
           ],
-          "cites": ["household-and-works", "gwilym-porter"]
+          "cites": ["sir-roger-lestrange", "lady-alys-brother"]
+        },
+        {
+          "id": "inner-terce-3",
+          "npcs": ["steward", "constable"],
+          "room": "kings-hall",
+          "lines": [
+            "Piers Marrable: There is an alderman's family in Mereford that has not paid its wall-tax in a decade, if the roll were ever made to say so.",
+            "Sir Roger: And whose hand keeps the roll from saying so, Piers? I ask it in this hall, and I would not have it asked past the door."
+          ],
+          "cites": ["town-debt-rumour"]
         }
       ]
     }
   },
-  "performancesComment": "WISHLIST.md theme 3's two set pieces, BACKLOG.md rank 8 (#592): lore performed rather than read. Two pools, `sermons` and `songs`. Each entry is one person speaking or singing alone in one room at one bell, played as the caption band src/ui.js draws (the same band the placed `chatter` pairs use), once, to whoever is standing in the room to hear it. A pool is flat rather than nested the way `chatter` is, because a performance names its own `room` and `watch`, while a placed chatter pair names its room, and its watch key is its bell. `npc` is who performs it and has to be somebody data/mystery.json's own schedule puts in that room at that watch: the sermon is said where the chaplain is, not where a data file wishes he were. `watch` is one of the four bells, or `lauds`, the morning after (data/mystery.json's `day2.watch`), which is how a pool tells a second day something the first day did not hear. `lines` are said in order, one caption at a time; a line in brackets is what the room does rather than what the speaker says. `cites` are the lore ids the piece tells, and data/lore.json's own `sources` name the piece back by id, the way they do for a document or a chatter pair. THE THIRD POOL (#648): `rumours`, what the castle is saying about the player on the morning after. A rumour piece may carry `when`, `unless` and `knew` on the same grammar data/mystery.json's `day2.castle` and `day2.knew` use (src/mystery.js's `dayTwoApplies`), so which one is said is the verdict the player reached and the journal he carried into it; `knew` names clues he has to be holding, all of them. Only a `lauds` piece may carry them, because a verdict is a thing only the morning after has, and src/lore.js refuses one at any of the four bells. That turns the old rule here into an order: a room at a bell holds a LIST, in file order, and the first piece whose conditions the play answers is the one said. Narrowest first, always, because src/lore.js refuses any piece the ones above it answer for in every ending and journal, which is the same rail as before with seven mornings in it instead of one. The three below are the guardroom at Lauds, Dafydd off watch and awake, and the narrow one is keyed on the gaol roll being in the journal: it is the one thing the castle can only say to a player who did the work. WHERE THE SONG GOES (#593): WISHLIST.md asked for a song in the hall at Sext and the schedule puts nobody in the Great Hall at Sext, so the hall's song is sung at Vespers, which is the one bell both wards eat there (`hall-high-table`), and a second song went into the kitchen at Sext so that day one has a piece to find before its last bell.",
+  "performancesComment": "WISHLIST.md theme 3's two set pieces, BACKLOG.md rank 8 (#592): lore performed rather than read. Two pools, `sermons` and `songs`. Each entry is one person speaking or singing alone in one room at one bell, played as the caption band src/ui.js draws (the same band the `chatter` pairs use), once, to whoever is standing in the room to hear it. A pool is flat rather than nested the way `chatter` is, because a performance names its own `room` and `watch`, while a chatter pair names its room, and its watch key is its bell. `npc` is who performs it and has to be somebody data/mystery.json's own schedule puts in that room at that watch: the sermon is said where the chaplain is, not where a data file wishes he were. `watch` is one of the four bells, or `lauds`, the morning after (data/mystery.json's `day2.watch`), which is how a pool tells a second day something the first day did not hear. `lines` are said in order, one caption at a time; a line in brackets is what the room does rather than what the speaker says. `cites` are the lore ids the piece tells, and data/lore.json's own `sources` name the piece back by id, the way they do for a document or a chatter pair. THE THIRD POOL (#648): `rumours`, what the castle is saying about the player on the morning after. A rumour piece may carry `when`, `unless` and `knew` on the same grammar data/mystery.json's `day2.castle` and `day2.knew` use (src/mystery.js's `dayTwoApplies`), so which one is said is the verdict the player reached and the journal he carried into it; `knew` names clues he has to be holding, all of them. Only a `lauds` piece may carry them, because a verdict is a thing only the morning after has, and src/lore.js refuses one at any of the four bells. That turns the old rule here into an order: a room at a bell holds a LIST, in file order, and the first piece whose conditions the play answers is the one said. Narrowest first, always, because src/lore.js refuses any piece the ones above it answer for in every ending and journal, which is the same rail as before with seven mornings in it instead of one. The three below are the guardroom at Lauds, Dafydd off watch and awake, and the narrow one is keyed on the gaol roll being in the journal: it is the one thing the castle can only say to a player who did the work. WHERE THE SONG GOES (#593): WISHLIST.md asked for a song in the hall at Sext and the schedule puts nobody in the Great Hall at Sext, so the hall's song is sung at Vespers, which is the one bell both wards eat there (`hall-high-table`), and a second song went into the kitchen at Sext so that day one has a piece to find before its last bell.",
   "performances": {
     "sermons": [
       {

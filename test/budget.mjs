@@ -139,6 +139,22 @@ const MAX_SKINNED_TOTAL = 34;
  * ward's walking-day peak goes from 19 to 20 of `MAX_SKINNED_PER_WARD`, which
  * stays 20. A pig or a goat after it costs its own argument, 34 to 35. */
 
+/** Skinned primitives drawn by the bodies in one ward at one watch, and by every body built. */
+const MAX_SKINNED_DRAWS_PER_WARD = 205;
+const MAX_SKINNED_DRAWS_TOTAL = 380;
+/* SET AT WHAT THE CASTLE DREW THE DAY THEY WERE WRITTEN (#825), and not a
+ * guess the way the rest of this block is: 380 in total, and 205 in the outer
+ * ward at `terce-eve`. The two body ceilings above count mixers; these count
+ * what a mixer's body costs to skin and draw, which the bodies never said.
+ * #789 priced the cow at "five skinned nodes" and three.js draws a primitive,
+ * not a node: a Quaternius human is 12 to 15 of them once `hideNodes` and
+ * `hideMaterials` have run, and a person on the shared rig (#820) is one per
+ * part they wear, at most five. There is no room in either number on purpose,
+ * because a ceiling with room in it is a ceiling nobody argues about (#756):
+ * a row that moves people onto the shared rig lowers both to what this suite
+ * then prints, and a row that adds a body argues for its draws in HISTORY.md
+ * beside its argument for the body. */
+
 /** Every image the page can load, decoded, in megabytes of video memory. */
 const MAX_TEXTURE_MB = 64;
 /* THE ONE CEILING IN THIS BLOCK THAT WAS MEASURED BEFORE IT WAS GUESSED (#742,
@@ -380,10 +396,54 @@ console.log('\npoint lights');
  * constant nobody would keep in step. The morning after is still not counted:
  * nobody in data/populace.json has a Lauds ring, so its cast-only load is
  * strictly under either day's.
+ *
+ * AND WHAT EACH BODY DRAWS (#825). A body is one mixer and several draws: one
+ * per skinned primitive of the file it wears that `hideNodes`, `hideMaterials`
+ * and `parts` leave visible, which is the same three fields src/npc.js hides
+ * by. A hidden node hides everything under it, as `visible = false` does in
+ * three.js; a hidden material hides the one primitive wearing it; and on a
+ * body with `parts`, a mesh node the list does not name is hidden (#821). The
+ * count is read off the file, per person, and added up in every ward the body
+ * itself was just counted in, so the two numbers can never disagree about
+ * where somebody is standing. A held prop is rigid and is not counted here.
  */
-console.log('\nskinned bodies per ward, at each watch, the cast and the household');
+const skinnedIn = new Map(); // file -> [{ node, under, material }], one per skinned primitive
+const skinnedPrimitives = (rel) => {
+  if (!skinnedIn.has(rel)) {
+    const { json } = readGLTF(path.join(ROOT, rel));
+    const nodes = json.nodes ?? [];
+    const roots = json.scenes?.[json.scene ?? 0]?.nodes
+      ?? nodes.map((_, i) => i).filter((i) => !nodes.some((n) => (n.children ?? []).includes(i)));
+    const out = [];
+    const walk = (index, above) => {
+      const node = nodes[index];
+      const under = [...above, node.name ?? ''];
+      if (node.mesh !== undefined && node.skin !== undefined) {
+        for (const prim of json.meshes[node.mesh].primitives) {
+          out.push({ node: node.name ?? '', under, material: json.materials?.[prim.material]?.name ?? '' });
+        }
+      }
+      for (const child of node.children ?? []) walk(child, under);
+    };
+    for (const root of roots) walk(root, []);
+    skinnedIn.set(rel, out);
+  }
+  return skinnedIn.get(rel);
+};
+/** How many skinned primitives this person's body leaves visible. */
+const drawsOf = (def) => {
+  const hideNodes = def.hideNodes ?? [];
+  const hideMaterials = def.hideMaterials ?? [];
+  return skinnedPrimitives(def.modelPath).filter((p) =>
+    !p.under.some((name) => hideNodes.includes(name)) &&
+    !hideMaterials.includes(p.material) &&
+    (!def.parts || def.parts.includes(p.node))).length;
+};
+
+console.log('\nskinned bodies and the skinned primitives they draw, per ward, at each watch, the cast and the household');
 {
   const wardOfRoom = new Map(mystery.rooms.map((r) => [r.id, r.ward]));
+  const castDef = new Map(npcs.cast.map((n) => [n.id, n]));
   const wardsAt = new Map(); // "person/watch" -> Set of wards, for the named case
   const days = [
     { of: 'the day of the death', watches: mystery.watches, schedule: mystery.schedule },
@@ -393,9 +453,12 @@ console.log('\nskinned bodies per ward, at each watch, the cast and the househol
   for (const day of days) {
     const peak = { outer: 0, inner: 0 };
     const peakAt = { outer: null, inner: null };
+    const drawPeak = { outer: 0, inner: 0 };
+    const drawPeakAt = { outer: null, inner: null };
     for (const watch of day.watches) {
       const cast = { outer: 0, inner: 0 };
       const folk = { outer: 0, inner: 0 };
+      const draws = { outer: 0, inner: 0 };
       for (const [who, schedule] of Object.entries(day.schedule)) {
         const station = schedule[watch];
         if (!station) continue;
@@ -405,6 +468,9 @@ console.log('\nskinned bodies per ward, at each watch, the cast and the househol
           continue;
         }
         cast[ward]++;
+        const def = castDef.get(who);
+        if (!def) fail(`${who} stands in "${station.room}" at ${watch} and data/npcs.json has no cast entry by that id, so what the body draws cannot be counted`);
+        else draws[ward] += drawsOf(def);
       }
       for (const p of populace.people) {
         const ring = p.routine?.[watch] ?? [];
@@ -420,11 +486,16 @@ console.log('\nskinned bodies per ward, at each watch, the cast and the househol
         }
         if (p.follow) for (const w of WARDS) wards.add(w);
         wardsAt.set(`${p.id}/${watch}`, wards);
-        for (const w of wards) folk[w]++;
+        for (const w of wards) { folk[w]++; draws[w] += drawsOf(p); }
       }
       const here = { outer: cast.outer + folk.outer, inner: cast.inner + folk.inner };
       for (const w of WARDS) if (here[w] > peak[w]) { peak[w] = here[w]; peakAt[w] = watch; }
-      console.log(`        ${watch}: ${WARDS.map((w) => `${w} ${here[w]} (${cast[w]} + ${folk[w]})`).join(', ')}`);
+      for (const w of WARDS) if (draws[w] > drawPeak[w]) { drawPeak[w] = draws[w]; drawPeakAt[w] = watch; }
+      console.log(`        ${watch}: ${WARDS.map((w) => `${w} ${here[w]} (${cast[w]} + ${folk[w]}) drawing ${draws[w]}`).join(', ')}`);
+    }
+    for (const w of WARDS) {
+      if (drawPeak[w] > MAX_SKINNED_DRAWS_PER_WARD) fail(`on ${day.of} the ${w} ward's bodies draw ${drawPeak[w]} skinned primitives at ${drawPeakAt[w]}, over the ceiling of ${MAX_SKINNED_DRAWS_PER_WARD} (#825)`);
+      else pass(`on ${day.of} the ${w} ward's bodies peak at ${drawPeak[w]} skinned draws (${drawPeakAt[w]}), ${MAX_SKINNED_DRAWS_PER_WARD - drawPeak[w]} under the ceiling of ${MAX_SKINNED_DRAWS_PER_WARD}`);
     }
     for (const w of WARDS) {
       if (peak[w] > MAX_SKINNED_PER_WARD) fail(`on ${day.of} the ${w} ward holds ${peak[w]} skinned bodies at ${peakAt[w]}, over the ceiling of ${MAX_SKINNED_PER_WARD}`);
@@ -450,6 +521,17 @@ console.log('\nskinned bodies per ward, at each watch, the cast and the househol
   const built = npcs.cast.length + populace.people.length;
   if (built > MAX_SKINNED_TOTAL) fail(`${built} bodies built, over the ceiling of ${MAX_SKINNED_TOTAL} (${npcs.cast.length} cast and ${populace.people.length} household)`);
   else pass(`${built} bodies built, ${npcs.cast.length} cast and ${populace.people.length} household, ${MAX_SKINNED_TOTAL - built} under the ceiling of ${MAX_SKINNED_TOTAL}`);
+  /* EVERY BODY BUILT, HIDDEN OR NOT, as the line above counts them (#825).
+   * A body that draws nothing is a body whose every skinned primitive was
+   * hidden or whose file has none, and either way this count read it wrong,
+   * so it is named rather than added up as a zero. */
+  const castDraws = npcs.cast.reduce((n, d) => n + drawsOf(d), 0);
+  const folkDraws = populace.people.reduce((n, p) => n + drawsOf(p), 0);
+  const none = [...npcs.cast, ...populace.people].filter((d) => drawsOf(d) === 0).map((d) => d.id);
+  if (none.length) fail(`${none.join(', ')} draw no skinned primitive at all, so the draw count is not counting what the page draws`);
+  const drawn = castDraws + folkDraws;
+  if (drawn > MAX_SKINNED_DRAWS_TOTAL) fail(`${drawn} skinned draws, over the ceiling of ${MAX_SKINNED_DRAWS_TOTAL} (${castDraws} the cast's and ${folkDraws} the household's, #825)`);
+  else pass(`${drawn} skinned draws, ${castDraws} the cast's and ${folkDraws} the household's, ${MAX_SKINNED_DRAWS_TOTAL - drawn} under the ceiling of ${MAX_SKINNED_DRAWS_TOTAL}`);
 }
 
 /* ================================================= 4: texture memory =========

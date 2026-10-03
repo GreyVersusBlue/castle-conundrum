@@ -699,6 +699,75 @@ try {
       `and ${notYet.join(', ')} — who has no Prime stop — is hidden rather than standing at the origin`,
       notYet.length ? notYet.filter((id) => byId.get(id)?.visible).join(', ') : 'nobody in the file skips Prime, so this asserts nothing');
   }
+  /* AND A PERSON ON THE SHARED RIG WEARS WHAT THEY NAME AND NOTHING ELSE
+   * (#820, #821, #940). `assets/blender/folk/folk.glb` carries 22 parts and a
+   * person's `parts` is the handful they have on. Node has already said the
+   * names are real ones and that there is one skin and one garment among them
+   * (test/mystery.mjs's parts rail), and has counted the draws
+   * (test/budget.mjs section 3). What Node cannot say is the seam (#529):
+   * that the list in data/populace.json reached `npc.js` at all, through
+   * `populaceDefs`, which copies body fields by name; that the page hid the
+   * other meshes; that the tint multiplied `Cloth` and left `Bare` alone on
+   * the live material; and that the body was scaled by its `skin-*` part
+   * rather than by the union of every hat in the file, which is what
+   * `Box3.setFromObject` over the model measures, hidden meshes and all.
+   *
+   * THE LIST IS READ OFF THE FILE, NOT OFF THE PAGE'S DEF (#147). With
+   * `parts: p.parts,` deleted from `populaceDefs` the live def has no `parts`
+   * and a beat that asked the page who wears parts would check nobody and
+   * pass. So who is asked comes from data/, and the count is printed and may
+   * not be zero while the file names one (#13).
+   *
+   * A held prop hangs off a hand bone and is not a part, so a mesh with a
+   * bone above it is left out of the count. The box is the skinned mesh's own
+   * rest box, which `npc.js` computed when it took the height and three
+   * keeps on the mesh, so the pose the body happens to be in does not move
+   * it. */
+  {
+    const household = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/populace.json'), 'utf8'));
+    const named = [...npcs.cast, ...household.people].filter((p) => Array.isArray(p.parts))
+      .map((p) => ({ id: p.id, parts: p.parts, height: p.modelHeight ?? 1.8 }));
+    const live = await page.evaluate((wanted) => {
+      const THREE = window.__THREE;
+      const all = [...(window.__cast || []), ...(window.__folk || [])];
+      return wanted.map(({ id }) => {
+        const n = all.find((x) => x.id === id);
+        if (!n) return { id, missing: true };
+        n.group.updateMatrixWorld(true);
+        const shown = [], bare = new Set();
+        let skinTop = null;
+        n.group.traverse((o) => {
+          if (!o.isMesh) return;
+          let seen = true, held = false;
+          for (let a = o; a && a !== n.group; a = a.parent) { if (!a.visible) seen = false; if (a.isBone) held = true; }
+          if (held || !seen) return;
+          shown.push(o.name);
+          for (const m of (Array.isArray(o.material) ? o.material : [o.material])) if (m?.name === 'Bare') bare.add(m.color.getHexString());
+          if (/^skin-/.test(o.name)) skinTop = new THREE.Box3().setFromObject(o).max.y - n.group.getWorldPosition(new THREE.Vector3()).y;
+        });
+        return { id, shown: shown.sort(), bare: [...bare], skinTop, defParts: Array.isArray(n.def.parts) };
+      });
+    }, named);
+    let checked = 0;
+    for (const want of named) {
+      const got = live.find((l) => l.id === want.id);
+      if (!got || got.missing) { fail(`${want.id} names ${want.parts.length} parts in data/ and the page spawned no such body`); continue; }
+      checked++;
+      const parts = [...want.parts].sort();
+      check(got.shown.join() === parts.join(),
+        `${want.id} shows ${got.shown.length} meshes; her parts name ${parts.length}`,
+        got.shown.join() === parts.join() ? '' : `shown and not named: ${got.shown.filter((s) => !parts.includes(s)).join(', ') || 'none'}; named and not shown: ${parts.filter((s) => !got.shown.includes(s)).join(', ') || 'none'}${got.defParts ? '' : '; the live def has no `parts`'}`);
+      check(got.bare.length === 1 && got.bare[0] === 'ffffff',
+        `${want.id}'s \`Bare\` material is ${got.bare.join(', ') || 'on nothing she shows'}`,
+        'want ffffff on exactly one live material: the tint reached what it is meant to leave alone');
+      check(got.skinTop != null && Math.abs(got.skinTop - want.height) <= 0.02,
+        `${want.id}'s skin part tops out ${got.skinTop == null ? 'nowhere' : `${got.skinTop.toFixed(3)} m`} above her feet, for a modelHeight of ${want.height} m`,
+        'more than 0.02 m off: the body was not scaled by its skin part');
+    }
+    check(checked === named.length && (checked > 0 || !/"parts"\s*:/.test(JSON.stringify(household.people))),
+      `${checked} parts bodies checked, of the ${named.length} data/ names`,
+      'data/populace.json names a `parts` and no live body was checked against it');
+  }
   /* AND THE RING ACTUALLY TURNS (#616). Everything above is where a body was
    * PUT; this is the only assertion that a routine of more than one stop is a
    * loop rather than a list nobody reads past the first entry. `Populace`

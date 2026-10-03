@@ -70,8 +70,7 @@
       "kind": "history",
       "text": "The cross-wall that splits the castle into two wards was not in the engineer's first drawing. It went in the fourth year, when the March labour in the outer ward outnumbered the King's garrison five to one and the engineer wrote to Vantry that a castle whose own yard could rise against it was no castle at all. So the King's household got a ward of its own with a gate and a porter, the works got the other, and the wall walk runs over the top of both as if nobody had ever thought of it.",
       "sources": [
-        { "kind": "document", "id": "engineer-drawing" },
-        { "kind": "chatter", "id": "inner-sext-4" }
+        { "kind": "document", "id": "engineer-drawing" }
       ]
     },
     {
@@ -174,8 +173,7 @@
       "kind": "person",
       "text": "Gwilym has kept the cross-wall gate twenty years and his father kept it before him, from the year the wall went up; the gate book is in the two hands, one after the other, and Gwilym's is the better of them because his father had him taught his letters by the chaplain of that day for the purpose. He is March-born and inner ward, which is a thing a man can be if he keeps a gate.",
       "sources": [
-        { "kind": "document", "id": "gate-book" },
-        { "kind": "chatter", "id": "inner-vespers-2" }
+        { "kind": "document", "id": "gate-book" }
       ]
     },
     {
@@ -184,8 +182,7 @@
       "text": "The household and the works have been two offices with two men and two sets of keys since Sir Walter died, eight years gone: the Steward keeps the household, the cellar, the muster and the passes, and the Clerk of Works keeps the works, the lead, the stone and the ledger. The exchequer's man who opened Sir Walter's books ordered the division on the spot, on the ground that one man had held both for two and thirty years and nobody had been able to check him, and Sir Roger has held to it as if he had thought of it himself.",
       "sources": [
         { "kind": "document", "id": "steward-letters" },
-        { "kind": "npc", "npc": "steward", "state": "default" },
-        { "kind": "chatter", "id": "inner-vespers-2" }
+        { "kind": "npc", "npc": "steward", "state": "default" }
       ]
     },
     {
@@ -231,7 +228,6 @@
       "sources": [
         { "kind": "document", "id": "works-ledger" },
         { "kind": "document", "id": "steward-letters" },
-        { "kind": "chatter", "id": "inner-prime-1" },
         { "kind": "performance", "id": "song-vespers-hall" }
       ]
     },
@@ -270,7 +266,6 @@
       "text": "Hywel ap Gruffudd carried stone up this castle's scaffolds as a boy of nine, the year his father died on them, and set his first course as a journeyman before he was twenty. Seven and twenty years a mason and eleven of them a master, he kept his own tally of every sheet of lead the roofs had, on the sticks he wore at his belt, because he had learned young that a boy who could not account for his own work went unpaid at the week's end.",
       "sources": [
         { "kind": "document", "id": "builder-graffito" },
-        { "kind": "chatter", "id": "outer-sext-1" },
         { "kind": "performance", "id": "sermon-lauds-cadeyrn" }
       ]
     },
@@ -304,7 +299,6 @@
       "kind": "person",
       "text": "Madoc is the castle's smith, as his father was, at the forge that has stood under the Prison Tower's wall since the twelfth year of the works. He draws out the masons' chisels twice a year, Lady Day and Michaelmas, for ale and nothing else, which the lodge counts a custom and the Steward counts a loss, and he has mended more of the kitchen's iron for a loaf than the kitchen has ever paid for.",
       "sources": [
-        { "kind": "chatter", "id": "outer-terce-3" },
         { "kind": "document", "id": "lodge-ordinances" }
       ]
     },
@@ -362,7 +356,6 @@
       "text": "Saint Cadeyrn was known on this ground before the King's masons ever were, patron of builders and of men who work in high places, and the works have kept him without troubling the chaplain about it: a mason sets a small cut cross to him at the springing of an arch the way his father did and his father's father, in a country where the arches themselves are new.",
       "sources": [
         { "kind": "document", "id": "builder-graffito" },
-        { "kind": "chatter", "id": "outer-prime-2" },
         { "kind": "performance", "id": "sermon-lauds-cadeyrn" }
       ]
     },

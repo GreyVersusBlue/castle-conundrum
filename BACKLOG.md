@@ -242,12 +242,12 @@ the placement editor, budget suite, move-and-delete and the dialogue format
 | Rank | Item | Size | Model | Where | Gate | Lane | Claimed | Detail |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | 2b | Blender: an interiors kit: joined sets dressing the kitchen, the great hall and the cell, specced (#813 to #816, #819); the two hearths and the chapel altar went to 2f (#830); nothing built | 2+ | Opus 5 | Local: Blender | 1 shipped (#881); 2a shipped (#907) | F, B | | [Blender: an interiors kit](SPECS.md#blender-an-interiors-kit) |
-| 2c | Blender: a shared rig with swappable parts: one rig, one-primitive parts, at most five skinned draws a person against the Quaternius rigs' 12 to 15, specced (#820 to #825); nothing built | 2+ | Opus 5 | Local: Blender, then Container; judged local: GPU (#53) | 1 shipped (#881) | F, C | | [Blender: a shared rig with swappable parts](SPECS.md#blender-a-shared-rig-with-swappable-parts) |
-| 2d | Blender: the animals: pig, goat, sheep, horse, cat and two geese on one quadruped topology plus a bird one for the goose, specced (#826 to #829); nothing built | 1 | Opus 5 | Local: Blender; judged local: GPU (#53) | after 2c increment 1 (1 shipped, #881) | F, C | | [Blender: the animals](SPECS.md#blender-the-animals) |
+| 2c | Blender: a shared rig with swappable parts: one rig, one-primitive parts, at most five skinned draws a person against the Quaternius rigs' 12 to 15, specced (#820 to #825); increment 1 shipped on huginn (#939 to #941); left: the Windows GPU look, which gates increment 2, the other 15 populace humans (container) | 2+ | Opus 5 | Windows: GPU look (#53), then Container | 1 shipped (#881) | F, C | | [Blender: a shared rig with swappable parts](SPECS.md#blender-a-shared-rig-with-swappable-parts) |
+| 2d | Blender: the animals: pig, goat, sheep, horse, cat and two geese on one quadruped topology plus a bird one for the goose, specced (#826 to #829); nothing built | 1 | Opus 5 | Local: Blender; judged local: GPU (#53) | 2c increment 1 committed (#941); 1 shipped (#881) | F, C | | [Blender: the animals](SPECS.md#blender-the-animals) |
 | 2i | Castle in Blender, the integration row: the game takes the model as a skin and never reads `markers.json` (#919); specced (#963 to #968): one `assets/castle3d/skin.glb` cut from the master by stage (`curtain`, `buildings`, `town`, `land`), about 25 MB and 37.3 MB of texture memory against the master's 570 MB and 1,738.8 MB, trees decimated to 2,000 triangles, KTX2 through `assets:encode`; draw ceiling 1200 to 600, a new 500,000-triangle ceiling, texture 64 to 76 to 84 (#966); #499 and #506 stand (#967); six increments, the first #922's open gate in the model; nothing built | 2+ | Opus 5 | Local: Blender GPU (5.2, Devon's Windows machine only), plus `ktx`; judged local: GPU (#53) | 2h shipped (#962) | G | | [Castle in Blender: the integration row](SPECS.md#castle-in-blender-the-integration-row) |
 | 3 | The GPU run: the fourth sitting confirmed the sight fix on a GPU and walked the whole day and the second day (#886 to #891); exit 1, 6 failures, 3a (#916) and 3b (#917) shipped, one more GPU run owed; the quay look's stills taken (#900, `looks/2026-10-03/`), Devon's verdict owed; `renderer.info` recorded (#887); the phone (#530) untouched | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
 | 4 | The retro castle: increment 1 shipped, fifteen sets out and fifteen 128 px textures in (#757 to #766); the look is left; variety per room is superseded by 2h (#839); the props increment moved to 2b (#813) | 2+ | Opus 5 | Container to the look, local: GPU past it | — | B | | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
-| 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #729 to #733); four generated clips placed in the household's routines (#800), `drill` dropped (#915); 10 of the twelve's 27 chatter pairs placed by room and bell (#911, #912) and now played by room and bell (#925 to #931); left: the 17 that wait on Devon (#914), the town's share of the fifty, the GPU look at playback (`npm run play`, #53, the looking list in #931) | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
+| 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #729 to #733); four generated clips placed in the household's routines (#800), `drill` dropped (#915); the twelve's chatter pool placed and played by room and bell, 19 pairs after nine were recast and eight retired (#911, #925 to #938); left: the town's share of the fifty, the GPU look at playback (`npm run play`, #53, the looking list in #931) | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: somebody listens to the seven beds, the four rings and the first two event sounds (a bed at a point and the rings, #680 to #683; the door and the hound, #696 to #698) | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
 | 11 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 | Container to the Node line, local: GPU past it | **after 3** | D | shadow + hand shipped 2026-09-17 (#650 to #654) | [Feel](SPECS.md#feel) |
 
@@ -278,18 +278,19 @@ moves here as this row's increment 3, gated on rank 4's look (#813). Detail:
 successor for people (#807): one rig, `folk.glb`, with every wearable part
 its own one-primitive mesh node, so a person names the parts they wear in
 `data/populace.json` and draws at most five skinned primitives where a
-Quaternius body draws 12 to 15. Increment 1 renders the rig and moves one
-wearer, the hen-wife, gated on a GPU look beside a Quaternius body before
-anything else is committed; increment 2, a container job, moves the other
-15 populace humans. The 14 cast stay on the Quaternius rigs (#824). Makes
+Quaternius body draws 12 to 15. Increment 1 shipped on huginn (#939 to #941): the
+rig, the mallet and the hen-wife, committed before their GPU look (#939).
+Left: that look on Windows (the hen-wife beside the baker, the eleven
+clips, the carter's mallet fit), which gates increment 2, a container job
+that moves the other 15 populace humans. The 14 cast stay on the Quaternius rigs (#824). Makes
 bodies and writes a person's first body fields only; "Life: a populace"
 still owns every ring and every later change (#821). Detail: [Blender: a
 shared rig with swappable parts](SPECS.md#blender-a-shared-rig-with-swappable-parts).
 
 ## Blender: the animals
 
-*Where: local, Blender; judged local GPU (#53). Gate: after 2c's
-increment 1; rank 1 shipped (#881). Lanes: F and C; not B.*
+*Where: local, Blender; judged local GPU (#53). Gate: 2c's
+increment 1, committed (#941); rank 1 shipped (#881). Lanes: F and C; not B.*
 
 **Rank 2d, size 1.** Specced whole, decisions #826 to #829. Rank 10's
 successor for animals (#807): pig, goat, sheep, horse and cat on one
@@ -366,12 +367,12 @@ gossip pairs, bringing the page to 32 of 32 bodies built — 13 cast plus 19
 populace, exactly `MAX_SKINNED_TOTAL` (#729 to #733). `test/mystery.mjs`
 owns the validator (#529); `test/budget.mjs` counts the household.
 
-**Four increments shipped, and what is left waits on a GPU look, one answer and one budget.**
+**Five increments shipped, and what is left waits on a GPU look and one budget.**
 The third held the twelve's chatter pool to the schedule (#911, #912): 10 of
 27 pairs carry a `room` at a day-one bell where both speakers stand, with the
 rail in `src/lore.js` and its tests in `test/lore.mjs`; the other 17 cannot be
 placed without moving a station or recasting, and `unplacedChatter` lists
-them as a ratchet. The generated clips are placed as before: `tools/bodies/`
+them as a ratchet until the fifth. The generated clips are placed as before: `tools/bodies/`
 shipped five (#790, kept under 2c and 2d, #807), and this row placed four
 across twelve stops over both days (#800). `drill` is dropped as an activity
 (#915, amending #800): it is out of `ACTIVITY_CLIPS`, and the Drill clip
@@ -381,13 +382,15 @@ The fourth plays the 10 placed pairs on the page (#925 to #931):
 on walking in, and follows each run or bell with a 4000 ms gap. `handleStand`
 tells it about open ground (#926). A cut pair counts as heard (#929), day one
 only (#930), and the hall's six pairs come after the Vespers song (#927).
+The fifth closed the pool (#932 to #938): nine pairs recast onto two
+speakers the schedule puts in one room, eight retired, 19 pairs each with a
+`room`, and a pair with no `room` refused by `src/lore.js`.
 
 **Left, in the order it can happen.** (1) The GPU look at playback, which nobody has run: `npm run play` on a
 real GPU (#53), judged against the looking list in #931 (the hall at Vespers
-end to end at 138.3 s, `outer-terce-1` from the east end of the outer ward,
-the band over the panel and the journal). (2) The 17 unplaced pairs, Devon's call (#914); recommended
-recast and rewrite for the 9 that are the only teller of a fact, retire the
-other 8, never move a station. (3) The town's share of the fifty, and whether
+end to end at 193.3 s, the chapel's four pairs at Prime between the same two
+men, `outer-terce-1` from the east end of the outer ward,
+the band over the panel and the journal). (2) The town's share of the fifty, and whether
 `garden` becomes ground, which waits on the skinned-draw budget:
 `MAX_SKINNED_TOTAL` stays 34 until 2c or 2d renegotiates it (#825, #828), and
 CC-04.
