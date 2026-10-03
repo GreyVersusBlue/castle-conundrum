@@ -13461,3 +13461,23 @@ under 0.0001). `skin.mjs` records its inputs' sha256 in
 `tools/castle3d/skin-manifest.json` and prints "unchanged", writing nothing,
 when they have not moved, as `blender:render` does (#880 to #884). No Cycles stills
 of the skin: the renderer that judges it is the game's, on a GPU (#53).
+
+## Castle in Blender, the integration row: Devon's lines on the open calls (2026-10-03)
+
+**#969. Devon accepts every recommendation in SPECS.md, "Castle in Blender:
+the integration row," "Open calls."** As he typed: "All as recommended."
+The list is 22 open calls, not the 17 the session notes and the prior
+next-session prompt said; the lead listed all 22 with their recommendations
+before Devon answered, so his line covers all 22: what ships, where the
+game learns the stages, the stages, what a stage admits, interiors, pixel
+textures, the swap, the box rule, the editor, draw ceiling, triangle
+ceiling, texture ceiling, #499, #506, resolution, LOD, instancing, the
+bake, leaves, determinism, the open arch and lane. Each stands as #963 to
+#968 decided it, and the open arch as #922 decided it. No call is
+overturned, so no architect amendment; the amendments to #921 and #611
+written in #964 and #966 stand as written.
+
+PR #106 merged to main as `e832bad`, after a merge of main for #107's
+Huginn reservation (`289049d`), CI green on `289049d` (run 37141666263).
+Increment 1, #922's open gate in the model, is next, on
+`claude/castle3d-2i-1`.
