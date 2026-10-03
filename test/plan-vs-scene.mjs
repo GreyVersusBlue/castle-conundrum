@@ -237,6 +237,85 @@ try {
   const perLevel = plan.levels.map((l) => `${stood.filter((s) => s.level === l).length} on level ${l}`).join(', ');
   if (stoodOk === stood.length) pass(`the camera stands on the plan's floor in all ${stood.length} rooms (${perLevel}), worst ${Math.max(0, worstStand).toFixed(4)} m in ${worstRoom}`);
 
+  /* AND TWO OF THE TWELVE REACH THE BAND, AND STOP AT THE DOOR (#925, #926,
+   * #931). QuestManager plays a placed chatter pair by room and bell, and
+   * test/quest.mjs holds all of that in Node: order, names, once, the cuts, the
+   * gap. What no Node suite can see is src/main.js, which nothing in Node
+   * loads. Two reads, and nothing else belongs here (#529):
+   *   - main.js hands `chatter` to the manager, so with the camera on a chapel
+   *     floor cell at Prime the page's own loop lights `#caption` with
+   *     inner-terce-4's first line under the name the line opens with;
+   *   - main.js tells the manager about open ground (`handleStand`), so with
+   *     the camera then put in the inner ward the band is no longer that pair's.
+   * Parked, not waited on (#724): no timer and no TOL. Two frames of the
+   * page's own loop are counted each time.
+   *
+   * THE CHAPEL READ IS TAKEN ON THE FRAME THE BAND LIGHTS, of those two, and
+   * not after both. The caption steps on a wall-clock timer and a frame is
+   * not a length of time: on a loaded box under software rendering two frames
+   * ran past line one's 4665 ms and the read found line two, with the wire
+   * intact (the first full `npm test` with this beat in it, load average over
+   * 10). The loop's callback runs ahead of this one in the same frame, so a
+   * read on the frame that lit the band has no timer between it and the
+   * caption.
+   *
+   * WHY IT STANDS HERE, AHEAD OF THE HUD BEAT. A pair is said once per page
+   * (#929), and the beat below stands the camera in every room at Prime for
+   * two frames, the chapel among them: after it, inner-terce-4 has been heard
+   * and nothing on this page can light the band with it again. The band is
+   * read dark first, as the household's talk beat does, so what lights it is
+   * the pair. */
+  {
+    const mysteryData = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/mystery.json'), 'utf8'));
+    const pool = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/npcs.json'), 'utf8')).chatter ?? {};
+    const pair = Object.values(pool).flatMap((byWatch) => Object.values(byWatch)).flat().find((p) => p.id === 'inner-terce-4');
+    const seamNav = castleNav(plan, mysteryData);
+    const chapelRoom = grid.rooms().find((r) => r.id === 'chapel' && r.reachable);
+    const inChapelCell = chapelRoom?.at.find((c) => { const at = seamNav.roomAt(c.x, c.z, c.h); return !at.open && at.id === 'chapel'; }) ?? null;
+    const wardCell = !inChapelCell ? null : grid.cells
+      .filter((c) => c.level === 0)
+      .map((c) => ({ x: c.i * grid.grid + grid.grid / 2, z: c.j * grid.grid + grid.grid / 2, h: c.h }))
+      .filter((c) => { const at = seamNav.roomAt(c.x, c.z, c.h); return at.open && at.id === 'inner-ward'; })
+      .sort((a, b) => Math.hypot(a.x - inChapelCell.x, a.z - inChapelCell.z) - Math.hypot(b.x - inChapelCell.x, b.z - inChapelCell.z))[0] ?? null;
+    if (!pair || pair.room !== 'chapel' || !inChapelCell || !wardCell) fail('no inner-terce-4 placed in the chapel, or no chapel floor cell and inner-ward cell to stand the camera on, so the chatter wire cannot be read');
+    else {
+      const opens = pair.lines[0].slice(0, pair.lines[0].indexOf(': '));
+      const bare = pair.lines.map((l) => l.slice(l.indexOf(': ') + 2));
+      const heard = await page.evaluate(async ({ inside, outside, eye }) => {
+        const frame = () => new Promise((r) => requestAnimationFrame(() => r()));
+        const cam = window.__cam, quest = window.__quest;
+        const band = document.getElementById('caption');
+        const now = () => ({
+          hidden: band.classList.contains('hidden'),
+          name: document.getElementById('caption-name').textContent,
+          line: document.getElementById('caption-line').textContent,
+          performing: quest.performing?.id ?? null,
+        });
+        const back = { x: cam.position.x, y: cam.position.y, z: cam.position.z };
+        const before = { ...now(), watch: window.__mystery.watch };
+        cam.position.set(inside.x, inside.h + eye, inside.z);
+        window.__player.settle();
+        let frames = 0;
+        while (frames < 2) { await frame(); frames++; if (!band.classList.contains('hidden')) break; }
+        const chapel = { ...now(), frames, room: document.getElementById('hud-room')?.textContent ?? null };
+        cam.position.set(outside.x, outside.h + eye, outside.z);
+        window.__player.settle();
+        await frame(); await frame();
+        const ward = { ...now(), room: document.getElementById('hud-room')?.textContent ?? null };
+        cam.position.set(back.x, back.y, back.z);
+        return { before, chapel, ward };
+      }, { inside: inChapelCell, outside: wardCell, eye: EYE_HEIGHT });
+      check(heard.before.hidden && heard.before.performing === null && heard.before.watch === mysteryData.watches[0],
+        'the band is dark at Prime before the chatter beat, so what lights it is the pair', JSON.stringify(heard.before));
+      check(!heard.chapel.hidden && heard.chapel.name === opens && heard.chapel.line === bare[0],
+        `within two frames on a chapel floor cell at Prime, #caption shows inner-terce-4's first line under "${opens}": main.js hands \`chatter\` to the manager (#925)`,
+        heard.chapel.hidden ? `the band is dark after ${heard.chapel.frames} frames in ${JSON.stringify(heard.chapel.room)}` : `on frame ${heard.chapel.frames} it says ${JSON.stringify(heard.chapel.name)}: ${JSON.stringify(heard.chapel.line)}`);
+      check(!bare.includes(heard.ward.line),
+        'two frames on open inner-ward ground, #caption-line is neither of that pair\'s lines: main.js tells the manager about open ground (#926)',
+        `standing in ${JSON.stringify(heard.ward.room)} the band still says ${JSON.stringify(heard.ward.line)}`);
+    }
+  }
+
   /* AND THE HUD SAYS WHERE (#515). The room line is written by the page's own
    * `nav.roomAt` on the next frame after the camera moves, so with the camera
    * settled in each room the line has to read what the same resolver, run

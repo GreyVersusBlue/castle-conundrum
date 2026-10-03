@@ -238,6 +238,9 @@ async function init() {
     quest: questData, sideQuests, mystery: mysteryData, riddle: riddleData, documents: documentsData.documents, npcs, ui, castle,
     engine,
     audio,
+    // The twelve's ten placed pairs, said on the caption band by room and bell
+    // (#925). The manager plays only the pairs with a `room`.
+    chatter: npcData.chatter,
     // The world half of a bell: the sky and twelve people walking to where they
     // are due next. The engine has already moved the watch on; this puts the
     // castle where the watch says it is. `applyDay` calls it once more for
@@ -423,8 +426,13 @@ async function init() {
     // is the same test `roomAt` settles for every room. One answer, two
     // consumers: the HUD line, and the engine, which grants `walk-crosses` on
     // the walk and puts every room on the map's visited set. Open ground is
-    // not a room and is not handed over: `repair` would drop it from the save
-    // on the next load, and a set the game writes knowing that is not a set.
+    // not a room and is not handed over to the engine: `repair` would drop it
+    // from the save on the next load, and a set the game writes knowing that is
+    // not a set. THE MANAGER IS TOLD ALL THE SAME (#926), through `handleStand`,
+    // which is the band's half of a room change and never asks the engine:
+    // without it the manager went on believing the player was in the last
+    // named room, so a song followed him out into the ward and a pair placed
+    // on open ground could never start.
     {
       const here = nav.roomAt(camera.position.x, camera.position.z, camera.position.y - EYE_HEIGHT);
       if (here.id !== roomShown) {
@@ -432,7 +440,8 @@ async function init() {
         ui.setRoom(here.name, here.open ? null : here.id);
         // And the third consumer: the room tone cross-fades on the same change.
         audio.enter(here);
-        if (!here.open) quest.handleEnter(here.id, here.level);
+        if (here.open) quest.handleStand(here.id);
+        else quest.handleEnter(here.id, here.level);
       }
     }
     // And where the head is, every frame: which beds are within earshot and
