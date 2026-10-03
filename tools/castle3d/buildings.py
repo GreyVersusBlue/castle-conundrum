@@ -45,9 +45,14 @@
 # THE ROOF (ROOF_great-hall, planIds the seven hall-roof ids). The pieces'
 # own section, underside on the trusses' top edges, ROOF_BOARDS under
 # ROOF_SLATES, with #853's departures: the hall's own x, the north eave
-# EAVE_PAST beyond the north run's outer face, the south slope on at the same
-# pitch to the curtain's face, both slopes less the drum discs; closed at each
-# end by a GABLE m board gable in the same object, clear of the drum discs.
+# EAVE_PAST beyond the north run's outer face, both slopes less the drum
+# discs; closed at each end by a GABLE m board gable in the same object, clear
+# of the drum discs. The south slope stops at the hall-roof pieces' own south
+# face (#922, taking back #853's run on to the curtain's face), so #527's
+# 0.75 m slot of sky stands between it and the curtain as it does in the game,
+# and the four drum walk doors #855 shut under it open onto that slot. Held:
+# the roof's world box ends within BOX_TOLERANCE of the pieces' south face, or
+# the stage raises.
 #
 # THE CORBELS (CORBELS_great-hall, modelOnly #853). One stone block under
 # each south truss foot that is not inside a drum disc, in the material of
@@ -78,13 +83,9 @@
 # THE WALL PLATE (PLATE_steward-chamber, modelOnly #855). TIMBER filling the
 # wedge the lean-to leaves over its low run's top, open to the chamber.
 #
-# THE DRUM DOORS (DOOR_<drum>-<index>, modelOnly #855). A drum door at
-# DOOR_BASE whose arc, sampled DOOR_OUT outside the ring, lies under any #853
-# roof whose top there stands above its base would glow into the room under
-# that roof, so it takes a shut leaf: two DOOR_LEAF plates of DOOR_TIMBER,
-# DOOR_GAP apart, on the chord between its outer-arc ends set DOOR_IN inward.
-# Found by that rule over the blueprint's drums and the roofs' own planes, not
-# a table. A leaf grown by DOOR_CLEAR that meets a prop's box raises.
+# #855's four shut drum walk doors (DOOR_prison-tower-1, -2, DOOR_sw-tower-1,
+# -2) are gone (#922): the hall roof is cut back instead, so the drums' walk
+# doors stand open in the model as they do in the game.
 #
 # THE BEAMS (BEAMS_<room id>, modelOnly #853). BEAM square, at BEAMS' tile
 # centres, under each upper floor and each flat roof, spanning the clear span
@@ -219,16 +220,9 @@ SLAT = (0.25, 0.025, 45)               # width, thickness, tip in degrees, low e
 LOUVRE_EAVE = 0.1                      # the cap past the footprint on all four sides
 LOUVRE_CLEAR = 0.1                     # the hole and the louvre grown by this meet no truss or prop
 
-# The lean-to's wall plate and the drum walk doors (#855).
+# The lean-to's wall plate (#855).
 PLATE_ONLY = '#855'
 PLATE_CLEAR = 0.1                      # the plate grown by this meets no prop
-DOOR_BASE = 8.0                        # the walk doors, the only ones a roof can pass
-DOOR_OUT = 0.05                        # the arc sampled this far outside the ring, off the roofs' disc-cut edges
-DOOR_TIMBER = 'oak'                    # MAT_wooden_gate through materials.ALIAS, as #851's leaves
-DOOR_LEAF = 0.1                        # each plate's thickness
-DOOR_GAP = 0.005                       # between the two plates at the middle
-DOOR_IN = 0.1                          # the leaf's centre plane, inward of the chord
-DOOR_CLEAR = 0.1                       # a leaf grown by this meets no prop
 
 
 # ------------------------------------------------------------------ helpers --
@@ -368,16 +362,16 @@ def build_truss(s, piece):
 
 
 # -------------------------------------------------------------------- roof --
-def build_roof(s, bp, room, roofs, runs, discs, hole=None, tops=None):
+def build_roof(s, bp, room, roofs, runs, discs, hole=None):
     """The hall's roof over `room` from the section of its `roofs` pieces:
     slot 0 slates, slot 1 boards. `hole` (x0, x1, z0, z1) opens it under the
     louvre (#854): each slope is then three rectangles, the two either side
     of the hole's x span whole and the middle one stopping at the hole's z.
-    Appends each slope's (plan polygon, top(x, z)) to `tops` when given (#855's
-    drum doors). Returns (north eave z, south z, ridge top)."""
+    The south slope stops at the pieces' south face, z1 (#922). Returns
+    (north eave z, south z, ridge top)."""
     z0, z1, y0, y1, zr, k = section(roofs)
     rb = room['bounds']
-    rx0, rx1, south = rb['min']['x'], rb['max']['x'], rb['max']['z']
+    rx0, rx1, south = rb['min']['x'], rb['max']['x'], z1
     north = [r for r in runs if r['box']['min']['z'] - EPS <= rb['min']['z'] <= r['box']['max']['z'] + EPS
              and r['box']['max']['z'] - r['box']['min']['z'] < r['box']['max']['x'] - r['box']['min']['x']
              and r['box']['min']['x'] <= rx0 + EPS and r['box']['max']['x'] >= rx1 - EPS]
@@ -403,8 +397,6 @@ def build_roof(s, bp, room, roofs, runs, discs, hole=None, tops=None):
         poly = masonry.minus_discs(rect, discs)
         s.slab(poly, under, BOARDS, slot=1)
         s.slab(poly, lambda x, z, under=under: under(x, z) + BOARDS, SLATES, slot=0)
-        if tops is not None:
-            tops.append((poly, lambda x, z, under=under: under(x, z) + BOARDS + SLATES))
 
     tri = [(z0, y0), (zr, y1), (z1, y0)]
     for xa, xb in ((rx0, rx0 + GABLE), (rx1 - GABLE, rx1)):
@@ -659,13 +651,12 @@ def build_plaster(s, room_id, span, y0, y1, bp, walls, run_cols, grown_of):
     return used
 
 
-def build_lean_to(s, room_id, span, by, walls, discs, tops):
+def build_lean_to(s, room_id, span, by, walls, discs):
     """The lean-to from EAVE_PAST beyond the low run's outer face to the
     curtain: underside through the low run's OUTER top edge (#855: "The roof
     should sit on the wall") and the curtain's top less the hall roof's
-    thickness; slot 0 slates, slot 1 boards. Appends (poly, top(x, z)) to
-    `tops`. Returns (eave z, eave underside, pitch, its box, the low run's
-    box, under(x, z))."""
+    thickness; slot 0 slates, slot 1 boards. Returns (eave z, eave underside,
+    pitch, its box, the low run's box, under(x, z))."""
     x0, x1, z0, z1 = span
     if len(by['z0']) != 1:
         raise ValueError(f"buildings: {room_id}'s lean-to needs one low run on its north edge, found "
@@ -686,7 +677,6 @@ def build_lean_to(s, room_id, span, by, walls, discs, tops):
     poly = masonry.minus_discs((x0, x1, eave, z1), discs)
     s.slab(poly, under, BOARDS, slot=1)
     s.slab(poly, lambda x, z: under(x, z) + BOARDS, SLATES, slot=0)
-    tops.append((poly, lambda x, z: under(x, z) + BOARDS + SLATES))
     return eave, under(0, eave), k, _box(x0, x1, under(0, eave), yb + BOARDS + SLATES, eave, z1), low, under
 
 
@@ -758,63 +748,6 @@ def build_louvre(s, roofs):
         s.slab(poly, lambda x, z, under=under: under(x, z) + BOARDS, SLATES, slot=0)
     ridge = apex + BOARDS + SLATES
     return foot, head, ridge, _box(fx0 - e, fx1 + e, foot, ridge, fz0 - e, fz1 + e)
-
-
-# ------------------------------------------------------- the drum doors --
-def _inside(poly, x, z):
-    """Even-odd point in a plan polygon [(x, z), ...]."""
-    hit = False
-    for i, (ax, az) in enumerate(poly):
-        bx, bz = poly[i - 1]
-        if (az > z) != (bz > z) and x < ax + (bx - ax) * (z - az) / (bz - az):
-            hit = not hit
-    return hit
-
-
-def shut_doors(bp, tops):
-    """#855: (drum, door) for each drum door at DOOR_BASE whose arc, sampled
-    DOOR_OUT outside the ring at masonry.arc's step, has a sample inside one of
-    `tops`' plan polygons where that roof's top stands above the door's base;
-    and the (drum id, door index) of every other walk door, passed over."""
-    shut, passed = [], []
-    for d in bp['drums']:
-        did = d['drum']['id']
-        for door in d['doors']:
-            if abs(door['base'] - DOOR_BASE) > EPS:
-                continue
-            pts = masonry.arc(d['cx'], d['cz'], d['radius'] + DOOR_OUT, door['from'], door['from'] + door['arc'])
-            if any(_inside(poly, x, z) and top(x, z) > door['base'] + 1e-6 for x, z in pts for poly, top in tops):
-                shut.append((d, door))
-            else:
-                passed.append(f"{did}-{door['index']}")
-    return shut, passed
-
-
-def build_door(s, d, door):
-    """A shut leaf of two DOOR_LEAF plates, DOOR_GAP apart at the middle, on
-    the chord between the door's outer-arc ends set DOOR_IN inward, from its
-    base to its top. Raises if the chord's middle is not inside the ring.
-    Returns the leaf's box."""
-    cx, cz, r = d['cx'], d['cz'], d['radius']
-    a = masonry.ring_point(cx, cz, r, door['from'])
-    b = masonry.ring_point(cx, cz, r, door['from'] + door['arc'])
-    mid = ((a[0] + b[0]) / 2, (a[1] + b[1]) / 2)
-    rm = math.hypot(mid[0] - cx, mid[1] - cz)
-    if not d['inner'] < rm < r:
-        raise ValueError(f"buildings: {d['drum']['id']} door {door['index']}'s chord middle at radius {rm:.3f} is not "
-                         f"inside the ring ({d['inner']:g} to {r:g})")
-    ux, uz = (b[0] - a[0]), (b[1] - a[1])
-    n = math.hypot(ux, uz)
-    ux, uz = ux / n, uz / n
-    ix, iz = (cx - mid[0]) / rm, (cz - mid[1]) / rm           # inward, towards the drum's centre
-    c0, c1 = DOOR_IN - DOOR_LEAF / 2, DOOR_IN + DOOR_LEAF / 2
-    xs, zs = [], []
-    for t0, t1 in ((0.0, (n - DOOR_GAP) / 2), ((n + DOOR_GAP) / 2, n)):
-        quad = [(a[0] + ux * t + ix * c, a[1] + uz * t + iz * c) for t, c in ((t0, c0), (t1, c0), (t1, c1), (t0, c1))]
-        s.prism(lambda y, quad=quad: quad, [door['base'], door['top']])
-        xs += [p[0] for p in quad]
-        zs += [p[1] for p in quad]
-    return _box(min(xs), max(xs), door['base'], door['top'], min(zs), max(zs))
 
 
 # ------------------------------------------------------------------- build --
@@ -927,9 +860,8 @@ def build(bp):
         raise ValueError(f"buildings: the trusses and roof pieces roof {sorted(covered)}, not {ROOF_OF}")
     hole = louvre_hole(roofs)
     check_hole(hole, trusses)
-    tops = []      # #855: every #853 roof's (plan polygon, top(x, z)), for the drum doors
     s = masonry.Solid()
-    eave, south, ridge = build_roof(s, bp, rooms[ROOF_OF], roofs, runs, discs, hole, tops)
+    eave, south, ridge = build_roof(s, bp, rooms[ROOF_OF], roofs, runs, discs, hole)
     roof = s.finish(f"ROOF_{ROOF_OF}", col, [materials.library(ROOF_SLATES), materials.library(ROOF_BOARDS)],
                     plan_ids=sorted(p['id'] for p in roofs), smooth_angle=5.0)
     s = masonry.Solid()
@@ -965,13 +897,12 @@ def build(bp):
         poly = masonry.minus_discs((x0, x1, z0, z1), discs)
         s.prism(lambda y, poly=poly: poly, [FLAT_Y[0], FLAT_Y[1] - FLAT_TOP[1]], slot=1)
         s.prism(lambda y, poly=poly: poly, [FLAT_Y[1] - FLAT_TOP[1], FLAT_Y[1]], slot=0)
-        tops.append((poly, lambda x, z: FLAT_Y[1]))
         _meets_props(f"ROOF_{rid}", _box(x0, x1, FLAT_Y[0], FLAT_Y[1], z0, z1), props)
         ob = s.finish(f"ROOF_{rid}", col, [materials.library(FLAT_TOP[0]), materials.library(FLAT_BOARDS)])
         ob['modelOnly'] = MODEL_ONLY
         roof_log.append(f"{ob.name} x {x0:g} to {x1:g}, z {z0:g} to {z1:g}")
     s = masonry.Solid()
-    l_eave, l_y, l_k, l_box, low, l_under = build_lean_to(s, LEAN_TO, *spans[LEAN_TO], level0, discs, tops)
+    l_eave, l_y, l_k, l_box, low, l_under = build_lean_to(s, LEAN_TO, *spans[LEAN_TO], level0, discs)
     _meets_props(f"ROOF_{LEAN_TO}", l_box, props)
     ob = s.finish(f"ROOF_{LEAN_TO}", col, [materials.library(ROOF_SLATES), materials.library(ROOF_BOARDS)],
                   smooth_angle=5.0)
@@ -979,7 +910,7 @@ def build(bp):
     roof_log.append(f"{ob.name} lean-to, pitch {l_k:.3f}, eave z {l_eave:g} underside {l_y:.3f} top "
                     f"{l_y + BOARDS + SLATES:.3f}")
 
-    # #855: the lean-to's wall plate, and the drum walk doors a roof passes
+    # #855: the lean-to's wall plate
     s = masonry.Solid()
     pbox = build_plate(s, spans[LEAN_TO][0], low, l_under)
     _meets_props(f"PLATE_{LEAN_TO}", pbox, props, PLATE_CLEAR)
@@ -987,16 +918,6 @@ def build(bp):
     ob['modelOnly'] = PLATE_ONLY
     roof_log.append(f"{ob.name} x {pbox['min']['x']:g} to {pbox['max']['x']:g}, z {pbox['min']['z']:g} to "
                     f"{pbox['max']['z']:g}, y {pbox['min']['y']:g} to {pbox['max']['y']:.3f}, modelOnly {PLATE_ONLY}")
-    shut, passed = shut_doors(bp, tops)
-    doors = []
-    for d, door in shut:
-        s = masonry.Solid()
-        name = f"DOOR_{d['drum']['id']}-{door['index']}"
-        _meets_props(name, build_door(s, d, door), props, DOOR_CLEAR)
-        ob = s.finish(name, col, [materials.library(DOOR_TIMBER)])
-        ob['modelOnly'] = PLATE_ONLY
-        doors.append(name)
-
     ceiling = {}
     for rid in BEAMS:
         if rid in FLAT_ROOFS:
@@ -1029,15 +950,20 @@ def build(bp):
 
     bpy.context.view_layer.update()
     worst = max(check_box(ob, p, faces) for ob, p, faces in checked)
+    # #922: the hall roof ends at the hall-roof pieces' south face, leaving #527's slot to the curtain
+    roof_south, pieces_south = world_box(roof)['max']['z'], section(roofs)[1]
+    if abs(roof_south - pieces_south) > BOX_TOLERANCE:
+        raise ValueError(f"buildings: {roof.name} reaches z {roof_south:.3f}, past the hall-roof pieces' south face at "
+                         f"z {pieces_south:g}; #922 cuts it back to #527's slot (tolerance {BOX_TOLERANCE} m)")
+    slot = rooms[ROOF_OF]['bounds']['max']['z'] - roof_south
     print(f"buildings: {len(runs)} runs ({windows} #853 windows), {len(decks)} deck, {len(uppers)} upper floors, "
           f"{len(grounds)} ground floors ({n_disc} discs), {len(columns)} columns, {len(trusses)} trusses; "
           f"columns and trusses within {worst:.4f} m of their boxes; {roof.name} over {ROOF_OF} with planIds "
-          f"{list(roof['planIds'])}, eave z {eave:g}, south z {south:g}, ridge top {ridge:.2f}; "
+          f"{list(roof['planIds'])}, eave z {eave:g}, south z {south:g}, ridge top {ridge:.2f}, "
+          f"#922 slot of sky to the curtain {slot:.3f} m; "
           f"{corbels} corbels in {slug}, modelOnly {MODEL_ONLY}")
     print(f"buildings 4b: dressed openings (DRESS {DRESS:g} m): {'; '.join(dress_log)}; {'; '.join(roof_log)}; "
           f"{beams} beams in {len(BEAMS)} BEAMS_ objects; {'; '.join(plaster_log)}; all modelOnly {MODEL_ONLY}")
     print(f"buildings 4b: {louvre_log}")
-    print(f"buildings 4b: #855 drum walk doors shut under a roof ({len(doors)}): {', '.join(doors)}; passed over "
-          f"({len(passed)}): {', '.join(passed)}; modelOnly {PLATE_ONLY}")
     look = materials.LOOK.get(PLASTER_SET, {})
     print(f"buildings 4b: MAT_{PLASTER_SET} LOOK {look}")

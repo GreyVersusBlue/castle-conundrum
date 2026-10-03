@@ -13461,3 +13461,71 @@ under 0.0001). `skin.mjs` records its inputs' sha256 in
 `tools/castle3d/skin-manifest.json` and prints "unchanged", writing nothing,
 when they have not moved, as `blender:render` does (#880 to #884). No Cycles stills
 of the skin: the renderer that judges it is the game's, on a GPU (#53).
+
+## Castle in Blender, the integration row: Devon's lines on the open calls (2026-10-03)
+
+**#969. Devon accepts every recommendation in SPECS.md, "Castle in Blender:
+the integration row," "Open calls."** As he typed: "All as recommended."
+The list is 22 open calls, not the 17 the session notes and the prior
+next-session prompt said; the lead listed all 22 with their recommendations
+before Devon answered, so his line covers all 22: what ships, where the
+game learns the stages, the stages, what a stage admits, interiors, pixel
+textures, the swap, the box rule, the editor, draw ceiling, triangle
+ceiling, texture ceiling, #499, #506, resolution, LOD, instancing, the
+bake, leaves, determinism, the open arch and lane. Each stands as #963 to
+#968 decided it, and the open arch as #922 decided it. No call is
+overturned, so no architect amendment; the amendments to #921 and #611
+written in #964 and #966 stand as written.
+
+PR #106 merged to main as `e832bad`, after a merge of main for #107's
+Huginn reservation (`289049d`), CI green on `289049d` (run 37141666263).
+Increment 1, #922's open gate in the model, is next, on
+`claude/castle3d-2i-1`.
+
+## Castle in Blender, the integration row, increment 1: #922 in the model (2026-10-03)
+
+**#970. Increment 1 built: the outer gate open, #527's roof slot cut, in
+`tools/castle3d/gates.py`, `buildings.py` and `README.md`.** The outer
+gate's two leaves each turn 90 degrees about their hinge (`OUTER_OPEN`),
+swinging toward the barbican to lie along their jamb, as the plan's open
+west gate lies along its own; the portcullis raises to the west gate's
+height, tips at y 2.650. Both keep `modelOnly "#851"`. In `buildings.py`,
+#855's four drum doors are deleted, and `ROOF_great-hall`'s south slope now
+stops at the hall-roof pieces' south edge, z 13.25, leaving #527's 0.750 m
+slot of sky to the curtain.
+
+**Build.** Full `npm run castle3d:build` exit 0, about 87 s, Blender 5.2,
+DEVON-DESKTOP. `check.py` lines 1 to 9 ok, line 6 unchanged at 446 pieces
+named, 5 allowed; no check.py line added, the spec's nine stand. Export
+check ok: `castle.glb` 569,698,032 bytes, sha256
+`151614aa96c60ae3e43752c58b26a915b9809337f8fb1dcd6d86a75ae2d6e705`. Against
+#961's master: 437 meshes (441), 636 nodes (640), 3,637,583 triangles
+(3,637,759), 41,821,174 placed (41,821,350); the whole difference is the
+four deleted doors. Still 130 images, 1,738.8 MB texture memory;
+`markers.json`'s sha256 unchanged.
+
+**Three build-time guard-rails, each broken from green (#34) and restored
+byte-identical.** Roof put back out to the curtain:
+`ValueError: buildings: ROOF_great-hall reaches z 14.000, past the
+hall-roof pieces' south face at z 13.25; #922 cuts it back to #527's slot
+(tolerance 0.01 m)`. `OUTER_OPEN = 0`:
+`ValueError: gates: LEAF_barbican-outer-a is not open (#922): ...`.
+Portcullis lowered:
+`ValueError: gates: PORT_barbican-outer's tips stand at y 0.000, under the
+springline 2; #922 raises it as the west gate's is`.
+
+`npm test`: fifteen of fifteen, 1m46s.
+
+**The still.** `CAM_spawn` looks east, so the still is from its eye turned
+due west, #922's "view west from SPAWN"; the `.blend` is never saved.
+`CASTLE3D_OUT\review\2i-1\spawn-west-2i-1-a.png` and `-b.png`, script
+`still_2i-1.py`, 1920x1080, 128 samples, OptiX RTX 3070 Ti, OIDN, exposure
++4.50. Twice-render inside #898's judge: max 1/255, mean 0.000044 of a
+step, 0.0131% of pixels differ. 40.5 s and 34.8 s, no other Blender
+running. Noted for the look: the open leaves are round-headed and hinge
+mid-passage, so their top edges run up into the vault at any angle, as the
+plan's open west gate's do; the looking checklist asks about it. The still
+awaits Devon's line.
+
+Main CI on `e832bad` (PR #106's merge) green: run 37150024532. Increment 2,
+the skin, outside this repo, is next.
