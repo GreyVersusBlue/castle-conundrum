@@ -316,6 +316,18 @@ const breakPair = (id, fn) => { const bad = clone(chatter); fn(pairAt(bad, id).p
   const said = breakPair('outer-vespers-1', (p) => { p.room = 'nowhere-at-all'; });
   check(names(said, 'chatter pair outer-vespers-1: in no room ("nowhere-at-all")'), 'a pair given a room the castle does not have', said.join('; ') || 'said nothing');
 }
+/* THE NAME RAIL (#928). QuestManager shows the text before a placed line's
+ * first ": " as the name on the band, so that text has to be the start of the
+ * cast name of whoever's turn it is. Unplaced pairs are not played and are not
+ * held to it (#914): the same damage to one of the 17 passes. */
+const reopen = (p) => { p.lines[0] = p.lines[0].replace(/^[^:]*: /, 'Marged: '); };
+{
+  check(validateLore(lore, args).length === 0, 'every line of the ten placed pairs opens with its speaker\'s name: validateLore is clean as shipped', validateLore(lore, args).join('; '));
+  const said = breakPair('outer-vespers-1', reopen);
+  check(names(said, 'chatter pair outer-vespers-1: line 1 does not open with sentry\'s name'), 'a placed pair whose first line opens with the other speaker\'s name', said.join('; ') || 'said nothing');
+  const unplaced = breakPair('outer-prime-2', reopen);
+  check(unplaced.length === 0, 'and the same damage to unplaced outer-prime-2 passes: the rail holds only what is played', unplaced.join('; '));
+}
 
 /* --------------------------------------------- 9: the sermons and the songs ---
  * The two set pieces (#592). What makes a performance harder to get wrong than

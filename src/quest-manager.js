@@ -71,6 +71,15 @@ const label = (id) => (typeof id === 'string' && id ? id[0].toUpperCase() + id.s
  */
 const captionMs = (line) => Math.min(7200, Math.max(2600, 1200 + 45 * String(line ?? '').length));
 
+/**
+ * The dark band before a placed chatter pair that follows another piece or a
+ * bell (#925). Longer than the shortest caption (2600 ms), so a dark band reads
+ * as a break and not as a flicker, and after a bell it is the allowance for
+ * bodies still walking to their stations. A guess held as one constant; the
+ * Great Hall at Vespers, a song and six pairs, is where it is judged.
+ */
+const CHATTER_GAP_MS = 4000;
+
 /** A counter off a save, held to a whole number of favours. */
 const nonNegInt = (v) => (Number.isInteger(v) && v >= 0 ? v : 0);
 
@@ -149,8 +158,13 @@ export class QuestManager {
    *                   the epilogue pane carries. Omitted is a castle that keeps
    *                   the counters and never says them out loud, which is what
    *                   every suite above this row gets.
+   * @param chatter    data/npcs.json's `chatter` (#925): ward, then watch, then
+   *                   the list. Only the pairs with a `room` are played, by
+   *                   room and bell. Omitted is a castle where the twelve say
+   *                   nothing to each other, and a manager that schedules
+   *                   nothing it did not schedule before.
    */
-  constructor({ quest, sideQuests = [], mystery = null, riddle, documents = [], npcs, ui, castle, schedule, restart, saved = null, onChange = null, engine = null, onWatch = null, audio = null, rooms = [], performances = null, reputation = null }) {
+  constructor({ quest, sideQuests = [], mystery = null, riddle, documents = [], npcs, ui, castle, schedule, restart, saved = null, onChange = null, engine = null, onWatch = null, audio = null, rooms = [], performances = null, reputation = null, chatter = null }) {
     this.graph = new QuestGraph(quest, QuestManager.actions);
     this.mystery = mystery;
     this.riddle = riddle;
@@ -190,9 +204,47 @@ export class QuestManager {
         this._performances.get(place).push({ ...e, pool });
       }
     }
+    /* THE TWELVE'S PLACED PAIRS (#925 to #930). data/npcs.json's `chatter`,
+     * keyed the same way and for the same question: the player is standing in
+     * `room` at `watch`, are two of the twelve talking? Only a pair with a
+     * `room` is here (#911); the unplaced 17 are src/lore.js's to validate and
+     * nobody's to play (#914). File order, which is ward key order and then
+     * list order, is the order a room says them in.
+     *
+     * THE NAME ON THE BAND IS THE NAME THE LINE OPENS WITH (#928). Every line
+     * is written "Dafydd: ..." or "Sir Roger: ...", so each is split once, here,
+     * at its first ": ". The cast name beside the whole line would print the
+     * speaker twice. A line with no ": " keeps its text and takes the cast name
+     * of whoever's turn it is; src/lore.js refuses such a line in a placed
+     * pair, so that fallback is for a pool nobody validated.
+     *
+     * DAY ONE ONLY (#930). The key is the watch the pair sits under, one of the
+     * four bells, and it is looked up by the engine's own watch id and never
+     * through `watchLike`: the `-eve` bells and `lauds` match nothing. */
+    this._chatter = new Map();
+    for (const byWatch of Object.values(chatter ?? {})) {
+      for (const [watch, pairs] of Object.entries(byWatch ?? {})) {
+        for (const pair of Array.isArray(pairs) ? pairs : []) {
+          if (!pair?.id || pair.room == null || !Array.isArray(pair.lines)) continue;
+          const names = [], lines = [];
+          pair.lines.forEach((text, i) => {
+            const line = String(text ?? '');
+            const cut = line.indexOf(': ');
+            if (cut >= 0) { names.push(line.slice(0, cut)); lines.push(line.slice(cut + 2)); return; }
+            const who = pair.npcs?.[i % 2];
+            names.push(npcs?.find((n) => n.id === who)?.name ?? who ?? '');
+            lines.push(line);
+          });
+          const place = `${pair.room}/${watch}`;
+          if (!this._chatter.has(place)) this._chatter.set(place, []);
+          this._chatter.get(place).push({ ...pair, watch, names, lines });
+        }
+      }
+    }
     this._heard = new Set();
     this._playing = null; // the piece the band is in the middle of, or null
-    this._room = null;    // where the player is standing, per `handleEnter`
+    this._room = null;    // where the player is standing, per `handleStand`
+    this._gap = null;     // the token of the pause before the next chatter pair, or null (#925)
 
     // The lock the player last pressed E at. `openLock` unlocks that one, so no
     // door id is written down in this file.
@@ -372,8 +424,13 @@ export class QuestManager {
     // The bell is the end of whatever was being said and the start of whatever
     // is said at the next one. Stopping first matters: without it, a sermon
     // begun at Sext would go on being captioned over a Vespers castle.
+    // A pause that was counting towards a pair of the old bell is void (#925).
+    this._gap = null;
     this._stopPerformance();
-    this._maybePerform();
+    // A BELL IS FOLLOWED BY THE GAP, NOT BY A PAIR AT ONCE (#925): the twelve
+    // are still walking to where this bell puts them. A performance due here
+    // goes first (#927), and the pairs queue behind its last line.
+    if (!this._maybePerform()) this._queueChatter();
   }
 
   /**
@@ -561,21 +618,44 @@ export class QuestManager {
    */
   handleEnter(room, level = null) {
     if (!room) return [];
-    // WHERE THE PLAYER IS STANDING IS THIS FILE'S ONLY COPY OF IT, and it is
-    // set before the engine is asked anything, because a castle with no engine
-    // still has rooms and a suite that drives one still walks between them.
+    // The band's half first, before the engine is asked anything, because a
+    // castle with no engine still has rooms and a suite that drives one still
+    // walks between them.
+    this.handleStand(room);
+    if (!this.engine) return [];
+    const effects = this.engine.enter(room, level);
+    this._surface(effects);
+    if (effects.some((e) => e.type === 'clue' || e.type === 'visited')) this._onChange?.(this._snapshot());
+    return effects;
+  }
+
+  /**
+   * The player has come to stand somewhere: a named room or open ground (#926).
+   * This is the band's half of a room change and the whole of what the manager
+   * does about a ward, the barbican or the garden. IT NEVER TOUCHES THE ENGINE:
+   * open ground is not a room to the map or to the save's `visited` set (#588),
+   * so main.js calls this for open ground and `handleEnter`, which calls this
+   * and then asks the engine, for a named room.
+   *
+   * Until #926 only `handleEnter` wrote `_room`, so a player who walked out of
+   * the hall into the outer ward was still, to this file, in the hall, and a
+   * song went on being captioned to him until he crossed another door.
+   */
+  handleStand(room) {
+    if (!room) return;
+    // A pause counting towards a pair of the room just left is void (#929).
+    if (room !== this._room) this._gap = null;
+    // WHERE THE PLAYER IS STANDING IS THIS FILE'S ONLY COPY OF IT.
     this._room = room;
     // You cannot hear the chapel from the hall: a piece in the room the player
     // just left is cut off where it stands. One already running in THIS room is
     // not, because main.js calls this on a change of room and a suite calling it
     // twice for one room should not silence what it started.
     if (this._playing && this._playing.piece.room !== room) this._stopPerformance();
-    this._maybePerform();
-    if (!this.engine) return [];
-    const effects = this.engine.enter(room, level);
-    this._surface(effects);
-    if (effects.some((e) => e.type === 'clue' || e.type === 'visited')) this._onChange?.(this._snapshot());
-    return effects;
+    // The performance first (#927); failing that, the room's first unheard
+    // pair at once, with no pause: a player who walks in should not wait for a
+    // room that is already talking (#925).
+    if (!this._maybePerform() && !this._gap) this._maybeChatter();
   }
 
   /* ----------------------------------------------- the sermon and the song ---
@@ -650,10 +730,14 @@ export class QuestManager {
   _run(piece, nameOf, talk = false) {
     const run = { piece, talk };
     this._playing = run;
+    this._gap = null; // the band is taken, so no pause is counting (#925)
     let i = 0;
     const step = () => {
       if (this._playing !== run) return;
-      if (i >= piece.lines.length) { this._playing = null; this.ui.clearCaption?.(); return; }
+      // THE NATURAL END, AND ONLY THIS BRANCH, IS FOLLOWED BY THE ROOM'S NEXT
+      // PAIR (#925), whatever kind of run it was. A run that was cut never
+      // gets here. With no pair due this schedules nothing.
+      if (i >= piece.lines.length) { this._playing = null; this.ui.clearCaption?.(); this._queueChatter(); return; }
       const name = nameOf(i);
       const line = piece.lines[i++];
       this.ui.caption?.(name, line);
@@ -687,6 +771,57 @@ export class QuestManager {
   /** The player walked out of earshot of `id`: the band goes dark if it is that pair's. */
   stopTalk(id) {
     if (this._playing?.talk && this._playing.piece.id === id) this._stopPerformance();
+  }
+
+  /* ------------------------------------------- two of the twelve, in a room ---
+   * The ten placed pairs of data/npcs.json's `chatter` (#925 to #930). Played
+   * by room and bell alone, as a performance is: no body's position is read
+   * (#928), and src/lore.js has already held both speakers to the schedule
+   * (#912). Three moments start one and there is no per-frame poll: the player
+   * comes to stand in the room (`handleStand`, at once), a bell is applied
+   * (`applyWatch`, after the gap), a run reaches its last line (`_run`, after
+   * the gap).
+   */
+
+  /** The first placed pair of this room at this bell not yet heard, or null. */
+  chatterHere() {
+    if (!this._room) return null;
+    const here = this._chatter.get(`${this._room}/${this.watch}`) ?? [];
+    return here.find((p) => !this._heard.has(p.id)) ?? null;
+  }
+
+  /**
+   * Start the pair due here, unless the band is busy. A chatter run is a
+   * `talk` run to the band, so a performance cuts it (#927, `_maybePerform`)
+   * and `stopTalk` never matches it, because no household pair shares its id.
+   * Heard when it starts, so a pair cut off at a doorway is not said again
+   * (#929).
+   */
+  _maybeChatter() {
+    if (this._playing) return null;
+    const pair = this.chatterHere();
+    if (!pair) return null;
+    this._heard.add(pair.id);
+    this._run(pair, (i) => pair.names[i], true);
+    return pair;
+  }
+
+  /**
+   * `CHATTER_GAP_MS` of dark band, then the pair due here. The wake is a token
+   * the way a run is one: no timer is cancelled, and a wake that finds another
+   * token in `_gap`, or the band busy, does nothing. With no pair due nothing
+   * is scheduled, which is what keeps a manager given no `chatter` on exactly
+   * the clock it had.
+   */
+  _queueChatter() {
+    if (!this.chatterHere()) return;
+    const gap = {};
+    this._gap = gap;
+    this._schedule(() => {
+      if (this._gap !== gap) return;
+      this._gap = null;
+      if (!this._playing) this._maybeChatter();
+    }, CHATTER_GAP_MS);
   }
 
   /** The band goes dark: the player left the room, or the bell moved. */

@@ -5169,6 +5169,8 @@ this row is below.
   (#915), below.
 - **The twelve's 27-pair chatter pool is held to the schedule by increment
   3, below** (#911 to #914): 10 pairs placed, 17 left for Devon.
+- **Playback of the ten placed pairs is increment 4, below** (#925 to
+  #931): specified, not built.
 
 ### Increment 3: the twelve's chatter held to the schedule, and `drill` dropped
 
@@ -5272,12 +5274,12 @@ that reads a data file's text builds both endings.
   the coin is argued and the hall at Vespers already holds six pairs and a
   song.
 - **Playback.** Recommended: not in this increment (#913), because it is a
-  second trigger in `QuestManager` with its own browser beat. What is left
-  for that increment: the twelve's pairs heard by room and bell rather than
-  by #732's 1.5 to 3 m between settled bodies; a performance first, then
-  the room's pairs in file order, one at a time, each once per page and
-  never saved (#39); the beat in `quest.mjs` and the wire in
-  `plan-vs-scene.mjs`, nothing Node can prove.
+  second trigger in `QuestManager` with its own browser beat. It is
+  increment 4, below (#925 to #931): the twelve's pairs heard by room and
+  bell rather than by #732's 1.5 to 3 m between settled bodies; a
+  performance first, then the room's pairs in file order, one at a time,
+  each once per page and never saved (#39); the beat in `quest.mjs` and the
+  wire in `plan-vs-scene.mjs`, nothing Node can prove.
 - **The 17 unplaced pairs.** Devon's call (#914), options: move a station,
   recast and rewrite, retire. Recommended: never move a station; recast and
   rewrite the nine that are a fact's only teller (`outer-prime-3`,
@@ -5296,6 +5298,252 @@ that reads a data file's text builds both endings.
 `drill` refusal in `mystery.mjs`), #13 (the unplaced list is asserted, not
 printed), #34 (the break above), #36 and #39 (no save field, `SAVE_VERSION`
 stays 6), #632 (above), #592 (the messages are its messages).
+
+### Increment 4: the ten placed pairs, heard on the page
+
+**Specified 2026-10-03** (#925 to #931). Not built. Class S from here: every
+open call below carries a recommendation, no save bump, no assertion crosses
+a suite line. The limits hold: no pair is placed, recast, rewritten or
+retired (the 17 of #914 stay Devon's), no schedule station moves, no body is
+added, `MAX_SKINNED_TOTAL` and `SAVE_VERSION` (6) are untouched, nothing
+under `tools/castle3d/` is touched.
+
+**What the code says today, and the one thing it gets wrong.**
+`QuestManager` learns the player's room from `handleEnter` and from nowhere
+else, and `src/main.js` calls it only for a named room: `if (!here.open)
+quest.handleEnter(here.id, here.level)`. `outer-ward`, `inner-ward`,
+`west-barbican` and `garden` are `open` in `nav.roomAt`. So `_room` keeps
+the last named room while the player stands in a ward. Two consequences for
+this increment: `outer-terce-1`, placed in `outer-ward`, could never start;
+and the hall's six pairs would go on being captioned, one after another,
+to a player who walked out into the outer ward. The same hole lets any
+performance run on behind a player whose way out of its room leads onto
+open ground; read from the code, not watched on a page. #926 closes it.
+
+**The behaviour, in one paragraph.** When the player stands in a room at a
+day-one bell, the band says that room's performance first if one is due,
+then the room's placed pairs in file order, one at a time, with
+`CHATTER_GAP_MS` (4000) of dark band before each pair that follows another
+piece or a bell. Each pair is said once per page. Walking out of the room,
+onto open ground included, or a bell, cuts the band dark; the cut pair
+counts as heard, and walking back in starts the next unheard pair at once.
+The caption's name is the name the line itself opens with.
+
+**Scope, by file.**
+
+- **`src/quest-manager.js`.**
+  - The constructor takes `chatter = null` (`data/npcs.json`'s `chatter`,
+    ward then watch then list) and builds `this._chatter`, a `Map` keyed
+    `` `${room}/${watch}` `` like `_performances`, holding only pairs with a
+    `room`, in file order (ward key order, then list order). Each entry is
+    prepared once: `{ ...pair, watch, names, lines }`, where line `i` is
+    split at its first `": "`, `names[i]` is the text before it and
+    `lines[i]` the text after. A line with no `": "` keeps its whole text
+    and takes the cast name of `pair.npcs[i % 2]` (`this.npcs`), or the id
+    if there is none; `test/lore.mjs` is what stops that fallback being
+    reached (#928).
+  - `CHATTER_GAP_MS = 4000`, a named constant beside `captionMs`.
+  - `chatterHere()`: the first pair in `_chatter.get(room/watch)` not in
+    `_heard`, or null. Public, as `performanceHere` is.
+  - `_maybeChatter()`: if `_playing` is set or `chatterHere()` is null, do
+    nothing; otherwise add the id to `_heard` and `_run(pair, (i) =>
+    pair.names[i], true)`. A chatter run is a `talk` run to the band, so
+    `_maybePerform`'s existing "a performance outranks talk" line covers it
+    unchanged, and `stopTalk(id)` never matches it because the ids differ.
+  - `_queueChatter()`: if `chatterHere()` is null, schedule nothing.
+    Otherwise set `this._gap` to a fresh token and `_schedule` a wake at
+    `CHATTER_GAP_MS` that does nothing unless `_gap` is still that token
+    and `_playing` is null, and then calls `_maybeChatter()`. Same pattern
+    as `_run`'s own token: no timer is cancelled. `_gap` is dropped by every
+    `_run`, by every `applyWatch`, and by a `handleStand` into a different
+    room.
+  - `_run`'s natural end (the `i >= piece.lines.length` branch, and only
+    that branch) calls `_queueChatter()` after clearing the band, for every
+    kind of run. **With no `chatter` handed over it schedules nothing**, so
+    every existing `pending()` and `tick()` count in `test/quest.mjs` stands
+    unedited.
+  - `handleStand(room)`, new and public (#926): set `_room`; if `_playing`
+    is in another room, `_stopPerformance()`; then `_maybePerform()`, and if
+    that started nothing and no gap is pending, `_maybeChatter()`. It never
+    touches the engine. `handleEnter` calls `handleStand(room)` in place of
+    its own three lines and then asks the engine as it does today.
+  - `applyWatch`: after `_stopPerformance()`, `_maybePerform()`; if that
+    started nothing, `_queueChatter()`. A bell is followed by the gap, not
+    by a pair at once (#925).
+- **`src/main.js`.** Two edits. The `QuestManager` constructor call gains
+  `chatter: npcData.chatter`. The room-change block becomes: named room,
+  `quest.handleEnter(here.id, here.level)` as today; open ground,
+  `quest.handleStand(here.id)`. The comment above it keeps saying open
+  ground is not handed to the engine (#588), and says why the manager now
+  hears of it.
+- **`src/lore.js`.** `indexChatter` gains one check for a pair with a
+  `room`: for each line `i`, the text before the first `": "` must be
+  non-empty and the cast `name` of `pair.npcs[i % 2]` must start with it.
+  Message, `where` being `chatter pair <id>`: `${where}: line ${i + 1} does
+  not open with ${npc}'s name`. Unplaced pairs are not checked. All ten
+  pass as shipped: measured, 0 mismatches over all 55 lines of the 27.
+- **`data/npcs.json`.** Text of two comments only. `chatterComment`: "The
+  pool is not yet played by the game (#913) and exists for src/lore.js to
+  validate" becomes a sentence saying the ten placed pairs are played by
+  `QuestManager` by room and bell (#925), the name on the band is the name
+  the line opens with (#928), and the unplaced 17 are validated and not
+  played. `performancesComment`: "(the same band the `chatter` pool above
+  is waiting for)" becomes "(the same band the placed `chatter` pairs
+  use)". No pair, no `room`, no line changes.
+- **`test/quest.mjs`**, **`test/lore.mjs`**, **`test/plan-vs-scene.mjs`**:
+  below.
+- **Not touched**: `src/populace.js` and `data/populace.json` (the
+  household's `talk` rail is as it is), `src/ui.js` and `index.html` (the
+  band exists), `src/save.js`, `data/mystery.json`, `data/lore.json`,
+  `test/budget.mjs`, `test/mystery.mjs`, `test/play-castle.mjs`,
+  `dialogue/castle.dlg`, anything under `tools/`.
+
+**Acceptance.** 1 to 11 in `test/quest.mjs`, a new section after "two of
+the household, overheard", on `performRig` with the real `performances` and
+the real `npcData.chatter` (`rig` gains a `chatter` option, default null).
+12 in `test/lore.mjs` section 7. 13 and 14 in `test/plan-vs-scene.mjs`.
+
+1. `great-hall` at Vespers: the band's first line is
+   `song-vespers-hall`'s, under "Dafydd ap Rhys", and no chatter line is
+   shown while the song runs.
+2. After the song's last line the band is dark and exactly one step is
+   pending. That step shows `outer-vespers-1`'s first line under the name
+   "Dafydd", and the line does not begin "Dafydd: ".
+3. Ticked to the end: the captions after the song are the twelve lines of
+   `outer-vespers-1`, `outer-vespers-2`, `outer-vespers-3`,
+   `outer-prime-1`, `outer-terce-4`, `outer-sext-2`, in that order, the
+   band was cleared between each pair and the next, and it ends dark with
+   nothing pending.
+4. Once per page: out of the hall and back in at the same bell says
+   nothing.
+5. Cut by leaving: `kings-hall` at Sext shows `inner-sext-1`'s first line
+   on entry with no gap. `handleStand('inner-ward')` darkens the band and
+   the steps still pending say nothing. Back in, `inner-terce-1` starts at
+   once and `inner-sext-1` is not said again.
+6. The bell: standing in `kings-hall` at Terce the band is dark; the ring
+   to Sext leaves it dark with one step pending, and that step shows
+   `inner-sext-1`. And `chapel` at Prime shows `inner-terce-4`'s first
+   line under "Sir Roger"; a ring darkens it and its second line is never
+   shown.
+7. Against the household: with a chatter pair on the band, `overhear` of a
+   `talk` pair returns null and the band's line does not change. With a
+   `talk` pair handed over in `kings-hall` at Sext on the band, entering
+   that room starts no chatter; when the talk ends one step is pending and
+   it shows `inner-sext-1`.
+8. Open ground: `handleStand('outer-ward')` at Terce shows
+   `outer-terce-1` under "Master Robert", then "Thomas Wykes", and the
+   engine's visited set does not gain `outer-ward`.
+9. Days: on the walking day, `great-hall` at `vespers-eve` shows nothing;
+   on the morning after, `great-hall`, `kings-hall`, `chapel` and
+   `outer-ward` at `lauds` show no chatter line.
+10. The sweep: every room in `mystery.rooms` stood in at each of the four
+    bells and ticked out says exactly the ten placed ids, each once, and
+    no line of the 17.
+11. Every section of `test/quest.mjs` above the new one passes with no
+    edit to its assertions.
+12. `validateLore` is clean as shipped. `outer-vespers-1` with line 1's
+    opening changed to "Marged: " fails with "chatter pair outer-vespers-1:
+    line 1 does not open with sentry's name". The same damage to unplaced
+    `outer-prime-2` passes.
+13. The wire, on the page at Prime: the camera is put on a floor cell of
+    `chapel`, the page's own loop runs two frames, and `#caption` is
+    shown with `#caption-name` "Sir Roger" and `#caption-line` equal to
+    `inner-terce-4`'s first line less its "Sir Roger: ". The band is read
+    dark first, as the talk beat does, so what lights it is the pair.
+14. Then the camera is put on open `inner-ward` ground, two more frames,
+    and `#caption-line` is neither of `inner-terce-4`'s lines. The camera
+    goes back where it was. Parked, not waited on (#724): no timer, no
+    `TOL`, and the shortest caption holds 2600 ms, so line one is still up
+    two frames in.
+
+`npm test` 15 of 15 and `npm run build` ok.
+
+**The #34 break, four of them, each from green and each restored.**
+
+- Delete the `_queueChatter()` call at `_run`'s natural end: 2 and 3 must
+  go red, 1 stays green. Quote both.
+- Delete `chatter: npcData.chatter` from `src/main.js`: 13 must go red
+  while `npm test quest` stays green. That is what makes 13 a seam and not
+  a Node fact (#529).
+- Put `src/main.js`'s room-change block back to `if (!here.open)
+  quest.handleEnter(...)` with no `handleStand`: 14 must go red, 13 stays
+  green.
+- Delete the name comparison in `indexChatter`: 12's second assertion must
+  go red.
+
+If any of the four leaves its suite green the row comes back to
+`architect` (#147).
+
+**Open calls, each with a recommendation.**
+
+- **The trigger.** Recommended: three, all through `handleStand`,
+  `applyWatch` and the end of a run (#925), because those are the only
+  three moments the room, the bell or the band changes and a per-frame
+  poll would be a second clock.
+- **The pause.** Recommended: `CHATTER_GAP_MS = 4000` before a pair that
+  follows a piece or a bell, none on walking in (#925), because 4000 is
+  longer than the shortest caption (2600 ms) so a dark band reads as a
+  break, and a player who walks in should not wait for a room that is
+  already talking. It is a guess held as one constant; the hall at Vespers
+  is where it is judged.
+- **Order against the song.** Recommended: the performance first, then the
+  pairs (#927), because the song is the hall's set piece (#593) and six
+  pairs in front of it are 101 s before a note.
+- **Order against the household's `talk`.** Recommended: neither cuts the
+  other; whoever holds the band finishes, and a performance cuts both
+  (#927), because no room at any bell holds both today and a rule with no
+  case should cost no code.
+- **Must both speakers be seen in the room.** Recommended: no, the room
+  and the bell are enough (#928), because that is the rule a performance
+  already plays by, #912 proves the schedule, and `QuestManager` reads no
+  body's position. The gap after a bell is the allowance for bodies still
+  walking in.
+- **The name on the band.** Recommended: the name the line opens with,
+  split off the line (#928), because the author wrote "Dafydd" and "Sir
+  Roger", and the cast name beside it would print the speaker twice.
+- **Does a cut-off pair count as heard.** Recommended: yes (#929), because
+  that is what a sermon and a `talk` pair already do and a pair that
+  restarts at every doorway is worse than one missed; a reload brings all
+  ten back (#39).
+- **Day two and the walking day.** Recommended: nothing plays (#930),
+  because #911 placed the pairs against day one's schedule only and
+  `lauds` and the four `-eve` bells are other stations.
+- **`outer-terce-1` across the whole outer ward.** Recommended: accept it,
+  heard from anywhere in the ward (#928), because an earshot test is a
+  per-frame poll for one pair of ten; it is on the looking list below, and
+  the fallback is to hand that one pair to `Populace`'s earshot rail in a
+  later increment.
+
+**Looking list, `npm run play` on a GPU (#53), judged by Devon, asserted
+nowhere.**
+
+1. The Great Hall at Vespers from the first note: 37.0 s of song, then six
+   pairs at 77.3 s with six gaps of 4 s, 138.3 s in all. Does it read as a
+   supper or as a wall of captions. `CHATTER_GAP_MS` is the one dial.
+2. Ring Sext and walk to the King's Hall: are Sir Roger and Piers Marrable
+   both in the room when `inner-sext-1` is captioned, or is one still on
+   the road.
+3. `outer-terce-1` read from the east end of the outer ward, with the cart
+   out of sight.
+4. Walking out of the hall door into the outer ward mid-pair: the band
+   goes dark on the threshold and not a room later.
+5. The band over an open dialogue panel and over the journal: legible, and
+   not on top of either.
+
+**Dependencies.** None. Lanes C and D: `data/npcs.json`'s two comments and
+`src/main.js`'s constructor call and room-change block.
+`src/quest-manager.js`, `src/lore.js`, `test/quest.mjs` and `test/lore.mjs`
+are in no other open row's scope. `test/plan-vs-scene.mjs` gains one beat
+beside the talk beat and moves none.
+
+**House rules that bite.** #529: the beat is `quest.mjs`'s, the name rail
+is `lore.mjs`'s, and `plan-vs-scene.mjs` holds only what `src/main.js`
+does, which no Node suite loads. #39: 13 and 14 read the DOM; nothing reads
+the save. #36: no save field, `SAVE_VERSION` stays 6. #34 and #147: the
+four breaks above. #724 and #53: the browser beat parks and counts frames;
+everything timed is on the looking list. #588: open ground still never
+reaches `engine.enter`. #632: every new assertion reads data through
+`JSON.parse`. #13: every new check exits non-zero.
 
 ### Dependencies
 
