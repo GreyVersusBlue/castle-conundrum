@@ -13021,3 +13021,38 @@ wall) in 6889322; chapel to 2a's `candles-chapel` swap to `pricket.glb`; town
 to the quay; spawn and courtyard foreground grass to the terrain change
 under the grass scatter (attributed, not isolated). Twice-render of the
 master: all five inside the judge. Stills await Devon's lines.
+
+## Castle in Blender closed: Devon's lines on 7b and 9 (2026-10-03)
+
+**#962. Devon's verdict on all nine review stills closes rank 2h.** Recorded
+by session CC-12, answering the stills and the nine look calls left open by
+#955 to #961.
+
+On the nine stills (7b's four in `CASTLE3D_OUT\review\increment7b\`, the
+toll-house still, `town-7b.png`, `chapel-7b.png` and `kitchen-crate.png`; and
+9's five in `CASTLE3D_OUT\review\increment9\`, `CAM_spawn`, `CAM_courtyard`,
+`CAM_hall`, `CAM_chapel` and `CAM_town`), Devon, as he typed: "the stills look
+fine." This also accepts #961's finding that all five of increment 9's
+cameras changed against #892's build, with the attributions #961 gives: hall
+to the nightly's plan move of `gothic_statue_1k` (6889322); chapel to 2a's
+`candles-chapel` swap to `pricket.glb`; town to the quay; spawn and
+courtyard to the terrain change under the grass scatter.
+
+On 7b's nine look calls (SPECS.md, "Castle in Blender"'s nine look calls,
+2026-10-03), Devon, as he typed: "all as built." Each stands as the builder
+built it: the water dark green-grey and opaque; the estuary open with no far
+bank; the toll-house roof `roof_slates_02`, flush, no eave; one shut oak
+door on the toll-house; the quay front `medieval_blocks_02` with a
+`stone_pavers` top; the banks the terrain's mud, no `forest_ground_06`
+fetch; the backdrops not drawn; the pack props' wood and iron faces onto the
+PBR kinds, the rest kept on their palette. For call 7, Devon's seven quay
+files: "as built" means the model takes none of them and no row is opened to
+restore any to the game. A later row restoring them is Devon's to open, not
+this one.
+
+Rank 2h is complete with this decision: increments 0 to 9 and 7b shipped
+(#839 to #844 spec; #892 baseline; #893 to #899; #955 to #961), CI green on
+`b608906` (run 37136625060: "build and the fifteen suites: success"). The CI
+run on `35f9eb8`, #104's merge, was cancelled by #105's merge landing
+on top of it, so `b608906`'s run is the only `main` run covering both. Next
+is rank 2i.

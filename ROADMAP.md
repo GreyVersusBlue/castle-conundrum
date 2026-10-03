@@ -5,13 +5,13 @@ what can be done *when*, on *what machine*, and *next to what else*.**
 `SPECS.md` is the spec behind every row and `HISTORY.md` is the only record.
 Nothing here is a locked decision except the lane rule (#600 to #602).
 
-Ten open rows: 2b, 2c, 2d, 2h, 2i, 3, 4, 6, 7, 11, and ~~2a~~ (#907),
-~~2e~~ (#908), ~~3a~~ (#916), ~~3b~~ (#917), ~~13~~ (#909), ~~9~~ (#910), ~~2f~~ and ~~2g~~ shipped (#830 to #838). Rows are named by title as well as by rank
+Nine open rows: 2b, 2c, 2d, 2i, 3, 4, 6, 7, 11, and ~~2a~~ (#907),
+~~2e~~ (#908), ~~3a~~ (#916), ~~3b~~ (#917), ~~13~~ (#909), ~~9~~ (#910), ~~2h~~ (#962), ~~2f~~ and ~~2g~~ shipped (#830 to #838). Rows are named by title as well as by rank
 (#522), because a rank is a priority and gets reused across different rows
 over time, never renumbered mid-table (#619, #491). Devon re-ranked on
 2026-09-25, reopening ranks 1 and 2 for the Blender rows and retiring rank 10
 into 2c and 2d (#801, #802, #807). He added 2h, "Castle in Blender", on
-2026-09-26 (#839).
+2026-09-26 (#839), and it shipped 2026-10-03 (#962).
 
 ---
 
@@ -26,23 +26,22 @@ row's build increment; CI runs only `test/assets.mjs` check 8 against the
 committed output, which needs no Blender (#804, #808). Blender 5.2 LTS is
 pinned; nothing else is accepted (#879, which moved #805's 4.5). It runs headless, `blender -b -P`,
 on Devon's machines only, huginn or Windows, never in a container (#878);
-both machines have 5.2.2 already. Rank 2h
+both machines have 5.2.2 already. Rank 2i
 is "Local: Blender GPU": Devon's Windows machine only (#878). 2c's and 2d's clips
 are also judged under "Local: a GPU" below, once rendered (#53).
 
-**2h is the exception by machine, not by version** (#840, #879): the
-Steam install, `5.2.2 LTS`, found at `CASTLE3D_BLENDER` or the Steam path
+**2i inherits 2h's exception by machine, not by version** (#840, #879, #962):
+the Steam install, `5.2.2 LTS`, found at `CASTLE3D_BLENDER` or the Steam path
 and never at `BLENDER`, which is `tools/blender/`'s (#842). Both pin 5.2 now. Nothing of it is committed but
-scripts, so CI neither runs nor checks it. Its increments 1, 6 and 7 also
-need a network that reaches Poly Haven, once each, into a hash-pinned cache.
+scripts, so CI neither runs nor checks it. 2h's increments 1, 6 and 7 needed
+a network that reaches Poly Haven, once each, into a hash-pinned cache.
 
 | Row | Model | Status |
 | --- | --- | --- |
 | **2b Blender: an interiors kit** | Opus 5 | Specced 2026-09-25 (#813 to #816, #819), nothing built. |
 | **2c Blender: a shared rig with swappable parts** | Opus 5 | Specced 2026-09-25 (#820 to #825), nothing built. Increment 1 is Blender; increment 2 is a container. |
 | **2d Blender: the animals** | Opus 5 | Specced 2026-09-25 (#826 to #829), nothing built. |
-| **2h Castle in Blender** (Blender 5.2) | Opus 5 | Specced 2026-09-26 (#839 to #844), built through increment 8, markers (#893 to #899). Increment 7b (#955 to #960) and increment 9, export (#961), are built. The game loads none of it. Left: Devon's lines on 7b's nine look calls and the stills of 7b and 9, which close the row. |
-| **2i Castle in Blender, the integration row** (Blender 5.2) | Opus 5 | Shape decided 2026-10-02 (#919 to #924): a skin swap, staged curtain wall and towers, then buildings, then Mereford, kit indoors meanwhile, the gate and drum doors opened in the model. Its `SPECS.md` section is not written: 2h increment 9's numbers are in #961, so the spec is unblocked. Nothing built. |
+| **2i Castle in Blender, the integration row** (Blender 5.2) | Opus 5 | Shape decided 2026-10-02 (#919 to #924): a skin swap, staged curtain wall and towers, then buildings, then Mereford, kit indoors meanwhile, the gate and drum doors opened in the model. Its `SPECS.md` section is not written: 2h shipped and closed (#962), its increment 9 numbers are in #961, so the spec is unblocked. Nothing built. |
 
 ### Local: a GPU
 
@@ -109,12 +108,12 @@ lane at a time** (#602). The lanes are named by the file, not by the theme.
 | **D** | `src/main.js`'s player rig and spawn | 6, 11 |
 | **E** | `src/audio.js` and `data/sounds.json` | 7 |
 | **F** | `tools/blender/` and `tools/blender/manifest.json` | 1, 2b, 2c, 2d |
-| **G** | `tools/castle3d/` | 2h, 2i |
+| **G** | `tools/castle3d/` | 2i |
 | **none** | | 3 |
 
 Every Blender row holds lane F, so only one runs at a time, which matches
-the one machine with Blender anyway (#804). Lane G is 2h's and 2i's and
-shares no file with F, so either may run beside a lane F row: two Blenders on
+the one machine with Blender anyway (#804). Lane G is 2i's and
+shares no file with F, so it may run beside a lane F row: two Blenders on
 one machine, which is Devon's call on the day (#842). Both add a line to
 `package.json`'s scripts, a one-line merge. The Blender row in lane B (2b)
 does not run beside rank 4.
@@ -148,8 +147,8 @@ of a row, not the start.
 E)~~, both shipped; 2b on Devon's machine (lanes F and B), plus rank 3
 on the same machine in a worktree, plus rank 6 or rank 11 (not both, lane
 D), plus rank 7 in lane E alongside any of them, plus 2i in lane G on the
-same machine if Devon wants two Blenders at once, now that 2h's increment 9
-has shipped.
+same machine if Devon wants two Blenders at once, now that 2h has shipped
+and closed (#962).
 
 ---
 
@@ -169,9 +168,10 @@ the band began with 2a evidence props, which shipped (#907) and proved
 the encode, manifest and budget paths on real content; then 2b the
 interiors kit, then 2c the shared rig, then 2d the animals; 2e the
 countryside backdrop shipped (#908). The gates inside the band: 2b after 2a, which shipped (#907), so that gate is
-open; 2d after 2c's increment 1. **2h is
-not in that order**: it has no gate, goes through nothing of `tools/blender/`'s, and
-starts whenever Devon's machine is free (#839, #840). The integration row,
+open; 2d after 2c's increment 1. **2h was not in that order**: it had no
+gate, went through nothing of `tools/blender/`'s, and started whenever
+Devon's machine was free (#839, #840); it shipped and closed 2026-10-03
+(#962). The integration row,
 **2i** (#919 to #924), puts its model in the game as a skin swap, last in the
 band, in lane G; its gate, 2h's increment 9, has shipped (#961), so its shape
 is decided and its spec, which waited on that increment's numbers (#923), is
