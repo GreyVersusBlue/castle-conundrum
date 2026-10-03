@@ -30,7 +30,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { validateLore, untoldFacts, factText } from '../src/lore.js';
+import { validateLore, untoldFacts, factText, unplacedChatter } from '../src/lore.js';
 
 /** The one fact in the canon that changes with what the player did (#646). */
 const THE_FACT = 'the-clerk-who-asked';
@@ -245,6 +245,76 @@ console.log('chatter: the existing twelve only, and their own ward');
   const badChatter = clone(chatter);
   badChatter.outer.prime.push({ ...clone(badChatter.outer.prime[0]), id: badChatter.outer.prime[0].id });
   check(names(validateLore(lore, { ...args, chatter: badChatter }), 'id used twice'), 'two chatter pairs sharing one id');
+}
+
+/* ------------------------------------- 7, continued: a placed pair (#911) ---
+ * A pair with a `room` is said in that room at the bell its watch key names,
+ * and both speakers must stand there awake by data/mystery.json's own
+ * schedule (#912, #592's messages). A pair with no `room` is unplaced, and
+ * `unplacedChatter` lists it: asserted exactly, so placing or unplacing a
+ * pair without moving this list is a failure (#13, #914). Everything here is
+ * read through JSON.parse, so no line ending reaches it (#632). */
+console.log('chatter: a placed pair stands where the schedule puts both speakers');
+const pairAt = (c, id) => {
+  for (const [ward, byWatch] of Object.entries(c)) {
+    for (const [watch, pairs] of Object.entries(byWatch)) {
+      const p = pairs.find((x) => x.id === id);
+      if (p) return { p, ward, watch };
+    }
+  }
+  return null;
+};
+{
+  const unplaced = unplacedChatter(chatter);
+  const THE_SEVENTEEN = [
+    'outer-prime-2', 'outer-prime-3', 'outer-terce-2', 'outer-terce-3', 'outer-sext-1', 'outer-cell-1', 'outer-sext-3',
+    'inner-prime-1', 'inner-prime-2', 'inner-prime-3', 'inner-terce-2', 'inner-terce-3',
+    'inner-sext-2', 'inner-sext-3', 'inner-sext-4', 'inner-vespers-1', 'inner-vespers-2',
+  ];
+  check(same([...unplaced].sort(), [...THE_SEVENTEEN].sort()), `unplacedChatter is exactly the seventeen of #914 (${unplaced.length})`, unplaced.join(', '));
+  check(validateLore(lore, args).length === 0, 'and validateLore does not fail on them: an unplaced pair is a report, never a problem');
+  const PLACED = {
+    'outer-terce-1': ['outer-ward', 'outer', 'terce'],
+    'outer-vespers-1': ['great-hall', 'outer', 'vespers'],
+    'outer-vespers-2': ['great-hall', 'outer', 'vespers'],
+    'outer-vespers-3': ['great-hall', 'outer', 'vespers'],
+    'inner-sext-1': ['kings-hall', 'inner', 'sext'],
+    'outer-prime-1': ['great-hall', 'outer', 'vespers'],
+    'outer-terce-4': ['great-hall', 'outer', 'vespers'],
+    'outer-sext-2': ['great-hall', 'outer', 'vespers'],
+    'inner-terce-1': ['kings-hall', 'inner', 'sext'],
+    'inner-terce-4': ['chapel', 'inner', 'prime'],
+  };
+  const withRoom = Object.values(chatter).flatMap((w) => Object.values(w)).flat().filter((p) => p.room != null);
+  check(same(withRoom.map((p) => p.id).sort(), Object.keys(PLACED).sort()), `ten pairs carry a room, and they are #911's ten (${withRoom.length})`, withRoom.map((p) => p.id).join(', '));
+  const wrong = Object.entries(PLACED).filter(([id, [room, ward, watch]]) => {
+    const at = pairAt(chatter, id);
+    return !at || at.p.room !== room || at.ward !== ward || at.watch !== watch;
+  }).map(([id]) => id);
+  check(wrong.length === 0, 'each in #911\'s room, under its ward and the watch key it is said at', wrong.join(', '));
+}
+const breakPair = (id, fn) => { const bad = clone(chatter); fn(pairAt(bad, id).p, bad); return validateLore(lore, { ...args, chatter: bad }); };
+{
+  const said = breakPair('outer-terce-1', (p) => { p.room = 'great-hall'; });
+  check(names(said, 'chatter pair outer-terce-1: clerk stands in outer-ward at terce, not in great-hall'), 'a placed pair in a room its speaker is not in at that bell', said.join('; ') || 'said nothing');
+}
+{
+  const said = breakPair('inner-prime-1', (p) => { p.room = 'porter-lodge'; });
+  check(names(said, 'chatter pair inner-prime-1: steward stands in kings-hall at prime, not in porter-lodge'), 'an unplaced pair given a room one speaker is not in', said.join('; ') || 'said nothing');
+}
+{
+  const said = breakPair('outer-prime-3', (p) => { p.room = 'guardroom'; });
+  check(names(said, 'chatter pair outer-prime-3: sentry is asleep at prime'), 'a pair whose speaker is asleep in that room at that bell', said.join('; ') || 'said nothing');
+}
+{
+  const said = breakPair('outer-prime-2', (p, bad) => {
+    bad.outer.prime.push({ id: 'merchant-at-prime', npcs: ['merchant', 'clerk'], room: 'outer-ward', lines: ['Thomas Wykes: Early.', 'Master Robert: Not early enough.'] });
+  });
+  check(names(said, 'chatter pair merchant-at-prime: merchant is not in the castle at prime'), 'a pair naming somebody the schedule has not let in yet', said.join('; ') || 'said nothing');
+}
+{
+  const said = breakPair('outer-vespers-1', (p) => { p.room = 'nowhere-at-all'; });
+  check(names(said, 'chatter pair outer-vespers-1: in no room ("nowhere-at-all")'), 'a pair given a room the castle does not have', said.join('; ') || 'said nothing');
 }
 
 /* --------------------------------------------- 9: the sermons and the songs ---

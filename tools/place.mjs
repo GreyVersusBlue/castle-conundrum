@@ -173,24 +173,46 @@ export function eolOf(source) {
  * nesting, numbers as they were given, and an array of numbers broken one per
  * line the way every `tile` and `size` in the file already is.
  *
+ * NESTED VALUES ARE WRITTEN THE WAY THE FILE ALREADY WRITES THEM, which is
+ * every level broken over its own lines at two more spaces. Three arrays were
+ * placeable for as long as this was flat, and none of their rows carries more
+ * than an array of numbers. `walls` and `rooms` carry two shapes they do not:
+ * a room's `tiles: { min, max }`, an object of two arrays, and a run's
+ * `doorways`, an array of objects. Written on one line, every move of a run
+ * would rewrite its `doorways` block into a shape no other row in the file
+ * has, which is #584's churn spreading past the field that was edited. Written
+ * this way, rewriting any `walls` or `rooms` row in the file with its own
+ * value is a no-op, and test/tools.mjs holds every one of them to that.
+ *
+ * Every newline at every depth is `eol`. A nested level is a new place for a
+ * hardcoded `\n` to hide, and on a CRLF file that is a byte short per nested
+ * line (#631, #632).
+ *
  * `eol` defaults to `\n` rather than reading it off anything, because a row on
  * its own has no file to read it off. `insertRow` is the caller that has one
  * and it always passes it.
  */
 export function formatRow(row, indent = 4, eol = '\n') {
+  return `${' '.repeat(indent)}${formatValue(row, indent, eol)}`;
+}
+
+/** One value whose first character sits at column `indent`, in the style `formatRow` describes. Keys holding `undefined` are left out, as `JSON.stringify` leaves them out. */
+function formatValue(v, indent, eol) {
   const pad = ' '.repeat(indent);
   const inner = ' '.repeat(indent + 2);
-  const blocks = [];
-  for (const [k, v] of Object.entries(row)) {
-    if (v === undefined) continue;
-    if (Array.isArray(v)) {
-      const items = v.map((x) => `${inner}  ${JSON.stringify(x)}`).join(`,${eol}`);
-      blocks.push(`${inner}${JSON.stringify(k)}: [${eol}${items}${eol}${inner}]`);
-    } else {
-      blocks.push(`${inner}${JSON.stringify(k)}: ${JSON.stringify(v)}`);
-    }
+  if (Array.isArray(v)) {
+    if (!v.length) return '[]';
+    const items = v.map((x) => `${inner}${formatValue(x, indent + 2, eol)}`);
+    return `[${eol}${items.join(`,${eol}`)}${eol}${pad}]`;
   }
-  return `${pad}{${eol}${blocks.join(`,${eol}`)}${eol}${pad}}`;
+  if (v && typeof v === 'object') {
+    const blocks = Object.entries(v)
+      .filter(([, x]) => x !== undefined)
+      .map(([k, x]) => `${inner}${JSON.stringify(k)}: ${formatValue(x, indent + 2, eol)}`);
+    if (!blocks.length) return '{}';
+    return `{${eol}${blocks.join(`,${eol}`)}${eol}${pad}}`;
+  }
+  return JSON.stringify(v);
 }
 
 /**
@@ -281,7 +303,17 @@ export function noteComment(comment, note) {
   return kept ? `${kept.replace(/\.?$/, '.')} ${note}` : note;
 }
 
-/** The arrays a placement may be written into, and the keys each row may carry. */
+/**
+ * The arrays a placement may be written into, and the keys each row may carry.
+ *
+ * `walls` and `rooms` are the floor plan (SPECS.md "The floor plan you can
+ * see", increment 2): the plan sheet in src/edit-layout.js drags a room's
+ * rectangle or a run's end and posts the row's whole record back through the
+ * same `move` the prop editor uses. Their lists are every key the rows in the
+ * file already carry and nothing else, which test/tools.mjs holds both ways.
+ * `drums` and `gates` are not here and are not meant to be yet (SPECS.md, open
+ * call 7).
+ */
 export const PLACEABLE = {
   interiorProps: ['model', 'tile', 'rotationY', 'yOffset', 'base', 'noCollide', 'id', 'evidence', 'comment'],
   builtProps: ['id', 'evidence', 'read', 'material', 'tile', 'base', 'size', 'comment'],
@@ -290,12 +322,83 @@ export const PLACEABLE = {
   // ground and a `base` written beside it would be read by nobody. It was in
   // this list for an hour and test/tools.mjs's own rail caught it (#34).
   braziers: ['tile', 'comment'],
+  walls: ['id', 'from', 'to', 'material', 'height', 'thickness', 'level', 'curtain', 'axis', 'base', 'walk',
+    'repeatMetres', 'interior', 'doorways', 'comment', 'doorwaysComment', 'heightComment', 'materialComment'],
+  rooms: ['id', 'level', 'ward', 'name', 'tiles', 'drum', 'bounds', 'floor', 'tint', 'comment'],
 };
+
+/** The keys one `doorways` entry may carry: where along the run, how wide, how tall, and how far up the run it starts. */
+export const DOORWAY_KEYS = ['at', 'width', 'height', 'base'];
+
+const pair = (v) => Array.isArray(v) && v.length === 2 && v.every((n) => Number.isFinite(n));
+const positive = (v) => Number.isFinite(v) && v > 0;
+/** `{ min: [x, z], max: [x, z] }` with min no greater than max on either axis: a room's `tiles` or its `bounds`. */
+const rectangle = (v) => !!v && typeof v === 'object' && !Array.isArray(v)
+  && Object.keys(v).every((k) => k === 'min' || k === 'max')
+  && pair(v.min) && pair(v.max) && v.min[0] <= v.max[0] && v.min[1] <= v.max[1];
+
+/**
+ * The shape one row of each array must have, beyond its key list. A prop is a
+ * tile; a run is two tiles and a stone; a room is a name over exactly one
+ * extent. Every rule names the field it is about, so the dev server's 400 says
+ * what to fix rather than that something is wrong.
+ */
+const SHAPES = {
+  interiorProps(row) {
+    needTile(row);
+    if (typeof row.model !== 'string') throw new Error('place: an interiorProps row needs a `model`');
+  },
+  builtProps(row) {
+    needTile(row);
+    if (typeof row.id !== 'string' || typeof row.material !== 'string') throw new Error('place: a builtProps row needs an `id` and a `material`');
+  },
+  braziers(row) { needTile(row); },
+  walls(row) {
+    if (typeof row.id !== 'string' || !row.id) throw new Error('place: a walls row needs an `id`');
+    if (!pair(row.from) || !pair(row.to)) throw new Error('place: a walls row needs `from` and `to`, each two finite numbers');
+    if (typeof row.material !== 'string') throw new Error('place: a walls row needs a `material`');
+    if (!positive(row.height) || !positive(row.thickness)) throw new Error('place: a walls row needs a positive `height` and `thickness`');
+    if ('axis' in row && row.axis !== 'x' && row.axis !== 'z') throw new Error('place: a run\'s `axis` is "x" or "z"');
+    if ('doorways' in row) {
+      if (!Array.isArray(row.doorways)) throw new Error('place: `doorways` must be an array');
+      row.doorways.forEach((d, i) => {
+        if (!d || typeof d !== 'object' || Array.isArray(d)) throw new Error(`place: doorways[${i}] must be an object`);
+        const extra = Object.keys(d).filter((k) => !DOORWAY_KEYS.includes(k));
+        if (extra.length) throw new Error(`place: doorways[${i}] carries no ${extra.join(', ')} (allowed: ${DOORWAY_KEYS.join(', ')})`);
+        if (!Number.isFinite(d.at)) throw new Error(`place: doorways[${i}].at must be a number`);
+        if (!positive(d.width) || !positive(d.height)) throw new Error(`place: doorways[${i}] needs a positive \`width\` and \`height\``);
+        if ('base' in d && !Number.isFinite(d.base)) throw new Error(`place: doorways[${i}].base must be a number`);
+      });
+    }
+  },
+  rooms(row) {
+    if (typeof row.id !== 'string' || !row.id) throw new Error('place: a rooms row needs an `id`');
+    if (!Number.isInteger(row.level)) throw new Error('place: a rooms row needs a whole-number `level`');
+    if (typeof row.ward !== 'string') throw new Error('place: a rooms row needs a `ward`');
+    // A room is a name over ONE extent (castle-plan.js's `rooms` pass): a
+    // rectangle of tiles, a drum's interior, or a rectangle in metres.
+    const by = ['tiles', 'drum', 'bounds'].filter((k) => k in row);
+    if (by.length !== 1) throw new Error(`place: a rooms row is by exactly one of tiles, drum, bounds, and this one has ${by.length ? by.join(' and ') : 'none'}`);
+    if ('tiles' in row && !rectangle(row.tiles)) throw new Error('place: `tiles` must be { min: [x, z], max: [x, z] } with min no greater than max');
+    if ('bounds' in row && !rectangle(row.bounds)) throw new Error('place: `bounds` must be { min: [x, z], max: [x, z] } with min no greater than max');
+    if ('drum' in row && typeof row.drum !== 'string') throw new Error('place: `drum` names a drum by its id');
+  },
+};
+
+function needTile(row) {
+  if (!pair(row.tile)) throw new Error('place: `tile` must be two finite numbers');
+}
 
 /**
  * A row off the wire, checked. Unknown keys are refused rather than dropped:
  * a typo that silently vanished would be written into the file as a prop with
  * no model and found by a suite two rows later.
+ *
+ * The rules are per array (`SHAPES` above). They were one shape for as long as
+ * every placeable row was a tile, and a run is not: it has a `from` and a `to`.
+ * These are the shape of a row and nothing more. Whether the castle still
+ * builds is `makePlan`'s question, which the floor plan asks in the page before
+ * it posts (#749), and whether it still works is test/layout.mjs's.
  */
 export function checkRow(key, row) {
   const allowed = PLACEABLE[key];
@@ -303,10 +406,7 @@ export function checkRow(key, row) {
   if (!row || typeof row !== 'object' || Array.isArray(row)) throw new Error('place: the row must be an object');
   const extra = Object.keys(row).filter((k) => !allowed.includes(k));
   if (extra.length) throw new Error(`place: ${key} rows carry no ${extra.join(', ')} (allowed: ${allowed.join(', ')})`);
-  const tile = row.tile;
-  if (!Array.isArray(tile) || tile.length !== 2 || !tile.every((n) => Number.isFinite(n))) throw new Error('place: `tile` must be two finite numbers');
   if ('base' in row && !Number.isFinite(row.base)) throw new Error('place: `base` must be a number');
-  if (key === 'interiorProps' && typeof row.model !== 'string') throw new Error('place: an interiorProps row needs a `model`');
-  if (key === 'builtProps' && (typeof row.id !== 'string' || typeof row.material !== 'string')) throw new Error('place: a builtProps row needs an `id` and a `material`');
+  SHAPES[key](row);
   return row;
 }

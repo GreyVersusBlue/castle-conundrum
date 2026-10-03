@@ -721,13 +721,13 @@ try {
   assert(sampling.allAtCap, 'every texture is at the GPU anisotropy ceiling',
     `cap ${sampling.cap}, worst ${sampling.worstAniso}, ${sampling.total} textures`);
 
-  // --- The interior hall walls are the same height as every outer wall, and the
-  // hall columns reach the ceiling. normalizeToTile used to scale wall-half.glb
-  // off its own X size (0.5, the one dimension that's deliberately NOT 1 unit for
-  // a half-width piece), which doubled its height and depth to 8m instead of 4m.
-  // castle-builder now scales off Z, the dimension that actually is 1 unit on
-  // every piece in the kit. Separately, column.glb had no scale branch at all and
-  // sat at its native 1m/20cm-thick size, invisible in every screenshot.
+  // --- The hall columns reach the ceiling. column.glb had no scale branch at
+  // all and sat at its native 1m/20cm-thick size, invisible in every screenshot.
+  // This block used to open with a wall half as well: `wall_` and `wall-half`
+  // meshes held to 4 m. It matched zero meshes once the walls became the
+  // castle's own pixel-material boxes (#742) and printed "outer m, hall m" at
+  // every GPU sitting (#890). It is deleted, not renamed: test/plan-vs-scene.mjs
+  // holds every wall's live box to the plan at 0.01 m (#500), which is the fact.
   const geometry = await page.evaluate(async () => {
     const THREE = window.__THREE;   // stashed by attachSceneProbe
     const s = window.__scene;
@@ -740,18 +740,10 @@ try {
       });
       return out;
     };
-    const outerWalls = heights(/^wall_/);
-    const hallWalls = heights(/^wall-half/);
-    const columns = heights(/^column/);
-    return { outerWalls, hallWalls, columns };
+    return { columns: heights(/^column/) };
   });
-  const wallHeightsMatch = geometry.outerWalls.length > 0 && geometry.hallWalls.length > 0
-    && geometry.outerWalls.every((h) => Math.abs(h - 4) < 0.05)
-    && geometry.hallWalls.every((h) => Math.abs(h - 4) < 0.05);
-  assert(wallHeightsMatch, 'interior hall walls are the same height as the outer walls',
-    `outer ${[...new Set(geometry.outerWalls)]}m, hall ${[...new Set(geometry.hallWalls)]}m`);
-  // Each column mesh has multiple material slots (separate submeshes per name,
-  // like the wall pieces above), so this counts distinct heights, not meshes.
+  // Each column mesh has multiple material slots (a separate submesh per
+  // material), so this counts distinct heights, not meshes.
   assert(geometry.columns.length > 0 && geometry.columns.every((h) => Math.abs(h - 4) < 0.05),
     'hall columns reach the same height as the walls, not a 1m stub',
     `${[...new Set(geometry.columns)]}m across ${geometry.columns.length} submeshes`);
@@ -833,7 +825,13 @@ try {
       let skinned = false;
       c.traverse((o) => { if (o.isSkinnedMesh) skinned = true; });
       if (skinned) continue;
-      stoneBoxes.push({ box: b, name: c.name || c.type });
+      // The planId first (#500): every glTF prop's root is named "Scene", so
+      // "IN Scene" named nothing, and three sittings read it without learning
+      // which root it was (#890). The hall's was gothic_statue, since moved off
+      // the brazier in data/scene-config.json. The gate pair read "IN Scene" on
+      // a GPU and reads clear on a headless page at Prime; this is what will
+      // say which root that is if it reads so again.
+      stoneBoxes.push({ box: b, name: c.userData?.planId || c.name || c.type });
     }
     const braziers = [];
     for (const c of s.children) {
@@ -1463,6 +1461,33 @@ try {
   assert(pouchGone, 'and it leaves the world, because take:true means the player has it');
   await snap('the-pouch-taken');
 
+  /* THE SAME WALK, BEFORE THE JOURNAL IS EVER OPENED (#890). The beat below
+   * asserts that W moves the player after J and J again, and it used to hold
+   * that walk to a flat `> 1.0 m`. Ten GPU readings ran 0.51 to 1.30 m, because
+   * how far 700 ms of W carries a body depends on what the chapel puts in front
+   * of it that run. So the walk is measured here first, with no journal in its
+   * past, and the one after the journal is held to a share of this one.
+   *
+   * S for the same 700 ms walks it back, so the second walk starts from about
+   * where this one did and meets the same stonework. "About": if W was stopped
+   * short by a wall, S overshoots, and the offset is printed with the result so
+   * a reading can be judged. This is after `the-pouch-taken` is shot and takes
+   * no clue, so no earlier beat and no journal row can see it. */
+  const walk700 = async (key = 'KeyW') => {
+    const from = await playerAt();
+    await page.keyboard.down(key);
+    await wait(700);
+    await page.keyboard.up(key);
+    await wait(150);
+    const to = await playerAt();
+    return { from, to, moved: Math.hypot(to.x - from.x, to.z - from.z) };
+  };
+  const baselineWalk = await walk700();
+  await walk700('KeyS');
+  // The floor under the ratio: 0 m against 0 m must not pass as "the same".
+  assert(baselineWalk.moved > 0.25, 'W moves the player before the journal is opened, the walk the next one is held to',
+    `${baselineWalk.moved.toFixed(2)} m in 700 ms`);
+
   // The journal, on J.
   await page.keyboard.press('KeyJ');
   await wait(300);
@@ -1489,20 +1514,22 @@ try {
    * THE WALK UNDER IT IS THE HALF A HEADLESS PAGE CANNOT ANSWER (#53).
    * test/overlays.mjs asserts who holds the pointer, which is the cause and is
    * the same in a software rasteriser; this asserts that the body then moves,
-   * which is real-time and is not. */
+   * which is real-time and is not.
+   *
+   * HELD TO HALF OF THE WALK MEASURED BEFORE THE JOURNAL, NOT TO A METRE
+   * (#659, #890). The bug read 0.00 m, so a half catches it and leaves room for
+   * the run-to-run spread a real compositor has. */
   const afterJournal = await page.evaluate(() => !!document.pointerLockElement);
   assert(afterJournal, 'shutting the journal gives the player back the castle',
     afterJournal ? '' : 'pointer lock is gone, no resume panel is offered, and W does nothing — the player can only reload');
   {
-    const before = await playerAt();
-    await page.keyboard.down('KeyW');
-    await wait(700);
-    await page.keyboard.up('KeyW');
-    await wait(150);
-    const after = await playerAt();
-    const moved = Math.hypot(after.x - before.x, after.z - before.z);
-    assert(moved > 1.0, 'and W moves the player again, from the same standing start',
-      `${moved.toFixed(2)} m in 700 ms`);
+    const again = await walk700();
+    const startOff = Math.hypot(again.from.x - baselineWalk.from.x, again.from.z - baselineWalk.from.z);
+    const ratio = baselineWalk.moved > 0 ? again.moved / baselineWalk.moved : 0;
+    assert(again.moved >= 0.5 * baselineWalk.moved && baselineWalk.moved > 0.25,
+      'and W moves the player again, from the same standing start',
+      `${again.moved.toFixed(2)} m in 700 ms against ${baselineWalk.moved.toFixed(2)} m before the journal, `
+      + `ratio ${ratio.toFixed(2)}, floor 0.50; the two starts are ${startOff.toFixed(2)} m apart`);
   }
 
   // The rest of Prime.

@@ -65,6 +65,12 @@ const NEAR = 6;
 const ARMED_FOR = 4000;
 /** An interiorProps model that names its own file, and so must name its own id (#832). */
 const ownsId = (model) => typeof model === 'string' && model.startsWith('assets/');
+/**
+ * The arrays THIS panel edits. PLACEABLE also carries `walls` and `rooms` since
+ * the floor plan's increment 2, and a run or a room has no `tile` to be near
+ * the player by: those two are src/edit-layout.js's, dragged on the sheet.
+ */
+const PROP_ARRAYS = ['interiorProps', 'builtProps', 'braziers'].filter((k) => k in PLACEABLE);
 
 /**
  * @param scene      the THREE.Scene, for the marker
@@ -120,7 +126,7 @@ export function mountEditor({ scene, THREE, camera, nav, config, eyeHeight, rend
   /* The rows as they are on disk. Seeded from the config main.js already
    * parsed and replaced wholesale by every write's answer, so an index the
    * panel sends is an index the file has. */
-  const rows = Object.fromEntries(Object.keys(PLACEABLE).map((k) => [k, (config[k] || []).slice()]));
+  const rows = Object.fromEntries(PROP_ARRAYS.map((k) => [k, (config[k] || []).slice()]));
   let armed = 0;
 
   /** What a row is called in the list: enough to tell two stools in one room apart, which is the tile. */
@@ -260,7 +266,7 @@ export function mountEditor({ scene, THREE, camera, nav, config, eyeHeight, rend
       });
       const out = await res.json();
       if (!res.ok || !out.ok) { say(out.error || `the dev server said ${res.status}`, false); return null; }
-      rows[out.key] = out.rows;
+      if (out.key in rows) rows[out.key] = out.rows;
       return out;
     } catch (e) {
       say(String(e && e.message ? e.message : e), false);
@@ -335,15 +341,20 @@ export function mountEditor({ scene, THREE, camera, nav, config, eyeHeight, rend
     const fn = KEYS[e.code];
     if (!fn || e.repeat) return;
     if (document.activeElement && /^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement.tagName)) return;
+    // The floor plan has its own Delete, for an opening (increment 3), and a
+    // prop placed at the feet of a player who is looking at a map is a prop
+    // nobody meant to place. While it is open these four are its, not ours.
+    if (layout?.isOpen()) return;
     e.stopPropagation();
     fn();
   }, true);
 
   syncList(here(), true);
 
-  // The floor plan rides along. It is read-only, it owns its own panel and its
-  // own keys, and the only thing it gives back to main.js is the camera to
-  // render while it is open.
+  // The floor plan rides along. It owns its own panel, its own keys and its
+  // own drags, posts `walls` and `rooms` rows to the same /__place this panel
+  // uses, and the only thing it gives back to main.js is the camera to render
+  // while it is open.
   const layout = renderer && plan
     ? mountLayoutView({ scene, THREE, renderer, plan, castle, config, mystery })
     : null;

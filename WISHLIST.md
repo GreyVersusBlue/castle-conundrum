@@ -34,18 +34,18 @@ his answers.
   5.2 m/s the player runs. A circuit of the walls is a minute.
 - **Twelve people, four bells, one crime.** Every NPC has one station per
   watch and walks between them on the same grid the player stands on
-  (`src/stations.js`). Nobody does anything at a station but stand there.
+  (`src/stations.js`). The twelve stand at a station; the populace (`data/populace.json`) has routines and activity clips.
 - **Everything is data, and every data file has a validator** that runs in
   Node before the page loads: `mystery.json` for clues, schedule and presses,
   `npcs.json` for bodies and lines, `quest.json` for the frame, `sounds.json`
   for the two sounds. This is the pattern every row below extends.
-- **Three bodies and 51 MB of assets, against a 200 MB ceiling** (#499). The
-  kit has no woman, no child, no animal. Every asset that lands goes through
+- **Eight body files and 28 MB of assets, against a 200 MB ceiling** (#499). The
+  bodies now include a woman, a child, a hound, a hen and a cow. Every asset that lands goes through
   `tools/encode-assets.mjs` first (#506).
 - **Two sounds, both synthesised.** No audio file exists in the repo yet;
   #519's synthesis-only half was reversed on 2026-09-16 (#548) and recorded
   CC0 audio is admitted, through the encode pipeline like any asset.
-- **Nothing here has been seen on a GPU since Phase 5** (#53). Every row
+- **Little here has been seen on a GPU since Phase 5** (#53); rank 3's sittings are the exception. Every row
   below that is about how something looks or feels is gated on `npm run play`
   on a real machine, and most of them are.
 
@@ -235,6 +235,11 @@ the row's next step is the map and the town rather than more floors.
 **The map shipped on 2026-09-17** (#588 to #591): the journal's third tab,
 the plan's 40 rooms drawn a storey at a time and filled in as they are stood
 in. What is left of the row is the town.
+
+**The row closed on 2026-10-02 (#910).** The town and the quay and river
+shipped (#725 to #728, #870 to #872). Devon dropped the rock, the spur over an
+estuary with a postern and a water gate: it would make the outside enterable
+(#703) or move the river, and the outer ward is at 1181 of 1200 meshes.
 
 ### 6. Bodies: the thing every row above waits on
 

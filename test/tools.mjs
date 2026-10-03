@@ -24,7 +24,7 @@
 // of what is on disk and both are asserted, so neither machine can be the only
 // one that runs the half that breaks.
 //
-// Five parts:
+// Six parts:
 //   1. the splice: it parses, it adds exactly one element, and cutting the new
 //      row back out gives back the original file byte for byte
 //   2. the move and the delete: a row is found by walking the text rather than
@@ -36,6 +36,15 @@
 //      top-down review view draws, against a plan built out of the real
 //      scene-config.json. Its one rail is #500 — every box it hands back is the
 //      object `makePlan` computed and not a second derivation of the same room.
+//   6. tools/layout-edit.mjs: what a drag on the floor plan does to one `walls`
+//      or `rooms` row, and that the row it hands back goes through the same
+//      `move` splice with every byte outside it unchanged, on both endings.
+//
+// Parts 1 to 4 run over all five placeable arrays. `walls` and `rooms` joined
+// the three prop arrays for the floor plan's increment 2 (SPECS.md "The floor
+// plan you can see"), and they are the two whose rows nest: a room's `tiles` is
+// an object of two arrays and a run's `doorways` is an array of objects, which
+// is a new place for a hardcoded `\n` to hide.
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -45,6 +54,9 @@ import {
   formatRow, checkRow, eolOf, PLACEABLE,
 } from '../tools/place.mjs';
 import { planSheet, storeyOf, storeySpan } from '../tools/plan-sheet.mjs';
+import {
+  dragRoom, dragRunEnd, clampOpening, moveOpening, widenOpening, cutOpening, withRow, snapTo, ALL_EDGES,
+} from '../tools/layout-edit.mjs';
 import { makePlan } from '../src/castle-plan.js';
 import { partsOf } from './gltf.mjs';
 
@@ -72,6 +84,12 @@ console.log('the splice, against the real scene-config.json');
     interiorProps: { model: 'wooden_stool_02_1k.gltf/wooden_stool_02_1k.gltf', tile: [-5.1, -4.1], rotationY: 45, comment: 'a test row' },
     builtProps: { id: 'a-test-slab', material: 'oak', tile: [1.5, -2.25], base: 0.6, size: [0.4, 0.3, 0.4], comment: 'a test row' },
     braziers: { tile: [0.25, 0.5], base: 0, comment: 'a test row' },
+    // The two that nest, each carrying the nested shape it has to survive.
+    walls: {
+      id: 'a-test-run', from: [1, 2], to: [3, 2], material: 'castle_wall_slates', height: 3, thickness: 0.5,
+      doorways: [{ at: 2, width: 1.2, height: 2.5 }, { at: 2.5, width: 1, height: 2, base: 4 }], comment: 'a test row',
+    },
+    rooms: { id: 'a-test-room', level: 0, ward: 'outer', tiles: { min: [1, 2], max: [3, 4] }, comment: 'a test row' },
   };
   const before = JSON.parse(raw);
   for (const [ending, source] of ENDINGS) {
@@ -163,6 +181,32 @@ console.log('the move and the delete');
 {
   const before = JSON.parse(raw);
   const keys = Object.keys(PLACEABLE);
+  /* What a move, a fresh row and a twin are for each array. A prop moves by
+   * its `tile`; a run by its two ends; a room by its extent. The headline below
+   * is the same for all five, and the fixtures are only what each one's row
+   * has to carry to be that array's row at all. */
+  const FIX = {
+    tile: {
+      move: (r) => ({ ...r, tile: [12.5, -7.25] }),
+      edit: (r) => ({ ...r, tile: [9, 9] }),
+      where: (r) => JSON.stringify(r.tile),
+    },
+    walls: {
+      fresh: { id: 'a-test-run', from: [1, 2], to: [2, 2], material: 'castle_wall_slates', height: 3, thickness: 0.5, doorways: [{ at: 1.5, width: 1, height: 2 }] },
+      twin: { id: 'a-twin', from: [3, 3], to: [4, 3], material: 'castle_wall_slates', height: 3, thickness: 0.5, doorways: [{ at: 3.5, width: 1, height: 2 }] },
+      move: (r) => ({ ...r, from: [12.5, -7.25], to: [14.5, -7.25] }),
+      edit: (r) => ({ ...r, from: [9, 9], to: [10, 9] }),
+      where: (r) => JSON.stringify([r.from, r.to]),
+    },
+    rooms: {
+      fresh: { id: 'a-test-room', level: 0, ward: 'outer', tiles: { min: [1, 2], max: [1, 2] } },
+      twin: { id: 'a-twin', level: 0, ward: 'outer', tiles: { min: [3, 3], max: [3, 3] } },
+      move: (r) => ({ ...r, tiles: { min: [12, -7], max: [13, -6] } }),
+      edit: (r) => ({ ...r, tiles: { min: [9, 9], max: [9, 9] } }),
+      where: (r) => JSON.stringify(r.tiles),
+    },
+  };
+  const fixOf = (key) => FIX[key] || FIX.tile;
   const sameArrays = (a, b, except) => Object.keys(a).every((k) => k === except || JSON.stringify(a[k]) === JSON.stringify(b[k]));
 
   for (const [ending, source] of ENDINGS) {
@@ -203,10 +247,11 @@ console.log('the move and the delete');
       check(outside === spans.length, `${ending} ${key}: and every byte outside that one row is the byte it was`, `${outside} of ${spans.length}`);
       check(strays === spans.length, `${ending} ${key}: and the file is still ${ending} throughout`, `${strays} of ${spans.length}`);
 
-      // The move itself: one row's tile changes and nobody else's does.
-      const moved = { ...before[key][0], tile: [12.5, -7.25] };
+      // The move itself: one row's place changes and nobody else's does.
+      const fix = fixOf(key);
+      const moved = fix.move(before[key][0]);
       const afterMove = JSON.parse(replaceRow(source, key, 0, moved));
-      check(JSON.stringify(afterMove[key][0].tile) === '[12.5,-7.25]', `${ending} ${key}: a move lands on the tile it was given`, JSON.stringify(afterMove[key][0].tile));
+      check(JSON.stringify(afterMove[key][0]) === JSON.stringify(moved), `${ending} ${key}: a move lands where it was told`, fix.where(afterMove[key][0]));
       check(JSON.stringify(afterMove[key].slice(1)) === JSON.stringify(before[key].slice(1)), `${ending} ${key}: and no other row in the array moved`);
       check(sameArrays(before, afterMove, key), `${ending} ${key}: and no other array changed at all`);
 
@@ -237,9 +282,9 @@ console.log('the move and the delete');
        * the line ending a delete takes are the ones an insert gave: a delete
        * that cut the separator off the wrong side parses fine, reads fine, and
        * fails here by one byte. */
-      const fresh = key === 'interiorProps' ? { model: 'x.gltf', tile: [1, 2] }
+      const fresh = fix.fresh || (key === 'interiorProps' ? { model: 'x.gltf', tile: [1, 2] }
         : key === 'builtProps' ? { id: 'a-test-slab', material: 'oak', tile: [1, 2] }
-          : { tile: [1, 2] };
+          : { tile: [1, 2] });
       const there = insertRow(source, key, fresh);
       const back = deleteRow(there, key, before[key].length);
       check(back === source, `${ending} ${key}: insert then delete is the file it started as`,
@@ -249,14 +294,14 @@ console.log('the move and the delete');
        * row's text would find the second one's twin and rewrite the wrong
        * element; both parse, both read right, and the prop that moved is the
        * one nobody asked about. This is the reason `rowSpans` walks. */
-      const twin = key === 'interiorProps' ? { model: 'x.gltf', tile: [3, 3] }
+      const twin = fix.twin || (key === 'interiorProps' ? { model: 'x.gltf', tile: [3, 3] }
         : key === 'builtProps' ? { id: 'a-twin', material: 'oak', tile: [3, 3] }
-          : { tile: [3, 3] };
+          : { tile: [3, 3] });
       const pair = insertRow(insertRow(source, key, twin), key, twin);
       const n = before[key].length;
-      const edited = JSON.parse(replaceRow(pair, key, n, { ...twin, tile: [9, 9] }));
-      check(JSON.stringify(edited[key][n].tile) === '[9,9]', `${ending} ${key}: of two identical rows, the first is the one that moves`, JSON.stringify(edited[key][n].tile));
-      check(JSON.stringify(edited[key][n + 1].tile) === '[3,3]', `${ending} ${key}: and its twin stays where it was`, JSON.stringify(edited[key][n + 1].tile));
+      const edited = JSON.parse(replaceRow(pair, key, n, fix.edit(twin)));
+      check(fix.where(edited[key][n]) === fix.where(fix.edit(twin)), `${ending} ${key}: of two identical rows, the first is the one that moves`, fix.where(edited[key][n]));
+      check(fix.where(edited[key][n + 1]) === fix.where(twin), `${ending} ${key}: and its twin stays where it was`, fix.where(edited[key][n + 1]));
 
       // And deleting the first of the pair leaves the second, not neither.
       const oneLeft = JSON.parse(deleteRow(pair, key, n));
@@ -303,10 +348,17 @@ console.log('the move and the delete');
 console.log('the shape rules');
 {
   const ok = { model: 'x.gltf', tile: [0, 0] };
+  const door = { at: 1.5, width: 1, height: 2 };
+  const run = { id: 'r', from: [1, 0], to: [2, 0], material: 'castle_wall_slates', height: 3, thickness: 0.5, doorways: [door] };
+  const room = { id: 'r', level: 0, ward: 'outer', tiles: { min: [0, 0], max: [1, 1] } };
   check(checkRow('interiorProps', ok) === ok, 'a good interiorProps row passes');
+  check(checkRow('walls', run) === run, 'a good walls row passes');
+  check(checkRow('rooms', room) === room, 'a good rooms row passes');
   check(!!checkRow('builtProps', { id: 'a', material: 'oak', tile: [0, 0] }), 'a good builtProps row passes');
   const rejects = [
-    ['an array that is not placeable', () => checkRow('rooms', ok), /is not a placeable array/],
+    // `materials` and not `rooms`, which is placeable since the floor plan's
+    // increment 2. A key that is not an array of rows never will be.
+    ['an array that is not placeable', () => checkRow('materials', ok), /is not a placeable array/],
     ['a row that is not an object', () => checkRow('interiorProps', [1, 2]), /must be an object/],
     ['a key the array does not carry', () => checkRow('interiorProps', { ...ok, colour: 'red' }), /carry no colour/],
     ['no tile at all', () => checkRow('interiorProps', { model: 'x.gltf' }), /`tile` must be two finite numbers/],
@@ -317,6 +369,22 @@ console.log('the shape rules');
     ['an interiorProps row with no model', () => checkRow('interiorProps', { tile: [0, 0] }), /needs a `model`/],
     ['a builtProps row with no id', () => checkRow('builtProps', { material: 'oak', tile: [0, 0] }), /needs an `id` and a `material`/],
     ['a builtProps row with no material', () => checkRow('builtProps', { id: 'a', tile: [0, 0] }), /needs an `id` and a `material`/],
+    // A run is two tiles, not one, and a room is one extent.
+    ['a tile on a run, which has a from and a to', () => checkRow('walls', { ...run, tile: [0, 0] }), /walls rows carry no tile/],
+    ['a run with no `to`', () => checkRow('walls', { ...run, to: undefined }), /needs `from` and `to`/],
+    ['a run whose `from` is one number', () => checkRow('walls', { ...run, from: [1] }), /needs `from` and `to`/],
+    ['a run with no material', () => checkRow('walls', { ...run, material: undefined }), /needs a `material`/],
+    ['a run of no height', () => checkRow('walls', { ...run, height: 0 }), /positive `height` and `thickness`/],
+    ['a run along an axis that is not x or z', () => checkRow('walls', { ...run, axis: 'y' }), /`axis` is "x" or "z"/],
+    ['a doorways that is not a list', () => checkRow('walls', { ...run, doorways: { at: 1 } }), /`doorways` must be an array/],
+    ['a doorway carrying a key no doorway has', () => checkRow('walls', { ...run, doorways: [{ ...door, leaf: true }] }), /doorways\[0\] carries no leaf/],
+    ['a doorway with no `at`', () => checkRow('walls', { ...run, doorways: [{ ...door, at: undefined }] }), /doorways\[0\]\.at must be a number/],
+    ['a doorway of no width', () => checkRow('walls', { ...run, doorways: [door, { ...door, width: 0 }] }), /doorways\[1\] needs a positive/],
+    ['a room by tiles and by drum at once', () => checkRow('rooms', { ...room, drum: 'nw-tower' }), /exactly one of tiles, drum, bounds, and this one has tiles and drum/],
+    ['a room by nothing', () => checkRow('rooms', { id: room.id, level: room.level, ward: room.ward }), /exactly one of tiles, drum, bounds, and this one has none/],
+    ['a room whose tiles are inside out', () => checkRow('rooms', { ...room, tiles: { min: [2, 0], max: [1, 0] } }), /`tiles` must be/],
+    ['a room whose bounds have a third corner', () => checkRow('rooms', { id: 'r', level: 0, ward: 'outer', bounds: { min: [0, 0], max: [1, 1], mid: [0, 0] } }), /`bounds` must be/],
+    ['a room on storey 1.5', () => checkRow('rooms', { ...room, level: 1.5 }), /whole-number `level`/],
   ];
   for (const [label, fn, re] of rejects) {
     const msg = threw(fn);
@@ -326,6 +394,15 @@ console.log('the shape rules');
   // destination the writer would throw on.
   const config = JSON.parse(raw);
   for (const key of Object.keys(PLACEABLE)) check(Array.isArray(config[key]), `${key} is an array in scene-config.json`);
+  // Every run and every room the file already has is one checkRow passes, or
+  // the floor plan's first drag of a row somebody typed by hand is a 400. Only
+  // the two floor-plan arrays: three prop rows carry keys the prop lists have
+  // never named (`backdrop`, `shape`, `ridge`), which is the prop editor's to
+  // settle and not this row's.
+  for (const key of ['walls', 'rooms']) {
+    const refused = config[key].map((r) => threw(() => checkRow(key, r))).filter(Boolean);
+    check(refused.length === 0, `every one of the file's ${config[key].length} ${key} rows passes checkRow`, refused.slice(0, 2).join('; '));
+  }
   // And every key a placeable row may carry is one the existing rows use, so
   // the allow-list cannot drift into inventing a field the builder ignores.
   for (const [key, allowed] of Object.entries(PLACEABLE)) {
@@ -359,6 +436,67 @@ console.log('the formatting');
   check(strayEndings(crlf, '\r\n') === 0, 'with no bare LF left inside the tile it broke over three lines',
     `${strayEndings(crlf, '\r\n')} bare LF`);
   check(!/undefined/.test(formatRow({ tile: [0, 0], base: undefined })), 'a key with no value is left out rather than written as undefined');
+
+  /* THE TWO NESTED SHAPES, written the way the file writes them: every level on
+   * its own lines, two more spaces each. And every one of those newlines in the
+   * ending asked for, which is the line SPECS.md names: hardcode `\n` in the
+   * nested-object branch and the CRLF row is one byte short per nested line. */
+  const roomLines = [
+    '    {',
+    '      "id": "r",',
+    '      "tiles": {',
+    '        "min": [',
+    '          -8,',
+    '          -3',
+    '        ],',
+    '        "max": [',
+    '          -7,',
+    '          -2',
+    '        ]',
+    '      }',
+    '    }',
+  ];
+  const roomRow = { id: 'r', tiles: { min: [-8, -3], max: [-7, -2] } };
+  check(formatRow(roomRow, 4) === roomLines.join('\n'), 'an object value is written one key per line, two spaces in', JSON.stringify(formatRow(roomRow, 4)));
+  const roomCrlf = formatRow(roomRow, 4, '\r\n');
+  check(roomCrlf === roomLines.join('\r\n'), 'and in CRLF when asked, at every depth',
+    `${roomLines.join('\r\n').length} bytes wanted, ${roomCrlf.length} written`);
+  check(strayEndings(roomCrlf, '\r\n') === 0, 'with no bare LF inside the object or the arrays in it', `${strayEndings(roomCrlf, '\r\n')} bare LF`);
+  const runLines = [
+    '    {',
+    '      "id": "r",',
+    '      "doorways": [',
+    '        {',
+    '          "at": -8.35,',
+    '          "width": 1.2',
+    '        },',
+    '        {',
+    '          "at": 2,',
+    '          "base": 4',
+    '        }',
+    '      ]',
+    '    }',
+  ];
+  const runRow = { id: 'r', doorways: [{ at: -8.35, width: 1.2 }, { at: 2, base: 4 }] };
+  check(formatRow(runRow, 4) === runLines.join('\n'), 'an array of objects is written one object per block, two spaces in', JSON.stringify(formatRow(runRow, 4)));
+  const runCrlf = formatRow(runRow, 4, '\r\n');
+  check(runCrlf === runLines.join('\r\n'), 'and in CRLF when asked, inside every object of it',
+    `${runLines.join('\r\n').length} bytes wanted, ${runCrlf.length} written`);
+  check(formatRow({ id: 'r', doorways: [] }, 0) === '{\n  "id": "r",\n  "doorways": []\n}', 'an empty list is `[]` on its own line rather than a bracket pair with nothing between');
+
+  /* AND THAT IS THE FILE'S OWN STYLE, measured against the file rather than
+   * against the two rows above. Every `walls` and `rooms` row rewritten with
+   * its own value is the file it was, byte for byte, on both endings — so a
+   * drag that changes a run's `to` puts that one field in the diff and not a
+   * reformatted `doorways` block under it (#584, #639). */
+  const parsed = JSON.parse(raw);
+  for (const [ending, source] of ENDINGS) {
+    for (const key of ['walls', 'rooms']) {
+      const changed = parsed[key].map((r, i) => (replaceRow(source, key, i, r) === source ? null : r.id)).filter(Boolean);
+      check(changed.length === 0, `${ending} ${key}: rewriting each of the ${parsed[key].length} rows with its own value is the file it was`,
+        `${changed.length} rows changed it: ${changed.slice(0, 3).join(', ')}`);
+    }
+  }
 }
 
 /* ----------------------------------------------------- 5: the plan sheet --- */
@@ -553,6 +691,145 @@ console.log('the plan sheet');
     // The same rectangle on every storey, or the camera jumps when `[` is
     // pressed and the plan is a different shape on each floor.
     check(sheets.every((s) => JSON.stringify(s.extent) === JSON.stringify(e)), 'and it is the same rectangle on every storey');
+  }
+}
+
+/* ------------------------------------------------- 6: the layout edits --- */
+//
+// WHAT THIS PART IS FOR. tools/layout-edit.mjs is what a drag on the floor plan
+// does to a row before src/edit-layout.js posts it, and the two ways it can go
+// wrong quietly are touching a field the drag was not about, and handing back
+// the row it was given with a change in it — the page then holds an edited
+// copy of the castle it believes is the file. So every function is asserted on
+// the whole row it returns, the input is asserted untouched, and the composed
+// edit is put through `replaceRow` on both endings with the same byte rail as
+// parts 1 and 2. Nothing here re-derives a box: the one world extent used is
+// the plan's own box for the run, as the page uses it (#500).
+console.log('the layout edits');
+{
+  const config = JSON.parse(raw);
+  const frozen = (r) => JSON.stringify(r);
+  const byTiles = config.rooms.find((r) => r.tiles);
+  const byBounds = config.rooms.find((r) => r.bounds);
+  const byDrum = config.rooms.find((r) => r.drum);
+
+  /* --- rooms --- */
+  {
+    const was = frozen(byTiles);
+    const moved = dragRoom(byTiles, { dx: 1, dz: -2 });
+    check(frozen(byTiles) === was, `dragging ${byTiles.id} leaves the row it was handed untouched`);
+    check(frozen(moved.tiles) === frozen({ min: [byTiles.tiles.min[0] + 1, byTiles.tiles.min[1] - 2], max: [byTiles.tiles.max[0] + 1, byTiles.tiles.max[1] - 2] }),
+      `a whole-rectangle drag moves all four edges of ${byTiles.id} by the tiles asked`, frozen(moved.tiles));
+    check(frozen(Object.keys(moved)) === frozen(Object.keys(byTiles)) && frozen({ ...moved, tiles: null }) === frozen({ ...byTiles, tiles: null }),
+      'and every other key is the value it was, in the order it was');
+    const wider = dragRoom(byTiles, { dx: 2, edges: { maxX: true } });
+    check(frozen(wider.tiles) === frozen({ min: byTiles.tiles.min, max: [byTiles.tiles.max[0] + 2, byTiles.tiles.max[1]] }),
+      'an edge drag moves that edge and no other', frozen(wider.tiles));
+    const fine = dragRoom(byTiles, { dx: 0.25 });
+    check(fine.tiles.min[0] === byTiles.tiles.min[0] + 0.25, 'a quarter-tile drag lands a quarter tile over');
+    const metres = dragRoom(byBounds, { dx: 1, dz: 0.25, tile: config.tileSize });
+    check(metres.bounds.min[0] === byBounds.bounds.min[0] + config.tileSize && metres.bounds.max[1] === byBounds.bounds.max[1] + config.tileSize / 4,
+      `a room by bounds (${byBounds.id}) takes the same drag in metres, ${config.tileSize} to the tile`, frozen(metres.bounds));
+    const inside = threw(() => dragRoom(byTiles, { dx: -50, edges: { maxX: true } }));
+    check(/would be inside out/.test(inside || ''), 'an edge dragged past the one opposite is refused', inside || 'it passed');
+    const drum = threw(() => dragRoom(byDrum, { dx: 1 }));
+    check(/is by drum/.test(drum || ''), `a room by drum (${byDrum.id}) has no rectangle to drag and says so`, drum || 'it passed');
+    check(dragRoom(byTiles, { dx: 0.1 + 0.2 - 0.3 }).tiles.min[0] === byTiles.tiles.min[0], 'and float dust is tidied rather than written into the file');
+    check(snapTo(1.37, 1) === 1 && snapTo(1.37, 0.25) === 1.25 && snapTo(-0.13, 0.25) === -0.25 && snapTo(-8.36, 0.025) === -8.35,
+      'snapTo rounds to whole tiles, quarter tiles and the opening step');
+    check(ALL_EDGES.minX && ALL_EDGES.maxX && ALL_EDGES.minZ && ALL_EDGES.maxZ, 'and a drag with no edges named moves the whole rectangle');
+  }
+
+  /* --- run ends --- */
+  const runIndex = config.walls.findIndex((r) => Array.isArray(r.doorways) && r.doorways.length > 1);
+  const run = config.walls[runIndex];
+  {
+    const was = frozen(run);
+    const longer = dragRunEnd(run, 'to', { dx: 1 });
+    check(frozen(run) === was, `dragging an end of ${run.id} leaves the row it was handed untouched`);
+    check(frozen(longer.to) === frozen([run.to[0] + 1, run.to[1]]) && longer.from === run.from,
+      'an end drag moves that end and leaves the other the array it was', `${frozen(longer.from)} to ${frozen(longer.to)}`);
+    check(longer.doorways === run.doorways, 'and the openings are the run\'s own list, not a copy');
+    check(/"from" or "to"/.test(threw(() => dragRunEnd(run, 'middle', { dx: 1 })) || ''), 'an end that is neither is refused');
+  }
+
+  /* --- openings --- */
+  {
+    const was = frozen(run);
+    const n = run.doorways.length;
+    const slid = moveOpening(run, 1, run.doorways[1].at + 0.5);
+    check(frozen(run) === was, 'sliding an opening leaves the run it was handed untouched');
+    check(slid.doorways[1].at === Number((run.doorways[1].at + 0.5).toFixed(6)) && slid.doorways[0] === run.doorways[0],
+      'sliding doorway 1 moves it and leaves doorway 0 the object it was', frozen(slid.doorways.map((d) => d.at)));
+    check(frozen({ ...slid.doorways[1], at: 0 }) === frozen({ ...run.doorways[1], at: 0 }), 'and keeps its width, height and base');
+    const wide = widenOpening(run, 0, 2.4);
+    check(wide.doorways[0].width === 2.4 && frozen({ ...wide.doorways[0], width: 0 }) === frozen({ ...run.doorways[0], width: 0 }),
+      'a typed width is that opening\'s width and nothing else of it changes');
+    for (const bad of [0, -1, NaN, '2']) check(/wider than nothing/.test(threw(() => widenOpening(run, 0, bad)) || ''), `a width of ${JSON.stringify(bad)} is refused`);
+
+    const cut = cutOpening(run, 0);
+    check(frozen(run) === was, 'cutting an opening leaves the run it was handed untouched');
+    check(cut.doorways.length === n - 1 && cut.doorways[0] === run.doorways[1], `cutting doorway 0 of ${n} leaves the other ${n - 1}, in order`);
+    let bare = run;
+    for (let i = 0; i < n; i++) bare = cutOpening(bare, 0);
+    check(!('doorways' in bare), 'the last opening out takes the `doorways` key with it rather than leaving `[]`', frozen(Object.keys(bare)));
+    check(frozen(Object.keys(bare)) === frozen(Object.keys(run).filter((k) => k !== 'doorways')), 'and every other key of the run stays, in its order');
+    for (const [label, index] of [['past the end', n], ['negative', -1], ['not an integer', 0.5]]) {
+      check(/so there is no doorway/.test(threw(() => cutOpening(run, index)) || ''), `cutting a doorway index ${label} throws`);
+      check(/so there is no doorway/.test(threw(() => moveOpening(run, index, 0)) || ''), `sliding a doorway index ${label} throws`);
+    }
+
+    // The clamp works in the run's own unit and is handed the extent: an
+    // opening 1.2 m wide on a run from -34 to -22 m has its centre held
+    // between -8.35 and -5.65 tiles, which is where the file's own nw-tower
+    // doorway already sits, flush with the run's end.
+    check(clampOpening(-20, 1.2, -34, -22) === -8.35 && clampOpening(0, 1.2, -34, -22) === -5.65 && clampOpening(-7, 1.2, -34, -22) === -7,
+      'an opening is held inside its run, flush at either end',
+      `${clampOpening(-20, 1.2, -34, -22)}, ${clampOpening(0, 1.2, -34, -22)}, ${clampOpening(-7, 1.2, -34, -22)}`);
+    check(clampOpening(9, 6, 0, 4) === 0.5, 'and an opening wider than its run is put in the run\'s middle');
+  }
+
+  /* --- the composed edit, through the splice the dev server runs --- */
+  //
+  // The page posts the whole run back through `move`. This is that, on both
+  // endings: the file still parses, the run is the edited row, nothing else in
+  // the file is a different byte, and putting the original row back is the
+  // file it started as.
+  {
+    const edits = [
+      ['walls', runIndex, 'a run with an end dragged', dragRunEnd(run, 'from', { dx: -0.25 })],
+      ['walls', runIndex, 'a run with an opening slid', moveOpening(run, 0, run.doorways[0].at + 0.25)],
+      ['walls', runIndex, 'a run with an opening widened', widenOpening(run, 1, 2)],
+      ['walls', runIndex, 'a run with an opening cut', cutOpening(run, 0)],
+      ['walls', runIndex, 'a run with every opening cut', run.doorways.reduce((r) => cutOpening(r, 0), run)],
+      ['rooms', config.rooms.indexOf(byTiles), 'a room by tiles moved', dragRoom(byTiles, { dx: 1 })],
+      ['rooms', config.rooms.indexOf(byBounds), 'a room by bounds resized', dragRoom(byBounds, { dz: 0.25, edges: { minZ: true }, tile: config.tileSize })],
+    ];
+    for (const [ending, source] of ENDINGS) {
+      const eol = eolOf(source);
+      for (const [key, index, label, row] of edits) {
+        check(!threw(() => checkRow(key, row)), `${ending}: ${label} is a row checkRow passes`, threw(() => checkRow(key, row)) || '');
+        const out = replaceRow(source, key, index, row);
+        let after = null;
+        try { after = JSON.parse(out); } catch (e) { fail(`${ending}: ${label} does not parse — ${e.message}`); continue; }
+        const sp = rowSpans(source, key)[index];
+        const grown = out.length - source.length;
+        check(frozen(after[key][index]) === frozen(row) && frozen(withRow(config, key, index, row)) === frozen(after),
+          `${ending}: ${label} is that row in the file and the file is otherwise the config it was`);
+        check(out.slice(0, sp.start) === source.slice(0, sp.start) && out.slice(sp.end + grown) === source.slice(sp.end),
+          `${ending}: ${label} leaves every byte outside the row the byte it was`);
+        check(strayEndings(out, eol) === 0, `${ending}: ${label} leaves the file ${ending} throughout`, `${strayEndings(out, eol)} of the other kind`);
+        const back = replaceRow(out, key, index, config[key][index]);
+        check(back === source, `${ending}: ${label}, then the row put back, is the file byte for byte`,
+          back === source ? '' : `${source.length} bytes in, ${back.length} back out`);
+      }
+    }
+    // `withRow` swaps one row and shares the rest, so the page's what-if plan
+    // is built from the file's own arrays and not from a copy of them.
+    const swapped = withRow(config, 'walls', runIndex, run);
+    check(swapped.rooms === config.rooms && swapped.walls !== config.walls && swapped.walls[0] === config.walls[0],
+      'withRow replaces one array and shares every other one');
+    check(/has no walls\[999\]/.test(threw(() => withRow(config, 'walls', 999, run)) || ''), 'and a row index the config does not have throws');
   }
 }
 

@@ -770,7 +770,7 @@
         "vespers"
       ],
       "clue": "chapel-candle",
-      "prop": "brass_candleholders_1k.gltf/brass_candleholders_1k.gltf"
+      "prop": "assets/blender/evidence/pricket.glb"
     },
     {
       "id": "walk-door",
@@ -843,7 +843,7 @@
         "word-lock"
       ],
       "lock": "muniment",
-      "prop": "WoodenTable_01_1k.gltf/WoodenTable_01_1k.gltf"
+      "prop": "assets/blender/evidence/ledger-desk.glb"
     },
     {
       "id": "knife",
@@ -857,7 +857,7 @@
         "vespers"
       ],
       "clue": "knife-found",
-      "prop": "detail-barrel.glb"
+      "prop": "assets/blender/evidence/knife-barrel.glb"
     },
     {
       "id": "gaol-roll",

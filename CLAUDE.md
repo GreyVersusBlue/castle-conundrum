@@ -12,8 +12,8 @@ all seven of which shipped. **`BACKLOG.md` is the entry point for open work,
 and `SPECS.md` is the spec behind each of its rows** (scope by file, acceptance,
 open calls with a recommendation, dependencies, the rules that bite). Read a
 row's spec before its brief. **`ROADMAP.md` is the order those rows can happen
-in**: which machine each needs, the four hard gates on the whole list, and the
-five lanes that say which two rows may be claimed at once (#600 to #602).
+in**: which machine each needs, the one hard gate still standing on the whole list (three of four shipped),
+and the seven lanes that say which rows may be claimed at once (#600 to #602).
 **`HISTORY.md` is the record**, and it carries every locked decision this
 project has, by number.
 

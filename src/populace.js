@@ -42,13 +42,16 @@ import { EYE_HEIGHT } from './castle-plan.js';
  * populace"): its jobs are ones a body does STANDING STILL, and each resolves
  * to one of three idle variants.
  *
- * The five working clips below it are generated, not the kit's (#787, #788):
+ * The four working clips below it are generated, not the kit's (#787, #788):
  * tools/bodies/ writes Sweep, Stir, Hammer, Spar and Drill into all four human
  * bodies from tools/bodies/clips.json, each one Idle with the arms and spine
  * turned on top, and test/assets.mjs check 7 holds the files to the table.
  * Four of them are placed (#800): the scullion sweeps and stirs in the
  * kitchen, the carter hammers at his cart, and the serjeant and the
- * man-at-arms spar in the yard at Terce. `drill` is nobody's yet.
+ * man-at-arms spar in the yard at Terce. The fifth, `drill`, was dropped as
+ * an activity (#915): the Drill clip stays in the bodies until they are
+ * re-rendered, and nothing here maps it, so a routine that names it is
+ * refused.
  *
  * The map is the validator's rail as well as the player's: an `activity` the
  * data uses and this object does not name is refused at load, because the
@@ -77,14 +80,14 @@ export const ACTIVITY_CLIPS = {
   // stays so a later row can give it back without touching this table.
   guard: 'Idle_Sword',
   muster: 'Idle_Sword',
-  /* THE GENERATED FIVE (#788). In Woman, Farmer, Adventurer and King only, so
+  /* THE GENERATED FOUR (#788). In Woman, Farmer, Adventurer and King only, so
    * a hound or a hen given one of these fails mystery.mjs's per-person clip
-   * check. `drill` is the garrison's, with the spear (#685). */
+   * check. `drill` was the fifth, the garrison's with the spear (#685), and
+   * was dropped (#915); its clip is still in the bodies and bound to nothing. */
   sweep: 'Sweep',
   stir: 'Stir',
   hammer: 'Hammer',
   spar: 'Spar',
-  drill: 'Drill',
   /* THE HOUND'S TWO (#644). Hound.glb ships twelve clips off Quaternius's
    * animal rig and not one of them is a human's, so these two exist in one
    * body and `wait` exists in all five. The clip check in test/mystery.mjs

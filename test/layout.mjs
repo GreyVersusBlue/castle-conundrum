@@ -191,6 +191,41 @@ console.log('\nthe built slabs and the props on an upper floor, and what each on
   }
 }
 
+/* ---------------------------- 1e: nothing stands over a pressable (#812) ---
+ * `InteractionSystem.hasLineOfSight` casts from the eye to a target's box
+ * centre against `occluders()`, which is every scene child but the bodies and
+ * the targets. A dressing is neither, so one set on top of or hung over a
+ * pressable is in its sight ray, and the prompt goes away with nothing to say
+ * why: the target is the one object the ray is not tested against.
+ *
+ * So: for every piece carrying `evidence`, `read` or `bell`, no other piece
+ * but the ground overlaps its box in plan by more than 1 cm in x and in z with
+ * its own base at or above the pressable's centre height and below the
+ * pressable's base plus EYE_HEIGHT. That band is the aim point to a standing
+ * eye. A floor slab 4 m over a level-0 pressable is above it, and the crate
+ * under the gaol roll or the cloak is below it. A plan fact, so here and not
+ * in plan-vs-scene.mjs (#529).
+ */
+console.log('\nnothing stands over a pressable');
+{
+  const pressables = plan.pieces.filter(p => p.evidence || p.read || p.bell);
+  if (!pressables.length) fail('no piece in the plan carries evidence, read or bell, so this check tests nothing');
+  const over = [];
+  for (const target of pressables) {
+    const centre = (target.box.min.y + target.box.max.y) / 2;
+    const eye = target.box.min.y + EYE_HEIGHT;
+    for (const o of plan.pieces) {
+      if (o === target || o.kind === 'ground' || !o.box) continue;
+      const ox = Math.min(target.box.max.x, o.box.max.x) - Math.max(target.box.min.x, o.box.min.x);
+      const oz = Math.min(target.box.max.z, o.box.max.z) - Math.max(target.box.min.z, o.box.min.z);
+      if (ox > 0.01 && oz > 0.01 && o.box.min.y >= centre && o.box.min.y < eye)
+        over.push(`${o.id} stands over ${target.id}, which the player presses E at: its base at y ${f2(o.box.min.y)} is between ${target.id}'s centre at ${f2(centre)} and a standing eye at ${f2(eye)}, and it overlaps by ${f2(ox)} x ${f2(oz)} m in plan`);
+    }
+  }
+  for (const line of over) fail(line);
+  if (!over.length) pass(`no piece stands over any of the ${pressables.length} pressables, between its centre and a standing eye`);
+}
+
 /* ------------------------------ 2: the cabinet and the commode stand close ---
  * The other half of the same number. Not being in the wall is the floor; these
  * two are meant to be AGAINST their side walls, and until 2026-09-14 they stood
@@ -833,6 +868,124 @@ console.log('\nthe water, seen from the walls');
     pass(`${w.id} is seen at (${f2(pt.x)}, ${f2(pt.z)}) from ${eye.surface} at (${f2(eye.x)}, ${f2(eye.y)}, ${f2(eye.z)}), ${d.toFixed(1)} m, after ${tried} of ${lattice.length} points`);
   }
   console.log(`        ${eyes.length} eyes, ${Date.now() - t0} ms`);
+}
+
+/* ------ 4g (rank 2e, #817, #818): the countryside meets the ground and runs into the fog ---
+ * Five `backdrop` pieces, cut from one height field by
+ * tools/blender/packs/countryside.py, tile x -140..180, z -170..170 with
+ * `ground` and `outside-ground`. The script types those two rectangles (#500)
+ * and this is what holds them to the plan, the way check 1d holds a roof's base.
+ *
+ * Four things, over every backdrop piece. Its box's min y is 0 within 1 mm, so
+ * the land neither floats over the apron nor sinks under it. In plan it
+ * overlaps no ground piece and no other backdrop by more than 1 cm on both
+ * axes (meshopt's quantising moves a 228 m piece's edge by up to 2 mm). Every
+ * side of `ground` and `outside-ground` is met along its whole length by
+ * another piece's side on the same line, backdrop or ground, except
+ * outside-ground's west side, which is the river's (#796): a gap is a line of
+ * fog colour between the land and the apron. THE SEAM RULE IS WRITTEN FROM THE
+ * GROUND'S SIDES ON PURPOSE: a rule asking each piece to touch something stays
+ * green with `backdrop-east` moved 1 m east, because it still touches the north
+ * and south pieces along z -22 and 22. And for each axis in which a piece lies
+ * wholly beyond the base ground, its far side is at least `lighting.fog.far`
+ * from the nearest of 4d's eyes along that axis, except a side on
+ * outside-ground's min x, which #796 gives to the fog: short of it the land
+ * ends in a line against the background.
+ *
+ * The eyes are `wallSight`'s, the one function 4d and 4f read, not a copy.
+ * Plan arithmetic, so here and not in plan-vs-scene.mjs (#529).
+ */
+console.log('\nthe countryside, against the ground and the fog');
+{
+  const TOL = 0.01;
+  const num = (n) => String(Number(n.toFixed(2)));
+  const span = (lo, hi) => `${num(lo)}..${num(hi)}`;
+  const where = (b) => `x ${span(b.min.x, b.max.x)}, z ${span(b.min.z, b.max.z)}`;
+  const backdrops = plan.pieces.filter(p => p.backdrop);
+  const base = plan.grounds.find(g => g.id === 'ground');
+  const outsideGround = plan.grounds.find(g => g.id === 'outside-ground');
+  const far = config.lighting?.fog?.far;
+  const { eyes } = wallSight;
+  if (!backdrops.length) fail('no piece in the plan is a backdrop, so check 4g measured nothing. Rank 2e put five pieces of countryside past the walls (#817)');
+  else if (!base || !outsideGround) fail(`check 4g reads the ground's sides by id and the plan has no ${[base ? null : 'ground', outsideGround ? null : 'outside-ground'].filter(Boolean).join(' and no ')}, so it stops here. A rank 9 increment that moves outside-ground re-cuts the field in the same commit`);
+  else if (!(far > 0)) fail('config.lighting.fog.far is not a positive number, so there is no distance to hold the countryside to');
+  else if (!eyes.length) fail('no reachable cell stands 8 m up or higher, so there is no eye to measure the countryside\'s far side from');
+  else {
+    const before = failures;
+
+    // on the ground
+    for (const p of backdrops) {
+      if (Math.abs(p.box.min.y) > 1e-3) fail(`${p.id}'s box starts at y ${p.box.min.y.toFixed(4)}, not 0 within 1 mm: the land floats over the apron or sinks under it`);
+    }
+
+    // overlapping nothing
+    for (const [i, p] of backdrops.entries()) {
+      for (const o of [...plan.grounds, ...backdrops.slice(i + 1)]) {
+        const ox = Math.min(p.box.max.x, o.box.max.x) - Math.max(p.box.min.x, o.box.min.x);
+        const oz = Math.min(p.box.max.z, o.box.max.z) - Math.max(p.box.min.z, o.box.min.z);
+        if (ox <= TOL || oz <= TOL) continue;
+        const [less, more] = oz <= ox ? [`${f2(oz)} m in z`, `${f2(ox)} m in x`] : [`${f2(ox)} m in x`, `${f2(oz)} m in z`];
+        fail(`${p.id} at ${where(p.box)} overlaps ${o.id} at ${where(o.box)} in plan by ${less} (and ${more}); the countryside lies beside the ground and beside itself, never over either`);
+      }
+    }
+
+    // the seams: every side of the two grounds, met along its whole length
+    const others = [...plan.grounds, ...backdrops];
+    let sides = 0;
+    for (const g of [base, outsideGround]) {
+      const b = g.box;
+      const SIDES = [
+        { name: 'north', axis: 'z', at: b.min.z, along: 'x', lo: b.min.x, hi: b.max.x, meets: (r) => r.max.z },
+        { name: 'south', axis: 'z', at: b.max.z, along: 'x', lo: b.min.x, hi: b.max.x, meets: (r) => r.min.z },
+        { name: 'west', axis: 'x', at: b.min.x, along: 'z', lo: b.min.z, hi: b.max.z, meets: (r) => r.max.x },
+        { name: 'east', axis: 'x', at: b.max.x, along: 'z', lo: b.min.z, hi: b.max.z, meets: (r) => r.min.x },
+      ];
+      for (const s of SIDES) {
+        if (g === outsideGround && s.name === 'west') continue; // the river's (#796)
+        sides++;
+        const runs = others
+          .filter(o => o !== g && Math.abs(s.meets(o.box) - s.at) <= TOL)
+          .map(o => [Math.max(s.lo, o.box.min[s.along]), Math.min(s.hi, o.box.max[s.along])])
+          .filter(([a, c]) => c > a)
+          .sort((u, v) => u[0] - v[0]);
+        const gaps = [];
+        let reached = s.lo;
+        for (const [a, c] of runs) {
+          if (a > reached + TOL) gaps.push([reached, a]);
+          reached = Math.max(reached, c);
+        }
+        if (reached < s.hi - TOL) gaps.push([reached, s.hi]);
+        if (gaps.length) fail(`${g.id}'s ${s.name} side at ${s.axis} ${num(s.at)} is met by nothing over ${gaps.map(([a, c]) => `${s.along} ${span(a, c)}`).join(', ')}: a line of fog colour between the land and the apron`);
+      }
+    }
+
+    // the far sides, past fog.far from the nearest eye
+    const eyeMin = { x: Math.min(...eyes.map(e => e.x)), z: Math.min(...eyes.map(e => e.z)) };
+    const eyeMax = { x: Math.max(...eyes.map(e => e.x)), z: Math.max(...eyes.map(e => e.z)) };
+    const reach = new Map();
+    for (const p of backdrops) {
+      const got = [];
+      for (const k of ['x', 'z']) {
+        let side, d;
+        if (p.box.min[k] >= base.box.max[k] - TOL) { side = p.box.max[k]; d = side - eyeMax[k]; }
+        else if (p.box.max[k] <= base.box.min[k] + TOL) {
+          side = p.box.min[k];
+          if (k === 'x' && Math.abs(side - outsideGround.box.min.x) <= TOL) continue; // the river's line, the fog's (#796)
+          d = eyeMin[k] - side;
+        } else continue;
+        if (d < far) fail(`${p.id}'s far side at ${k} ${num(side)} is ${f2(d)} m from the nearest eye along ${k}, inside fog.far ${far}: the land ends in a line against the background before the fog has it`);
+        else got.push(`${f2(d)} in ${k}`);
+      }
+      if (!got.length && failures === before) fail(`${p.id} at ${where(p.box)} lies wholly beyond the base ground on no axis that is not the river's, so nothing measured how far it runs`);
+      reach.set(p.id, got.join(', '));
+    }
+
+    if (failures === before) {
+      pass(`${backdrops.length} backdrop pieces stand on y 0 within 1 mm and overlap no ground and no other backdrop by over ${TOL} m`);
+      pass(`all ${sides} sides of ground and outside-ground are met along their whole length; outside-ground's west side is the river's (#796)`);
+      pass(`every far side is at least fog.far ${far} m past the nearest of ${eyes.length} eyes: ${[...reach].map(([id, r]) => `${id} ${r}`).join('; ')}`);
+    }
+  }
 }
 
 /* ---------------------------- 4b: two crossings, one logged and one not ---

@@ -2448,17 +2448,6 @@
         "comment": "the clerk's pouch, in the chapel Moved in Phase 5 to the south crescent beside the foot of the Chapel Tower's lower flight, which it had stood inside (#460)."
       },
       {
-        "id": "knife",
-        "model": "detail-barrel.glb",
-        "tile": [
-          0.125,
-          3.825
-        ],
-        "scale": 2,
-        "evidence": "knife",
-        "comment": "the bakehouse barrel the knife is behind"
-      },
-      {
         "id": "cloak-crate",
         "model": "detail-crate.glb",
         "tile": [
@@ -2775,11 +2764,11 @@
     {
       "model": "gothic_statue_1k.gltf/gothic_statue_1k.gltf",
       "tile": [
-        -5,
+        -5.3,
         2.275
       ],
       "rotationY": 180,
-      "comment": "was tile z -2.85 (world -11.4): measured box z -11.774..-10.211, entirely inside the north wall (inner face z -10) -- confirmed invisible with a camera probe standing where it should render. The whole hall cluster (this statue, the table, chair, stool, candleholders, lantern) and the Scholar (data/npcs.json, and SCHOLAR in Tools/board-check/play-castle.mjs) moved +2.0 m south (+0.5 tile) as one rigid shift, chosen as the smallest round number that clears the statue's north edge (0.23 m margin from the wall) without pushing the chair's south edge past the doorway partition (0.76 m margin from its inner face at z -6) -- valid range was roughly +1.9 to +2.6 m"
+      "comment": "was tile z -2.85 (world -11.4): measured box z -11.774..-10.211, entirely inside the north wall (inner face z -10) -- confirmed invisible with a camera probe standing where it should render. The whole hall cluster (this statue, the table, chair, stool, candleholders, lantern) and the Scholar (data/npcs.json, and SCHOLAR in Tools/board-check/play-castle.mjs) moved +2.0 m south (+0.5 tile) as one rigid shift, chosen as the smallest round number that clears the statue's north edge (0.23 m margin from the wall) without pushing the chair's south edge past the doorway partition (0.76 m margin from its inner face at z -6) -- valid range was roughly +1.9 to +2.6 m. Moved 1.2 m west along the hall, tile x -5 to -5.3 (rank 3b, #890): at -5 its box (x -20.69..-19.22, z 8.73..10.29) held the hall brazier's bowl at world (-20, 10). Box is now x -21.89..-20.42, 0.14 m west of the brazier's own box (x -20.28..-19.72). West, not east: east put it 0.42 m from the Great Hall station at world (-17.6, 9.2). The brazier stays where it is (#721 to #724)"
     },
     {
       "model": "wooden_lantern_01_1k.gltf/wooden_lantern_01_1k.gltf",
@@ -2824,18 +2813,18 @@
     },
     {
       "id": "candles-chapel",
-      "model": "brass_candleholders_1k.gltf/brass_candleholders_1k.gltf",
+      "model": "assets/blender/evidence/pricket.glb",
       "tile": [
-        5.675,
-        4.325
+        5.69705,
+        4.30765
       ],
-      "rotationY": 10,
+      "rotationY": 0,
       "evidence": "candle",
-      "comment": "Moved in Phase 5 clear of the Chapel Tower's lower flight, which stands in the tower's east half with its foot at the south end (#460): the candles to the south-west quadrant, the lantern beside the foot."
+      "comment": "Moved in Phase 5 clear of the Chapel Tower's lower flight, which stands in the tower's east half with its foot at the south end (#460): the candles to the south-west quadrant, the lantern beside the foot. The brass candleholders swapped for the evidence pack's pricket under #811: the tile is the old box's centre, (22.7882, 17.2306) over 4, so PROP_CLEARANCE measures from the same point; the old tile was the photoscan's origin, 0.114 m off it."
     },
     {
       "id": "table-muniment",
-      "model": "WoodenTable_01_1k.gltf/WoodenTable_01_1k.gltf",
+      "model": "assets/blender/evidence/ledger-desk.glb",
       "tile": [
         6.05,
         -4.15
@@ -3570,6 +3559,88 @@
         -3.8125,
         -3.3
       ]
+    },
+    {
+      "id": "chapel-aumbry",
+      "model": "assets/blender/evidence/aumbry-candles.glb",
+      "tile": [
+        5.8,
+        3.53125
+      ],
+      "rotationY": 0,
+      "yOffset": 1.2,
+      "noCollide": true,
+      "comment": "The aumbry by the vestry door that has never had a lock on it (data/lore.json), with the three tallow candles the candle-count quest counts at Lauds. Hung in the chapel on the north face, where the east curtain's end stands into the drum at z 14, 0.6 m east of the door arc (theta 210 to 270) and west of the lower flight; its back is 0.005 m off the curtain's box. Clear of every pressable in plan. A dressing, not pressable, so no clue (#810, #812)."
+    },
+    {
+      "id": "knife",
+      "model": "assets/blender/evidence/knife-barrel.glb",
+      "tile": [
+        0.125,
+        3.825
+      ],
+      "evidence": "knife",
+      "comment": "The bakehouse flour barrel with the kitchen knife stuck in its flour. Was the kit barrel detail-barrel.glb in courtyard.placements; moved here under #811 because propPath is read at the interiorProps sites only. The tile is the kit barrel's box centre, (0.5, 15.3), and the piece is now a prop, so check 1 holds it: 0.86 m from the drum's centre, clear of the stone."
+    },
+    {
+      "id": "backdrop-north",
+      "model": "assets/blender/countryside/backdrop-north.glb",
+      "tile": [
+        16.5,
+        -24
+      ],
+      "rotationY": 0,
+      "noCollide": true,
+      "backdrop": true,
+      "comment": "The countryside beyond the wall (#817): x -48..180, z -170..-22: the land north of the base ground and its apron, out to the rim. One of five pieces cut from one height field by tools/blender/packs/countryside.py, so a shared edge shares its heights. A backdrop: noCollide, no surface, nothing reachable (#703, #795). Check 4g holds it to the ground's sides and to fog.far past the eyes (#818)."
+    },
+    {
+      "id": "backdrop-south",
+      "model": "assets/blender/countryside/backdrop-south.glb",
+      "tile": [
+        16.5,
+        24
+      ],
+      "rotationY": 0,
+      "noCollide": true,
+      "backdrop": true,
+      "comment": "The countryside beyond the wall (#817): x -48..180, z 22..170: the land south of the base ground, out to the rim. One of five pieces cut from one height field by tools/blender/packs/countryside.py, so a shared edge shares its heights. A backdrop: noCollide, no surface, nothing reachable (#703, #795). Check 4g holds it to the ground's sides and to fog.far past the eyes (#818)."
+    },
+    {
+      "id": "backdrop-east",
+      "model": "assets/blender/countryside/backdrop-east.glb",
+      "tile": [
+        27,
+        0
+      ],
+      "rotationY": 0,
+      "noCollide": true,
+      "backdrop": true,
+      "comment": "The countryside beyond the wall (#817): x 36..180, z -22..22: the land east of the base ground, between the north and south pieces. One of five pieces cut from one height field by tools/blender/packs/countryside.py, so a shared edge shares its heights. A backdrop: noCollide, no surface, nothing reachable (#703, #795). Check 4g holds it to the ground's sides and to fog.far past the eyes (#818)."
+    },
+    {
+      "id": "backdrop-north-west",
+      "model": "assets/blender/countryside/backdrop-north-west.glb",
+      "tile": [
+        -23.5,
+        -26.25
+      ],
+      "rotationY": 0,
+      "noCollide": true,
+      "backdrop": true,
+      "comment": "The countryside beyond the wall (#817): x -140..-48, z -170..-40: north of outside-ground, cut at the river's line x -140 (#796). One of five pieces cut from one height field by tools/blender/packs/countryside.py, so a shared edge shares its heights. A backdrop: noCollide, no surface, nothing reachable (#703, #795). Check 4g holds it to the ground's sides and to fog.far past the eyes (#818)."
+    },
+    {
+      "id": "backdrop-south-west",
+      "model": "assets/blender/countryside/backdrop-south-west.glb",
+      "tile": [
+        -23.5,
+        26.25
+      ],
+      "rotationY": 0,
+      "noCollide": true,
+      "backdrop": true,
+      "comment": "The countryside beyond the wall (#817): x -140..-48, z 40..170: south of outside-ground, cut at the river's line x -140 (#796). One of five pieces cut from one height field by tools/blender/packs/countryside.py, so a shared edge shares its heights. A backdrop: noCollide, no surface, nothing reachable (#703, #795). Check 4g holds it to the ground's sides and to fog.far past the eyes (#818)."
     }
   ],
   "braziers": [

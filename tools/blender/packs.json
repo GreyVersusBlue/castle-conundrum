@@ -3,6 +3,30 @@
   "packs": {
     "calibration": {
       "extraColours": []
+    },
+    "evidence": {
+      "extraColours": [
+        {
+          "colour": "#e6d9a8",
+          "why": "Tallow. The candle-count quest and the chapel candle clue are tallow candles, and the castle's palettes stop at plaster #cbbfa3, which reads as stone beside a wall of it, not as a candle."
+        }
+      ]
+    },
+    "countryside": {
+      "extraColours": [
+        {
+          "colour": "#b89d55",
+          "why": "Wheat, and the rick. The castle's palettes have no yellow above plaster #cbbfa3 and wooden_gate's browns, so a field of standing corn at 60 m in the fog would read as bare earth or as stone."
+        },
+        {
+          "colour": "#6b7a3a",
+          "why": "Meadow. Every green in tools/pixel/textures.json is forest_ground_06 or grassy_cobblestone, moss and shade at most #5b6a36, and a hay meadow beside a ploughed strip needs one green lighter than the slopes behind it, or the fields are one colour under fog."
+        },
+        {
+          "colour": "#7e6a3e",
+          "why": "Thatch, for the longhouse and barn roofs. The castle roofs are slate and tile, and a farm under a slate roof reads as a second castle at 100 m."
+        }
+      ]
     }
   },
   "rows": [
@@ -16,6 +40,158 @@
       "plank": 0.03,
       "gap": 0.012,
       "batten": 0.09
+    },
+    {
+      "pack": "evidence",
+      "name": "aumbry-candles",
+      "script": "evidence.py",
+      "seed": "evidence/aumbry-candles/2026-10-01",
+      "why": "Dresses the candle-count quest (four tallow in the aumbry at Compline, three at Lauds) and data/lore.json's candle account; the three that are left, at 26, 22 and 18 cm. Not pressable, so no clue (#810).",
+      "width": 0.5,
+      "depth": 0.22,
+      "height": 0.36,
+      "board": 0.025,
+      "candles": [
+        0.26,
+        0.22,
+        0.18
+      ],
+      "candleRadius": 0.013,
+      "sides": 10
+    },
+    {
+      "pack": "evidence",
+      "name": "pricket",
+      "script": "evidence.py",
+      "seed": "evidence/pricket/2026-10-01",
+      "why": "Swaps for the `candle` evidence, `candles-chapel` (#811): one tallow candle in a pricket at the first turn of the Chapel Tower stair, wax pooled below it. The photoscanned brass candleholders it replaces were three candlesticks in a 1.08 m spread and 41,936 triangles.",
+      "stem": 0.76,
+      "feet": 0.36,
+      "rod": 0.022,
+      "pan": 0.075,
+      "stub": 0.04,
+      "stubRadius": 0.022,
+      "pool": 0.14,
+      "sides": 10
+    },
+    {
+      "pack": "evidence",
+      "name": "knife-barrel",
+      "script": "evidence.py",
+      "seed": "evidence/knife-barrel/2026-10-01",
+      "why": "Swaps for the `knife` evidence (#811), a herring: the kitchen knife, in the bakehouse, flour on it. A flour barrel with the knife stuck in the flour and its handle over the rim, in place of a kit barrel.",
+      "radius": 0.19,
+      "belly": 0.22,
+      "height": 0.58,
+      "rim": 0.02,
+      "flour": 0.03,
+      "lean": 45,
+      "enter": 0.04,
+      "blade": 0.16,
+      "handle": 0.1,
+      "sides": 12
+    },
+    {
+      "pack": "evidence",
+      "name": "ledger-desk",
+      "script": "evidence.py",
+      "seed": "evidence/ledger-desk/2026-10-01",
+      "why": "Swaps for the `ledger` evidence, `table-muniment` (#811): the works ledger open on a desk in the muniment room, 340 sheets received and 212 laid, in place of a photoscanned table with nothing on it.",
+      "width": 1.2,
+      "depth": 0.6,
+      "height": 0.74,
+      "top": 0.04,
+      "leg": 0.06,
+      "book": [
+        0.44,
+        0.3
+      ],
+      "lines": 7
+    },
+    {
+      "pack": "countryside",
+      "name": "backdrop-north",
+      "script": "countryside.py",
+      "seed": "countryside/2026-10-02",
+      "why": "North of the base ground, the whole north walk's view: fields under the wall, two farmsteads, woods on the slopes and the rim at z -170. One of five pieces cut from one height field (#817); placed as interiorProps `backdrop-north`, backdrop and noCollide.",
+      "cut": {
+        "min": [
+          -48,
+          -170
+        ],
+        "max": [
+          180,
+          -22
+        ]
+      }
+    },
+    {
+      "pack": "countryside",
+      "name": "backdrop-south",
+      "script": "countryside.py",
+      "seed": "countryside/2026-10-02",
+      "why": "South of the base ground: fields, two farmsteads and the rim at z 170. One of five pieces cut from one height field (#817); placed as interiorProps `backdrop-south`, backdrop and noCollide.",
+      "cut": {
+        "min": [
+          -48,
+          22
+        ],
+        "max": [
+          180,
+          170
+        ]
+      }
+    },
+    {
+      "pack": "countryside",
+      "name": "backdrop-east",
+      "script": "countryside.py",
+      "seed": "countryside/2026-10-02",
+      "why": "East of the base ground, between the north and south pieces: fields running out to the rim at x 180. One of five pieces cut from one height field (#817); placed as interiorProps `backdrop-east`, backdrop and noCollide.",
+      "cut": {
+        "min": [
+          36,
+          -22
+        ],
+        "max": [
+          180,
+          22
+        ]
+      }
+    },
+    {
+      "pack": "countryside",
+      "name": "backdrop-north-west",
+      "script": "countryside.py",
+      "seed": "countryside/2026-10-02",
+      "why": "North of outside-ground, beside the town: woods and the rim along the river's line at x -140, so the north end of the river runs under a hill and not into nothing. One of five pieces cut from one height field (#817); placed as interiorProps `backdrop-north-west`, backdrop and noCollide.",
+      "cut": {
+        "min": [
+          -140,
+          -170
+        ],
+        "max": [
+          -48,
+          -40
+        ]
+      }
+    },
+    {
+      "pack": "countryside",
+      "name": "backdrop-south-west",
+      "script": "countryside.py",
+      "seed": "countryside/2026-10-02",
+      "why": "South of outside-ground: one farmstead and the rim, as the north-west piece. One of five pieces cut from one height field (#817); placed as interiorProps `backdrop-south-west`, backdrop and noCollide.",
+      "cut": {
+        "min": [
+          -140,
+          40
+        ],
+        "max": [
+          -48,
+          170
+        ]
+      }
     }
   ]
 }

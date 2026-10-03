@@ -9,9 +9,12 @@ decision. Every "recommendation" below is exactly that, and the session that
 ships the row is the one that records the call with a number.
 
 One section per row still open in `BACKLOG.md`'s ranked table: 3, 4, 6, 7,
-9, 11, 13, and the rank 2 band (2a to 2e, and 2h, "Castle in Blender",
+9, 11, and the rank 2 band (2b to 2d, and 2h, "Castle in Blender",
 which is outside the Blender pipeline, #839). 2f and 2g shipped and their
-sections are deleted (#830 to #838). Rank 1, the pipeline, shipped too
+sections are deleted (#830 to #838); 2a shipped (#907) and its section is cut
+to what 2b cites and its open look; 2e shipped (#908) and its section is cut
+to its pointer and its open look; 13 shipped (#909) and its section is cut
+to its pointer. Rank 1, the pipeline, shipped too
 (#880 to #884); its section is cut to the two parts the packs cite. The red suite is closed; its section is a
 stub pointing at `HISTORY.md`. "Bodies" stays until 2c's and 2d's sections
 land, and is then deleted (#807).
@@ -139,230 +142,27 @@ in `npm test` (#53).
 
 ## Blender: evidence props
 
-**Rank 2a. Size 1. Model Opus 5. Where: Local: Blender. Gate: rank 1 shipped
-(#881). Lanes F and B.** The first pack after the calibration crate, and the one
-that proves `finish.mjs`, check 8 and `test/budget.mjs` on content a player
-presses E at. Everything under "What every Blender pack shares" in "Blender:
-what every pack shares" holds here and is not restated. Decided in `HISTORY.md` as
-#810, #811, #812, #816 and #819, against `86c72fb`; this section is the
-`builder` job those leave. Two increments, both class S, each one sitting on
-Devon's machine; a third is conditional on the GPU look.
+**Rank 2a. Shipped (#907), in two increments, against #810 to #812, #816 and
+#819.** Its row is retired from `BACKLOG.md` and `ROADMAP.md`. What other
+sections cite, and what is still open:
 
-**Amended by #830 (2026-09-25).** Increment 1 is now `chapel-aumbry` and
-check 1e only. `hall-goblet`, `clerk-seal` and `larder-vial` (one vial)
-are Devon's files, placed by 2f, "Blender: Devon's props, placed", and the
-#812 id throw ships there. Check 1e is green on 2f's 70 rows (0 hits over
-25 pressables, measured). Increment 2 is unchanged. `coin-pouch.glb` in
-`51735fa` is a candidate for the `pouch` swap in increment 3.
-
-**What the brief asked for, against the data.** The brief named a dagger, a
-goblet, vials, candles at several heights, a ledger and a seal.
-`data/mystery.json` has eleven evidence rows and none of them is a dagger, a
-goblet, a vial or a seal. What each of the six is, measured:
-
-| Brief | What the data has | Stand-in today | This pack |
-| --- | --- | --- | --- |
-| dagger | `knife`, "bakehouse barrel": "The kitchen knife, in the bakehouse, flour on it" (`knife-found`, a herring) | `detail-barrel.glb`, a kit barrel, in `courtyard.placements` | **swap**: `knife-barrel.glb`, a flour barrel with the knife's handle over the rim |
-| candles at several heights | `candle`, "chapel candles": "One tallow candle in a pricket at the first turn of the Chapel Tower stair. Wax pooled on the step below it"; `candle-count` quest: four tallow in the aumbry at Compline, three at Lauds | `brass_candleholders`, a photoscanned 1.08 m spread of three brass candlesticks, 7 primitives, 41,936 triangles | **swap**: `pricket.glb`, an iron floor pricket, a stub burnt to 4 cm, the wax pool; **dress**: `aumbry-candles.glb`, the aumbry with the three at 26, 22 and 18 cm |
-| ledger | `ledger`, "works ledger", behind the word-lock: "340 sheets received, 212 laid" | `WoodenTable_01`, a photoscanned table with nothing on it | **swap**: `ledger-desk.glb`, a desk with the ledger open on it |
-| seal | no evidence; `prisoner-story`: "with the Clerk's seal on the pass" | nothing | **dress**: `seal.glb`, the seal matrix, a stick of red wax and a folded pass, in the Clerk of Works' office |
-| goblet | no evidence; `steward-denies` ("He was drunk") against `hywel-sober` | nothing | **dress**: `goblet.glb`, pewter, on the Great Hall's table |
-| vials | nothing in any clue, quest or document | nothing | **dress**: Devon's `larder-vial` (2f, #830), on the kit crate `detail-crate-93` in the larder; not the calibration crate (`kitchen-crate`), which stands in the kitchen (#880) |
-
-Three swaps replace the thing the player presses; four dressings stand
-beside it or in a room with no evidence at all. No dressing is pressable,
-so no dressing is a clue, and no clue, deduction, press or station changes
-(#810).
-
-### Scope, increment 1: the four dressings (class S)
-
-- **`tools/blender/packs/evidence.py`**, importing `common.py`: one function
-  per asset, dispatched on the row's `name`. Round things (goblet, vials,
-  candles) are lathed at 8 to 12 sides; nothing is subdivided.
-- **`tools/blender/packs.json`**: four rows, pack `evidence`, each with a
-  `why` that names the clue it dresses or says it dresses none. The pack's
-  `extraColours`, at most 8: tallow, sealing wax, brass, pewter, two glass
-  and steel, each with a `why`. The palette union has no bright tallow,
-  wax red, glass or brass.
-- **`assets/blender/evidence/{goblet,vials,aumbry-candles,seal}.glb`** and
-  their `tools/blender/manifest.json` rows.
-- **`data/scene-config.json`, `interiorProps`**, four rows, spliced by
-  `tools/place.mjs` in the file's own ending (#584, #632), each with an
-  explicit `id`:
-  - `hall-goblet` on the Great Hall's `WoodenTable_01`, a free spot on its
-    top clear of the lantern and the candleholders; stacked by
-    `surfaceHeightUnder`, so the row comes after the table's.
-  - `larder-vials` is shipped by 2f as `larder-vial`, one vial on the kit
-    crate `detail-crate-93` in the larder at `yOffset` 0.45 (#830). Rank
-    1's crate stands in the kitchen, not the larder (#880), and nothing in
-    2a stacks on it.
-  - `chapel-aumbry` on the chapel's drum wall, `yOffset` 1.2 and
-    `noCollide`, the way `kite_shield` hangs in the hall. The builder picks
-    the arc, clear of the chapel's door and of every pressable (check 1e
-    below), and writes the tile in `HISTORY.md`.
-  - `clerk-seal` on the roped crate by the barrels in the Clerk of Works'
-    office (tile [-8.1, -1.85]), `yOffset` the crate's top off `partsOf`,
-    `noCollide`. Not on `works-ledger`, which is a pressable.
-- **`src/castle-plan.js`**: an `interiorProps` row whose `model` starts
-  `assets/` and carries no `id` throws, naming the model (#812). Today the
-  id is `p.model.split('/')[0]`, which is `"assets"` for every Blender
-  path, so the second Blender row would share an id with the first. Rank
-  1's crate row carries `id: "kitchen-crate"` (#880).
-- **`test/layout.mjs`, new check 1e, "nothing stands over a pressable"**
-  (#812): for every piece carrying `evidence`, `read` or `bell`, no other
-  non-ground piece overlaps its box in plan by more than 1 cm in x and in z
-  with its own base at or above the pressable's centre height and below
-  the pressable's base plus `EYE_HEIGHT`. That is the band between the
-  prompt's aim point and a standing eye, where
-  `InteractionSystem.hasLineOfSight` would meet it: `occluders()` is every
-  scene child but the bodies and the targets, and a dressing is neither. A
-  floor slab 4 m over a level-0 pressable is above the band, and a crate
-  under the gaol roll or the cloak is below it. A plan fact, so here and
-  not in `plan-vs-scene.mjs` (#529).
-- **`test/assets.mjs`**, check 8's caps block, one line:
-  `evidence: { triangles: 600, bytes: 32000 }` (#819).
-
-### Scope, increment 2: the three pinned swaps (class S)
-
-- **`tools/blender/packs.json`**: three rows, `pricket`, `knife-barrel`,
-  `ledger-desk`. Each asset is symmetric about its origin in x and z to
-  1 mm, so a rotation cannot move its box centre.
-- **`assets/blender/evidence/{pricket,knife-barrel,ledger-desk}.glb`** and
-  their manifest rows.
-- **`data/scene-config.json`**, each swap under #811's rule (same id, box
-  centre to 1 mm, footprint inside the old box):
-  - `candles-chapel`: `model` to `assets/blender/evidence/pricket.glb`, tile
-    **[5.69705, 4.30765]**, rotationY 0. That tile is the old box's centre,
-    (22.7882, 17.2306), over 4. The old tile [5.675, 4.325] was the
-    photoscan's origin, 0.114 m off its box centre, and is not where the
-    rail measures from. Footprint at most 0.4 x 0.4 m inside the old
-    1.08 x 0.43.
-  - `table-muniment`: `model` to `assets/blender/evidence/ledger-desk.glb`,
-    tile and rotationY 90 unchanged, since the table's box centre is its
-    tile (24.2, -16.6). Footprint inside 0.66 x 1.80.
-  - `knife`: the row leaves `courtyard.placements` and becomes an
-    `interiorProps` row, same `id` and `evidence`, `model`
-    `assets/blender/evidence/knife-barrel.glb`, tile [0.125, 3.825] (the
-    kit barrel's centre, (0.5, 15.3)), because `propPath` is read at the
-    `interiorProps` sites only. `tools/place.mjs` does not take
-    `courtyard.placements`, so that one row is cut by hand in the file's own
-    ending (#632). The piece's kind goes from `decor` to `prop`, which puts
-    it under check 1; it stands 0.86 m from the drum's centre and clears
-    the stone. Footprint inside 0.49 x 0.49.
-- **`data/mystery.json`**: the three evidence rows' `prop` become the three
-  new paths. `name`, `clue`, `watches`, `room` and every station unchanged.
-- **`test/mystery.mjs` check 1, one line**: the resolver for "every evidence
-  prop is a model already on disk" tests `e.prop.startsWith('assets/')`
-  before `.endsWith('.glb')` and takes such a path as repo-relative through
-  `propPath`. Today every `.glb` is joined to `kenneyBase`, so
-  `assets/blender/evidence/pricket.glb` reads as missing. **No station line
-  in `test/mystery.mjs` changes** (#529): check 2's four `PROP_CLEARANCE`
-  expectations stay byte-identical, which is the evidence that the pins
-  held.
-- **Untouched**: `data/npcs.json`, `data/populace.json`, `data/quests/`,
-  `src/save.js`, `src/interaction.js`, `test/plan-vs-scene.mjs`,
-  `test/budget.mjs`'s ceilings. The brass candleholders' pack stays on disk:
-  the hall's table still carries a set.
-
-### Acceptance
-
-`npm test` fifteen of fifteen after each increment. Each line names its
-suite and the break that turns it red from green (#34).
-
-1. **Check 8, the pack's lines** (`test/assets.mjs`), over seven new rows,
-   under `evidence`'s cap. **The break the builder quotes for increment 1 is
-   line 2's**: flip one byte of `goblet.glb`, expecting "assets/blender/
-   evidence/goblet.glb hashes to ..., the manifest says ...: it changed after
-   its render". Line 6 (the cap) is *local*: `goblet.py`'s lathe at 64 sides.
-2. **Check 1e** (`test/layout.mjs`), new, green on today's data before any
-   dressing lands; if it is red on today's data, that is a finding for
-   `HISTORY.md` before anything is placed. Break: `hall-goblet`'s tile set
-   onto `table-muniment`'s centre (after increment 2, `ledger-desk`), expecting
-   "hall-goblet stands over table-muniment, which the player presses E at".
-3. **The id rule** (`makePlan`, surfaced by every Node suite). Break: delete
-   `hall-goblet`'s `id`; `makePlan` throws naming
-   `assets/blender/evidence/goblet.glb`.
-4. **`test/mystery.mjs` check 1, the resolver.** Break: take the `assets/`
-   branch out; expecting "every evidence prop is a model already on disk"
-   to fail listing `candle`, `knife` and `ledger`.
-5. **The pins** (`test/mystery.mjs` check 2, unchanged). **The break the
-   builder quotes for increment 2**: `candles-chapel` at the old tile
-   [5.675, 4.325]. The Constable's put-back station at (5.9, 4.2) is then
-   1.03 m from the candle and the rail says nothing, so "the Constable back
-   at the candles at Prime" fails; restore the pinned tile and it prints
-   0.92 m again, as Hywel's line prints 0.34.
-6. **Held with no new line**: `test/layout.mjs` check 3e (each evidence
-   piece's model ends with its `prop`, in its room, base inside 1.5 m of the
-   floor), checks 1, 1b and 11; `validateMystery` and `validatePopulace` with
-   no station moved; `test/plan-vs-scene.mjs` diffing all seven boxes at
-   0.01 m, and its candles beat still finding a cell 0.9 to 2.8 m out that
-   offers the pricket; `test/built.mjs` serving the seven from `dist/`.
-7. **The budget, recorded, not asserted anew** (#816): increment 1 moves
-   the outer ward up 3 (goblet, vials, seal) and the inner up 1 (the
-   aumbry); increment 2 takes the inner ward down 6 (seven primitives of
-   candleholders become one) and removes 41,936 triangles no suite counts.
-   The builder writes the two lines `test/budget.mjs` prints, before and
-   after each increment, in `HISTORY.md`.
-
-### Open calls
-
-- **The brief's six against the data's eleven.** Recommend **three pinned
-  swaps and four dressings, as the table above**: the knife, the candle and
-  the ledger are evidence whose stand-in is the wrong object, and the other
-  three name no evidence, so they dress rooms rather than invent clues.
-- **Swap or dress, for the knife and the ledger.** Recommend **swap**: a
-  dressing on top of a pressable sits in its sight ray, and the target is
-  the one object the ray is not tested against, so what the player sees on
-  it has to be the target itself.
-- **Make the seal, the goblet or the vials pressable.** Recommend **no**: a
-  new pressable is a new clue with a `source`, which is `validateMystery`'s
-  and the mystery's shape, not an asset row's.
-- **Rename "chapel candles".** Recommend **no**: `plan-vs-scene.mjs`'s
-  candles beat and `npm run play`'s `examine('candle', 'chapel candles')`
-  read the name, and it still fits a chapel with an aumbry of three and a
-  stub on a pricket.
-- **Where the vials stand.** **Settled by #830 and #880: where 2f put
-  it**, Devon's one `larder-vial` on the kit crate `detail-crate-93` in the
-  larder. Recommend it stays: the calibration crate (`kitchen-crate`) cannot stand in the larder
-  (#880), a vial already stands on a crate there, and moving it onto the
-  kitchen crate buys nothing a suite or the look asks for.
-- **An `assets/` row with no id: derive or throw.** Recommend **throw**:
-  check 2's messages and `plan-vs-scene.mjs`'s tags name a piece by its id,
-  and a basename rule would give two goblets one id without a word.
-- **The pouch and the tally stick**, both a `detail-crate-small.glb` today.
-  Recommend **a conditional increment 3, only if the GPU look says a crate
-  for a tally stick reads wrong**: both are `courtyard.placements` (the
-  tally at level 2, where `interiorProps` cannot stand, since the plan
-  gives every `interiorProps` row `level: 0`), so it needs `propPath` at the
-  placement loop and at `test/assets.mjs`'s placement reference check
-  (#500), then the same pinned swap. Class S as written here.
-
-### Dependencies
-
-- **Gate: rank 1 shipped (#881).** `common.py`, the manifest and check 8 now
-  exist; `propPath` and the vial are 2f's (#830), and the vial stands on a kit
-  crate, not the calibration crate (`kitchen-crate`, #880).
-- **Lanes F and B.** Not beside another Blender pack (F), nor rank 4, rank 9
-  or rank 13's increments 2 and 3 (B).
-- **Rank 3**: increment 2 changes three things `npm run play` examines.
-  The next GPU run after it is the one that says the pricket, the barrel and
-  the desk still take E on a real screen (#53); run it from a worktree.
-- **2b after 2a**: 2b's increment 3 uses #811's pin, and check 1e is the
-  rail 2b's sets stand under.
-
-### Constraints
-
-- #529: check 1e is `layout.mjs`'s; `mystery.mjs` changes one resolver line
-  and no station line; `plan-vs-scene.mjs` gains nothing.
-- #785, #792: `PROP_CLEARANCE` is measured to a pressable's box centre, so
-  a swap pins the centre and a dressing is not pressable.
-- #500: one `propPath`, read by the resolver too. #390: each asset and its
-  row in one commit. #584, #632: spliced, own line ending, including the
-  hand-cut `knife` row.
-- #611, #816: no ceiling moves. #499: seven files under 32 KB each.
-- #13, #34, #147: every line above has its break.
-- #53: whether the pricket reads as a candle is a GPU look.
-- #801 to #808, #810 to #812, #816, #819.
+- **Check 1e, "nothing stands over a pressable"** (`test/layout.mjs`, #812):
+  for every piece carrying `evidence`, `read` or `bell`, no other non-ground
+  piece overlaps its box in plan by more than 1 cm in x and in z with its own
+  base at or above the pressable's centre height and below the pressable's
+  base plus `EYE_HEIGHT`. Green over 25 pressables. 2b's sets stand under it.
+- **#811's pin**: a swap keeps its piece's id and its box centre to 1 mm, with
+  the new footprint inside the old box, so no station moves. Applied to
+  `candles-chapel` (pricket), `table-muniment` (ledger desk) and `knife`
+  (barrel). 2b's increment 3 uses it.
+- **Open: the GPU look (#53).** It belongs with the next rank 3 GPU run.
+- **Open and conditional: increment 3**, the pouch and the tally stick, both a
+  `detail-crate-small.glb` today in `courtyard.placements` (the tally at level
+  2, where `interiorProps` cannot stand). Built only if the look below says a
+  crate for a tally stick reads wrong; it needs `propPath` at the placement
+  loop and at `test/assets.mjs`'s placement reference check (#500), then the
+  same pinned swap. `coin-pouch.glb` in `51735fa` is a candidate for the
+  `pouch`. Class S.
 
 ### Looking checklist
 
@@ -377,11 +177,13 @@ suite and the break that turns it red from green (#34).
 ## Blender: an interiors kit
 
 **Rank 2b. Size 2+. Model Opus 5. Where: Local: Blender. Gate: rank 1 shipped
-(#881; after 2a, for check 1e and #811's pin). Lanes F and B.** Modular
+(#881; 2a shipped, #907, for check 1e and #811's pin). Lanes F and B.** Modular
 pieces that make the castle's working rooms read as what they are. "What
 every Blender pack shares" holds and is not restated. Decided as #813 to
 #816 and #819. Three increments: two class S, the third gated on rank 4's
 look.
+
+> **#920:** this row's build is gated on an `architect` re-check of #803's look against the photographic castle the game is heading for (#919); recommended answer, the look stands, since interiors keep the kit (#921).
 
 **Amended by #830 (2026-09-25).** `kitchen-hearth`, `hall-hearth` and
 `chapel-altar` are dropped, because 2f, "Blender: Devon's props, placed",
@@ -504,8 +306,7 @@ narrower, the increment comes back to `architect` first.
   things for a count a join gets to for nothing. A repeated bench costs a
   few KB of bytes, not a draw.
 - **The smithy and the stables.** Recommend **not in this row** (#814):
-  neither is a room, and a room is a layout call (rank 13's editor or a
-  rank 9 increment), not a kit's; #582 refused new rooms for volume. The
+  neither is a room, and a room is a layout call (the floor plan editor, #909), not a kit's; #582 refused new rooms for volume. The
   lore puts the forge "under the Prison Tower's wall" (year 12), which is
   outside the south curtain; a stable waits on a horse, which is 2d's to
   make or not.
@@ -517,9 +318,8 @@ narrower, the increment comes back to `architect` first.
 
 ### Dependencies
 
-- **Gate: rank 1 shipped (#881); 2a shipped** (check 1e, #811).
-- **Lanes F and B.** Not beside any Blender pack, rank 4, rank 9, or rank
-  13's increments 2 and 3.
+- **Gate: rank 1 shipped (#881); 2a shipped (#907)** (check 1e, #811).
+- **Lanes F and B.** Not beside any Blender pack, or rank 4.
 - **Increment 3 waits on rank 4's look** (#53), which is rank 3's machine
   and sitting.
 
@@ -799,8 +599,7 @@ clips on the four Quaternius bodies, and the eleven on `folk.glb`.
 - **Gate: rank 1 shipped (#881).** `common.py`, the manifest and check 8
   now exist.
 - **Lanes F and C.** Increment 1 holds both; increment 2 holds C only. Not
-  beside rank 6 (C), 2d (F and C), or 2a, 2b, 2e (F). Beside rank 9 or rank
-  4 (B) and rank 7 (E): yes.
+  beside rank 6 (C), 2d (F and C), or 2b (F). Beside rank 4 (B) and rank 7 (E): yes.
 - **Increment 2 after increment 1**, and only after its look passed.
 - **"Blender: the animals" follows this row** by letter, and uses
   increment 1's `/^bare$/i`, check 8's `materials` and `frame` amendment
@@ -972,7 +771,7 @@ follow, the hens' peck, the cow grazing. One sentence each in the entry.
 - **Gate: rank 1 shipped (#881)**, and 2c's increment 1 for the shared pieces above.
 - **Recommended after 2c's increment 2**, which frees the draw headroom this
   row spends (#828); before it, the argument is 380 to 394 and 205 to 213.
-- **Lanes F and C.** Not beside rank 6, 2c, 2a, 2b or 2e.
+- **Lanes F and C.** Not beside rank 6, 2c or 2b.
 
 ### Constraints
 
@@ -993,165 +792,15 @@ follow, the hens' peck, the cow grazing. One sentence each in the entry.
 
 ## Blender: the countryside beyond the wall
 
-**Rank 2e. Size 1. Model Opus 5. Where: Local: Blender. Gate: rank 1 shipped (#881)
-and after rank 9's increment 3b. Lanes F and B.** Hills, fields, tree lines
-and distant farms on every side the walls look out on, so that what lies
-past the curtain is land and not the fog's colour. "What every Blender pack
-shares" holds and is not restated. Decided as #816 to #819. One increment,
-class S.
+**Rank 2e. Shipped (#908), in one increment, against #816 to #819.** Its row is
+retired from `BACKLOG.md` and `ROADMAP.md`. What other sections cite, and what
+is still open:
 
-**What is there now, measured on `86c72fb`.** The base ground is x -48..36,
-z -22..22, the curtain plus 2 m. `outside-ground` is x -198..-48, z -40..40,
-west only, and rank 9's 3b cuts its west edge to -140 for the river. North,
-south and east of the base's 2 m apron there is nothing: `scene.background`
-is the fog colour, so from the north walk the land stops two metres out.
-The eyes (every reachable cell 8 m up, 4d's set) run x -38.25..26.25, z
--17.25..17.25, and the highest stands at 12 m, an eye at 13.7. Fog is
-`smoothstep(30, 150, depth)`, the camera's far plane 300. The town's walls
-reach z -34..30.
-
-**The shape** (#817). One seeded height field over **x -140..180, z
--170..170**, cut into **five backdrop pieces** that, with the two grounds,
-tile that rectangle edge to edge:
-
-| Piece | Box in plan | Tile (centre / 4) |
-| --- | --- | --- |
-| `backdrop-north` | x -48..180, z -170..-22 | [16.5, -24] |
-| `backdrop-south` | x -48..180, z 22..170 | [16.5, 24] |
-| `backdrop-east` | x 36..180, z -22..22 | [27, 0] |
-| `backdrop-north-west` | x -140..-48, z -170..-40 | [-23.5, -26.25] |
-| `backdrop-south-west` | x -140..-48, z 40..170 | [-23.5, 26.25] |
-
-Cut from one field, two pieces sharing an edge share its heights by
-construction. No piece crosses the river's line at x -140, and nothing is
-built west of the water (#796 stands: no far bank).
-
-### Scope (class S)
-
-- **`tools/blender/packs/countryside.py`**, importing `common.py`. The
-  field's constants live in the script; each row carries only its `cut`.
-  Heights: 0 within 10 m of either ground rectangle; rising through fields
-  and slopes; a crest of at least 20 m along every edge that touches nothing
-  (the rim, #818). Fields are swatch-coloured faces of the field in its low
-  ground; tree lines are low-poly clumps along field edges; woods on the
-  slopes; four to six farmsteads (a longhouse, a barn, a fence, a rick) at 60
-  to 130 m from the curtain, none nearer than 40 m. All of a piece is joined
-  into one mesh: one draw.
-- **`tools/blender/packs.json`**: five rows, pack `countryside`, one shared
-  seed, `extraColours` at most 8 (wheat, meadow, thatch, each with a `why`).
-- **`assets/blender/countryside/*.glb`**, five files; manifest rows.
-- **`src/castle-plan.js`**: an `interiorProps` row may carry `backdrop:
-  true`, and the piece carries `backdrop: true`. A `backdrop` row without
-  `noCollide` throws, because a colliding prop pushes its box top as a
-  surface and a 20 m surface over the countryside is a floor nobody built.
-  Nothing else changes: with `noCollide` a prop pushes no collider and no
-  surface, so the fill, `surfacesAt`, check 4e and check 12 never see it.
-- **`data/scene-config.json`, `interiorProps`**: five rows, ids and tiles as
-  the table, rotationY 0, `noCollide`, `backdrop`. Spliced (#584, #632).
-- **`test/layout.mjs`, new check 4g, "the countryside meets the ground and
-  runs into the fog"** (#818), over every `backdrop` piece:
-  - its box's min y is 0 within 1 mm;
-  - in plan it overlaps no ground piece and no other backdrop piece;
-  - every side of `ground` and `outside-ground` (read by id, and the check
-    stops if either id is missing, as `budget.mjs` does for the cross-wall)
-    is met along its whole length by a backdrop piece's side or another
-    ground piece's, except `outside-ground`'s west side, which is the
-    river's (#796). That is the seam rule: a gap is a line of fog colour
-    between the land and the apron;
-  - for each axis in which its box lies wholly beyond the base ground, its
-    far side is at least `config.lighting.fog.far` from the nearest of 4d's
-    eyes along that axis, except a side on `outside-ground`'s min x, which
-    #796 gives to the fog. Measured today: north 152.75, south 152.75, east
-    153.75, north-west and south-west 152.75 in z.
-  - If no piece is a backdrop, it fails saying it measured nothing.
-
-  4d's eyes come from the one function 3b lifted for 4d and 4f, not a copy.
-- **`test/assets.mjs`**, check 8's caps block, one line:
-  `countryside: { triangles: 6000, bytes: 160000 }` (#819).
-
-### Acceptance
-
-`npm test` fifteen of fifteen. Each line has its break (#34).
-
-1. **Check 4g, the seam.** **The break the builder quotes**:
-   `backdrop-east`'s tile to [27.25, 0], 1 m east, expecting "ground's east
-   side at x 36 is met by nothing over z -22..22". (A rule that only asked
-   each piece to touch something stays green here, because the moved piece
-   still touches the north and south pieces along z -22 and 22; that is why
-   the rule is written from the ground's sides.)
-2. **Check 4g, overlap.** Break: `backdrop-north`'s tile to [16.5, -23.75],
-   1 m south: it overlaps `ground` by 1.00 m in z.
-3. **Check 4g, the far side.** Break: `backdrop-north`'s `cut` to z
-   -100..-22 and a re-render, *local*: the far side is 82.75 m from the
-   nearest eye, inside 150.
-4. **The throw.** Break: delete `noCollide` from `backdrop-south`; `makePlan`
-   throws naming it.
-5. **Checks 4d and 4f, unchanged**, with the five boxes among their
-   occluders, which only makes them harder to pass. Every box lies at
-   |z| >= 22 east of x -48 and |z| >= 40 west of it; the lines 4d and 4f
-   print today (the quay's ridge from `west-curtain-north-walk`, the water
-   from `sw-tower-stair-3`, the yard from the North-west Tower's roof) run
-   at z -17..16 and meet none of them. The builder records the printed lines
-   as unchanged; if one moves, it is still a pass and the new line goes in
-   `HISTORY.md`; if one fails, the piece is lowered near the castle, and the
-   town is not moved.
-6. **Checks 1, 4, 4c, 4e, 10, 11, unchanged**: the backdrop is clear of
-   stone, the castle is still sealed, no surface lies over the water, and no
-   room has a backdrop piece's centre in it.
-7. **`test/budget.mjs`, unchanged** (#816): five meshes, all outside both
-   wards, so five more in each ward's sum. The builder records the printed
-   lines before and after.
-8. **Check 8** over five rows under `countryside`'s cap; line 6 is *local*:
-   the field at a 1 m grid.
-
-### Open calls
-
-- **Pieces or ground.** Recommend **pieces with `backdrop` and
-  `noCollide`** (#817): a `ground.outside` box is a flat walkable surface
-  that check 10 and the rank-5 check hold, and a hill is neither.
-- **One mesh, five, or many.** Recommend **five, cut from one field**: five
-  draws, and the edges match without a rule to hold them.
-- **How far.** Recommend **to `fog.far` past the nearest eye** (170 north
-  and south, 180 east): short of it, the land ends in a line against the
-  background; past it, it is bytes nobody sees.
-- **The rim.** Recommend **a crest of at least 20 m on every edge that
-  touches nothing** (#818): the highest eye is 13.7 m, so a crest above it
-  hides the field's back edge the way a horizon does.
-- **West of the river.** Recommend **nothing** (#796 stands).
-- **The forge under the Prison Tower** (lore year 12). Recommend **not
-  here**: it is a building by a wall, not country, and 2b's #814 names it.
-- **Beasts in the fields.** Recommend **none**: a body is 2d's and costs a
-  skinned draw and an `AnimationMixer` against a per-ward ceiling at 20 of
-  20 on the walking day.
-- **Shadows.** Recommend **as the builder does now**: the sun's shadow
-  camera is 80 m square (`scene-setup.js`, -40..40), so at most each piece's
-  inner 18 m is ever drawn into the shadow map.
-- **A triangle ceiling.** Recommend **none** (#816): the five cap at 30,000
-  and are expected near 12,000, against about 234,000 in the castle's static
-  pieces, of which the two photoscanned candlestick sets are 83,872.
-
-### Dependencies
-
-- **Gate: rank 1 shipped (#881), and rank 9's 3b shipped.** 3b sets the ground's
-  west edge at -140 that the two west pieces are cut to, and lifts 4d's eyes
-  into the function 4g calls.
-- **Lanes F and B.** Not beside any Blender pack, rank 4, rank 9, or rank
-  13's increments 2 and 3.
-- A later rank 9 increment that moves `outside-ground` breaks check 4g by
-  name; it re-cuts the field in the same commit.
-
-### Constraints
-
-- #796: no far bank; the water runs into the fog. #795: nothing here is a
-  surface. #703, #704: nothing out there is reachable.
-- #500: the field's ground rectangles are typed in the script and check 4g
-  is what holds them to the plan, the way check 1d holds a roof's base.
-- #529: 4g is plan arithmetic and `layout.mjs`'s; `plan-vs-scene.mjs` gains
-  nothing.
-- #611, #727, #816: every piece is paid in both wards; no ceiling moves.
-- #390, #499, #506, #584, #632. #13, #34, #147.
-- #53: whether it reads as land at each bell is the GPU's.
-- #801 to #808, #816 to #819.
+- **Check 4g** (`test/layout.mjs`, #817, #818): the five backdrop pieces sit on
+  y 0, overlap nothing, meet every side of `ground` and `outside-ground`, and
+  their far sides lie past `fog.far` from the nearest eye. A `backdrop` row
+  without `noCollide` throws in `src/castle-plan.js`.
+- **Open: the GPU look (#53).** It belongs with the next rank 3 GPU run.
 
 ### Looking checklist
 
@@ -1188,6 +837,7 @@ section is the `builder` job those decisions leave. Nothing
 under `tools/castle3d/` exists on `e05ac72`. **The game loads none of it**:
 no file under `src/`, `data/`, `assets/` or `test/` changes in any
 increment, `npm test` stays fifteen of fifteen, and the integration row
+(rank 2i, shape decided in #919 to #924, spec after increment 9's numbers)
 that would change that is not this one (#839).
 
 **The shape, in one line**: Node writes `blueprint.json` from `makePlan`;
@@ -1778,7 +1428,7 @@ turn it red from green (#34). The report quotes the failing line.
 - **Increment 9.** A full build writes `castle.blend`, `castle.glb` and
   `markers.json`, and `npx gltf-transform inspect castle.glb`'s size,
   triangle count and texture memory are written into `HISTORY.md`. Those
-  are the numbers the integration row argues from (#611).
+  are the numbers the integration row (2i) argues from (#611, #923).
   *Corrected 2026-10-02 (#897, #898)*: after 7b and 8, a plain `npm run
   castle3d:build` runs the ten stages, saves `castle.blend`, passes
   `check.py`'s nine lines, runs `export.py` in a third Blender and
@@ -1808,7 +1458,7 @@ walks, in daylight, at the five places the game's own player stands?
   the east curtain at 36, and the plan's span sets it, not a guess.
 - **The river and a moat.** Recommend **neither in this row until rank 9's
   3b ships**: the river's course is rank 9's layout decision (#795 to
-  #798), and when 3b lands the terrain stage reads its piece out of the
+  #798), and since 3b landed (#870 to #872) the terrain stage reads its piece out of the
   blueprint like any other. The road to the west gate is in.
 - **UVs or projection on built stone.** Recommend **box projection with a
   0.2 blend on world coordinates for walls, floors and ground, and the
@@ -1895,7 +1545,8 @@ walks, in daylight, at the five places the game's own player stands?
 - **Where the markers go on export.** Recommend **`markers.json` in the
   game's frame, and nothing in `castle.glb`**: a marker mesh in the glb is
   something a renderer draws, and a JSON in the blueprint's shape can be
-  diffed against `makePlan` in Node by the integration row.
+  diffed against `makePlan` in Node by the integration row, at 0.5 m with
+  each exception an `allow.json` entry; the game never reads it (#919).
 - **blender-mcp's config.** Recommend **local scope (`claude mcp add
   --scope local`), not a committed `.mcp.json`**: the server's path is
   `C:\Users\devon\.blender-mcp\...`, and a committed absolute Windows path
@@ -3541,7 +3192,7 @@ piece, so no `modelOnly` and no `allow.json` entry.
   prop set deeper into a wall is the plan's fault, for the lead. The skin is
   taken whole along each edge, openings included, so the rule is the
   blueprint's alone and `--only props` needs no `PLASTER_` object. The
-  report prints each push. For the integration row (#839): a push of under
+  report prints each push. For the integration row (#839, 2i): a push of under
   a centimetre on four `noCollide` props moves nothing a body meets.
 - **The floating decks (#868).** They are closed by realising the posts the
   plan already has, as #854's ruling 10 and #859 said, with no model-only
@@ -4574,10 +4225,13 @@ rendered twice each on the RTX 3070 Ti.
   with lane F, so it may run beside a rank 1 or rank 2 session; that is two
   Blenders on one machine and Devon's call. Both add a line to
   `package.json`'s scripts, a one-line merge.
-- **Rank 9's quay and river**: not a gate. If 3b ships first, increment 1
-  picks the water up from the blueprint.
-- **The integration row**, unspecced and unranked (#839), is gated on
-  increment 9, whose `gltf-transform inspect` numbers it argues from.
+- **Rank 9's quay and river**: shipped (#870 to #872), not a gate.
+  Increment 1 picks the water up from the blueprint.
+- **The integration row**, ranked 2i, shape decided in #919 to #924, full
+  spec waits on increment 9's `gltf-transform inspect` numbers, which it
+  argues from (#923). Lane G. It will open the outer gate and the four drum
+  doors in the model (#922), which changes `tools/castle3d/` after this row
+  closes.
 - **Rank 4**: its increment 2 is superseded by this row (#839); its
   looking checklist is unaffected and runs in rank 3's sitting.
 
@@ -4591,7 +4245,8 @@ rendered twice each on the RTX 3070 Ti.
 - #500: `blueprint.json` is `makePlan`'s output, computed once, never
   committed, never re-derived.
 - #506: nothing reaches `assets/`, so nothing is encoded; that is the
-  integration row's.
+  integration row's (2i; ceilings and encode argued from increment 9's
+  numbers, #923).
 - #529, #611: no assertion moves and no ceiling moves; no suite gains a
   line.
 - #13, #34, #147: every `check.py` line and every launcher refusal has its
@@ -4671,9 +4326,10 @@ compositing eleven times over four sittings (#624 to #630, #708 to #715,
 holds: the sentry's and the porter's sighting beats pass, the accusation
 selects 3 of 3, and the whole day and the whole second day have now been
 walked by `npm run play` for the first time. **What is left is exit 0**:
-run 5 of the fourth sitting still ends 212 ok, 6 failures, filed as rank 3a
-(Play Again does not start over) and rank 3b (three small suite and data
-bugs), and the phone in the room (#530) is untouched.
+run 5 of the fourth sitting still ends 212 ok, 6 failures. Rank 3a (Play Again
+does not start over, #916) and rank 3b (three small suite and data bugs,
+#917) have since shipped in Node, leaving one more GPU run, and the phone in
+the room (#530) is untouched.
 
 **The judgement half of this row is done.** Every render question this
 section used to list is answered in `HISTORY.md`: the twelve at Vespers
@@ -4703,6 +4359,18 @@ button size and two render numbers are all still guesses.
 - No new guard-rail: the run is the check. The `snap` beat is a screenshot,
   not an assertion, and says so in its comment.
 
+**The quay through the fog, moved here from rank 9 (#910).** One more
+pinned-camera shot through `tools/shot-yard.mjs`, spawn untouched
+(`validatePopulace` refuses it): do the toll-house's slate ridge (about
+98 m, 60 % fog) and the river (84 % fog, first seen at (-155, -3) from
+`floor-sw-tower-roof`, 119.7 m, through the west gate) read at all. If not,
+the lever is `lighting.fog` (#796), not the town or the west wall.
+**Stills exist, verdict owed** (#900): `q1` to `q5` and the two `x3` crops
+in `looks/2026-10-03/`, from both west tower roofs and the west walk at
+Terce, Prime and Vespers. #900 reads the gate as fog colour, the ridge as a
+small grey point and no water told apart; that is the session's reading,
+not Devon's, and this item stays open until he judges them.
+
 ### Dependencies
 
 - **Gated on "Sight at the body's own height," which shipped 2026-09-21**
@@ -4710,9 +4378,9 @@ button size and two render numbers are all still guesses.
 - The run needs a machine with a GPU, which is Devon's; a session can add a
   beat and cannot run it. If a session is asked to take the run without one,
   the honest output is the beat and a note, not a claim.
-- **What exit 0 still owes**: rank 3a (Play Again does not start over,
-  #889) and rank 3b (the last three standing failures, #890), both specced
-  below.
+- **What exit 0 still owes**: rank 3a (Play Again, #889) shipped (#916) and
+  rank 3b (the last three standing failures, #890) shipped (#917). One more
+  GPU run is owed, and it confirms both.
 
 ### Constraints
 
@@ -4723,101 +4391,39 @@ button size and two render numbers are all still guesses.
 
 ## Play Again starts over
 
-**Rank 3a. Size ¼.** `src/main.js:285`'s restart is `auto.stop();
-slot.reset(); window.location.reload();`. `src/gvb-save.js`'s `autosave`
-`stop()` clears the timer and leaves `dirty` true; the same autosave flushes
-on `pagehide`, so the reload writes the ended game straight back over the
-reset before the fresh page can read it (#889). A player at the end of the
-game cannot start a new one without clearing site data by hand.
+**Rank 3a. Shipped (#916), in one increment, against #889.** Its row is
+retired from `BACKLOG.md` and `ROADMAP.md`. What other sections cite, and what
+is still open:
 
-### Scope
-
-- `src/gvb-save.js`'s `autosave` function.
-- `src/main.js:285` if the chosen fix needs it.
-- A Node test in `test/save.mjs`, the suite that already imports
-  `gvb-save.js` directly.
-
-### Acceptance
-
-- After `restart()` runs and a `pagehide` fires, the saved key under
-  `castleConundrumSave_v1` is gone, not the ended game.
-- `npm run play`'s three Play Again beats pass on a GPU (#886 to #891).
-- `npm test` fifteen of fifteen.
-
-### Open calls
-
-- **How to stop the write.** Recommend `stop()` also sets `dirty = false`,
-  the smallest change: `slot.reset()` runs before the reload either way, and
-  a `dirty` flag that is already false has nothing left to flush. The two
-  alternatives cost more for no gain — removing the `pagehide` flush breaks
-  the mid-day reload it exists for, and reordering `restart()` still races
-  the same flush on a slow disk.
-
-### Dependencies
-
-- Lane D (`src/main.js`'s player rig and spawn), which rank 6 and rank 11
-  also hold.
-- #34: the break is putting `dirty` back and watching the new test fail.
-
-### Constraints
-
-- #36: the storage key does not change.
-- No `SAVE_VERSION` bump: this is a write-timing bug, not a schema change.
+- **The fix**: `src/gvb-save.js`'s `autosave` `stop()` sets `dirty = false` as
+  well as clearing the timer, so `restart()`'s `slot.reset()` is not written
+  back by the `pagehide` flush. `src/main.js` is unchanged; no `SAVE_VERSION`
+  bump (#36).
+- **Held by** `test/save.mjs` section 6, 8 assertions, with a control that
+  shows a mark then `pagehide` does write.
+- **Open**: the three Play Again beats in `npm run play` need a GPU run (#53),
+  which stays with rank 3. The fix is not carried back to tools-and-games'
+  `assets/js/gvb-save.js`.
 
 ---
 
 ## play-castle's last three failures
 
-**Rank 3b. Size ¼.** Three unrelated breaks surfaced by the fourth GPU
-sitting, each in `test/play-castle.mjs` or the data it reads, none of them
-a sight or a walk bug (#890).
+**Rank 3b. Node half shipped (#917), against #890.** Its row is retired from
+`BACKLOG.md` and `ROADMAP.md`.
 
-### Scope
-
-- `test/play-castle.mjs`.
-- `data/scene-config.json`, for whichever of (b)'s two moves turns out to be
-  the fix.
-
-### Acceptance
-
-- All three beats pass in `npm run play` on a GPU; #53 applies.
-- `npm test` fifteen of fifteen.
-
-### Open calls
-
-- **(a) The wall-height check.** It matches zero meshes: no mesh is named
-  `wall_` or `wall-half` since the walls became the castle's own
-  pixel-material boxes (#742). Recommend **delete the check**:
-  `test/plan-vs-scene.mjs` already holds every wall's live box to the plan
-  at 0.01 m (#500), which is the same fact this check was trying to reach by
-  a name that no longer exists.
-- **(b) The brazier sealed inside the stonework.** The Great Hall's brazier
-  at tile (-5, 2.5) stands inside `gothic_statue`'s box, moved there by the
-  hall cluster's +2.0 m shift. Recommend **move the statue, not the
-  brazier**, about 1.2 m along the hall so its 1.5 m box clears the
-  brazier's bowl: the brazier's position is load-bearing for the chapel-
-  candles aim fix (#721 to #724) and the statue's is not. The porter's-gate
-  pair at (-4.8, -2.4) and (-4.8, 2.4) reads inside some root named "Scene"
-  this sitting did not identify; identify that root before deciding whether
-  that half of the check is right.
-- **(c) #659's journal walk.** Ten GPU readings now run 0.51 to 1.30 m
-  against a flat `> 1.0 m` threshold. Recommend asserting the walk against
-  the same walk measured with no journal opened, as a ratio, rather than
-  against an absolute metre: a ratio holds regardless of which geometry the
-  chapel happens to route the player past that run.
-
-### Dependencies
-
-- Lane B (`data/scene-config.json`), which rank 4 and rank 9's increments
-  also hold.
-- (b) and (c) need a GPU run to confirm; (a) is a deletion a container can
-  make and a Node suite can carry.
-
-### Constraints
-
-- #53 for (b) and (c).
-- #529: no assertion of (a)'s or (b)'s kind moves into `layout.mjs` or
-  `mystery.mjs`; both stay where `plan-vs-scene.mjs`'s seam already is.
+- **The fixes**: (a) the wall-height check is deleted from
+  `test/play-castle.mjs`, as recommended; `test/plan-vs-scene.mjs` holds
+  every wall's live box to the plan at 0.01 m (#500). (b) `gothic_statue`
+  moved 1.2 m west along the hall, tile x -5 to -5.3 in
+  `data/scene-config.json`; the brazier did not move. (c) #659's journal walk
+  is asserted as at least 0.5 of a baseline walk taken before the journal is
+  opened.
+- **Held by**: nothing in `npm test`. The beats live in
+  `test/play-castle.mjs` and only `npm run play` runs them.
+- **Open**: all three beats need a GPU run (#53), which stays with rank 3.
+  The porter's-gate pair's root is not identified. The furniture wall check's
+  `/^(wall|tower|column)/` still matches no wall.
 
 ---
 
@@ -4836,8 +4442,8 @@ are below; the second and third increments wait on the look (#53).
 **Increment 2 is superseded by "Castle in Blender" (#839), and nothing
 shipped here is reverted.** The game keeps the fifteen pixel textures,
 `pixelMaterials`, check 3b, `RELIGHT_KIT` and `MAX_TEXTURE_MB` until the
-integration row that puts the realistic model in the game ships; forty
-per-room textures would be deleted that day. What is left of this row is
+stage of the integration row (2i) that swaps the last surface wearing one
+ships (#921); forty per-room textures would be deleted that day. What is left of this row is
 the looking checklist at the end of this section, and a fix if the look
 finds a hole.
 
@@ -5039,8 +4645,8 @@ this row is below.
 
 ### Scope, what is left
 
-- **The rest of the fifty waits on the town** (rank 9): more bodies, and
-  whether `garden` becomes ground, is that row's call (#618, #703 to #707).
+- **The rest of the fifty waited on the town** (rank 9, shipped): more bodies, and
+  whether `garden` becomes ground, is this row's call (#618, #703 to #707).
 - **The ceiling stays 32 until a row renegotiates it, and the evidence it
   brings should be the GPU run's `renderer.info`, not a second guess** (#609,
   #729). Instancing and animation LOD are the tools for that argument, not
@@ -5049,13 +4655,137 @@ this row is below.
   the kitchen at Prime and stirs at Terce, the carter hammers at his cart in
   the outer ward at Terce, and the serjeant and the man-at-arms spar in the
   yard at Terce, facing each other, where they mustered. Same tiles, so no
-  ward count moved. `drill` is still in no routine, and `muster` is now in
-  none either.
-- **The twelve's 27-pair chatter pool stays unspent.** Recommend a later
-  lore or dialogue increment hold each pair to the schedule the way #592
-  holds a performance, which is the pass #554 named and skipped: 5 of the
-  27 survive a same-room rule as written, and the other 22 need a room and
-  a bell somebody authors (#731).
+  ward count moved. `muster` is in no routine, and `drill` is dropped
+  (#915), below.
+- **The twelve's 27-pair chatter pool is held to the schedule by increment
+  3, below** (#911 to #914): 10 pairs placed, 17 left for Devon.
+
+### Increment 3: the twelve's chatter held to the schedule, and `drill` dropped
+
+**Specified 2026-10-02** (#911 to #915). Class S from here: every open call
+below carries a recommendation, no save bump, no assertion crosses a suite
+line. Devon's limits hold: no schedule station moves, no pair is recast or
+rewritten, no body added, `MAX_SKINNED_TOTAL` and `SAVE_VERSION` (6)
+untouched.
+
+**Scope, by file.**
+
+- **`data/npcs.json` `chatter`.** Ten pairs gain `room`, and five of them
+  move to the watch key they are said at, keeping their `id` (#911). Moved
+  pairs are appended after the pairs already under that key, in the order
+  of this table. The other 17 are not touched.
+
+  | Pair | Room | Watch key | Moves from |
+  | --- | --- | --- | --- |
+  | `outer-terce-1` | `outer-ward` | `outer.terce` | stays |
+  | `outer-vespers-1` | `great-hall` | `outer.vespers` | stays |
+  | `outer-vespers-2` | `great-hall` | `outer.vespers` | stays |
+  | `outer-vespers-3` | `great-hall` | `outer.vespers` | stays |
+  | `inner-sext-1` | `kings-hall` | `inner.sext` | stays |
+  | `outer-prime-1` | `great-hall` | `outer.vespers` | `outer.prime` |
+  | `outer-terce-4` | `great-hall` | `outer.vespers` | `outer.terce` |
+  | `outer-sext-2` | `great-hall` | `outer.vespers` | `outer.sext` |
+  | `inner-terce-1` | `kings-hall` | `inner.sext` | `inner.terce` |
+  | `inner-terce-4` | `chapel` | `inner.prime` | `inner.terce` |
+
+- **`data/npcs.json` `chatterComment`** says what a `room` is, that the
+  watch key is the bell a pair is said at and an id no longer spells it, and
+  that a pair with no `room` is unplaced and listed by `unplacedChatter`. It
+  drops "not one pair has its two speakers within 3 m" in favour of the
+  room rule. `performancesComment`'s "a chatter pair names neither" becomes
+  "a placed chatter pair names its room, and its watch key is its bell".
+- **`src/lore.js`.** `indexChatter` gains #592's station check for a pair
+  with a `room` (#912), with these messages, `where` being `chatter pair
+  <id>`: `${where}: in no room (${JSON.stringify(room)})`, `${where}: ${npc}
+  is not in the castle at ${watch}`, `${where}: ${npc} stands in ${st.room}
+  at ${watch}, not in ${room}`, `${where}: ${npc} is asleep at ${watch}`.
+  The `n.ward !== ward` check stays as it is. New export
+  `unplacedChatter(chatter)`: the ids of pairs with no `room`, in file
+  order, a report and never folded into `validateLore`'s list, as
+  `untoldFacts` is.
+- **`test/lore.mjs`** section 7, in that suite and no other (#529). The
+  existing `badChatter.outer.prime[0]` breaks keep working: that slot is
+  `outer-prime-2` after the move.
+- **`src/populace.js`**: `drill: 'Drill'` leaves `ACTIVITY_CLIPS`, and the
+  two comments that say "`drill` is nobody's yet" and "`drill` is the
+  garrison's" say it was dropped (#915). **`data/populace.json`
+  `activityComment`**: "`sweep`, `stir`, `hammer`, `spar` and `drill`
+  resolve to" names the four, and "`drill` is still nobody's" becomes a
+  sentence citing #915.
+- **Not touched**: `data/lore.json` (ids are kept), `dialogue/castle.dlg`
+  and `tools/dialogue.mjs` (the chatter pool is not in the `.dlg`; 0 hits
+  for any pair id), `tools/bodies/clips.json`, the four `.glb` bodies,
+  `test/assets.mjs`'s `GENERATED_CLIPS`, `src/quest-manager.js`,
+  `src/main.js`, `data/mystery.json`, `test/budget.mjs`.
+
+**Acceptance, all in `test/lore.mjs` except 8.**
+
+1. As shipped, `validateLore` is clean, and `unplacedChatter` is exactly
+   the 17 of #914, compared sorted against a literal list, so a pair placed
+   or unplaced without this list moving is a failure.
+2. Ten pairs carry a `room`, and they are the table above, by id, room and
+   watch key.
+3. `outer-terce-1` given `room: "great-hall"` fails with "clerk stands in
+   outer-ward at terce, not in great-hall".
+4. `inner-prime-1` given `room: "porter-lodge"` fails with "steward stands
+   in kings-hall at prime, not in porter-lodge".
+5. `outer-prime-3` given `room: "guardroom"` fails with "sentry is asleep
+   at prime".
+6. A pair naming `merchant` under `outer.prime` with `room: "outer-ward"`
+   fails with "merchant is not in the castle at prime".
+7. A pair given `room: "nowhere-at-all"` fails with "in no room".
+8. `test/mystery.mjs` still passes with `drill` gone, and a routine stop
+   given `activity: "drill"` is refused by `validatePopulace`; the builder
+   quotes the message it prints.
+
+**The #34 break.** From green, delete the `st.room !== room` comparison in
+the new chatter check; assertions 3 and 4 must go red and the report quotes
+what each said. Then restore it and move `inner-terce-4` back under
+`inner.terce` with its `room` kept: the shipped baseline must go red with
+"constable stands in kings-hall at terce, not in chapel". #632: every new
+assertion reads data through `JSON.parse`, so no line ending reaches it; one
+that reads a data file's text builds both endings.
+
+**Open calls, each with a recommendation.**
+
+- **Which day's bells may hold a pair.** Recommended: day one's four only
+  (#911), because all ten placeable pairs have one and a `-eve` or `lauds`
+  pair would need #592's day-two absence rail for no pair that uses it.
+- **Does the ward key still have to match both speakers' `ward`.**
+  Recommended: yes, as #554 set it, because the key says who is talking and
+  the room says where; no placed pair puts an inner pair in an outer room.
+- **Several pairs in one room at one bell.** Recommended: allowed, in file
+  order (#912), because refusing it leaves the hall at Vespers one of its
+  six pairs.
+- **`inner-terce-1`'s bell, Sext in the King's Hall or Vespers in the
+  Great Hall.** Recommended: Sext, because the Constable's board is where
+  the coin is argued and the hall at Vespers already holds six pairs and a
+  song.
+- **Playback.** Recommended: not in this increment (#913), because it is a
+  second trigger in `QuestManager` with its own browser beat. What is left
+  for that increment: the twelve's pairs heard by room and bell rather than
+  by #732's 1.5 to 3 m between settled bodies; a performance first, then
+  the room's pairs in file order, one at a time, each once per page and
+  never saved (#39); the beat in `quest.mjs` and the wire in
+  `plan-vs-scene.mjs`, nothing Node can prove.
+- **The 17 unplaced pairs.** Devon's call (#914), options: move a station,
+  recast and rewrite, retire. Recommended: never move a station; recast and
+  rewrite the nine that are a fact's only teller (`outer-prime-3`,
+  `outer-terce-2`, `outer-cell-1`, `outer-sext-3`, `inner-prime-3`,
+  `inner-terce-2`, `inner-terce-3`, `inner-sext-3`, `inner-vespers-1`);
+  retire the other eight, because a station is an alibi and a retired sole
+  teller leaves a fact told by nothing. They stay unplaced here.
+- **`Drill` in the bodies.** Recommended: kept until rank 2c and 2d
+  re-render the bodies (#807, #915), because taking it out now is a
+  re-render for a clip nothing binds.
+
+**Dependencies.** None. Lanes C and D, as this row's earlier increments.
+`src/lore.js` and `test/lore.mjs` are in no other open row's scope.
+
+**House rules that bite.** #529 (the chatter rail in `lore.mjs`, the
+`drill` refusal in `mystery.mjs`), #13 (the unplaced list is asserted, not
+printed), #34 (the break above), #36 and #39 (no save field, `SAVE_VERSION`
+stays 6), #632 (above), #592 (the messages are its messages).
 
 ### Dependencies
 
@@ -5064,7 +4794,7 @@ this row is below.
 - **Lanes C and D**: `data/populace.json`, `data/npcs.json`'s comment and
   `src/main.js`'s one constructor. `src/quest-manager.js` is in no other
   open row's scope today.
-- **Not `data/scene-config.json`**, which rank 9 holds in lane B.
+- **Not `data/scene-config.json`**, which rank 4 and 2b hold in lane B.
 - **The GPU run** is what a later ceiling argument cites; this increment
   does not wait on it.
 
@@ -5238,321 +4968,28 @@ watch, from the chapel and then from the far ward):
 
 ## A castle to get lost in
 
-**Rank 9. Size 2+. The first increment as this section first specced it was
-already built, and the row's premise was corrected on 2026-09-17** (#582).
-**The map shipped the same day** (#588 to #591). `WISHLIST.md` theme 5.
-**The town's first increment shipped on 2026-09-21** (#725 to #728): a street
-of six houses and a church inside Mereford's wall, west of the town gate, seen
-from the walls and entered by nobody. **The quay and the river**, outside the
-west gate, specced below in two class-S increments (#795 to #798), **shipped
-on 2026-09-29, both increments** (#870 to #872): the measured numbers are in
-`HISTORY.md`. What is left of the row is the rock, which has no spec yet, and
-the GPU run's look at the quay (#53).
+**Rank 9. Retired (#910), against #582, #588 to #591, #725 to #728 and #795 to
+#798.** Its row is out of `BACKLOG.md` and struck through in `ROADMAP.md`.
+Devon dropped the rock on 2026-10-02 (#910): it will not be specced. What other
+sections cite, and what is open:
 
-### What was measured, and what it changed
-
-This section used to say "eight drums with three floors each is 24 rooms
-against about 6 in use" and ask for a floor slab and a `planId` for each
-unused one. That was written from `WISHLIST.md` rather than from the code, as
-this file's own header says of all eight sections added that day. Against
-`data/scene-config.json`: **every one of the eight drums carries a room at
-levels 0, 1 and 2**, four carry one at level 3, and the castle has **40
-rooms — 14, 11, 11 and 4 by level**, which is the count
-`test/plan-vs-scene.mjs` prints on every run. The four drums with no top room
-are the four with a 2.5 m turret, refused on arithmetic by #523: a 2.5 m
-turret in a 2.8 m ring leaves a 0.3 m ledge. There is no unused drum floor
-left to add.
-
-**What the castle has instead is nineteen empty rooms**: seven of the eight
-tower first floors, seven of the eight tower top rooms, all four roofs, and
-the larder hold no evidence, no station, no document and no prop. `PLAN.md`'s
-"an empty room is worse than no room" is the state of the castle rather than a
-risk to it, and more volume makes it worse — which is why the latrine turret
-and the well chamber this section also named were considered and refused
-(#582): they would have made the count 22, not filled any of the 19.
-
-### The map, shipped (#588 to #591)
-
-The journal's third tab, "The castle", is `src/stations.js`'s `nav.rooms()`
-drawn by `src/ui.js`: one inline SVG per storey, off the plan's own bounds
-and discs (#500). A room is entered once and marked `visited`, carried on
-the save since version 5 (#590). `test/map.mjs` is the suite (#591).
-
-### The town's first increment, shipped (#725 to #728)
-
-Mereford, west of the `town-wall` run: three wall runs closing a circuit
-with the west gate cut in, six houses, a church with a saddleback tower, all
-Kenney kit or Poly Haven pieces already in `assets/`, no new asset. Nothing
-in it is enterable — #703 stands, the castle is sealed. Two new rooms,
-`ward: "outside"`, drawn on their own map section rather than the castle's:
-`mereford-street` and `mereford-church`. `test/layout.mjs` gained check 4d,
-every outside room seen from somewhere a player can stand (from a wall walk
-or a tower roof, never lower); `test/budget.mjs` gained an `outside` bucket
-summed into both wards' ceiling, 131 meshes. `npm test` fifteen of fifteen.
-
-### The quay and the river, shipped (#870 to #872)
-
-**Shipped as specced below.** Where the build differed from the prototype:
-check 4f's first seen point is (-155, -3) from `floor-sw-tower-roof` at
-119.7 m after 221 of 1,120 points (the lattice is sorted by distance from the
-curtain's centre); the outside bucket is 161 as estimated, but the outer
-ward's sum is 1181 of 1200, not about 1154, because it started at 1151; and
-`tools/plan-sheet.mjs`, which this section's level -1 grep did not reach
-because it sorts by `y`, now draws everything under the ground storey on the
-ground storey's sheet (#872). The section below is kept as the spec it was
-built from.
-
-**Two increments, both class S, 3a first** (the map and the town were this
-row's first two). Decided before anything is
-built (#795 to #798), against `ec11009`, from a Node prototype that cloned
-`data/scene-config.json` in memory, added everything below, and ran
-`makePlan`, `walkability`, `surfacesAt` and check 4d's own sight test over
-it. The prototype is not committed; the builder writes each rail from this
-section and breaks it from green (#34).
-
-**What the stub under this heading got wrong.** It said water is a surface
-kind the plan lacks, that the walkability fill would call it floor, that
-check 12 would want a step sound for it, and that the ground has to go below
-y 0. Measured, only the second is true, and not of the water: with
-`outside-ground` left at x -198 over a river, **all 18,240 grid points of
-the water's footprint have `outside-ground` under them at y 0**, so what
-calls the river floor is the ground over it. Water is a piece and never a
-surface (#795): the ground stops at the bank, the water has no surface, so
-`surfacesAt` over it returns nothing, check 12 never sees it and no step
-class is added. Nothing that is a surface goes below y 0. What does is stone
-faces and the water plane, and a kit placement with a negative `base` takes
-`levelUnder`'s level -1; a grep of `src/` and `test/` finds nothing that
-reads a placed piece's `level` and breaks on -1, and the builder confirms
-it by the suites staying green.
-
-**What the kit has, measured with `partsOf`.** `water.glb` is 1 x 0.2 x 1,
-**its origin at a corner** (x -1..0, z 0..1), one primitive, a plane at 0.1
-with a ripple to 0.2, `KHR_materials_unlit`, opaque. `dock-side.glb` is
-1 x 0.5 x 1.1 (z -0.6..0.5, the 0.1 past -0.5 is the lip over the water),
-two primitives; `dock-corner.glb` is 1.1 x 0.5 x 1.1 with the lip on -x and
--z, two primitives. At scale 4 a dock piece is a 2 m stone face with its
-paved top at 2. `pulley-crate.glb` is three primitives, `barrels.glb` two,
-`detail-crate.glb` one. No boat in the kit.
-
-**What the player sees of it, measured.** The west town wall is 8 m and the
-nearest place 8 m up is 88 m east of it, so a line from the walls to
-anything low past that wall is under its top. **The quay room passes check
-4d on the toll-house's slate ridge and on nothing else**: with the ridge at
-9 m, 261 eyes see it, the first `west-curtain-north-walk` at (-35.75, 9.70,
--11.75); at 8 m, 64; at 7 m, none. The walls, the crane, the barrels and
-the crate are seen by nobody. **The water is seen only through the west
-gate**, from the tops of the two west towers: 134 of the 1,120 points of a 2 m
-lattice on its top, the nearest (-155, -3) at 119.2 m from
-`floor-sw-tower-roof`; with the gate's doorway deleted, none. Three's fog is
-`smoothstep(30, 150, depth)`, so the ridge at about 98 m is about 60 %
-fog and the nearest water about 84 %. That is what this increment buys, and
-the GPU run is what says whether it reads (#53).
-
-#### Scope, increment 3a: the toll-house and the quay (class S)
-
-- **`src/castle-plan.js`, `builtProps`**: an entry may carry `shape:
-  "gable"` and `ridge: "x"` or `"z"`. It is placed exactly as a slab is
-  (same `tile`, `size`, `base`, same box, same collider) and the piece says
-  `built: 'gable'` and carries `ridge`. Anything else in `shape`, or a
-  gable with no `ridge`, throws, the way a diagonal run does. The box is the gable's bounding box, which is
-  what `Box3` reports for a prism, so `plan-vs-scene.mjs`'s existing 0.01 m
-  diff holds it with no new line.
-- **`src/castle-builder.js`**: `buildGable(box, ridge, material, metres)`,
-  one mesh, a triangular prism filling the box: the two eaves at the box's
-  bottom along the ridge axis, the ridge at the top centre, two sloped faces
-  and two triangular ends, no underside. World-space UVs at `repeatMetres`,
-  the way `worldUVsOnBox` does it (u along the ridge, v up the slope's own
-  length), so the slate courses match the curtain's. `buildPiece` gains the
-  branch and `carriesOwnWorldPosition` gains `'gable'`. Without the branch
-  `test/budget.mjs` already fails naming the piece ("has no branch for it").
-- **`test/layout.mjs` check 1d**: the filter becomes `built === 'slab' ||
-  built === 'gable'`. The roof's `base` is the house's height typed a second
-  time, which is exactly the number check 1d exists for.
-- **`data/scene-config.json`** (spliced, #584, #632):
-  - `quay-toll-house`, a run `from [-34, -2] to [-33, -2]`, thickness 6,
-    height 6, `medieval_blocks_02`, `repeatMetres` 3, `interior: true`: x
-    -138..-130, z -11..-5, north of the road at the quay's head, 0.5 m clear
-    of `town-wall-west`. Stone, not plaster, because it is the King's.
-  - `quay-toll-house-roof`, a `builtProps` entry, `shape: "gable"`, `ridge:
-    "x"`, `tile [-33.5, -2]`, `size [8, 3, 6]`, `base 6`,
-    `castle_wall_slates`: the one slate roof in Mereford (`the-quay` in
-    `data/lore.json`), in the curtain's own stone, ridge at 9.
-  - Room `mereford-quay`, `ward: "outside"`, name **"The King's quay"**,
-    bounds x -140..-129.5, z -16..16, `floor: "stone_pavers"`. Inside
-    `outside-ground` in both increments; its centre (-134.75, 0) is on the
-    floor patch, which check 15 and `plan-vs-scene`'s anchor need.
-  - Three placements on the quay's floor so check 11 has something in the
-    room: `quay-crane`, `pulley-crate.glb`, tile [-34.6, 1.5], rotationY 90,
-    scale 2.5, at the water's edge; `quay-barrels`, `barrels.glb`, tile
-    [-33.5, 1.2], scale 2.5; `quay-crate`, `detail-crate.glb`, tile [-34.2,
-    2.6], rotationY 15, scale 2.5.
-- **No change** to `plan-vs-scene.mjs`, `data/lore.json`, `data/mystery.json`,
-  `data/sounds.json` or `data/populace.json`.
-
-#### Acceptance, increment 3a
-
-Each line names the suite and the break that turns it red from green (#34).
-
-1. **`test/layout.mjs` check 4d**, unchanged, now over four outside rooms:
-   `mereford-quay` seen by `quay-toll-house-roof`. Break: toll-house height
-   4 and the roof's base 4, ridge at 7: `mereford-quay is seen from
-   nowhere`. The yard, the street and the church still pass, which is the
-   control.
-2. **Check 1d on the gable.** Break: toll-house height 5 with the roof's
-   base left at 6: `quay-toll-house-roof has its base at y 6.00 and nothing
-   under it`.
-3. **Checks 3d2, 4c, 11 and 12, unchanged**: a name that is not its id, the
-   room clear of the curtain, on `outside-ground` and reached by nobody,
-   three things in it, and `floor-mereford-quay` resolving to the
-   `stone_pavers` step class the base already uses.
-4. **`test/budget.mjs`, unchanged**: the gable is one mesh through
-   `buildPiece`. Break: delete the `gable` branch; the "no branch" line
-   fails. The prototype's count for 3a is about 10 more outside meshes
-   (run 1, gable 1, floor 1, crane 3, barrels 2, crate 1, and `outside-ground`
-   re-cut round the new patch); the builder reads the real number off the
-   run and writes it in `HISTORY.md`.
-5. **`plan-vs-scene.mjs` and `map.mjs`, unchanged** and green: the gable is a
-   tagged piece the box diff already covers, and the outside drawing picks
-   up a fourth room by the plan's own list (#726).
-
-#### Scope, increment 3b: the water (class S)
-
-- **`src/castle-plan.js`, the placement loop's kind rule**: a model whose
-  name starts `water` is `kind: 'water'`, beside the `tower` and
-  `wall|column` rules. One line. It pushes no surface (placements never do)
-  and the config gives it `noCollide`.
-- **`data/scene-config.json`**:
-  - `outside-ground`'s box min x from -198 to **-140**, and `outside-road`'s
-    likewise. Both comments rewritten: the ground's west edge is the bank
-    now, and the fog's `far` is the water's to meet. Both still meet the
-    base box, so the rank-5 check is unchanged.
-  - `quay-water`, `water.glb`, tile [-35.25, -10], rotationY 0, scale [57,
-    1, 80], base -1.3, `noCollide: true`: x -198..-141, z -40..40, y
-    -1.3..-1.1. One mesh. The tile is the model's corner origin, not its
-    centre, and the comment says so.
-  - Six `dock-side.glb` at tile x -35.5, z -2.5 to 2.5 by 1, rotationY 90,
-    scale 4, base -2, and two `dock-corner.glb` at [-35.5, -3.5] rotationY 0
-    and [-35.5, 3.5] rotationY 90, same scale and base: the quay front,
-    x -144.4..-140, z -16.4..16.4, stone from -2 to a top flush with the
-    road at 0.
-  - Two bank runs, `quay-bank-north` `from [-35.125, -9.5] to [-35.125,
-    -4.6]` and `quay-bank-south` `from [-35.125, 4.6] to [-35.125, 9.5]`,
-    thickness 1, height 2, `base: -2`, `forest_ground_06`, `interior: true`:
-    x -141..-140, the earth face from the water up to the ground either side
-    of the quay, stopping at the dock corners' ends so the two do not
-    overlap.
-- **`test/layout.mjs`, new check 4e, "nothing stands on the water"**: for
-  every `kind: 'water'` piece, every point of a 0.5 m grid over its box's
-  footprint gets nothing from `surfacesAt`. A plan fact, so here and not in
-  `plan-vs-scene.mjs` (#529). If no piece is water, it fails saying it
-  measured nothing.
-- **`test/layout.mjs`, new check 4f, "the water is seen"**: for every water
-  piece, some point of a 2 m lattice on its top (0.05 m under the box's top,
-  as 4d does) has a clear segment from one of 4d's eyes, within
-  `config.lighting.fog.far` of it, past 4d's occluders less the water itself.
-  Nearest the castle first, stop at the first seen point. 4d's eyes and
-  segment test are lifted into one function both checks call, not copied.
-  Prototype: seen at (-155, -7) from `sw-tower-stair-3` at 120.9 m after
-  257 of 1,120 points, 98 ms; the full sweep on the break is 229 ms.
-- **`test/budget.mjs`**: no line changes (#798).
-
-#### Acceptance, increment 3b
-
-1. **Check 4e.** Break: put `outside-ground`'s min x back at -198; the
-   failure names `outside-ground` at y 0 over 18,240 of the water's 18,240
-   points, the prototype's count. Check 10 also names the two bank runs sharing a top
-   with `outside-ground`, which is the second net and not a reason to skip
-   the first.
-2. **Check 4f.** Break: delete `town-wall-west`'s doorway: `quay-water is
-   seen from nowhere`, 0 of 1,120 points.
-3. **Check 10, unchanged**: the bank runs and the quay floor touch
-   `outside-ground` at x -140 and share no top.
-4. **Check 4, unchanged**: sealed; the fill never leaves the castle.
-5. **`test/budget.mjs`, unchanged**: about 20 more outside meshes (docks 16,
-   water 1, banks 2, and the shorter ground re-cut). With 3a, the
-   prototype's outside bucket goes from 131 to about 161, the outer ward's
-   sum from 1124 to about 1154 of 1200, the inner's to about 804. The
-   builder records the measured numbers.
-6. **`plan-vs-scene.mjs`, unchanged**: every new piece is tagged and diffed.
-
-#### Open calls, the quay and the river
-
-- **Water as a surface of its own kind, refused by walkability, or as a
-  piece with no surface.** Recommend **a piece** (#795): a surface is
-  something a foot can land on, so a water surface would need a step class
-  that check 12's dead-class rail would then have to excuse, and a rule in
-  the fill to refuse it. No surface needs neither.
-- **A far bank.** Recommend **none; the water runs into the fog** (#796). A
-  far bank is ground touching nothing the rank-5 check accepts, and the lore
-  puts the castle on a river mouth ("four rivers running to the sea ... a
-  King's castle now on the mouth of each"), which is an estuary.
-- **The road "down through Mereford to the quay".** Recommend **flat**: a
-  gradient on ground nobody walks is a sloped ground piece the plan does not
-  have, seen at 90 m through fog as nothing.
-- **Bodies on the quay.** Recommend **none**, #707 as for the town.
-- **A boat.** Recommend **none in this row**: the kit has none, and a hull is
-  #787's generator's to make, with its own table row, if the GPU run says
-  the quay reads empty.
-  **Since #833**: Devon's `rowboat`, `quay-crane`, `net-rack`,
-  `fish-crates`, `mooring-post`, `mooring-bollard` and `toll-house-sign` are in
-  `51735fa`. This row may restore any of them in the commit that places
-  them, and pays for each in both wards (#727).
-- **A sound for the river.** Recommend **none**: `ambient.spatial.hearMetres`
-  is 14 and the nearest place the player stands is 88 m away; check 13
-  already excludes outside rooms.
-- **The room's name.** Recommend **"The King's quay"**: `the-quay` says it is
-  the King's and not the town's, and the map is the one place the player
-  reads the name.
-- **If the GPU run cannot see the river.** Recommend **fog, not more water**:
-  the lever is `lighting.fog`, which is every view's, and is a decision for
-  whoever changes it, not this row. Do not move the town or cut the west
-  wall; #725's 8 m wall is why the street reads as a street.
-- **Tide.** Recommend **a fixed level at -1.1**: moving water is a runtime
-  animation of a plan piece, which `plan-vs-scene`'s box diff would have to
-  learn about, for a plane 84 % fogged.
-
-#### Dependencies, the quay and the river
-
-- The town's first increment, shipped (#725 to #728). 3b after 3a: both
-  write `data/scene-config.json`, and 3a's room is what 3b's docks stand at.
-- **Lane B.** Not beside rank 4 or rank 13's increments 2 and 3. 3a also
-  writes `src/castle-builder.js`, which rank 4's later increments may touch;
-  another reason not to run beside it.
-- No save bump, no `data/npcs.json`, no `src/audio.js`: lanes A, C, D and E
-  are free of it.
-
-Two calls from the town's first increment still bind the next one:
-
-- **Bodies in the town: none while #703 stands.** `validatePopulace` refuses
-  a stop the player cannot walk to (#707), so rank 6's "the rest of the fifty
-  go in rank 9's town" is answered no until something outside the curtain is
-  enterable. A figure in a street nobody enters is a different system from a
-  populace.
-- **Doors and windows on the house fronts: none yet.** If the GPU run says the
-  rows read as blocks, `wall-pane-wood-door.glb` and
-  `wall-pane-wood-window.glb` go on as facades and check 4d still holds.
-
-### Constraints
-
-- #500, #529: every new piece is a plan piece; a sight check is Node
-  arithmetic and belongs in `test/layout.mjs`, never `plan-vs-scene.mjs`.
-  Checks 4e and 4f go there; `plan-vs-scene.mjs` gains nothing, because
-  the gable and the water are tagged pieces its box diff already holds.
-- #795 to #798: water is never a surface; the ground stops at the bank; the
-  gable is the one new built shape; no ceiling moves.
-- #728: every outside room seen from the walls, and #796 holds the water to
-  the same standard inside `fog.far`.
-- #13, #34: 4e, 4f and check 1d's gable each go red from green on the break
-  this section names before the increment is called done.
-- #611: `test/budget.mjs` holds cost, `test/layout.mjs` holds whether the
-  castle works.
-- #703, #704: nothing outside the curtain is enterable; `ward: "outside"` is
-  the only way a room lies past it.
-- #513: runs meet by touching, never by overlapping.
-- #584, #632: `data/scene-config.json` is spliced, never re-serialised, in
-  its own line ending.
-- #493, #506: no asset fetched without going through the encoder.
-- #53: the look is the GPU run's.
+- **The map (#588 to #591)**: the journal's third tab, `nav.rooms()` drawn by
+  `src/ui.js`, `visited` on the save since version 5, `test/map.mjs`.
+- **The town (#725 to #728)**: six houses and a church inside Mereford's wall,
+  check 4d (every outside room seen from a wall walk or a tower roof, never
+  lower), an `outside` bucket in `test/budget.mjs`. Nothing in it is enterable
+  (#703); no bodies in it while that stands (#707).
+- **The quay and the river (#870 to #872)**: the toll-house under a `gable`
+  built shape, water as a piece and never a surface (#795), checks 4e and 4f.
+  First seen point (-155, -3) from `floor-sw-tower-roof` at 119.7 m; the outer
+  ward at 1181 of 1200 meshes. Dropped from the spec: a far bank, a boat, a
+  sound, a tide (#796 to #798).
+- **Open: the quay's look (#53)**, moved to rank 3 (#910), under "The GPU run".
+  If it does not read, the lever is `lighting.fog`, not the town or the west
+  wall.
+- **Dropped: the rock** (#910): a postern and water gate would make the outside
+  enterable, overturning #703, and a view down to water means moving the river
+  or raising the castle.
 
 ---
 
@@ -5643,206 +5080,22 @@ ray that was never going to hit anything.
 
 ## The floor plan you can see
 
-**Rank 13. Size 2+. Nothing is built; decisions #745 to #749, 2026-09-21.**
-Devon's ask, in his words: the room layout was placed by an AI one room and
-one guess at a time with no way to see the whole floor plan, he is not happy
-with how it reads, and he wants a GUI to lay it out himself, **or at least to
-review and correct it visually**. That last clause is why increment 1 below
-writes nothing.
+**Rank 13. Shipped (#909), in three increments, against #745 to #749.** Its row
+is retired from `BACKLOG.md` and `ROADMAP.md`. What is cited and what is open:
 
-### What the layout is today, measured
-
-**`src/castle-plan.js` holds no coordinate.** It is a pure compiler:
-`makePlan(config, boundsOf)` reads `data/scene-config.json` and returns
-`{tile, pieces, colliders, surfaces, rooms, curtain, spawn}`, and it throws
-rather than warns on a config that does not hang together: `[castle-plan]
-drum "x" has an interior and no room in config.rooms names it`
-(castle-plan.js:999). So the floor plan is **data**: four arrays of
-`data/scene-config.json`, and a fifth that holds what stands on it.
-
-| Array | Rows | What one row is |
-| --- | --- | --- |
-| `walls` | 46: 18 curtain at level 0, 3 at level 1, 25 interior partitions with no `level` at all | a run between two tile centres, carrying `from`, `to`, `material`, `height`, `thickness`, and optionally `axis`, `base`, `walk`, `repeatMetres`, `interior`, `doorways` |
-| `drums` | 8 | a tower, carrying `tile`, `radius`, `height`, `segments`, `turret`, `stairs`, and an `interior` carrying its own `doors` |
-| `gates` | 3 | an arch on a tile with a `leaf` |
-| `rooms` | 43: 23 outer, 17 inner, 3 outside; 9 by `tiles`, 28 by `drum`, 6 by `bounds` | **a name over an extent, with no geometry of its own** |
-| `courtyard.placements` | 123 | a kit model at a tile, which is where the roofs, sheds and trees are |
-
-**Eleven runs carry `doorways`**, each `{ at, width, height, base? }`: an
-opening at a point along a run, which is how two spaces connect. Nothing is
-derived from anything else. A wall is not a room's edge, a room is an
-annotation over ground that runs happen to enclose, a door is a hole in a run,
-a stair is two flags on a drum. An editor here edits four independent lists,
-not one building.
-
-The file is **3113 lines** and every one was hand-typed. `?edit=1`
-(`src/edit-mode.js`, 327 lines; #583 to #587, move-and-delete #636 to #642)
-writes three *other* arrays of the same file (`interiorProps` (12),
-`builtProps` (21), `braziers` (3)) through `tools/place.mjs`'s splice and a
-Vite middleware, and touches none of the four above. It is walked in first
-person, so **the whole plan has never been on a screen at once.**
-
-### Increment 1, shipped
-
-`src/edit-layout.js`, mounted by `src/edit-mode.js` inside `main.js`'s
-`import.meta.env.DEV` branch (#585): an orthographic camera over the real
-scene, not a second drawing (#746), with a storey filter and ghosting.
-`tools/plan-sheet.mjs`, new and pure, draws the labels, room outlines and
-openings off the plan's own boxes, never recomputed (#500). `V` toggles the
-view, `[`/`]` change storey. Nothing else changed: not `src/castle-plan.js`,
-`src/castle-builder.js`, `data/scene-config.json`, `tools/place.mjs` or
-`vite.config.js`.
-
-### Scope, increment 2: rooms and runs become editable
-
-Class S. **Lane B** (`data/scene-config.json` and `test/tools.mjs`'s
-byte-exactness rail).
-
-- **`tools/place.mjs`.** `PLACEABLE` gains `walls` and `rooms` with their key
-  lists. `checkRow` becomes per-key shape rules rather than one shape:
-  today every branch of it demands a `tile`, and a wall row has `from` and
-  `to`. `formatRow` learns two shapes the four arrays have and the three
-  placeable ones do not: an object value (`tiles: { min, max }`) and an array
-  of objects (`doorways`). It writes both on one line today.
-- **`src/edit-layout.js`.** Drag a room's rectangle or a run's end on the
-  sheet; the sheet snaps to whole tiles, `Alt` to a quarter tile. The selected
-  row's whole record is posted through the existing `/__place` `move` verb.
-  No new verb and no change to `vite.config.js`.
-- **`test/tools.mjs`.** Parts 1 and 2 run the two new arrays: insert, then cut
-  the row back out, and the file is the file byte for byte, on an LF copy and
-  a CRLF copy (#632). Part 3's `'an array that is not placeable'` case moves
-  off `rooms`, which is placeable now, onto `materials`, which is an object
-  and never will be. Part 4 covers the nested formatting.
-
-### Scope, increment 3: the openings, which is how rooms connect
-
-Class S, lane B. A `doorways` entry is a field of the run that owns it, so
-editing one is a `move` of that run's row and needs no nested-path splice
-anywhere (#749). Drag an opening along its run, type a width, `Delete` twice
-to cut it, the way the prop editor already arms a delete.
-
-### Acceptance
-
-- **Increment 1, shipped**: `test/built.mjs` greps `dist/` for both dev-tool
-  sentinels, and `test/tools.mjs` holds `planSheet(plan, level)` to the
-  plan's own boxes, never recomputed (#500).
-- **Increments 2 and 3.** `test/tools.mjs`'s headline rail, extended: an
-  insert and a delete of the same `walls` row, and of the same `rooms` row,
-  give back the file byte for byte on both endings, and every byte outside a
-  rewritten row's span is the byte it was. **Break**: hardcode `\n` in
-  `formatRow`'s nested-object branch; the CRLF copy fails by one byte per
-  nested line, which is exactly #631's failure with a new surface under it.
-- **Every increment.** `npm test` is 15 of 15 and `npm run build` is clean.
-  No suite gains or loses an assertion in `layout.mjs`, `plan-vs-scene.mjs`,
-  `mystery.mjs` or `budget.mjs` (#529, #611): a dev tool's rails are
-  `test/tools.mjs`'s and `test/built.mjs`'s.
-- **What no suite can say** is whether the plan reads better afterwards. That
-  is Devon's, on the dev server, with `?edit=1&view=plan`. It is not a GPU
-  question (#53), because an orthographic top-down of a static scene is not a
-  real-time movement assertion, so a container can build and drive it, and
-  only a person can judge the result.
-
-### Open calls
-
-1. **Does the GUI edit `castle-plan.js`, or an intermediate JSON?**
-   **Neither: it edits `data/scene-config.json` directly, through
-   `tools/place.mjs`'s splice** (#745). `castle-plan.js` is a compiler with no
-   coordinate in it, so there is nothing there to round-trip; and the four
-   layout arrays sit in the same file, under the same 3113-line splice rail,
-   as the three the editor already writes. An intermediate format would be a
-   second source of truth for the castle, which is exactly the thing #500
-   exists to forbid. `eolOf` already gives it #632 for free.
-2. **A re-serialise, now that whole rows are being rewritten?** **No** (#584,
-   measured again today): `JSON.stringify(JSON.parse(raw), null, 2)` over the
-   current file is 124924 bytes against 117131, so a round-trip writer puts
-   7.8 KB of churn into every edit's diff, and the diff is the product. The
-   churn a `move` makes inside the one row it rewrites stays the accepted
-   bargain (#639).
-3. **Top-down camera in the engine, or a flat 2D editor that never loads
-   three?** **The camera** (#746). A flat schematic cannot compute anything
-   here: `makePlan` takes `boundsOf(modelPath)`, and the only place that
-   exists is `CastleBuilder.measure()`, which loads every model and measures
-   its parts (castle-builder.js:630). A DOM editor would have to re-derive
-   every box the plan computes, which is `test/layout.mjs`'s old sin written
-   into a tool (castle-plan.js's header, #500). The camera also shows the 123
-   `courtyard.placements`, the ground patches and the drums' own shells, which
-   are the things a schematic would have drawn as nothing. Devon's own school
-   editor landed here after 42 phases: `js/render.js:1522` is an
-   `OrthographicCamera` 200 ft over the real scene with storeys ghosted, not a
-   second canvas.
-4. **Same tool or a new one?** **Same entry point, second module** (#747).
-   `?edit=1` stays the one flag and the one DEV branch to audit;
-   `src/edit-layout.js` is its own file because the data has nothing in
-   common (a prop is a tile, a run is two tiles and eight fields) and
-   because folding it into `edit-mode.js` would double a file whose whole
-   value is that a person can read it in one sitting.
-5. **Live validation, or write and let `npm test` catch it?** **Both, and the
-   live half copies no assertion** (#749). Before it posts, the panel calls
-   `makePlan(edited, boundsOf)` and `walkability`, the same two pure
-   functions the page and every Node suite already call, and refuses to write
-   when `makePlan` throws, showing the throw. It prints the room count, the
-   walkable-cell count and whether the fill still seals, and **those are
-   numbers, not checks**: #13's rule is why they are not allowed to be
-   checks, because a second copy of check 4 living in a panel is a rail nobody
-   runs and nobody maintains. No check from `layout.mjs`, `plan-vs-scene.mjs`
-   or `budget.mjs` is copied, moved or re-implemented (#529, #611).
-6. **A new row or an amendment to the placement editor's?** **New row.** Rank
-   12 retired whole on 2026-09-18 (#687 to #690) and a retired row does not
-   reopen; the scope is different besides: that row was props on a castle
-   that already exists, this one is the castle.
-7. **Which arrays does the write path take, and in what order?** **`rooms`
-   and `walls` first, `doorways` second, `drums` and `gates` not in this row.**
-   A drum is 970 of the castle's 1539 meshes (#609) and eight fields that the
-   crown, the stairs and the turret all read; a gate carries a `leaf` spec
-   with a springline in it. Both are a later increment's, and both stay
-   readable in the review view from increment 1.
-8. **Undo?** **No.** `git diff` is the undo, the write does not commit, and
-   the one module in Devon's school editor most worth lifting (`js/history.js`,
-   a JSON structural diff behind a 100-deep stack) is the one this repo does
-   not need, because that tool's design lives in memory and this one's lives
-   in a file git is already watching.
-9. **Does the room's own record grow anything?** **No.** A room is a name over
-   an extent and the builder works out what is in it; a second answer written
-   beside the builder's is a second answer to drift, which is #583's rule for
-   the prop editor's comment and holds here unchanged.
-10. **Read-only first, as its own increment?** **Yes** (#748), and it is the
-    answer to the half of Devon's sentence that says "or at least to review".
-    It ships without touching `tools/place.mjs`, `PLACEABLE`, `/__place` or
-    the byte-exactness rail, so the first thing anybody looks at costs nothing
-    that could break a file ten suites read.
-
-### Dependencies
-
-- **Increment 1 is in no lane** and may be claimed beside anything, including
-  rank 9. **Increments 2 and 3 are lane B**, which rank 9's town also holds:
-  one row per lane at a time (#602), so they do not run beside it.
-- Nothing gates this row and it gates nothing. It makes rank 9's remaining
-  work and the nineteen empty rooms cheaper, the way the prop editor did for
-  the content rows (#583).
-- `src/edit-mode.js` is the host; a session in this row and a session
-  extending the prop editor would collide on that file.
-
-### Constraints
-
-- **#500.** The sheet reads `plan.pieces` and `plan.rooms` and recomputes no
-  box. A tool that re-derives the castle is the failure `castle-plan.js` was
-  written to end.
-- **#529, #611.** No assertion moves. A dev tool's rails live in
-  `test/tools.mjs` and `test/built.mjs`.
-- **#585, #586.** Two independent halves, neither trusted: the module is
-  reached only from inside `import.meta.env.DEV`, the writer is still a plugin
-  with `apply: 'serve'`, and the check is the grep of `dist/`, now for two
-  sentinels.
-- **#584, #632, #639.** Splice, never re-serialise; every newline from
-  `eolOf(source)`; every byte outside the edited row's span unchanged, on both
-  endings.
-- **#13, #34.** The panel's numbers are not checks. Every rail named above is
-  broken on purpose once, from green, with the FAIL line quoted in
-  `HISTORY.md`.
-- **#493, #494, #506.** No asset, no vendored library. Anything carried over
-  from the school editor arrives as source under `src/` or `tools/`, never as
-  a `libs/` copy.
-- **#53.** An orthographic still of a static scene is not a real-time
-  assertion, so the suite half of this row is a container's. Whether the plan
-  reads better is Devon's.
-
+- **Increment 1 (#748)**: the read-only top-down sheet, `src/edit-layout.js`
+  over `tools/plan-sheet.mjs`, with its own sentinel in `test/built.mjs`'s grep
+  of `dist/` (#747, #586).
+- **Increments 2 and 3 (#909)**: `walls` and `rooms` are in `tools/place.mjs`'s
+  `PLACEABLE`; `tools/layout-edit.mjs` holds the pure row edits; the sheet drags
+  rooms, run ends and openings and posts the whole row through `/__place`
+  `move` after `makePlan` and `walkability` accept it. Held by
+  `test/tools.mjs` on both line endings (#584, #632, #639); no assertion in
+  `layout`, `plan-vs-scene`, `mystery` or `budget` (#529, #611).
+- **Open calls as decided**: edit `data/scene-config.json` through the splice
+  (#745), no re-serialise (#584), no undo, `git diff` is the undo, `drums` and
+  `gates` stay out of the editor (call 7).
+- **Open: the judgement.** Whether the plan reads better is Devon's call on
+  `?edit=1&view=plan` (#53). Not fixed: five `interiorProps` rows with
+  `backdrop` and one `builtProps` row with `shape` and `ridge` are not in
+  `PLACEABLE`, so the prop editor's `move` refuses them.

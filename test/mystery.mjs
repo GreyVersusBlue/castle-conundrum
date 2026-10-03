@@ -38,7 +38,7 @@ import { fileURLToPath } from 'node:url';
 import { validateMystery, createMystery, earliest, shortestPath, freshState, dayTwoOutcomes, dayTwoLines, dayTwoKnew, dayWatchesOf, beforeDayOne } from '../src/mystery.js';
 import { QuestGraph, validateQuest, validateAgainstNpcs } from '../src/quest-graph.js';
 import { QuestManager, MANAGER_PAIRS } from '../src/quest-manager.js';
-import { makePlan, walkability, EYE_HEIGHT } from '../src/castle-plan.js';
+import { makePlan, walkability, EYE_HEIGHT, propPath } from '../src/castle-plan.js';
 import { castleNav } from '../src/stations.js';
 import { validatePopulace, ACTIVITY_CLIPS, populaceDefs, Populace } from '../src/populace.js';
 import { partsOf, readGLTF } from './gltf.mjs';
@@ -107,7 +107,7 @@ console.log('mystery.json validates');
   // Every evidence row names a prop that is already on disk (Phase 1 ships no
   // asset): a kit .glb, or a Poly Haven .gltf under the project's own folder.
   const missing = mystery.evidence.filter((e) => {
-    const rel = e.prop.endsWith('.glb') ? path.join(config.kenneyBase, e.prop) : path.join(config.polyhavenBase, e.prop);
+    const rel = e.prop.startsWith('assets/') ? propPath(config.polyhavenBase, e.prop) : e.prop.endsWith('.glb') ? path.join(config.kenneyBase, e.prop) : path.join(config.polyhavenBase, e.prop);
     return !fs.existsSync(path.join(ROOT, rel));
   }).map((e) => `${e.id}: ${e.prop}`);
   check(missing.length === 0, 'every evidence prop is a model already on disk', missing.join('; '));
@@ -1414,6 +1414,11 @@ console.log('\nthe household validator rejects');
   expect('an activity no clip in npc.js answers to',
     (f, people) => { of(people, 'baker').routine.terce[0].activity = 'juggle'; },
     /^baker at terce, stop 1: activity "juggle" is one src\/npc\.js has no clip for/);
+  /* `drill` WAS DROPPED (#915). Its clip is still in the four human bodies,
+   * so the only thing that refuses it is ACTIVITY_CLIPS no longer naming it. */
+  expect('`drill`, dropped as an activity though its clip is still in the bodies (#915)',
+    (f, people) => { of(people, 'serjeant').routine.terce[0].activity = 'drill'; },
+    /^serjeant at terce, stop 1: activity "drill" is one src\/npc\.js has no clip for/);
   expect('a stop with no floor under it',
     (f, people) => { of(people, 'baker').routine.terce[0].tile = [0.313, 6.5]; },
     /^baker at terce, stop 1: .*no floor to stand on$/);

@@ -68,6 +68,7 @@ function indexChatter(chatter, { npcs, mystery, problems }) {
   const say = (m) => problems.push(m);
   const cast = new Map((npcs ?? []).map((n) => [n.id, n]));
   const watches = new Set(Array.isArray(mystery?.watches) ? mystery.watches : []);
+  const rooms = new Set((mystery?.rooms ?? []).map((r) => r.id));
   const byId = new Map();
   for (const [ward, byWatch] of Object.entries(chatter ?? {})) {
     if (!WARDS.has(ward)) say(`chatter: ward ${JSON.stringify(ward)} is not outer or inner`);
@@ -80,6 +81,17 @@ function indexChatter(chatter, { npcs, mystery, problems }) {
         byId.set(p.id, { ...p, ward, watch });
         const speakers = asList(p.npcs);
         if (speakers.length !== 2) { say(`${where}: names ${speakers.length} speakers, not two`); continue; }
+        // A PLACED PAIR IS SAID WHERE THE SCHEDULE PUTS BOTH SPEAKERS (#911,
+        // #912). `room` names the room, and the watch key the pair sits under
+        // is the bell it is said at; the id no longer spells the bell. Both
+        // speakers must stand in that room at that bell and be awake, which is
+        // #592's station check for a performance, with its messages. A pair
+        // with no `room` is unplaced: it passes here and `unplacedChatter`
+        // lists it. Several pairs may share one room at one bell, in file
+        // order; there is no distance rail, because the room is the unit.
+        const placed = p.room != null;
+        const roomOk = placed && rooms.has(p.room);
+        if (placed && !roomOk) say(`${where}: in no room (${JSON.stringify(p.room)})`);
         for (const npcId of speakers) {
           const n = cast.get(npcId);
           if (!n) { say(`${where}: ${npcId} is not in the cast`); continue; }
@@ -92,6 +104,12 @@ function indexChatter(chatter, { npcs, mystery, problems }) {
           if (beforeDayOne(n)) say(`${where}: ${npcId} is in the castle on the walking day only (arrives: 0) and is not one of the existing twelve`);
           else if ((n.arrives ?? 1) > 1) say(`${where}: ${npcId} arrives on day ${n.arrives} and is not one of the existing twelve`);
           else if (n.ward !== ward) say(`${where}: ${npcId}'s own ward is ${JSON.stringify(n.ward)}, not ${ward}`);
+          if (roomOk && watches.has(watch)) {
+            const st = mystery?.schedule?.[npcId]?.[watch];
+            if (!st) say(`${where}: ${npcId} is not in the castle at ${watch}`);
+            else if (st.room !== p.room) say(`${where}: ${npcId} stands in ${st.room} at ${watch}, not in ${p.room}`);
+            else if (st.asleep) say(`${where}: ${npcId} is asleep at ${watch}`);
+          }
         }
         if (speakers[0] && speakers[1] && speakers[0] === speakers[1]) say(`${where}: both lines given to ${speakers[0]}`);
         const lines = asList(p.lines);
@@ -106,9 +124,10 @@ function indexChatter(chatter, { npcs, mystery, problems }) {
  * Flatten data/npcs.json's `performances` (pool -> entries) into one map by id,
  * plus every problem in its own shape.
  *
- * WHAT A PERFORMANCE HAS THAT A CHATTER PAIR DOES NOT: a room and a bell. A
- * chatter pair is two bodies talking wherever the pair's ward puts them, so
- * #554 settled for checking each speaker's own static `ward` field. A
+ * WHAT A PERFORMANCE HAS THAT AN UNPLACED CHATTER PAIR DOES NOT: a room and a
+ * bell. #554 settled for checking each chatter speaker's own static `ward`
+ * field; since #911 a placed pair names its room too, its watch key is its
+ * bell, and indexChatter above holds it to this same station check. A
  * performance is one body saying one thing in one named room at one named
  * bell, and data/mystery.json's `schedule` already says where everybody is at
  * every bell, so this checks the station itself: the sermon is said where the
@@ -485,6 +504,22 @@ export function factText(fact, outcome = null, held = null) {
     if (dayTwoApplies(row, outcome, held) && nonEmpty(row.text)) return row.text;
   }
   return fact.text ?? null;
+}
+
+/**
+ * Chatter pair ids with no `room`, in file order (#912, #914). A report, not a
+ * failure, in the shape of `untoldFacts`: a pair the schedule cannot hold is
+ * waiting on Devon's call, and test/lore.mjs asserts this list exactly so it
+ * is a ratchet rather than a print (#13).
+ */
+export function unplacedChatter(chatter) {
+  const ids = [];
+  for (const byWatch of Object.values(chatter ?? {})) {
+    for (const pairs of Object.values(byWatch ?? {})) {
+      for (const p of asList(pairs)) if (p && p.room == null && nonEmpty(p.id)) ids.push(p.id);
+    }
+  }
+  return ids;
 }
 
 /** Fact ids with no source at all. A report, not a failure: WISHLIST.md's own rule for theme 3. */
