@@ -825,7 +825,13 @@ try {
       let skinned = false;
       c.traverse((o) => { if (o.isSkinnedMesh) skinned = true; });
       if (skinned) continue;
-      stoneBoxes.push({ box: b, name: c.name || c.type });
+      // The planId first (#500): every glTF prop's root is named "Scene", so
+      // "IN Scene" named nothing, and three sittings read it without learning
+      // which root it was (#890). The hall's was gothic_statue, since moved off
+      // the brazier in data/scene-config.json. The gate pair read "IN Scene" on
+      // a GPU and reads clear on a headless page at Prime; this is what will
+      // say which root that is if it reads so again.
+      stoneBoxes.push({ box: b, name: c.userData?.planId || c.name || c.type });
     }
     const braziers = [];
     for (const c of s.children) {
