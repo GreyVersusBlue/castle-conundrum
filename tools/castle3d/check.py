@@ -29,7 +29,8 @@
 #                           each on a floor the spawn reaches; CAM_spawn is the scene's
 #   9 markers   (markers)   one COL_ per collider, a STAIR_ and both ends per LIVE
 #                           ramp, SPAWN aimed, each EVID_, READ_, BELL_; every
-#                           marker hidden from render and nothing else in MARKERS
+#                           marker hidden from render and nothing else in MARKERS;
+#                           when props ran, each PROP_ its piece's noCollide (#898)
 # Lines 5 and 6 are live from increment 1, whose terrain is the first geometry
 # stage; 7 and 8 from increment 7 (#876); 1, 2, 3 and 9 from increment 8
 # (#895). Line 9 is last so no line renumbers.
@@ -87,8 +88,7 @@ def g(v):
     return '(' + ', '.join(f"{float(c):g}" for c in v) + ')'
 
 
-def to_game(v):
-    return (v[0], v[2], -v[1])
+from common import to_game  # the inverse of to_blender, shared with export.py (#898)
 
 
 def tree_bounds(root):
@@ -858,6 +858,27 @@ if 'markers' in stages:
     for ob in bpy.data.objects:
         if ob not in in_markers and is_marker_name(ob.name):
             probs.append(f"{ob.name} is named as a marker and is outside MARKERS")
+    # #894's deferred clause (#898 call 8): when props ran, each PROP_<id>
+    # carries noCollide equal to its blueprint piece's. A piece props does not
+    # draw (the backdrops) has no PROP_, and line 6 names a missing one.
+    nc_text = ''
+    if 'props' in stages:
+        nc_bad, nc_seen, nc_true = [], 0, 0
+        for p in bp['pieces']:
+            ob = obj(f"PROP_{p['id']}")
+            if ob is None:
+                continue
+            nc_seen += 1
+            want_nc = bool(p.get('noCollide'))
+            nc_true += want_nc
+            have_nc = bool(ob['noCollide']) if 'noCollide' in ob.keys() else None
+            if have_nc is not want_nc:
+                nc_bad.append((ob.name, have_nc, want_nc))
+        if nc_bad:
+            name0, have0, want0 = nc_bad[0]
+            probs.append(f"{len(nc_bad)} of {nc_seen} PROP_ carry a noCollide other than their blueprint piece's; first "
+                         f"{name0}, {'missing' if have0 is None else have0} against the blueprint's {want0}")
+        nc_text = f"; {nc_seen} PROP_ carrying their blueprint noCollide ({nc_true} true)"
     if probs:
         report(9, 'markers', False, '; '.join(probs[:12]) + (' ...' if len(probs) > 12 else ''))
     else:
@@ -867,7 +888,8 @@ if 'markers' in stages:
         report(9, 'markers', True, f"{len(in_markers)} in MARKERS ({n.get('room', 0)} ROOM_, {n.get('collider', 0)} COL_, "
                f"{n.get('stair', 0)} STAIR_ and {n.get('stair-low', 0) + n.get('stair-high', 0)} ends, "
                f"{n.get('gate', 0)} GATE_, {n.get('hinge', 0)} hinges, SPAWN, {n.get('evidence', 0)} EVID_, "
-               f"{n.get('read', 0)} READ_, {n.get('bell', 0)} BELL_), none renders, SPAWN aimed at {g(look)}")
+               f"{n.get('read', 0)} READ_, {n.get('bell', 0)} BELL_), none renders, SPAWN aimed at {g(look)}"
+               + nc_text)
 else:
     skipped(9, 'markers', 'markers was not built')
 

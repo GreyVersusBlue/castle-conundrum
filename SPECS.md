@@ -1543,6 +1543,55 @@ turn it red from green (#34). The report quotes the failing line.
   exposure in #877's bands and Devon's line on each recorded; each camera
   rendered twice and compared, and against #892's build, as increment 9's
   open calls say.
+  *Measured 2026-10-03*: on Blender 5.2.2, DEVON-DESKTOP's RTX 3070 Ti, over
+  the 451-piece blueprint. **The plain `npm run castle3d:build` exited 0** in
+  1 min 44 s, all nine lines passing, line 9 ending `190 PROP_ carrying their
+  blueprint noCollide (55 true)`, then export.py and the export check, whose
+  line is, whole: `ok    export: castle.glb 569711256 bytes, sha256
+  06f3911007b095e4d9523560c889434f7eb1e84fb53a51d77901bae0b12101c7; 3637759
+  triangles (41821350 placed), 441 meshes, 640 nodes, 54 materials, 130 images
+  (51 JPEG, 79 PNG, 360841444 bytes, 1738.8 MB of texture memory); no Draco,
+  every image embedded, no GUIDE or marker node, 446 pieces named, 4 leaves on
+  their pivots; markers.json 899 markers, sha256
+  c87bb7d79dd81ed51fe78a3b47fefd786b00f52abbad294cba29253727d09399, each within
+  0.5 m of the blueprint, 0 allowed`. Texture memory is 1,823,212,712 bytes.
+  Against #897's baseline: 9.5 MB more file, 53,540 fewer unique triangles and
+  25.7 million fewer placed (49 of the 120 trees dropped west of x -134), 12
+  more meshes, 64 fewer nodes, 3 more materials, 4 more images. Corrected:
+  call 2's `castle.glb.part` would be written as `castle.glb.part.glb`, since
+  5.2.2's exporter appends `.glb` to any name not ending `.glb` or `.gltf`;
+  export.py writes `castle.part.glb` and moves it. `--export-only` twice, and
+  a second full build: the same 569,711,256 bytes and sha256 `06f39110...`
+  for the glb and 176,753 bytes and `c87bb7d7...` for `markers.json`, all
+  three runs; the glb of two full builds matched, a finding and not a gate.
+  The six export breaks each went red as call 7 gives them: (1) `FAIL  export:
+  castle.glb has 1 node(s) named as a marker or GUIDE: ROOM_kitchen`, and
+  `MARKERS.hide_render` False alone stayed green with the glb byte-identical;
+  (2) `FAIL  export: castle.glb uses KHR_draco_mesh_compression; Draco is off
+  (#897)`; (3) `FAIL  export: castle.glb image 0 is by uri x.png; every image is
+  embedded`; (4) `FAIL  export: 1 blueprint piece(s) no glb node names:
+  west-gate`, with `castle.glb has no node LEAF_west-gate`; (5) `FAIL  export:
+  LEAF_west-gate stands 1.344 m from west-gate's pivot (-36, 0, 0.95)` among
+  eight (four leaves, distance and turn); (6) `FAIL  export: markers.json: 868
+  of 899 markers more than 0.5 m from the blueprint; first ROOM_clerk-office,
+  20.000 m from (-30, -10)`. Line 9's break, on `--only props,markers` from
+  green: `FAIL  line 9 markers: 55 of 190 PROP_ carry a noCollide other than
+  their blueprint piece's; first PROP_detail-crate-small-64, False against the
+  blueprint's True`. The five stills (`still_9.py`, `review\increment9\`,
+  1920 x 1080), each probe landing on its table exposure and in band: spawn
+  +4.00 (median 0.344), courtyard +2.50 (0.365), hall +9.75 (0.319, clipped
+  0.04%), chapel +10.00 (0.305, clipped 0.65%), town -0.50 (0.356). Twice each
+  at 960 x 540, all five inside the judge: at most 1/255, mean 0.000033 to
+  0.000046 of a step. **Against #892's build, all five are outside the judge,
+  not the three #960 expected**: share of pixels more than 2/255 apart spawn
+  0.56%, courtyard 0.95%, hall 24.30%, chapel 0.44%, town 3.47%, a
+  `cam-<name>-diff.png` for each. The difference images put spawn's and
+  courtyard's in the foreground grass and, in the courtyard, one doorway;
+  chapel's is faint everywhere with one line near the top of frame; the
+  hall's is the statue standing somewhere else and a low change over the
+  whole room. Reported, not chased. **Recorded as #961**, with the hall
+  attributed to the nightly's move of `gothic_statue_1k` (6889322) and the
+  chapel to 2a's `candles-chapel` swap to `pricket.glb`.
 
 **The look, local** (#53): one sentence from Devon per still, recorded,
 blocking nothing in `npm test`. Does it read as the same castle the game

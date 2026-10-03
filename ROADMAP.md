@@ -41,8 +41,8 @@ need a network that reaches Poly Haven, once each, into a hash-pinned cache.
 | **2b Blender: an interiors kit** | Opus 5 | Specced 2026-09-25 (#813 to #816, #819), nothing built. |
 | **2c Blender: a shared rig with swappable parts** | Opus 5 | Specced 2026-09-25 (#820 to #825), nothing built. Increment 1 is Blender; increment 2 is a container. |
 | **2d Blender: the animals** | Opus 5 | Specced 2026-09-25 (#826 to #829), nothing built. |
-| **2h Castle in Blender** (Blender 5.2) | Opus 5 | Specced 2026-09-26 (#839 to #844), built through increment 8, markers (#893 to #899). Increment 7b, the quay and the kitchen crate, and increment 9, export, are left; 9 is blocked on 7b. The game loads none of it. |
-| **2i Castle in Blender, the integration row** (Blender 5.2) | Opus 5 | Shape decided 2026-10-02 (#919 to #924): a skin swap, staged curtain wall and towers, then buildings, then Mereford, kit indoors meanwhile, the gate and drum doors opened in the model. Its `SPECS.md` section is not written: it waits for 2h increment 9's numbers (#923). Nothing built. |
+| **2h Castle in Blender** (Blender 5.2) | Opus 5 | Specced 2026-09-26 (#839 to #844), built through increment 8, markers (#893 to #899). Increment 7b (#955 to #960) and increment 9, export (#961), are built. The game loads none of it. Left: Devon's lines on 7b's nine look calls and the stills of 7b and 9, which close the row. |
+| **2i Castle in Blender, the integration row** (Blender 5.2) | Opus 5 | Shape decided 2026-10-02 (#919 to #924): a skin swap, staged curtain wall and towers, then buildings, then Mereford, kit indoors meanwhile, the gate and drum doors opened in the model. Its `SPECS.md` section is not written: 2h increment 9's numbers are in #961, so the spec is unblocked. Nothing built. |
 
 ### Local: a GPU
 
@@ -147,8 +147,9 @@ of a row, not the start.
 **Startable together right now:** ~~2f (lane B), then 2g (lanes B and
 E)~~, both shipped; 2b on Devon's machine (lanes F and B), plus rank 3
 on the same machine in a worktree, plus rank 6 or rank 11 (not both, lane
-D), plus rank 7 in lane E alongside any of them, plus 2h (then 2i, once 2h's increment 9 ships) in lane G on the
-same machine if Devon wants two Blenders at once.
+D), plus rank 7 in lane E alongside any of them, plus 2i in lane G on the
+same machine if Devon wants two Blenders at once, now that 2h's increment 9
+has shipped.
 
 ---
 
@@ -172,8 +173,9 @@ open; 2d after 2c's increment 1. **2h is
 not in that order**: it has no gate, goes through nothing of `tools/blender/`'s, and
 starts whenever Devon's machine is free (#839, #840). The integration row,
 **2i** (#919 to #924), puts its model in the game as a skin swap, last in the
-band, in lane G, and is gated on 2h's increment 9: its shape is decided and
-its spec waits for that increment's numbers (#923).
+band, in lane G; its gate, 2h's increment 9, has shipped (#961), so its shape
+is decided and its spec, which waited on that increment's numbers (#923), is
+unblocked.
 
 **Rank 3's hour on a GPU is spent: the fourth sitting confirmed the sight
 fix** (#886 to #891). What is left of the row, 3a (#916) and 3b (#917) having shipped, is one more
