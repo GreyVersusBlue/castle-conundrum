@@ -40,7 +40,7 @@ a network that reaches Poly Haven, once each, into a hash-pinned cache.
 | --- | --- | --- |
 | **2b Blender: an interiors kit** | Opus 5 | Specced 2026-09-25 (#813 to #816, #819), nothing built. |
 | **2c Blender: a shared rig with swappable parts** | Opus 5 | Specced 2026-09-25 (#820 to #825). Increment 1 shipped on huginn (#939 to #941). Left: the Windows GPU look, then increment 2, a container job. |
-| **2d Blender: the animals** | Opus 5 | Specced 2026-09-25 (#826 to #829). Increment 1 shipped on huginn (#942, #943). Left: the Windows GPU look, which blocks nothing, then increment 2, the goose. |
+| ~~**2d Blender: the animals**~~ | Opus 5 | ~~Specced 2026-09-25 (#826 to #829).~~ Both increments shipped on huginn (#942 to #945). Nothing left for Blender; the Windows GPU look is under "Local: a GPU". |
 | **2i Castle in Blender, the integration row** (Blender 5.2) | Opus 5 | Shape decided 2026-10-02 (#919 to #924); specced 2026-10-03 (#963 to #968), argued from #961's master: one skin file cut by stage, `curtain`, `buildings`, `town`, `land`, the ceilings moved in #966. Next is increment 1, #922's open gate in the model, a `builder` job on Devon's Windows machine. Nothing built. |
 
 ### Local: a GPU
@@ -57,7 +57,7 @@ cannot trust a pass either.
 | **4 The retro castle**, past increment 1 | Opus 5 | Increment 1 shipped in a container, no GPU needed (#757 to #766). What is left is the look: the checklist is in `SPECS.md`. Increment 2 is superseded by 2h (#839). |
 | **11 Feel**, past its Node line | Sonnet 5 | The Node half shipped 2026-09-17 (#650 to #654): a shadow decal and a reaching hand, nine assertions in `plan-vs-scene.mjs`. What is left is whether either reads on a GPU. Gated on rank 3 (below). |
 | **2c Blender: a shared rig with swappable parts**, the clips | Opus 5 | The eleven clips and the hen-wife beside a Quaternius body are a GPU look, the gate on increment 2 (#939, #53). Increment 1 is committed (#941). |
-| **2d Blender: the animals**, the clips | Opus 5 | Increment 1 is committed (#943). Each kind at 10 m and its clips are a GPU look on Windows; blocks nothing in `npm test` (#53). |
+| **2d Blender: the animals**, the clips | Opus 5 | Both increments are committed (#943, #945). The look is six kinds at 10 m and their clips on Windows; blocks nothing in `npm test` (#53). |
 
 ### Local: a network that reaches the asset hosts
 

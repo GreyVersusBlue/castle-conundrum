@@ -1,7 +1,7 @@
 # animals.py - the farm's and the house's animals (SPECS.md "Blender: the
 # animals", #826 to #829).
 #
-# One row per kind and one file per row: pig, goat, sheep, horse, cat. Each is
+# One row per kind and one file per row: pig, goat, sheep, horse, cat, goose. Each is
 # an armature on one of TOPOLOGIES' joint lists, one mesh of two primitives
 # (`Coat`, which the tint multiplies, and `Bare`, which it does not, over the
 # one palette image) and three clips. The rig, the parts and the clips are the
@@ -11,8 +11,8 @@
 # the animal's left, +y up, +z the way it faces), which is the frame
 # tools/bodies/bodies.json describes the cow in; common.py's `to_blender` is
 # the one place that frame meets Blender's. Nothing is read from tools/bodies/
-# and the cow is not re-made (#807): what is shared with it is its fifteen
-# joint names and its clip grammar.
+# and the cow is not re-made (#807): what the quadrupeds share with it is its
+# fifteen joint names, and what every kind shares with it is its clip grammar.
 #
 # The rig, the clips, the frame on Root, the two materials and the mesh
 # builder are common.py's "a skinned pack", as folk.py's are.
@@ -23,9 +23,9 @@
 #   prism  the same with `sides`, and `ends`, the scale of its back and front
 #          faces: a barrel along z, which is a body
 #
-# A topology is a joint list and the clips a kind on it carries. The second,
-# the goose's, is increment 2's: a line in each of the two tables below, a row
-# in packs.json, and nothing else here changes.
+# A topology is a joint list and the clips a kind on it carries: the
+# quadruped's 16 and the bird's 12, which is the goose's (increment 2). A third
+# is a line in each of the two tables below and a row in packs.json.
 
 import os
 import sys
@@ -46,10 +46,17 @@ TOPOLOGIES = {
                   'FrontUpperLeg.L', 'FrontLowerLeg.L', 'FrontUpperLeg.R', 'FrontLowerLeg.R',
                   'BackUpperLeg.L', 'BackLowerLeg.L', 'BackUpperLeg.R', 'BackLowerLeg.R',
                   'Tail1', 'Tail2'),
+    # The goose's own (#826): a quadruped's front legs are wings on nothing, and
+    # the hen's seven joints are a sourced file's (#803). Two neck joints, since
+    # a goose's neck is most of what it is; one wing joint a side; no ears.
+    'bird': ('Root', 'Body', 'Neck1', 'Neck2', 'Head', 'Wing.L', 'Wing.R',
+             'UpperLeg.L', 'UpperLeg.R', 'LowerLeg.L', 'LowerLeg.R', 'Tail1'),
 }
-# So `wait` and `eat` resolve through ACTIVITY_CLIPS as it stands (#827).
+# So `wait`, `eat` and `peck` resolve through ACTIVITY_CLIPS as it stands
+# (#827): `Idle_Peck` is the name the hen's file gave `peck` (#684).
 CLIPS = {
     'quadruped': ('Idle', 'Walk', 'Eating'),
+    'bird': ('Idle', 'Walk', 'Idle_Peck'),
 }
 
 # The atlas, one for the pack. The first three are `plastered_wall_04`'s light
@@ -57,7 +64,9 @@ CLIPS = {
 # #684). Then what the tint must leave alone: eye and hoof `wooden_gate`, mane
 # `wood_planks`, the sheep's face `wood_floor_deck`, horn `stone_pavers`, the
 # cat's nose `dirty_carpet` and its eye `forest_ground_06`. The last is the
-# pack's one extraColour (packs.json says why).
+# pack's one extraColour (packs.json says why), the pig's snout and the
+# geese's bills and feet. The goose adds no colour, because a twelfth swatch
+# would move the atlas, and with it the bytes of the five files before it.
 PALETTE = ['#cbbfa3', '#b1a58d', '#978b77', '#1c1410', '#3a2a1c', '#2a1d12', '#33261a', '#aaa292',
            '#7a473c', '#57643e', '#d49a8c']
 

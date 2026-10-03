@@ -11,7 +11,7 @@
   "day2Comment": "Nobody here has a Lauds stop, so the morning after has the cast and nothing else. That is the increment's boundary and not a claim about the fiction; a later one gives the household a second day.",
   "gardenComment": "There is no gardener, and there was one until the grid was asked. `garden` is a room id in mystery.json that no point in this castle resolves to: there are 93 walkable cells east of the east gate and every one of them is inside the Chapel Tower's or the King's Tower's own disc, so `roomAt` names a tower and never the garden. A stop written there would be a stop in a room that does not exist on the ground. The hen-wife keeps the outer ward instead.",
   "rank6bComment": "The last five (#729): a page, the sacristan, the Lady's tiring-woman, a watchman and a writer, every stop of every watch in an inner-ward room, which takes what src/main.js builds to 32 bodies, exactly test/budget.mjs's MAX_SKINNED_TOTAL, and the inner ward's peak to 15 of 20 while the outer stays at 18. A sixth body is a ceiling argument in HISTORY.md, not a row here. The writer was to keep the muniment room and nothing in it is floor the validator accepts: the room is behind the riddle's lock, and the eight grid cells inside its disc all resolve to the King's Hall, so his three muniment stops stand in the inner ward outside the King's Tower instead, doing the same job.",
-  "rank2dComment": "The pig, the sheep, the horse, the goat and the cat are rank 2d's increment 1 (#826 to #829): five files Blender made under assets/blender/animals/, one per kind, on one quadruped topology of 16 joints, the cow's 15 names and `Root`, each one mesh in two materials. `Coat` takes the tint and `Bare` (eyes, snout, hooves, horns, the horse's mane and tail, the sheep's face and legs) does not, so one file is a white sheep or a dark one by `tint` the way the two hens are one file. Their clips are `Idle`, `Walk` and `Eating`, so `wait` and `eat` need no new activity. Each has the cow's kind of ring, one `eat` and one `wait` stop at all eight bells, and none leaves its ward: the pig and the sheep in the outer ward, the horse and the goat in the inner ward, the cat in the bakehouse. The horse stands in the inner ward's south-west corner, the nearest courtyard floor to the porter's lodge, because the tiles between are the King's Hall. Any later change to a ring is \"Life: a populace\"'s.",
+  "rank2dComment": "The pig, the sheep, the horse, the goat and the cat are rank 2d's increment 1 (#826 to #829): five files Blender made under assets/blender/animals/, one per kind, on one quadruped topology of 16 joints, the cow's 15 names and `Root`, each one mesh in two materials. `Coat` takes the tint and `Bare` (eyes, snout, hooves, horns, the horse's mane and tail, the sheep's face and legs) does not, so one file is a white sheep or a dark one by `tint` the way the two hens are one file. Their clips are `Idle`, `Walk` and `Eating`, so `wait` and `eat` need no new activity. Each has the cow's kind of ring, one `eat` and one `wait` stop at all eight bells, and none leaves its ward: the pig and the sheep in the outer ward, the horse and the goat in the inner ward, the cat in the bakehouse. The horse stands in the inner ward's south-west corner, the nearest courtyard floor to the porter's lodge, because the tiles between are the King's Hall. The two geese are increment 2: one file, `goose.glb`, on a bird topology of 12 joints (`Root`, `Body`, `Neck1`, `Neck2`, `Head`, a wing and two leg joints a side, `Tail1`), grey and white by `tint` with the bill and feet in `Bare`, and its eating clip is named `Idle_Peck` as the hen's is, so `peck` needs no new activity either. They keep the outer ward east of the hen-wife's patch, a `peck` and a `wait` stop each at all eight bells. Any later change to a ring is \"Life: a populace\"'s.",
   "talkComment": "Two of the household talking where the player can overhear (#731, #732). The twelve's `chatter` pool in data/npcs.json is theirs and not this file's: every line in it starts with one of their names. A pair here is two ids from `people` in speaking order, one watch, and two to four lines alternating between them with no name in front, because the caption band carries the name. Each speaker has a ring of exactly ONE `gossip` stop at that watch, the two stops in one room from 1.5 to 3 m apart (src/populace.js's TALK_RADIUS), which is what keeps a pair standing still for the whole watch. The player hears it once per page, within 6 m (EARSHOT) and in the same room, on the band a sermon uses; a sermon out-ranks it. The lines are household talk, nothing about the mason, the death or the twelve's movements, because nothing reads a populace line against the timeline.",
   "people": [
     {
@@ -809,6 +809,92 @@
         "vespers-eve": [
           { "room": "bakehouse", "tile": [-0.313, 4.063], "activity": "wait", "facing": 90 },
           { "room": "bakehouse", "tile": [-0.063, 4.125], "activity": "eat", "facing": 0 }
+        ]
+      }
+    },
+    {
+      "id": "goose-grey",
+      "name": "Llwyd",
+      "role": "one of the hen-wife's geese",
+      "modelPath": "assets/blender/animals/goose.glb",
+      "modelHeight": 0.75,
+      "speed": 0.8,
+      "tint": "#9c9486",
+      "routine": {
+        "prime": [
+          { "room": "outer-ward", "tile": [-4.938, -0.313], "activity": "peck" },
+          { "room": "outer-ward", "tile": [-4.563, -0.188], "activity": "wait", "facing": 270 }
+        ],
+        "terce": [
+          { "room": "outer-ward", "tile": [-4.938, -0.313], "activity": "peck" },
+          { "room": "outer-ward", "tile": [-4.563, -0.188], "activity": "wait", "facing": 270 }
+        ],
+        "sext": [
+          { "room": "outer-ward", "tile": [-4.938, -0.313], "activity": "peck" },
+          { "room": "outer-ward", "tile": [-4.563, -0.188], "activity": "wait", "facing": 270 }
+        ],
+        "vespers": [
+          { "room": "outer-ward", "tile": [-4.938, -0.313], "activity": "peck" },
+          { "room": "outer-ward", "tile": [-4.563, -0.188], "activity": "wait", "facing": 270 }
+        ],
+        "prime-eve": [
+          { "room": "outer-ward", "tile": [-4.938, -0.313], "activity": "peck" },
+          { "room": "outer-ward", "tile": [-4.563, -0.188], "activity": "wait", "facing": 270 }
+        ],
+        "terce-eve": [
+          { "room": "outer-ward", "tile": [-4.938, -0.313], "activity": "peck" },
+          { "room": "outer-ward", "tile": [-4.563, -0.188], "activity": "wait", "facing": 270 }
+        ],
+        "sext-eve": [
+          { "room": "outer-ward", "tile": [-4.938, -0.313], "activity": "peck" },
+          { "room": "outer-ward", "tile": [-4.563, -0.188], "activity": "wait", "facing": 270 }
+        ],
+        "vespers-eve": [
+          { "room": "outer-ward", "tile": [-4.938, -0.313], "activity": "peck" },
+          { "room": "outer-ward", "tile": [-4.563, -0.188], "activity": "wait", "facing": 270 }
+        ]
+      }
+    },
+    {
+      "id": "goose-white",
+      "name": "Cannaid",
+      "role": "one of the hen-wife's geese",
+      "modelPath": "assets/blender/animals/goose.glb",
+      "modelHeight": 0.72,
+      "speed": 0.8,
+      "tint": "#f0efe6",
+      "routine": {
+        "prime": [
+          { "room": "outer-ward", "tile": [-4.438, 0.313], "activity": "peck" },
+          { "room": "outer-ward", "tile": [-4.063, -0.063], "activity": "wait", "facing": 180 }
+        ],
+        "terce": [
+          { "room": "outer-ward", "tile": [-4.438, 0.313], "activity": "peck" },
+          { "room": "outer-ward", "tile": [-4.063, -0.063], "activity": "wait", "facing": 180 }
+        ],
+        "sext": [
+          { "room": "outer-ward", "tile": [-4.438, 0.313], "activity": "peck" },
+          { "room": "outer-ward", "tile": [-4.063, -0.063], "activity": "wait", "facing": 180 }
+        ],
+        "vespers": [
+          { "room": "outer-ward", "tile": [-4.438, 0.313], "activity": "peck" },
+          { "room": "outer-ward", "tile": [-4.063, -0.063], "activity": "wait", "facing": 180 }
+        ],
+        "prime-eve": [
+          { "room": "outer-ward", "tile": [-4.438, 0.313], "activity": "peck" },
+          { "room": "outer-ward", "tile": [-4.063, -0.063], "activity": "wait", "facing": 180 }
+        ],
+        "terce-eve": [
+          { "room": "outer-ward", "tile": [-4.438, 0.313], "activity": "peck" },
+          { "room": "outer-ward", "tile": [-4.063, -0.063], "activity": "wait", "facing": 180 }
+        ],
+        "sext-eve": [
+          { "room": "outer-ward", "tile": [-4.438, 0.313], "activity": "peck" },
+          { "room": "outer-ward", "tile": [-4.063, -0.063], "activity": "wait", "facing": 180 }
+        ],
+        "vespers-eve": [
+          { "room": "outer-ward", "tile": [-4.438, 0.313], "activity": "peck" },
+          { "room": "outer-ward", "tile": [-4.063, -0.063], "activity": "wait", "facing": 180 }
         ]
       }
     },

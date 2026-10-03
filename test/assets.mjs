@@ -937,17 +937,20 @@ console.log('\nthe generated cow, inside #789\'s caps');
  *      under the pack's line, #789's cow caps with 2 primitives in place of
  *      4. Break: a third material on the pig's snout
  *   2. topology: the joint names are exactly those of the topology its row
- *      names, the quadruped's 16 here (a goose's 12 is one more line of
- *      ANIMAL_TOPOLOGIES). Break: rename the goat's `Tail1`
+ *      names: the quadruped's 16, or the bird's 12, which is the goose's.
+ *      Break: rename the goat's `Tail1`, and the goose's `Wing.L`
  *   3. skin: line 4 above. Break: the cat's ear weighted to joint 16, in the
  *      file, since Blender's exporter cannot write an index outside the skin
  *   4. clips: exactly the topology's three; every channel on a joint of the
  *      skin; each loops (`seamOf`); Idle at least 2.0 s; the eating clip's
- *      `Head` 20 degrees off Idle at some key. Break: `cycles: 1.5` on the
- *      horse's Walk
+ *      `Head` 20 degrees off Idle at some key, and the eating clip is
+ *      `Eating` on a quadruped and `Idle_Peck` on a bird. Break: `cycles: 1.5`
+ *      on the horse's Walk and on the goose's, and the goose's `Idle_Peck`
+ *      with its `Head` left where Idle has it
  *   5. four-legged: a quadruped's bind-pose box is at least 1.15 times as
  *      long (z) as it is tall (y), the cow's 1.3 less the goat's horns.
- *      Break: swap the sheep body's y and z
+ *      Break: the whole sheep stood on its tail (#942). A bird has no
+ *      `long` and is not held to this line: a goose is as tall as it is long
  *
  * `topology` is read off the row the way `driver` is: which list to hold the
  * file to, not what is in it. The lists are held here.
@@ -967,6 +970,11 @@ const ANIMAL_TOPOLOGIES = {
     clips: ['Idle', 'Walk', 'Eating'],
     eats: 'Eating',
     long: 1.15,
+  },
+  bird: {
+    joints: ['Root', 'Body', 'Neck1', 'Neck2', 'Head', 'Wing.L', 'Wing.R', 'UpperLeg.L', 'UpperLeg.R', 'LowerLeg.L', 'LowerLeg.R', 'Tail1'],
+    clips: ['Idle', 'Walk', 'Idle_Peck'],
+    eats: 'Idle_Peck',
   },
 };
 const ANIMAL_DRIVER = 'Head';

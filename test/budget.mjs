@@ -109,8 +109,8 @@ const MAX_POINT_LIGHTS_TOTAL = 8;
  * inner ward is paid for while standing in the outer one. Three today. */
 
 /** Skinned bodies standing in one ward at one watch, and in the whole cast. */
-const MAX_SKINNED_PER_WARD = 22;
-const MAX_SKINNED_TOTAL = 39;
+const MAX_SKINNED_PER_WARD = 24;
+const MAX_SKINNED_TOTAL = 41;
 /* Anchored on rank 6 rather than on hardware, because rank 6 is what is about
  * to spend it: twelve cast plus its first ten populace is 22, which fits 32
  * with room left for somebody to be standing in rank 4c's yard. The "7 today"
@@ -147,12 +147,17 @@ const MAX_SKINNED_TOTAL = 39;
  * peak goes from 20 to 22 at `terce-eve`; the horse, the goat and the cat
  * never leave the inner ward, which goes from 15 to 18 and has room under 22.
  * What lets a per-ward body ceiling move at all is that the draw ceilings
- * below now count what a body costs, and an animal costs 2. The two geese
- * are increment 2's and their own two: 39 to 41, 22 to 24. */
+ * below now count what a body costs, and an animal costs 2.
+ * 39 TO 41 AND 22 TO 24 ARE THE TWO GEESE (#828, increment 2): one file on
+ * the bird topology, 12 joints, inside the same caps and held by the same
+ * half of check 8, worn twice. Both stand in the outer ward all day beside
+ * the hens, so that ward's peak goes from 22 to 24 at `terce-eve` and the
+ * inner ward stays at 18. That is #828's last body: a 42nd is a new
+ * argument in HISTORY.md and not a row in data/populace.json. */
 
 /** Skinned primitives drawn by the bodies in one ward at one watch, and by every body built. */
-const MAX_SKINNED_DRAWS_PER_WARD = 209;
-const MAX_SKINNED_DRAWS_TOTAL = 390;
+const MAX_SKINNED_DRAWS_PER_WARD = 213;
+const MAX_SKINNED_DRAWS_TOTAL = 394;
 /* SET AT WHAT THE CASTLE DREW THE DAY THEY WERE WRITTEN (#825), and not a
  * guess the way the rest of this block is: 380 in total, and 205 in the outer
  * ward at `terce-eve`. The two body ceilings above count mixers; these count
@@ -170,7 +175,10 @@ const MAX_SKINNED_DRAWS_TOTAL = 390;
  * the bell that ward peaks. The suite printed 372 and 197 before them and
  * prints 382 and 201 with them, so the 8 of room under each ceiling is the
  * hen-wife's (#940), unspent, and is not new room: rank 2c's increment 2
- * still lowers both to what it prints. */
+ * still lowers both to what it prints. 390 TO 394 AND 209 TO 213 ARE THE
+ * TWO GEESE'S (#828, increment 2): 2 draws each and both in the outer ward,
+ * so 4 on each line, and the suite prints 386 and 205 with them. The 8
+ * under each is still the hen-wife's. */
 
 /** Every image the page can load, decoded, in megabytes of video memory. */
 const MAX_TEXTURE_MB = 64;
