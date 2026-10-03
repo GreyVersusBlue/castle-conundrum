@@ -12488,3 +12488,97 @@ back (#916) -- the store holds {"stage":"fall",...`; the control stayed green.
 Restored, green. Checks on huginn: `npm test` 15 of 15, `npm run build` ok.
 Not confirmed: the three Play Again beats in `npm run play` need a GPU run on
 Windows (#53). That stays with rank 3.
+
+**#917. Rank 3b's Node half: the wall check deleted, the statue moved off the
+hall brazier, the journal walk held to a ratio.** Shipped 2026-10-03, session
+CC-04, in three commits: 9805a76 (a), a58c228 (b), 9f15674 (c). SPECS's three
+recommendations are taken.
+
+**(a), `builder`.** `'interior hall walls are the same height as the outer
+walls'` is deleted from `test/play-castle.mjs` along with `outerWalls`,
+`hallWalls` and `wallHeightsMatch`. It has matched zero meshes since #742.
+`test/plan-vs-scene.mjs` diffs every plan piece's live `Box3` at 0.01 m and
+wall runs are pieces (`kind: 'wall'`, #500), so the fact is held elsewhere.
+The columns check beside it stays. Not checked on a live page: whether
+`/^column/` also catches `mereford-churchyard-cross`, a `column-damaged.glb`
+that is not 4 m.
+
+**(b), the lead.** The lead measured and made the two-line data edit itself,
+an override of the class table because the edit was the measurement's own
+output. A headless probe of the live scene at Prime (static geometry, so #53
+does not apply to it) reproduced the hall half with the suite's own logic:
+the bowl at world (-20, 0.99, 10) inside root "Scene", `planId`
+`gothic_statue`, box x -20.69..-19.22, z 8.73..10.29, 1.74 m tall.
+`gothic_statue` moved 1.2 m west along the hall, tile x -5 to -5.3 in
+`data/scene-config.json`; its box is now x -21.89..-20.42, 0.14 m west of the
+brazier's own box (x -20.28..-19.72). West and not east because east stood it
+0.42 m from the Great Hall station at world (-17.6, 9.2). The brazier did not
+move (#721 to #724). The same probe after the move read all three braziers
+inside nothing.
+
+The porter's-gate pair at (-4.8, -2.4) and (-4.8, 2.4) was NOT reproduced. On
+a headless page at Prime nothing but each brazier's own group contains its
+bowl, and in Node no plan piece's box does, at HEAD or at the sitting's
+commit 1d3d4ae. The suite makes that check at the start screen before a day
+is entered, a state the headless probe could not hold (the scene probe timed
+out there twice), so the root is still not identified. That half of the check
+is left as it is, and its detail now prints `userData.planId` before the
+name, because every glTF prop's root is called "Scene"; the next GPU run
+names the root if it reads so again.
+
+**(c), `builder`.** A helper `walk700` takes a baseline: W for 700 ms before
+the journal is opened, then S for 700 ms back to the standing start. A new
+beat, 'W moves the player before the journal is opened, the walk the next one
+is held to', asserts the baseline is over 0.25 m. 'and W moves the player
+again, from the same standing start' now asserts the walk after J and J is at
+least 0.5 of the baseline, and prints both distances, the ratio and how far
+apart the two starts were. The bug it guards read 0.00 m (#626); the ten GPU
+readings ran 0.51 to 1.30 m. Known weakness: a baseline W stopped by a wall
+makes S overshoot, and a blocked S starts the second walk further forward;
+the printed start offset is how a reading is judged.
+
+**Broken on purpose (#34).** (a) adds no rail. (b) was watched both ways by
+the probe: inside `gothic_statue` before the move, clear after. (c)'s two
+assertions only run under `npm run play`, so #626 was not reintroduced and
+watched fail; that is owed to the GPU sitting.
+
+**Also seen, not changed.** The furniture check below the brazier check
+matches scene roots against `/^(wall|tower|column)/`, and no wall carries
+such a name since #742, so its wall half passes without looking (already said
+in the third sitting's notes). The hall brazier's box (z 9.71..10.29)
+overlaps the table's (z 10.17..10.83) by 0.12 m, the clash SPECS's look
+checklist already lists.
+
+**Checks on huginn.** `npm test` 14 of 15 with `built` red, then `npm test
+built` green on a rerun (#918). Layout, mystery, budget, tools, lore and
+assets green with the move in. `npm run build` ok. `node --check
+test/play-castle.mjs` clean.
+
+**Not confirmed: all three beats need `npm run play` on a GPU (#53). Nobody
+ran it. That stays with rank 3**, whose next run also confirms #916's three
+Play Again beats and takes the quay shot (#910). The row is retired from
+`BACKLOG.md` and `ROADMAP.md`.
+
+**#918. `built` went red six times on huginn under memory pressure and green
+on the seventh; recorded as a flake, with its control.** Between about 00:00
+and 00:37 ET on 2026-10-03, six runs were red: three by `builder`, three by
+the lead, one of them inside a full `npm test`. The failing assertions were
+'the built page fetched the same 2xx files under assets/, data/ and decoders/
+as the source page' and 'both pages fetched the same 4x KTX2 textures', with
+the bundle at 46 against the source at 41, 42 or 43, a different shortfall
+each run. The source page, not the built one, was short. Its log carried
+`THREE.GLTFLoader: Couldn't load texture`, `MISSING/BROKEN ASSET:
+"assets/NPCs/Woman.glb" TypeError: Failed to fetch`, then `THREE.WebGLProgram:
+Shader Error 0 - VALIDATE_STATUS false` on a `MeshDepthMaterial` and a
+`TypeError: Cannot read properties of null (reading 'trim')` in three's
+`getUniforms`.
+
+The box: load average 8 to 10, swap 4095 of 4095 MB used, `/tmp` a tmpfs at
+5.6 of 7.1 GB. **Control**: three of the red runs were on commit 9f15674,
+which differs from the 15 of 15 tree of 23:14 (426c43c) only in
+`test/play-castle.mjs`, a file no suite loads, so the red was there without
+the data move. The seventh run, with the statue move in the tree, passed with
+0 fetch failures. `plan-vs-scene`, `touch`, `map` and `overlays` passed
+throughout. The cause is not proved; memory pressure on this box is the
+reading. Nothing changed in `test/built.mjs`. If it recurs on a quiet box it
+is a bug and gets a row.

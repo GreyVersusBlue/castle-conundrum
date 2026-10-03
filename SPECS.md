@@ -3752,9 +3752,10 @@ compositing eleven times over four sittings (#624 to #630, #708 to #715,
 holds: the sentry's and the porter's sighting beats pass, the accusation
 selects 3 of 3, and the whole day and the whole second day have now been
 walked by `npm run play` for the first time. **What is left is exit 0**:
-run 5 of the fourth sitting still ends 212 ok, 6 failures, rank 3a (Play Again
-does not start over) has since shipped (#916), leaving rank 3b (three small
-suite and data bugs), and the phone in the room (#530) is untouched.
+run 5 of the fourth sitting still ends 212 ok, 6 failures. Rank 3a (Play Again
+does not start over, #916) and rank 3b (three small suite and data bugs,
+#917) have since shipped in Node, leaving one more GPU run, and the phone in
+the room (#530) is untouched.
 
 **The judgement half of this row is done.** Every render question this
 section used to list is answered in `HISTORY.md`: the twelve at Vespers
@@ -3798,8 +3799,9 @@ the lever is `lighting.fog` (#796), not the town or the west wall.
 - The run needs a machine with a GPU, which is Devon's; a session can add a
   beat and cannot run it. If a session is asked to take the run without one,
   the honest output is the beat and a note, not a claim.
-- **What exit 0 still owes**: rank 3a (Play Again, #889) shipped (#916); rank 3b (the last three
-  standing failures, #890) is specced below, and then one more GPU run.
+- **What exit 0 still owes**: rank 3a (Play Again, #889) shipped (#916) and
+  rank 3b (the last three standing failures, #890) shipped (#917). One more
+  GPU run is owed, and it confirms both.
 
 ### Constraints
 
@@ -3828,56 +3830,21 @@ is still open:
 
 ## play-castle's last three failures
 
-**Rank 3b. Size ¼.** Three unrelated breaks surfaced by the fourth GPU
-sitting, each in `test/play-castle.mjs` or the data it reads, none of them
-a sight or a walk bug (#890).
+**Rank 3b. Node half shipped (#917), against #890.** Its row is retired from
+`BACKLOG.md` and `ROADMAP.md`.
 
-### Scope
-
-- `test/play-castle.mjs`.
-- `data/scene-config.json`, for whichever of (b)'s two moves turns out to be
-  the fix.
-
-### Acceptance
-
-- All three beats pass in `npm run play` on a GPU; #53 applies.
-- `npm test` fifteen of fifteen.
-
-### Open calls
-
-- **(a) The wall-height check.** It matches zero meshes: no mesh is named
-  `wall_` or `wall-half` since the walls became the castle's own
-  pixel-material boxes (#742). Recommend **delete the check**:
-  `test/plan-vs-scene.mjs` already holds every wall's live box to the plan
-  at 0.01 m (#500), which is the same fact this check was trying to reach by
-  a name that no longer exists.
-- **(b) The brazier sealed inside the stonework.** The Great Hall's brazier
-  at tile (-5, 2.5) stands inside `gothic_statue`'s box, moved there by the
-  hall cluster's +2.0 m shift. Recommend **move the statue, not the
-  brazier**, about 1.2 m along the hall so its 1.5 m box clears the
-  brazier's bowl: the brazier's position is load-bearing for the chapel-
-  candles aim fix (#721 to #724) and the statue's is not. The porter's-gate
-  pair at (-4.8, -2.4) and (-4.8, 2.4) reads inside some root named "Scene"
-  this sitting did not identify; identify that root before deciding whether
-  that half of the check is right.
-- **(c) #659's journal walk.** Ten GPU readings now run 0.51 to 1.30 m
-  against a flat `> 1.0 m` threshold. Recommend asserting the walk against
-  the same walk measured with no journal opened, as a ratio, rather than
-  against an absolute metre: a ratio holds regardless of which geometry the
-  chapel happens to route the player past that run.
-
-### Dependencies
-
-- Lane B (`data/scene-config.json`), which rank 4 and rank 9's increments
-  also hold.
-- (b) and (c) need a GPU run to confirm; (a) is a deletion a container can
-  make and a Node suite can carry.
-
-### Constraints
-
-- #53 for (b) and (c).
-- #529: no assertion of (a)'s or (b)'s kind moves into `layout.mjs` or
-  `mystery.mjs`; both stay where `plan-vs-scene.mjs`'s seam already is.
+- **The fixes**: (a) the wall-height check is deleted from
+  `test/play-castle.mjs`, as recommended; `test/plan-vs-scene.mjs` holds
+  every wall's live box to the plan at 0.01 m (#500). (b) `gothic_statue`
+  moved 1.2 m west along the hall, tile x -5 to -5.3 in
+  `data/scene-config.json`; the brazier did not move. (c) #659's journal walk
+  is asserted as at least 0.5 of a baseline walk taken before the journal is
+  opened.
+- **Held by**: nothing in `npm test`. The beats live in
+  `test/play-castle.mjs` and only `npm run play` runs them.
+- **Open**: all three beats need a GPU run (#53), which stays with rank 3.
+  The porter's-gate pair's root is not identified. The furniture wall check's
+  `/^(wall|tower|column)/` still matches no wall.
 
 ---
 

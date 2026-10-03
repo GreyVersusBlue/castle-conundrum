@@ -5,8 +5,8 @@ what can be done *when*, on *what machine*, and *next to what else*.**
 `SPECS.md` is the spec behind every row and `HISTORY.md` is the only record.
 Nothing here is a locked decision except the lane rule (#600 to #602).
 
-Eleven open rows: 2b, 2c, 2d, 2h, 2i, 3, 3b, 4, 6, 7, 11, and ~~2a~~ (#907),
-~~2e~~ (#908), ~~3a~~ (#916), ~~13~~ (#909), ~~9~~ (#910), ~~2f~~ and ~~2g~~ shipped (#830 to #838). Rows are named by title as well as by rank
+Ten open rows: 2b, 2c, 2d, 2h, 2i, 3, 4, 6, 7, 11, and ~~2a~~ (#907),
+~~2e~~ (#908), ~~3a~~ (#916), ~~3b~~ (#917), ~~13~~ (#909), ~~9~~ (#910), ~~2f~~ and ~~2g~~ shipped (#830 to #838). Rows are named by title as well as by rank
 (#522), because a rank is a priority and gets reused across different rows
 over time, never renumbered mid-table (#619, #491). Devon re-ranked on
 2026-09-25, reopening ranks 1 and 2 for the Blender rows and retiring rank 10
@@ -54,8 +54,7 @@ cannot trust a pass either.
 
 | Row | Model | Status |
 | --- | --- | --- |
-| **3 The GPU run** | Opus 5 | The fourth sitting confirmed the sight fix on a GPU and walked the whole day and the second day for the first time (#886 to #891). What is left is `npm run play` reaching exit 0: 3b (3a shipped, #916) and one more GPU run, the phone in the room (#530), and a shot, the quay through the fog (#910). |
-| **3b play-castle's last three failures** | Opus 5 | A wall check that matches nothing, a statue over the hall brazier, and #659's journal walk (#890). Specced, nothing built. (a) is a container deletion; (b) and (c) need a GPU to confirm. |
+| **3 The GPU run** | Opus 5 | The fourth sitting confirmed the sight fix on a GPU and walked the whole day and the second day for the first time (#886 to #891). What is left is `npm run play` reaching exit 0: 3a (#916) and 3b (#917) shipped, so one more GPU run, which also confirms 3b's three beats and the three Play Again beats, the phone in the room (#530), and a shot, the quay through the fog (#910). |
 | **4 The retro castle**, past increment 1 | Opus 5 | Increment 1 shipped in a container, no GPU needed (#757 to #766). What is left is the look: the checklist is in `SPECS.md`. Increment 2 is superseded by 2h (#839). |
 | **11 Feel**, past its Node line | Sonnet 5 | The Node half shipped 2026-09-17 (#650 to #654): a shadow decal and a reaching hand, nine assertions in `plan-vs-scene.mjs`. What is left is whether either reads on a GPU. Gated on rank 3 (below). |
 | **2c Blender: a shared rig with swappable parts**, the clips | Opus 5 | Once rendered, the eleven clips and the hen-wife beside a Quaternius body are a GPU look, the gate on committing anything under `assets/blender/folk/` (#824, #53). |
@@ -105,7 +104,7 @@ lane at a time** (#602). The lanes are named by the file, not by the theme.
 | Lane | The file that decides it | Rows in it |
 | --- | --- | --- |
 | **A** | `src/save.js` — the version number and `migrate` | none held; next bump is to 7 |
-| **B** | `data/scene-config.json`, and `test/tools.mjs`'s byte-exactness rail | 1, 2b, 3b, 4 |
+| **B** | `data/scene-config.json`, and `test/tools.mjs`'s byte-exactness rail | 1, 2b, 4 |
 | **C** | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | 2c, 2d, 6 |
 | **D** | `src/main.js`'s player rig and spawn | 6, 11 |
 | **E** | `src/audio.js` and `data/sounds.json` | 7 |
@@ -177,8 +176,8 @@ band, in lane G, and is gated on 2h's increment 9: its shape is decided and
 its spec waits for that increment's numbers (#904).
 
 **Rank 3's hour on a GPU is spent: the fourth sitting confirmed the sight
-fix** (#886 to #891). What is left of the row, 3b (3a shipped, #916) and one more `npm run play`, is container
-work, bar that last run; neither needs the worktree the run itself did.
+fix** (#886 to #891). What is left of the row, 3a (#916) and 3b (#917) having shipped, is one more
+GPU `npm run play`; it needs Devon's Windows machine and nothing else.
 
 **One gate outside the band stands**: rank 3 before rank 11 ships past its
 Node acceptance. Rank 11's own spec says nothing in it goes past a `snap`

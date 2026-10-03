@@ -207,7 +207,7 @@ that is two Blenders on one machine and Devon's call (#842).
 
 ## The ranked table
 
-Eleven ranked rows: 2b, 2c, 2d, 2h, 2i, 3, 3b, 4, 6, 7, 11. Devon
+Ten ranked rows: 2b, 2c, 2d, 2h, 2i, 3, 4, 6, 7, 11. Devon
 reopened ranks 1 and 2 himself on 2026-09-25 for the Blender rows, and
 lettered the pack band by priority (#801, #802). 2f, his own props, took
 the next letter the same day, ran first, and shipped the same day
@@ -239,8 +239,7 @@ the placement editor, budget suite, move-and-delete and the dialogue format
 | 2d | Blender: the animals: pig, goat, sheep, horse, cat and two geese on one quadruped topology plus a bird one for the goose, specced (#826 to #829); nothing built | 1 | Opus 5 | Local: Blender; judged local: GPU (#53) | after 2c increment 1 (1 shipped, #881) | F, C | | [Blender: the animals](SPECS.md#blender-the-animals) |
 | 2h | Castle in Blender: the castle, Mereford and the countryside as a realistic standalone model with Poly Haven PBR, built by committed scripts on Blender 5.2, with gameplay markers, specced (#839 to #844); increments 0 to 7 shipped (#839 to #877, PR #93, 0064a11), the five stills of 7 approved by Devon (#905); increments 8 and 9 (markers, export) are left; the game loads none of it | 2+ | Opus 5 | Local: Blender GPU (5.2, Devon's Windows machine only); Local: net for its fetches | — | G | | [Castle in Blender](SPECS.md#castle-in-blender) |
 | 2i | Castle in Blender, the integration row: the game takes `castle.glb` as a skin swap and never reads `markers.json` (#900), staged curtain wall and towers, then buildings, then Mereford, with the kit indoors meanwhile (#902), the outer gate and drum doors opened in the model (#903); shape decided (#900 to #905), full spec (ceilings, LOD and bake, KTX2, amendments to #499, #506, #611) waits for 2h increment 9's `gltf-transform inspect` numbers (#904); nothing built | Set by the spec | Opus 5 | Local: Blender GPU (5.2, Devon's Windows machine only) | after 2h increment 9 | G | | [Castle in Blender, the integration row](SPECS.md#castle-in-blender-the-integration-row) (no section yet, #904) |
-| 3 | The GPU run: the fourth sitting confirmed the sight fix on a GPU and walked the whole day and the second day (#886 to #891); exit 1, 6 failures, 3a shipped (#916) and 3b filed; `renderer.info` recorded (#887); the phone (#530) untouched | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
-| 3b | play-castle's last three failures: a wall check that matches nothing, a statue over the hall brazier, and #659's journal walk (#890) | ¼ | Opus 5 | Container, then local: GPU to confirm | — | B | | [play-castle's last three failures](SPECS.md#play-castles-last-three-failures) |
+| 3 | The GPU run: the fourth sitting confirmed the sight fix on a GPU and walked the whole day and the second day (#886 to #891); exit 1, 6 failures, 3a (#916) and 3b (#917) shipped, one more GPU run owed; `renderer.info` recorded (#887); the phone (#530) untouched | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
 | 4 | The retro castle: increment 1 shipped, fifteen sets out and fifteen 128 px textures in (#757 to #766); the look is left; variety per room is superseded by 2h (#839); the props increment moved to 2b (#813) | 2+ | Opus 5 | Container to the look, local: GPU past it | — | B | | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
 | 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #729 to #733); four generated clips placed in the household's routines (#800), `drill` dropped (#915); 10 of the twelve's 27 chatter pairs placed by room and bell (#911, #912); left: playback of those 10 (#913), the 17 that wait on Devon (#914), the town's share of the fifty | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: somebody listens to the seven beds, the four rings and the first two event sounds (a bed at a point and the rings, #680 to #683; the door and the hound, #696 to #698) | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
@@ -325,9 +324,10 @@ to #891). The fourth sitting's fifth run walked the whole day and the whole
 second day for the first time: the accusation selects 3 of 3, "Master Robert
 Ferrour hangs," and Play Again's pane. `renderer.info` was read at five
 beats and recorded against rank 2c and 2d's skinned-draw ceiling (#887). Exit
-0 is still owed — rank 3a (Play Again does not start over) shipped (#916), so
-what is left is rank 3b (three small suite and data bugs) and one more GPU
-`npm run play` to reach exit 0 — and the phone (#530) is untouched. **One more shot
+0 is still owed — rank 3a (Play Again does not start over, #916) and rank 3b
+(three small suite and data bugs, #917) shipped, so what is left is one more
+GPU `npm run play` to reach exit 0, which also confirms 3b's three beats and
+the three Play Again beats — and the phone (#530) is untouched. **One more shot
 moved here from rank 9 (#910)**: the quay through the fog, a pinned camera
 through `tools/shot-yard.mjs`, to say whether the toll-house ridge (about 98 m,
 60 % fog) and the river (first seen at 119.7 m, 84 % fog) read at all.
@@ -341,18 +341,6 @@ no dawn colour in it. The covered hall's seven trusses are invisible from
 the floor, and a sliver of sky shows at its south-east corner. #715's stray
 prompt naming "the Sir Roger Lestrange" is gone; every prompt now reads
 correctly.
-
-## play-castle's last three failures
-
-*Where: container, then local: GPU to confirm. Gate: none. Lane: B.*
-
-**Rank 3b.** Three small, unrelated breaks in `test/play-castle.mjs` and the
-data it reads (#890): a wall-height check that matches zero meshes, because
-no wall is named `wall_` or `wall-half` any more; the Great Hall's brazier
-sealed inside `gothic_statue`'s box after the hall cluster's shift, plus one
-brazier pair inside an unidentified "Scene" root; and #659's journal walk,
-whose ten GPU readings now run 0.51 to 1.30 m against a flat `> 1.0 m`
-threshold.
 
 ## The retro castle
 
