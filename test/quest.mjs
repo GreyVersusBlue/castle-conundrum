@@ -58,7 +58,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, '..');
 const read = (rel) => JSON.parse(fs.readFileSync(path.join(ROOT, rel), 'utf8'));
 const quest = read('data/quest.json');
-const { cast: npcDefs, performances, reputation } = read('data/npcs.json');
+const { cast: npcDefs, performances, reputation, chatter: chatterPool } = read('data/npcs.json');
 const riddle = read('data/riddle.json');
 const scene = read('data/scene-config.json');
 const mystery = read('data/mystery.json');
@@ -408,7 +408,7 @@ function stubUI() {
  *   mystery dispatches it too and nothing happens, because `day:1` is a
  *   transition on `explore` and on `night` and on no other stage.
  */
-function rig({ saved = null, withSideQuests = true, quests = null, cast = npcDefs, rooms = [], perform = null, schedule = null, reputes = reputation, day0 = false } = {}) {
+function rig({ saved = null, withSideQuests = true, quests = null, cast = npcDefs, rooms = [], perform = null, schedule = null, reputes = reputation, day0 = false, chatter = null } = {}) {
   const ui = stubUI();
   const npcs = cast.map((def) => ({
     id: def.id, name: def.name, def, talking: false, dialogueState: 'default',
@@ -451,6 +451,8 @@ function rig({ saved = null, withSideQuests = true, quests = null, cast = npcDef
     // nothing, so every beat above this line runs in a castle where nobody
     // performs and no line of the manager's new code is reachable.
     performances: perform, ...(schedule ? { schedule } : {}),
+    // The twelve's placed pairs (#925). Nothing by default, for the same reason.
+    chatter,
     /* THE REAL REPUTATION BLOCK, IN EVERY BEAT IN THIS FILE, ON PURPOSE. It is
      * the opposite of `performances` above, which defaults to nothing so that
      * no beat that does not care about it can reach its code: reputation adds
@@ -2304,6 +2306,186 @@ const handOver = (id) => {
   s.qm.handleEnter('kitchen', 0);
   s.qm.stopTalk('song-sext-kitchen');
   check(s.qm.performing?.id === 'song-sext-kitchen', 'and stopTalk with a song\'s id does not stop the song, because a song is not talk', s.qm.performing?.id);
+}
+
+/* ------------------------------------------- two of the twelve, in a room ---
+ * data/npcs.json's ten placed `chatter` pairs, played by room and bell (#925
+ * to #931). Same rig, same queued clock, the real `performances` and the real
+ * `chatter`, so a pair moved or recast in the data is a different answer here.
+ * `handleStand` is how the manager hears of open ground (#926). What is held:
+ * the order against the song, the names split off the lines, once per page,
+ * the two cuts, the gap after a bell and after a run, the two days nothing
+ * plays on, and a sweep of every room at every bell that hears exactly the
+ * ten. The stub band records `${name}: ${line}`, which for a chatter line is
+ * the line as the file has it, so a caption is matched to its pair by the
+ * file's own text. Read through JSON.parse, so no line ending reaches it
+ * (#632).
+ */
+console.log('\ntwo of the twelve, in a room');
+const chatterRig = (opts = {}) => performRig({ ...opts, chatter: chatterPool });
+const allPairs = Object.values(chatterPool).flatMap((byWatch) => Object.values(byWatch)).flat();
+const pairOf = (id) => allPairs.find((p) => p.id === id);
+/** A pair's line `i` with its opening name taken off, the way the band shows it. */
+const bare = (id, i) => pairOf(id).lines[i].replace(/^[^:]*: /, '');
+/** Which pair a recorded caption is a line of, or null: the file's own text. */
+const pairSaying = (caption) => allPairs.find((p) => p.lines.includes(caption))?.id ?? null;
+const HALL_ORDER = ['outer-vespers-1', 'outer-vespers-2', 'outer-vespers-3', 'outer-prime-1', 'outer-terce-4', 'outer-sext-2'];
+{
+  // 1 TO 4: THE GREAT HALL AT VESPERS. The song first (#927), then the six
+  // pairs in file order with a dark band before each (#925), each once.
+  const r = chatterRig();
+  r.ring(); r.ring(); r.ring();
+  r.qm.handleEnter('great-hall', 0);
+  const song = pieceOf('song-vespers-hall');
+  check(r.ui.captionName === 'Dafydd ap Rhys' && r.ui.captionLine === song.lines[0] && r.qm.performing?.id === song.id,
+    'the hall at Vespers opens on the song, under the sentry\'s cast name', `${r.ui.captionName}: ${r.ui.captionLine}`);
+  r.tick(song.lines.length - 1);
+  check(r.ui.captionLine === song.lines.at(-1) && r.ui.captions.every((c) => pairSaying(c) === null),
+    'and no chatter line is shown while the song runs', JSON.stringify(r.ui.captions.filter((c) => pairSaying(c))));
+  r.tick(1);
+  check(r.ui.captionLine === null && r.qm.performing === null && r.pending() === 1,
+    'after the song\'s last line the band is dark and exactly one step is pending: the gap', `${JSON.stringify(r.ui.captionLine)}, ${r.pending()} pending`);
+  r.tick(1);
+  check(r.ui.captionName === 'Dafydd' && r.ui.captionLine === bare('outer-vespers-1', 0) && !r.ui.captionLine.startsWith('Dafydd: '),
+    'that step shows outer-vespers-1\'s first line under "Dafydd", with the name split off the line', `${r.ui.captionName}: ${r.ui.captionLine}`);
+  // To the end, a step at a time, noting every clear: a pair is two lines, an
+  // end that clears the band, and (but for the last) a gap.
+  const from = r.ui.captions.length - 1;
+  const clearsBefore = r.ui.log.filter((e) => e === 'caption:clear').length;
+  const darkBetween = [];
+  let last = pairSaying(r.ui.captions.at(-1)), guard = 0;
+  while (r.pending() && guard++ < 200) {
+    const wasDark = r.ui.captionLine === null;
+    r.tick(1);
+    const now = r.ui.captionLine === null ? null : pairSaying(r.ui.captions.at(-1));
+    if (now && now !== last) { darkBetween.push(wasDark); last = now; }
+  }
+  const after = r.ui.captions.slice(from);
+  const want = HALL_ORDER.flatMap((id) => pairOf(id).lines);
+  check(same(after, want), `the captions after the song are the twelve lines of ${HALL_ORDER.join(', ')}, in that order`, JSON.stringify(after.map(pairSaying)));
+  check(darkBetween.length === 5 && darkBetween.every(Boolean), 'the band was cleared between each pair and the next', JSON.stringify(darkBetween));
+  check(r.ui.log.filter((e) => e === 'caption:clear').length - clearsBefore === 6, 'six clears, one after each pair', `${r.ui.log.filter((e) => e === 'caption:clear').length - clearsBefore}`);
+  check(r.ui.captionLine === null && r.qm.performing === null && r.pending() === 0, 'and it ends dark with nothing pending', `${JSON.stringify(r.ui.captionLine)}, ${r.pending()} pending`);
+  const said = r.ui.captions.length;
+  r.qm.handleStand('outer-ward');
+  r.qm.handleEnter('great-hall', 0);
+  r.tick(200);
+  check(r.ui.captions.length === said && r.pending() === 0, 'once per page: out of the hall and back in at the same bell says nothing', `${r.ui.captions.length} vs ${said}`);
+}
+{
+  // 5: CUT BY LEAVING, onto open ground (#926), and a cut pair counts as heard
+  // (#929).
+  const r = chatterRig();
+  r.ring(); r.ring();
+  r.qm.handleEnter('kings-hall', 0);
+  check(r.pending() === 1 && r.ui.captionName === 'Sir Roger' && r.ui.captionLine === bare('inner-sext-1', 0),
+    'walking into the King\'s Hall at Sext shows inner-sext-1\'s first line at once, with no gap', `${r.ui.captionName}: ${r.ui.captionLine}, ${r.pending()} pending`);
+  r.qm.handleStand('inner-ward');
+  check(r.ui.captionLine === null && r.qm.performing === null, 'out onto the inner ward and the band is dark', JSON.stringify(r.ui.captionLine));
+  const said = r.ui.captions.length;
+  r.tick(200);
+  check(r.ui.captions.length === said, 'and the steps still pending say nothing', `${r.ui.captions.length} vs ${said}`);
+  r.qm.handleEnter('kings-hall', 0);
+  check(r.ui.captionName === 'Piers Marrable' && r.ui.captionLine === bare('inner-terce-1', 0), 'back in, inner-terce-1 starts at once', `${r.ui.captionName}: ${r.ui.captionLine}`);
+  r.tick(200);
+  check(r.ui.captions.filter((c) => pairSaying(c) === 'inner-sext-1').length === 1, 'and inner-sext-1, cut after one line, is not said again',
+    JSON.stringify(r.ui.captions.map(pairSaying)));
+}
+{
+  // 6: THE BELL. One that finds the player in the room is followed by the gap
+  // and then the pair; one over a pair ends it.
+  const r = chatterRig();
+  r.ring();
+  r.qm.handleEnter('kings-hall', 0);
+  check(r.engine.watch === 'terce' && r.ui.captionLine === null && r.pending() === 0, 'standing in the King\'s Hall at Terce the band is dark', `${r.engine.watch}: ${JSON.stringify(r.ui.captionLine)}`);
+  r.ring();
+  check(r.engine.watch === 'sext' && r.ui.captionLine === null && r.pending() === 1, 'the ring to Sext leaves it dark with one step pending', `${JSON.stringify(r.ui.captionLine)}, ${r.pending()} pending`);
+  r.tick(1);
+  check(r.ui.captionLine === bare('inner-sext-1', 0), 'and that step shows inner-sext-1', JSON.stringify(r.ui.captionLine));
+
+  const c = chatterRig();
+  c.qm.handleEnter('chapel', 0);
+  check(c.ui.captionName === 'Sir Roger' && c.ui.captionLine === bare('inner-terce-4', 0), 'the chapel at Prime shows inner-terce-4\'s first line under "Sir Roger"', `${c.ui.captionName}: ${c.ui.captionLine}`);
+  c.ring();
+  check(c.ui.captionLine === null && c.qm.performing === null, 'a ring darkens it', JSON.stringify(c.ui.captionLine));
+  c.tick(200);
+  check(!c.ui.captions.includes(pairOf('inner-terce-4').lines[1]), 'and its second line is never shown', JSON.stringify(c.ui.captions));
+}
+{
+  // 7: AGAINST THE HOUSEHOLD (#927). Neither cuts the other: whoever holds the
+  // band finishes.
+  const r = chatterRig();
+  r.ring(); r.ring();
+  r.qm.handleEnter('kings-hall', 0);
+  const line = r.ui.captionLine;
+  const { pair, names } = handOver('talk-sext-inner-ward');
+  const got = r.qm.overhear({ ...pair, room: 'kings-hall' }, names);
+  check(got === null && line === bare('inner-sext-1', 0) && r.ui.captionLine === line && r.qm.performing?.id === 'inner-sext-1',
+    'with a chatter pair on the band, overhear of a talk pair returns null and the band\'s line does not change', `${r.qm.performing?.id}: ${r.ui.captionLine}`);
+
+  const s = chatterRig();
+  s.ring(); s.ring();
+  const talk = { ...pair, room: 'kings-hall' };
+  s.qm.overhear(talk, names);
+  s.qm.handleEnter('kings-hall', 0);
+  check(s.qm.performing?.id === talk.id && s.ui.captionLine === talk.lines[0], 'with a talk pair in the King\'s Hall at Sext on the band, entering that room starts no chatter', `${s.qm.performing?.id}: ${s.ui.captionLine}`);
+  s.tick(talk.lines.length);
+  check(s.ui.captionLine === null && s.qm.performing === null && s.pending() === 1 && s.ui.captions.every((c) => pairSaying(c) === null),
+    'when the talk ends the band is dark and one step is pending', `${JSON.stringify(s.ui.captionLine)}, ${s.pending()} pending`);
+  s.tick(1);
+  check(s.ui.captionLine === bare('inner-sext-1', 0), 'and it shows inner-sext-1', JSON.stringify(s.ui.captionLine));
+}
+{
+  // 8: OPEN GROUND (#926). The manager is told; the engine is not (#588).
+  const r = chatterRig();
+  r.ring();
+  const visited = [...r.engine.state.visited];
+  const marks = r.changes.n;
+  r.qm.handleStand('outer-ward');
+  check(r.ui.captionName === 'Master Robert' && r.ui.captionLine === bare('outer-terce-1', 0), 'handleStand(\'outer-ward\') at Terce shows outer-terce-1 under "Master Robert"', `${r.ui.captionName}: ${r.ui.captionLine}`);
+  r.tick(1);
+  check(r.ui.captionName === 'Thomas Wykes' && r.ui.captionLine === bare('outer-terce-1', 1), 'then "Thomas Wykes"', `${r.ui.captionName}: ${r.ui.captionLine}`);
+  check(same(r.engine.state.visited, visited) && !r.engine.state.visited.includes('outer-ward') && r.changes.n === marks,
+    'and the engine\'s visited set does not gain outer-ward, nor the autosave a mark', r.engine.state.visited.join(', '));
+}
+{
+  // 9: DAY ONE ONLY (#930). The `-eve` bells and `lauds` are their own ids and
+  // are not resolved through `watchLike`.
+  const eve = chatterRig({ day0: true });
+  let rings = 0;
+  while (eve.engine.watch !== 'vespers-eve' && rings++ < 4) eve.ring();
+  eve.qm.handleEnter('great-hall', 0);
+  eve.tick(200);
+  check(eve.engine.watch === 'vespers-eve' && eve.qm.day === 0 && eve.ui.captions.length === 0,
+    'on the walking day, the Great Hall at vespers-eve shows nothing', `${eve.engine.watch}, day ${eve.qm.day}: ${JSON.stringify(eve.ui.captions)}`);
+
+  const r = morningAfter(chatterRig(), 'prisoner', []);
+  for (const room of ['great-hall', 'kings-hall', 'chapel']) { r.qm.handleEnter(room, 0); r.tick(200); }
+  r.qm.handleStand('outer-ward'); r.tick(200);
+  check(r.engine.watch === 'lauds' && r.qm.day === 2 && r.ui.captions.every((c) => pairSaying(c) === null),
+    'on the morning after, the Great Hall, the King\'s Hall, the chapel and the outer ward at lauds show no chatter line',
+    `${r.engine.watch}, day ${r.qm.day}: ${JSON.stringify(r.ui.captions.filter((c) => pairSaying(c)))}`);
+  check(r.ui.captions.some((c) => c.includes('Cadeyrn')), 'while the chapel\'s Lauds sermon was said, so the band was live for that read');
+}
+{
+  // 10: THE SWEEP. Every room data/mystery.json names, at each of the four
+  // bells, ticked out: exactly the ten placed ids, each once, none of the 17.
+  const r = chatterRig();
+  for (let b = 0; b < mystery.watches.length; b++) {
+    if (b > 0) r.ring();
+    for (const room of mystery.rooms) { r.qm.handleStand(room.id); r.tick(200); }
+  }
+  const placed = allPairs.filter((p) => p.room != null);
+  const lineCount = new Map();
+  for (const c of r.ui.captions) { if (pairSaying(c)) lineCount.set(c, (lineCount.get(c) ?? 0) + 1); }
+  const saidIds = [...new Set(r.ui.captions.map(pairSaying).filter(Boolean))].sort();
+  check(placed.length === 10 && same(saidIds, placed.map((p) => p.id).sort()),
+    `every room at every bell says exactly the ten placed pairs (${saidIds.length})`, saidIds.join(', '));
+  const wrongCount = placed.flatMap((p) => p.lines).filter((l) => lineCount.get(l) !== 1);
+  check(wrongCount.length === 0, 'each of their lines once', JSON.stringify(wrongCount));
+  const unplacedLines = new Set(allPairs.filter((p) => p.room == null).flatMap((p) => p.lines));
+  check(allPairs.length - placed.length === 17 && !r.ui.captions.some((c) => unplacedLines.has(c)), 'and no line of the 17', JSON.stringify(r.ui.captions.filter((c) => unplacedLines.has(c))));
+  check(r.engine.watch === 'vespers' && r.pending() === 0 && r.ui.captionLine === null, 'ending at Vespers, dark, with nothing pending', `${r.engine.watch}, ${r.pending()} pending`);
 }
 
 console.log(failures ? `\n${failures} failure(s)` : '\nall good');

@@ -114,6 +114,21 @@ function indexChatter(chatter, { npcs, mystery, problems }) {
         if (speakers[0] && speakers[1] && speakers[0] === speakers[1]) say(`${where}: both lines given to ${speakers[0]}`);
         const lines = asList(p.lines);
         if (lines.length < 2 || !lines.every(nonEmpty)) say(`${where}: fewer than two non-empty lines`);
+        // A PLACED PAIR'S LINE OPENS WITH ITS SPEAKER'S NAME (#928). The band
+        // shows the text before the first ": " as the name and the rest as the
+        // line, so that text has to be there and has to be the start of the
+        // cast name of whoever's turn it is: "Dafydd" for Dafydd ap Rhys. An
+        // unplaced pair is not played and is not held to this (#914).
+        if (placed) {
+          lines.forEach((line, i) => {
+            const npc = speakers[i % 2];
+            const text = typeof line === 'string' ? line : '';
+            const cut = text.indexOf(': ');
+            const opens = cut > 0 ? text.slice(0, cut) : '';
+            const name = cast.get(npc)?.name;
+            if (!opens || typeof name !== 'string' || !name.startsWith(opens)) say(`${where}: line ${i + 1} does not open with ${npc}'s name`);
+          });
+        }
       }
     }
   }
