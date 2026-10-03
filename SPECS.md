@@ -183,7 +183,7 @@ every Blender pack shares" holds and is not restated. Decided as #813 to
 #816 and #819. Three increments: two class S, the third gated on rank 4's
 look.
 
-> **#901:** this row's build is gated on an `architect` re-check of #803's look against the photographic castle the game is heading for (#900); recommended answer, the look stands, since interiors keep the kit (#902).
+> **#920:** this row's build is gated on an `architect` re-check of #803's look against the photographic castle the game is heading for (#919); recommended answer, the look stands, since interiors keep the kit (#921).
 
 **Amended by #830 (2026-09-25).** `kitchen-hearth`, `hall-hearth` and
 `chapel-altar` are dropped, because 2f, "Blender: Devon's props, placed",
@@ -830,12 +830,14 @@ rise, tint and 2.5 m scale and `rough_wood`'s warm dark tint, amending
 stone at 2.5 m by Devon's rulings; #863 to #868 decide increment 6, the
 props, before anything is built, and #869 closes it; #873 to #877 decide
 increment 7, the light and the five cameras, before anything is built, and
-#876 amends #844 to eight `check.py` lines); this section is the `builder`
-job those decisions leave. Nothing
+#876 amends #844 to eight `check.py` lines; #893 to #898 decide
+increments 8 and 9 before anything is built, put increment 7b, the quay and
+the crate, between them, and amend #843 and #844 to nine lines); this
+section is the `builder` job those decisions leave. Nothing
 under `tools/castle3d/` exists on `e05ac72`. **The game loads none of it**:
 no file under `src/`, `data/`, `assets/` or `test/` changes in any
 increment, `npm test` stays fifteen of fifteen, and the integration row
-(rank 2i, shape decided in #900 to #905, spec after increment 9's numbers)
+(rank 2i, shape decided in #919 to #924, spec after increment 9's numbers)
 that would change that is not this one (#839).
 
 **The shape, in one line**: Node writes `blueprint.json` from `makePlan`;
@@ -865,6 +867,9 @@ one shared module, one module per stage.
   --python tools/castle3d/check.py -- --blueprint <file>`; exit non-zero if
   either Blender did. `path.join` everywhere and `pathToFileURL` for any
   absolute `import()`: this runs on Windows.
+  From increment 9 (#897), a full build then runs a third Blender,
+  `export.py`, over the saved master, and `check-export.mjs`; `--export-only`
+  runs those two alone over the existing master.
 - **`export-blueprint.mjs`**, pure Node, exported as a function and
   runnable alone. Imports `makePlan` from `src/castle-plan.js` and `partsOf`
   from `test/gltf.mjs`, builds `boundsOf` exactly as `test/layout.mjs` line
@@ -918,6 +923,10 @@ one shared module, one module per stage.
 - **`allow.json`**, committed, `{}` in increment 0: every departure from
   the blueprint that `check.py` lines 3 and 6 would otherwise fail, keyed
   `ROOM_<id>`, a piece id, or `model:<file>`, each with a reason.
+  *Amended 2026-10-02 (#895)*: from increment 8 a marker's entry is keyed
+  by its object name (`ROOM_<id>`, `COL_<id>`, `EVID_<id>` and so on), line
+  3 reads it and line 6 skips it, and one for a marker within 0.5 m fails as
+  stale. See increment 8's open calls.
 - **`build.py`**: pins through `common.py`, parses `--only`, runs `guide`
   and then the requested stages in the fixed order below, records the
   stage list in `scene["castle3d_stages"]`, and saves. A full build saves
@@ -935,6 +944,10 @@ one shared module, one module per stage.
   `seed(stage)`; `STAGE_OF`, the table that gives every blueprint piece to
   exactly one stage by kind and id prefix, which `--only guide` prints; the
   material library (below).
+  From increment 8 (#893, #895), `STAGE_RULES` gains one rule after the
+  gates' two, `('town', None, r'^(quay-|floor-mereford-quay$)')`, and
+  `MARKER_PREFIXES` names the marker kinds line 6 leaves to line 3; from
+  increment 9 (#898), `to_game`, the inverse of `to_blender`.
 - **`materials.py`**: node materials from the cached maps, box-projected on
   object or world coordinates so a wall of any length tiles with no UV work.
   A missing map raises; it never falls back to a flat colour. Increment 1
@@ -984,10 +997,20 @@ one shared module, one module per stage.
   `GUIDE` collection, increment 0), `terrain.py`, `walls.py`, `towers.py`,
   `gates.py`, `buildings.py`, `town.py`, `props.py`, `lighting.py`,
   `markers.py`, and `export.py` (increment 9).
+  *Corrected 2026-10-02 (#897)*: `export.py` is not a stage. It runs in a
+  third Blender over the saved master after `check.py` passes, and
+  `common.STAGES` never gains `export`; see increment 9's open calls.
 - **`check.py`**: #844's six lines, each printing a line of its own, pass
   or fail and why, and exiting non-zero when any failed. From increment 7,
   eight (#876): line 7 `light` and line 8 `cameras`, both run when
   `lighting` did.
+  From increment 8, nine (#895): line 3 holds every marker, not only the
+  rooms, against the blueprint and against the object that realises it, and
+  line 9 `markers` holds the rest of #843's list; lines 1, 2, 3 and 9 run
+  when `markers` did.
+- **`check-export.mjs`**, Node, from increment 9 (#898): run by `build.mjs`
+  after `export.py`, it holds `castle.glb` and `markers.json` and prints the
+  glb's numbers. Not a `check.py` line. See increment 9's open calls.
 - **`README.md`**: how to run it, the two env vars, the output folder, what
   each stage builds. **`CREDITS.md`**: every `sources.json` `asset` by
   name, author and licence, one line per asset rather than per file,
@@ -1133,10 +1156,39 @@ recorded in `HISTORY.md` against the increment (#53).
 8. **Markers.** `markers.py` writes every marker in #843 from the
    blueprint into `MARKERS`, then a session adjusts them to the new
    geometry, each departure past 0.5 m with an `allow.json` reason.
+   *Corrected 2026-10-02 (#893 to #896)*: on HEAD the markers are 899
+   objects, 49 `ROOM_` (45 blueprint rooms and the 4 open places) and 761
+   `COL_` among them; "adjusts them to the new geometry" is `markers.py`'s
+   `ADJUST` table, which ships empty because no marker is more than
+   0.0000056 m from the object that realises it (measured); `check.py`
+   gains line 9; `common.STAGE_RULES` gains the quay rule; and there is no
+   still. Every number the builder needs is in increment 8's open calls.
 9. **Export.** `export.py` writes `castle.blend`, `castle.glb` (Draco off,
    textures embedded, `MARKERS` and `GUIDE` excluded) and `markers.json`
    in the game's frame and the blueprint's shape, plus a Cycles still from
    each of the five cameras.
+   *Corrected 2026-10-02 (#897, #898)*: `castle.blend` is `build.py`'s, not
+   `export.py`'s. `export.py` runs in a third Blender over the saved master
+   after `check.py` passes, on a full build or `--export-only`, writes
+   `castle.glb` and `markers.json`, and `check-export.mjs` holds both; the
+   five stills are taken over the master. Every number is in increment 9's
+   open calls.
+
+**7b, between 8 and 9: the quay and the crate (#893).** The 18 pieces the
+plan gained after increment 7 was built: rank 9's 16 `quay-*` and
+`floor-mereford-quay` (#870, #871), which #893's rule gives to `town`, and
+rank 1's `kitchen-crate` (#880), which is `props`'. Until it ships, `--only
+town` and `--only props` raise naming them and no plain build exits 0, so
+increment 9 waits on it. **Its open calls are not written**, and they are
+`architect`'s: the river (a channel in the height field west of x -141, the
+water's surface between y -1.3 and -1.1), the dock front, the toll-house's
+slate gable (`quay-toll-house-roof` is a 3 m `prop` box in the blueprint,
+which carries no shape field), the banks' `forest_ground_06` (not in
+`LIBRARY`), the crane and the crate, and whether any of it is a fetch. Devon's
+`_source/` folder holds `quay-crane.glb`, `rowboat.glb`, `mooring-post.glb`,
+`mooring-bollard.glb`, `net-rack.glb`, `fish-crates.glb` and
+`toll-house-sign.glb` beside his placed props; whether the model takes any
+of them is that block's first question.
 
 ### Acceptance
 
@@ -1329,10 +1381,68 @@ turn it red from green (#34). The report quotes the failing line.
   `GATE_west-gate_HINGE` (line 2); move `ROOM_kitchen` 0.6 m (line 3); add
   an `allow.json` entry for a room that is within 0.5 m (line 3, stale).
   The report quotes line 3's message.
+  *Corrected 2026-10-02 (#893 to #896)*: on HEAD 49 `ROOM_`, 761 `COL_`,
+  18 `STAIR_` with 36 ends, 899 objects in `MARKERS`, and `check.py` has nine
+  lines, line 9 `markers` holding every kind lines 1 and 2 do not. `npm
+  test` fifteen of fifteen, unchanged. `--only guide` exits 0 and prints
+  `STAGE_OF` with `town 60` and `props 188`; `--only markers` exits 0 with
+  lines 1, 2, 3, 4 and 9 passing (line 4 at 0 and 0) and 5 to 8 not run;
+  `--only terrain,walls,towers,gates,buildings,lighting,markers` exits 0
+  with all nine passing, line 4 quoted, line 5 at 19 rooms and 95 points,
+  line 6 at 197, line 7 at 3 practicals and line 3's realised count at 20.
+  A plain build exits 1 at `town`, naming the 14 quay pieces, by design
+  until 7b, and the report quotes it. The ten breaks in increment 8's open
+  calls, each from green, each quoted. No still (#896).
+  *Measured 2026-10-02*: every number above held as written, on Blender
+  5.2.2 against the 445-piece blueprint. `--only guide` printed `town 60`
+  and `props 188`. `--only markers`: `markers: 899 in MARKERS`, 4 hinges
+  made here, `ADJUST empty`; lines 1, 2, 3, 4 and 9 passed with the texts
+  in increment 8's open calls (line 4 `0 image texture nodes, 0 images`).
+  The castle build: 4 hinges adopted from `gates`; line 1 `49 ROOM_ (45
+  blueprint rooms, 28 of them discs, and 4 open places); the 27 mystery
+  rooms each have one`; line 2 `... each holding its LEAF_`; line 3 `899
+  markers within 0.5 m of the blueprint (worst room 0.000 m, box 0.000,
+  point 0.000), 4 open places in their bands; 20 on the objects that
+  realise them (worst 0.000 m); 0 allowed`; line 4 `244 image texture
+  nodes, 133 images`; line 5 `19 level-0 rooms, 95 points, largest
+  |height| 0.0001 m`; line 6 `197 pieces`; line 7 `3 practicals (3
+  brazier)`; line 8 5 cameras; line 9 `899 in MARKERS (49 ROOM_, 761 COL_,
+  18 STAIR_ and 36 ends, 5 GATE_, 4 hinges, SPAWN, 11 EVID_, 13 READ_, 1
+  BELL_), none renders, SPAWN aimed at (0, 1.7, 0)`. The plain build
+  exited 1 at `town` with the 14 quay pieces named, no `castle.blend`
+  written. The ten breaks each printed the text the open calls give, word
+  for word; (4) ends `1 allowed: ROOM_kitchen 0.600 m (#895 break: moved on
+  purpose)` and counts 898 within, the allowed one apart; (1), (2) and (8)
+  count 898 on line 3, which measures the markers that exist; none stayed
+  green. Not a gate, asked by Devon for this sitting: with no master,
+  `CAM_spawn` and `CAM_courtyard` were rendered from the castle build's
+  partial by `review\increment8\still_8.py` (uncommitted), Cycles on
+  OPTIX, `NVIDIA GeForce RTX 3070 Ti`, at #898's comparison settings (960 x
+  540, each camera's `samples` and fixed `exposure`). Twice each: not
+  byte-identical, at most 1/255 apart, mean 0.000037 and 0.000041 of a
+  step, on 0.0112% and 0.0123% of pixels, inside #898's judge. With
+  `MARKERS.hide_render` False and each marker's own flag kept, the same
+  (at most 1/255, mean 0.000035 and 0.000036); with every marker's flag
+  False too, the control, 99.99% and 99.98% of pixels changed, so the
+  comparison sees a marker when one renders and none does.
 - **Increment 9.** A full build writes `castle.blend`, `castle.glb` and
   `markers.json`, and `npx gltf-transform inspect castle.glb`'s size,
   triangle count and texture memory are written into `HISTORY.md`. Those
-  are the numbers the integration row (2i) argues from (#611, #904).
+  are the numbers the integration row (2i) argues from (#611, #923).
+  *Corrected 2026-10-02 (#897, #898)*: after 7b and 8, a plain `npm run
+  castle3d:build` runs the ten stages, saves `castle.blend`, passes
+  `check.py`'s nine lines, runs `export.py` in a third Blender and
+  `check-export.mjs`, and exits 0. The export check's line is quoted whole
+  and its numbers (bytes, triangles unique and placed, nodes, meshes,
+  materials, images by type, image bytes, texture memory) go into
+  `HISTORY.md` beside #897's baseline, computed by the pinned
+  `@gltf-transform/core`, not `npx gltf-transform`, which is not installed.
+  `--export-only` twice prints the same bytes and sha256 for both files.
+  Line 9's `noCollide` clause lands with its break. The six export breaks,
+  each quoted. Five stills from the `CAM_` objects over the master, each
+  exposure in #877's bands and Devon's line on each recorded; each camera
+  rendered twice and compared, and against #892's build, as increment 9's
+  open calls say.
 
 **The look, local** (#53): one sentence from Devon per still, recorded,
 blocking nothing in `npm test`. Does it read as the same castle the game
@@ -1436,7 +1546,7 @@ walks, in daylight, at the five places the game's own player stands?
   game's frame, and nothing in `castle.glb`**: a marker mesh in the glb is
   something a renderer draws, and a JSON in the blueprint's shape can be
   diffed against `makePlan` in Node by the integration row, at 0.5 m with
-  each exception an `allow.json` entry; the game never reads it (#900).
+  each exception an `allow.json` entry; the game never reads it (#919).
 - **blender-mcp's config.** Recommend **local scope (`claude mcp add
   --scope local`), not a committed `.mcp.json`**: the server's path is
   `C:\Users\devon\.blender-mcp\...`, and a committed absolute Windows path
@@ -3582,6 +3692,458 @@ but this section and `HISTORY.md` changed.
   brazier's overlaps, the five cameras with their `stand`, and its line 4
   share.
 
+**Increment 8's open calls: the markers, decided before anything is built**
+(architect, 2026-10-02, against `1fb06f1`, where #892 was the last; decided
+as #893 to #896). Every number is in the game's frame unless it says
+Blender; game (x, y, z) is Blender (x, -z, y), and a game `rotationY` is
+Blender Z, same sign (#843). **Measured on this branch, not predicted**:
+`export-blueprint.mjs` on HEAD and on `110812b`, the commit increment 7 was
+built on, diffed; `--only guide` on HEAD; a scratch copy of
+`tools/castle3d/` with the one `STAGE_OF` rule below, built `--only
+terrain,walls,towers,gates,buildings,lighting`, `--only town` and `--only
+props` into a scratch `CASTLE3D_OUT` and checked; the 25 evidence, read and
+bell pieces, the 18 ramps and the four hinges against the objects that
+realise them in `partial/terrain+walls+towers+gates+buildings+town+props+
+lighting.blend`, the build #892 closed on; and Blender 5.2.2's glTF exporter
+over a scratch scene with a child collection under `MARKERS`. Nothing in the
+repo but this section and `HISTORY.md` changed.
+
+- **The plan moved under the model (0, #893).** HEAD's blueprint prints
+  `445 pieces, 761 colliders, 45 rooms, 4 open, 5 gates, 18 ramps, 8 drums,
+  3 braziers, 5 cameras, 5 standing`; increment 7 was built on 427, 745 and
+  44, and the default output folder's `blueprint.json`, the last one any
+  build wrote, still says so. The 18 new pieces are rank 9's quay (#870,
+  #871: `quay-toll-house` and `quay-toll-house-roof`, `quay-bank-north` and
+  `-south`, `quay-water`, `quay-crane`, `quay-barrels`, `quay-crate`,
+  `quay-dock-side-1` to `-6`, `quay-dock-corner-north` and `-south`,
+  `floor-mereford-quay`) and rank 1's `kitchen-crate` (#880); the 16 new
+  colliders are theirs; the new room is `mereford-quay` (level 0, outside);
+  `outside-ground` and `outside-road` now stop at x -140 and -129.5. Rooms,
+  gates, ramps and the spawn are otherwise identical. **On HEAD every build
+  exits 1 at `guide`**, measured: `ValueError: STAGE_OF: no stage takes
+  piece quay-water of kind water`, from `print_stage_table`, which is #13
+  doing its job. Recommend **one rule in `common.STAGE_RULES`, after the
+  gates' two and before `('props', {'prop'}, None)`: `('town', None,
+  r'^(quay-|floor-mereford-quay$)')`, written in this increment, and nothing
+  else of the quay or the crate**. Measured on a scratch copy: it moves no
+  piece of increment 7's blueprint (5, 97, 46, 9, 40, 43 and 187, as #869
+  closed), gives `town` 60 and `props` 188 on HEAD, and `--only
+  terrain,walls,towers,gates,buildings,lighting` exits 0 with `ok line 4
+  images: 244 image texture nodes, 133 images`, `ok line 5 level ground: 19
+  level-0 rooms, 95 points, largest |height| 0.0001 m`, `ok line 6
+  coverage: 197 pieces`, and lines 7 and 8 green (`3 practicals (3
+  brazier)`). `--only town` raises `town: STAGE_OF gives this stage pieces
+  no rule takes: ['quay-toll-house', 'quay-bank-north', 'quay-bank-south',
+  'quay-crane', 'quay-water', 'quay-dock-side-1', ... 'quay-dock-corner-south',
+  'quay-toll-house-roof']`, 14 pieces (`town.py`'s existing rules take the
+  barrels, the crate and the floor), and `--only props` raises `props:
+  kitchen-crate is assets/blender/calibration/crate.glb, which no group
+  takes`. Both are the right red, by name, until **increment 7b, the quay
+  and the crate**, the model catching up with the plan. The quay goes to
+  `town` and not `terrain` because `terrain.py` names every terrain-stage id
+  on its height field, so `quay-water` there would pass line 6 with no water
+  drawn (#147). So **increment 8 does not wait for 7b and writes no
+  master**: its builds are `--only` builds, and the first plain build to
+  exit 0 comes after 7b.
+- **How many `ROOM_` (1, #894).** The acceptance's 48 was #843's 44
+  blueprint rooms plus the mystery's 4 open places on `e05ac72`. On HEAD it
+  is **49**: 45 blueprint rooms (19 at level 0, 11 at 1, 11 at 2, 4 at 3;
+  28 of them discs) plus `west-barbican`, `outer-ward`, `inner-ward` and
+  `garden`. The mystery's 27 rooms are all among them; its other 23 are
+  blueprint rooms. Recommend **no count in code**: `markers.py` makes one
+  `ROOM_` per blueprint room and per `openRooms` row, line 1 holds both
+  lists and the mystery's, and this spec quotes 49 as measured.
+- **The marker objects (2, #894).** Each transform comes from the blueprint
+  through `common.to_blender` and `rotation_z` and nothing else (#500).
+  Every marker is linked into `MARKERS` and no other collection, carries
+  `marker` (the kind in the second column) and has `hide_render` True on the
+  object as well as on the collection. A field that is null in the blueprint
+  is not written as a property.
+
+  | Marker | Object | Placed at (game) | Custom properties |
+  | --- | --- | --- | --- |
+  | `ROOM_<room id>` (45) | mesh, its own data, `display_type` WIRE | origin on the floor at the plan-view centre, `(cx, top, cz)`; a box from `bounds` or a 32-sided cylinder of `shape.radius`, `top` to `top + storey`, as `GUIDE_room_` | `marker` room, `roomId`, `level`, `ward` (`''` for none), `drum`, `shape` box or disc, `open` False, `top` |
+  | `ROOM_<open id>` (4) | the same | the band between its two gates' x (the curtain's own x where `openRooms` says null), the curtain's z, 0 to `storey`, as `GUIDE_open_` | the same, `shape` box, `open` True, `ward` from `openRooms` |
+  | `COL_<collider id>` (761) | empty, CUBE, `empty_display_size` 1 | location the box's centre, `scale` its half extents in Blender's axes, no rotation | `marker` collider, `colliderId` |
+  | `GATE_<gate id>` (5) | empty, PLAIN_AXES, 0.5 | `(x, 0, z)` where the gate has `x` and `z` (west, east, porter); its `centre` (muniment); else its room's disc centre at the room's `top` (`stockhouse-walk`, (0, 8, -16)) | `marker` gate, `gateId`, `level` (the leaf piece's, else the room's), `at` (`opening`, `centre` or `room`), `closed`, `shutAngle`, `openAngle`, `bar`, `blocks` (a list; an empty one is allowed, measured), `quest`, `lock`, `evidence` |
+  | `GATE_<gate id>_HINGE` (4) | `gates.py`'s PLAIN_AXES empty, adopted; made by `markers.py` through `gates.hinge_empty` when `gates` did not run | `pivot.position`, turned `pivot.rotationY` | `marker` hinge, `gateId`, `level`; no `planId`, so increment 3's break stands |
+  | `STAIR_<ramp id>` (18) | empty, CUBE, 1 | as `COL_`, from the ramp's `box` | `marker` stair, `rampId`, `level`, `drum` |
+  | `STAIR_<ramp id>_LOW`, `_HIGH` (36) | empty, PLAIN_AXES, 0.25 | `slope.from`, `slope.to`, which are `[x, z, y]`: game `(a[0], a[2], a[1])` | `marker` stair-low or stair-high, `rampId`, `level` |
+  | `SPAWN` (1) | empty, ARROWS, 0.5 | `spawn.position` (the eye), its -Z aimed at `lookAt` by `to_track_quat('-Z', 'Y')`, as `lighting.py` aims a camera | `marker` spawn, `level`, `lookAt` (game, three floats) |
+  | `EVID_<evidence id>` (11) | empty, SPHERE, 0.15 | the centre of the carrying piece's `box` | `marker` evidence, `evidenceId`, `planId`, `level` |
+  | `READ_<read id>` (13) | the same | the same | `marker` read, `readId`, `planId`, `level` |
+  | `BELL_<piece id>` (1) | the same | the same, where `bell` is `true` | `marker` bell, `planId`, `level` |
+
+  899 objects: 49 meshes and 850 empties. The longest name is 35
+  characters (`STAIR_stockhouse-tower-stair-1_HIGH`). Four notes. **The boxes
+  are empties, and nothing is shared**: an empty has no geometry to render
+  or export, so a dropped `hide_render` cannot put 761 boxes into a still or
+  the glb, and its box is exactly `location +- scale`, which line 3 reads; a
+  shared unit-cube mesh is refused for that reason. **No child collections
+  under `MARKERS`** (`MARKERS_rooms` and so on, to hide the colliders with
+  one click): measured, 5.2.2's exporter with `use_renderable` exported an
+  object from a child collection whose parent alone had `hide_render`. The
+  viewport's empty filter hides the 850 instead. **`COL_` carries no
+  `level`**, amending #843's "every marker carries level": the plan gives a
+  collider none, and deriving one from its y would be a second source.
+  **`GATE_` says where it stands**: the plan gives `x` and `z` for three
+  gates, a `centre` for the muniment's leaf, and `centre: null` for
+  `stockhouse-walk`, a bar on a drum door (`castle-plan.js` line 1162);
+  placing that one in its doorway would be computing the door's chord in
+  Python, which #500 refuses, so it stands at its room's centre with `at:
+  "room"`. And `bell` is `false`, not null, on 134 pieces, so the rule is
+  `bell is True`, measured 1. `noCollide` on each `PROP_` is #843's too and
+  `props.py`'s `tag()` has written it since increment 6; no line holds it in
+  increment 8, because no `props` build exits 0 before 7b and a clause ships
+  with its break (#34); increment 9 adds it.
+- **What "a session adjusts them to the new geometry" means (3, #895).**
+  Recommend **markers are written from the blueprint, and an adjustment is
+  a committed entry in `markers.py`'s `ADJUST`, `{'<marker name>': ((dx, dy,
+  dz), '<why>')}` in game metres, applied after every marker is placed and
+  before `SPAWN` is aimed; an entry naming no marker, or with an empty why,
+  raises**. That is #841: an edit to the master over MCP is lost on the next
+  build unless it is written back. **Which markers can drift, measured:
+  none, today.** A marker drifts from the model only where the geometry
+  departs from the plan, and every object that realises a piece is held to
+  its box within `BOX_TOLERANCE` 0.01 m, the props pushed off the plaster by
+  at most 0.0073 m (#868). On #892's build each of the 25 evidence, read and
+  bell pieces is realised by exactly one object carrying its `planId` (23
+  `PROP_`, `LEAF_muniment`, `BAR_walk-bar`), the worst at 0.0000056 m from
+  the piece's box centre (`PROP_cart`); the 18 `FLIGHT_` objects are 0.0000
+  m from their ramps' boxes on every face; the four `LEAF_` origins sit on
+  their hinges. Rooms and colliders have no realising object: the model's
+  rooms are bounded by stone built from those colliders, and #851's outer
+  gate is shut, which the solid `barbican-west` colliders describe. So
+  **`ADJUST` ships empty and `allow.json` stays `{}`**; the breaks exercise
+  both. The 0.5 m is room for a later session that moves something in the
+  model to drive the plan; past it, `allow.json` needs a reason.
+- **Line 3, measured against what (3, #895, amending #844).** Two measures,
+  both `WHERE_TOLERANCE` 0.5 m, a `check.py` constant. (a) **Against the
+  blueprint, every marker**: a `ROOM_`'s plan-view centre (its world
+  vertices' bounds) against its `bounds`' centre, its lowest vertex against
+  `top`, and its `level` equal; an open place's centre strictly inside its
+  band in x and the curtain in z, instead of the 0.5 m; a `COL_` or `STAIR_`
+  box by its worst face; every point marker (`GATE_`, hinge, `_LOW`,
+  `_HIGH`, `SPAWN`, `EVID_`, `READ_`, `BELL_`) by its distance in 3D. Past
+  0.5 m fails unless `allow.json` has an entry under the marker's object
+  name with a non-empty reason. An entry with no reason fails; **an entry
+  for a marker within 0.5 m fails as stale**, and so does one under a marker
+  prefix that names no marker in the file. (b) **Against the model**, each
+  marker whose item exactly one object outside `GUIDE` and `MARKERS`
+  realises by `planId` (`EVID_`, `READ_` and `BELL_` by their `planId`,
+  `STAIR_` by its `rampId`): its point, or its box's worst face, against
+  that object's world bounds (a root's whole tree, as line 7's
+  `tree_bounds`). Past 0.5 m fails, **and `allow.json` cannot excuse it**: an
+  entry records a marker departing from the plan, never from the model it
+  describes. Hinges are line 2's. **The key and reason**: the object name
+  and a sentence citing a HISTORY number, `{"ROOM_kitchen": "#9xx: the
+  kitchen's east wall moved 0.8 m in the model"}`. Line 6 keeps piece ids
+  and `model:<file>`, and skips every key that starts with one of
+  `common.MARKER_PREFIXES` (`ROOM_`, `COL_`, `GATE_`, `STAIR_`, `SPAWN`,
+  `EVID_`, `READ_`, `BELL_`), where today it skips `ROOM_` alone.
+- **The four lines (4, #895, amending #844 and #876 to nine).** Each runs
+  when `markers` did. **Line 1, `rooms`**: one `ROOM_` per blueprint room
+  and open place, each a mesh in `MARKERS` with `marker`, `roomId`, `level`,
+  `shape` and `open`; every mystery room among them; no `ROOM_` naming
+  neither. Passes `ok    line 1 rooms: 49 ROOM_ (45 blueprint rooms, 28 of
+  them discs, and 4 open places); the 27 mystery rooms each have one`.
+  **Line 2, `gates`**: one `GATE_` per blueprint gate, its `gateId`, `at`
+  and mirrored fields equal to the blueprint's; one `_HINGE` per gate with
+  a `pivot`, on it within 0.01 m and turned to its `rotationY` within 0.1
+  degree; `bar` True on a gate without one; and when `gates` ran, each hinge
+  parents exactly `LEAF_<gate id>`, whose origin is on it within 0.01 m.
+  Passes `ok    line 2 gates: 5 GATE_ (west-gate, east-gate, porter-gate at
+  the opening, muniment at its centre, stockhouse-walk at its room, bar), 4
+  hinges at their pivots, each holding its LEAF_` (on `--only markers`, `4
+  hinges at their pivots, made by markers (gates did not run)`). **Line 3,
+  `where`**, renamed from `where the rooms are`: (a) and (b) above. Passes
+  `ok    line 3 where: 899 markers within 0.5 m of the blueprint (worst room
+  0.000 m, box 0.000, point 0.000), 4 open places in their bands; 20 on the
+  objects that realise them (worst 0.000 m); 0 allowed`, where 20 is the
+  castle build's 18 `STAIR_`, `EVID_lock` and `EVID_walk-door`, and `--only
+  markers` says `no realising objects (no geometry stage ran)`. **Line 9,
+  `markers`**, new, last so no line renumbers: one `COL_` per collider; one
+  `STAIR_` with both ends per ramp; `SPAWN` with a `lookAt` equal to the
+  blueprint's and its -Z within 0.1 degree of it; one `EVID_`, `READ_` and
+  `BELL_` per carrying piece, with its `planId`; `COL_` and `STAIR_`
+  unrotated; every marker with `marker` and `hide_render` True; every object
+  in `MARKERS` a marker; no marker-named object outside it. Passes `ok
+  line 9 markers: 899 in MARKERS (49 ROOM_, 761 COL_, 18 STAIR_ and 36 ends,
+  5 GATE_, 4 hinges, SPAWN, 11 EVID_, 13 READ_, 1 BELL_), none renders,
+  SPAWN aimed at (0, 1.7, 0)`. **Why a ninth line** rather than more
+  clauses in 1 and 2: the acceptance listed 745 `COL_` to one `BELL_` under
+  lines 1 to 3, and none of #844's three would go red with any of them
+  missing (#147). The header comment and `README.md` say nine lines.
+- **The breaks (5, #34)**, each from green on `--only
+  terrain,walls,towers,gates,buildings,lighting,markers`, restored before the
+  next, quoted as printed; where a number is "about", the printed one is the
+  record. A "temporary line" goes at the end of `markers.build`. (1)
+  `bpy.data.objects.remove` on `ROOM_kitchen`: `FAIL  line 1 rooms:
+  ROOM_kitchen missing; kitchen is a blueprint room (level 0) and a mystery
+  room`, and no other line (line 3 measures the markers that exist). (2) The
+  same on `GATE_west-gate_HINGE`: `FAIL  line 2 gates: GATE_west-gate_HINGE
+  missing; west-gate has a pivot at game (-36, 0, 0.95); LEAF_west-gate's
+  parent is none, not GATE_west-gate_HINGE`; line 6 stays green, the leaf
+  still naming `west-gate`. (3) `ADJUST = {'ROOM_kitchen': ((0.6, 0, 0),
+  '#895 break')}`: `FAIL  line 3 where: ROOM_kitchen's centre is 0.600 m
+  from kitchen's (-20, -10) in plan (limit 0.5) and allow.json has no
+  ROOM_kitchen`. (4) (3) with `{"ROOM_kitchen": "#895 break: moved on
+  purpose"}` in `allow.json`: line 3 passes and ends `1 allowed:
+  ROOM_kitchen 0.600 m (#895 break: moved on purpose)`. (5) That entry with
+  `ADJUST` empty, the acceptance's stale entry: `FAIL  line 3 where:
+  allow.json's ROOM_kitchen is stale: ROOM_kitchen is 0.000 m from the
+  blueprint, within 0.5; delete the entry`. (6) (3) with `{"ROOM_kitchen":
+  ""}`: `FAIL  line 3 where: allow.json's ROOM_kitchen has no reason`, and
+  line 6 stays green. (7) `ADJUST = {'EVID_lock': ((0, 0, 0.6), '#895
+  break')}` with `{"EVID_lock": "#895 break"}`: `FAIL  line 3 where:
+  EVID_lock is 0.600 m from LEAF_muniment, which realises muniment;
+  allow.json excuses a marker from the blueprint, never from the model`. (8)
+  A temporary line removing `COL_north-curtain-west-0`: `FAIL  line 9
+  markers: COL_north-curtain-west-0 missing; the blueprint has collider
+  north-curtain-west-0`. (9) A temporary `ROOM_kitchen.hide_render = False`:
+  `FAIL  line 9 markers: ROOM_kitchen renders; every marker is hidden from
+  render (#843)`, the guard the glb's exclusion leans on. (10) A temporary
+  empty `STRAY` linked into `MARKERS`: `FAIL  line 9 markers: STRAY in
+  MARKERS is no marker`.
+- **The plain build (6, #896).** After increment 8 the stage list is
+  complete, `guide` to `markers`, and **`export` is never a stage**:
+  increment 9's export is a third Blender over the saved master, so
+  `build.py`'s module-per-stage import never meets a missing `export.py`. A
+  plain build exits 1 at `town` until 7b, for call 0's reason and no other,
+  and the report quotes that one line; after 7b it runs the ten stages,
+  saves `castle.blend` for the first time and passes nine lines. Recommend
+  **no change to `STAGES`, `MODULE` or `build.py`'s code**, and its header
+  comment's "a full build before increment 8 fails on the first missing
+  stage" corrected to say what fails now.
+- **A still (7, #896).** Recommend **none in increment 8, and no line asked
+  of Devon**. Every marker is hidden from render (#843), so a Cycles still
+  from any `CAM_` is increment 7's picture again, and Workbench does not
+  draw empties, which are 850 of the 899. What there is to look at, the
+  boxes against the stone, is a viewport: the report may attach one
+  `get_viewport_screenshot` from a live blender-mcp session
+  over the castle build with `MARKERS` shown, as a picture and not a check.
+  This amends the scope's "each increment ends with a Cycles still" for 8
+  only; increment 9's five stills are the master's.
+- **The module split (8).** Recommend **`markers.py` new (`build(bp)`,
+  `ADJUST`, the table above, a print of the counts by kind and of
+  `ADJUST`); `common.py` gains the one rule and `MARKER_PREFIXES`;
+  `check.py` gains lines 1, 2, 3 and 9, `WHERE_TOLERANCE` and line 6's
+  prefix skip; `build.py`'s header comment; `README.md`'s stage row and line
+  count**. `gates.py`, `build.mjs`, `export-blueprint.mjs`, `fetch.mjs`,
+  `sources.json`, `allow.json`, `CREDITS.md` and every geometry stage do not
+  change. `markers.py` reads the blueprint and, for the hinges, the objects
+  `gates.py` made, and nothing else, so `--only markers` builds alone.
+  Nothing is fetched.
+
+**Increment 9's open calls: export, decided before anything is built**
+(architect, 2026-10-02, against `1fb06f1`; decided as #897 and #898). The
+master does not exist yet (increment 8's call 0), so every glb number below
+is #892's through build, `partial/terrain+walls+towers+gates+buildings+
+town+props+lighting.blend` on the 427-piece blueprint, a baseline the
+master's are recorded against and not a prediction of them. **Measured**:
+Blender 5.2.2's glTF exporter over that file into scratch, twice; the glb
+read in Node with this repo's `@gltf-transform/core` 4.5 and `functions`'
+`inspect`; every embedded image hashed against `sources.json`; two cameras
+rendered twice each on the RTX 3070 Ti.
+
+- **Where export runs (1, #897).** Recommend **a third Blender, after
+  `check.py` passes, over the saved master: `blender -b <out>/castle.blend
+  --factory-startup --python-exit-code 1 --python tools/castle3d/export.py
+  -- --out <out> --blueprint <file>`, then `check-export.mjs` (call 7), on a
+  full build only and never on `--only`; and `npm run castle3d:build --
+  --export-only`, which writes the blueprint fresh (#841), skips the fetch,
+  the build and `check.py`, refuses when `<out>/castle.blend` is missing,
+  and runs those two over it**. Not a stage: a stage runs before the save
+  and before `check.py`, so the glb would come from a file no check had
+  passed and that was not yet the file on disk. `export.py` opens the master
+  and **never saves it**: `castle.blend` is `build.py`'s, as it has been
+  since increment 0, so the scope's "writes `castle.blend`" is corrected.
+- **The glb (2, #897).** `bpy.ops.export_scene.gltf(filepath=
+  <out>/castle.glb.part, export_format='GLB',
+  export_draco_mesh_compression_enable=False, export_image_format='AUTO',
+  use_renderable=True, export_apply=True, export_extras=True,
+  export_cameras=False, export_lights=False, export_animations=False,
+  export_yup=True)`, then `os.replace` onto `castle.glb`, so a failed export
+  leaves no half file. Every option name read from 5.2.2's operator. What
+  each buys, measured on #892's build. **`use_renderable` is the whole
+  exclusion of `GUIDE` and `MARKERS`**, both `hide_render` collections: 0
+  nodes named `GUIDE_` or by a marker prefix among 704. **The four leaves
+  survive their hinges' exclusion**: the exporter drops the hinge and writes
+  each `LEAF_` as a root node with the hinge's world transform, so
+  `LEAF_west-gate` is translation `[-36, 0, 0.95]` turned 180 degrees about
+  +Y, the plan's `pivot`, and the glb is in the game's frame (Y-up turns
+  Blender (x, -z, y) back into (x, y, z)). **`export_extras`** carries each
+  object's custom properties onto its node: 336 `planId`, 32 `planIds`, 187
+  `noCollide`, 28 `modelOnly`, 3 `configId`, and a few of the source files'
+  own (`MM`, `hops`, `BoolToolRoot`), harmless; all 427 pieces are named by
+  a node, so the integration row maps nodes to the plan without a naming
+  rule. **`export_apply`** applies the 4 `WEIGHTED_NORMAL` and 12
+  geometry-nodes modifiers; the grass scatter has no primitives and is
+  omitted with the exporter's warning; grass is the integration row's.
+  Draco off; `KHR_texture_transform` is the one extension used; cameras and
+  lights off, since the game owns both and a Cycles watt is not a glTF
+  candela. **Textures embedded**: 126 images in the binary chunk, none by
+  `uri`, 49 JPEG and 77 PNG; 69 byte for byte the cached file (177,811,334
+  bytes), 57 written by the exporter (172,511,157), which are the roughness
+  and metal packed into glTF's metallic-roughness PNG and four normal maps.
+  `AUTO`, not `JPEG`, which at the default quality 75 would re-encode the
+  69. 51 materials, 50 with a base colour texture, 47 with a normal map.
+  **The glb is the exporter's reading of the node materials, not the
+  stills' look**: it warned 17 times `More than one shader node tex image
+  used for a texture. The resulting glTF sampler will behave like the
+  first`, which is #850's break-up sampling a set twice, and `LOOK`'s
+  tints, grime and undulation are node arithmetic glTF has no field for. A
+  bake is the integration row's (#839); nobody judges the glb's look in this
+  row.
+- **Determinism (3, #897).** Measured: two exports of the same file are
+  byte-identical, 560,243,100 bytes and sha256 `8d7f033ee78976d554b327e7
+  15e4fc9bebbf030def74b93712c5995f0e8a8455` both, in 38.7 and 40.6 s.
+  Recommend **`export.py` prints each file's bytes and sha256, and the
+  acceptance runs `--export-only` twice over one master: the two pairs of
+  lines must match exactly**. `markers.json` is byte-stable by construction
+  (call 6). Two full builds are not claimed to give the same glb (#840
+  claims a seeded layout, not a byte no-op); the report runs one second full
+  build, quotes both sha256 and records whether they matched, as a finding
+  and not a gate.
+- **The size, and what bites (4, #897).** On #892's build: **560,243,100
+  bytes; 3,691,299 triangles in 429 meshes, 67,473,845 placed** (each node's
+  mesh counted per node; the 120 terrain trees, 519,809 each on one shared
+  `island_tree_01` mesh, are most of it); 704 nodes; 126 images, 63 at
+  2048, 62 at 1024 and one at 128, 350,322,491 bytes in the file; **texture
+  memory 1,756,102,488 bytes (1,674.7 MB)**, uncompressed with mips, by
+  `ImageUtils.getVRAMByteLength`, which equals `inspect`'s `gpuSize`, both
+  measured. Five kit shrubs are not shared: `PROP_tree-shrub-68` to `-71`
+  and `-136` are 608,882 vertices and 27.7 MB each, a mesh apiece; a note
+  for the integration row, not a fix here. **Nothing in this row bites**:
+  #499's 200 MB is the repo's, and the glb lives outside it (#841).
+  **Flagged**: it is 2.8 times that whole ceiling, so the integration row
+  cannot commit it as it stands (#506's KTX2 took the game from 317.9 to
+  79.9 MB of video memory; this is 1,674.7), and the default output folder
+  is under OneDrive, so every full build re-syncs a 117 MB master and a 560
+  MB glb. Recommend **keep the default folder**, since Devon chose it and
+  `CASTLE3D_OUT` moves it in one variable; his yes is asked.
+- **`npx gltf-transform inspect` (5, #898).** Recommend **no `npx`**:
+  `@gltf-transform/cli` is not in `package.json` (`core`, `extensions` and
+  `functions` 4.5 are, as devDependencies), so `npx` would fetch an
+  unpinned CLI from npm at build time. `check-export.mjs` computes the same
+  numbers with the pinned `core`: the file's bytes, triangles unique and
+  placed from the accessors' counts, nodes, meshes, materials, images by
+  MIME type, image bytes and texture memory. Those go to `HISTORY.md` beside
+  call 4's baseline and are the numbers the integration row argues from
+  (#611). The acceptance's `npx` is corrected.
+- **`markers.json` (6, #898).** Written by `export.py` from the `MARKERS`
+  objects in the saved master, every value read back from `matrix_world`
+  through `common.to_game` (the inverse of `to_blender`, moved there from
+  `check.py`), never copied from the blueprint, because the file exists for
+  the day Blender drives the plan (#839). The game's frame and the
+  blueprint's shape, each list in blueprint order, every number rounded to 4
+  decimals (0.1 mm, above float32's noise at these sizes), `json.dumps(...,
+  indent=1)`, LF:
+
+  ```
+  { comment, frame: "game: metres, Y-up (#843)", built: <castle3d_stages>, blueprintSha256,
+    rooms:     [{ id, level, ward, drum, open, top, bounds: {min: {x, z}, max: {x, z}},
+                  shape: null | {kind: "disc", cx, cz, radius} }],
+    colliders: [{ id, box: {min: {x, y, z}, max: {x, y, z}} }],
+    gates:     [{ id, at, position: [x, y, z], closed, shutAngle, openAngle, bar, blocks,
+                  quest, lock, evidence, pivot: null | {position: [x, y, z], rotationY} }],
+    ramps:     [{ id, level, drum, box, slope: {from: [x, z, y], to: [x, z, y]} }],
+    spawn:     { position: [x, y, z], lookAt: [x, y, z], level },
+    evidence:  [{ id, planId, level, position }], read: [ ...the same ], bells: [ ...the same ],
+    allowed:   { "<marker name>": "<reason>" } }
+  ```
+
+  A room's `bounds` and `top` come from its mesh's world vertices, a disc's
+  `radius` from half its x extent (the 32-gon has vertices on both x
+  ends); `pivot.rotationY` is the hinge's world Z in degrees modulo 360, so
+  300 stays 300; `slope` is written `[x, z, y]` as the plan writes it; a
+  property the object lacks is `null`. `allowed` copies `allow.json`'s
+  marker entries, so a reader sees why a marker departs without the repo;
+  `blueprintSha256` is the sha256 of the `blueprint.json` the export ran
+  against.
+- **The export check (7, #898).** Recommend **`check-export.mjs`, Node,
+  exported as a function, run by `build.mjs` after `export.py`, non-zero on
+  any failure, and not a `check.py` line**: `check.py` runs over the `.blend`
+  before export, and these are facts about two other files, which Node
+  reads without a fourth Blender (a 560 MB glb's JSON chunk and images in
+  0.3 s, measured). #844's count stays nine. It holds (a) **the glb**: glTF
+  2; no `KHR_draco_mesh_compression`; every image in a `bufferView`, none by
+  `uri`; no camera and no `KHR_lights_punctual`; no node named `GUIDE_` or
+  by a `MARKER_PREFIXES` prefix; every blueprint piece named by some node's
+  `extras.planId` or `extras.planIds` unless `allow.json` names it, which is
+  line 6 over what was written, since an exporter that drops an object, as
+  it drops the hinges, is invisible to line 6; each `LEAF_<gate id>` node,
+  a root, within 0.01 m of its gate's `pivot.position` and 0.1 degree of its
+  `rotationY` about +Y, the frame checked where a sign error shows. (b)
+  **`markers.json`**: its ids equal the blueprint's, list by list (rooms
+  with the open places, colliders, gates, ramps, evidence, read, bells), and
+  each position or box within 0.5 m of the blueprint's unless `allowed`
+  names it: line 3's rule over the written file, because a frame error in
+  the writer (a z sign, an unswapped `slope`) is invisible to line 3, which
+  never sees the file. Passing prints one line, quoted whole in the report:
+  `ok    export: castle.glb <bytes> bytes, sha256 <...>; <n> triangles (<n>
+  placed), <n> meshes, <n> nodes, <n> materials, <n> images (<n> JPEG, <n>
+  PNG, <bytes> bytes, <MB> MB of texture memory); no Draco, every image
+  embedded, no GUIDE or marker node, <n> pieces named, 4 leaves on their
+  pivots; markers.json <n> markers, sha256 <...>, each within 0.5 m of the
+  blueprint, <n> allowed`. **Breaks, each from green, each quoted**: (1) a
+  temporary line in `export.py` setting both `MARKERS.hide_render` and
+  `ROOM_kitchen.hide_render` False: `FAIL  export: castle.glb has 1 node(s)
+  named as a marker or GUIDE: ROOM_kitchen`; and the collection's alone
+  stays green, which the report says in one line (each marker's own
+  `hide_render` holds it, which is why each carries one). (2)
+  `export_draco_mesh_compression_enable=True`: `FAIL  export: castle.glb
+  uses KHR_draco_mesh_compression; Draco is off (#897)`. (3) The check run
+  over a scratch copy of the glb whose first image a throwaway script has
+  moved to `uri: "x.png"` (a fixture, as #884's flipped byte was): `FAIL
+  export: castle.glb image 0 is by uri x.png; every image is embedded`. (4)
+  A temporary `LEAF_west-gate.hide_render = True` in `export.py`, so
+  `check.py` passed the file and the glb lacks it: `FAIL  export: 1
+  blueprint piece(s) no glb node names: west-gate`. (5) `export_yup=False`:
+  `FAIL  export: LEAF_west-gate stands 1.344 m from west-gate's pivot (-36,
+  0, 0.95)`, among others. (6) `to_game` with z's sign flipped in
+  `markers.json`'s writer only: `FAIL  export: markers.json: <n> of 899
+  markers more than 0.5 m from the blueprint; first ROOM_clerk-office, 20.000
+  m from (-30, -10)`.
+- **Line 9's last clause (8, #898).** `check.py` stays at nine lines; line 9
+  gains #894's deferred clause: when `props` ran, each `PROP_<id>` carries
+  `noCollide` equal to its blueprint piece's. Break: `props.tag()` writing
+  `False` for every piece; line 9 names the first `PROP_` in blueprint order
+  whose blueprint says true, and the count, and the report quotes it.
+- **The five stills (9, #898).** Recommend **`still_9.py` in
+  `CASTLE3D_OUT\review\increment9\`, uncommitted, which is `still_7.py` with
+  its folder and file names changed and nothing else, over `castle.blend`**:
+  Cycles, `compute_device_type` OPTIX and CUDA if not, the devices filtered
+  to that type, `cycles.device` GPU; 1920 x 1080; the OpenImageDenoise
+  denoiser; adaptive sampling at Blender's default; each `CAM_`'s `samples`;
+  exposure by the 480 x 270 bisection; #877's bands. **No `-t`**:
+  `BLENDER_THREADS` is rank 1's `render.mjs` (#882), and a GPU path tracer's
+  threads are not the CPU's. The report names the machine, DEVON-DESKTOP's
+  RTX 3070 Ti (#878). Devon's line on each, recorded. **Rendered twice and
+  compared**, at 960 x 540, each camera's `samples` and its fixed
+  `cameras.json` `exposure`, not a probed one, so two renders compare. (a)
+  **The master, twice.** Measured on #892's build: `CAM_spawn` at 128
+  samples and `CAM_hall` at 1024, each rendered twice, are not
+  byte-identical, and differ by at most one 8-bit step (1/255), on 0.0008%
+  and 0.0004% of pixels, mean 0.00000; 28 to 29 s a render. The judge is
+  **every pixel within 1/255 and a mean difference under 0.0001**; a camera
+  outside it is reported, not re-rendered. (b) **The master against #892's
+  build**, the same five at the same settings: what differs is what 7b and
+  the move to one file changed. Expected: `CAM_spawn`, `CAM_courtyard`,
+  `CAM_hall` and `CAM_chapel` within (a)'s judge (markers do not render, and
+  no quay or crate is in their frames) and `CAM_town` changed where the
+  quay shows. The report gives each camera's share of pixels more than 2/255
+  apart, and a difference image for any outside (a)'s judge. That is the
+  evidence that the master is #892's castle plus 7b, with nothing lost.
+- **The module split (10).** Recommend **`export.py` new (the export,
+  `markers.json`, a print of bytes and sha256 for each); `check-export.mjs`
+  new; `build.mjs` gains steps 9 and 10 (export, the export check) on a full
+  build, and `--export-only`; `common.py` gains `to_game`, which `check.py`
+  then imports; `check.py` gains line 9's clause; `README.md` (the third
+  Blender, the two files, `--export-only`, the sizes)**. `package.json`,
+  `sources.json`, `allow.json` and every stage module do not change.
+  Nothing is fetched.
+
 ### Dependencies
 
 - **Gate: none.** Needs Devon's Windows machine with the Steam Blender 5.2
@@ -3653,16 +4215,22 @@ but this section and `HISTORY.md` changed.
   stills. One `builder` sitting. The game-side fix for `brazier-3` (a
   one-tile edit to `scene-config.json`) is not this row's and does not gate
   it.
+- **Increments 8, 7b and 9's order** (#893): 8 first, a `builder` job now,
+  since it needs no master and no Devon yes but #896's; then 7b's open calls
+  (`architect`) and Devon's lines on its look calls; then 7b's build, the
+  first plain build to exit 0 and so the first master; then 9. 7b's spec can
+  be written while 8 is built; 7b's build follows 8 because both edit
+  `common.py`.
 - **Lane G, `tools/castle3d/`**, this row's alone (#842). It shares no file
   with lane F, so it may run beside a rank 1 or rank 2 session; that is two
   Blenders on one machine and Devon's call. Both add a line to
   `package.json`'s scripts, a one-line merge.
 - **Rank 9's quay and river**: shipped (#870 to #872), not a gate.
   Increment 1 picks the water up from the blueprint.
-- **The integration row**, ranked 2i, shape decided in #900 to #905, full
+- **The integration row**, ranked 2i, shape decided in #919 to #924, full
   spec waits on increment 9's `gltf-transform inspect` numbers, which it
-  argues from (#904). Lane G. It will open the outer gate and the four drum
-  doors in the model (#903), which changes `tools/castle3d/` after this row
+  argues from (#923). Lane G. It will open the outer gate and the four drum
+  doors in the model (#922), which changes `tools/castle3d/` after this row
   closes.
 - **Rank 4**: its increment 2 is superseded by this row (#839); its
   looking checklist is unaffected and runs in rank 3's sitting.
@@ -3678,7 +4246,7 @@ but this section and `HISTORY.md` changed.
   committed, never re-derived.
 - #506: nothing reaches `assets/`, so nothing is encoded; that is the
   integration row's (2i; ceilings and encode argued from increment 9's
-  numbers, #904).
+  numbers, #923).
 - #529, #611: no assertion moves and no ceiling moves; no suite gains a
   line.
 - #13, #34, #147: every `check.py` line and every launcher refusal has its
@@ -3701,6 +4269,10 @@ but this section and `HISTORY.md` changed.
   no `allow.json` entry.
 - #844, amended by #876: eight `check.py` lines, not six; lines 7 and 8 run
   when `lighting` did, and each has its break.
+- #844, amended again by #895: nine lines; lines 1, 2, 3 and 9 run when
+  `markers` did. The export check is the launcher's (#898), not a tenth line.
+- #843, amended by #894: `COL_` carries no `level`, `GATE_` carries `at`, and
+  `MARKERS` has no child collections.
 - #500 and #843, extended by #874 and #875: the braziers' positions and the
   cameras' footing are computed in Node by `castle-plan.js`'s own
   `tileToWorld`, `standAt` and `walkability`, never again in Python.
@@ -3739,6 +4311,8 @@ but this section and `HISTORY.md` changed.
       The sun's shadows the same way round?
 - [ ] The hall's brazier (`brazier-3`) against the statue and the table:
       the game's clash, reproduced; seen?
+- [ ] The master's five stills beside #892's: the same castle, with the
+      quay where `CAM_town` looks?
 
 ---
 
@@ -3791,6 +4365,11 @@ pinned-camera shot through `tools/shot-yard.mjs`, spawn untouched
 98 m, 60 % fog) and the river (84 % fog, first seen at (-155, -3) from
 `floor-sw-tower-roof`, 119.7 m, through the west gate) read at all. If not,
 the lever is `lighting.fog` (#796), not the town or the west wall.
+**Stills exist, verdict owed** (#900): `q1` to `q5` and the two `x3` crops
+in `looks/2026-10-03/`, from both west tower roofs and the west walk at
+Terce, Prime and Vespers. #900 reads the gate as fog colour, the ridge as a
+small grey point and no water told apart; that is the session's reading,
+not Devon's, and this item stays open until he judges them.
 
 ### Dependencies
 
@@ -3864,7 +4443,7 @@ are below; the second and third increments wait on the look (#53).
 shipped here is reverted.** The game keeps the fifteen pixel textures,
 `pixelMaterials`, check 3b, `RELIGHT_KIT` and `MAX_TEXTURE_MB` until the
 stage of the integration row (2i) that swaps the last surface wearing one
-ships (#902); forty per-room textures would be deleted that day. What is left of this row is
+ships (#921); forty per-room textures would be deleted that day. What is left of this row is
 the looking checklist at the end of this section, and a fix if the look
 finds a hole.
 

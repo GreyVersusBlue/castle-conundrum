@@ -12,9 +12,12 @@
 # list goes into scene["castle3d_stages"] for check.py (#844), and the saved
 # path into <out>/last-build.txt for the launcher.
 #
-# A stage whose module does not exist yet is an error, named, not a skip: a
-# full build before increment 8 fails on the first missing stage rather than
-# saving a castle.blend that silently lacks it (#13).
+# A stage whose module does not exist yet is an error, named, not a skip, so a
+# build never saves a castle.blend that silently lacks one (#13). From
+# increment 8 every stage has its module, `guide` to `markers`, and `export`
+# is never a stage (#896). What stops a full build now is the plan moving
+# under the model: until increment 7b, `town` raises naming the quay's 14
+# pieces it has no rule for, and the master is not saved (#893).
 
 import os
 import sys

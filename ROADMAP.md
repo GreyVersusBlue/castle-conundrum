@@ -41,8 +41,8 @@ need a network that reaches Poly Haven, once each, into a hash-pinned cache.
 | **2b Blender: an interiors kit** | Opus 5 | Specced 2026-09-25 (#813 to #816, #819), nothing built. |
 | **2c Blender: a shared rig with swappable parts** | Opus 5 | Specced 2026-09-25 (#820 to #825), nothing built. Increment 1 is Blender; increment 2 is a container. |
 | **2d Blender: the animals** | Opus 5 | Specced 2026-09-25 (#826 to #829), nothing built. |
-| **2h Castle in Blender** (Blender 5.2) | Opus 5 | Specced 2026-09-26 (#839 to #844), built through increment 7 (#873 to #877, PR #93, 0064a11): lighting and five cameras, five stills approved by Devon (#905). Increments 8 and 9 left: markers, export. The game loads none of it. |
-| **2i Castle in Blender, the integration row** (Blender 5.2) | Opus 5 | Shape decided 2026-10-02 (#900 to #905): a skin swap, staged curtain wall and towers, then buildings, then Mereford, kit indoors meanwhile, the gate and drum doors opened in the model. Its `SPECS.md` section is not written: it waits for 2h increment 9's numbers (#904). Nothing built. |
+| **2h Castle in Blender** (Blender 5.2) | Opus 5 | Specced 2026-09-26 (#839 to #844), built through increment 8, markers (#893 to #899). Increment 7b, the quay and the kitchen crate, and increment 9, export, are left; 9 is blocked on 7b. The game loads none of it. |
+| **2i Castle in Blender, the integration row** (Blender 5.2) | Opus 5 | Shape decided 2026-10-02 (#919 to #924): a skin swap, staged curtain wall and towers, then buildings, then Mereford, kit indoors meanwhile, the gate and drum doors opened in the model. Its `SPECS.md` section is not written: it waits for 2h increment 9's numbers (#923). Nothing built. |
 
 ### Local: a GPU
 
@@ -54,7 +54,7 @@ cannot trust a pass either.
 
 | Row | Model | Status |
 | --- | --- | --- |
-| **3 The GPU run** | Opus 5 | The fourth sitting confirmed the sight fix on a GPU and walked the whole day and the second day for the first time (#886 to #891). What is left is `npm run play` reaching exit 0: 3a (#916) and 3b (#917) shipped, so one more GPU run, which also confirms 3b's three beats and the three Play Again beats, the phone in the room (#530), and a shot, the quay through the fog (#910). |
+| **3 The GPU run** | Opus 5 | The fourth sitting confirmed the sight fix on a GPU and walked the whole day and the second day for the first time (#886 to #891). What is left is `npm run play` reaching exit 0: 3a (#916) and 3b (#917) shipped, so one more GPU run, which also confirms 3b's three beats and the three Play Again beats, the phone in the room (#530), and a shot, the quay through the fog (#910): seven stills of it are in `looks/2026-10-03/` (#900) and Devon's verdict on them is owed. |
 | **4 The retro castle**, past increment 1 | Opus 5 | Increment 1 shipped in a container, no GPU needed (#757 to #766). What is left is the look: the checklist is in `SPECS.md`. Increment 2 is superseded by 2h (#839). |
 | **11 Feel**, past its Node line | Sonnet 5 | The Node half shipped 2026-09-17 (#650 to #654): a shadow decal and a reaching hand, nine assertions in `plan-vs-scene.mjs`. What is left is whether either reads on a GPU. Gated on rank 3 (below). |
 | **2c Blender: a shared rig with swappable parts**, the clips | Opus 5 | Once rendered, the eleven clips and the hen-wife beside a Quaternius body are a GPU look, the gate on committing anything under `assets/blender/folk/` (#824, #53). |
@@ -171,9 +171,9 @@ countryside backdrop shipped (#908). The gates inside the band: 2b after 2a, whi
 open; 2d after 2c's increment 1. **2h is
 not in that order**: it has no gate, goes through nothing of `tools/blender/`'s, and
 starts whenever Devon's machine is free (#839, #840). The integration row,
-**2i** (#900 to #905), puts its model in the game as a skin swap, last in the
+**2i** (#919 to #924), puts its model in the game as a skin swap, last in the
 band, in lane G, and is gated on 2h's increment 9: its shape is decided and
-its spec waits for that increment's numbers (#904).
+its spec waits for that increment's numbers (#923).
 
 **Rank 3's hour on a GPU is spent: the fourth sitting confirmed the sight
 fix** (#886 to #891). What is left of the row, 3a (#916) and 3b (#917) having shipped, is one more

@@ -74,7 +74,7 @@ priority on 2026-09-25 and reopened ranks 1 and 2 himself to hold them
 (#801). Ten rows: the Blender pack band,
 three rows lettered by priority (2b an interiors kit, 2c a
 shared rig with swappable parts, 2d the animals); the castle rebuilt as a realistic standalone Blender model, outside
-the pipeline (2h, #839 to #844), then its integration row (2i, #900 to #905); the GPU run itself, now gated on nothing (rank 3, #780 to #782);
+the pipeline (2h, #839 to #844), then its integration row (2i, #919 to #924); the GPU run itself, now gated on nothing (rank 3, #780 to #782);
 the retro castle's look, its variety increment superseded by 2h (rank 4,
 #839); the rest of
 the fifty-person populace (rank 6); somebody with speakers to judge the
@@ -237,9 +237,9 @@ the placement editor, budget suite, move-and-delete and the dialogue format
 | 2b | Blender: an interiors kit: joined sets dressing the kitchen, the great hall and the cell, specced (#813 to #816, #819); the two hearths and the chapel altar went to 2f (#830); nothing built | 2+ | Opus 5 | Local: Blender | 1 shipped (#881); 2a shipped (#907) | F, B | | [Blender: an interiors kit](SPECS.md#blender-an-interiors-kit) |
 | 2c | Blender: a shared rig with swappable parts: one rig, one-primitive parts, at most five skinned draws a person against the Quaternius rigs' 12 to 15, specced (#820 to #825); nothing built | 2+ | Opus 5 | Local: Blender, then Container; judged local: GPU (#53) | 1 shipped (#881) | F, C | | [Blender: a shared rig with swappable parts](SPECS.md#blender-a-shared-rig-with-swappable-parts) |
 | 2d | Blender: the animals: pig, goat, sheep, horse, cat and two geese on one quadruped topology plus a bird one for the goose, specced (#826 to #829); nothing built | 1 | Opus 5 | Local: Blender; judged local: GPU (#53) | after 2c increment 1 (1 shipped, #881) | F, C | | [Blender: the animals](SPECS.md#blender-the-animals) |
-| 2h | Castle in Blender: the castle, Mereford and the countryside as a realistic standalone model with Poly Haven PBR, built by committed scripts on Blender 5.2, with gameplay markers, specced (#839 to #844); increments 0 to 7 shipped (#839 to #877, PR #93, 0064a11), the five stills of 7 approved by Devon (#905); increments 8 and 9 (markers, export) are left; the game loads none of it | 2+ | Opus 5 | Local: Blender GPU (5.2, Devon's Windows machine only); Local: net for its fetches | — | G | | [Castle in Blender](SPECS.md#castle-in-blender) |
-| 2i | Castle in Blender, the integration row: the game takes `castle.glb` as a skin swap and never reads `markers.json` (#900), staged curtain wall and towers, then buildings, then Mereford, with the kit indoors meanwhile (#902), the outer gate and drum doors opened in the model (#903); shape decided (#900 to #905), full spec (ceilings, LOD and bake, KTX2, amendments to #499, #506, #611) waits for 2h increment 9's `gltf-transform inspect` numbers (#904); nothing built | Set by the spec | Opus 5 | Local: Blender GPU (5.2, Devon's Windows machine only) | after 2h increment 9 | G | | [Castle in Blender, the integration row](SPECS.md#castle-in-blender-the-integration-row) (no section yet, #904) |
-| 3 | The GPU run: the fourth sitting confirmed the sight fix on a GPU and walked the whole day and the second day (#886 to #891); exit 1, 6 failures, 3a (#916) and 3b (#917) shipped, one more GPU run owed; `renderer.info` recorded (#887); the phone (#530) untouched | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
+| 2h | Castle in Blender: the castle, Mereford and the countryside as a realistic standalone model with Poly Haven PBR, built by committed scripts on Blender 5.2, with gameplay markers, specced (#839 to #844); increments 0 to 7 shipped (#839 to #877, PR #93, 0064a11, closed by #892); increment 8, markers, built (#893 to #899); 7b (the quay and the kitchen crate, needs its architect block) and 9 (export, specced, blocked on 7b) are left; the game loads none of it | 2+ | Opus 5 | Local: Blender GPU (5.2, Devon's Windows machine only); Local: net for its fetches | — | G | | [Castle in Blender](SPECS.md#castle-in-blender) |
+| 2i | Castle in Blender, the integration row: the game takes `castle.glb` as a skin swap and never reads `markers.json` (#919), staged curtain wall and towers, then buildings, then Mereford, with the kit indoors meanwhile (#921), the outer gate and drum doors opened in the model (#922); shape decided (#919 to #924), full spec (ceilings, LOD and bake, KTX2, amendments to #499, #506, #611) waits for 2h increment 9's `gltf-transform inspect` numbers (#923); nothing built | Set by the spec | Opus 5 | Local: Blender GPU (5.2, Devon's Windows machine only) | after 2h increment 9 | G | | [Castle in Blender, the integration row](SPECS.md#castle-in-blender-the-integration-row) (no section yet, #923) |
+| 3 | The GPU run: the fourth sitting confirmed the sight fix on a GPU and walked the whole day and the second day (#886 to #891); exit 1, 6 failures, 3a (#916) and 3b (#917) shipped, one more GPU run owed; the quay look's stills taken (#900, `looks/2026-10-03/`), Devon's verdict owed; `renderer.info` recorded (#887); the phone (#530) untouched | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
 | 4 | The retro castle: increment 1 shipped, fifteen sets out and fifteen 128 px textures in (#757 to #766); the look is left; variety per room is superseded by 2h (#839); the props increment moved to 2b (#813) | 2+ | Opus 5 | Container to the look, local: GPU past it | — | B | | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
 | 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #729 to #733); four generated clips placed in the household's routines (#800), `drill` dropped (#915); 10 of the twelve's 27 chatter pairs placed by room and bell (#911, #912); left: playback of those 10 (#913), the 17 that wait on Devon (#914), the town's share of the fifty | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: somebody listens to the seven beds, the four rings and the first two event sounds (a bed at a point and the rings, #680 to #683; the door and the hound, #696 to #698) | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
@@ -312,6 +312,9 @@ Gameplay is authored as named markers (`ROOM_`, `COL_`, `GATE_` with its
 hinge, `STAIR_`, `SPAWN`, `EVID_`, `READ_`, `BELL_`) so that Blender can
 drive the plan later (#843). The game loads none of it, `npm test` stays
 fifteen suites, and CI never runs it (#842). Ten increments, one stage each.
+Built through increment 8, markers (#893 to #899); increment 7b, the quay
+and the kitchen crate, was found missing from the model and comes before 9
+(#893); increment 9, export, is specced (#897, #898) and blocked on 7b.
 Detail: [Castle in Blender](SPECS.md#castle-in-blender).
 
 ## The GPU run
@@ -330,7 +333,9 @@ GPU `npm run play` to reach exit 0, which also confirms 3b's three beats and
 the three Play Again beats — and the phone (#530) is untouched. **One more shot
 moved here from rank 9 (#910)**: the quay through the fog, a pinned camera
 through `tools/shot-yard.mjs`, to say whether the toll-house ridge (about 98 m,
-60 % fog) and the river (first seen at 119.7 m, 84 % fog) read at all.
+60 % fog) and the river (first seen at 119.7 m, 84 % fog) read at all. Seven
+stills of that view exist, `q1` to `q5` and two crops in `looks/2026-10-03/`
+(#900); Devon's verdict on them is owed and nothing is closed.
 
 **Settled and closed by the looking already done** (#711 to #715, #891):
 the compressed textures, the tower roof climb, the gaol roll on the
@@ -363,7 +368,7 @@ GPU needed.
 **Then somebody looks** (#53), with the checklist in `SPECS.md`. The second
 increment, a wall and a floor of its own in every named room, is superseded
 by 2h (#839): the game keeps these fifteen textures until the stage of 2i
-that swaps the last surface wearing one (#902), and forty more would be
+that swaps the last surface wearing one (#921), and forty more would be
 deleted that day. The ten Poly Haven prop packs stay until the look says otherwise, and
 the props increment is 2b's (#813).
 

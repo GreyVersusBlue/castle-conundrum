@@ -1,0 +1,34 @@
+e1-pricket-spot-chapel-tower | sky prime | from 22,1.7,14.4 at 22.79,17.23 pitch -0.42 | prompt "Press E to ring the bell" | shadow 22,0.02,14.4 | hand 21.75,1.04,14.64 | mem {"geometries":1401,"textures":507,"programs":25}
+e2-aumbry-wall-chapel-tower | sky prime | from 22.3,1.7,14.6 at 25.5,18.5 pitch -0.05 | prompt "Press E to talk to Sir Roger Lestrange" | shadow 22.3,0.02,14.6 | hand 22.32,1.14,15.09 | mem {"geometries":1401,"textures":507,"programs":25}
+e3-knife-barrel-spot-bakehouse | sky prime | from 1.6,1.7,13.6 at 0.5,15.3 pitch -0.55 | prompt "Press E to examine the bakehouse barrel" | shadow 1.6,0.02,13.6 | hand 1.31,1.02,13.5 | mem {"geometries":1408,"textures":510,"programs":26}
+e4-ledger-desk-spot-muniment | sky prime | from 22,1.7,-14.2 at 24.2,-16.6 pitch -0.42 | prompt "Press E to read the The King's writ" | shadow 22,0.02,-14.2 | hand 22.33,1.04,-14.12 | mem {"geometries":1408,"textures":510,"programs":26}
+r4-1-one-castle-nw-roof-east | sky terce | from -36,13.7,-16 at -20,-16 pitch -0.12 | prompt null | shadow -36,0.02,-16 | hand -35.65,13.11,-15.7 | mem {"geometries":1419,"textures":535,"programs":26}
+r4-1-one-castle-nw-roof-se | sky terce | from -36,13.7,-16 at -20,0 pitch -0.2 | prompt null | shadow -36,0.02,-16 | hand -36,13.09,-15.57 | mem {"geometries":1452,"textures":538,"programs":26}
+r4-2-shadowed-cross-wall-west-face | sky terce | from -9,1.7,-4.5 at -2,-9 pitch 0.12 | prompt "Press E to read the The lodge's ordinances" | shadow -9,0.02,-4.5 | hand -8.43,1.21,-4.51 | mem {"geometries":1401,"textures":532,"programs":25}
+r4-2-shadowed-hall-north-wall | sky terce | from -20,1.7,-4 at -20,6 pitch 0.1 | prompt null | shadow -20,0.02,-4 | hand -20.3,1.2,-3.53 | mem {"geometries":1452,"textures":538,"programs":26}
+r4-3-grazing-one-metre | sky terce | from -3,1.7,-3 at -2.2,-14 pitch 0 | prompt null | shadow -3,0.02,-3 | hand -2.67,1.16,-3.4 | mem {"geometries":1452,"textures":538,"programs":26}
+r4-4-sky-prime | sky prime | from -28,1.7,2 at 0,-8 pitch 0.05 | prompt "Gwenno — one of the hen-wife's fowl" | shadow -28,0.02,2 | hand -27.48,1.18,2.13 | mem {"geometries":1452,"textures":538,"programs":27}
+r4-4-sky-terce | sky terce | from -28,1.7,2 at 0,-8 pitch 0.05 | prompt null | shadow -28,0.02,2 | hand -27.48,1.18,2.13 | mem {"geometries":1452,"textures":538,"programs":27}
+r4-4-sky-sext | sky sext | from -28,1.7,2 at 0,-8 pitch 0.05 | prompt null | shadow -28,0.02,2 | hand -27.48,1.18,2.13 | mem {"geometries":1452,"textures":538,"programs":27}
+r4-4-sky-vespers | sky vespers | from -28,1.7,2 at 0,-8 pitch 0.05 | prompt null | shadow -28,0.02,2 | hand -27.48,1.18,2.13 | mem {"geometries":1452,"textures":538,"programs":27}
+r4-4-sky-lauds | sky lauds | from -28,1.7,2 at 0,-8 pitch 0.05 | prompt null | shadow -28,0.02,2 | hand -27.48,1.18,2.13 | mem {"geometries":1452,"textures":538,"programs":27}
+r4-5-eight-tints-nw-roof | sky terce | from -36,13.7,-16 at 24,16 pitch -0.12 | prompt null | shadow -36,0.02,-16 | hand -35.83,13.11,-15.57 | mem {"geometries":1452,"textures":538,"programs":27}
+r4-5-eight-tints-chapel-roof | sky terce | from 24,13.7,16 at -36,-16 pitch -0.12 | prompt null | shadow 24,0.02,16 | hand 23.83,13.11,15.57 | mem {"geometries":1487,"textures":546,"programs":27}
+r4-6-floor-ward-cobbles | sky terce | from -14,1.7,-2 at -14,-6 pitch -0.75 | prompt null | shadow -14,0.02,-2 | hand -13.7,1.02,-1.94 | mem {"geometries":1487,"textures":546,"programs":27}
+r4-6-floor-hall-tiles | sky terce | from -14,1.7,10 at -24,10 pitch -0.6 | prompt null | shadow -14,0.02,10 | hand -14.04,1.02,9.7 | mem {"geometries":1487,"textures":546,"programs":27}
+r4-6-floor-walk-decking | sky terce | from -1,9.7,-3 at -1,-12 pitch -0.6 | prompt null | shadow -1,0.02,-3 | hand -0.7,9.02,-3.04 | mem {"geometries":1487,"textures":546,"programs":27}
+r4-6-floor-tower-boards | sky terce | from -34.5,5.7,-14.5 at -37,-17 pitch -0.7 | prompt null | shadow -34.5,0.02,-14.5 | hand -34.27,5.02,-14.69 | mem {"geometries":1487,"textures":546,"programs":27}
+r4-7-cabinet-in-pixel-hall | sky terce | from -28.5,1.7,9.5 at -33.4,11.3 pitch -0.12 | prompt null | shadow -28.5,0.02,9.5 | hand -28.93,1.11,9.34 | mem {"geometries":1487,"textures":546,"programs":27}
+q1-quay-from-nw-roof | sky terce | from -38.5,13.7,-14 at -140,-3 pitch -0.06 | prompt null | shadow -38.5,0.02,-14 | hand -38.92,13.14,-14.26 | mem {"geometries":1487,"textures":546,"programs":27}
+q2-quay-from-sw-roof | sky terce | from -38.5,13.7,14 at -140,0 pitch -0.06 | prompt null | shadow -38.5,0.02,14 | hand -38.84,13.14,13.65 | mem {"geometries":1487,"textures":546,"programs":27}
+q3-toll-ridge-from-west-walk | sky terce | from -35.75,9.7,-11.75 at -134,-8 pitch -0.03 | prompt null | shadow -35.75,0.02,-11.75 | hand -36.16,9.15,-12.03 | mem {"geometries":1487,"textures":546,"programs":27}
+q4-quay-from-nw-roof-prime | sky prime | from -38.5,13.7,-14 at -140,-3 pitch -0.06 | prompt null | shadow -38.5,0.02,-14 | hand -38.92,13.14,-14.26 | mem {"geometries":1487,"textures":546,"programs":27}
+q5-quay-from-nw-roof-vespers | sky vespers | from -38.5,13.7,-14 at -140,-3 pitch -0.06 | prompt null | shadow -38.5,0.02,-14 | hand -38.92,13.14,-14.26 | mem {"geometries":1487,"textures":546,"programs":27}
+f1-blob-on-stone-inner-ward | sky terce | from 14,1.7,-4 at 14,-5 pitch -1.35 | prompt null | shadow 14,0.02,-4 | hand 14.3,1.17,-3.57 | mem {"geometries":1402,"textures":508,"programs":27}
+f2-blob-on-grass-outer-ward | sky terce | from -14,1.7,-2 at -14,-3 pitch -1.35 | prompt null | shadow -14,0.02,-2 | hand -13.7,1.17,-1.57 | mem {"geometries":1403,"textures":525,"programs":27}
+f3-stair-disc-nw-flight-north | sky terce | from -36.75,3.65,-16 at -36.75,-20 pitch -1.3 | prompt "Press E to read the The watch-bill" | shadow -36.75,1.97,-16 | hand -36.45,3.1,-15.59 | mem {"geometries":1409,"textures":525,"programs":27}
+f3-stair-disc-nw-flight-south | sky terce | from -36.75,3.65,-16 at -36.75,-12 pitch -1.3 | prompt null | shadow -36.75,1.97,-16 | hand -37.05,3.1,-16.41 | mem {"geometries":1411,"textures":532,"programs":27}
+f4-word-lock-hand | sky prime | from 21,1.7,-12 at 20.79,-20 pitch 0 | prompt "Press E to read the word-lock" | shadow 21,0.02,-12 | hand 21.09,1.63,-12.77 | mem {"geometries":1489,"textures":546,"programs":27}
+f4-word-lock-no-hand-turned-away | sky prime | from 21,1.7,-12 at 21.2,-4 pitch 0 | prompt null | shadow 21,0.02,-12 | hand 20.71,1.16,-11.57 | mem {"geometries":1489,"textures":546,"programs":27}
+q1z-quay-from-nw-roof-west-gate-x3 | crop of q1, 480x270 at (585,390), nearest x3.33
+q2z-quay-from-sw-roof-west-gate-x3 | crop of q2, 480x270 at (650,390), nearest x3.33
