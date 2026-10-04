@@ -1255,6 +1255,29 @@ try {
   const skins = new Set(bodies.map((b) => b.skin).filter(Boolean));
   check(skins.size === 1, `and one skin colour across all of them`, [...skins].join(' | '));
 
+  /* THE PROMPT A READABLE WEARS, AND A TITLE BRINGS ITS OWN ARTICLE (#948).
+   * #715's `read` half, which its fix did not reach: castle-builder.js wrapped
+   * every document's title in "the", and twelve of the thirteen titles open on
+   * an article of their own, so the page said "Press E to read the The King's
+   * writ" and "the A gravestone in the chapel floor" (seen on a GPU at #900's
+   * sitting and filed nowhere). The string is composed on the page from the
+   * objects the builder placed, so it is read off the page (#529, #39), and
+   * against data/documents.json's own titles rather than typed ones. Two
+   * questions, so the rail does not restate the rule it checks (#34): no
+   * article follows another, and the title is still the end of the prompt. */
+  {
+    const docs = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/documents.json'), 'utf8')).documents;
+    const worn = await page.evaluate(() => (window.__readables || []).map((r) => ({ id: r.id, prompt: r.prompt })));
+    const doubled = worn.filter((r) => /\b(the|an?) (the|an?)\b/i.test(r.prompt));
+    const lost = worn.filter((r) => {
+      const title = docs.find((d) => d.id === r.id)?.title;
+      return !title || !r.prompt.startsWith('Press E to read ') || !r.prompt.toLowerCase().endsWith(title.toLowerCase());
+    });
+    check(worn.length === docs.length && worn.length > 0, `the ${docs.length} documents are ${worn.length} things to read on the page`);
+    check(doubled.length === 0, `no readable's prompt says two articles in a row`, doubled.map((r) => JSON.stringify(r.prompt)).join(', '));
+    check(lost.length === 0, `and each one ends on its document's own title`, lost.map((r) => `${r.id}: ${JSON.stringify(r.prompt)}`).join(', '));
+  }
+
   // The bell. Stand at the reachable cell nearest it, look at it, press E.
   const bellPiece = plan.pieces.find((p) => p.bell);
   const bellAt = bellPiece ? { x: (bellPiece.box.min.x + bellPiece.box.max.x) / 2, z: (bellPiece.box.min.z + bellPiece.box.max.z) / 2 } : null;

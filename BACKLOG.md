@@ -339,8 +339,8 @@ as two, the Constable and the Steward being one white-haired man told apart
 only by a collar colour past about three metres. The Lauds sky reads flat,
 no dawn colour in it. The covered hall's seven trusses are invisible from
 the floor, and a sliver of sky shows at its south-east corner. #715's stray
-prompt naming "the Sir Roger Lestrange" is gone; every prompt now reads
-correctly.
+prompt naming "the Sir Roger Lestrange" is gone, and its `read` half ("read
+the The King's writ") went in #948; the next GPU run looks at one.
 
 ## The retro castle
 
