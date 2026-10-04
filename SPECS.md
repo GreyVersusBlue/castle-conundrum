@@ -347,11 +347,13 @@ narrower, the increment comes back to `architect` first.
 
 ## Blender: a shared rig with swappable parts
 
-**Rank 2c. Size 2+. Model Opus 5. Where: Local: Blender (increment 1, whose
-GPU look is on the same machine); Container (increment 2). Gate: rank 1
+**Rank 2c. Size 2+. Model Opus 5. Where: Local: Blender (increment 1, built
+and committed on huginn; its GPU look is a later Windows sitting, #939);
+Container (increment 2, after that look says Yes). Gate: rank 1
 shipped (#881). Lanes F and C; not B.** Decided in `HISTORY.md`
-as #820 to #825; this section is the `builder` job those decisions leave.
-Nothing under `assets/blender/` exists on `86c72fb`. **Rank 10 is retired**
+as #820 to #825, amended by #939 and #940; this section is the `builder` job
+those decisions leave.
+**Status: increment 1 shipped on huginn (#941). Left: the Windows GPU look (#939) and increment 2.** Before it, nothing under `assets/blender/folk/` existed. **Rank 10 is retired**
 (#807): its "shared low-poly rig for the fifty" is this row, and the Bodies
 section is deleted once this one and "Blender: the animals" land. **This row
 does not duplicate rank 6**: it makes bodies and writes a person's body
@@ -441,14 +443,19 @@ bodies, the peaks are **outer 205 at `terce-eve`, inner 183 at `terce` and
     would scale a bare-headed person by the tallest hat in the file.
   - Nothing else: tint, `boneScale`, `clips`, `speed`, `heldProp` and
     `heldPropFit` already read the def and work on this rig by its names.
+- **`src/populace.js`** (lane C, #940): `populaceDefs` gains one line,
+  `parts: p.parts,`, beside `hideMaterials`. It copies body fields by name,
+  so without it `def.parts` never reaches `npc.js` for a populace person.
+  No `?? []`: `npc.js` branches on `def.parts` being set, and an empty list
+  would hide every mesh on a Quaternius body. Nothing else in the file.
 - **`data/populace.json`** (lane C, body fields only, #821):
   - **The first wearer is the hen-wife**: `modelPath` to
     `assets/blender/folk/folk.glb`, `parts` e.g. `["skin-old-woman",
     "garment-gown", "over-apron", "hat-wimple"]`, her tint kept,
     `hideNodes` and `hideMaterials` removed. Her ring is untouched: `tend`
     and `wait`, `Idle_Neutral` and `Idle`, both in the file. This is the
-    reference #390 needs for `folk.glb`, and it is written only after the
-    GPU look below passes.
+    reference #390 needs for `folk.glb`, so it is written in the commit
+    `folk.glb` lands in, before the GPU look below (#939).
   - **The carter** gains `heldProp: "assets/blender/held/mallet.glb"` and a
     `heldPropFit`, on his Farmer body; the reference #390 needs for the
     mallet.
@@ -458,13 +465,18 @@ bodies, the peaks are **outer 205 at `terce-eve`, inner 183 at `terce` and
   (Acceptance), the `materials` and `frame` amendments of line 6 (#820),
   and a skinned half for `folk`.
 - **`test/mystery.mjs`**: the parts rail, and the silhouette tuple gains
-  `parts` sorted.
+  `parts` sorted. The existing household-bodies check (#644, "N bodies, N
+  of them the cast's and N the household's own") accepts a body under
+  `assets/NPCs/` or `assets/blender/` (#940): both `startsWith` tests in
+  it become the pair, and its comment names check 8 as what holds the
+  second prefix.
 - **`test/budget.mjs`** section 3: skinned draws, per ward and in total,
   beside skinned bodies, with two new ceilings (#825).
 - **`test/plan-vs-scene.mjs`**: one beat, the live seam only.
 - **Untouched**: `tools/bodies/` and every file it writes (#807),
   `assets/NPCs/`, `data/npcs.json`'s cast, `src/populace.js`'s
-  `ACTIVITY_CLIPS` (the eleven names are the values it already maps to),
+  `ACTIVITY_CLIPS` (the eleven names are the values it already maps to;
+  the file's one change is `populaceDefs`' line above, #940),
   `src/save.js` (bodies are not saved; `SAVE_VERSION` stays 6),
   `data/scene-config.json`, `MAX_SKINNED_TOTAL` and `MAX_SKINNED_PER_WARD`.
 
@@ -533,10 +545,16 @@ show all 22 of them".
 the skinned primitives of their file left visible by `hideNodes`,
 `hideMaterials` and `parts`; a body counts in every ward it counts in for
 bodies. `MAX_SKINNED_DRAWS_PER_WARD = 205` and `MAX_SKINNED_DRAWS_TOTAL =
-380` in the ceilings block, with #825 beside them. Increment 1 prints about
-373 and 198; increment 2 lowers both ceilings to what it prints. Break:
-delete the baker's `hideNodes: ["Sword"]`; expected "381 skinned draws,
-over the ceiling of 380".
+380` in the ceilings block, with #825 beside them. Increment 1 prints 372
+in total and 197 in the outer ward at `terce-eve` (#940: the hen-wife goes
+from 12 to her 4 parts); increment 2 lowers both ceilings to what it prints.
+Break (#940): drop `"Gold"` from the baker's `hideMaterials`; expected "381
+skinned draws, over the ceiling of 380". Deleting her `hideNodes:
+["Sword"]` is not a break and leaves 380: `Sword` in `Woman.glb` is a rigid
+mesh on the joint `Middle1.R`, not a skinned primitive. A rigid mesh held
+by a joint is outside this count on purpose, baked in or a `heldProp`: it
+is an ordinary draw that no section of `budget.mjs` counts as one (section
+1 counts plan pieces), and section 4 prices its texture.
 
 **`test/plan-vs-scene.mjs`, one beat, the seam and nothing Node can prove**
 (#529): for every live body whose def has `parts`, the visible meshes under
@@ -544,7 +562,9 @@ it are exactly those names; its `Bare` material's colour is `ffffff`, so the
 tint missed it; its `skin-*` node's live box top is its `modelHeight` (1.8
 if none) within 0.02 m. **Break, the one increment 1's builder quotes:
 delete the hide branch for `parts` in `npc.js`.** Expected: "hen-wife shows
-22 meshes; her parts name 4", and the height line goes red with it.
+22 meshes; her parts name 4", and the height line goes red with it. Deleting
+`parts: p.parts,` from `populaceDefs` reads the same, and is the only rail
+on that line (#940).
 
 **Held by what exists**: check 1 and check 4 (both files resolve and are
 referenced), check 5 (meshopt, `finish.mjs`'s), check 8 lines 1 to 8,
@@ -552,14 +572,19 @@ referenced), check 5 (meshopt, `finish.mjs`'s), check 8 lines 1 to 8,
 in increment 2, all sixteen do resolves in `folk.glb`), section 4 of
 `test/budget.mjs` pricing the embedded atlas, `test/built.mjs` serving both.
 
-**The GPU look, local, and it gates the wearer** (#807, #53). On Devon's
-machine, before `populace.json` is touched: `npm run dev`, a line-up on the
+**The GPU look, on Windows, after the commit, and it gates increment 2**
+(#939, amending #824; #807, #53). Increment 1 is committed on huginn with
+the hen-wife on `folk.glb` and `npm test` green; the look is its own later
+sitting on the Windows machine: `npm run dev`, a line-up on the
 grey background #606 and #643 used, the hen-wife's parts on `folk.glb` at
 1.65 m beside the baker on `Woman.glb`, both tinted, both in `Idle`, then
-both in `Walk`. One sentence in the increment's `HISTORY.md` entry: does the
-2c woman read as the same game as the Quaternius one? **Yes**: the hen-wife
-moves in this commit. **No**: nothing under `assets/blender/folk/` is
-committed, and the row comes back to `architect` with what read wrong.
+both in `Walk`. One sentence in a `HISTORY.md` entry of its own: does the
+2c woman read as the same game as the Quaternius one? **Yes**: increment 2
+may start. **No**: one data commit puts the hen-wife's body fields back on
+`Woman.glb`; `folk.glb` stays only if `data/` still names it (#390),
+otherwise it and its manifest and `packs.json` rows leave in that commit;
+and the row comes back to `architect` with what read wrong. Until the
+verdict the published page shows one unjudged body, which #939 accepts.
 Rank 10's inherited look goes on the same sitting's checklist and blocks
 nothing: the girl at running speed, the spear on the garrison, the five
 clips on the four Quaternius bodies, and the eleven on `folk.glb`.
@@ -605,12 +630,15 @@ clips on the four Quaternius bodies, and the eleven on `folk.glb`.
 - **Increment 2 after increment 1**, and only after its look passed.
 - **"Blender: the animals" follows this row** by letter, and uses
   increment 1's `/^bare$/i`, check 8's `materials` and `frame` amendment
-  and the draw count.
+  and the draw count. Recommend **2d may start once increment 1 is
+  committed, without the look's verdict** (#939): all three are source the
+  commit carries and a No does not remove.
 
 ### Constraints
 
 - #807: bodies from Blender only, never from `tools/bodies/`; no file it
-  writes is touched; the Quaternius rigs keep every body until the look.
+  writes is touched; the Quaternius rigs keep every body until the look,
+  the hen-wife excepted (#939).
 - #803, #805, #806, #808: the pipeline's rules as "What every Blender pack
   shares" states them.
 - #390: `folk.glb` and the hen-wife, `mallet.glb` and the carter, one commit
@@ -627,7 +655,7 @@ clips on the four Quaternius bodies, and the eleven on `folk.glb`.
   its break is not shipped.
 - #53: the line-up and every clip's look are a GPU's; a real-time assertion
   failing under software Chromium is inconclusive.
-- #820 to #825.
+- #820 to #825, #939, #940.
 
 ---
 
@@ -636,7 +664,8 @@ clips on the four Quaternius bodies, and the eleven on `folk.glb`.
 **Rank 2d. Size 1. Model Opus 5. Where: Local: Blender. Gate: rank 1 shipped (#881)
 and after "Blender: a shared rig with swappable parts" increment 1;
 recommended after its increment 2. Lanes F and C; not B.** Decided in
-`HISTORY.md` as #826 to #829, on #820's and #825's shape. **Rank 10 is
+`HISTORY.md` as #826 to #829, on #820's and #825's shape, corrected by #942 and #944.
+**Status: both increments shipped on huginn (#942 to #945): six files, 240,748 bytes, bodies 41, outer 24 at `terce-eve`, inner 18, draw ceilings 394 and 213. Left: the Windows GPU look only, which blocks nothing (#53).** **Rank 10 is
 retired** (#807): its "pig, then a goat" is this row, and its GPU look at
 the hound, the hens and the cow moves into this row's checklist. **This row
 does not duplicate rank 6**: it makes the animals and writes each one's
@@ -683,10 +712,10 @@ adds kinds; it replaces none.
 
   | Kind | Ward | Room | `modelHeight` |
   | --- | --- | --- | --- |
-  | pig | outer | `outer-ward`, by the hen-wife's patch | 0.8 |
+  | pig | outer | `outer-ward`, by the hen-wife's patch, (-5.438, -0.938) (#942) | 0.8 |
   | sheep | outer | `outer-ward`, beside the cow | 0.9 |
-  | goose x2 | outer | `outer-ward`, by the hens | 0.75 |
-  | horse | inner | `inner-ward`, by the porter's lodge | 1.65 |
+  | goose x2 | outer | `outer-ward`, by the hens | 0.75 and 0.72 (#944) |
+  | horse | inner | `inner-ward`, south-west corner (#942) | 1.65 |
   | goat | inner | `inner-ward` | 0.95 |
   | cat | inner | `bakehouse` | 0.3 |
 
@@ -727,7 +756,7 @@ six files, each with its break:
    Break, *local*: `cycles: 1.5` on the horse's `Walk`.
 5. **Reads as four-legged.** A quadruped's bind-pose box is at least 1.15
    times as long (z) as it is tall (y): the cow's 1.3 less the goat's horns.
-   Break, *local*: swap the sheep body's y and z.
+   Break, *local* (#942): swap y and z on every part and every joint of the sheep and set it back on the floor, a sheep stood on its tail. Swapping only the body's one prism leaves the rail green, since the neck, head and tail still make the box 1.44 m long. Expected: "0.89 m long and 1.45 m tall, under 1.15 to 1".
 
 **`test/budget.mjs`** (#828): increment 1 prints 39 bodies, outer 22 at
 `terce-eve`, inner 18; increment 2 prints 41 and outer 24. The draw ceilings
@@ -763,7 +792,7 @@ follow, the hens' peck, the cow grazing. One sentence each in the entry.
 - **The cat's job.** Recommend **`wait` and `eat` in the bakehouse**, no
   new activity: `ACTIVITY_CLIPS` is shared with rank 6 and a mouser needs
   no clip the table lacks.
-- **If 2c's look fails and its increment 1 never lands.** Recommend
+- **If 2c's look fails and its increment 1 never lands** (cannot occur as written, since increment 1 landed first, #939). Recommend
   **2d's increment 1 carries the three shared pieces itself** (the
   `/^bare$/i` line, check 8's `materials` and `frame`, section 3's draw
   count at 380 and 205) and argues its own draws on top in its entry.
@@ -1535,7 +1564,10 @@ this row is below.
 - **The twelve's 27-pair chatter pool is held to the schedule by increment
   3, below** (#911 to #914): 10 pairs placed, 17 left for Devon.
 - **Playback of the ten placed pairs is increment 4, below** (#925 to
-  #931): specified, not built.
+  #931): built 2026-10-03.
+- **The 17 are increment 5, below** (#932 to #938): Devon decided #914 on
+  2026-10-03 as recommended, so nine are recast, eight retired, and the pool
+  is 19 pairs with a `room` each.
 
 ### Increment 3: the twelve's chatter held to the schedule, and `drill` dropped
 
@@ -1909,6 +1941,404 @@ four breaks above. #724 and #53: the browser beat parks and counts frames;
 everything timed is on the looking list. #588: open ground still never
 reaches `engine.enter`. #632: every new assertion reads data through
 `JSON.parse`. #13: every new check exits non-zero.
+
+### Increment 5: nine pairs recast, eight retired, and no pair without a room
+
+**Specified 2026-10-03** (#932 to #938). Class S from here: every open call
+below carries a recommendation, no save bump, no assertion crosses a suite
+line. **Devon decided #914 on 2026-10-03, as recommended**: never move a
+station, recast the nine pairs that are the only teller of a fact, retire
+the other eight. The limits hold: no schedule station moves, no body is
+added, `MAX_SKINNED_TOTAL` and `SAVE_VERSION` (6) are untouched, the town's
+share is not this increment's, and nothing here needs `npm run play`.
+
+**What the schedule allows, measured.** `data/mystery.json`'s day-one
+`schedule` puts two of the twelve from one ward in one room, both awake, at
+four places only: `chapel` at Prime (constable, chaplain), `outer-ward` at
+Terce (clerk, merchant), `kings-hall` at Sext (constable, steward) and
+`great-hall` at Vespers (any two of clerk, cook, sentry, laundress, or
+constable and steward). The porter, the lady, the apprentice and the prisoner
+share a room with nobody of their own ward at any bell, so after this
+increment they speak in no pair. The ward rule (#554, #911) is kept.
+
+**The pool after it: 19 pairs, 39 lines, every pair with a `room`.**
+
+**Scope, by file.**
+
+- **`data/npcs.json` `chatter`.** Eight pairs are deleted, nine are recast
+  and moved, the ten of #911 are not edited. A recast pair keeps its `id` and
+  its `cites` (#911) and takes new `npcs`, a `room`, new `lines` and the
+  watch key it is said at. The four watch keys left with nothing under them
+  (`outer.prime`, `outer.sext`, `inner.terce`, `inner.vespers`) are deleted,
+  not left as `[]` (#935).
+
+  Deleted: `outer-prime-2`, `outer-terce-3`, `outer-sext-1`,
+  `inner-prime-1`, `inner-prime-2`, `inner-sext-2`, `inner-sext-4`,
+  `inner-vespers-2`.
+
+  Recast (`npcs` in speaking order):
+
+  | Pair | `npcs` | Room | Watch key | Moves from | Tells |
+  | --- | --- | --- | --- | --- | --- |
+  | `outer-sext-3` | sentry, clerk | `great-hall` | `outer.vespers` | `outer.sext` | `sentry-grandfather`, `march-song` |
+  | `outer-prime-3` | sentry, clerk | `great-hall` | `outer.vespers` | `outer.prime` | `cadeyrn-cross-count` |
+  | `outer-cell-1` | cook, laundress | `great-hall` | `outer.vespers` | `outer.sext` | `prison-tower-scratching` |
+  | `outer-terce-2` | clerk, merchant | `outer-ward` | `outer.terce` | stays | `saint-cadeyrn-miracle` |
+  | `inner-prime-3` | constable, chaplain | `chapel` | `inner.prime` | stays | `aldous-heart` |
+  | `inner-terce-2` | constable, chaplain | `chapel` | `inner.prime` | `inner.terce` | `sir-walter-debt-rumour` |
+  | `inner-vespers-1` | chaplain, constable | `chapel` | `inner.prime` | `inner.vespers` | `chapel-relic` |
+  | `inner-sext-3` | constable, steward | `kings-hall` | `inner.sext` | stays | `sir-roger-lestrange`, `lady-alys-brother` |
+  | `inner-terce-3` | steward, constable | `kings-hall` | `inner.sext` | `inner.terce` | `town-debt-rumour` |
+
+  **The file order, which is the order a room says them in (#935).** Exactly
+  this, and no other key:
+
+  - `outer.terce`: `outer-terce-1`, `outer-terce-2`.
+  - `outer.vespers`: `outer-sext-3`, `outer-vespers-1`, `outer-vespers-2`,
+    `outer-vespers-3`, `outer-prime-1`, `outer-terce-4`, `outer-sext-2`,
+    `outer-prime-3`, `outer-cell-1`.
+  - `inner.prime`: `inner-terce-4`, `inner-prime-3`, `inner-terce-2`,
+    `inner-vespers-1`.
+  - `inner.sext`: `inner-sext-1`, `inner-terce-1`, `inner-sext-3`,
+    `inner-terce-3`.
+
+  **The nine pairs' lines, in full.** Copy them as they are; the text before
+  the first `": "` is the name on the band (#928).
+
+  `outer-sext-3`:
+
+  1. `Dafydd: My grandfather stood on the other bank of this river against the old King for nine years, Master Robert, and was sworn at the end of it, and kept his word and his opinions both. I stand the King's watch and I have the opinions.`
+  2. `Master Robert: And the song, I suppose. I have sat at the high table and heard the garrison sing it every Michaelmas I have kept the works, and never been told a word of what it says.`
+
+  `outer-prime-3`:
+
+  1. `Dafydd: There is a cross cut in the stone for every man who died building this place. Count them and you have the priest's roll without the Latin.`
+  2. `Master Robert: A cross goes at the springing of an arch, Dafydd, and it means the arch. The watch has counted them twice and got two numbers, and neither of them was the roll.`
+
+  `outer-cell-1`:
+
+  1. `Marged: Madoc tells whoever stands at his bars that something moves under the Prison Tower's floor at night. Slow. A drag, then a stop, same as it has since before they put him in to hear it.`
+  2. `Nest: He has said that every day this week, Marged, and I have believed him every day this week, and neither of those has got him out.`
+
+  `outer-terce-2`:
+
+  1. `Master Robert: The lodge has it that a hod-carrier went off the Bakehouse Tower's scaffold in the ninth year and stood up laughing, for calling on Cadeyrn on the way down.`
+  2. `Thomas Wykes: They also say it was a load of straw broke his fall and not the saint. I have hauled that straw. It was a great deal of straw.`
+
+  `inner-prime-3`:
+
+  1. `Sir Roger: They say the old King's heart is under your altar stone, Father, in a lead box sent up from Vantry the year he died, so that some part of him should see the place finished.`
+  2. `Father Anselm: I have had a bar under that stone once, Sir Roger, and I will not tell you what I found, because whichever way it went it is a scandal, and I have enough of those.`
+
+  `inner-terce-2`:
+
+  1. `Sir Roger: They say Sir Walter's own coffer covered what the works had lost, before he died, and that is the whole reason his books balanced.`
+  2. `Father Anselm: I have read his accounts, Sir Roger. I have also heard what you just said from three other mouths, each swearing he had it from a fourth.`
+
+  `inner-vespers-1` (three lines; line 3 is `npcs[0]`'s again):
+
+  1. `Father Anselm: I keep a knuckle of bone under glass on the north sill, Sir Roger, and call it Saint Osyth's own.`
+  2. `Sir Roger: And do you believe that, Father, or only say it?`
+  3. `Father Anselm: On my better days, both.`
+
+  `inner-sext-3`:
+
+  1. `Sir Roger: Eleven years married, Piers, and eight of them here. I had twelve men at Bryn Adda and thought myself a Constable. I have eight now and a wall, and think myself less of one.`
+  2. `Piers Marrable: And a wife whose brother sits among the justiciar's clerks, Sir Roger, which you have never once mentioned and never once forgotten.`
+
+  `inner-terce-3`:
+
+  1. `Piers Marrable: There is an alderman's family in Mereford that has not paid its wall-tax in a decade, if the roll were ever made to say so.`
+  2. `Sir Roger: And whose hand keeps the roll from saying so, Piers? I ask it in this hall, and I would not have it asked past the door.`
+
+- **`data/npcs.json` `chatterComment`**, text only. "Twenty-seven pairs. The
+  ten placed pairs are played by QuestManager on the caption band, by room
+  and bell (#925), and the name on the band is the name the line opens with
+  (#928); the unplaced 17 are validated by src/lore.js and not played."
+  becomes: "Nineteen pairs, every one with a `room` (#932): of the first
+  twenty-seven, eight were retired and nine recast onto two speakers the
+  schedule puts in one room. QuestManager plays them on the caption band, by
+  room and bell (#925), and the name on the band is the name the line opens
+  with (#928)." After "so an id no longer spells its bell (#911)" add: "nor
+  its room or its speakers: `outer-cell-1` is said in the Great Hall by the
+  cook and the laundress (#933)". "A pair with a `room` is placed: `room` is
+  one of" becomes "Every pair names a `room`, one of". "A pair with no `room`
+  is unplaced, waiting on a recast or a retirement (#914), and src/lore.js's
+  `unplacedChatter` lists it." becomes "A pair with no `room` is refused by
+  src/lore.js (#937)." Add one sentence: "A watch key with no pair under it
+  is left out (#935)."
+- **`data/npcs.json` `performancesComment`**, text only. "(the same band the
+  placed `chatter` pairs use)" becomes "(the same band the `chatter` pairs
+  use)", and "while a placed chatter pair names its room, and its watch key
+  is its bell" becomes "while a chatter pair names its room, and its watch
+  key is its bell".
+- **`data/lore.json`.** Seven `sources` rows go, each naming a deleted pair
+  (#936): `{kind: "chatter", id: "inner-sext-4"}` from `the-cross-wall`;
+  `inner-vespers-2` from `gwilym-porter` and from `household-and-works`;
+  `inner-prime-1` from `kings-debt-wages`; `outer-sext-1` from `hywel-rise`;
+  `outer-terce-3` from `madoc-smith`; `outer-prime-2` from `saint-cadeyrn`.
+  Each fact keeps at least one source (1, 1, 2, 3, 2, 1, 2 left). Nothing
+  else in the file changes: the nine recast pairs keep their ids, so the
+  eleven `sources` rows that name them stand, `march-song`'s and
+  `sir-roger-lestrange`'s among them. No fact `text` is edited.
+- **`src/lore.js`.**
+  - `indexChatter`: a pair with no `room` is a problem (#937). Message,
+    `where` being `chatter pair <id>`: `${where}: names no room`. It is said
+    once per pair, where `placed` is computed, and the pair's other checks
+    still run.
+  - The name rail runs for every pair with two speakers: the `if (placed)`
+    around it goes.
+  - `unplacedChatter` and its doc comment are deleted.
+  - Comments: the block in `indexChatter` that ends "A pair with no `room`
+    is unplaced: it passes here and `unplacedChatter` lists it" says a pair
+    with no `room` is refused (#937); the name rail's "An unplaced pair is
+    not played and is not held to this (#914)" is deleted; the performance
+    check's heading "WHAT A PERFORMANCE HAS THAT AN UNPLACED CHATTER PAIR
+    DOES NOT" and its "since #911 a placed pair names its room too" say what
+    is true now: every chatter pair names its room and is held to the same
+    station check (#937).
+- **`src/quest-manager.js`**: one comment. "Only a pair with a `room` is
+  here (#911); the unplaced 17 are src/lore.js's to validate and nobody's to
+  play (#914)." becomes "Every pair names a `room` (#937); one that does not
+  is skipped here and refused by src/lore.js." The `pair.room == null` skip
+  stays. No code changes.
+- **`src/populace.js`**: one comment, near `TALK_RADIUS`. "not one of its 27
+  pairs has its speakers within 3 m at the pair's own watch (#731)" becomes
+  "it is played by room and bell, not by the 3 m between two bodies (#731,
+  #925)".
+- **`src/main.js`**: nothing.
+- **`test/lore.mjs`**, **`test/quest.mjs`**: below.
+- **`test/plan-vs-scene.mjs`**: nothing. Its chatter beat reads
+  `inner-terce-4`, which stays the first pair in `chapel` at Prime, and no
+  new assertion here is a seam (#529).
+- **Not touched**: `data/mystery.json` (no station moves), `src/save.js`,
+  `data/populace.json`, `src/ui.js`, `test/budget.mjs`, `test/mystery.mjs`,
+  `test/play-castle.mjs`, `dialogue/castle.dlg` and `tools/dialogue.mjs`
+  (the chatter pool is not in the `.dlg`; 0 hits for any pair id under
+  `dialogue/` or `tools/`), `WISHLIST.md` (its "twenty-seven-pair pool" and
+  "27 chatter pairs and 54 lines" are a dated record of what the theme
+  found).
+
+**`test/lore.mjs`, edit by edit.**
+
+- The header comment's "a chatter pool of twenty-seven pairs" says nineteen.
+- Section 1: `pairs.length === 27` becomes `=== 19`, with its label.
+- Seven fixtures use `badChatter.outer.prime[0]` (one in section 4, six in
+  section 7). That key is gone. Each becomes `badChatter.outer.terce[0]`,
+  which is `outer-terce-1`. Measured against the pool above, each still
+  draws the message it looks for, and the "id used twice" fixture pushes
+  onto `badChatter.outer.terce`.
+- Section 7, continued. The `unplacedChatter` import, `THE_SEVENTEEN` and
+  the two assertions on them go. `PLACED` becomes the 19 rows: the ten of
+  #911 unchanged plus the nine in the table above. The two assertions on it
+  keep their shape, "nineteen pairs carry a room" and "each in its room,
+  under its ward and the watch key it is said at", and a third is added:
+  every pair in the pool is in `PLACED`, so a twentieth pair without a row
+  here is a failure.
+- New: `outer-vespers-1` with its `room` deleted fails with `chatter pair
+  outer-vespers-1: names no room`.
+- `inner-prime-1` given `porter-lodge` is replaced: `inner-terce-3` given
+  `room: "steward-chamber"` fails with `chatter pair inner-terce-3: steward
+  stands in kings-hall at sext, not in steward-chamber`.
+- `outer-prime-3` given `guardroom` is replaced: a pair `{ id:
+  'asleep-at-prime', npcs: ['sentry', 'cook'], room: 'guardroom', lines:
+  ['Dafydd: Not yet.', 'Marged: So I see.'] }` put under a new
+  `bad.outer.prime` fails with `chatter pair asleep-at-prime: sentry is
+  asleep at prime`.
+- The `merchant-at-prime` fixture is reached through `breakPair('outer-terce-1',
+  ...)` and creates `bad.outer.prime` before it pushes. Its message stands.
+- The name rail: the first two assertions stand, the label "the ten placed
+  pairs" loses "ten placed". "The same damage to unplaced `outer-prime-2`
+  passes" is deleted. New: `inner-vespers-1` with line 3's opening changed
+  to "Sir Roger: " fails with `chatter pair inner-vespers-1: line 3 does not
+  open with chaplain's name`, which is the first check of `i % 2` past line
+  2.
+- Section 2 stands unedited: `untoldFacts` is still exactly `the-well` and
+  `prison-tower-origin`.
+
+**`test/quest.mjs`, edit by edit**, all inside "two of the twelve, in a
+room". Nothing above that section is touched, and `rig` is not.
+
+- The header comment's "ten" becomes nineteen, and "none of the 17" goes.
+- `HALL_ORDER` is `outer.vespers`'s nine, in the file order above.
+- 2: the step after the song shows `outer-sext-3`'s first line under
+  "Dafydd", not `outer-vespers-1`'s.
+- 3: the captions after the song are the eighteen lines of `HALL_ORDER`;
+  the band was cleared between each pair and the next, 8 times; 9 clears.
+  Write the two counts as `HALL_ORDER.length - 1` and `HALL_ORDER.length`.
+- 5, 6, 7, 8, 9: no edit. `inner-sext-1` then `inner-terce-1` are still the
+  King's Hall's first two, `inner-terce-4` the chapel's first, and
+  `outer-terce-1` the outer ward's first.
+- New, 5b: `chapel` at Prime ticked to the end says `inner-terce-4`,
+  `inner-prime-3`, `inner-terce-2`, `inner-vespers-1` in that order, nine
+  lines, and the last caption is under "Father Anselm" and is "On my better
+  days, both."
+- New, 5c: `kings-hall` at Sext ticked to the end says `inner-sext-1`,
+  `inner-terce-1`, `inner-sext-3`, `inner-terce-3` in that order.
+- New, 8b: after `outer-terce-1`'s second line, one step is pending, and
+  the step after the gap shows `outer-terce-2`'s first line under "Master
+  Robert".
+- 10, the sweep: `placed.length === 19`, "exactly the nineteen pairs". The
+  assertion "and no line of the 17" is replaced by `allPairs.length === 19
+  && placed.length === allPairs.length`, "and the pool holds no pair
+  without a room".
+
+**Acceptance.**
+
+1. `npm test lore`: `validateLore` is clean as shipped, 19 pairs, the
+   `PLACED` table of 19 holds in both directions, `untoldFacts` is exactly
+   `the-well` and `prison-tower-origin`.
+2. A pair with no `room` fails with "names no room".
+3. The station fixtures and the two name fixtures above each draw their
+   message.
+4. `npm test quest`: the hall at Vespers says the song, then the nine pairs
+   in file order starting with `outer-sext-3`; the chapel at Prime and the
+   King's Hall at Sext say their four in file order; the outer ward at Terce
+   says its two; the sweep hears exactly the nineteen, each line once.
+5. `grep -rn unplacedChatter src test` returns nothing.
+6. No line of the 19 pairs contains an em dash, and each recast line is the
+   text above, character for character. The builder diffs the nine pairs'
+   lines against this section rather than reading them.
+7. `npm test` 15 of 15 and `npm run build` ok. `test/plan-vs-scene.mjs` is
+   unedited and green.
+
+**One thing to watch in `test/plan-vs-scene.mjs`, with what to do.** The
+chapel at Prime now holds four pairs, and that suite stands the camera in
+the chapel at Prime more than once: the chatter beat hears `inner-terce-4`,
+the HUD beat (#515) starts and cuts `inner-prime-3`, and any later stand
+starts the next. Only two reads look at the band, the chatter beat's own
+and the household talk beat's "the band is dark before the beat"; the
+second runs with the camera wherever the beats before it left it. If that
+read goes red, the report quotes what was on the band. The fix allowed in
+class S is in the beat's own setup, standing the camera on open
+`inner-ward` ground for two frames before the read, as the chatter beat's
+second half does. Reordering the pool to make it pass is not allowed.
+
+**The #34 break, four of them, each from green and each restored.**
+
+- Delete the `names no room` line in `indexChatter`: the new assertion on
+  `outer-vespers-1` with its `room` deleted must go red with "said
+  nothing". Everything else in `lore.mjs` stays green.
+- In `data/npcs.json`, give `outer-sext-3` its old `npcs`, `["sentry",
+  "merchant"]`, with its `room` and new lines kept: `validates clean` must
+  go red with `chatter pair outer-sext-3: merchant is not in the castle at
+  vespers`.
+- In `data/lore.json`, put `{ "kind": "chatter", "id": "outer-prime-2" }`
+  back into `saint-cadeyrn`'s `sources`: `validates clean` must go red with
+  `saint-cadeyrn: unknown source, no chatter pair "outer-prime-2"`.
+- In `data/npcs.json`, move `outer-sext-3` to the end of `outer.vespers`:
+  `npm test quest` 2 and 3 must go red and `npm test lore` stays green,
+  which is what makes the order `quest.mjs`'s and not the rail's.
+
+If any of the four leaves its suite green the row comes back to `architect`
+(#147).
+
+**Open calls, each with a recommendation.**
+
+- **Who says `cadeyrn-cross-count`.** Recommended: the sentry and the
+  clerk, in the hall at Vespers (#933), because the fact is the garrison's
+  belief against the masons' and Dafydd's line then stands word for word,
+  with only the name on the answer changed. The fallback, if the hall reads
+  as too long on a GPU, is clerk and merchant in the outer ward at Terce.
+- **Who answers Dafydd about his grandfather.** Recommended: the clerk
+  (#933), because the answer is "never been told a word" of the song, and
+  `hall-high-table` seats the Clerk of Works at the high table, which the
+  song itself says has none of the words. The cook came up from Mereford
+  and the laundress calls the March's tongue "our own".
+- **Who reports Madoc.** Recommended: the cook says it and the laundress
+  answers (#933), because Nest's answer is then her own line turned to the
+  third person, and "tells whoever stands at his bars" is the fact's own
+  wording.
+- **Where `sir-walter-debt-rumour` and `lady-alys-brother` go.**
+  Recommended: the first to the chapel at Prime with the chaplain
+  answering, the second to the King's Hall at Sext with Sir Roger speaking
+  of himself and the Steward answering (#933). Father Anselm's "I have read
+  his accounts" is the stance `sir-walter-esturmy` and the Vespers sermon
+  already give him, said over the floor Sir Walter lies under; and it
+  leaves each room four pairs instead of five and three.
+- **Does a recast pair keep its second cite.** Recommended: yes, both
+  (#936). `outer-sext-3` still says the garrison sings the song and a
+  King's man has never been told the words; `inner-sext-3` still says eight
+  years here and twelve men at Bryn Adda.
+- **Where a recast pair sits in its list.** Recommended: after the pairs
+  #911 placed, in the order above, except `outer-sext-3`, which goes first
+  in `outer.vespers` (#935), because its second line answers the song and
+  the song is what the hall says first (#927); behind six pairs it would be
+  said 105 s after the last note. Everywhere else the first pair of a room
+  is unchanged, so `plan-vs-scene.mjs` and `quest.mjs` 5 to 9 stand.
+- **An empty watch key.** Recommended: deleted (#935), because the key is
+  the bell a pair is said at and a bell with no pair is not in the file;
+  `indexChatter` and `QuestManager` both walk `Object.entries` and need no
+  key to exist.
+- **A pair with no `room`.** Recommended: a failure, "names no room", and
+  `unplacedChatter` deleted (#937), because nothing waits on Devon now, a
+  report that must always be empty is a second way of saying the same
+  thing, and a pair with no room is one the page can never say.
+- **The name rail on a pair with no `room`.** Recommended: it runs too
+  (#937), because the gate existed only to leave the 17 alone and there are
+  none.
+- **`QuestManager`'s skip of a pair with no `room`.** Recommended: kept,
+  because the manager is also built with pools no validator has read (the
+  rigs in `test/quest.mjs`), and a skip costs one comparison.
+- **The ward rule.** Recommended: kept as it is (#554, #911), because all
+  nine recasts fit inside it; it is why the porter, the lady, the
+  apprentice and the prisoner now speak in no pair, which is accepted.
+- **Four pairs in a row from the same two men in the chapel.**
+  Recommended: accepted and put on the looking list, because the chapel at
+  Prime holds only the Constable and the chaplain of the twelve, and the
+  alternative is retiring a sole teller.
+
+**Looking list, added to increment 4's, `npm run play` on a GPU (#53),
+judged by Devon, asserted nowhere.** By `captionMs`, with the names split
+off:
+
+1. The Great Hall at Vespers is now 37.0 s of song, nine pairs at 120.3 s
+   and nine gaps: 193.3 s from the first note, up from 138.3. Is that a
+   supper. `CHATTER_GAP_MS` and the first open call's fallback are the two
+   dials.
+2. The chapel at Prime, walked into: four pairs, 52.0 s and three gaps,
+   64.0 s, all Sir Roger and Father Anselm, with the mason laid out between
+   them.
+3. The King's Hall at Sext, walked into: four pairs, 51.5 s and three gaps,
+   63.5 s.
+4. The outer ward at Terce: two pairs, 23.2 s and one gap, 27.2 s, heard
+   from anywhere in the ward (#928).
+
+**What the builder changes in the doc files.**
+
+- `BACKLOG.md`, the rank 6 row: "10 of the twelve's 27 chatter pairs placed
+  by room and bell (#911, #912) and now played by room and bell (#925 to
+  #931); left: the 17 that wait on Devon (#914), the town's share" becomes
+  "the twelve's chatter pool placed and played by room and bell, 19 pairs
+  after nine were recast and eight retired (#911, #925 to #938); left: the
+  town's share". The rest of the row stands; the row stays open.
+- `BACKLOG.md`, the rank 6 prose: "Four increments shipped" becomes five;
+  "and `unplacedChatter` lists them as a ratchet" gains "until the fifth";
+  a sentence for the fifth is added after the fourth's: nine recast, eight
+  retired, 19 pairs each with a `room`, a pair with no `room` refused
+  (#932 to #938). In "Left", item (2), the 17, is deleted and (3) becomes
+  (2); item (1)'s "the hall at Vespers end to end at 138.3 s" becomes 193.3
+  s, and the chapel's four pairs are added to its list.
+- `ROADMAP.md`: "(10 chatter pairs placed, #911; playback and the town's
+  share left)" becomes "(19 chatter pairs placed and played, #911 to #938;
+  the GPU look and the town's share left)".
+- `CLAUDE.md`: nothing. It names neither the pool nor a count.
+- `HISTORY.md`: the "Built the same day" paragraph under #938, in the shape
+  of increment 4's: files, assertions, the four breaks with what each said,
+  the checks on huginn.
+
+**Dependencies.** None. Lane C for `data/npcs.json`. `data/lore.json`,
+`src/lore.js`, `src/quest-manager.js`, `test/lore.mjs` and `test/quest.mjs`
+are in no other open row's scope.
+
+**House rules that bite.** #529: every assertion here is a fact about two
+data files or about `QuestManager` on a rig, provable in Node, so it is
+`lore.mjs`'s or `quest.mjs`'s and none goes to `plan-vs-scene.mjs`. #13:
+the report is replaced by a failure. #34 and #147: the four breaks. #36 and
+#39: no save field, `SAVE_VERSION` stays 6, `_heard` is still per page.
+#632: every assertion reads data through `JSON.parse`; `data/npcs.json` and
+`data/lore.json` are edited keeping each file's own line ending. #53: the
+looking list is not asserted. Writing style: no em dash in any line.
 
 ### Dependencies
 

@@ -27,6 +27,33 @@
           "why": "Thatch, for the longhouse and barn roofs. The castle roofs are slate and tile, and a farm under a slate roof reads as a second castle at 100 m."
         }
       ]
+    },
+    "folk": {
+      "extraColours": [
+        {
+          "colour": "#d9aa84",
+          "why": "Skin. The castle's palettes are stone, wood, plaster and moss, and the nearest thing to a face in them is wood_floor_deck #a17f58, which reads as a wooden mask. `Bare`, so the tint never touches it (#820)."
+        },
+        {
+          "colour": "#d0b096",
+          "why": "Skin, for the two old heads: paler and greyer than the first, so an old face differs from a young one by more than its brows at the distance a player passes one."
+        },
+        {
+          "colour": "#ebe5d6",
+          "why": "Undyed linen, the lightest `Cloth` swatch. The tint multiplies `Cloth`, so a garment can only be as light as its swatch, and the palettes stop at plaster #cbbfa3, which would darken every tint by a fifth (SPECS.md, \"Two materials over the one atlas image\"; #644, #684)."
+        }
+      ]
+    },
+    "held": {
+      "extraColours": []
+    },
+    "animals": {
+      "extraColours": [
+        {
+          "colour": "#d49a8c",
+          "why": "The pig's snout, and the geese's bills and feet. The castle's palettes have no pink: the nearest are castle_brick_02_red's #9a4430, which reads as a wound, and plaster #cbbfa3, which is the coat it has to stand out from. `Bare`, so a tint on the coat never touches it (#827)."
+        }
+      ]
     }
   },
   "rows": [
@@ -192,6 +219,6143 @@
           170
         ]
       }
+    },
+    {
+      "pack": "folk",
+      "name": "folk",
+      "script": "folk.py",
+      "seed": "folk/2026-10-03",
+      "why": "The household's shared body (#820 to #823): one 20-joint rig, 22 parts in five slots a person picks from by `parts`, and eleven clips. `rig` is each joint's place in metres in the model frame (+x the body's left, +y up, +z the way it faces); every joint keeps the model's own axes, so a joint's rotation at rest is none. `parts` is the catalogue, one mesh node each, `Cloth` tinted and `Bare` not. `clips` is tools/bodies/clips.json's grammar over this rig's own Idle: the angle at key k of `keys` is rest + amp * sin(2 pi (cycles * k / keys + phase)), a rotation about a model axis at the joint, composed on Idle's at that key; `cycles` is an integer or the clip does not loop, and `driver` is the joint test/assets.mjs holds 20 degrees off Idle. `sheet` is the six people the contact sheet lines up. The first wearer is the hen-wife.",
+      "fps": 24,
+      "keys": 48,
+      "rig": [
+        {
+          "name": "Root",
+          "parent": null,
+          "head": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "name": "Hips",
+          "parent": "Root",
+          "head": [
+            0,
+            0.94,
+            0
+          ]
+        },
+        {
+          "name": "Torso",
+          "parent": "Hips",
+          "head": [
+            0,
+            1.06,
+            0
+          ]
+        },
+        {
+          "name": "Chest",
+          "parent": "Torso",
+          "head": [
+            0,
+            1.22,
+            0
+          ]
+        },
+        {
+          "name": "Neck",
+          "parent": "Chest",
+          "head": [
+            0,
+            1.44,
+            0
+          ]
+        },
+        {
+          "name": "Head",
+          "parent": "Neck",
+          "head": [
+            0,
+            1.52,
+            0
+          ]
+        },
+        {
+          "name": "UpperArm.L",
+          "parent": "Chest",
+          "head": [
+            0.2,
+            1.4,
+            0
+          ]
+        },
+        {
+          "name": "UpperArm.R",
+          "parent": "Chest",
+          "head": [
+            -0.2,
+            1.4,
+            0
+          ]
+        },
+        {
+          "name": "LowerArm.L",
+          "parent": "UpperArm.L",
+          "head": [
+            0.22,
+            1.13,
+            0
+          ]
+        },
+        {
+          "name": "LowerArm.R",
+          "parent": "UpperArm.R",
+          "head": [
+            -0.22,
+            1.13,
+            0
+          ]
+        },
+        {
+          "name": "Wrist.L",
+          "parent": "LowerArm.L",
+          "head": [
+            0.23,
+            0.87,
+            0
+          ]
+        },
+        {
+          "name": "Wrist.R",
+          "parent": "LowerArm.R",
+          "head": [
+            -0.23,
+            0.87,
+            0
+          ]
+        },
+        {
+          "name": "Fingers.L",
+          "parent": "Wrist.L",
+          "head": [
+            0.23,
+            0.8,
+            0
+          ]
+        },
+        {
+          "name": "Fingers.R",
+          "parent": "Wrist.R",
+          "head": [
+            -0.23,
+            0.8,
+            0
+          ]
+        },
+        {
+          "name": "UpperLeg.L",
+          "parent": "Hips",
+          "head": [
+            0.09,
+            0.92,
+            0
+          ]
+        },
+        {
+          "name": "UpperLeg.R",
+          "parent": "Hips",
+          "head": [
+            -0.09,
+            0.92,
+            0
+          ]
+        },
+        {
+          "name": "LowerLeg.L",
+          "parent": "UpperLeg.L",
+          "head": [
+            0.09,
+            0.5,
+            0
+          ]
+        },
+        {
+          "name": "LowerLeg.R",
+          "parent": "UpperLeg.R",
+          "head": [
+            -0.09,
+            0.5,
+            0
+          ]
+        },
+        {
+          "name": "Foot.L",
+          "parent": "LowerLeg.L",
+          "head": [
+            0.09,
+            0.08,
+            0
+          ]
+        },
+        {
+          "name": "Foot.R",
+          "parent": "LowerLeg.R",
+          "head": [
+            -0.09,
+            0.08,
+            0
+          ]
+        }
+      ],
+      "parts": [
+        {
+          "name": "skin-man",
+          "material": "Bare",
+          "shape": "skin",
+          "tone": "#d9aa84",
+          "jaw": 0.085,
+          "nose": 0.022,
+          "brow": null,
+          "eye": "#1c1410"
+        },
+        {
+          "name": "skin-woman",
+          "material": "Bare",
+          "shape": "skin",
+          "tone": "#d9aa84",
+          "jaw": 0.07,
+          "nose": 0.016,
+          "brow": null,
+          "eye": "#1c1410"
+        },
+        {
+          "name": "skin-old-man",
+          "material": "Bare",
+          "shape": "skin",
+          "tone": "#d0b096",
+          "jaw": 0.082,
+          "nose": 0.028,
+          "brow": "#aaa292",
+          "eye": "#1c1410"
+        },
+        {
+          "name": "skin-old-woman",
+          "material": "Bare",
+          "shape": "skin",
+          "tone": "#d0b096",
+          "jaw": 0.068,
+          "nose": 0.022,
+          "brow": "#aaa292",
+          "eye": "#1c1410"
+        },
+        {
+          "name": "garment-tunic",
+          "material": "Cloth",
+          "shape": "garment",
+          "hem": 0.62,
+          "flare": [
+            0.21,
+            0.14
+          ],
+          "cuff": 0.045,
+          "body": "#ebe5d6",
+          "belt": "#a49882",
+          "legs": "#cbbfa3",
+          "shoes": "#a49882"
+        },
+        {
+          "name": "garment-gown",
+          "material": "Cloth",
+          "shape": "garment",
+          "hem": 0.04,
+          "flare": [
+            0.3,
+            0.24
+          ],
+          "cuff": 0.045,
+          "body": "#ebe5d6",
+          "belt": "#ebe5d6",
+          "legs": "#cbbfa3",
+          "shoes": "#a49882"
+        },
+        {
+          "name": "garment-robe",
+          "material": "Cloth",
+          "shape": "garment",
+          "hem": 0.06,
+          "flare": [
+            0.24,
+            0.19
+          ],
+          "cuff": 0.08,
+          "body": "#ebe5d6",
+          "belt": "#cbbfa3",
+          "legs": "#cbbfa3",
+          "shoes": "#a49882"
+        },
+        {
+          "name": "garment-smock",
+          "material": "Cloth",
+          "shape": "garment",
+          "hem": 0.5,
+          "flare": [
+            0.24,
+            0.17
+          ],
+          "cuff": 0.06,
+          "body": "#ebe5d6",
+          "belt": "#ebe5d6",
+          "legs": "#cbbfa3",
+          "shoes": "#a49882"
+        },
+        {
+          "name": "garment-mail",
+          "material": "Bare",
+          "shape": "garment",
+          "hem": 0.6,
+          "flare": [
+            0.21,
+            0.14
+          ],
+          "cuff": 0.05,
+          "body": "#7e898d",
+          "belt": "#3a2a1c",
+          "legs": "#565d61",
+          "shoes": "#3a2a1c"
+        },
+        {
+          "name": "hair-cropped",
+          "material": "Bare",
+          "shape": "shell",
+          "colour": "#503a28",
+          "scale": 1.06,
+          "nape": 1.57,
+          "sides": 1.63,
+          "temple": 1.69,
+          "brow": 1.69
+        },
+        {
+          "name": "hair-long",
+          "material": "Bare",
+          "shape": "shell",
+          "colour": "#a17f58",
+          "scale": 1.07,
+          "nape": 1.52,
+          "sides": 1.57,
+          "temple": 1.63,
+          "brow": 1.69,
+          "tail": [
+            [
+              1.42,
+              0.115,
+              0.1,
+              0.02
+            ],
+            [
+              1.3,
+              0.125,
+              0.07,
+              0.07
+            ]
+          ]
+        },
+        {
+          "name": "hair-bun",
+          "material": "Bare",
+          "shape": "shell",
+          "colour": "#2a1d12",
+          "scale": 1.06,
+          "nape": 1.57,
+          "sides": 1.63,
+          "temple": 1.69,
+          "brow": 1.69,
+          "bun": [
+            0.135,
+            1.67,
+            0.09
+          ]
+        },
+        {
+          "name": "hair-grey",
+          "material": "Bare",
+          "shape": "shell",
+          "colour": "#aaa292",
+          "scale": 1.08,
+          "nape": 1.52,
+          "sides": 1.57,
+          "temple": 1.69,
+          "brow": 1.735
+        },
+        {
+          "name": "hair-beard",
+          "material": "Bare",
+          "shape": "shell",
+          "colour": "#503a28",
+          "scale": 1.06,
+          "nape": 1.57,
+          "sides": 1.63,
+          "temple": 1.69,
+          "brow": 1.69,
+          "beard": [
+            0.11,
+            0.05,
+            0.075
+          ]
+        },
+        {
+          "name": "over-apron",
+          "material": "Cloth",
+          "shape": "over",
+          "colour": "#ebe5d6",
+          "edge": "#cbbfa3",
+          "rings": [
+            [
+              1.3,
+              0.2,
+              0.127
+            ],
+            [
+              1.1,
+              0.177,
+              0.117
+            ],
+            [
+              1.05,
+              0.177,
+              0.117
+            ],
+            [
+              0.94,
+              0.192,
+              0.127
+            ],
+            [
+              0.66,
+              0.229,
+              0.166
+            ],
+            [
+              0.35,
+              0.271,
+              0.209
+            ]
+          ],
+          "cover": [
+            [
+              5
+            ],
+            [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7
+            ],
+            [
+              4,
+              5,
+              6
+            ],
+            [
+              4,
+              5,
+              6
+            ],
+            [
+              4,
+              5,
+              6
+            ]
+          ]
+        },
+        {
+          "name": "over-cloak",
+          "material": "Cloth",
+          "shape": "over",
+          "colour": "#cbbfa3",
+          "edge": "#a49882",
+          "rings": [
+            [
+              1.46,
+              0.12,
+              0.1
+            ],
+            [
+              1.4,
+              0.29,
+              0.14
+            ],
+            [
+              1.1,
+              0.3,
+              0.16
+            ],
+            [
+              0.9,
+              0.3,
+              0.18
+            ],
+            [
+              0.6,
+              0.31,
+              0.21
+            ],
+            [
+              0.3,
+              0.32,
+              0.24
+            ]
+          ],
+          "cover": [
+            [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7
+            ],
+            [
+              7,
+              0,
+              1,
+              2,
+              3
+            ],
+            [
+              7,
+              0,
+              1,
+              2,
+              3
+            ],
+            [
+              7,
+              0,
+              1,
+              2,
+              3
+            ],
+            [
+              7,
+              0,
+              1,
+              2,
+              3
+            ]
+          ]
+        },
+        {
+          "name": "over-tabard",
+          "material": "Cloth",
+          "shape": "over",
+          "colour": "#ebe5d6",
+          "edge": "#cbbfa3",
+          "rings": [
+            [
+              1.455,
+              0.1,
+              0.08
+            ],
+            [
+              1.405,
+              0.207,
+              0.11
+            ],
+            [
+              1.28,
+              0.2,
+              0.127
+            ],
+            [
+              1.1,
+              0.177,
+              0.117
+            ],
+            [
+              1.05,
+              0.177,
+              0.117
+            ],
+            [
+              0.94,
+              0.192,
+              0.127
+            ],
+            [
+              0.68,
+              0.22,
+              0.152
+            ]
+          ],
+          "cover": [
+            [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7
+            ],
+            [
+              0,
+              1,
+              2,
+              4,
+              5,
+              6
+            ],
+            [
+              0,
+              1,
+              2,
+              4,
+              5,
+              6
+            ],
+            [
+              0,
+              1,
+              2,
+              3,
+              4,
+              5,
+              6,
+              7
+            ],
+            [
+              0,
+              1,
+              2,
+              4,
+              5,
+              6
+            ],
+            [
+              0,
+              1,
+              2,
+              4,
+              5,
+              6
+            ]
+          ]
+        },
+        {
+          "name": "hat-coif",
+          "material": "Cloth",
+          "shape": "shell",
+          "colour": "#ebe5d6",
+          "scale": 1.12,
+          "nape": 1.52,
+          "sides": 1.52,
+          "temple": 1.63,
+          "brow": 1.69
+        },
+        {
+          "name": "hat-hood",
+          "material": "Cloth",
+          "shape": "shell",
+          "colour": "#cbbfa3",
+          "scale": 1.15,
+          "nape": 1.52,
+          "sides": 1.52,
+          "temple": 1.57,
+          "brow": 1.69,
+          "drape": [
+            [
+              1.44,
+              0.1,
+              0.1
+            ],
+            [
+              1.4,
+              0.225,
+              0.125
+            ],
+            [
+              1.27,
+              0.24,
+              0.15
+            ]
+          ],
+          "point": [
+            0.16,
+            1.72,
+            0.07
+          ]
+        },
+        {
+          "name": "hat-cap",
+          "material": "Cloth",
+          "shape": "crown",
+          "colour": "#cbbfa3",
+          "band": "#a49882",
+          "rings": [
+            [
+              1.69,
+              0.118,
+              0.126
+            ],
+            [
+              1.72,
+              0.128,
+              0.136
+            ],
+            [
+              1.77,
+              0.12,
+              0.128
+            ],
+            [
+              1.8,
+              0.07,
+              0.075
+            ]
+          ],
+          "brim": null
+        },
+        {
+          "name": "hat-wimple",
+          "material": "Cloth",
+          "shape": "shell",
+          "colour": "#ebe5d6",
+          "scale": 1.12,
+          "nape": 1.52,
+          "sides": 1.52,
+          "temple": 1.52,
+          "brow": 1.69,
+          "drape": [
+            [
+              1.44,
+              0.09,
+              0.09
+            ],
+            [
+              1.4,
+              0.218,
+              0.122
+            ],
+            [
+              1.33,
+              0.218,
+              0.137
+            ]
+          ]
+        },
+        {
+          "name": "hat-helm",
+          "material": "Bare",
+          "shape": "crown",
+          "colour": "#7e898d",
+          "band": "#565d61",
+          "rings": [
+            [
+              1.67,
+              0.122,
+              0.13
+            ],
+            [
+              1.73,
+              0.116,
+              0.124
+            ],
+            [
+              1.78,
+              0.08,
+              0.088
+            ],
+            [
+              1.805,
+              0.03,
+              0.034
+            ]
+          ],
+          "brim": [
+            1.67,
+            0.05
+          ]
+        }
+      ],
+      "clips": [
+        {
+          "name": "Idle",
+          "cycles": 1,
+          "moves": [
+            {
+              "bone": "Chest",
+              "axis": "x",
+              "rest": 1,
+              "amp": 1.5,
+              "phase": 0
+            },
+            {
+              "bone": "Head",
+              "axis": "x",
+              "rest": 0,
+              "amp": 1.2,
+              "phase": 0.5
+            },
+            {
+              "bone": "UpperArm.L",
+              "axis": "z",
+              "rest": 3,
+              "amp": 1,
+              "phase": 0
+            },
+            {
+              "bone": "UpperArm.R",
+              "axis": "z",
+              "rest": -3,
+              "amp": -1,
+              "phase": 0
+            },
+            {
+              "bone": "LowerArm.L",
+              "axis": "x",
+              "rest": -8,
+              "amp": 1.5,
+              "phase": 0
+            },
+            {
+              "bone": "LowerArm.R",
+              "axis": "x",
+              "rest": -8,
+              "amp": 1.5,
+              "phase": 0
+            }
+          ]
+        },
+        {
+          "name": "Idle_Neutral",
+          "cycles": 1,
+          "moves": [
+            {
+              "bone": "Torso",
+              "axis": "x",
+              "rest": 6,
+              "amp": 1,
+              "phase": 0
+            },
+            {
+              "bone": "Head",
+              "axis": "x",
+              "rest": 8,
+              "amp": 2,
+              "phase": 0.25
+            },
+            {
+              "bone": "Head",
+              "axis": "y",
+              "rest": 0,
+              "amp": 6,
+              "phase": 0
+            },
+            {
+              "bone": "UpperArm.L",
+              "axis": "x",
+              "rest": -14,
+              "amp": 2,
+              "phase": 0
+            },
+            {
+              "bone": "UpperArm.R",
+              "axis": "x",
+              "rest": -14,
+              "amp": 2,
+              "phase": 0
+            },
+            {
+              "bone": "LowerArm.L",
+              "axis": "x",
+              "rest": -42,
+              "amp": 3,
+              "phase": 0.25
+            },
+            {
+              "bone": "LowerArm.R",
+              "axis": "x",
+              "rest": -42,
+              "amp": 3,
+              "phase": 0.25
+            },
+            {
+              "bone": "LowerArm.L",
+              "axis": "y",
+              "rest": -30,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "LowerArm.R",
+              "axis": "y",
+              "rest": 30,
+              "amp": 0,
+              "phase": 0
+            }
+          ]
+        },
+        {
+          "name": "Idle_Sword",
+          "cycles": 1,
+          "moves": [
+            {
+              "bone": "Hips",
+              "axis": "y",
+              "rest": -8,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "Chest",
+              "axis": "y",
+              "rest": 8,
+              "amp": 2,
+              "phase": 0
+            },
+            {
+              "bone": "Head",
+              "axis": "y",
+              "rest": 0,
+              "amp": 8,
+              "phase": 0.25
+            },
+            {
+              "bone": "UpperArm.R",
+              "axis": "x",
+              "rest": -28,
+              "amp": 2,
+              "phase": 0
+            },
+            {
+              "bone": "LowerArm.R",
+              "axis": "x",
+              "rest": -52,
+              "amp": 3,
+              "phase": 0
+            },
+            {
+              "bone": "UpperArm.L",
+              "axis": "z",
+              "rest": 6,
+              "amp": 1,
+              "phase": 0
+            }
+          ]
+        },
+        {
+          "name": "Walk",
+          "cycles": 2,
+          "moves": [
+            {
+              "bone": "Chest",
+              "axis": "y",
+              "rest": 0,
+              "amp": 5,
+              "phase": 0
+            },
+            {
+              "bone": "Hips",
+              "axis": "y",
+              "rest": 0,
+              "amp": -4,
+              "phase": 0
+            },
+            {
+              "bone": "Torso",
+              "axis": "x",
+              "rest": 3,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "UpperLeg.L",
+              "axis": "x",
+              "rest": -4,
+              "amp": 24,
+              "phase": 0
+            },
+            {
+              "bone": "UpperLeg.R",
+              "axis": "x",
+              "rest": -4,
+              "amp": 24,
+              "phase": 0.5
+            },
+            {
+              "bone": "LowerLeg.L",
+              "axis": "x",
+              "rest": 20,
+              "amp": 18,
+              "phase": 0.75
+            },
+            {
+              "bone": "LowerLeg.R",
+              "axis": "x",
+              "rest": 20,
+              "amp": 18,
+              "phase": 0.25
+            },
+            {
+              "bone": "Foot.L",
+              "axis": "x",
+              "rest": 0,
+              "amp": 8,
+              "phase": 0.25
+            },
+            {
+              "bone": "Foot.R",
+              "axis": "x",
+              "rest": 0,
+              "amp": 8,
+              "phase": 0.75
+            },
+            {
+              "bone": "UpperArm.L",
+              "axis": "x",
+              "rest": 0,
+              "amp": -18,
+              "phase": 0
+            },
+            {
+              "bone": "UpperArm.R",
+              "axis": "x",
+              "rest": 0,
+              "amp": 18,
+              "phase": 0
+            },
+            {
+              "bone": "LowerArm.L",
+              "axis": "x",
+              "rest": -12,
+              "amp": -8,
+              "phase": 0
+            },
+            {
+              "bone": "LowerArm.R",
+              "axis": "x",
+              "rest": -12,
+              "amp": 8,
+              "phase": 0
+            }
+          ]
+        },
+        {
+          "name": "Run",
+          "cycles": 3,
+          "moves": [
+            {
+              "bone": "Torso",
+              "axis": "x",
+              "rest": 10,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "Chest",
+              "axis": "y",
+              "rest": 0,
+              "amp": 9,
+              "phase": 0
+            },
+            {
+              "bone": "Hips",
+              "axis": "y",
+              "rest": 0,
+              "amp": -7,
+              "phase": 0
+            },
+            {
+              "bone": "Head",
+              "axis": "x",
+              "rest": -6,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "UpperLeg.L",
+              "axis": "x",
+              "rest": -12,
+              "amp": 38,
+              "phase": 0
+            },
+            {
+              "bone": "UpperLeg.R",
+              "axis": "x",
+              "rest": -12,
+              "amp": 38,
+              "phase": 0.5
+            },
+            {
+              "bone": "LowerLeg.L",
+              "axis": "x",
+              "rest": 46,
+              "amp": 38,
+              "phase": 0.75
+            },
+            {
+              "bone": "LowerLeg.R",
+              "axis": "x",
+              "rest": 46,
+              "amp": 38,
+              "phase": 0.25
+            },
+            {
+              "bone": "Foot.L",
+              "axis": "x",
+              "rest": 6,
+              "amp": 12,
+              "phase": 0.25
+            },
+            {
+              "bone": "Foot.R",
+              "axis": "x",
+              "rest": 6,
+              "amp": 12,
+              "phase": 0.75
+            },
+            {
+              "bone": "UpperArm.L",
+              "axis": "x",
+              "rest": -6,
+              "amp": -36,
+              "phase": 0
+            },
+            {
+              "bone": "UpperArm.R",
+              "axis": "x",
+              "rest": -6,
+              "amp": 36,
+              "phase": 0
+            },
+            {
+              "bone": "LowerArm.L",
+              "axis": "x",
+              "rest": -78,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "LowerArm.R",
+              "axis": "x",
+              "rest": -78,
+              "amp": 0,
+              "phase": 0
+            }
+          ]
+        },
+        {
+          "name": "Wave",
+          "cycles": 2,
+          "moves": [
+            {
+              "bone": "Chest",
+              "axis": "z",
+              "rest": -3,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "Head",
+              "axis": "z",
+              "rest": -4,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "UpperArm.R",
+              "axis": "z",
+              "rest": -128,
+              "amp": 6,
+              "phase": 0
+            },
+            {
+              "bone": "LowerArm.R",
+              "axis": "z",
+              "rest": -24,
+              "amp": 26,
+              "phase": 0
+            },
+            {
+              "bone": "Wrist.R",
+              "axis": "z",
+              "rest": 0,
+              "amp": 14,
+              "phase": 0.1
+            }
+          ]
+        },
+        {
+          "name": "Sweep",
+          "cycles": 1,
+          "driver": "UpperArm.R",
+          "moves": [
+            {
+              "bone": "Torso",
+              "axis": "x",
+              "rest": 18,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "Chest",
+              "axis": "y",
+              "rest": 0,
+              "amp": 22,
+              "phase": 0
+            },
+            {
+              "bone": "Head",
+              "axis": "x",
+              "rest": 12,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "UpperArm.R",
+              "axis": "x",
+              "rest": -32,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "UpperArm.R",
+              "axis": "z",
+              "rest": 0,
+              "amp": 28,
+              "phase": 0
+            },
+            {
+              "bone": "LowerArm.R",
+              "axis": "x",
+              "rest": -18,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "UpperArm.L",
+              "axis": "x",
+              "rest": -48,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "UpperArm.L",
+              "axis": "z",
+              "rest": 0,
+              "amp": 28,
+              "phase": 0
+            },
+            {
+              "bone": "LowerArm.L",
+              "axis": "x",
+              "rest": -30,
+              "amp": 0,
+              "phase": 0
+            }
+          ]
+        },
+        {
+          "name": "Stir",
+          "cycles": 2,
+          "driver": "UpperArm.R",
+          "moves": [
+            {
+              "bone": "Torso",
+              "axis": "x",
+              "rest": 10,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "Chest",
+              "axis": "y",
+              "rest": 0,
+              "amp": 6,
+              "phase": 0
+            },
+            {
+              "bone": "Head",
+              "axis": "x",
+              "rest": 15,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "UpperArm.R",
+              "axis": "x",
+              "rest": -12,
+              "amp": 16,
+              "phase": 0.25
+            },
+            {
+              "bone": "UpperArm.R",
+              "axis": "y",
+              "rest": 0,
+              "amp": 34,
+              "phase": 0
+            },
+            {
+              "bone": "LowerArm.R",
+              "axis": "x",
+              "rest": -62,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "UpperArm.L",
+              "axis": "x",
+              "rest": -20,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "LowerArm.L",
+              "axis": "x",
+              "rest": -55,
+              "amp": 0,
+              "phase": 0
+            }
+          ]
+        },
+        {
+          "name": "Hammer",
+          "cycles": 2,
+          "driver": "UpperArm.R",
+          "moves": [
+            {
+              "bone": "Torso",
+              "axis": "x",
+              "rest": 12,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "Chest",
+              "axis": "y",
+              "rest": 0,
+              "amp": 6,
+              "phase": 0
+            },
+            {
+              "bone": "Head",
+              "axis": "x",
+              "rest": 14,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "UpperArm.R",
+              "axis": "x",
+              "rest": -80,
+              "amp": 60,
+              "phase": 0
+            },
+            {
+              "bone": "LowerArm.R",
+              "axis": "x",
+              "rest": -40,
+              "amp": 32,
+              "phase": 0
+            },
+            {
+              "bone": "Wrist.R",
+              "axis": "x",
+              "rest": 0,
+              "amp": 20,
+              "phase": 0
+            },
+            {
+              "bone": "UpperArm.L",
+              "axis": "x",
+              "rest": -30,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "LowerArm.L",
+              "axis": "x",
+              "rest": -50,
+              "amp": 0,
+              "phase": 0
+            }
+          ]
+        },
+        {
+          "name": "Spar",
+          "cycles": 2,
+          "driver": "UpperArm.R",
+          "moves": [
+            {
+              "bone": "Chest",
+              "axis": "y",
+              "rest": -15,
+              "amp": 12,
+              "phase": 0.5
+            },
+            {
+              "bone": "Torso",
+              "axis": "x",
+              "rest": 6,
+              "amp": 4,
+              "phase": 0
+            },
+            {
+              "bone": "UpperArm.R",
+              "axis": "x",
+              "rest": -50,
+              "amp": -30,
+              "phase": 0
+            },
+            {
+              "bone": "LowerArm.R",
+              "axis": "x",
+              "rest": -70,
+              "amp": 60,
+              "phase": 0
+            },
+            {
+              "bone": "UpperArm.L",
+              "axis": "x",
+              "rest": -60,
+              "amp": -25,
+              "phase": 0.5
+            },
+            {
+              "bone": "LowerArm.L",
+              "axis": "x",
+              "rest": -80,
+              "amp": 55,
+              "phase": 0.5
+            }
+          ]
+        },
+        {
+          "name": "Drill",
+          "cycles": 1,
+          "driver": "UpperArm.R",
+          "moves": [
+            {
+              "bone": "Torso",
+              "axis": "y",
+              "rest": 14,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "Chest",
+              "axis": "x",
+              "rest": 4,
+              "amp": 8,
+              "phase": 0
+            },
+            {
+              "bone": "UpperArm.R",
+              "axis": "x",
+              "rest": -40,
+              "amp": -25,
+              "phase": 0
+            },
+            {
+              "bone": "LowerArm.R",
+              "axis": "x",
+              "rest": -55,
+              "amp": 45,
+              "phase": 0
+            },
+            {
+              "bone": "UpperArm.L",
+              "axis": "x",
+              "rest": -50,
+              "amp": -25,
+              "phase": 0
+            },
+            {
+              "bone": "LowerArm.L",
+              "axis": "x",
+              "rest": -65,
+              "amp": 45,
+              "phase": 0
+            }
+          ]
+        }
+      ],
+      "sheet": [
+        [
+          "skin-old-woman",
+          "garment-gown",
+          "over-apron",
+          "hat-wimple"
+        ],
+        [
+          "skin-man",
+          "garment-tunic",
+          "hair-cropped",
+          "hat-cap"
+        ],
+        [
+          "skin-man",
+          "garment-mail",
+          "hair-beard",
+          "over-tabard",
+          "hat-helm"
+        ],
+        [
+          "skin-old-man",
+          "garment-robe",
+          "hair-grey"
+        ],
+        [
+          "skin-woman",
+          "garment-gown",
+          "hair-long",
+          "hat-coif"
+        ],
+        [
+          "skin-woman",
+          "garment-smock",
+          "hair-bun",
+          "over-cloak",
+          "hat-hood"
+        ]
+      ]
+    },
+    {
+      "pack": "held",
+      "name": "mallet",
+      "script": "held.py",
+      "seed": "held/mallet/2026-10-03",
+      "why": "The carter's mallet, for his `hammer` stop at the cart (#800): a rigid file on `heldProp`, because a skinned tool would be one more skinned draw per holder (#820). A beech head on an ash haft with two iron bands, stood on its haft so +Y runs from the grip to the head.",
+      "length": 0.45,
+      "haft": 0.016,
+      "head": [
+        0.17,
+        0.085,
+        0.09
+      ],
+      "band": 0.018,
+      "sides": 6
+    },
+    {
+      "pack": "animals",
+      "name": "pig",
+      "script": "animals.py",
+      "seed": "animals/pig/2026-10-03",
+      "why": "The hen-wife's pig, in the outer ward by her patch (#829): the low barrel, the snout and the short legs are what read as a pig at 10 m, and the snout's disc is the one face the tint must not touch.",
+      "topology": "quadruped",
+      "fps": 24,
+      "onIdle": false,
+      "rig": [
+        {
+          "name": "Root",
+          "parent": null,
+          "head": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "name": "Body",
+          "parent": "Root",
+          "head": [
+            0,
+            0.5,
+            0
+          ]
+        },
+        {
+          "name": "Neck1",
+          "parent": "Body",
+          "head": [
+            0,
+            0.5,
+            0.46
+          ]
+        },
+        {
+          "name": "Head",
+          "parent": "Neck1",
+          "head": [
+            0,
+            0.5,
+            0.6
+          ]
+        },
+        {
+          "name": "Ear.L",
+          "parent": "Head",
+          "head": [
+            0.12,
+            0.64,
+            0.66
+          ]
+        },
+        {
+          "name": "Ear.R",
+          "parent": "Head",
+          "head": [
+            -0.12,
+            0.64,
+            0.66
+          ]
+        },
+        {
+          "name": "FrontUpperLeg.L",
+          "parent": "Body",
+          "head": [
+            0.16,
+            0.35,
+            0.34
+          ]
+        },
+        {
+          "name": "FrontLowerLeg.L",
+          "parent": "FrontUpperLeg.L",
+          "head": [
+            0.16,
+            0.17,
+            0.34
+          ]
+        },
+        {
+          "name": "FrontUpperLeg.R",
+          "parent": "Body",
+          "head": [
+            -0.16,
+            0.35,
+            0.34
+          ]
+        },
+        {
+          "name": "FrontLowerLeg.R",
+          "parent": "FrontUpperLeg.R",
+          "head": [
+            -0.16,
+            0.17,
+            0.34
+          ]
+        },
+        {
+          "name": "BackUpperLeg.L",
+          "parent": "Body",
+          "head": [
+            0.16,
+            0.35,
+            -0.36
+          ]
+        },
+        {
+          "name": "BackLowerLeg.L",
+          "parent": "BackUpperLeg.L",
+          "head": [
+            0.16,
+            0.17,
+            -0.36
+          ]
+        },
+        {
+          "name": "BackUpperLeg.R",
+          "parent": "Body",
+          "head": [
+            -0.16,
+            0.35,
+            -0.36
+          ]
+        },
+        {
+          "name": "BackLowerLeg.R",
+          "parent": "BackUpperLeg.R",
+          "head": [
+            -0.16,
+            0.17,
+            -0.36
+          ]
+        },
+        {
+          "name": "Tail1",
+          "parent": "Body",
+          "head": [
+            0,
+            0.62,
+            -0.5
+          ]
+        },
+        {
+          "name": "Tail2",
+          "parent": "Tail1",
+          "head": [
+            0,
+            0.62,
+            -0.6
+          ]
+        }
+      ],
+      "parts": [
+        {
+          "shape": "prism",
+          "sides": 6,
+          "center": [
+            0,
+            0.5,
+            -0.02
+          ],
+          "size": [
+            0.5,
+            0.46,
+            1
+          ],
+          "joint": "Body",
+          "material": "Coat",
+          "colour": "#cbbfa3",
+          "ends": [
+            0.86,
+            0.92
+          ]
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            0.735,
+            -0.02
+          ],
+          "size": [
+            0.26,
+            0.03,
+            0.8
+          ],
+          "joint": "Body",
+          "material": "Coat",
+          "colour": "#b1a58d"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            0.5,
+            0.54
+          ],
+          "size": [
+            0.36,
+            0.36,
+            0.18
+          ],
+          "joint": "Neck1",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            0.5,
+            0.7
+          ],
+          "size": [
+            0.32,
+            0.32,
+            0.24
+          ],
+          "joint": "Head",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            0.44,
+            0.87
+          ],
+          "size": [
+            0.18,
+            0.16,
+            0.12
+          ],
+          "joint": "Head",
+          "material": "Coat",
+          "colour": "#b1a58d"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            0.44,
+            0.94
+          ],
+          "size": [
+            0.16,
+            0.13,
+            0.03
+          ],
+          "joint": "Head",
+          "material": "Bare",
+          "colour": "#d49a8c"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.162,
+            0.56,
+            0.76
+          ],
+          "size": [
+            0.02,
+            0.04,
+            0.04
+          ],
+          "joint": "Head",
+          "material": "Bare",
+          "colour": "#1c1410"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.162,
+            0.56,
+            0.76
+          ],
+          "size": [
+            0.02,
+            0.04,
+            0.04
+          ],
+          "joint": "Head",
+          "material": "Bare",
+          "colour": "#1c1410"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.12,
+            0.7,
+            0.68
+          ],
+          "size": [
+            0.1,
+            0.14,
+            0.04
+          ],
+          "joint": "Ear.L",
+          "material": "Coat",
+          "colour": "#b1a58d",
+          "pitch": 30
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.12,
+            0.7,
+            0.68
+          ],
+          "size": [
+            0.1,
+            0.14,
+            0.04
+          ],
+          "joint": "Ear.R",
+          "material": "Coat",
+          "colour": "#b1a58d",
+          "pitch": 30
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.16,
+            0.255,
+            0.34
+          ],
+          "size": [
+            0.13,
+            0.21,
+            0.15
+          ],
+          "joint": "FrontUpperLeg.L",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.16,
+            0.11,
+            0.34
+          ],
+          "size": [
+            0.09,
+            0.12,
+            0.1
+          ],
+          "joint": "FrontLowerLeg.L",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.16,
+            0.025,
+            0.34
+          ],
+          "size": [
+            0.1,
+            0.05,
+            0.11
+          ],
+          "joint": "FrontLowerLeg.L",
+          "material": "Bare",
+          "colour": "#3a2a1c"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.16,
+            0.255,
+            0.34
+          ],
+          "size": [
+            0.13,
+            0.21,
+            0.15
+          ],
+          "joint": "FrontUpperLeg.R",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.16,
+            0.11,
+            0.34
+          ],
+          "size": [
+            0.09,
+            0.12,
+            0.1
+          ],
+          "joint": "FrontLowerLeg.R",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.16,
+            0.025,
+            0.34
+          ],
+          "size": [
+            0.1,
+            0.05,
+            0.11
+          ],
+          "joint": "FrontLowerLeg.R",
+          "material": "Bare",
+          "colour": "#3a2a1c"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.16,
+            0.255,
+            -0.36
+          ],
+          "size": [
+            0.13,
+            0.21,
+            0.15
+          ],
+          "joint": "BackUpperLeg.L",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.16,
+            0.11,
+            -0.36
+          ],
+          "size": [
+            0.09,
+            0.12,
+            0.1
+          ],
+          "joint": "BackLowerLeg.L",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.16,
+            0.025,
+            -0.36
+          ],
+          "size": [
+            0.1,
+            0.05,
+            0.11
+          ],
+          "joint": "BackLowerLeg.L",
+          "material": "Bare",
+          "colour": "#3a2a1c"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.16,
+            0.255,
+            -0.36
+          ],
+          "size": [
+            0.13,
+            0.21,
+            0.15
+          ],
+          "joint": "BackUpperLeg.R",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.16,
+            0.11,
+            -0.36
+          ],
+          "size": [
+            0.09,
+            0.12,
+            0.1
+          ],
+          "joint": "BackLowerLeg.R",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.16,
+            0.025,
+            -0.36
+          ],
+          "size": [
+            0.1,
+            0.05,
+            0.11
+          ],
+          "joint": "BackLowerLeg.R",
+          "material": "Bare",
+          "colour": "#3a2a1c"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            0.62,
+            -0.56
+          ],
+          "size": [
+            0.04,
+            0.04,
+            0.1
+          ],
+          "joint": "Tail1",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            0.66,
+            -0.62
+          ],
+          "size": [
+            0.04,
+            0.1,
+            0.04
+          ],
+          "joint": "Tail2",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        }
+      ],
+      "clips": [
+        {
+          "name": "Idle",
+          "seconds": 3,
+          "cycles": 1,
+          "driver": "Tail1",
+          "moves": [
+            {
+              "bone": "Tail1",
+              "axis": "z",
+              "rest": 0,
+              "amp": 30,
+              "phase": 0,
+              "rate": 2
+            },
+            {
+              "bone": "Tail2",
+              "axis": "z",
+              "rest": 0,
+              "amp": 24,
+              "phase": 0.15,
+              "rate": 2
+            },
+            {
+              "bone": "Ear.L",
+              "axis": "z",
+              "rest": 0,
+              "amp": 8,
+              "phase": 0,
+              "rate": 3
+            },
+            {
+              "bone": "Ear.R",
+              "axis": "z",
+              "rest": 0,
+              "amp": 8,
+              "phase": 0.4,
+              "rate": 3
+            },
+            {
+              "bone": "Neck1",
+              "axis": "x",
+              "rest": 4,
+              "amp": 3,
+              "phase": 0
+            },
+            {
+              "bone": "Head",
+              "axis": "y",
+              "rest": 0,
+              "amp": 8,
+              "phase": 0.25
+            }
+          ]
+        },
+        {
+          "name": "Walk",
+          "seconds": 1,
+          "cycles": 1,
+          "driver": "FrontUpperLeg.L",
+          "moves": [
+            {
+              "bone": "FrontUpperLeg.L",
+              "axis": "x",
+              "rest": 0,
+              "amp": 22,
+              "phase": 0
+            },
+            {
+              "bone": "BackUpperLeg.R",
+              "axis": "x",
+              "rest": 0,
+              "amp": 22,
+              "phase": 0
+            },
+            {
+              "bone": "FrontUpperLeg.R",
+              "axis": "x",
+              "rest": 0,
+              "amp": 22,
+              "phase": 0.5
+            },
+            {
+              "bone": "BackUpperLeg.L",
+              "axis": "x",
+              "rest": 0,
+              "amp": 22,
+              "phase": 0.5
+            },
+            {
+              "bone": "FrontLowerLeg.L",
+              "axis": "x",
+              "rest": 12,
+              "amp": 12,
+              "phase": 0.25
+            },
+            {
+              "bone": "FrontLowerLeg.R",
+              "axis": "x",
+              "rest": 12,
+              "amp": 12,
+              "phase": 0.75
+            },
+            {
+              "bone": "BackLowerLeg.L",
+              "axis": "x",
+              "rest": -12,
+              "amp": 12,
+              "phase": 0.75
+            },
+            {
+              "bone": "BackLowerLeg.R",
+              "axis": "x",
+              "rest": -12,
+              "amp": 12,
+              "phase": 0.25
+            },
+            {
+              "bone": "Neck1",
+              "axis": "x",
+              "rest": 8,
+              "amp": 4,
+              "phase": 0,
+              "rate": 2
+            },
+            {
+              "bone": "Head",
+              "axis": "x",
+              "rest": 0,
+              "amp": 3,
+              "phase": 0.25,
+              "rate": 2
+            },
+            {
+              "bone": "Body",
+              "axis": "z",
+              "rest": 0,
+              "amp": 2.5,
+              "phase": 0
+            },
+            {
+              "bone": "Tail1",
+              "axis": "z",
+              "rest": 0,
+              "amp": 8,
+              "phase": 0.25
+            }
+          ]
+        },
+        {
+          "name": "Eating",
+          "seconds": 3,
+          "cycles": 1,
+          "driver": "Head",
+          "moves": [
+            {
+              "bone": "Neck1",
+              "axis": "x",
+              "rest": 30,
+              "amp": 3,
+              "phase": 0,
+              "rate": 2
+            },
+            {
+              "bone": "Head",
+              "axis": "x",
+              "rest": 24,
+              "amp": 8,
+              "phase": 0,
+              "rate": 4
+            },
+            {
+              "bone": "Head",
+              "axis": "y",
+              "rest": 0,
+              "amp": 6,
+              "phase": 0.25
+            },
+            {
+              "bone": "FrontUpperLeg.L",
+              "axis": "x",
+              "rest": -4,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "FrontUpperLeg.R",
+              "axis": "x",
+              "rest": -4,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "FrontLowerLeg.L",
+              "axis": "x",
+              "rest": 4,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "FrontLowerLeg.R",
+              "axis": "x",
+              "rest": 4,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "Tail1",
+              "axis": "z",
+              "rest": 0,
+              "amp": 14,
+              "phase": 0,
+              "rate": 2
+            },
+            {
+              "bone": "Ear.L",
+              "axis": "z",
+              "rest": -10,
+              "amp": 8,
+              "phase": 0,
+              "rate": 3
+            },
+            {
+              "bone": "Ear.R",
+              "axis": "z",
+              "rest": 10,
+              "amp": 8,
+              "phase": 0.5,
+              "rate": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pack": "animals",
+      "name": "goat",
+      "script": "animals.py",
+      "seed": "animals/goat/2026-10-03",
+      "why": "The inner ward's goat (#829): narrow, leggy, horned and bearded, so it is not a small sheep. The horns are why #827's length to height is 1.15 and not the cow's 1.3.",
+      "topology": "quadruped",
+      "fps": 24,
+      "onIdle": false,
+      "rig": [
+        {
+          "name": "Root",
+          "parent": null,
+          "head": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "name": "Body",
+          "parent": "Root",
+          "head": [
+            0,
+            0.6,
+            0
+          ]
+        },
+        {
+          "name": "Neck1",
+          "parent": "Body",
+          "head": [
+            0,
+            0.64,
+            0.42
+          ]
+        },
+        {
+          "name": "Head",
+          "parent": "Neck1",
+          "head": [
+            0,
+            0.8,
+            0.56
+          ]
+        },
+        {
+          "name": "Ear.L",
+          "parent": "Head",
+          "head": [
+            0.08,
+            0.83,
+            0.585
+          ]
+        },
+        {
+          "name": "Ear.R",
+          "parent": "Head",
+          "head": [
+            -0.08,
+            0.83,
+            0.585
+          ]
+        },
+        {
+          "name": "FrontUpperLeg.L",
+          "parent": "Body",
+          "head": [
+            0.12,
+            0.46,
+            0.3
+          ]
+        },
+        {
+          "name": "FrontLowerLeg.L",
+          "parent": "FrontUpperLeg.L",
+          "head": [
+            0.12,
+            0.23,
+            0.3
+          ]
+        },
+        {
+          "name": "FrontUpperLeg.R",
+          "parent": "Body",
+          "head": [
+            -0.12,
+            0.46,
+            0.3
+          ]
+        },
+        {
+          "name": "FrontLowerLeg.R",
+          "parent": "FrontUpperLeg.R",
+          "head": [
+            -0.12,
+            0.23,
+            0.3
+          ]
+        },
+        {
+          "name": "BackUpperLeg.L",
+          "parent": "Body",
+          "head": [
+            0.12,
+            0.46,
+            -0.32
+          ]
+        },
+        {
+          "name": "BackLowerLeg.L",
+          "parent": "BackUpperLeg.L",
+          "head": [
+            0.12,
+            0.23,
+            -0.32
+          ]
+        },
+        {
+          "name": "BackUpperLeg.R",
+          "parent": "Body",
+          "head": [
+            -0.12,
+            0.46,
+            -0.32
+          ]
+        },
+        {
+          "name": "BackLowerLeg.R",
+          "parent": "BackUpperLeg.R",
+          "head": [
+            -0.12,
+            0.23,
+            -0.32
+          ]
+        },
+        {
+          "name": "Tail1",
+          "parent": "Body",
+          "head": [
+            0,
+            0.77,
+            -0.47
+          ]
+        },
+        {
+          "name": "Tail2",
+          "parent": "Tail1",
+          "head": [
+            0,
+            0.78,
+            -0.56
+          ]
+        }
+      ],
+      "parts": [
+        {
+          "shape": "prism",
+          "sides": 6,
+          "center": [
+            0,
+            0.6,
+            -0.02
+          ],
+          "size": [
+            0.34,
+            0.36,
+            0.92
+          ],
+          "joint": "Body",
+          "material": "Coat",
+          "colour": "#cbbfa3",
+          "ends": [
+            0.9,
+            1
+          ]
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            0.785,
+            -0.04
+          ],
+          "size": [
+            0.1,
+            0.03,
+            0.8
+          ],
+          "joint": "Body",
+          "material": "Coat",
+          "colour": "#978b77"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            0.72,
+            0.5
+          ],
+          "size": [
+            0.16,
+            0.3,
+            0.18
+          ],
+          "joint": "Neck1",
+          "material": "Coat",
+          "colour": "#cbbfa3",
+          "pitch": 30
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            0.8,
+            0.66
+          ],
+          "size": [
+            0.15,
+            0.16,
+            0.26
+          ],
+          "joint": "Head",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            0.77,
+            0.83
+          ],
+          "size": [
+            0.11,
+            0.11,
+            0.1
+          ],
+          "joint": "Head",
+          "material": "Coat",
+          "colour": "#b1a58d"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            0.79,
+            0.885
+          ],
+          "size": [
+            0.07,
+            0.04,
+            0.02
+          ],
+          "joint": "Head",
+          "material": "Bare",
+          "colour": "#1c1410"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            0.665,
+            0.79
+          ],
+          "size": [
+            0.05,
+            0.12,
+            0.05
+          ],
+          "joint": "Head",
+          "material": "Coat",
+          "colour": "#978b77"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.045,
+            0.868,
+            0.58
+          ],
+          "size": [
+            0.035,
+            0.15,
+            0.04
+          ],
+          "joint": "Head",
+          "material": "Bare",
+          "colour": "#aaa292",
+          "pitch": -30
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.045,
+            0.868,
+            0.58
+          ],
+          "size": [
+            0.035,
+            0.15,
+            0.04
+          ],
+          "joint": "Head",
+          "material": "Bare",
+          "colour": "#aaa292",
+          "pitch": -30
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.077,
+            0.83,
+            0.71
+          ],
+          "size": [
+            0.02,
+            0.035,
+            0.04
+          ],
+          "joint": "Head",
+          "material": "Bare",
+          "colour": "#1c1410"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.077,
+            0.83,
+            0.71
+          ],
+          "size": [
+            0.02,
+            0.035,
+            0.04
+          ],
+          "joint": "Head",
+          "material": "Bare",
+          "colour": "#1c1410"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.12,
+            0.83,
+            0.585
+          ],
+          "size": [
+            0.11,
+            0.035,
+            0.06
+          ],
+          "joint": "Ear.L",
+          "material": "Coat",
+          "colour": "#b1a58d"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.12,
+            0.83,
+            0.585
+          ],
+          "size": [
+            0.11,
+            0.035,
+            0.06
+          ],
+          "joint": "Ear.R",
+          "material": "Coat",
+          "colour": "#b1a58d"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.12,
+            0.34,
+            0.3
+          ],
+          "size": [
+            0.09,
+            0.26,
+            0.11
+          ],
+          "joint": "FrontUpperLeg.L",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.12,
+            0.14,
+            0.3
+          ],
+          "size": [
+            0.06,
+            0.18,
+            0.07
+          ],
+          "joint": "FrontLowerLeg.L",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.12,
+            0.025,
+            0.3
+          ],
+          "size": [
+            0.075,
+            0.05,
+            0.09
+          ],
+          "joint": "FrontLowerLeg.L",
+          "material": "Bare",
+          "colour": "#3a2a1c"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.12,
+            0.34,
+            0.3
+          ],
+          "size": [
+            0.09,
+            0.26,
+            0.11
+          ],
+          "joint": "FrontUpperLeg.R",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.12,
+            0.14,
+            0.3
+          ],
+          "size": [
+            0.06,
+            0.18,
+            0.07
+          ],
+          "joint": "FrontLowerLeg.R",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.12,
+            0.025,
+            0.3
+          ],
+          "size": [
+            0.075,
+            0.05,
+            0.09
+          ],
+          "joint": "FrontLowerLeg.R",
+          "material": "Bare",
+          "colour": "#3a2a1c"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.12,
+            0.34,
+            -0.32
+          ],
+          "size": [
+            0.09,
+            0.26,
+            0.11
+          ],
+          "joint": "BackUpperLeg.L",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.12,
+            0.14,
+            -0.32
+          ],
+          "size": [
+            0.06,
+            0.18,
+            0.07
+          ],
+          "joint": "BackLowerLeg.L",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.12,
+            0.025,
+            -0.32
+          ],
+          "size": [
+            0.075,
+            0.05,
+            0.09
+          ],
+          "joint": "BackLowerLeg.L",
+          "material": "Bare",
+          "colour": "#3a2a1c"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.12,
+            0.34,
+            -0.32
+          ],
+          "size": [
+            0.09,
+            0.26,
+            0.11
+          ],
+          "joint": "BackUpperLeg.R",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.12,
+            0.14,
+            -0.32
+          ],
+          "size": [
+            0.06,
+            0.18,
+            0.07
+          ],
+          "joint": "BackLowerLeg.R",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.12,
+            0.025,
+            -0.32
+          ],
+          "size": [
+            0.075,
+            0.05,
+            0.09
+          ],
+          "joint": "BackLowerLeg.R",
+          "material": "Bare",
+          "colour": "#3a2a1c"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            0.77,
+            -0.52
+          ],
+          "size": [
+            0.05,
+            0.05,
+            0.1
+          ],
+          "joint": "Tail1",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            0.81,
+            -0.58
+          ],
+          "size": [
+            0.045,
+            0.08,
+            0.045
+          ],
+          "joint": "Tail2",
+          "material": "Coat",
+          "colour": "#978b77"
+        }
+      ],
+      "clips": [
+        {
+          "name": "Idle",
+          "seconds": 3,
+          "cycles": 1,
+          "driver": "Tail1",
+          "moves": [
+            {
+              "bone": "Tail1",
+              "axis": "z",
+              "rest": 0,
+              "amp": 26,
+              "phase": 0,
+              "rate": 2
+            },
+            {
+              "bone": "Tail2",
+              "axis": "z",
+              "rest": 0,
+              "amp": 20,
+              "phase": 0.15,
+              "rate": 2
+            },
+            {
+              "bone": "Ear.L",
+              "axis": "z",
+              "rest": 0,
+              "amp": 14,
+              "phase": 0,
+              "rate": 3
+            },
+            {
+              "bone": "Ear.R",
+              "axis": "z",
+              "rest": 0,
+              "amp": 14,
+              "phase": 0.4,
+              "rate": 3
+            },
+            {
+              "bone": "Neck1",
+              "axis": "x",
+              "rest": 4,
+              "amp": 3,
+              "phase": 0
+            },
+            {
+              "bone": "Head",
+              "axis": "y",
+              "rest": 0,
+              "amp": 12,
+              "phase": 0.25
+            }
+          ]
+        },
+        {
+          "name": "Walk",
+          "seconds": 1,
+          "cycles": 1,
+          "driver": "FrontUpperLeg.L",
+          "moves": [
+            {
+              "bone": "FrontUpperLeg.L",
+              "axis": "x",
+              "rest": 0,
+              "amp": 24,
+              "phase": 0
+            },
+            {
+              "bone": "BackUpperLeg.R",
+              "axis": "x",
+              "rest": 0,
+              "amp": 24,
+              "phase": 0
+            },
+            {
+              "bone": "FrontUpperLeg.R",
+              "axis": "x",
+              "rest": 0,
+              "amp": 24,
+              "phase": 0.5
+            },
+            {
+              "bone": "BackUpperLeg.L",
+              "axis": "x",
+              "rest": 0,
+              "amp": 24,
+              "phase": 0.5
+            },
+            {
+              "bone": "FrontLowerLeg.L",
+              "axis": "x",
+              "rest": 12,
+              "amp": 12,
+              "phase": 0.25
+            },
+            {
+              "bone": "FrontLowerLeg.R",
+              "axis": "x",
+              "rest": 12,
+              "amp": 12,
+              "phase": 0.75
+            },
+            {
+              "bone": "BackLowerLeg.L",
+              "axis": "x",
+              "rest": -12,
+              "amp": 12,
+              "phase": 0.75
+            },
+            {
+              "bone": "BackLowerLeg.R",
+              "axis": "x",
+              "rest": -12,
+              "amp": 12,
+              "phase": 0.25
+            },
+            {
+              "bone": "Neck1",
+              "axis": "x",
+              "rest": 8,
+              "amp": 4,
+              "phase": 0,
+              "rate": 2
+            },
+            {
+              "bone": "Head",
+              "axis": "x",
+              "rest": 0,
+              "amp": 3,
+              "phase": 0.25,
+              "rate": 2
+            },
+            {
+              "bone": "Body",
+              "axis": "z",
+              "rest": 0,
+              "amp": 2.5,
+              "phase": 0
+            },
+            {
+              "bone": "Tail1",
+              "axis": "z",
+              "rest": 0,
+              "amp": 8,
+              "phase": 0.25
+            }
+          ]
+        },
+        {
+          "name": "Eating",
+          "seconds": 3,
+          "cycles": 1,
+          "driver": "Head",
+          "moves": [
+            {
+              "bone": "Neck1",
+              "axis": "x",
+              "rest": 55,
+              "amp": 3,
+              "phase": 0,
+              "rate": 2
+            },
+            {
+              "bone": "Head",
+              "axis": "x",
+              "rest": 24,
+              "amp": 8,
+              "phase": 0,
+              "rate": 4
+            },
+            {
+              "bone": "Head",
+              "axis": "y",
+              "rest": 0,
+              "amp": 6,
+              "phase": 0.25
+            },
+            {
+              "bone": "FrontUpperLeg.L",
+              "axis": "x",
+              "rest": -6,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "FrontUpperLeg.R",
+              "axis": "x",
+              "rest": -6,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "FrontLowerLeg.L",
+              "axis": "x",
+              "rest": 6,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "FrontLowerLeg.R",
+              "axis": "x",
+              "rest": 6,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "Tail1",
+              "axis": "z",
+              "rest": 0,
+              "amp": 14,
+              "phase": 0,
+              "rate": 2
+            },
+            {
+              "bone": "Ear.L",
+              "axis": "z",
+              "rest": -10,
+              "amp": 8,
+              "phase": 0,
+              "rate": 3
+            },
+            {
+              "bone": "Ear.R",
+              "axis": "z",
+              "rest": 10,
+              "amp": 8,
+              "phase": 0.5,
+              "rate": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pack": "animals",
+      "name": "sheep",
+      "script": "animals.py",
+      "seed": "animals/sheep/2026-10-03",
+      "why": "One sheep beside the cow (#829): the fleece is `Coat`, so a tint makes a white or a dark sheep off one file as the two hens are one file (#684); the face and legs are `Bare` and stay dark.",
+      "topology": "quadruped",
+      "fps": 24,
+      "onIdle": false,
+      "rig": [
+        {
+          "name": "Root",
+          "parent": null,
+          "head": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "name": "Body",
+          "parent": "Root",
+          "head": [
+            0,
+            0.6,
+            0
+          ]
+        },
+        {
+          "name": "Neck1",
+          "parent": "Body",
+          "head": [
+            0,
+            0.62,
+            0.42
+          ]
+        },
+        {
+          "name": "Head",
+          "parent": "Neck1",
+          "head": [
+            0,
+            0.72,
+            0.58
+          ]
+        },
+        {
+          "name": "Ear.L",
+          "parent": "Head",
+          "head": [
+            0.1,
+            0.77,
+            0.61
+          ]
+        },
+        {
+          "name": "Ear.R",
+          "parent": "Head",
+          "head": [
+            -0.1,
+            0.77,
+            0.61
+          ]
+        },
+        {
+          "name": "FrontUpperLeg.L",
+          "parent": "Body",
+          "head": [
+            0.15,
+            0.42,
+            0.3
+          ]
+        },
+        {
+          "name": "FrontLowerLeg.L",
+          "parent": "FrontUpperLeg.L",
+          "head": [
+            0.15,
+            0.21,
+            0.3
+          ]
+        },
+        {
+          "name": "FrontUpperLeg.R",
+          "parent": "Body",
+          "head": [
+            -0.15,
+            0.42,
+            0.3
+          ]
+        },
+        {
+          "name": "FrontLowerLeg.R",
+          "parent": "FrontUpperLeg.R",
+          "head": [
+            -0.15,
+            0.21,
+            0.3
+          ]
+        },
+        {
+          "name": "BackUpperLeg.L",
+          "parent": "Body",
+          "head": [
+            0.15,
+            0.42,
+            -0.32
+          ]
+        },
+        {
+          "name": "BackLowerLeg.L",
+          "parent": "BackUpperLeg.L",
+          "head": [
+            0.15,
+            0.21,
+            -0.32
+          ]
+        },
+        {
+          "name": "BackUpperLeg.R",
+          "parent": "Body",
+          "head": [
+            -0.15,
+            0.42,
+            -0.32
+          ]
+        },
+        {
+          "name": "BackLowerLeg.R",
+          "parent": "BackUpperLeg.R",
+          "head": [
+            -0.15,
+            0.21,
+            -0.32
+          ]
+        },
+        {
+          "name": "Tail1",
+          "parent": "Body",
+          "head": [
+            0,
+            0.72,
+            -0.52
+          ]
+        },
+        {
+          "name": "Tail2",
+          "parent": "Tail1",
+          "head": [
+            0,
+            0.6,
+            -0.55
+          ]
+        }
+      ],
+      "parts": [
+        {
+          "shape": "prism",
+          "sides": 8,
+          "center": [
+            0,
+            0.6,
+            -0.02
+          ],
+          "size": [
+            0.56,
+            0.48,
+            0.98
+          ],
+          "joint": "Body",
+          "material": "Coat",
+          "colour": "#cbbfa3",
+          "ends": [
+            0.9,
+            0.9
+          ]
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            0.85,
+            -0.02
+          ],
+          "size": [
+            0.36,
+            0.08,
+            0.78
+          ],
+          "joint": "Body",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            0.6,
+            -0.02
+          ],
+          "size": [
+            0.6,
+            0.26,
+            0.74
+          ],
+          "joint": "Body",
+          "material": "Coat",
+          "colour": "#b1a58d"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            0.67,
+            0.5
+          ],
+          "size": [
+            0.3,
+            0.32,
+            0.24
+          ],
+          "joint": "Neck1",
+          "material": "Coat",
+          "colour": "#cbbfa3",
+          "pitch": 20
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            0.72,
+            0.7
+          ],
+          "size": [
+            0.19,
+            0.21,
+            0.28
+          ],
+          "joint": "Head",
+          "material": "Bare",
+          "colour": "#33261a"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            0.84,
+            0.63
+          ],
+          "size": [
+            0.21,
+            0.07,
+            0.16
+          ],
+          "joint": "Head",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            0.68,
+            0.845
+          ],
+          "size": [
+            0.1,
+            0.06,
+            0.03
+          ],
+          "joint": "Head",
+          "material": "Bare",
+          "colour": "#1c1410"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.097,
+            0.76,
+            0.75
+          ],
+          "size": [
+            0.02,
+            0.03,
+            0.04
+          ],
+          "joint": "Head",
+          "material": "Bare",
+          "colour": "#aaa292"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.097,
+            0.76,
+            0.75
+          ],
+          "size": [
+            0.02,
+            0.03,
+            0.04
+          ],
+          "joint": "Head",
+          "material": "Bare",
+          "colour": "#aaa292"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.15,
+            0.76,
+            0.61
+          ],
+          "size": [
+            0.12,
+            0.04,
+            0.07
+          ],
+          "joint": "Ear.L",
+          "material": "Bare",
+          "colour": "#33261a"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.15,
+            0.76,
+            0.61
+          ],
+          "size": [
+            0.12,
+            0.04,
+            0.07
+          ],
+          "joint": "Ear.R",
+          "material": "Bare",
+          "colour": "#33261a"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.15,
+            0.31,
+            0.3
+          ],
+          "size": [
+            0.1,
+            0.24,
+            0.11
+          ],
+          "joint": "FrontUpperLeg.L",
+          "material": "Bare",
+          "colour": "#33261a"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.15,
+            0.13,
+            0.3
+          ],
+          "size": [
+            0.07,
+            0.16,
+            0.08
+          ],
+          "joint": "FrontLowerLeg.L",
+          "material": "Bare",
+          "colour": "#33261a"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.15,
+            0.025,
+            0.3
+          ],
+          "size": [
+            0.085,
+            0.05,
+            0.1
+          ],
+          "joint": "FrontLowerLeg.L",
+          "material": "Bare",
+          "colour": "#1c1410"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.15,
+            0.31,
+            0.3
+          ],
+          "size": [
+            0.1,
+            0.24,
+            0.11
+          ],
+          "joint": "FrontUpperLeg.R",
+          "material": "Bare",
+          "colour": "#33261a"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.15,
+            0.13,
+            0.3
+          ],
+          "size": [
+            0.07,
+            0.16,
+            0.08
+          ],
+          "joint": "FrontLowerLeg.R",
+          "material": "Bare",
+          "colour": "#33261a"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.15,
+            0.025,
+            0.3
+          ],
+          "size": [
+            0.085,
+            0.05,
+            0.1
+          ],
+          "joint": "FrontLowerLeg.R",
+          "material": "Bare",
+          "colour": "#1c1410"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.15,
+            0.31,
+            -0.32
+          ],
+          "size": [
+            0.1,
+            0.24,
+            0.11
+          ],
+          "joint": "BackUpperLeg.L",
+          "material": "Bare",
+          "colour": "#33261a"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.15,
+            0.13,
+            -0.32
+          ],
+          "size": [
+            0.07,
+            0.16,
+            0.08
+          ],
+          "joint": "BackLowerLeg.L",
+          "material": "Bare",
+          "colour": "#33261a"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.15,
+            0.025,
+            -0.32
+          ],
+          "size": [
+            0.085,
+            0.05,
+            0.1
+          ],
+          "joint": "BackLowerLeg.L",
+          "material": "Bare",
+          "colour": "#1c1410"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.15,
+            0.31,
+            -0.32
+          ],
+          "size": [
+            0.1,
+            0.24,
+            0.11
+          ],
+          "joint": "BackUpperLeg.R",
+          "material": "Bare",
+          "colour": "#33261a"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.15,
+            0.13,
+            -0.32
+          ],
+          "size": [
+            0.07,
+            0.16,
+            0.08
+          ],
+          "joint": "BackLowerLeg.R",
+          "material": "Bare",
+          "colour": "#33261a"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.15,
+            0.025,
+            -0.32
+          ],
+          "size": [
+            0.085,
+            0.05,
+            0.1
+          ],
+          "joint": "BackLowerLeg.R",
+          "material": "Bare",
+          "colour": "#1c1410"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            0.66,
+            -0.54
+          ],
+          "size": [
+            0.08,
+            0.14,
+            0.08
+          ],
+          "joint": "Tail1",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            0.56,
+            -0.55
+          ],
+          "size": [
+            0.07,
+            0.08,
+            0.07
+          ],
+          "joint": "Tail2",
+          "material": "Coat",
+          "colour": "#b1a58d"
+        }
+      ],
+      "clips": [
+        {
+          "name": "Idle",
+          "seconds": 3,
+          "cycles": 1,
+          "driver": "Tail1",
+          "moves": [
+            {
+              "bone": "Tail1",
+              "axis": "z",
+              "rest": 0,
+              "amp": 14,
+              "phase": 0,
+              "rate": 2
+            },
+            {
+              "bone": "Tail2",
+              "axis": "z",
+              "rest": 0,
+              "amp": 10,
+              "phase": 0.15,
+              "rate": 2
+            },
+            {
+              "bone": "Ear.L",
+              "axis": "z",
+              "rest": 0,
+              "amp": 10,
+              "phase": 0,
+              "rate": 3
+            },
+            {
+              "bone": "Ear.R",
+              "axis": "z",
+              "rest": 0,
+              "amp": 10,
+              "phase": 0.4,
+              "rate": 3
+            },
+            {
+              "bone": "Neck1",
+              "axis": "x",
+              "rest": 4,
+              "amp": 3,
+              "phase": 0
+            },
+            {
+              "bone": "Head",
+              "axis": "y",
+              "rest": 0,
+              "amp": 8,
+              "phase": 0.25
+            }
+          ]
+        },
+        {
+          "name": "Walk",
+          "seconds": 1,
+          "cycles": 1,
+          "driver": "FrontUpperLeg.L",
+          "moves": [
+            {
+              "bone": "FrontUpperLeg.L",
+              "axis": "x",
+              "rest": 0,
+              "amp": 20,
+              "phase": 0
+            },
+            {
+              "bone": "BackUpperLeg.R",
+              "axis": "x",
+              "rest": 0,
+              "amp": 20,
+              "phase": 0
+            },
+            {
+              "bone": "FrontUpperLeg.R",
+              "axis": "x",
+              "rest": 0,
+              "amp": 20,
+              "phase": 0.5
+            },
+            {
+              "bone": "BackUpperLeg.L",
+              "axis": "x",
+              "rest": 0,
+              "amp": 20,
+              "phase": 0.5
+            },
+            {
+              "bone": "FrontLowerLeg.L",
+              "axis": "x",
+              "rest": 12,
+              "amp": 12,
+              "phase": 0.25
+            },
+            {
+              "bone": "FrontLowerLeg.R",
+              "axis": "x",
+              "rest": 12,
+              "amp": 12,
+              "phase": 0.75
+            },
+            {
+              "bone": "BackLowerLeg.L",
+              "axis": "x",
+              "rest": -12,
+              "amp": 12,
+              "phase": 0.75
+            },
+            {
+              "bone": "BackLowerLeg.R",
+              "axis": "x",
+              "rest": -12,
+              "amp": 12,
+              "phase": 0.25
+            },
+            {
+              "bone": "Neck1",
+              "axis": "x",
+              "rest": 8,
+              "amp": 4,
+              "phase": 0,
+              "rate": 2
+            },
+            {
+              "bone": "Head",
+              "axis": "x",
+              "rest": 0,
+              "amp": 3,
+              "phase": 0.25,
+              "rate": 2
+            },
+            {
+              "bone": "Body",
+              "axis": "z",
+              "rest": 0,
+              "amp": 2.5,
+              "phase": 0
+            },
+            {
+              "bone": "Tail1",
+              "axis": "z",
+              "rest": 0,
+              "amp": 8,
+              "phase": 0.25
+            }
+          ]
+        },
+        {
+          "name": "Eating",
+          "seconds": 3,
+          "cycles": 1,
+          "driver": "Head",
+          "moves": [
+            {
+              "bone": "Neck1",
+              "axis": "x",
+              "rest": 50,
+              "amp": 3,
+              "phase": 0,
+              "rate": 2
+            },
+            {
+              "bone": "Head",
+              "axis": "x",
+              "rest": 24,
+              "amp": 8,
+              "phase": 0,
+              "rate": 4
+            },
+            {
+              "bone": "Head",
+              "axis": "y",
+              "rest": 0,
+              "amp": 6,
+              "phase": 0.25
+            },
+            {
+              "bone": "FrontUpperLeg.L",
+              "axis": "x",
+              "rest": -6,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "FrontUpperLeg.R",
+              "axis": "x",
+              "rest": -6,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "FrontLowerLeg.L",
+              "axis": "x",
+              "rest": 6,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "FrontLowerLeg.R",
+              "axis": "x",
+              "rest": 6,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "Tail1",
+              "axis": "z",
+              "rest": 0,
+              "amp": 14,
+              "phase": 0,
+              "rate": 2
+            },
+            {
+              "bone": "Ear.L",
+              "axis": "z",
+              "rest": -10,
+              "amp": 8,
+              "phase": 0,
+              "rate": 3
+            },
+            {
+              "bone": "Ear.R",
+              "axis": "z",
+              "rest": 10,
+              "amp": 8,
+              "phase": 0.5,
+              "rate": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pack": "animals",
+      "name": "horse",
+      "script": "animals.py",
+      "seed": "animals/horse/2026-10-03",
+      "why": "The horse by the porter's lodge (#829), the only animal taller than a child: long legs, a raised neck, and a mane and tail in `Bare` so a bay stays black-pointed under any tint.",
+      "topology": "quadruped",
+      "fps": 24,
+      "onIdle": false,
+      "rig": [
+        {
+          "name": "Root",
+          "parent": null,
+          "head": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "name": "Body",
+          "parent": "Root",
+          "head": [
+            0,
+            1.1,
+            0
+          ]
+        },
+        {
+          "name": "Neck1",
+          "parent": "Body",
+          "head": [
+            0,
+            1.2,
+            0.68
+          ]
+        },
+        {
+          "name": "Head",
+          "parent": "Neck1",
+          "head": [
+            0,
+            1.5,
+            1.02
+          ]
+        },
+        {
+          "name": "Ear.L",
+          "parent": "Head",
+          "head": [
+            0.07,
+            1.56,
+            1.04
+          ]
+        },
+        {
+          "name": "Ear.R",
+          "parent": "Head",
+          "head": [
+            -0.07,
+            1.56,
+            1.04
+          ]
+        },
+        {
+          "name": "FrontUpperLeg.L",
+          "parent": "Body",
+          "head": [
+            0.17,
+            0.86,
+            0.52
+          ]
+        },
+        {
+          "name": "FrontLowerLeg.L",
+          "parent": "FrontUpperLeg.L",
+          "head": [
+            0.17,
+            0.44,
+            0.52
+          ]
+        },
+        {
+          "name": "FrontUpperLeg.R",
+          "parent": "Body",
+          "head": [
+            -0.17,
+            0.86,
+            0.52
+          ]
+        },
+        {
+          "name": "FrontLowerLeg.R",
+          "parent": "FrontUpperLeg.R",
+          "head": [
+            -0.17,
+            0.44,
+            0.52
+          ]
+        },
+        {
+          "name": "BackUpperLeg.L",
+          "parent": "Body",
+          "head": [
+            0.17,
+            0.86,
+            -0.56
+          ]
+        },
+        {
+          "name": "BackLowerLeg.L",
+          "parent": "BackUpperLeg.L",
+          "head": [
+            0.17,
+            0.44,
+            -0.56
+          ]
+        },
+        {
+          "name": "BackUpperLeg.R",
+          "parent": "Body",
+          "head": [
+            -0.17,
+            0.86,
+            -0.56
+          ]
+        },
+        {
+          "name": "BackLowerLeg.R",
+          "parent": "BackUpperLeg.R",
+          "head": [
+            -0.17,
+            0.44,
+            -0.56
+          ]
+        },
+        {
+          "name": "Tail1",
+          "parent": "Body",
+          "head": [
+            0,
+            1.32,
+            -0.76
+          ]
+        },
+        {
+          "name": "Tail2",
+          "parent": "Tail1",
+          "head": [
+            0,
+            0.94,
+            -0.84
+          ]
+        }
+      ],
+      "parts": [
+        {
+          "shape": "prism",
+          "sides": 8,
+          "center": [
+            0,
+            1.1,
+            -0.02
+          ],
+          "size": [
+            0.5,
+            0.56,
+            1.5
+          ],
+          "joint": "Body",
+          "material": "Coat",
+          "colour": "#cbbfa3",
+          "ends": [
+            0.92,
+            0.95
+          ]
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            1.3,
+            0.84
+          ],
+          "size": [
+            0.2,
+            0.5,
+            0.3
+          ],
+          "joint": "Neck1",
+          "material": "Coat",
+          "colour": "#cbbfa3",
+          "pitch": 45
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            1.42,
+            1.16
+          ],
+          "size": [
+            0.2,
+            0.24,
+            0.44
+          ],
+          "joint": "Head",
+          "material": "Coat",
+          "colour": "#cbbfa3",
+          "pitch": 30
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            1.3,
+            1.37
+          ],
+          "size": [
+            0.16,
+            0.17,
+            0.12
+          ],
+          "joint": "Head",
+          "material": "Coat",
+          "colour": "#b1a58d",
+          "pitch": 30
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            1.427,
+            0.713
+          ],
+          "size": [
+            0.06,
+            0.5,
+            0.08
+          ],
+          "joint": "Neck1",
+          "material": "Bare",
+          "colour": "#2a1d12",
+          "pitch": 45
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            1.6,
+            1.1
+          ],
+          "size": [
+            0.06,
+            0.07,
+            0.1
+          ],
+          "joint": "Head",
+          "material": "Bare",
+          "colour": "#2a1d12",
+          "pitch": 30
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.105,
+            1.48,
+            1.12
+          ],
+          "size": [
+            0.02,
+            0.05,
+            0.05
+          ],
+          "joint": "Head",
+          "material": "Bare",
+          "colour": "#1c1410"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.105,
+            1.48,
+            1.12
+          ],
+          "size": [
+            0.02,
+            0.05,
+            0.05
+          ],
+          "joint": "Head",
+          "material": "Bare",
+          "colour": "#1c1410"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.07,
+            1.6,
+            1.04
+          ],
+          "size": [
+            0.05,
+            0.1,
+            0.05
+          ],
+          "joint": "Ear.L",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.07,
+            1.6,
+            1.04
+          ],
+          "size": [
+            0.05,
+            0.1,
+            0.05
+          ],
+          "joint": "Ear.R",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.17,
+            0.645,
+            0.52
+          ],
+          "size": [
+            0.15,
+            0.45,
+            0.19
+          ],
+          "joint": "FrontUpperLeg.L",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.17,
+            0.25,
+            0.52
+          ],
+          "size": [
+            0.09,
+            0.38,
+            0.1
+          ],
+          "joint": "FrontLowerLeg.L",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.17,
+            0.03,
+            0.52
+          ],
+          "size": [
+            0.12,
+            0.06,
+            0.14
+          ],
+          "joint": "FrontLowerLeg.L",
+          "material": "Bare",
+          "colour": "#3a2a1c"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.17,
+            0.645,
+            0.52
+          ],
+          "size": [
+            0.15,
+            0.45,
+            0.19
+          ],
+          "joint": "FrontUpperLeg.R",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.17,
+            0.25,
+            0.52
+          ],
+          "size": [
+            0.09,
+            0.38,
+            0.1
+          ],
+          "joint": "FrontLowerLeg.R",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.17,
+            0.03,
+            0.52
+          ],
+          "size": [
+            0.12,
+            0.06,
+            0.14
+          ],
+          "joint": "FrontLowerLeg.R",
+          "material": "Bare",
+          "colour": "#3a2a1c"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.17,
+            0.645,
+            -0.56
+          ],
+          "size": [
+            0.15,
+            0.45,
+            0.19
+          ],
+          "joint": "BackUpperLeg.L",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.17,
+            0.25,
+            -0.56
+          ],
+          "size": [
+            0.09,
+            0.38,
+            0.1
+          ],
+          "joint": "BackLowerLeg.L",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.17,
+            0.03,
+            -0.56
+          ],
+          "size": [
+            0.12,
+            0.06,
+            0.14
+          ],
+          "joint": "BackLowerLeg.L",
+          "material": "Bare",
+          "colour": "#3a2a1c"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.17,
+            0.645,
+            -0.56
+          ],
+          "size": [
+            0.15,
+            0.45,
+            0.19
+          ],
+          "joint": "BackUpperLeg.R",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.17,
+            0.25,
+            -0.56
+          ],
+          "size": [
+            0.09,
+            0.38,
+            0.1
+          ],
+          "joint": "BackLowerLeg.R",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.17,
+            0.03,
+            -0.56
+          ],
+          "size": [
+            0.12,
+            0.06,
+            0.14
+          ],
+          "joint": "BackLowerLeg.R",
+          "material": "Bare",
+          "colour": "#3a2a1c"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            1.12,
+            -0.8
+          ],
+          "size": [
+            0.08,
+            0.4,
+            0.09
+          ],
+          "joint": "Tail1",
+          "material": "Bare",
+          "colour": "#2a1d12",
+          "pitch": -10
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            0.76,
+            -0.86
+          ],
+          "size": [
+            0.1,
+            0.36,
+            0.1
+          ],
+          "joint": "Tail2",
+          "material": "Bare",
+          "colour": "#2a1d12"
+        }
+      ],
+      "clips": [
+        {
+          "name": "Idle",
+          "seconds": 3,
+          "cycles": 1,
+          "driver": "Tail1",
+          "moves": [
+            {
+              "bone": "Tail1",
+              "axis": "z",
+              "rest": 0,
+              "amp": 16,
+              "phase": 0,
+              "rate": 2
+            },
+            {
+              "bone": "Tail2",
+              "axis": "z",
+              "rest": 0,
+              "amp": 14,
+              "phase": 0.15,
+              "rate": 2
+            },
+            {
+              "bone": "Ear.L",
+              "axis": "z",
+              "rest": 0,
+              "amp": 12,
+              "phase": 0,
+              "rate": 3
+            },
+            {
+              "bone": "Ear.R",
+              "axis": "z",
+              "rest": 0,
+              "amp": 12,
+              "phase": 0.4,
+              "rate": 3
+            },
+            {
+              "bone": "Neck1",
+              "axis": "x",
+              "rest": 4,
+              "amp": 3,
+              "phase": 0
+            },
+            {
+              "bone": "Head",
+              "axis": "y",
+              "rest": 0,
+              "amp": 8,
+              "phase": 0.25
+            }
+          ]
+        },
+        {
+          "name": "Walk",
+          "seconds": 1.5,
+          "cycles": 1,
+          "driver": "FrontUpperLeg.L",
+          "moves": [
+            {
+              "bone": "FrontUpperLeg.L",
+              "axis": "x",
+              "rest": 0,
+              "amp": 24,
+              "phase": 0
+            },
+            {
+              "bone": "BackUpperLeg.R",
+              "axis": "x",
+              "rest": 0,
+              "amp": 24,
+              "phase": 0
+            },
+            {
+              "bone": "FrontUpperLeg.R",
+              "axis": "x",
+              "rest": 0,
+              "amp": 24,
+              "phase": 0.5
+            },
+            {
+              "bone": "BackUpperLeg.L",
+              "axis": "x",
+              "rest": 0,
+              "amp": 24,
+              "phase": 0.5
+            },
+            {
+              "bone": "FrontLowerLeg.L",
+              "axis": "x",
+              "rest": 12,
+              "amp": 12,
+              "phase": 0.25
+            },
+            {
+              "bone": "FrontLowerLeg.R",
+              "axis": "x",
+              "rest": 12,
+              "amp": 12,
+              "phase": 0.75
+            },
+            {
+              "bone": "BackLowerLeg.L",
+              "axis": "x",
+              "rest": -12,
+              "amp": 12,
+              "phase": 0.75
+            },
+            {
+              "bone": "BackLowerLeg.R",
+              "axis": "x",
+              "rest": -12,
+              "amp": 12,
+              "phase": 0.25
+            },
+            {
+              "bone": "Neck1",
+              "axis": "x",
+              "rest": 8,
+              "amp": 4,
+              "phase": 0,
+              "rate": 2
+            },
+            {
+              "bone": "Head",
+              "axis": "x",
+              "rest": 0,
+              "amp": 3,
+              "phase": 0.25,
+              "rate": 2
+            },
+            {
+              "bone": "Body",
+              "axis": "z",
+              "rest": 0,
+              "amp": 2.5,
+              "phase": 0
+            },
+            {
+              "bone": "Tail1",
+              "axis": "z",
+              "rest": 0,
+              "amp": 8,
+              "phase": 0.25
+            }
+          ]
+        },
+        {
+          "name": "Eating",
+          "seconds": 3,
+          "cycles": 1,
+          "driver": "Head",
+          "moves": [
+            {
+              "bone": "Neck1",
+              "axis": "x",
+              "rest": 60,
+              "amp": 3,
+              "phase": 0,
+              "rate": 2
+            },
+            {
+              "bone": "Head",
+              "axis": "x",
+              "rest": 24,
+              "amp": 8,
+              "phase": 0,
+              "rate": 4
+            },
+            {
+              "bone": "Head",
+              "axis": "y",
+              "rest": 0,
+              "amp": 6,
+              "phase": 0.25
+            },
+            {
+              "bone": "FrontUpperLeg.L",
+              "axis": "x",
+              "rest": -6,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "FrontUpperLeg.R",
+              "axis": "x",
+              "rest": -6,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "FrontLowerLeg.L",
+              "axis": "x",
+              "rest": 6,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "FrontLowerLeg.R",
+              "axis": "x",
+              "rest": 6,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "Tail1",
+              "axis": "z",
+              "rest": 0,
+              "amp": 14,
+              "phase": 0,
+              "rate": 2
+            },
+            {
+              "bone": "Ear.L",
+              "axis": "z",
+              "rest": -10,
+              "amp": 8,
+              "phase": 0,
+              "rate": 3
+            },
+            {
+              "bone": "Ear.R",
+              "axis": "z",
+              "rest": 10,
+              "amp": 8,
+              "phase": 0.5,
+              "rate": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pack": "animals",
+      "name": "cat",
+      "script": "animals.py",
+      "seed": "animals/cat/2026-10-03",
+      "why": "The bakehouse cat (#829), a mouser at 0.3 m: pointed ears, a long tail carried behind it and green eyes, which is everything a cat is at the distance a player sees one.",
+      "topology": "quadruped",
+      "fps": 24,
+      "onIdle": false,
+      "rig": [
+        {
+          "name": "Root",
+          "parent": null,
+          "head": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "name": "Body",
+          "parent": "Root",
+          "head": [
+            0,
+            0.165,
+            0
+          ]
+        },
+        {
+          "name": "Neck1",
+          "parent": "Body",
+          "head": [
+            0,
+            0.19,
+            0.16
+          ]
+        },
+        {
+          "name": "Head",
+          "parent": "Neck1",
+          "head": [
+            0,
+            0.22,
+            0.21
+          ]
+        },
+        {
+          "name": "Ear.L",
+          "parent": "Head",
+          "head": [
+            0.035,
+            0.265,
+            0.24
+          ]
+        },
+        {
+          "name": "Ear.R",
+          "parent": "Head",
+          "head": [
+            -0.035,
+            0.265,
+            0.24
+          ]
+        },
+        {
+          "name": "FrontUpperLeg.L",
+          "parent": "Body",
+          "head": [
+            0.045,
+            0.125,
+            0.12
+          ]
+        },
+        {
+          "name": "FrontLowerLeg.L",
+          "parent": "FrontUpperLeg.L",
+          "head": [
+            0.045,
+            0.065,
+            0.12
+          ]
+        },
+        {
+          "name": "FrontUpperLeg.R",
+          "parent": "Body",
+          "head": [
+            -0.045,
+            0.125,
+            0.12
+          ]
+        },
+        {
+          "name": "FrontLowerLeg.R",
+          "parent": "FrontUpperLeg.R",
+          "head": [
+            -0.045,
+            0.065,
+            0.12
+          ]
+        },
+        {
+          "name": "BackUpperLeg.L",
+          "parent": "Body",
+          "head": [
+            0.045,
+            0.125,
+            -0.13
+          ]
+        },
+        {
+          "name": "BackLowerLeg.L",
+          "parent": "BackUpperLeg.L",
+          "head": [
+            0.045,
+            0.065,
+            -0.13
+          ]
+        },
+        {
+          "name": "BackUpperLeg.R",
+          "parent": "Body",
+          "head": [
+            -0.045,
+            0.125,
+            -0.13
+          ]
+        },
+        {
+          "name": "BackLowerLeg.R",
+          "parent": "BackUpperLeg.R",
+          "head": [
+            -0.045,
+            0.065,
+            -0.13
+          ]
+        },
+        {
+          "name": "Tail1",
+          "parent": "Body",
+          "head": [
+            0,
+            0.18,
+            -0.18
+          ]
+        },
+        {
+          "name": "Tail2",
+          "parent": "Tail1",
+          "head": [
+            0,
+            0.204,
+            -0.34
+          ]
+        }
+      ],
+      "parts": [
+        {
+          "shape": "prism",
+          "sides": 6,
+          "center": [
+            0,
+            0.165,
+            -0.01
+          ],
+          "size": [
+            0.13,
+            0.12,
+            0.36
+          ],
+          "joint": "Body",
+          "material": "Coat",
+          "colour": "#cbbfa3",
+          "ends": [
+            0.9,
+            0.95
+          ]
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            0.2265,
+            -0.01
+          ],
+          "size": [
+            0.05,
+            0.008,
+            0.3
+          ],
+          "joint": "Body",
+          "material": "Coat",
+          "colour": "#978b77"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            0.2,
+            0.19
+          ],
+          "size": [
+            0.08,
+            0.08,
+            0.06
+          ],
+          "joint": "Neck1",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            0.225,
+            0.255
+          ],
+          "size": [
+            0.11,
+            0.1,
+            0.1
+          ],
+          "joint": "Head",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            0.2,
+            0.315
+          ],
+          "size": [
+            0.06,
+            0.04,
+            0.03
+          ],
+          "joint": "Head",
+          "material": "Coat",
+          "colour": "#b1a58d"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            0.212,
+            0.333
+          ],
+          "size": [
+            0.02,
+            0.015,
+            0.01
+          ],
+          "joint": "Head",
+          "material": "Bare",
+          "colour": "#7a473c"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.03,
+            0.242,
+            0.307
+          ],
+          "size": [
+            0.025,
+            0.022,
+            0.01
+          ],
+          "joint": "Head",
+          "material": "Bare",
+          "colour": "#57643e"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.03,
+            0.242,
+            0.307
+          ],
+          "size": [
+            0.025,
+            0.022,
+            0.01
+          ],
+          "joint": "Head",
+          "material": "Bare",
+          "colour": "#57643e"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.035,
+            0.28,
+            0.24
+          ],
+          "size": [
+            0.035,
+            0.04,
+            0.02
+          ],
+          "joint": "Ear.L",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.035,
+            0.28,
+            0.24
+          ],
+          "size": [
+            0.035,
+            0.04,
+            0.02
+          ],
+          "joint": "Ear.R",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.045,
+            0.09,
+            0.12
+          ],
+          "size": [
+            0.04,
+            0.09,
+            0.05
+          ],
+          "joint": "FrontUpperLeg.L",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.045,
+            0.0325,
+            0.12
+          ],
+          "size": [
+            0.03,
+            0.065,
+            0.035
+          ],
+          "joint": "FrontLowerLeg.L",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.045,
+            0.011,
+            0.13
+          ],
+          "size": [
+            0.038,
+            0.022,
+            0.055
+          ],
+          "joint": "FrontLowerLeg.L",
+          "material": "Coat",
+          "colour": "#b1a58d"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.045,
+            0.09,
+            0.12
+          ],
+          "size": [
+            0.04,
+            0.09,
+            0.05
+          ],
+          "joint": "FrontUpperLeg.R",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.045,
+            0.0325,
+            0.12
+          ],
+          "size": [
+            0.03,
+            0.065,
+            0.035
+          ],
+          "joint": "FrontLowerLeg.R",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.045,
+            0.011,
+            0.13
+          ],
+          "size": [
+            0.038,
+            0.022,
+            0.055
+          ],
+          "joint": "FrontLowerLeg.R",
+          "material": "Coat",
+          "colour": "#b1a58d"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.045,
+            0.09,
+            -0.13
+          ],
+          "size": [
+            0.04,
+            0.09,
+            0.05
+          ],
+          "joint": "BackUpperLeg.L",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.045,
+            0.0325,
+            -0.13
+          ],
+          "size": [
+            0.03,
+            0.065,
+            0.035
+          ],
+          "joint": "BackLowerLeg.L",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.045,
+            0.011,
+            -0.12
+          ],
+          "size": [
+            0.038,
+            0.022,
+            0.055
+          ],
+          "joint": "BackLowerLeg.L",
+          "material": "Coat",
+          "colour": "#b1a58d"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.045,
+            0.09,
+            -0.13
+          ],
+          "size": [
+            0.04,
+            0.09,
+            0.05
+          ],
+          "joint": "BackUpperLeg.R",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.045,
+            0.0325,
+            -0.13
+          ],
+          "size": [
+            0.03,
+            0.065,
+            0.035
+          ],
+          "joint": "BackLowerLeg.R",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.045,
+            0.011,
+            -0.12
+          ],
+          "size": [
+            0.038,
+            0.022,
+            0.055
+          ],
+          "joint": "BackLowerLeg.R",
+          "material": "Coat",
+          "colour": "#b1a58d"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            0.19,
+            -0.26
+          ],
+          "size": [
+            0.03,
+            0.03,
+            0.16
+          ],
+          "joint": "Tail1",
+          "material": "Coat",
+          "colour": "#cbbfa3",
+          "pitch": 10
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            0.239,
+            -0.4
+          ],
+          "size": [
+            0.028,
+            0.028,
+            0.14
+          ],
+          "joint": "Tail2",
+          "material": "Coat",
+          "colour": "#978b77",
+          "pitch": 30
+        }
+      ],
+      "clips": [
+        {
+          "name": "Idle",
+          "seconds": 3,
+          "cycles": 1,
+          "driver": "Tail1",
+          "moves": [
+            {
+              "bone": "Tail1",
+              "axis": "y",
+              "rest": 0,
+              "amp": 24,
+              "phase": 0,
+              "rate": 2
+            },
+            {
+              "bone": "Tail2",
+              "axis": "y",
+              "rest": 0,
+              "amp": 30,
+              "phase": 0.15,
+              "rate": 2
+            },
+            {
+              "bone": "Ear.L",
+              "axis": "z",
+              "rest": 0,
+              "amp": 10,
+              "phase": 0,
+              "rate": 3
+            },
+            {
+              "bone": "Ear.R",
+              "axis": "z",
+              "rest": 0,
+              "amp": 10,
+              "phase": 0.4,
+              "rate": 3
+            },
+            {
+              "bone": "Neck1",
+              "axis": "x",
+              "rest": 4,
+              "amp": 3,
+              "phase": 0
+            },
+            {
+              "bone": "Head",
+              "axis": "y",
+              "rest": 0,
+              "amp": 14,
+              "phase": 0.25
+            }
+          ]
+        },
+        {
+          "name": "Walk",
+          "seconds": 0.75,
+          "cycles": 1,
+          "driver": "FrontUpperLeg.L",
+          "moves": [
+            {
+              "bone": "FrontUpperLeg.L",
+              "axis": "x",
+              "rest": 0,
+              "amp": 28,
+              "phase": 0
+            },
+            {
+              "bone": "BackUpperLeg.R",
+              "axis": "x",
+              "rest": 0,
+              "amp": 28,
+              "phase": 0
+            },
+            {
+              "bone": "FrontUpperLeg.R",
+              "axis": "x",
+              "rest": 0,
+              "amp": 28,
+              "phase": 0.5
+            },
+            {
+              "bone": "BackUpperLeg.L",
+              "axis": "x",
+              "rest": 0,
+              "amp": 28,
+              "phase": 0.5
+            },
+            {
+              "bone": "FrontLowerLeg.L",
+              "axis": "x",
+              "rest": 12,
+              "amp": 12,
+              "phase": 0.25
+            },
+            {
+              "bone": "FrontLowerLeg.R",
+              "axis": "x",
+              "rest": 12,
+              "amp": 12,
+              "phase": 0.75
+            },
+            {
+              "bone": "BackLowerLeg.L",
+              "axis": "x",
+              "rest": -12,
+              "amp": 12,
+              "phase": 0.75
+            },
+            {
+              "bone": "BackLowerLeg.R",
+              "axis": "x",
+              "rest": -12,
+              "amp": 12,
+              "phase": 0.25
+            },
+            {
+              "bone": "Neck1",
+              "axis": "x",
+              "rest": 8,
+              "amp": 4,
+              "phase": 0,
+              "rate": 2
+            },
+            {
+              "bone": "Head",
+              "axis": "x",
+              "rest": 0,
+              "amp": 3,
+              "phase": 0.25,
+              "rate": 2
+            },
+            {
+              "bone": "Body",
+              "axis": "z",
+              "rest": 0,
+              "amp": 2.5,
+              "phase": 0
+            },
+            {
+              "bone": "Tail1",
+              "axis": "y",
+              "rest": 0,
+              "amp": 8,
+              "phase": 0.25
+            }
+          ]
+        },
+        {
+          "name": "Eating",
+          "seconds": 3,
+          "cycles": 1,
+          "driver": "Head",
+          "moves": [
+            {
+              "bone": "Neck1",
+              "axis": "x",
+              "rest": 32,
+              "amp": 3,
+              "phase": 0,
+              "rate": 2
+            },
+            {
+              "bone": "Head",
+              "axis": "x",
+              "rest": 24,
+              "amp": 8,
+              "phase": 0,
+              "rate": 4
+            },
+            {
+              "bone": "Head",
+              "axis": "y",
+              "rest": 0,
+              "amp": 6,
+              "phase": 0.25
+            },
+            {
+              "bone": "FrontUpperLeg.L",
+              "axis": "x",
+              "rest": -8,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "FrontUpperLeg.R",
+              "axis": "x",
+              "rest": -8,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "FrontLowerLeg.L",
+              "axis": "x",
+              "rest": 8,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "FrontLowerLeg.R",
+              "axis": "x",
+              "rest": 8,
+              "amp": 0,
+              "phase": 0
+            },
+            {
+              "bone": "Tail1",
+              "axis": "y",
+              "rest": 0,
+              "amp": 14,
+              "phase": 0,
+              "rate": 2
+            },
+            {
+              "bone": "Ear.L",
+              "axis": "z",
+              "rest": -10,
+              "amp": 8,
+              "phase": 0,
+              "rate": 3
+            },
+            {
+              "bone": "Ear.R",
+              "axis": "z",
+              "rest": 10,
+              "amp": 8,
+              "phase": 0.5,
+              "rate": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "pack": "animals",
+      "name": "goose",
+      "script": "animals.py",
+      "seed": "animals/goose/2026-10-03",
+      "why": "The hen-wife's geese (#829), two off one file by tint: a long neck stood straight up, a heavy body carried level on two legs set under it, and a pink bill and feet in `Bare`. The bird topology, 12 joints (#826), because a quadruped's front legs are wings on nothing.",
+      "topology": "bird",
+      "fps": 24,
+      "onIdle": false,
+      "rig": [
+        {
+          "name": "Root",
+          "parent": null,
+          "head": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "name": "Body",
+          "parent": "Root",
+          "head": [
+            0,
+            0.22,
+            -0.02
+          ]
+        },
+        {
+          "name": "Neck1",
+          "parent": "Body",
+          "head": [
+            0,
+            0.37,
+            0.16
+          ]
+        },
+        {
+          "name": "Neck2",
+          "parent": "Neck1",
+          "head": [
+            0,
+            0.52,
+            0.19
+          ]
+        },
+        {
+          "name": "Head",
+          "parent": "Neck2",
+          "head": [
+            0,
+            0.66,
+            0.21
+          ]
+        },
+        {
+          "name": "Wing.L",
+          "parent": "Body",
+          "head": [
+            0.1,
+            0.39,
+            0.1
+          ]
+        },
+        {
+          "name": "Wing.R",
+          "parent": "Body",
+          "head": [
+            -0.1,
+            0.39,
+            0.1
+          ]
+        },
+        {
+          "name": "UpperLeg.L",
+          "parent": "Body",
+          "head": [
+            0.06,
+            0.22,
+            -0.02
+          ]
+        },
+        {
+          "name": "UpperLeg.R",
+          "parent": "Body",
+          "head": [
+            -0.06,
+            0.22,
+            -0.02
+          ]
+        },
+        {
+          "name": "LowerLeg.L",
+          "parent": "UpperLeg.L",
+          "head": [
+            0.06,
+            0.12,
+            -0.02
+          ]
+        },
+        {
+          "name": "LowerLeg.R",
+          "parent": "UpperLeg.R",
+          "head": [
+            -0.06,
+            0.12,
+            -0.02
+          ]
+        },
+        {
+          "name": "Tail1",
+          "parent": "Body",
+          "head": [
+            0,
+            0.34,
+            -0.25
+          ]
+        }
+      ],
+      "parts": [
+        {
+          "shape": "prism",
+          "sides": 8,
+          "center": [
+            0,
+            0.31,
+            -0.03
+          ],
+          "size": [
+            0.22,
+            0.22,
+            0.46
+          ],
+          "joint": "Body",
+          "material": "Coat",
+          "colour": "#cbbfa3",
+          "ends": [
+            0.75,
+            0.9
+          ]
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            0.3,
+            0.2
+          ],
+          "size": [
+            0.15,
+            0.16,
+            0.06
+          ],
+          "joint": "Body",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            0.445,
+            0.175
+          ],
+          "size": [
+            0.075,
+            0.17,
+            0.075
+          ],
+          "joint": "Neck1",
+          "material": "Coat",
+          "colour": "#b1a58d",
+          "pitch": 10
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            0.59,
+            0.2
+          ],
+          "size": [
+            0.06,
+            0.16,
+            0.06
+          ],
+          "joint": "Neck2",
+          "material": "Coat",
+          "colour": "#b1a58d",
+          "pitch": 8
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            0.7,
+            0.225
+          ],
+          "size": [
+            0.08,
+            0.08,
+            0.11
+          ],
+          "joint": "Head",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            0.685,
+            0.315
+          ],
+          "size": [
+            0.045,
+            0.035,
+            0.07
+          ],
+          "joint": "Head",
+          "material": "Bare",
+          "colour": "#d49a8c"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            0.68,
+            0.355
+          ],
+          "size": [
+            0.03,
+            0.02,
+            0.01
+          ],
+          "joint": "Head",
+          "material": "Bare",
+          "colour": "#7a473c"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.0415,
+            0.715,
+            0.25
+          ],
+          "size": [
+            0.005,
+            0.018,
+            0.018
+          ],
+          "joint": "Head",
+          "material": "Bare",
+          "colour": "#1c1410"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.0415,
+            0.715,
+            0.25
+          ],
+          "size": [
+            0.005,
+            0.018,
+            0.018
+          ],
+          "joint": "Head",
+          "material": "Bare",
+          "colour": "#1c1410"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.1,
+            0.33,
+            -0.04
+          ],
+          "size": [
+            0.025,
+            0.14,
+            0.3
+          ],
+          "joint": "Wing.L",
+          "material": "Coat",
+          "colour": "#b1a58d"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.1,
+            0.33,
+            -0.04
+          ],
+          "size": [
+            0.025,
+            0.14,
+            0.3
+          ],
+          "joint": "Wing.R",
+          "material": "Coat",
+          "colour": "#b1a58d"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.095,
+            0.32,
+            -0.235
+          ],
+          "size": [
+            0.02,
+            0.08,
+            0.11
+          ],
+          "joint": "Wing.L",
+          "material": "Coat",
+          "colour": "#978b77"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.095,
+            0.32,
+            -0.235
+          ],
+          "size": [
+            0.02,
+            0.08,
+            0.11
+          ],
+          "joint": "Wing.R",
+          "material": "Coat",
+          "colour": "#978b77"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0,
+            0.35,
+            -0.3
+          ],
+          "size": [
+            0.12,
+            0.03,
+            0.1
+          ],
+          "joint": "Tail1",
+          "material": "Coat",
+          "colour": "#cbbfa3",
+          "pitch": 15
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.06,
+            0.17,
+            -0.02
+          ],
+          "size": [
+            0.05,
+            0.11,
+            0.07
+          ],
+          "joint": "UpperLeg.L",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.06,
+            0.17,
+            -0.02
+          ],
+          "size": [
+            0.05,
+            0.11,
+            0.07
+          ],
+          "joint": "UpperLeg.R",
+          "material": "Coat",
+          "colour": "#cbbfa3"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.06,
+            0.06,
+            -0.02
+          ],
+          "size": [
+            0.02,
+            0.12,
+            0.02
+          ],
+          "joint": "LowerLeg.L",
+          "material": "Bare",
+          "colour": "#d49a8c"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.06,
+            0.06,
+            -0.02
+          ],
+          "size": [
+            0.02,
+            0.12,
+            0.02
+          ],
+          "joint": "LowerLeg.R",
+          "material": "Bare",
+          "colour": "#d49a8c"
+        },
+        {
+          "shape": "box",
+          "center": [
+            0.06,
+            0.008,
+            0.01
+          ],
+          "size": [
+            0.07,
+            0.016,
+            0.09
+          ],
+          "joint": "LowerLeg.L",
+          "material": "Bare",
+          "colour": "#d49a8c"
+        },
+        {
+          "shape": "box",
+          "center": [
+            -0.06,
+            0.008,
+            0.01
+          ],
+          "size": [
+            0.07,
+            0.016,
+            0.09
+          ],
+          "joint": "LowerLeg.R",
+          "material": "Bare",
+          "colour": "#d49a8c"
+        }
+      ],
+      "clips": [
+        {
+          "name": "Idle",
+          "seconds": 3,
+          "cycles": 1,
+          "driver": "Head",
+          "moves": [
+            {
+              "bone": "Neck1",
+              "axis": "x",
+              "rest": 0,
+              "amp": 3,
+              "phase": 0
+            },
+            {
+              "bone": "Neck2",
+              "axis": "x",
+              "rest": 0,
+              "amp": 3,
+              "phase": 0.5
+            },
+            {
+              "bone": "Head",
+              "axis": "y",
+              "rest": 0,
+              "amp": 16,
+              "phase": 0.25
+            },
+            {
+              "bone": "Tail1",
+              "axis": "y",
+              "rest": 0,
+              "amp": 10,
+              "phase": 0,
+              "rate": 3
+            }
+          ]
+        },
+        {
+          "name": "Walk",
+          "seconds": 1,
+          "cycles": 1,
+          "driver": "UpperLeg.L",
+          "moves": [
+            {
+              "bone": "UpperLeg.L",
+              "axis": "x",
+              "rest": 0,
+              "amp": 26,
+              "phase": 0
+            },
+            {
+              "bone": "UpperLeg.R",
+              "axis": "x",
+              "rest": 0,
+              "amp": 26,
+              "phase": 0.5
+            },
+            {
+              "bone": "LowerLeg.L",
+              "axis": "x",
+              "rest": 10,
+              "amp": 10,
+              "phase": 0.25
+            },
+            {
+              "bone": "LowerLeg.R",
+              "axis": "x",
+              "rest": 10,
+              "amp": 10,
+              "phase": 0.75
+            },
+            {
+              "bone": "Body",
+              "axis": "z",
+              "rest": 0,
+              "amp": 5,
+              "phase": 0
+            },
+            {
+              "bone": "Body",
+              "axis": "y",
+              "rest": 0,
+              "amp": 4,
+              "phase": 0.25
+            },
+            {
+              "bone": "Neck1",
+              "axis": "x",
+              "rest": 4,
+              "amp": 4,
+              "phase": 0,
+              "rate": 2
+            },
+            {
+              "bone": "Head",
+              "axis": "x",
+              "rest": 0,
+              "amp": 3,
+              "phase": 0.25,
+              "rate": 2
+            },
+            {
+              "bone": "Tail1",
+              "axis": "y",
+              "rest": 0,
+              "amp": 8,
+              "phase": 0.25
+            }
+          ]
+        },
+        {
+          "name": "Idle_Peck",
+          "seconds": 3,
+          "cycles": 1,
+          "driver": "Head",
+          "moves": [
+            {
+              "bone": "Body",
+              "axis": "x",
+              "rest": 30,
+              "amp": 2,
+              "phase": 0,
+              "rate": 2
+            },
+            {
+              "bone": "UpperLeg.L",
+              "axis": "x",
+              "rest": -30,
+              "amp": -2,
+              "phase": 0,
+              "rate": 2
+            },
+            {
+              "bone": "UpperLeg.R",
+              "axis": "x",
+              "rest": -30,
+              "amp": -2,
+              "phase": 0,
+              "rate": 2
+            },
+            {
+              "bone": "Neck1",
+              "axis": "x",
+              "rest": 50,
+              "amp": 4,
+              "phase": 0,
+              "rate": 2
+            },
+            {
+              "bone": "Neck2",
+              "axis": "x",
+              "rest": 40,
+              "amp": 4,
+              "phase": 0.1,
+              "rate": 2
+            },
+            {
+              "bone": "Head",
+              "axis": "x",
+              "rest": 20,
+              "amp": 8,
+              "phase": 0,
+              "rate": 4
+            },
+            {
+              "bone": "Head",
+              "axis": "y",
+              "rest": 0,
+              "amp": 5,
+              "phase": 0.25
+            },
+            {
+              "bone": "Tail1",
+              "axis": "y",
+              "rest": 0,
+              "amp": 8,
+              "phase": 0,
+              "rate": 2
+            }
+          ]
+        }
+      ]
     }
   ]
 }

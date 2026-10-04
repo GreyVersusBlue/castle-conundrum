@@ -2309,14 +2309,14 @@ const handOver = (id) => {
 }
 
 /* ------------------------------------------- two of the twelve, in a room ---
- * data/npcs.json's ten placed `chatter` pairs, played by room and bell (#925
- * to #931). Same rig, same queued clock, the real `performances` and the real
+ * data/npcs.json's nineteen `chatter` pairs, played by room and bell (#925
+ * to #938). Same rig, same queued clock, the real `performances` and the real
  * `chatter`, so a pair moved or recast in the data is a different answer here.
  * `handleStand` is how the manager hears of open ground (#926). What is held:
  * the order against the song, the names split off the lines, once per page,
  * the two cuts, the gap after a bell and after a run, the two days nothing
  * plays on, and a sweep of every room at every bell that hears exactly the
- * ten. The stub band records `${name}: ${line}`, which for a chatter line is
+ * nineteen. The stub band records `${name}: ${line}`, which for a chatter line is
  * the line as the file has it, so a caption is matched to its pair by the
  * file's own text. Read through JSON.parse, so no line ending reaches it
  * (#632).
@@ -2329,10 +2329,11 @@ const pairOf = (id) => allPairs.find((p) => p.id === id);
 const bare = (id, i) => pairOf(id).lines[i].replace(/^[^:]*: /, '');
 /** Which pair a recorded caption is a line of, or null: the file's own text. */
 const pairSaying = (caption) => allPairs.find((p) => p.lines.includes(caption))?.id ?? null;
-const HALL_ORDER = ['outer-vespers-1', 'outer-vespers-2', 'outer-vespers-3', 'outer-prime-1', 'outer-terce-4', 'outer-sext-2'];
+const HALL_ORDER = ['outer-sext-3', 'outer-vespers-1', 'outer-vespers-2', 'outer-vespers-3', 'outer-prime-1', 'outer-terce-4', 'outer-sext-2', 'outer-prime-3', 'outer-cell-1'];
 {
-  // 1 TO 4: THE GREAT HALL AT VESPERS. The song first (#927), then the six
+  // 1 TO 4: THE GREAT HALL AT VESPERS. The song first (#927), then the nine
   // pairs in file order with a dark band before each (#925), each once.
+  // `outer-sext-3` is first because its second line answers the song (#935).
   const r = chatterRig();
   r.ring(); r.ring(); r.ring();
   r.qm.handleEnter('great-hall', 0);
@@ -2346,8 +2347,8 @@ const HALL_ORDER = ['outer-vespers-1', 'outer-vespers-2', 'outer-vespers-3', 'ou
   check(r.ui.captionLine === null && r.qm.performing === null && r.pending() === 1,
     'after the song\'s last line the band is dark and exactly one step is pending: the gap', `${JSON.stringify(r.ui.captionLine)}, ${r.pending()} pending`);
   r.tick(1);
-  check(r.ui.captionName === 'Dafydd' && r.ui.captionLine === bare('outer-vespers-1', 0) && !r.ui.captionLine.startsWith('Dafydd: '),
-    'that step shows outer-vespers-1\'s first line under "Dafydd", with the name split off the line', `${r.ui.captionName}: ${r.ui.captionLine}`);
+  check(r.ui.captionName === 'Dafydd' && r.ui.captionLine === bare('outer-sext-3', 0) && !r.ui.captionLine.startsWith('Dafydd: '),
+    'that step shows outer-sext-3\'s first line under "Dafydd", with the name split off the line', `${r.ui.captionName}: ${r.ui.captionLine}`);
   // To the end, a step at a time, noting every clear: a pair is two lines, an
   // end that clears the band, and (but for the last) a gap.
   const from = r.ui.captions.length - 1;
@@ -2362,9 +2363,9 @@ const HALL_ORDER = ['outer-vespers-1', 'outer-vespers-2', 'outer-vespers-3', 'ou
   }
   const after = r.ui.captions.slice(from);
   const want = HALL_ORDER.flatMap((id) => pairOf(id).lines);
-  check(same(after, want), `the captions after the song are the twelve lines of ${HALL_ORDER.join(', ')}, in that order`, JSON.stringify(after.map(pairSaying)));
-  check(darkBetween.length === 5 && darkBetween.every(Boolean), 'the band was cleared between each pair and the next', JSON.stringify(darkBetween));
-  check(r.ui.log.filter((e) => e === 'caption:clear').length - clearsBefore === 6, 'six clears, one after each pair', `${r.ui.log.filter((e) => e === 'caption:clear').length - clearsBefore}`);
+  check(same(after, want), `the captions after the song are the eighteen lines of ${HALL_ORDER.join(', ')}, in that order`, JSON.stringify(after.map(pairSaying)));
+  check(want.length === 18 && darkBetween.length === HALL_ORDER.length - 1 && darkBetween.every(Boolean), `the band was cleared between each pair and the next, ${HALL_ORDER.length - 1} times`, JSON.stringify(darkBetween));
+  check(r.ui.log.filter((e) => e === 'caption:clear').length - clearsBefore === HALL_ORDER.length, `${HALL_ORDER.length} clears, one after each pair`, `${r.ui.log.filter((e) => e === 'caption:clear').length - clearsBefore}`);
   check(r.ui.captionLine === null && r.qm.performing === null && r.pending() === 0, 'and it ends dark with nothing pending', `${JSON.stringify(r.ui.captionLine)}, ${r.pending()} pending`);
   const said = r.ui.captions.length;
   r.qm.handleStand('outer-ward');
@@ -2390,6 +2391,26 @@ const HALL_ORDER = ['outer-vespers-1', 'outer-vespers-2', 'outer-vespers-3', 'ou
   r.tick(200);
   check(r.ui.captions.filter((c) => pairSaying(c) === 'inner-sext-1').length === 1, 'and inner-sext-1, cut after one line, is not said again',
     JSON.stringify(r.ui.captions.map(pairSaying)));
+}
+{
+  // 5b, 5c: THE CHAPEL AT PRIME AND THE KING'S HALL AT SEXT, TO THE END (#934,
+  // #935). Four pairs each, in file order, the recast ones after #911's.
+  const c = chatterRig();
+  c.qm.handleEnter('chapel', 0);
+  c.tick(200);
+  const CHAPEL = ['inner-terce-4', 'inner-prime-3', 'inner-terce-2', 'inner-vespers-1'];
+  check(same(c.ui.captions, CHAPEL.flatMap((id) => pairOf(id).lines)) && c.ui.captions.length === 9,
+    `the chapel at Prime ticked to the end says ${CHAPEL.join(', ')} in that order, nine lines`, JSON.stringify(c.ui.captions.map(pairSaying)));
+  check(c.ui.captions.at(-1) === 'Father Anselm: On my better days, both.' && c.pending() === 0,
+    'and the last caption is under "Father Anselm" and is "On my better days, both."', JSON.stringify(c.ui.captions.at(-1)));
+
+  const k = chatterRig();
+  k.ring(); k.ring();
+  k.qm.handleEnter('kings-hall', 0);
+  k.tick(200);
+  const KINGS = ['inner-sext-1', 'inner-terce-1', 'inner-sext-3', 'inner-terce-3'];
+  check(same(k.ui.captions, KINGS.flatMap((id) => pairOf(id).lines)) && k.pending() === 0,
+    `the King's Hall at Sext ticked to the end says ${KINGS.join(', ')} in that order`, JSON.stringify(k.ui.captions.map(pairSaying)));
 }
 {
   // 6: THE BELL. One that finds the player in the room is followed by the gap
@@ -2447,6 +2468,11 @@ const HALL_ORDER = ['outer-vespers-1', 'outer-vespers-2', 'outer-vespers-3', 'ou
   check(r.ui.captionName === 'Thomas Wykes' && r.ui.captionLine === bare('outer-terce-1', 1), 'then "Thomas Wykes"', `${r.ui.captionName}: ${r.ui.captionLine}`);
   check(same(r.engine.state.visited, visited) && !r.engine.state.visited.includes('outer-ward') && r.changes.n === marks,
     'and the engine\'s visited set does not gain outer-ward, nor the autosave a mark', r.engine.state.visited.join(', '));
+  // 8b: THE OUTER WARD'S SECOND PAIR (#933), after the gap.
+  r.tick(1);
+  check(r.ui.captionLine === null && r.qm.performing === null && r.pending() === 1, 'after outer-terce-1\'s second line the band is dark and one step is pending: the gap', `${JSON.stringify(r.ui.captionLine)}, ${r.pending()} pending`);
+  r.tick(1);
+  check(r.ui.captionName === 'Master Robert' && r.ui.captionLine === bare('outer-terce-2', 0), 'and the step after the gap shows outer-terce-2\'s first line under "Master Robert"', `${r.ui.captionName}: ${r.ui.captionLine}`);
 }
 {
   // 9: DAY ONE ONLY (#930). The `-eve` bells and `lauds` are their own ids and
@@ -2469,7 +2495,7 @@ const HALL_ORDER = ['outer-vespers-1', 'outer-vespers-2', 'outer-vespers-3', 'ou
 }
 {
   // 10: THE SWEEP. Every room data/mystery.json names, at each of the four
-  // bells, ticked out: exactly the ten placed ids, each once, none of the 17.
+  // bells, ticked out: exactly the nineteen ids, each line once (#932).
   const r = chatterRig();
   for (let b = 0; b < mystery.watches.length; b++) {
     if (b > 0) r.ring();
@@ -2479,12 +2505,11 @@ const HALL_ORDER = ['outer-vespers-1', 'outer-vespers-2', 'outer-vespers-3', 'ou
   const lineCount = new Map();
   for (const c of r.ui.captions) { if (pairSaying(c)) lineCount.set(c, (lineCount.get(c) ?? 0) + 1); }
   const saidIds = [...new Set(r.ui.captions.map(pairSaying).filter(Boolean))].sort();
-  check(placed.length === 10 && same(saidIds, placed.map((p) => p.id).sort()),
-    `every room at every bell says exactly the ten placed pairs (${saidIds.length})`, saidIds.join(', '));
+  check(placed.length === 19 && same(saidIds, placed.map((p) => p.id).sort()),
+    `every room at every bell says exactly the nineteen pairs (${saidIds.length})`, saidIds.join(', '));
   const wrongCount = placed.flatMap((p) => p.lines).filter((l) => lineCount.get(l) !== 1);
   check(wrongCount.length === 0, 'each of their lines once', JSON.stringify(wrongCount));
-  const unplacedLines = new Set(allPairs.filter((p) => p.room == null).flatMap((p) => p.lines));
-  check(allPairs.length - placed.length === 17 && !r.ui.captions.some((c) => unplacedLines.has(c)), 'and no line of the 17', JSON.stringify(r.ui.captions.filter((c) => unplacedLines.has(c))));
+  check(allPairs.length === 19 && placed.length === allPairs.length, 'and the pool holds no pair without a room', `${placed.length} of ${allPairs.length}`);
   check(r.engine.watch === 'vespers' && r.pending() === 0 && r.ui.captionLine === null, 'ending at Vespers, dark, with nothing pending', `${r.engine.watch}, ${r.pending()} pending`);
 }
 

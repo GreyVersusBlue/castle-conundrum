@@ -206,9 +206,9 @@ export class QuestManager {
     }
     /* THE TWELVE'S PLACED PAIRS (#925 to #930). data/npcs.json's `chatter`,
      * keyed the same way and for the same question: the player is standing in
-     * `room` at `watch`, are two of the twelve talking? Only a pair with a
-     * `room` is here (#911); the unplaced 17 are src/lore.js's to validate and
-     * nobody's to play (#914). File order, which is ward key order and then
+     * `room` at `watch`, are two of the twelve talking? Every pair names a
+     * `room` (#937); one that does not is skipped here and refused by
+     * src/lore.js. File order, which is ward key order and then
      * list order, is the order a room says them in.
      *
      * THE NAME ON THE BAND IS THE NAME THE LINE OPENS WITH (#928). Every line

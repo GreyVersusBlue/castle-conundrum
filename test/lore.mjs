@@ -6,7 +6,7 @@
 // browser, no build.
 //
 // WHY THIS EXISTS. data/lore.json is sixty-odd invented facts, thirteen
-// documents, a chatter pool of twenty-seven pairs and seven performed pieces
+// documents, a chatter pool of nineteen pairs and seven performed pieces
 // (two sermons, two songs and three rumours, #592 and #648), and every
 // cross-reference among them is
 // exactly the kind of mistake that is silent on the screen: a source citing a
@@ -30,7 +30,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { validateLore, untoldFacts, factText, unplacedChatter } from '../src/lore.js';
+import { validateLore, untoldFacts, factText } from '../src/lore.js';
 
 /** The one fact in the canon that changes with what the player did (#646). */
 const THE_FACT = 'the-clerk-who-asked';
@@ -68,7 +68,7 @@ console.log('the canon, as shipped');
   check(lore.facts.length >= 60, `at least sixty facts (${lore.facts.length})`);
   check(documents.length === 13, `thirteen documents (${documents.length})`, documents.map((d) => d.id).join(', '));
   const pairs = Object.values(chatter).flatMap((w) => Object.values(w)).flat();
-  check(pairs.length === 27, `twenty-seven chatter pairs (${pairs.length})`);
+  check(pairs.length === 19, `nineteen chatter pairs (${pairs.length})`);
   const pieces = Object.values(performances).flat();
   check(pieces.length === 7, `seven performed pieces (${pieces.length})`, pieces.map((e) => e.id).join(', '));
   const told = new Set(lore.facts.flatMap((f) => f.sources.map((s) => s.kind)));
@@ -141,7 +141,7 @@ console.log('dangling id');
 }
 {
   const badChatter = clone(chatter);
-  badChatter.outer.prime[0].cites = ['no-such-fact'];
+  badChatter.outer.terce[0].cites = ['no-such-fact'];
   check(names(validateLore(lore, { ...args, chatter: badChatter }), 'cites no-such-fact, which is not a fact (dangling id)'), 'a chatter pair citing a fact that does not exist');
 }
 
@@ -204,7 +204,7 @@ console.log('a document and its slab');
 console.log('chatter: the existing twelve only, and their own ward');
 {
   const badChatter = clone(chatter);
-  badChatter.outer.prime[0].npcs = ['inspector', 'cook'];
+  badChatter.outer.terce[0].npcs = ['inspector', 'cook'];
   check(names(validateLore(lore, { ...args, chatter: badChatter }), 'arrives on day 2 and is not one of the existing twelve'), 'the thirteenth, the inspector, cannot chatter — he has not dismounted yet');
 }
 {
@@ -214,7 +214,7 @@ console.log('chatter: the existing twelve only, and their own ward');
    * message is the walking day's own and not the inspector's, which the two
    * assertions either side of this one still hold verbatim. */
   const badChatter = clone(chatter);
-  badChatter.outer.prime[0].npcs = ['hywel', 'cook'];
+  badChatter.outer.terce[0].npcs = ['hywel', 'cook'];
   const said = validateLore(lore, { ...args, chatter: badChatter });
   check(names(said, 'hywel is in the castle on the walking day only (arrives: 0) and is not one of the existing twelve'),
     'the fourteenth, Hywel, cannot chatter either — he is dead by Prime', said.join('; ') || 'said nothing');
@@ -228,33 +228,33 @@ console.log('chatter: the existing twelve only, and their own ward');
 }
 {
   const badChatter = clone(chatter);
-  badChatter.outer.prime[0].npcs = ['constable', 'cook']; // constable's own ward is inner
+  badChatter.outer.terce[0].npcs = ['constable', 'cook']; // constable's own ward is inner
   check(names(validateLore(lore, { ...args, chatter: badChatter }), "own ward is \"inner\", not outer"), 'an npc placed in a ward that is not their own');
 }
 {
   const badChatter = clone(chatter);
-  badChatter.outer.prime[0].npcs = ['nobody-at-all', 'cook'];
+  badChatter.outer.terce[0].npcs = ['nobody-at-all', 'cook'];
   check(names(validateLore(lore, { ...args, chatter: badChatter }), 'is not in the cast'), 'a chatter pair naming somebody who does not exist');
 }
 {
   const badChatter = clone(chatter);
-  badChatter.outer.prime[0].lines = ['only one line'];
+  badChatter.outer.terce[0].lines = ['only one line'];
   check(names(validateLore(lore, { ...args, chatter: badChatter }), 'fewer than two non-empty lines'), 'a pair with fewer than two lines');
 }
 {
   const badChatter = clone(chatter);
-  badChatter.outer.prime.push({ ...clone(badChatter.outer.prime[0]), id: badChatter.outer.prime[0].id });
+  badChatter.outer.terce.push({ ...clone(badChatter.outer.terce[0]), id: badChatter.outer.terce[0].id });
   check(names(validateLore(lore, { ...args, chatter: badChatter }), 'id used twice'), 'two chatter pairs sharing one id');
 }
 
-/* ------------------------------------- 7, continued: a placed pair (#911) ---
- * A pair with a `room` is said in that room at the bell its watch key names,
- * and both speakers must stand there awake by data/mystery.json's own
- * schedule (#912, #592's messages). A pair with no `room` is unplaced, and
- * `unplacedChatter` lists it: asserted exactly, so placing or unplacing a
- * pair without moving this list is a failure (#13, #914). Everything here is
- * read through JSON.parse, so no line ending reaches it (#632). */
-console.log('chatter: a placed pair stands where the schedule puts both speakers');
+/* ------------------------------- 7, continued: every pair in a room (#911) ---
+ * A pair is said in its `room` at the bell its watch key names, and both
+ * speakers must stand there awake by data/mystery.json's own schedule (#912,
+ * #592's messages). A pair with no `room` is refused (#937). The table below
+ * is the whole pool, asserted in both directions, so a pair added, moved or
+ * recast without moving this table is a failure (#13, #938). Everything here
+ * is read through JSON.parse, so no line ending reaches it (#632). */
+console.log('chatter: every pair stands where the schedule puts both speakers');
 const pairAt = (c, id) => {
   for (const [ward, byWatch] of Object.entries(c)) {
     for (const [watch, pairs] of Object.entries(byWatch)) {
@@ -265,14 +265,6 @@ const pairAt = (c, id) => {
   return null;
 };
 {
-  const unplaced = unplacedChatter(chatter);
-  const THE_SEVENTEEN = [
-    'outer-prime-2', 'outer-prime-3', 'outer-terce-2', 'outer-terce-3', 'outer-sext-1', 'outer-cell-1', 'outer-sext-3',
-    'inner-prime-1', 'inner-prime-2', 'inner-prime-3', 'inner-terce-2', 'inner-terce-3',
-    'inner-sext-2', 'inner-sext-3', 'inner-sext-4', 'inner-vespers-1', 'inner-vespers-2',
-  ];
-  check(same([...unplaced].sort(), [...THE_SEVENTEEN].sort()), `unplacedChatter is exactly the seventeen of #914 (${unplaced.length})`, unplaced.join(', '));
-  check(validateLore(lore, args).length === 0, 'and validateLore does not fail on them: an unplaced pair is a report, never a problem');
   const PLACED = {
     'outer-terce-1': ['outer-ward', 'outer', 'terce'],
     'outer-vespers-1': ['great-hall', 'outer', 'vespers'],
@@ -284,30 +276,51 @@ const pairAt = (c, id) => {
     'outer-sext-2': ['great-hall', 'outer', 'vespers'],
     'inner-terce-1': ['kings-hall', 'inner', 'sext'],
     'inner-terce-4': ['chapel', 'inner', 'prime'],
+    // The nine recast (#933).
+    'outer-sext-3': ['great-hall', 'outer', 'vespers'],
+    'outer-prime-3': ['great-hall', 'outer', 'vespers'],
+    'outer-cell-1': ['great-hall', 'outer', 'vespers'],
+    'outer-terce-2': ['outer-ward', 'outer', 'terce'],
+    'inner-prime-3': ['chapel', 'inner', 'prime'],
+    'inner-terce-2': ['chapel', 'inner', 'prime'],
+    'inner-vespers-1': ['chapel', 'inner', 'prime'],
+    'inner-sext-3': ['kings-hall', 'inner', 'sext'],
+    'inner-terce-3': ['kings-hall', 'inner', 'sext'],
   };
-  const withRoom = Object.values(chatter).flatMap((w) => Object.values(w)).flat().filter((p) => p.room != null);
-  check(same(withRoom.map((p) => p.id).sort(), Object.keys(PLACED).sort()), `ten pairs carry a room, and they are #911's ten (${withRoom.length})`, withRoom.map((p) => p.id).join(', '));
+  const everyPair = Object.values(chatter).flatMap((w) => Object.values(w)).flat();
+  const withRoom = everyPair.filter((p) => p.room != null);
+  check(withRoom.length === 19 && same(withRoom.map((p) => p.id).sort(), Object.keys(PLACED).sort()), `nineteen pairs carry a room (${withRoom.length})`, withRoom.map((p) => p.id).join(', '));
   const wrong = Object.entries(PLACED).filter(([id, [room, ward, watch]]) => {
     const at = pairAt(chatter, id);
     return !at || at.p.room !== room || at.ward !== ward || at.watch !== watch;
   }).map(([id]) => id);
-  check(wrong.length === 0, 'each in #911\'s room, under its ward and the watch key it is said at', wrong.join(', '));
+  check(wrong.length === 0, 'each in its room, under its ward and the watch key it is said at', wrong.join(', '));
+  const noRow = everyPair.filter((p) => !Object.hasOwn(PLACED, p.id)).map((p) => p.id);
+  check(noRow.length === 0, `and every pair in the pool is one of the nineteen (${everyPair.length})`, noRow.join(', '));
 }
 const breakPair = (id, fn) => { const bad = clone(chatter); fn(pairAt(bad, id).p, bad); return validateLore(lore, { ...args, chatter: bad }); };
 {
   const said = breakPair('outer-terce-1', (p) => { p.room = 'great-hall'; });
-  check(names(said, 'chatter pair outer-terce-1: clerk stands in outer-ward at terce, not in great-hall'), 'a placed pair in a room its speaker is not in at that bell', said.join('; ') || 'said nothing');
+  check(names(said, 'chatter pair outer-terce-1: clerk stands in outer-ward at terce, not in great-hall'), 'a pair in a room its speaker is not in at that bell', said.join('; ') || 'said nothing');
 }
 {
-  const said = breakPair('inner-prime-1', (p) => { p.room = 'porter-lodge'; });
-  check(names(said, 'chatter pair inner-prime-1: steward stands in kings-hall at prime, not in porter-lodge'), 'an unplaced pair given a room one speaker is not in', said.join('; ') || 'said nothing');
+  // A PAIR WITH NO ROOM IS REFUSED (#937): the page could never say it.
+  const said = breakPair('outer-vespers-1', (p) => { delete p.room; });
+  check(names(said, 'chatter pair outer-vespers-1: names no room'), 'a pair with its room deleted', said.join('; ') || 'said nothing');
 }
 {
-  const said = breakPair('outer-prime-3', (p) => { p.room = 'guardroom'; });
-  check(names(said, 'chatter pair outer-prime-3: sentry is asleep at prime'), 'a pair whose speaker is asleep in that room at that bell', said.join('; ') || 'said nothing');
+  const said = breakPair('inner-terce-3', (p) => { p.room = 'steward-chamber'; });
+  check(names(said, 'chatter pair inner-terce-3: steward stands in kings-hall at sext, not in steward-chamber'), 'a pair given a room one speaker is not in', said.join('; ') || 'said nothing');
 }
 {
-  const said = breakPair('outer-prime-2', (p, bad) => {
+  const said = breakPair('outer-terce-1', (p, bad) => {
+    bad.outer.prime = [{ id: 'asleep-at-prime', npcs: ['sentry', 'cook'], room: 'guardroom', lines: ['Dafydd: Not yet.', 'Marged: So I see.'] }];
+  });
+  check(names(said, 'chatter pair asleep-at-prime: sentry is asleep at prime'), 'a pair whose speaker is asleep in that room at that bell', said.join('; ') || 'said nothing');
+}
+{
+  const said = breakPair('outer-terce-1', (p, bad) => {
+    bad.outer.prime = bad.outer.prime ?? [];
     bad.outer.prime.push({ id: 'merchant-at-prime', npcs: ['merchant', 'clerk'], room: 'outer-ward', lines: ['Thomas Wykes: Early.', 'Master Robert: Not early enough.'] });
   });
   check(names(said, 'chatter pair merchant-at-prime: merchant is not in the castle at prime'), 'a pair naming somebody the schedule has not let in yet', said.join('; ') || 'said nothing');
@@ -316,17 +329,17 @@ const breakPair = (id, fn) => { const bad = clone(chatter); fn(pairAt(bad, id).p
   const said = breakPair('outer-vespers-1', (p) => { p.room = 'nowhere-at-all'; });
   check(names(said, 'chatter pair outer-vespers-1: in no room ("nowhere-at-all")'), 'a pair given a room the castle does not have', said.join('; ') || 'said nothing');
 }
-/* THE NAME RAIL (#928). QuestManager shows the text before a placed line's
- * first ": " as the name on the band, so that text has to be the start of the
- * cast name of whoever's turn it is. Unplaced pairs are not played and are not
- * held to it (#914): the same damage to one of the 17 passes. */
+/* THE NAME RAIL (#928). QuestManager shows the text before a line's first
+ * ": " as the name on the band, so that text has to be the start of the cast
+ * name of whoever's turn it is, and on a third line that is `npcs[0]` again
+ * (#938): `inner-vespers-1` is the first played pair to have one. */
 const reopen = (p) => { p.lines[0] = p.lines[0].replace(/^[^:]*: /, 'Marged: '); };
 {
-  check(validateLore(lore, args).length === 0, 'every line of the ten placed pairs opens with its speaker\'s name: validateLore is clean as shipped', validateLore(lore, args).join('; '));
+  check(validateLore(lore, args).length === 0, 'every line of the pairs opens with its speaker\'s name: validateLore is clean as shipped', validateLore(lore, args).join('; '));
   const said = breakPair('outer-vespers-1', reopen);
-  check(names(said, 'chatter pair outer-vespers-1: line 1 does not open with sentry\'s name'), 'a placed pair whose first line opens with the other speaker\'s name', said.join('; ') || 'said nothing');
-  const unplaced = breakPair('outer-prime-2', reopen);
-  check(unplaced.length === 0, 'and the same damage to unplaced outer-prime-2 passes: the rail holds only what is played', unplaced.join('; '));
+  check(names(said, 'chatter pair outer-vespers-1: line 1 does not open with sentry\'s name'), 'a pair whose first line opens with the other speaker\'s name', said.join('; ') || 'said nothing');
+  const third = breakPair('inner-vespers-1', (p) => { p.lines[2] = p.lines[2].replace(/^[^:]*: /, 'Sir Roger: '); });
+  check(names(third, 'chatter pair inner-vespers-1: line 3 does not open with chaplain\'s name'), 'a third line that opens with the second speaker\'s name: line 3 is the first speaker\'s again', third.join('; ') || 'said nothing');
 }
 
 /* --------------------------------------------- 9: the sermons and the songs ---

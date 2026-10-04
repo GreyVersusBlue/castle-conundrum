@@ -888,7 +888,11 @@ console.log('\nthe generated cow, inside #789\'s caps');
  *      CRLF, and manifest.json has one kind of line ending
  *   6. the shape: meshopt, no basisu, no unlit, no COLOR_0, one material at
  *      metallic 0, the row's triangles and under the pack's caps, its box on
- *      y 0 and centred in x and z to 1 mm
+ *      y 0 and centred in x and z to 1 mm. Two amendments for a skinned pack
+ *      (#820): `materials` on the pack's caps line names the materials the
+ *      file carries, all over one image (one unnamed material without it),
+ *      and a pack with `joints` is framed on its `Root` joint at x and z 0
+ *      to 1 mm, with its bind-pose box on y 0, in place of the box centre
  *   7. the images: PNG, at most 128 px a side and 32 colours, every texel in
  *      the castle's palettes or the pack's `extraColours` (at most 8, each
  *      with a `why`)
@@ -897,12 +901,86 @@ console.log('\nthe generated cow, inside #789\'s caps');
  *
  * The caps are one line per pack, held here and never read off the generator
  * (#34). A pack that adds a line argues it in HISTORY.md (#611).
+ *
+ * The skinned half, over a pack whose caps line has `joints` (#820 to #823):
+ * five more lines, each with its break, every one a re-render (#34):
+ *
+ *   1. rig: one skin, at most `joints` joints, `Head` and `Wrist.R` among
+ *      them, and `Wrist.R` with a child joint, which is what a held prop is
+ *      aimed along. Break: drop `Fingers.R`
+ *   2. parts: every mesh node is one primitive, its material one of the caps
+ *      line's, its name `<slot>-<variant>` with the slot one of the five, and
+ *      `skin` and `garment` each have at least one. Break: join `hat-helm`
+ *      and `hat-coif` into one object with two materials
+ *   3. a person's triangles: the heaviest part of each slot, summed, is at
+ *      most `person`, which bounds every combination without naming one.
+ *      Break: subdivide `garment-robe` past it
+ *   4. skin: every mesh node is bound to the one skin, and every vertex's
+ *      weights sum to 1 within 1e-3 and index inside it, the cow's rail
+ *      (#794). Break: weight `hat-cap` to joint 20
+ *   5. clips: exactly FOLK_CLIPS; every channel on a joint of the skin; every
+ *      clip loops (`seamOf`); Idle at least 2.0 s; each activity clip's
+ *      `driver` 20 degrees off Idle at some key. Break: `cycles: 1.5` on Sweep
+ *
+ * As in check 7, `driver` is the one thing read off the row: which joint to
+ * look at, not what to find there.
+ *
+ * The animal half, over a pack whose caps line has `primitives` (#826, #827):
+ * the same walk over the same file, with five lines of its own in place of
+ * the five above. A parts file is many meshes worn a few at a time and an
+ * animal is one mesh worn whole, so lines 1 and 2 above (a hand to hold a
+ * prop, parts by slot) and 3 (a person's triangles) do not apply to it, and
+ * the skin and the clip lines are the same code under the animal's numbers.
+ * Each break is a re-render but the third (#34):
+ *
+ *   1. caps: one skin, and joints, triangles, primitives and bytes at or
+ *      under the pack's line, #789's cow caps with 2 primitives in place of
+ *      4. Break: a third material on the pig's snout
+ *   2. topology: the joint names are exactly those of the topology its row
+ *      names: the quadruped's 16, or the bird's 12, which is the goose's.
+ *      Break: rename the goat's `Tail1`, and the goose's `Wing.L`
+ *   3. skin: line 4 above. Break: the cat's ear weighted to joint 16, in the
+ *      file, since Blender's exporter cannot write an index outside the skin
+ *   4. clips: exactly the topology's three; every channel on a joint of the
+ *      skin; each loops (`seamOf`); Idle at least 2.0 s; the eating clip's
+ *      `Head` 20 degrees off Idle at some key, and the eating clip is
+ *      `Eating` on a quadruped and `Idle_Peck` on a bird. Break: `cycles: 1.5`
+ *      on the horse's Walk and on the goose's, and the goose's `Idle_Peck`
+ *      with its `Head` left where Idle has it
+ *   5. four-legged: a quadruped's bind-pose box is at least 1.15 times as
+ *      long (z) as it is tall (y), the cow's 1.3 less the goat's horns.
+ *      Break: the whole sheep stood on its tail (#942). A bird has no
+ *      `long` and is not held to this line: a goose is as tall as it is long
+ *
+ * `topology` is read off the row the way `driver` is: which list to hold the
+ * file to, not what is in it. The lists are held here.
  */
 const BLENDER_CAPS = {
   calibration: { triangles: 300, bytes: 24000 },
   evidence: { triangles: 600, bytes: 32000 },
   countryside: { triangles: 6000, bytes: 160000 },
+  folk: { triangles: 12000, bytes: 400000, person: 1500, joints: 20, materials: ['Cloth', 'Bare'], clips: 11 },
+  held: { triangles: 300, bytes: 16000 },
+  animals: { triangles: 1000, bytes: 80000, joints: 16, primitives: 2, materials: ['Coat', 'Bare'] },
 };
+const ANIMAL_TOPOLOGIES = {
+  quadruped: {
+    joints: ['Root', 'Body', 'Neck1', 'Head', 'Ear.L', 'Ear.R', 'FrontUpperLeg.L', 'FrontLowerLeg.L', 'FrontUpperLeg.R', 'FrontLowerLeg.R',
+      'BackUpperLeg.L', 'BackLowerLeg.L', 'BackUpperLeg.R', 'BackLowerLeg.R', 'Tail1', 'Tail2'],
+    clips: ['Idle', 'Walk', 'Eating'],
+    eats: 'Eating',
+    long: 1.15,
+  },
+  bird: {
+    joints: ['Root', 'Body', 'Neck1', 'Neck2', 'Head', 'Wing.L', 'Wing.R', 'UpperLeg.L', 'UpperLeg.R', 'LowerLeg.L', 'LowerLeg.R', 'Tail1'],
+    clips: ['Idle', 'Walk', 'Idle_Peck'],
+    eats: 'Idle_Peck',
+  },
+};
+const ANIMAL_DRIVER = 'Head';
+const FOLK_SLOTS = ['skin', 'garment', 'hair', 'over', 'hat'];
+const FOLK_CLIPS = ['Idle', 'Idle_Neutral', 'Idle_Sword', 'Walk', 'Run', 'Wave', 'Sweep', 'Stir', 'Hammer', 'Spar', 'Drill'];
+const FOLK_IDLE_MIN_SECONDS = 2.0;
 const BLENDER_DIR = 'assets/blender';
 const BLENDER_EXTRA_MAX = 8;
 console.log('\nwhat Blender made: the manifest, the bytes and the inputs');
@@ -912,6 +990,11 @@ console.log('\nwhat Blender made: the manifest, the bytes and the inputs');
   const { partsOf } = await import('./gltf.mjs');
   const bad = [];
   const say = (line, msg) => bad.push(`check 8 line ${line}: ${msg}`);
+  const saySkinned = (line, msg) => bad.push(`check 8 skinned line ${line}: ${msg}`);
+  const sayAnimal = (line, msg) => bad.push(`check 8 animal line ${line}: ${msg}`);
+  const skinnedPassed = [];
+  await MeshoptDecoder.ready;
+  const io = new NodeIO().registerExtensions(ALL_EXTENSIONS).registerDependencies({ 'meshopt.decoder': MeshoptDecoder });
   const manifestFile = path.join(ROOT, 'tools/blender/manifest.json');
   const manifestText = fs.readFileSync(manifestFile, 'utf8');
   const manifest = JSON.parse(manifestText);
@@ -990,7 +1073,14 @@ console.log('\nwhat Blender made: the manifest, the bytes and the inputs');
     for (const ext of ['KHR_texture_basisu', 'KHR_materials_unlit']) if (used.includes(ext)) say(6, `${r.file} declares ${ext}; a Blender asset is lit with one PNG atlas ("The look")`);
     if ((json.meshes || []).some((m) => m.primitives.some((p) => 'COLOR_0' in p.attributes))) say(6, `${r.file} carries COLOR_0; colour is the atlas, not vertex colours`);
     const mats = json.materials || [];
-    if (mats.length !== 1) say(6, `${r.file} has ${mats.length} materials, not one`);
+    if (caps.materials) {
+      const got = mats.map((m) => m.name ?? '(unnamed)');
+      if (got.length !== caps.materials.length || caps.materials.some((n) => !got.includes(n)))
+        say(6, `${r.file} has ${got.length} material(s), ${got.join(', ') || 'none'}, not ${caps.materials.join(' and ')} (#820)`);
+      const images = new Set(mats.map((m) => json.textures?.[m.pbrMetallicRoughness?.baseColorTexture?.index]?.source));
+      if (images.size !== 1 || images.has(undefined))
+        say(6, `${r.file}'s materials sample ${images.size} images, not the one palette atlas (#820)`);
+    } else if (mats.length !== 1) say(6, `${r.file} has ${mats.length} materials, not one`);
     for (const m of mats) {
       const metal = m.pbrMetallicRoughness?.metallicFactor ?? 1;
       if (metal !== 0) say(6, `${r.file}'s material ${m.name} has metallic ${metal}, not 0`);
@@ -1000,20 +1090,198 @@ console.log('\nwhat Blender made: the manifest, the bytes and the inputs');
     if (tris > caps.triangles) say(6, `${r.file} has ${tris} triangles, over pack ${r.pack}'s cap of ${caps.triangles}`);
     const size = fs.statSync(abs).size;
     if (size > caps.bytes) say(6, `${r.file} is ${size} bytes, over pack ${r.pack}'s cap of ${caps.bytes}`);
-    const lo = [Infinity, Infinity, Infinity], hi = [-Infinity, -Infinity, -Infinity];
-    for (const part of partsOf(abs).parts) {
-      const m = part.matrix;
-      for (const x of [part.min.x, part.max.x]) for (const y of [part.min.y, part.max.y]) for (const z of [part.min.z, part.max.z]) {
-        for (let k = 0; k < 3; k++) {
-          const v = m[k] * x + m[4 + k] * y + m[8 + k] * z + m[12 + k];
-          lo[k] = Math.min(lo[k], v); hi[k] = Math.max(hi[k], v);
+    if (caps.joints) {
+      // The skinned half, and line 6's frame for a skinned pack: the file is
+      // framed on its Root joint, not on its box (#820).
+      const bytes = fs.readFileSync(abs);
+      const doc = await io.readBinary(new Uint8Array(bytes.buffer, bytes.byteOffset, bytes.byteLength));
+      const root = doc.getRoot();
+      const before = bad.length;
+
+      // Which half: a parts file has `person`, an animal has `primitives`.
+      // The skin and the clips are the same lines under either's numbers.
+      const animal = caps.primitives !== undefined;
+      const sayRig = (msg) => (animal ? sayAnimal(1, msg) : saySkinned(1, msg));
+      const saySkin = (msg) => (animal ? sayAnimal(3, msg) : saySkinned(4, msg));
+      const sayClips = (msg) => (animal ? sayAnimal(4, msg) : saySkinned(5, msg));
+      const topology = animal ? ANIMAL_TOPOLOGIES[tableRows.get(r.file)?.topology] : null;
+
+      // 1. rig (the animal's 1, caps, with its primitives below)
+      const skins = root.listSkins();
+      const joints = skins.flatMap((sk) => sk.listJoints());
+      const named = new Map(joints.map((j) => [j.getName(), j]));
+      if (skins.length !== 1) sayRig(`${r.file} has ${skins.length} skins, not one`);
+      if (joints.length > caps.joints) sayRig(`${r.file} has ${joints.length} joints, over pack ${r.pack}'s cap of ${caps.joints}`);
+      if (!animal) {
+        for (const need of ['Head', 'Wrist.R']) if (!named.has(need)) saySkinned(1, `${r.file} has no joint ${need}; boneScale and the held prop find them by that name (#823)`);
+        const hand = named.get('Wrist.R');
+        if (hand && !hand.listChildren().some((c) => joints.includes(c)))
+          saySkinned(1, `${r.file}'s Wrist.R has no child joint, so a held prop would be aimed back up the arm (#823)`);
+      }
+
+      // the animal's 2. topology
+      if (animal) {
+        if (!topology) sayAnimal(2, `${r.file}'s packs.json row names topology ${JSON.stringify(tableRows.get(r.file)?.topology)}, and check 8 holds ${Object.keys(ANIMAL_TOPOLOGIES).join(', ')}`);
+        else {
+          const got = joints.map((j) => j.getName());
+          const lacks = topology.joints.filter((n) => !got.includes(n));
+          const adds = got.filter((n) => !topology.joints.includes(n));
+          if (lacks.length || adds.length || got.length !== topology.joints.length)
+            sayAnimal(2, `${r.file}'s joints are not the ${tableRows.get(r.file).topology}'s ${topology.joints.length}${lacks.length ? `: it lacks ${lacks.join(', ')}` : ''}${adds.length ? `${lacks.length ? ' and' : ':'} it adds ${adds.join(', ')}` : ''}${!lacks.length && !adds.length ? `: it has ${got.length}` : ''} (#826)`);
         }
       }
-    }
-    if (Math.abs(lo[1]) > 1e-3) say(6, `${r.file}'s box starts at y ${lo[1].toFixed(4)}, not 0 within 1 mm; common.py's frame() puts the base on the floor`);
-    for (const [k, axis] of [[0, 'x'], [2, 'z']]) {
-      const mid = (lo[k] + hi[k]) / 2;
-      if (Math.abs(mid) > 1e-3) say(6, `${r.file}'s box is centred at ${axis} ${mid.toFixed(4)}, not 0 within 1 mm`);
+
+      // line 6, the frame
+      const rootJoint = named.get('Root');
+      if (!rootJoint) say(6, `${r.file} has no Root joint to be framed on (#820)`);
+      else {
+        const at = rootJoint.getWorldTranslation();
+        for (const [k, axis] of [[0, 'x'], [2, 'z']])
+          if (Math.abs(at[k]) > 1e-3) say(6, `${r.file}'s Root joint is at ${axis} ${at[k].toFixed(4)}, not 0 within 1 mm; a skinned pack is framed on its Root joint (#820)`);
+      }
+
+      // 2. parts, and 3. a person's triangles
+      const meshNodes = root.listNodes().filter((n) => n.getMesh());
+      const heaviest = new Map();
+      const names = new Set();
+      const primitives = meshNodes.flatMap((n) => n.getMesh().listPrimitives());
+      if (animal) {
+        if (primitives.length > caps.primitives) sayAnimal(1, `${r.file} has ${primitives.length} primitives, over ${caps.primitives}`);
+        for (const p of primitives) {
+          const mat = p.getMaterial()?.getName() ?? '(none)';
+          if (!caps.materials.includes(mat)) sayAnimal(1, `${r.file} has a primitive in material ${mat}, not ${caps.materials.join(' or ')} (#827)`);
+        }
+      }
+      for (const n of animal ? [] : meshNodes) {
+        const name = n.getName();
+        const prims = n.getMesh().listPrimitives();
+        const [slot, ...rest] = name.split('-');
+        if (!FOLK_SLOTS.includes(slot) || !rest.join('-') || /[^a-z0-9-]/.test(name))
+          saySkinned(2, `${r.file}'s mesh node ${JSON.stringify(name)} is not <slot>-<variant> with the slot one of ${FOLK_SLOTS.join(', ')}`);
+        if (names.has(name)) saySkinned(2, `${r.file} has two mesh nodes called ${name}`);
+        names.add(name);
+        if (prims.length !== 1) saySkinned(2, `${r.file}'s ${name} is ${prims.length} primitives, not one: a part is one draw (#820)`);
+        for (const p of prims) {
+          const mat = p.getMaterial()?.getName() ?? '(none)';
+          if (!caps.materials.includes(mat)) saySkinned(2, `${r.file}'s ${name} wears material ${mat}, not ${caps.materials.join(' or ')}`);
+        }
+        const count = prims.reduce((sum, p) => sum + (p.getIndices() ? p.getIndices().getCount() : p.getAttribute('POSITION').getCount()) / 3, 0);
+        heaviest.set(slot, Math.max(heaviest.get(slot) ?? 0, count));
+      }
+      for (const need of animal ? [] : ['skin', 'garment']) if (![...names].some((n) => n.startsWith(`${need}-`))) saySkinned(2, `${r.file} has no ${need}-* part, and every person wears one`);
+      const person = [...heaviest.values()].reduce((a, b) => a + b, 0);
+      const perSlot = FOLK_SLOTS.filter((sl) => heaviest.has(sl)).map((sl) => `${sl} ${heaviest.get(sl)}`).join(', ');
+      if (!animal && person > caps.person)
+        saySkinned(3, `${r.file}'s heaviest part in each slot comes to ${person} triangles (${perSlot}), over a person's cap of ${caps.person} (#823)`);
+
+      // 4. skin, and the bind-pose box line 6 stands on y 0: a vertex at rest
+      // is sum_i w_i * jointWorld_i * inverseBind_i * v, as the cow's rail.
+      const skin = skins[0];
+      const ibm = skin?.getInverseBindMatrices();
+      const mul = (a, b) => { // column-major 4x4
+        const o = new Array(16).fill(0);
+        for (let c = 0; c < 4; c++) for (let rr = 0; rr < 4; rr++) for (let k = 0; k < 4; k++) o[c * 4 + rr] += a[k * 4 + rr] * b[c * 4 + k];
+        return o;
+      };
+      const bind = joints.map((j, i) => mul(j.getWorldMatrix(), ibm ? ibm.getElement(i, []) : [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]));
+      const lo = [Infinity, Infinity, Infinity], hi = [-Infinity, -Infinity, -Infinity];
+      for (const n of meshNodes) {
+        const name = n.getName();
+        if (n.getSkin() !== skin || !skin) { saySkin(`${r.file}'s ${name} is not bound to the file's one skin`); continue; }
+        for (const p of n.getMesh().listPrimitives()) {
+          const pos = p.getAttribute('POSITION'), jnt = p.getAttribute('JOINTS_0'), wgt = p.getAttribute('WEIGHTS_0');
+          if (!jnt || !wgt) { saySkin(`${r.file}'s ${name} has no JOINTS_0 or WEIGHTS_0`); continue; }
+          const v = [], ji = [], w = [];
+          for (let i = 0; i < pos.getCount(); i++) {
+            pos.getElement(i, v); jnt.getElement(i, ji); wgt.getElement(i, w);
+            const sum = w.reduce((a, b) => a + b, 0);
+            if (Math.abs(sum - 1) > 1e-3) { saySkin(`${r.file}'s ${name} vertex ${i}'s weights sum to ${sum.toFixed(4)}, not 1`); break; }
+            const outside = ji.filter((j, k) => w[k] > 0 && !(Number.isInteger(j) && j >= 0 && j < joints.length));
+            if (outside.length) { saySkin(`${r.file}'s ${name} vertex ${i} is weighted to joint ${outside.join(', ')}, and the skin has ${joints.length} (0 to ${joints.length - 1})`); break; }
+            const out = [0, 0, 0];
+            for (let k = 0; k < 4; k++) {
+              if (!w[k]) continue;
+              const m = bind[ji[k]];
+              for (let rr = 0; rr < 3; rr++) out[rr] += w[k] * (m[rr] * v[0] + m[4 + rr] * v[1] + m[8 + rr] * v[2] + m[12 + rr]);
+            }
+            for (let rr = 0; rr < 3; rr++) { lo[rr] = Math.min(lo[rr], out[rr]); hi[rr] = Math.max(hi[rr], out[rr]); }
+          }
+        }
+      }
+      if (Math.abs(lo[1]) > 1e-3) say(6, `${r.file}'s bind pose starts at y ${lo[1].toFixed(4)}, not 0 within 1 mm; the soles stand on the floor (#820)`);
+
+      // 5. clips
+      const anims = new Map(root.listAnimations().map((a) => [a.getName(), a]));
+      const wantClips = animal ? (topology?.clips ?? []) : FOLK_CLIPS;
+      const clipCount = animal ? wantClips.length : caps.clips;
+      const missing = wantClips.filter((n) => !anims.has(n));
+      const extra = [...anims.keys()].filter((n) => !wantClips.includes(n));
+      if (missing.length || extra.length || root.listAnimations().length !== clipCount)
+        sayClips(`${r.file} carries ${root.listAnimations().length} clips, not ${clipCount}${missing.length ? `; missing ${missing.join(', ')}` : ''}${extra.length ? `; unexpected ${extra.join(', ')}` : ''}`);
+      const lastOf = (a) => Math.max(...a.listSamplers().map((sm) => sm.getInput().getMax([])[0]));
+      const idle = anims.get('Idle');
+      if (idle && lastOf(idle) < FOLK_IDLE_MIN_SECONDS - 1e-4) sayClips( `${r.file}'s Idle runs ${lastOf(idle).toFixed(2)} s, under ${FOLK_IDLE_MIN_SECONDS}`);
+      for (const [name, anim] of anims) {
+        const off = anim.listChannels().filter((c) => !joints.includes(c.getTargetNode())).map((c) => c.getTargetNode()?.getName() ?? '(none)');
+        if (off.length) sayClips(`${r.file}'s ${name} keys ${[...new Set(off)].join(', ')}, not a joint of the skin`);
+        const seam = seamOf(anim);
+        if (seam) sayClips(`${r.file}'s ${name}'s ${seam}`);
+      }
+      const rotationAt = (sampler, t) => {
+        const times = sampler.getInput().getArray();
+        let j = 1;
+        while (j < times.length - 1 && times[j] < t) j++;
+        const f = Math.min(1, Math.max(0, (t - times[j - 1]) / (times[j] - times[j - 1])));
+        const A = rowOfAcc(sampler.getOutput(), j - 1);
+        let B = rowOfAcc(sampler.getOutput(), j);
+        if (A.reduce((sum, x, i) => sum + x * B[i], 0) < 0) B = B.map((x) => -x);
+        const q = A.map((x, i) => x + (B[i] - x) * f);
+        const l = Math.hypot(...q);
+        return q.map((x) => x / l);
+      };
+      const degreesBetween = (a, b) => (2 * Math.acos(Math.min(1, Math.abs(a.reduce((sum, x, i) => sum + x * b[i], 0)))) * 180) / Math.PI;
+      const clipRows = tableRows.get(r.file)?.clips ?? [];
+      // A parts file's five activity clips each name their driver in the row;
+      // an animal's one is its eating clip, and its driver is Head (#827).
+      for (const clip of animal ? (topology ? [topology.eats] : []) : GENERATED_CLIPS) {
+        const anim = anims.get(clip);
+        if (!anim || !idle) continue; // the names line said so
+        const driver = animal ? ANIMAL_DRIVER : clipRows.find((c) => c.name === clip)?.driver;
+        if (!driver) { sayClips(`${r.file}'s ${clip} has no \`driver\` in its packs.json row to hold off Idle`); continue; }
+        const find = (a) => a.listChannels().find((c) => c.getTargetNode()?.getName() === driver && c.getTargetPath() === 'rotation');
+        const mine = find(anim), theirs = find(idle);
+        if (!mine || !theirs) { sayClips(`${r.file}'s ${clip}'s driver ${driver} has no rotation channel to compare`); continue; }
+        const times = mine.getSampler().getInput().getArray();
+        let most = 0;
+        for (let k = 0; k < times.length; k++)
+          most = Math.max(most, degreesBetween(rowOfAcc(mine.getSampler().getOutput(), k), rotationAt(theirs.getSampler(), times[k])));
+        if (most < DRIVER_MIN_DEGREES)
+          sayClips(`${r.file}'s ${clip}'s driver ${driver} never gets more than ${most.toFixed(1)} degrees from Idle, under ${DRIVER_MIN_DEGREES}: the clip is Idle with a new name`);
+      }
+      // the animal's 5. four-legged
+      const tall = hi[1] - lo[1], long = hi[2] - lo[2];
+      if (animal && topology?.long && (!(tall > 0) || long < topology.long * tall))
+        sayAnimal(5, `${r.file}'s bind pose is ${long.toFixed(2)} m long and ${tall.toFixed(2)} m tall, under ${topology.long} to 1: that is not a thing on four legs (#827)`);
+      if (bad.length === before && animal)
+        skinnedPassed.push(`${r.file}: one skin of the ${tableRows.get(r.file).topology}'s ${joints.length} joints with Root at the origin, ${tris} triangles in ${primitives.length} primitives (${caps.materials.join(', ')}), ${size} bytes, every weight inside the skin, ${[...anims.keys()].join(', ')} looping with Idle over ${idle ? lastOf(idle).toFixed(2) : '?'} s and ${topology.eats}'s ${ANIMAL_DRIVER} ${DRIVER_MIN_DEGREES} degrees off it, ${long.toFixed(2)} m long by ${tall.toFixed(2)} m tall, ${(long / tall).toFixed(2)} to 1`);
+      else if (bad.length === before)
+        skinnedPassed.push(`${r.file}: one skin of ${joints.length} joints with Root at the origin, ${meshNodes.length} parts each one primitive in ${caps.materials.join(' or ')}, a person at most ${person} triangles of ${caps.person} (${perSlot}), every weight inside the skin, ${anims.size} clips looping${idle ? ` over ${lastOf(idle).toFixed(2)} s` : ''} with the five activity drivers ${DRIVER_MIN_DEGREES} degrees off Idle`);
+    } else {
+      const lo = [Infinity, Infinity, Infinity], hi = [-Infinity, -Infinity, -Infinity];
+      for (const part of partsOf(abs).parts) {
+        const m = part.matrix;
+        for (const x of [part.min.x, part.max.x]) for (const y of [part.min.y, part.max.y]) for (const z of [part.min.z, part.max.z]) {
+          for (let k = 0; k < 3; k++) {
+            const v = m[k] * x + m[4 + k] * y + m[8 + k] * z + m[12 + k];
+            lo[k] = Math.min(lo[k], v); hi[k] = Math.max(hi[k], v);
+          }
+        }
+      }
+      if (Math.abs(lo[1]) > 1e-3) say(6, `${r.file}'s box starts at y ${lo[1].toFixed(4)}, not 0 within 1 mm; common.py's frame() puts the base on the floor`);
+      for (const [k, axis] of [[0, 'x'], [2, 'z']]) {
+        const mid = (lo[k] + hi[k]) / 2;
+        if (Math.abs(mid) > 1e-3) say(6, `${r.file}'s box is centred at ${axis} ${mid.toFixed(4)}, not 0 within 1 mm`);
+      }
     }
 
     // 7
@@ -1059,6 +1327,7 @@ console.log('\nwhat Blender made: the manifest, the bytes and the inputs');
   if (!bad.length) {
     const t = manifest.rows.map((r) => `${r.file} ${r.triangles} triangles ${r.bytes} bytes`).join('; ');
     pass(`${manifest.rows.length} Blender file(s), each its manifest row, rendered by 5.2 from today's inputs, meshopt, one lit material, palette texels only, nothing opened: ${t}`);
+    for (const line of skinnedPassed) pass(line);
   }
 }
 

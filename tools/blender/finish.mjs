@@ -10,6 +10,15 @@
 // tools/bodies/ make, and hands back the bytes and the manifest row.
 // render.mjs decides whether either is new.
 //
+// A skinned file takes two more steps (#820, #823), and a file with no skin
+// takes neither, so its bytes are what they were. gltf-transform's quantize
+// folds each mesh's position scale into a copy of the skin's inverse bind
+// matrices, one copy per mesh, so folk.glb's one armature left here as 23
+// skins, where the pack's rail and three's one Skeleton per skin both want
+// one. So a skinned file is quantized over the scene's volume, not each
+// mesh's, which makes every copy the same matrices, and then the copies and
+// every equal accessor are merged and what nothing references is dropped.
+//
 // `sourceHash` is exported from here so test/assets.mjs check 8 and the
 // writer agree by import. Check 8's line 5 is what stops that being a test
 // that re-implements its subject: it builds each input as LF and as CRLF and
@@ -19,9 +28,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { fileURLToPath } from 'node:url';
-import { NodeIO } from '@gltf-transform/core';
+import { NodeIO, PropertyType } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
-import { meshopt } from '@gltf-transform/functions';
+import { meshopt, dedup, prune } from '@gltf-transform/functions';
 import { MeshoptDecoder, MeshoptEncoder } from 'meshoptimizer';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -96,7 +105,15 @@ export async function finish(staged, row) {
     ...root.listTextures(), ...root.listAccessors(), ...root.listBuffers()]) {
     prop.setExtras({});
   }
-  await doc.transform(meshopt({ encoder: MeshoptEncoder, cleanup: false }));
+  if (root.listSkins().length === 0) {
+    await doc.transform(meshopt({ encoder: MeshoptEncoder, cleanup: false }));
+  } else {
+    await doc.transform(
+      meshopt({ encoder: MeshoptEncoder, cleanup: false, quantizationVolume: 'scene' }),
+      dedup({ propertyTypes: [PropertyType.ACCESSOR, PropertyType.SKIN] }),
+      prune({ propertyTypes: [PropertyType.ACCESSOR, PropertyType.SKIN], keepAttributes: true, keepIndices: true, keepLeaves: true }),
+    );
+  }
   const bytes = Buffer.from(await (await reader()).writeBinary(doc));
 
   let triangles = 0;

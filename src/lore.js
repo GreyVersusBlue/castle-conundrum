@@ -81,15 +81,16 @@ function indexChatter(chatter, { npcs, mystery, problems }) {
         byId.set(p.id, { ...p, ward, watch });
         const speakers = asList(p.npcs);
         if (speakers.length !== 2) { say(`${where}: names ${speakers.length} speakers, not two`); continue; }
-        // A PLACED PAIR IS SAID WHERE THE SCHEDULE PUTS BOTH SPEAKERS (#911,
-        // #912). `room` names the room, and the watch key the pair sits under
-        // is the bell it is said at; the id no longer spells the bell. Both
-        // speakers must stand in that room at that bell and be awake, which is
-        // #592's station check for a performance, with its messages. A pair
-        // with no `room` is unplaced: it passes here and `unplacedChatter`
-        // lists it. Several pairs may share one room at one bell, in file
-        // order; there is no distance rail, because the room is the unit.
+        // A PAIR IS SAID WHERE THE SCHEDULE PUTS BOTH SPEAKERS (#911, #912).
+        // `room` names the room, and the watch key the pair sits under is the
+        // bell it is said at; the id no longer spells the bell. Both speakers
+        // must stand in that room at that bell and be awake, which is #592's
+        // station check for a performance, with its messages. A pair with no
+        // `room` is refused (#937): the page could never say it. Several
+        // pairs may share one room at one bell, in file order; there is no
+        // distance rail, because the room is the unit.
         const placed = p.room != null;
+        if (!placed) say(`${where}: names no room`);
         const roomOk = placed && rooms.has(p.room);
         if (placed && !roomOk) say(`${where}: in no room (${JSON.stringify(p.room)})`);
         for (const npcId of speakers) {
@@ -114,21 +115,19 @@ function indexChatter(chatter, { npcs, mystery, problems }) {
         if (speakers[0] && speakers[1] && speakers[0] === speakers[1]) say(`${where}: both lines given to ${speakers[0]}`);
         const lines = asList(p.lines);
         if (lines.length < 2 || !lines.every(nonEmpty)) say(`${where}: fewer than two non-empty lines`);
-        // A PLACED PAIR'S LINE OPENS WITH ITS SPEAKER'S NAME (#928). The band
-        // shows the text before the first ": " as the name and the rest as the
-        // line, so that text has to be there and has to be the start of the
-        // cast name of whoever's turn it is: "Dafydd" for Dafydd ap Rhys. An
-        // unplaced pair is not played and is not held to this (#914).
-        if (placed) {
-          lines.forEach((line, i) => {
-            const npc = speakers[i % 2];
-            const text = typeof line === 'string' ? line : '';
-            const cut = text.indexOf(': ');
-            const opens = cut > 0 ? text.slice(0, cut) : '';
-            const name = cast.get(npc)?.name;
-            if (!opens || typeof name !== 'string' || !name.startsWith(opens)) say(`${where}: line ${i + 1} does not open with ${npc}'s name`);
-          });
-        }
+        // A PAIR'S LINE OPENS WITH ITS SPEAKER'S NAME (#928, every pair since
+        // #937). The band shows the text before the first ": " as the name and
+        // the rest as the line, so that text has to be there and has to be the
+        // start of the cast name of whoever's turn it is: "Dafydd" for Dafydd
+        // ap Rhys.
+        lines.forEach((line, i) => {
+          const npc = speakers[i % 2];
+          const text = typeof line === 'string' ? line : '';
+          const cut = text.indexOf(': ');
+          const opens = cut > 0 ? text.slice(0, cut) : '';
+          const name = cast.get(npc)?.name;
+          if (!opens || typeof name !== 'string' || !name.startsWith(opens)) say(`${where}: line ${i + 1} does not open with ${npc}'s name`);
+        });
       }
     }
   }
@@ -139,12 +138,11 @@ function indexChatter(chatter, { npcs, mystery, problems }) {
  * Flatten data/npcs.json's `performances` (pool -> entries) into one map by id,
  * plus every problem in its own shape.
  *
- * WHAT A PERFORMANCE HAS THAT AN UNPLACED CHATTER PAIR DOES NOT: a room and a
- * bell. #554 settled for checking each chatter speaker's own static `ward`
- * field; since #911 a placed pair names its room too, its watch key is its
- * bell, and indexChatter above holds it to this same station check. A
- * performance is one body saying one thing in one named room at one named
- * bell, and data/mystery.json's `schedule` already says where everybody is at
+ * A ROOM AND A BELL, WHICH A CHATTER PAIR NOW HAS TOO. #554 settled for
+ * checking each chatter speaker's own static `ward` field; since #937 every
+ * chatter pair names its room, its watch key is its bell, and indexChatter
+ * above holds it to this same station check. A performance is one body
+ * saying one thing in one named room at one named bell, and data/mystery.json's `schedule` already says where everybody is at
  * every bell, so this checks the station itself: the sermon is said where the
  * chaplain actually stands, not where a data file wishes he stood. A piece at
  * one of `day2.watches` (#699) is checked against `day2.schedule` instead, and
@@ -519,22 +517,6 @@ export function factText(fact, outcome = null, held = null) {
     if (dayTwoApplies(row, outcome, held) && nonEmpty(row.text)) return row.text;
   }
   return fact.text ?? null;
-}
-
-/**
- * Chatter pair ids with no `room`, in file order (#912, #914). A report, not a
- * failure, in the shape of `untoldFacts`: a pair the schedule cannot hold is
- * waiting on Devon's call, and test/lore.mjs asserts this list exactly so it
- * is a ratchet rather than a print (#13).
- */
-export function unplacedChatter(chatter) {
-  const ids = [];
-  for (const byWatch of Object.values(chatter ?? {})) {
-    for (const pairs of Object.values(byWatch ?? {})) {
-      for (const p of asList(pairs)) if (p && p.room == null && nonEmpty(p.id)) ids.push(p.id);
-    }
-  }
-  return ids;
 }
 
 /** Fact ids with no source at all. A report, not a failure: WISHLIST.md's own rule for theme 3. */

@@ -1270,7 +1270,7 @@ console.log('\nthe household in data/populace.json');
       `all ${people.length} of the household are in the castle on the walking day too, over ${stops} stops at its four bells`,
       `nobody at any of ${W0.join(', ')}: ${empty.join(', ')}`);
   }
-  check(people.length === 20, `${people.length} of them: the first increment's ten (SPECS.md, "Life: a populace"), the child and the hound (#643, #644), two hens (#684), the inner ward's five (#729) and the generated cow (#789)`);
+  check(people.length === 27, `${people.length} of them: the first increment's ten (SPECS.md, "Life: a populace"), the child and the hound (#643, #644), two hens (#684), the inner ward's five (#729), the generated cow (#789) and Blender's seven animals off six files, the pig, the sheep, the horse, the goat, the cat and two geese (#826 to #829)`);
   /* THE TALK LIST (#731), counted beside the people because a validator that
    * found nothing in an empty list would pass the same as one that found
    * nothing in three. */
@@ -1282,13 +1282,15 @@ console.log('\nthe household in data/populace.json');
    * holds now is narrower and is stated by kind — every body a populace
    * person wears is either the cast's or is under assets/NPCs, where
    * test/assets.mjs's checks 4 and 5 hold it to being referenced and being
-   * meshopt-encoded. */
+   * meshopt-encoded, or is under assets/blender/ (#940), which is held by
+   * assets.mjs check 4 (referenced, #808) and check 8 (its manifest row and
+   * meshopt). A body anywhere else still fails. */
   const castBodies = new Set(cast.map((n) => n.modelPath));
   const theirs = new Set(people.map((p) => p.modelPath));
   const foreign = [...theirs].filter((m) => !castBodies.has(m));
-  check(foreign.every((m) => m.startsWith('assets/NPCs/')),
+  check(foreign.every((m) => (m.startsWith('assets/NPCs/') || m.startsWith('assets/blender/'))),
     `${theirs.size} bodies, ${theirs.size - foreign.length} of them the cast's and ${foreign.length} the household's own (${foreign.join(', ') || 'none'})`,
-    foreign.filter((m) => !m.startsWith('assets/NPCs/')).join(', '));
+    foreign.filter((m) => !(m.startsWith('assets/NPCs/') || m.startsWith('assets/blender/'))).join(', '));
   check(new Set(people.map((p) => p.tint)).size === people.length, `no two of the ${people.length} share a tint`);
 
   /* A CLIP NAME IS A STRING UNTIL SOMETHING READS THE FILE. ACTIVITY_CLIPS
@@ -1343,6 +1345,62 @@ console.log('\nthe household in data/populace.json');
       `nobody does ${placed.filter(([, ids]) => !ids.length).map(([j]) => j).join(', ')}`);
   }
 
+  /* THE PARTS RAIL (#820, #821): A PERSON AGAINST THE FILE THEY WEAR. The
+   * shared rig's file carries every part as its own mesh node named
+   * `<slot>-<variant>`, and `parts` on a person is the list src/npc.js leaves
+   * visible. Every way that list can be wrong looks like a person on screen:
+   * a typo is a part silently missing, no `skin-*` is a walking gown with no
+   * face and a height taken off the whole file, two hats is two hats, and
+   * no `parts` at all is everything in the file worn at once. So each is
+   * refused here, by name, against the node list inside the file, read the
+   * way the clip check above reads its animations.
+   *
+   * WHAT IS NOT HERE (#529). That a parts file's nodes are one primitive
+   * each, `Cloth` or `Bare`, and in one of the five slots is a fact about
+   * the file and is test/assets.mjs check 8's. That the hide ran and the
+   * height came off the skin is npc.js running and is plan-vs-scene.mjs's.
+   * This is the person held to the file, and the cast is held with the
+   * household because npc.js builds both from the same fields.
+   *
+   * AND IT SAYS HOW MANY IT CHECKED, because with nobody on the shared rig
+   * every line below is true of nothing, and a reader should be able to see
+   * that from the output rather than from the data. */
+  {
+    const SLOTS = ['skin', 'garment', 'hair', 'over', 'hat'];
+    const REQUIRED = ['skin', 'garment'];
+    const slotOf = (name) => SLOTS.find((slot) => String(name).startsWith(`${slot}-`)) ?? null;
+    const meshNodesOf = new Map();
+    let refused = 0, wearers = 0, worn = 0;
+    const no = (msg) => { fail(msg); refused++; };
+    for (const n of [...cast, ...people]) {
+      if (!meshNodesOf.has(n.modelPath)) meshNodesOf.set(n.modelPath, (readGLTF(path.join(ROOT, n.modelPath)).json.nodes ?? []).filter((node) => node.mesh !== undefined).map((node) => node.name ?? ''));
+      const meshes = meshNodesOf.get(n.modelPath);
+      const slotted = meshes.filter((name) => slotOf(name));
+      if (n.parts == null) {
+        if (slotted.length) no(`${n.id} wears ${n.modelPath} with no parts, and would show all ${slotted.length} of them`);
+        continue;
+      }
+      wearers++;
+      if (!Array.isArray(n.parts) || n.parts.some((part) => typeof part !== 'string')) { no(`${n.id}: parts is ${JSON.stringify(n.parts)}, not a list of mesh node names`); continue; }
+      worn += n.parts.length;
+      if (!slotted.length) { no(`${n.id} names ${n.parts.length} parts and wears ${n.modelPath}, which has no mesh node named for a slot (${SLOTS.join(', ')}), so the list would hide the whole body`); continue; }
+      for (const field of ['hideNodes', 'hideMaterials']) {
+        if (n[field] != null) no(`${n.id} has parts beside ${field}: a parts body says what it wears, and what it hides is everything else`);
+      }
+      for (const part of n.parts) {
+        if (!meshes.includes(part)) no(`${n.id} wears ${JSON.stringify(part)}, which is not a mesh node of ${n.modelPath}`);
+        else if (!slotOf(part)) no(`${n.id} wears ${JSON.stringify(part)}, a mesh node of ${n.modelPath} that is in none of the slots ${SLOTS.join(', ')}`);
+      }
+      for (const slot of SLOTS) {
+        const inSlot = n.parts.filter((part) => slotOf(part) === slot);
+        if (REQUIRED.includes(slot) && inSlot.length !== 1) no(`${n.id} wears ${inSlot.length} ${slot} parts (${inSlot.join(', ') || 'none'}) and a body has exactly one`);
+        else if (inSlot.length > 1) no(`${n.id} wears ${inSlot.length} ${slot} parts (${inSlot.join(', ')}) and a body has at most one`);
+      }
+    }
+    const partsFiles = [...meshNodesOf].filter(([, meshes]) => meshes.some((name) => slotOf(name))).map(([file]) => file);
+    if (!refused) pass(`${wearers} parts bodies checked, wearing ${worn} parts between them off ${partsFiles.length} parts file(s)${partsFiles.length ? ` (${partsFiles.join(', ')})` : ''}: every part a mesh node of its file, one skin and one garment each, and nobody on a parts file without a list`);
+  }
+
   /* THE ROW'S NODE ACCEPTANCE (SPECS.md, "Bodies"): the variation axes that
    * cost no file — height, a scaled bone, hidden nodes and materials, a held
    * prop — make more distinct SHAPES than there are body files. Tint is left
@@ -1350,10 +1408,11 @@ console.log('\nthe household in data/populace.json');
    * counting it would make this true of one body and thirteen colours. A
    * silhouette is what tells two people apart across a ward, before colour
    * does; five files making fewer than six shapes would be five files making
-   * clones. */
+   * clones. `parts`, sorted, is the newest axis (#821): on the shared rig it
+   * is the only one, since every wearer names the same file. */
   {
     const everyone = [...cast, ...people];
-    const shape = (n) => JSON.stringify([n.modelPath, n.modelHeight ?? null, [...(n.hideNodes ?? [])].sort(), [...(n.hideMaterials ?? [])].sort(), n.heldProp ?? null, n.boneScale ?? null]);
+    const shape = (n) => JSON.stringify([n.modelPath, n.modelHeight ?? null, [...(n.hideNodes ?? [])].sort(), [...(n.hideMaterials ?? [])].sort(), n.heldProp ?? null, n.boneScale ?? null, Array.isArray(n.parts) ? [...n.parts].sort() : null]);
     const shapes = new Set(everyone.map(shape));
     const files = new Set(everyone.map((n) => n.modelPath));
     check(shapes.size > files.size, `${shapes.size} silhouettes off ${files.size} body files, across the cast and the household`);

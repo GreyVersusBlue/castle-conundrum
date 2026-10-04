@@ -3,6 +3,102 @@
   "blender": "5.2",
   "rows": [
     {
+      "file": "assets/blender/animals/cat.glb",
+      "pack": "animals",
+      "name": "cat",
+      "bytes": 41112,
+      "sha256": "d07765950e5a4731ccf7191369039118e794ce4f71ef8a970a6748941ad855db",
+      "triangles": 296,
+      "images": [
+        [
+          16,
+          16
+        ]
+      ],
+      "blender": "5.2.2 LTS",
+      "source": "feceeec94293b4b927ebde38e1c56472020c6e7e54770d8b7483f14bc344e795"
+    },
+    {
+      "file": "assets/blender/animals/goat.glb",
+      "pack": "animals",
+      "name": "goat",
+      "bytes": 41624,
+      "sha256": "d289f0bb402c6d4383f746000dc6fbd402a8614d9338a259d3b6d7016dd089b0",
+      "triangles": 332,
+      "images": [
+        [
+          16,
+          16
+        ]
+      ],
+      "blender": "5.2.2 LTS",
+      "source": "73e1b1c2f25a7021980b90bbb3ac665d0092b98945575a2add63aa8920794ce6"
+    },
+    {
+      "file": "assets/blender/animals/goose.glb",
+      "pack": "animals",
+      "name": "goose",
+      "bytes": 34716,
+      "sha256": "e4b4bdb2e7601c27e81ab25a4cbdd8e4940e4d2182ac2b0e05d8ca0808e6defb",
+      "triangles": 256,
+      "images": [
+        [
+          16,
+          16
+        ]
+      ],
+      "blender": "5.2.2 LTS",
+      "source": "f60be647d9a0b9b600be942224de8274d97fd87d4b9737e03b5ebfde615de77f"
+    },
+    {
+      "file": "assets/blender/animals/horse.glb",
+      "pack": "animals",
+      "name": "horse",
+      "bytes": 41572,
+      "sha256": "dfe8bc4b4f6b5b956ba673fb7a3f8bde2d4fa6159248eaea018b0bf099f0170a",
+      "triangles": 304,
+      "images": [
+        [
+          16,
+          16
+        ]
+      ],
+      "blender": "5.2.2 LTS",
+      "source": "ec3429efcf78de282aae99d97e3d46e2836a92bdea1c81106a3bceddc57fcf87"
+    },
+    {
+      "file": "assets/blender/animals/pig.glb",
+      "pack": "animals",
+      "name": "pig",
+      "bytes": 40812,
+      "sha256": "34b9dbc728a057f1b657c8d5bf69b645672d952a3fb03f971a4a4a689ebb78d7",
+      "triangles": 296,
+      "images": [
+        [
+          16,
+          16
+        ]
+      ],
+      "blender": "5.2.2 LTS",
+      "source": "dd163db80ec4fe7339fc7fd1d44f12c79eeeb94ff7f3cb7f5efc2b70a5c7b67e"
+    },
+    {
+      "file": "assets/blender/animals/sheep.glb",
+      "pack": "animals",
+      "name": "sheep",
+      "bytes": 40912,
+      "sha256": "3e379d283a80fb9cec81c4f0b6d3b04ae02984c613f8686e507b0745d4c74473",
+      "triangles": 316,
+      "images": [
+        [
+          16,
+          16
+        ]
+      ],
+      "blender": "5.2.2 LTS",
+      "source": "2a722fafc4382f1f16b0ca38212c215c2ddd0ab6e3a63fbcf4db44e3cd5bb4e4"
+    },
+    {
       "file": "assets/blender/calibration/crate.glb",
       "pack": "calibration",
       "name": "crate",
@@ -16,7 +112,7 @@
         ]
       ],
       "blender": "5.2.2 LTS",
-      "source": "82ed8e4c2aa421552056c1b2a4f8aa14e1b40e0eb0b6e4aac089d9bbc3eb2099"
+      "source": "ad866b5333b624c1037cb21e5577f6fd97992249b779c8d7d7b9af313a4bf068"
     },
     {
       "file": "assets/blender/countryside/backdrop-east.glb",
@@ -32,7 +128,7 @@
         ]
       ],
       "blender": "5.2.2 LTS",
-      "source": "6b9483c28beefda5d999ed9564d1c9e18fb114456344ed7b7e47c58262d3f1c6"
+      "source": "14bfd68b86e0cf0a6720cf0a13cff90ae028ac2dc235ebc769d5073416dadb41"
     },
     {
       "file": "assets/blender/countryside/backdrop-north-west.glb",
@@ -48,7 +144,7 @@
         ]
       ],
       "blender": "5.2.2 LTS",
-      "source": "0039b999f87f56d143fc624dc521ec665404eafdb3f9263b7ee75ccbaa546a4f"
+      "source": "f0c43be49faa82cfa00ddb3db30d648d7179b344e5f82e411a4851ff3bd65296"
     },
     {
       "file": "assets/blender/countryside/backdrop-north.glb",
@@ -64,7 +160,7 @@
         ]
       ],
       "blender": "5.2.2 LTS",
-      "source": "f30dac6cee9e5b33bc184ff141261a4fb3139caf22fa7cb6240ca323ae605115"
+      "source": "b7add6b5158d3d076dd9dfebd37b785d58778a7c83f3468f8fbc9073d28913c0"
     },
     {
       "file": "assets/blender/countryside/backdrop-south-west.glb",
@@ -80,7 +176,7 @@
         ]
       ],
       "blender": "5.2.2 LTS",
-      "source": "acca0f54a128c4bb7c152a8b9a91f0469a6f97a86e2d83ca15a11347f3572cd0"
+      "source": "1e68d037210ce09581cbd051f569f5ec75d7c8b5a9354dbdaa456a8502684a09"
     },
     {
       "file": "assets/blender/countryside/backdrop-south.glb",
@@ -96,7 +192,7 @@
         ]
       ],
       "blender": "5.2.2 LTS",
-      "source": "4e0f93e61ab936356dd6be88f1b7ada60c5721cd18b3480c4f93a7799e8bdc64"
+      "source": "323af2026338dbb5e33ac6eea13159769e71541800cab0b1fa22ab00a0111054"
     },
     {
       "file": "assets/blender/evidence/aumbry-candles.glb",
@@ -112,7 +208,7 @@
         ]
       ],
       "blender": "5.2.2 LTS",
-      "source": "d5ab7d0456126a131e98ebe6a6b475aed98d09d5466b0243fcb672396377102d"
+      "source": "39959a58169d9bf024cfb99e1d6ea8ed6f8d344875640b99280a784ced32f8d5"
     },
     {
       "file": "assets/blender/evidence/knife-barrel.glb",
@@ -128,7 +224,7 @@
         ]
       ],
       "blender": "5.2.2 LTS",
-      "source": "4954769feac398cf6f01ec69e9ca3cf46c14c4287c246c7422d46e47ba50bc3c"
+      "source": "2a5e6fe22414288b458d70f7096495d39d2bd8e744b26685b1c16f31a91157d2"
     },
     {
       "file": "assets/blender/evidence/ledger-desk.glb",
@@ -144,7 +240,7 @@
         ]
       ],
       "blender": "5.2.2 LTS",
-      "source": "af4651ea90ca2c8b732897cde3e61f37b58bf722b900641c39b61304a39ef4c3"
+      "source": "866adeabaa0a94399fbaa71c6d00502ce67c2b2b1999ab74d9cafd9f3afa8461"
     },
     {
       "file": "assets/blender/evidence/pricket.glb",
@@ -160,7 +256,39 @@
         ]
       ],
       "blender": "5.2.2 LTS",
-      "source": "b83c95b7eef368e526612fd640d6135cdc5e189b3ef24ee93b681af7bee24a47"
+      "source": "38a90a0b4bb4d82818d895cfc9bd538b3461cdee3461b7cdf5c8bf2bda2f15b1"
+    },
+    {
+      "file": "assets/blender/folk/folk.glb",
+      "pack": "folk",
+      "name": "folk",
+      "bytes": 229172,
+      "sha256": "b32cbe2817526cefec3c8e77045bf1ccd21ea30ad57f8a7ab87ad1d591d6e37e",
+      "triangles": 3448,
+      "images": [
+        [
+          16,
+          16
+        ]
+      ],
+      "blender": "5.2.2 LTS",
+      "source": "5b5af22bcedf052af4c8677f30203fa13007db9ed4dc83addf1239c57b3afce1"
+    },
+    {
+      "file": "assets/blender/held/mallet.glb",
+      "pack": "held",
+      "name": "mallet",
+      "bytes": 5136,
+      "sha256": "4f860eaa887777e6e58cb3a530a1ed930f03e3d159c1b65464095cbf5ee4a790",
+      "triangles": 76,
+      "images": [
+        [
+          16,
+          16
+        ]
+      ],
+      "blender": "5.2.2 LTS",
+      "source": "e7511ee1b5345e9d0afb013d189a16659d3b62d72d18c8c3618306cf6f359b67"
     }
   ]
 }
