@@ -14368,4 +14368,94 @@ Left on the row:
 - **The Windows GPU look** at the five sets, against the swapped walls
   (#946).
 
+## Rank 3's orphan findings, re-verified: two fixed here, the rest already fixed or the GPU's (2026-10-03)
+
+Session CC-17, on huginn, software Chromium. The audit of 2026-10-01 listed
+four findings from #714, #715 and #718 as nobody's row. Each was read against
+the tree at `84b55f5` before anything was changed. Lead override of the class
+table for both edits: each is under twenty lines and its spec is the finding.
+
+| Finding | State before this session | Where |
+| --- | --- | --- |
+| #715's "talk to the Sir Roger Lestrange" | Fixed. `src/interaction.js:197` has no article, `test/plan-vs-scene.mjs` asserts the Constable's live prompt, and a GPU run read it right (#891's sitting). | no change |
+| #715's `read` half, "read the A gravestone" | **Open.** `src/castle-builder.js` still wrapped every title in "the"; #900's sitting saw four and filed none. | #948 |
+| #714's anisotropy, NEAREST and body-count checks | Fixed in #888 (items 5 and 6), read green on a GPU in its run 5. | no change |
+| #714's wall-height check | Deleted in #917 (a). | no change |
+| #714's brazier check | Hall half fixed in #917 (b). The porter's-gate pair reads clear headless and "IN Scene" on a GPU; the check now prints the `planId`. GPU only. | rank 3 |
+| The journal walk, 0.51 to 1.30 m against 3.75 m | Rewritten as a ratio against a baseline walk in #917 (c). Never watched fail (#626 not reintroduced). GPU only. | rank 3 |
+| The router prices tight cells (#717, #718) | Not a two-prop workaround. See #950. | no change |
+
+**#948. A title brings its own article.** `readables()` in
+`src/castle-builder.js` built `Press E to read the ${name}`, and twelve of
+`data/documents.json`'s thirteen titles open on The or A, so the page said
+"Press E to read the The King's writ" and "the A gravestone in the chapel
+floor". Now a title's own article is kept and lowered ("Press E to read the
+King's writ", "read a gravestone in the chapel floor"), a title with none is
+said as written ("Press E to read Letters on the Steward's floor"), and a
+piece with no title at all still reads "the" and its id. `src/ui.js`'s touch
+label strips "Press E to" and is unchanged.
+
+The rail is in `test/plan-vs-scene.mjs`, beside the bell, three assertions
+over `window.__readables`: thirteen documents are thirteen things to read, no
+prompt says two articles in a row, and each prompt ends on its document's own
+title from `data/documents.json`. It is a page assertion for #715's own
+reason: the string is composed from the objects the builder placed (#529,
+#39). **Broken on purpose (#34)**: the old template put back, `FAIL no
+readable's prompt says two articles in a row` followed by twelve prompts,
+"Press E to read the The old works ledgers" first, exit 1, 1 failure, the
+other two assertions green. Restored: `plan-vs-scene` green alone in 284.8 s.
+
+**#949. The furniture-against-the-wall check is deleted from
+`test/play-castle.mjs`.** `'the hall table, statue, cabinet and commode all
+clear the wall behind them'` took its stone from scene children named wall,
+tower or column. #917 said its wall half "passes without looking" and left
+it. A headless probe of the live scene at the start panel (static geometry,
+so #53 does not apply) found six such children: three `wall-fortified-gate`
+leaves, `column-61`, `column-damaged-62` and `mereford-churchyard-cross`. No
+wall run and no tower. The check could only fail if one of four props stood
+in a gate leaf or a column, or went missing. The fact is `test/layout.mjs`'s
+check 1, every prop against every wall run, tower and column, and it was
+watched fail for the bug this check was written about: `GothicCabinet_01`'s
+tile x -8.3557 to -8.6557 printed `FAIL GothicCabinet_01 at x -35.08..-33.95,
+y 0.00..2.36, z 10.40..12.12 is inside west-curtain-south`, from a green
+baseline, restored. Deleted and not rewritten, as #917 (a) did: a rewrite
+against `planId` stone would be check 1 again, on a page, in a file CI does
+not run. `test/layout.mjs`'s header said the beat exists; it now says it is
+gone. This adds no rail.
+
+The same probe answers #917 (a)'s open question. `/^column/` does catch the
+churchyard cross, and all six column submeshes read 4.00 m, so `'hall columns
+reach the same height as the walls'` passes for the right reason; its label
+is loose by one cross and is left.
+
+**#950. The clearance pricing is the router, not a workaround, and the two
+props stay.** #718 left `foundation-stone` and `barrels-91` as "a small row
+of its own" and `BACKLOG.md` no longer carries one. Measured in Node on this
+tree with `test/route.mjs`'s own `clearance`: 1031 of the 5227 ground cells
+are tighter than `BODY_RADIUS`, and 115 different colliders are the nearest
+stone to at least one of them. `foundation-stone` (a slab 0.08 m thick, 0.60
+m off `cross-wall-south`) is nearest to none of them and `barrels-91` (0.67 m
+off `west-curtain-north`) to three. Moving both props would take three cells
+out of 1031 and delete no line of `test/route.mjs`: `TIGHT` is there for the
+0.5 m lattice against 1.2 m doorways (#717), which is most of the 1031.
+Nothing changed. What moving them would take: two tile edits in
+`data/scene-config.json` (lane C), `foundation-stone`'s slab copy in
+`data/documents.json` (#557), and a GPU look at a readable that moved. No
+route depends on it.
+
+**Checks on huginn.** `plan-vs-scene` twice, once red on the break and once
+green, each alone. `node --check test/play-castle.mjs` clean; the file was
+not run (`npm run play` is the GPU's, #53). `npm test` on the final tree: 14
+of 15, `built` red at load 16 with two other sessions' browsers up, on
+`Waiting for selector #start-overlay:not(.hidden)` and a `DOM.describeNode`
+protocol timeout, which is #918's failure. `npm test built` alone straight
+after: green in 344.2 s. 8.3 GB was available at the red, so this was load
+and not memory.
+
+**Left for rank 3's next GPU run, by name:** `'no brazier is sealed inside
+the stonework'` for the porter's-gate pair at (-4.8, -2.4) and (-4.8, 2.4);
+`'W moves the player before the journal is opened'` and `'and W moves the
+player again, from the same standing start'`, which also owe #626
+reintroduced; and a look at one readable's prompt on the HUD.
+
 **#1000. Reserved: #971 to #1000 are held for sessions on Huginn (the Selector loop); anyone else numbers from #1001.**

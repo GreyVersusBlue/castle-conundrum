@@ -9,9 +9,11 @@
 // (round 2, found and not fixed), then GothicCabinet_01 and GothicCommode_01,
 // both entirely inside the corner where the north wall meets a hall side wall,
 // invisible from every angle. `play-castle.mjs` grew a beat for it afterwards —
-// but that beat needs a real browser and real GPU compositing, so it is outside
-// CI on purpose (#353), it names four objects by hand, and it says clear or
-// EMBEDDED and nothing else.
+// but that beat needed a real browser and real GPU compositing, so it was
+// outside CI on purpose (#353), it named four objects by hand, and it said
+// clear or EMBEDDED and nothing else. It is gone (#949): once the walls were
+// the castle's own boxes (#742) it had no wall to measure against, and check 1
+// below is the only place this fact is held.
 //
 // WHAT CHANGED ON 2026-09-14. This file used to re-implement `tileToWorld`,
 // `normalizeToTile`, `normalizeHeight` and `groundAndCenter` in Node, and its

@@ -907,65 +907,17 @@ try {
     'the shut word-lock door stands across its own doorway',
     gateDoorBox ? `x[${gateDoorBox.min[0].toFixed(2)}, ${gateDoorBox.max[0].toFixed(2)}] z[${gateDoorBox.min[1].toFixed(2)}, ${gateDoorBox.max[1].toFixed(2)}]` : 'not found');
 
-  // --- The hall table, the gothic statue, and the two side cabinets clear the
-  // wall behind them. Round 2 found (but did not fix) the table and the statue
-  // sitting inside the north wall — nothing had ever checked furniture against
-  // the wall, only against the table and the floor (see the checks above). This
-  // session's own sweep found two more of the same bug: GothicCabinet_01 and
-  // GothicCommode_01 were both fully sealed in the corners where the north wall
-  // meets the hall's own side walls.
-  //
-  // Deliberately NOT the "stoneBoxes" height>1.5m heuristic the brazier check
-  // above uses — the gothic statue (1.74m) and GothicCabinet_01 (2.36m) are
-  // both taller than that themselves, so that filter would count each piece of
-  // furniture as its own wall and report every one of them "embedded" against
-  // itself (caught by running this check once and seeing exactly that). Wall/
-  // tower/column pieces are the only scene children whose top-level group name
-  // starts with wall, tower or column — match on that instead.
-  const wallCheck = await page.evaluate(async () => {
-    const THREE = window.__THREE;   // stashed by attachSceneProbe
-    const s = window.__scene;
-    const stoneBoxes = [];
-    for (const c of s.children) {
-      if (!/^(wall|tower|column)/.test(c.name || '')) continue;
-      const b = new THREE.Box3().setFromObject(c);
-      if (!isFinite(b.min.x)) continue;
-      stoneBoxes.push(b);
-    }
-    const findByMesh = (pattern) => {
-      let found = null;
-      s.children.forEach((c) => {
-        if (found) return;
-        let hit = false;
-        c.traverse((o) => { if (o.isMesh && pattern.test(o.name || '')) hit = true; });
-        if (hit) found = c;
-      });
-      return found;
-    };
-    const targets = {
-      table: findByMesh(/^WoodenTable_01$/),
-      statue: findByMesh(/^gothic_statue$/),
-      cabinet: findByMesh(/^GothicCabinet_01/),
-      commode: findByMesh(/^GothicCommode_01/),
-    };
-    const results = {};
-    for (const [name, obj] of Object.entries(targets)) {
-      if (!obj) { results[name] = 'not found'; continue; }
-      const b = new THREE.Box3().setFromObject(obj);
-      let embedded = false;
-      for (const sb of stoneBoxes) {
-        const ox = Math.min(b.max.x, sb.max.x) - Math.max(b.min.x, sb.min.x);
-        const oy = Math.min(b.max.y, sb.max.y) - Math.max(b.min.y, sb.min.y);
-        const oz = Math.min(b.max.z, sb.max.z) - Math.max(b.min.z, sb.min.z);
-        if (ox > 0 && oy > 0 && oz > 0) { embedded = true; break; }
-      }
-      results[name] = embedded ? 'EMBEDDED' : 'clear';
-    }
-    return results;
-  });
-  assert(Object.values(wallCheck).every((v) => v === 'clear'),
-    'the hall table, statue, cabinet and commode all clear the wall behind them',
-    JSON.stringify(wallCheck));
+  // --- A check stood here that the hall table, the gothic statue, the cabinet
+  // and the commode "all clear the wall behind them". It is deleted (#949), the
+  // way #917 deleted the wall-height check, because it had no wall in it. Its
+  // stone was every scene child named wall, tower or column, and since the walls
+  // became the castle's own pixel-material boxes (#742) a probe of the live
+  // scene finds six such children: three `wall-fortified-gate` leaves, the two
+  // hall columns and Mereford's churchyard cross. Push the cabinet a metre into
+  // the west curtain and it still read "clear". test/layout.mjs's check 1 is the
+  // fact, every prop against every wall run, tower and column in Node, and it
+  // prints `GothicCabinet_01 ... is inside west-curtain-south` for that push;
+  // test/plan-vs-scene.mjs holds the scene to the plan it reads (#500).
 
   // AND THE DOOR IS THE SECOND BUTTON, NOT THE FIRST (#755, #767). The page
   // opens on the walking day since #751, so `#start-button` — "Walk the castle"
