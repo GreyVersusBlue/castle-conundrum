@@ -14457,7 +14457,7 @@ the stonework'` for the porter's-gate pair at (-4.8, -2.4) and (-4.8, 2.4);
 `'W moves the player before the journal is opened'` and `'and W moves the
 player again, from the same standing start'`, which also owe #626
 reintroduced; and a look at one readable's prompt on the HUD.
-=======
+
 ## Castle in Blender, the integration row: Devon's lines on the open calls (2026-10-03)
 
 **#969. Devon accepts every recommendation in SPECS.md, "Castle in Blender:
@@ -14525,6 +14525,5 @@ awaits Devon's line.
 
 Main CI on `e832bad` (PR #106's merge) green: run 37150024532. Increment 2,
 the skin, outside this repo, is next.
->>>>>>> origin/main
 
 **#1000. Reserved: #971 to #1000 are held for sessions on Huginn (the Selector loop); anyone else numbers from #1001.**
