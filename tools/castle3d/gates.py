@@ -26,8 +26,8 @@
 # jamb, ground to the arch's top; in the slot's x band the arch is its two
 # jamb boxes only. A timber grid of seven verticals and six horizontals, iron
 # points under the verticals and iron straps over the two lowest horizontals.
-# The west one is raised, its tips RAISED_BELOW_CROWN under the crown; the
-# outer one stands on the ground.
+# Both are raised, their tips RAISED_BELOW_CROWN under the crown (the outer
+# one since #922; it stood on the ground before).
 #
 # THE LEAVES (LEAF_<id>, planId <id>). Built in the hinge's local frame from
 # the piece's `leaf` and `pivot`, never from shutAngle or openAngle: the
@@ -46,12 +46,22 @@
 #
 # #851. ARCH_barbican-outer is the block walls.OUTER_GATE cut out of
 # WALL_barbican-west, built from the like-arch's three colliders with x
-# replaced by the run's; two shut leaves, LEAF_barbican-outer-a (z -0.95 to 0)
-# and -b (0 to 0.95), each half the west gate's leaf with a quarter-circle
-# head, in the block's middle plane, ledges on the barbican side; and
-# PORT_barbican-outer, lowered. None carries a planId; each carries
-# modelOnly "#851" and none is named GATE_ (#843 keeps that for the plan's
-# gates).
+# replaced by the run's; two leaves, LEAF_barbican-outer-a (z -0.95 to 0 shut)
+# and -b (0 to 0.95 shut), each half the west gate's leaf with a quarter-circle
+# head, hinged at the opening's edges in the block's middle plane, ledges on
+# the barbican side; and PORT_barbican-outer. None carries a planId; each
+# carries modelOnly "#851" and none is named GATE_ (#843 keeps that for the
+# plan's gates).
+#
+# #922: THE OUTER GATE OPEN. Each leaf turns OUTER_OPEN degrees about its
+# hinge, its free edge to the barbican side, so it lies along its jamb as the
+# plan's open west gate lies along its own (pivot rotationY 180, the leaf flat
+# on the jamb's face at z 0.95); and the portcullis is raised as the west
+# gate's is. #851's way out stays shut by the game's barbican-west collider
+# (#919), not by the model. Held by check_outer: each leaf's world box runs
+# along x from its hinge to the barbican side and no thicker across z than
+# the leaf, and the portcullis's tips stand at or over the springline, or the
+# stage raises naming the object.
 #
 # #854: THE DRESSED PASSAGE. An arch in rubble (any slug but
 # materials.DRESSED) takes materials.dressing() as its second slot on the
@@ -89,6 +99,7 @@ LEDGE_INSET = 0.05       # in from each edge
 STRAP_TALL = 0.06
 STRAP_REACH = 0.85       # of the width, from the hinge edge
 OUTER_PLANKS = 4         # per half leaf of #851's gate
+OUTER_OPEN = 90.0        # #922: each outer leaf's swing from shut, as the plan's west gate stands open
 
 # The portcullis and its slot.
 SLOT = 0.15
@@ -343,6 +354,30 @@ def check_box(ob, piece):
     return worst
 
 
+def check_outer(leaves, port, mid, inward, half, spring):
+    """#922: raises unless each of #851's leaves is open, its world box running
+    from the hinge plane x `mid` `half` m to the `inward` (barbican) side and no
+    thicker across z than the leaf, and the portcullis's tips stand at or over
+    `spring`, naming the object. Returns the worst leaf's length short of half."""
+    t = LEDGE_W[1] - STRAP_W[0]
+    worst = 0.0
+    for ob in leaves:
+        b = world_box(ob)
+        near, far = (b['min']['x'], b['max']['x']) if inward > 0 else (b['max']['x'], b['min']['x'])
+        along, across = b['max']['x'] - b['min']['x'], b['max']['z'] - b['min']['z']
+        if abs(near - mid) > BOX_TOLERANCE or abs(along - half) > BOX_TOLERANCE or across > t + BOX_TOLERANCE:
+            raise ValueError(f"gates: {ob.name} is not open (#922): its box runs x {b['min']['x']:.3f} to "
+                             f"{b['max']['x']:.3f}, z {b['min']['z']:.3f} to {b['max']['z']:.3f}; open, it runs "
+                             f"{half:g} m along x from the hinge plane x {mid:g} to the barbican side and is {t:g} m "
+                             f"across z")
+        worst = max(worst, abs(along - half))
+    foot = world_box(port)['min']['y']
+    if foot < spring - BOX_TOLERANCE:
+        raise ValueError(f"gates: {port.name}'s tips stand at y {foot:.3f}, under the springline {spring:g}; "
+                         f"#922 raises it as the west gate's is")
+    return worst, foot
+
+
 # -------------------------------------------------------------------- build --
 def build(bp):
     col = common.stage_collection('gates')
@@ -437,26 +472,39 @@ def build(bp):
     mats, painted['ARCH_barbican-outer'] = paint_passage(s, sh, x0, x1, run['material'])
     outer_obs = [s.finish('ARCH_barbican-outer', col, mats)]
     p = masonry.Solid()
-    build_portcullis(p, xc, sh['cz'], sh['y0'], -outer if outer else 1, 0, 1)
-    outer_obs.append(p.finish('PORT_barbican-outer', col, [wood, iron]))
+    build_portcullis(p, xc, sh['cz'], sh['crown'] - RAISED_BELOW_CROWN, -outer if outer else 1, 0, 1)   # #922: raised
+    port = p.finish('PORT_barbican-outer', col, [wood, iron])
+    outer_obs.append(port)
     lf = by[like_gate]['leaf']
     half = lf['width'] / 2
     mid = (x0 + x1) / 2
+    shut = 90.0 if (outer or -1) < 0 else 270.0      # local w -> the barbican side, u -> -z (+z at 270)
+    inward = 1 if (outer or -1) < 0 else -1          # the barbican side's sign in x
+    outer_leaves = []
     for tag, (u0, u1) in (('a', (0.0, half)), ('b', (-half, 0.0))):
+        hinge_u = u1 if tag == 'a' else u0
         s = masonry.Solid()
-        build_leaf(s, u0, u1, lf['springline'], 0.0, lf['archRadius'], u1 if tag == 'a' else u0, OUTER_PLANKS)
+        build_leaf(s, u0, u1, lf['springline'], 0.0, lf['archRadius'], hinge_u, OUTER_PLANKS)
         ob = s.finish(f"LEAF_barbican-outer-{tag}", col, [wood, iron])
-        # local w -> the barbican side (+x when the outer face is at min x), u -> -z
-        ob.location = common.to_blender((mid, sh['y0'], sh['cz']))
-        ob.rotation_euler = (0.0, 0.0, common.rotation_z(90.0 if (outer or -1) < 0 else 270.0))
+        # #922: turned OUTER_OPEN about its hinge, the free edge to the barbican
+        # side: a's free edge lies at -u from its hinge, b's at +u.
+        open_y = shut + (OUTER_OPEN if tag == 'a' else -OUTER_OPEN)
+        th = math.radians(shut)
+        hinge = (mid + hinge_u * math.cos(th), sh['y0'], sh['cz'] - hinge_u * math.sin(th))
+        to = math.radians(open_y)
+        ob.location = common.to_blender((hinge[0] - hinge_u * math.cos(to), hinge[1], hinge[2] + hinge_u * math.sin(to)))
+        ob.rotation_euler = (0.0, 0.0, common.rotation_z(open_y))
         outer_obs.append(ob)
+        outer_leaves.append(ob)
     for ob in outer_obs:
         ob['modelOnly'] = MODEL_ONLY
 
     bpy.context.view_layer.update()
     worst = max(check_box(ob, piece) for ob, piece in checked)
+    short, port_foot = check_outer(outer_leaves, port, mid, inward, half, lf['springline'])
     print(f"gates: {len(arches)} arches, {len(leaves)} leaves on hinges in MARKERS, {len(bars)} bars, "
           f"{len(walk_bars)} walk bar, {len(PORTCULLIS)} portcullis raised; each leaf and bar within "
           f"{worst:.4f} m of its blueprint box; #851's outer gate in {run['id']}: {len(outer_obs)} objects, "
-          f"modelOnly, no planId; #854 passage faces dressed: "
-          + ', '.join(f"{k} {v}" for k, v in painted.items()))
+          f"modelOnly, no planId; #922: its leaves open {OUTER_OPEN:g} degrees to the barbican side (within "
+          f"{short:.4f} m of {half:g} along x), its portcullis raised, tips at y {port_foot:.3f}; "
+          f"#854 passage faces dressed: " + ', '.join(f"{k} {v}" for k, v in painted.items()))
