@@ -14795,3 +14795,65 @@ be recorded as encoded and check 10's hash line passes over the wrong file.
 Next free number: #1005.
 
 Increment 3, stage curtain in the game, is next.
+
+**#1005. Rank 2i, increment 3 built: stage curtain in the game (PR #116,
+commit ce50548).** Devon's line on its stills, given 2026-10-04: "Looks good
+to me."
+
+`data/castle-skin.json` stages `["curtain"]`; `assets/castle3d/skin.glb`
+7,601,804 bytes, sha256 109b221808317e2fa4f500b43886f9a2649557c6fdf02d82c43
+d16132dc8d7db (raw cut 63cdff80…605e), meshopt and KTX2 by `npm run
+assets:encode`, recorded by `skin.mjs --record`; `tools/castle3d/skin-
+manifest.json`. Final `castle3d:skin` printed "unchanged". `assets/` sits at
+40,650,035 bytes of the 200 MB ceiling (#499).
+
+`skin.py` writes `extras.joined` (#1004). Two runs over the unmoved master
+0db90daf…291ff gave `skin-full.glb` aa6460b0d2e4beff3fdb183f937de3ecf864fd5
+d3626797be03eae1eca205308, 46,667,308 bytes (supersedes #1003's
+`d9a3bbd1…`).
+
+Budget measured: outer and outside wards 473 of 600 draws, inner 379;
+triangles 198,947 and 58,281 of 500,000; textures 58.5 of 64 MB.
+
+`--drop` tested on an encoded scratch copy: `--drop buildings` (manifest
+`curtain,buildings`) removed 0 nodes, 7,601,804 to 7,269,276 bytes, kept
+meshopt and basisu, 132 draws, 40,000 tris, all 33 image sha256s unchanged;
+`--drop curtain` deleted the file, stages `[]`, no `cut` or `encoded` row.
+
+**Guard-rails broken from green (#34).** Check 10: a PNG over 128 px; a
+2048 KTX2 fixture, "the cap is 1024 (#968)"; a stages mismatch; a flipped
+byte against the encoded row; no encoded row; `ROCKS_kings-tower` at 2,722
+for 1 joined, "the cap is 1000 (#968)"; a missing `extras.joined`; `joined`
+on a non-`TREES_`/`ROCKS_` node; a shared mesh over 2,000; a mesh at 43,234;
+specular; Draco; a light; a camera; a 40.3 MB file; stages empty with the
+file present. Check 4: "nothing references assets/castle3d/skin.glb". Layout
+check 16: an unnamed plan piece; 1 m off its plan box; a stale allow entry;
+an unknown id, a duplicate id, a kept id, a dangling allow key, stage-table
+drift. Budget, skip removed: outer ward 1,117 meshes over 600; a 519,809-tri
+node; skin images priced RGBA8 at 131.9 MB over the 64 MB cap.
+`plan-vs-scene`'s seams: (a) identity transform, "ARCH_east-gate stands
+25.500 m…"; (b) the hide line commented out, "north-curtain-mid is drawn
+beside its skin"; (c) a leaf not under its pivot, "LEAF_muniment is 2.915 m
+off…"; (d) `setPieceVisible` run on the built page only; the evidence
+target, "walk-door: skin shown, target inactive". `--record`'s three
+refusals exit 1. `test/built.mjs` with `skin.glb` deleted from `dist/`:
+"1 missing".
+
+The builder's calls past the spec: leaves sit under their pivot at their
+glb world position in the pivot's frame, because meshopt quantization puts
+a scale and offset on each node, so an identity-under-pivot check fails by
+construction. `setEvidenceVisible` and `evidence().active` read the skin
+(the walk bar and the muniment door are evidence inside the curtain;
+without this the walk bar was never examinable). New
+`tools/castle3d/skin-stages.mjs` mirrors `common.py`'s stage table; drift
+between the two fails layout check 16.
+
+Look: 27 stills in `CASTLE3D_OUT\review\2i-3\` (headed Chrome, RTX 3070 Ti,
+poses in `look-2i-3.txt`). No clear curtain view at 10 m exists in the
+outer ward because buildings block it; 02 is partly blocked, 04 the most
+open. `renderer.info.memory` gives counts, not MB (578 textures, 1,516
+geometries, 27 programs).
+
+`npm test`: fifteen of fifteen.
+
+Increment 4, stage buildings, is next. Next free number: #1006.
