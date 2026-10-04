@@ -242,6 +242,14 @@ console.log('the validator rejects');
       `a station on the body's lantern fires at Prime and not at Terce, when the body is no longer evidence there`,
       `prime: ${atPrime.join('; ') || 'nothing'} | terce: ${atTerce.join('; ') || 'nothing'}`);
   }
+  /* A BODY STOOD ON A SET, BEHIND BARS (#953). Everywhere else a set on a
+   * station fails as "which the player cannot walk to". Madoc's room is
+   * `barred`, so that line is never asked, and a set on his tile left the
+   * validator at 0 problems with him 1.10 m up on a worktable. The config is
+   * what is broken here, not the mystery: the station never moves (#814). */
+  expect('the kitchen worktable stood on Madoc in his cell (`prisoner: station at prime is in PT, behind bars, 1.10 m up`)',
+    (m, n, f, c) => { c.interiorProps.find((r) => r.id === 'kitchen-worktable').tile = [-5, 3.5]; },
+    /^prisoner: station at prime is in PT, behind bars, 1\.10 m up on something that is not its floor$/);
   /* THE SAME RAIL ON THE OTHER TWO DAYS (#792). Each of the three stations it
    * moved, put back: the Chaplain on the gravestone on the morning after,
    * Hywel on the candles and under the bell at the last bell of the walking

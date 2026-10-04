@@ -633,6 +633,7 @@ export function validateMystery(mystery, npcs, quest, nav = null, sideQuests = [
            * chapel's candlesticks, 0.84 m up, a step nobody can take. */
           if (rooms.get(s.room)?.barred) {
             if (!nav.talkable(point)) say(`${npcId}: station at ${w} is in ${code(s.room)}, behind bars with nowhere within ${TALK_RANGE} m of them to stand`);
+            if (nav.onFloor(point) === false) say(`${npcId}: station at ${w} is in ${code(s.room)}, behind bars, ${point.h.toFixed(2)} m up on something that is not its floor`);
           } else if (!nav.walkable(point)) {
             say(`${npcId}: station at ${w} is at tile (${s.tile.join(', ')}) in ${code(s.room)}, which the player cannot walk to`);
           }
@@ -745,6 +746,7 @@ export function validateMystery(mystery, npcs, quest, nav = null, sideQuests = [
             if (nav.inNamedRoom(point) === false) say(`${npcId}: station at ${w} is at tile (${s.tile.join(', ')}), which is not inside ${s.room}`);
             if (rooms.get(s.room)?.barred) {
               if (!nav.talkable(point)) say(`${npcId}: station at ${w} is in ${code(s.room)}, behind bars with nowhere within ${TALK_RANGE} m of them to stand`);
+              if (nav.onFloor(point) === false) say(`${npcId}: station at ${w} is in ${code(s.room)}, behind bars, ${point.h.toFixed(2)} m up on something that is not its floor`);
             } else if (!nav.walkable(point)) {
               say(`${npcId}: station at ${w} is at tile (${s.tile.join(', ')}) in ${code(s.room)}, which the player cannot walk to`);
             }
@@ -849,6 +851,7 @@ export function validateMystery(mystery, npcs, quest, nav = null, sideQuests = [
         if (nav.inNamedRoom(point) === false) say(`${npcId}: station at ${w2} is at tile (${st.tile.join(', ')}), which is not inside ${st.room}`);
         if (rooms.get(st.room)?.barred) {
           if (!nav.talkable(point)) say(`${npcId}: station at ${w2} is in ${code(st.room)}, behind bars with nowhere within ${TALK_RANGE} m of them to stand`);
+          if (nav.onFloor(point) === false) say(`${npcId}: station at ${w2} is in ${code(st.room)}, behind bars, ${point.h.toFixed(2)} m up on something that is not its floor`);
         } else if (!nav.walkable(point)) {
           say(`${npcId}: station at ${w2} is at tile (${st.tile.join(', ')}) in ${code(st.room)}, which the player cannot walk to`);
         }

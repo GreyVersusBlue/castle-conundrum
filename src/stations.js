@@ -148,6 +148,19 @@ export function castleNav(plan, mystery) {
       }
       return false;
     },
+    /**
+     * Is the floor the point stands on the floor of the room its station names
+     * (#953)? True when `point.h` is within 1 mm of that plan room's `top`,
+     * null when the plan has no such room. Behind bars nobody asks `walkable`,
+     * so a set stood on Madoc's station left him 1.10 m up on a worktable and
+     * every rail silent; this is the one that says so.
+     */
+    onFloor(point) {
+      if (!point) return null;
+      const r = planRooms.get(`${point.room}/${point.level ?? 0}`);
+      if (!r || typeof r.top !== 'number') return null;
+      return typeof point.h === 'number' && Math.abs(point.h - r.top) <= 0.001;
+    },
     /** Is the point inside the room its station names? Null when nothing can say. */
     inNamedRoom(point) {
       if (!point) return null;
