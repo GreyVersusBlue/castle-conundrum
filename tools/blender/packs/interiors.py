@@ -1,5 +1,5 @@
 # interiors.py - the interiors kit (SPECS.md "Blender: an interiors kit",
-# #813 to #816, #819, #830).
+# #813 to #816, #819, #830, #951 to #953).
 #
 # Modular pieces as functions, composed into sets by the row (#815): a row's
 # `pieces` is a list of [piece, x, y, z, rotationY] in the set's own metres,
@@ -22,8 +22,9 @@ from mathutils import Matrix, Vector  # noqa: E402
 
 # Wood from tools/pixel/textures.json's `wood_planks` and `old_planks_02`,
 # iron from `castle_wall_slates`, earthenware from `castle_brick_02_red`,
-# dough from `plastered_wall_04`. LINEN is the pack's one extraColour
-# (packs.json says why).
+# dough from `plastered_wall_04`. LINEN and STRAW are the pack's two
+# extraColours (packs.json says why). STRAW is appended last, so slots 0 to 9
+# keep the UVs the four sets of increment 1 were built with (#952).
 WOOD_DARK = '#553a22'
 WOOD = '#6d4a2e'
 WOOD_LIGHT = '#855a3a'
@@ -34,7 +35,8 @@ EARTHEN = '#9a4430'
 EARTHEN_DARK = '#7a3626'
 DOUGH = '#cbbfa3'
 LINEN = '#ebe5d6'
-PALETTE = [WOOD_DARK, WOOD, WOOD_LIGHT, WOOD_EDGE, INTERIOR, IRON, EARTHEN, EARTHEN_DARK, DOUGH, LINEN]
+STRAW = '#b89d55'
+PALETTE = [WOOD_DARK, WOOD, WOOD_LIGHT, WOOD_EDGE, INTERIOR, IRON, EARTHEN, EARTHEN_DARK, DOUGH, LINEN, STRAW]
 
 
 def paint(bm, faces, colour):
@@ -142,6 +144,73 @@ def cloth(bm, s):
         cbox(bm, (sx * (length / 2 + t / 2), 0, t - drop / 2), (t, depth, drop), LINEN)
 
 
+def pallet(bm, s):
+    """A prisoner's bed: a board frame on the floor, straw heaped proud of it
+    and a folded blanket at the foot. The head is at -X, the foot at +X.
+    `height` is the straw's top, which is what a chain is measured from."""
+    length, depth, height, board, frame = s['length'], s['depth'], s['height'], s['board'], s['frame']
+    for sy in (-1, 1):
+        cbox(bm, (0, sy * (depth / 2 - board / 2), frame / 2), (length, board, frame), WOOD_DARK)
+    for sx in (-1, 1):
+        cbox(bm, (sx * (length / 2 - board / 2), 0, frame / 2), (board, depth - 2 * board, frame), WOOD_DARK)
+    cbox(bm, (0, 0, height / 2), (length - 2 * board, depth - 2 * board, height), STRAW)
+    fold, thick = s['blanket']
+    cbox(bm, (length / 2 - board - 0.04 - fold / 2, 0, height + thick / 2),
+         (fold, depth - 2 * board - 0.08, thick), EARTHEN_DARK)
+
+
+def bucket(bm, s):
+    """A stave bucket: staves lathed with a little flare, two iron hoops
+    standing proud of them, and the dark of its inside under the rim. The
+    upper hoop is the widest thing on it, at `radius`."""
+    r, h, sides = s['radius'], s['height'], s['sides']
+    stave = r * 0.94
+    profile = [(stave * 0.86, 0.0), (stave * 0.89, h * 0.16), (r * 0.93, h * 0.16), (r * 0.93, h * 0.26),
+               (stave * 0.91, h * 0.26), (stave * 0.98, h * 0.74), (r, h * 0.74), (r, h * 0.84),
+               (stave, h * 0.84), (stave, h), (stave * 0.86, h), (stave * 0.84, h * 0.55)]
+    lathe(bm, profile, sides,
+          [WOOD, IRON, IRON, IRON, WOOD, IRON, IRON, IRON, WOOD, WOOD_EDGE, INTERIOR],
+          (WOOD_DARK, INTERIOR))
+
+
+def wall_ring(bm, s):
+    """An iron plate on the wall and a ring hanging from it. The plate's back
+    is on the piece's own z 0 (Blender y 0) and everything else is in front of
+    it, so nothing reaches behind the wall face. The base, z 0, is the ring's
+    lowest point, which is where a chain meets it."""
+    width, tall, t = s['plate']
+    radius, bar, segments = s['radius'], s['bar'], s['segments']
+    top = 2 * radius + tall * 0.6
+    cbox(bm, (0, -t / 2, top - tall / 2), (width, t, tall), IRON)
+    # the ring: a square-section torus in the plane of the wall, in front of
+    # the plate, its top inside the plate's height as if through a staple
+    y0, y1 = -t, -t - bar
+    rings = []
+    for k in range(segments):
+        a = 2 * math.pi * (k + 0.5) / segments
+        c, sn = math.cos(a), math.sin(a)
+        rings.append([bm.verts.new((rr * c, y, radius + rr * sn))
+                      for rr, y in ((radius, y0), (radius, y1), (radius - bar, y1), (radius - bar, y0))])
+    faces = []
+    for k in range(segments):
+        a, b = rings[k], rings[(k + 1) % segments]
+        for j in range(4):
+            faces.append(bm.faces.new((a[j], b[j], b[(j + 1) % 4], a[(j + 1) % 4])))
+    paint(bm, faces, IRON)
+
+
+def chain(bm, s):
+    """`links` iron links rising `drop` from the base, alternate links turned
+    90 degrees. Each is a box a little longer than its share of the drop, so
+    the links overlap as links do."""
+    links, drop, link, bar = s['links'], s['drop'], s['link'], s['bar']
+    pitch = drop / links
+    for k in range(links):
+        size = (link, bar, pitch * 1.15) if k % 2 == 0 else (bar, link, pitch * 1.15)
+        z = min(max(pitch * (k + 0.5), size[2] / 2), drop - size[2] / 2)
+        cbox(bm, (0, 0, z), size, IRON)
+
+
 PIECES = {
     'trestle-board': trestle_board,
     'bench': bench,
@@ -150,6 +219,10 @@ PIECES = {
     'crock': vessel,
     'rack': rack,
     'cloth': cloth,
+    'pallet': pallet,
+    'bucket': bucket,
+    'wall-ring': wall_ring,
+    'chain': chain,
 }
 
 

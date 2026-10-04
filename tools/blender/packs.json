@@ -60,6 +60,10 @@
         {
           "colour": "#ebe5d6",
           "why": "Linen, the cloth on the high table. It is what tells the Constable's board from the household's trestles down the hall, and the castle's palettes stop at plaster #cbbfa3, which on a table reads as a second, paler wood. The same undyed linen the folk pack wears."
+        },
+        {
+          "colour": "#b89d55",
+          "why": "Straw, the fill of the pallet in the cell (#952). It is what makes the bed a prisoner's and not a board: the pack's four woods run #553a22 to #916240 and dough is #cbbfa3, so straw in any of them reads as a plank or as plaster. Appended last in the palette, so the ten slots before it keep their UVs."
         }
       ]
     }
@@ -6618,6 +6622,77 @@
           "leg": 0.05,
           "inset": 0.2,
           "bevel": 0
+        }
+      }
+    },
+    {
+      "pack": "interiors",
+      "name": "cell-pallet",
+      "script": "interiors.py",
+      "seed": "interiors/cell-pallet/2026-10-03",
+      "why": "The Prison Tower's cell, the gaol since lore year 9, held nothing but its drum (#951, #952): a straw pallet along the flat west face, an iron ring on the wall over its head with a chain down to it, and a bucket past the head end. One set, one draw, back at -Z, which is the wall; the ring and the bucket are at -X, the end farthest from the bars under rotationY 90.",
+      "pieces": [
+        [
+          "pallet",
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          "wall-ring",
+          -0.6,
+          1.05,
+          -0.375,
+          0
+        ],
+        [
+          "chain",
+          -0.6,
+          0.18,
+          -0.34,
+          0
+        ],
+        [
+          "bucket",
+          -1.21,
+          0,
+          -0.15,
+          0
+        ]
+      ],
+      "sizes": {
+        "pallet": {
+          "length": 1.9,
+          "depth": 0.75,
+          "height": 0.18,
+          "board": 0.03,
+          "frame": 0.14,
+          "blanket": [
+            0.5,
+            0.05
+          ]
+        },
+        "wall-ring": {
+          "plate": [
+            0.1,
+            0.08,
+            0.02
+          ],
+          "radius": 0.05,
+          "bar": 0.012,
+          "segments": 8
+        },
+        "chain": {
+          "links": 10,
+          "drop": 0.85,
+          "link": 0.03,
+          "bar": 0.01
+        },
+        "bucket": {
+          "radius": 0.16,
+          "height": 0.3,
+          "sides": 8
         }
       }
     }
