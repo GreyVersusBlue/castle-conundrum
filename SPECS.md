@@ -184,8 +184,9 @@ pieces that make the castle's working rooms read as what they are. "What
 every Blender pack shares" holds and is not restated. Decided as #813 to
 #816 and #819, amended by #951 to #953. Three increments: two class S, the
 third gated on rank 4's look. **Increment 1 shipped on huginn (#947)**: four
-sets, five placed, the GPU look still owed. **Increment 2 is the cell alone
-(#951)**: one set, one outer-ward draw, behind one new station rail (#953).
+sets, five placed, the GPU look still owed. **Increment 2 shipped on huginn
+(#971)** as the cell alone (#951): one set, one outer-ward draw, behind one
+new station rail (#953); the GPU look is still owed.
 
 > **#920, discharged by #946 (2026-10-03):** the gate is open and #803's flat look stands for this row. #920's own reason was overtaken: #964 swaps the wall faces round all four rooms, so the sets will stand against photographic walls. The look stands because #964 names 2b's sets among what a room keeps, #813 gives this row no wall to cover, and #803's pipeline takes no image input. A flat set against a swapped wall is a line on the integration row's looking checklist, and its remedy is that row's `keep` list.
 
@@ -429,7 +430,8 @@ narrower, the increment comes back to `architect` first.
    1826 meshes to 1827; 164 textures to 165, one 16 px atlas. The builder
    writes the printed lines before and after in `HISTORY.md`.
 6. **`plan-vs-scene.mjs`**, unchanged: one tagged mesh per set, diffed.
-7. **Check 8 over `cell-pallet`**: about 360 triangles and 13 KB expected,
+7. **Check 8 over `cell-pallet`**: about 360 triangles and 13 KB expected
+   (measured at #971: 456 triangles, 13,632 bytes),
    against 2,500 and 96,000; the pack's five files about 2,070 triangles and
    70 KB. Its line 6 is not broken again: #947's break 1 was that line, in
    this pack, through the same `sizes` path. If `cell-pallet` measures over
@@ -462,7 +464,8 @@ narrower, the increment comes back to `architect` first.
 - **The draw ceiling.** Recommend **no move** (#816); the numbers are there.
   After increment 2 the outer ward has 7 draws left, so the next row that
   adds to it brings #609's sector merge to `architect` first.
-- **For Devon: does the chapel get a 2b set?** Recommend **no** (#951): the
+- **For Devon: does the chapel get a 2b set?** **Answered no, 2026-10-03
+  22:58 ET (#971).** Recommend **no** (#951): the
   drum's 24.6 square metres already hold seven pieces, a flight and four
   stations, and its altar, pulpit, rood and pews stand next door in 2g's
   nave. **If this is not answered when increment 2 is built, the builder
@@ -494,7 +497,7 @@ narrower, the increment comes back to `architect` first.
 - #529: no rail moves; every one above already exists but check 8's line
   and #953's clause, which is new and on `mystery`'s side.
 - #13, #34, #147. #53: whether a room reads as its trade is Devon's look.
-- #801 to #808, #811 to #816, #819, #830, #837, #946, #947, #951 to #953.
+- #801 to #808, #811 to #816, #819, #830, #837, #946, #947, #951 to #953, #971.
 
 ### Looking checklist
 

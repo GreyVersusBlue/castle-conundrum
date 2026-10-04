@@ -3612,6 +3612,16 @@
       "comment": "The high table on the dais, its cloth and board to the west so whoever sits at it faces down the hall, its bench between the board and Devon's high chair (#830, #947). yOffset 0.32 is the dais's top, as hall-high-chair's is: a prop stacks on props, and the dais is nine kit steps."
     },
     {
+      "id": "cell-pallet",
+      "model": "assets/blender/interiors/cell-pallet.glb",
+      "tile": [
+        -5.405,
+        4.05
+      ],
+      "rotationY": 90,
+      "comment": "The cell's pallet along the flat west face the south curtain's end makes of the Prison Tower, x -22.0 (#951, #952, #971): its back 5 mm off the stone, the ring, the chain and the bucket at the south end, farthest from the bars. One mesh and a full collider, 1.20 m to the ring. Madoc's station at (-20, 14) is 2.2 m from it and did not move (#814); #953's rail is what says so."
+    },
+    {
       "id": "chapel-aumbry",
       "model": "assets/blender/evidence/aumbry-candles.glb",
       "tile": [
