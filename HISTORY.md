@@ -14751,6 +14751,107 @@ and the three cell lines on the looking checklist stand open.
 **Left:** increment 3, gated on rank 4's look, and the Windows GPU look at
 the five sets (six placements).
 
+## The hound-bark beat's flake: a fixed second of wall clock, replaced by a wait on the bark (2026-10-04)
+
+Session CC-17, a follow-up, on huginn, software Chromium. Lead override of
+the class table: one beat in one suite, and finding the cause was the work.
+
+**#972. `test/plan-vs-scene.mjs`'s bark beat waits for the bark and counts
+its verdict in frames; the game is unchanged, and the bark was never
+missed.** The beat is #696's. It went red in CI twice (#847, #885) and on huginn
+four times on 2026-10-03 (#931's and #941's sessions, #947, #971), with the
+same two lines each time they were written down, "(1 frames driven) -- 0 cued" and "Infinity m off", and
+always green on the rerun. Each was filed as inconclusive under #53. It was
+not the renderer's verdict on the game. It was the test.
+
+**The cause.** The beat put the camera beside Gelert and drove
+`populace.update` once per `requestAnimationFrame` for `firstSeconds` + 400
+ms of wall clock, 1.0 s, then read the log. The page's own loop runs in the
+same frames, ahead of the beat's callback, and renders at the end of its
+callback. A software frame on huginn is about half a second with nothing
+else running: the quiet baseline drove 2 frames. When the page's frame began
+before 0.6 s it cued nothing, correctly, and when its render then ran past
+1.0 s the beat woke behind it, saw its second gone and left. One frame
+driven, no update of anybody's after the wait, 0 cued. A frame that began
+after 0.6 s barked from the page's loop and the beat passed with one frame
+driven, which is why the same count read green on other runs.
+
+**Reproduced on purpose.** CPU load did not do it in two tries: 8 busy
+processes died earlier on `Runtime.callFunctionOn timed out`, 4 passed with
+1 frame driven. A slow render did it on the first try: every frame's
+callbacks followed by 1100 ms of busy main thread, for this beat only, in a
+scratch copy of the suite. The old beat: "FAIL Gelert beside the player cues
+a bark inside 0.6 s plus a margin (1 frames driven) -- 0 cued" and "FAIL and
+it is heard from where the hound stands -- Infinity m off", the two lines of
+#847 to the character. The new beat under the same render: green, 2 frames
+driven, the bark at 2328 ms.
+
+**The fix, in the test only.** The loop runs until a `hound-near` entry is
+in the audio's log. It gives up after 3 frames driven past the wait have
+cued nothing, a count load cannot move, with a 120 s wall for a page that
+gives no frames at all. Both verdicts are bracketed on the first update,
+the one that opens the cadence's clock: a frame that begins `firstSeconds`
+after that update returned and leaves no bark is late, and a bark whose own
+log stamp is under `firstSeconds` after that update began is early. The
+early check lost its 50 ms of slack and reads the entry's `t`, so it also
+covers a bark the page's loop cues. The first assertion now says "on the
+first frame driven after the cadence's 0.6 s are up", which is stricter than
+"inside 0.6 s plus a margin" and does not depend on the machine.
+
+**Three breaks, each from green (#34):**
+
+1. `src/populace.js` never cues `hound-near`. "FAIL Gelert beside the player
+   cues a bark on the first frame driven after the cadence's 0.6 s are up (5
+   frames driven, the bark at null ms) -- 0 cued, 3 frames driven after the
+   wait cued nothing, 5 driven in all", and "Infinity m off".
+2. `src/audio.js` opens the clock at `now`, no wait. "FAIL and none before
+   the cadence's 0.6 s were up -- 1 cued early, the first at 3 ms".
+3. `src/audio.js` waits ten times `firstSeconds`. The same two lines as
+   break 1.
+
+**Checks on huginn.** `npm test plan-vs-scene` alone, ten times in a row:
+ten green, 1 to 3 frames driven, the bark at 643 to 1825 ms. Three of the ten
+barked after the old window had shut (1117, 1616 and 1825 ms).
+Under 4 busy `node` processes, three times: three green, 237 to 250 s
+against 151 to 157 alone, the bark at 1925, 623 and 726 ms. Available memory
+was 9.7 GB or more throughout. `npm test` once at the end: fifteen of
+fifteen, the bark at 1479 ms with 2 frames driven.
+
+**Not changed, and noted.** #782 still stands: the cadence's clock is
+cleared only between 5 m and the follow radius, which is the game's and not
+this beat's. `test/plan-vs-scene.mjs` carries one NUL byte, on the line that
+builds `perMaterial`'s key, so git holds the file as binary, CRLF in the
+index on every machine, and a plain `grep` over it prints nothing. That is
+why a search for "bark" in `test/` does not find this beat. Left as it is:
+whether the separator should be a NUL is not this row's call.
+
+**#973. `test/built.mjs` closes the built page before it opens the source
+page, and `test/map.mjs`'s two reloads get 120 s; the game is unchanged.**
+`main` went red on GitHub when #1004's stage curtain was merged
+(castle-conundrum#116, 2026-10-04): `map` and `built` failed on the pull
+request's run and on the push run, `built` on huginn too. Neither was the
+build or the map. Measured on huginn's software renderer from the built page:
+with the skin drawn a frame of the opening view is about 2.1 s, and with
+`data/castle-skin.json`'s stages emptied in the page it is about 1.2 s; a
+`page.reload` took 31.5 s with the skin and 15.1 s without, so it had been
+at half of puppeteer's 30 s navigation limit before the curtain and is past
+it now. `test/map.mjs` reloads twice and threw "Navigation timeout of 30000
+ms exceeded" on the first; both reloads now say `timeout: 120000`, the same
+figure the wait for the start panel under them already uses.
+`test/built.mjs` held the built page and the source page open side by side
+in one browser, so one GPU process drew both, and the source page did not
+finish building inside its 180 s (`DOM.describeNode timed out`). What the
+comparison needs from the built page is the set of files it was served, and
+that is in hand as soon as the page has built, so the built page's own
+checks (no offsite request, no console error, the second start button) now
+run first, the page is closed, and then the source page loads. No assertion
+was added, dropped or reworded, and none moved between suites. `built` went
+from red at 307 s to green in 35.8 s on huginn. **Not changed, and noted:**
+the frame cost is the software renderer's and says nothing measured about a
+GPU; `test/play-castle.mjs` has one more `page.reload` with the default
+30 s, which was green here and in CI and was left alone. Found by the
+landing routine and fixed at Devon's asking.
+
 **#1000. Reserved: #971 to #1000 are held for sessions on Huginn (the Selector loop); anyone else numbers from #1001.**
 
 **#1001. Devon's line on increment 1's still (#970), given 2026-10-03:

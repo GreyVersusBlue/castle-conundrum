@@ -1243,38 +1243,65 @@ try {
   /* THE HOUND'S BARK (#696). `Populace._follow` cues `hound-near` every
    * frame the hound is inside its radius, and the audio's cadence turns the
    * frames into a bark `firstSeconds` after the approach. The camera is put
-   * beside the hound, the loop is driven by hand with a supplied dt as the
-   * ring beat above is, and the clock the cadence reads is the page's own,
-   * so the wait is a real one of `firstSeconds` and a margin, which is well
-   * under a second. What is held is that a bark is cued from where the hound
-   * stands and none before the wait is up; how it sounds is #53's. */
+   * beside the hound and the loop is driven by hand with a supplied dt as the
+   * ring beat above is. The clock the cadence reads is the page's own, so the
+   * wait is a real one of `firstSeconds`. What is held is that a bark is cued
+   * from where the hound stands, on the first frame after the wait is up and
+   * on none before it; how it sounds is #53's.
+   *
+   * THE WAIT IS ON THE BARK AND THE VERDICT IS COUNTED IN FRAMES (#972). This
+   * beat drove frames for `firstSeconds` + 400 ms of wall clock and then
+   * looked, one frame per `requestAnimationFrame`, behind the page's own loop
+   * in the same frame. A software-rendered frame on huginn is about half a
+   * second with nothing else running, so a quiet run drove two. Under load
+   * the page's frame began before the 0.6 s were up, cued nothing, which is
+   * right, and rendered until the second was over; the beat woke behind it,
+   * saw its second gone and left with one frame driven and nothing after the
+   * wait at all: "0 cued", "Infinity m off". Nothing was wrong with the bark.
+   * Now the loop runs until the bark is in the log, and gives up only after
+   * LATE frames driven past the wait have cued nothing, which is a count no
+   * load can move. `opened` brackets the first update, the one that opens the
+   * cadence's clock, so both verdicts are exact: a frame that starts
+   * `firstSeconds` after that update returned has to bark, and a bark stamped
+   * less than `firstSeconds` after it began is early. The stamp is the log
+   * entry's own `t`, because the page's loop is running too and may be the
+   * one that cues it. WALL is for a page that has stopped giving frames at
+   * all, and is not a wait anything passes by reaching. */
   {
-    const barked = await page.evaluate(async ({ dt }) => {
+    const barked = await page.evaluate(async ({ dt, LATE, WALL }) => {
       const pop = window.__populace, audio = window.__audio, cam = window.__cam;
       const body = pop.bodies.find((b) => b.person.follow && b.npc.group.visible);
       if (!body) return null;
       const sounds = await (await fetch('data/sounds.json')).json();
       const cad = sounds.events.sounds[sounds.events.byCue['hound-near']].cadence;
+      const wait = cad.firstSeconds * 1000;
       const me = body.npc.group.position;
       const home = { x: cam.position.x, y: cam.position.y, z: cam.position.z };
       cam.position.set(me.x + 1.5, me.y + 1.7, me.z);
       const before = audio.events().length;
+      const heard = () => audio.events().slice(before).filter((e) => e.cue === 'hound-near');
       const t0 = performance.now();
-      let early = 0, frames = 0;
-      while (performance.now() - t0 < cad.firstSeconds * 1000 + 400) {
+      let opened = null, late = 0, frames = 0;
+      while (!heard().length && late < LATE && performance.now() - t0 < WALL) {
+        const began = performance.now();
         pop.update(dt, cam.position);
         frames++;
-        if (performance.now() - t0 < cad.firstSeconds * 1000 - 50 && audio.events().length > before) early++;
-        await new Promise((r) => requestAnimationFrame(r));
+        if (!opened) opened = { began, done: performance.now() };
+        else if (began - opened.done >= wait && !heard().length) late++;
+        if (!heard().length) await new Promise((r) => requestAnimationFrame(r));
       }
-      const fired = audio.events().slice(before).filter((e) => e.cue === 'hound-near');
+      const fired = heard();
+      const early = opened ? fired.filter((e) => e.t - opened.began < wait).length : 0;
+      const after = fired.length ? Math.round(fired[0].t - opened.began) : null;
       cam.position.set(home.x, home.y, home.z);
-      return { id: body.person.id, name: body.npc.name, at: { x: me.x, y: me.y, z: me.z }, fired, early, frames, first: cad.firstSeconds };
-    }, { dt: 0.05 });
+      return { id: body.person.id, name: body.npc.name, at: { x: me.x, y: me.y, z: me.z }, fired, early, late, frames, after, first: cad.firstSeconds };
+    }, { dt: 0.05, LATE: 3, WALL: 120000 });
     if (!barked) fail('no populace body follows the player at Prime, so nothing here can bark');
     else {
-      check(barked.fired.length >= 1, `${barked.name} beside the player cues a bark inside ${barked.first} s plus a margin (${barked.frames} frames driven)`, `${barked.fired.length} cued`);
-      check(barked.early === 0, `and none before the cadence's ${barked.first} s were up`, `${barked.early} frames had one early`);
+      check(barked.fired.length >= 1 && barked.late === 0,
+        `${barked.name} beside the player cues a bark on the first frame driven after the cadence's ${barked.first} s are up (${barked.frames} frames driven, the bark at ${barked.after} ms)`,
+        `${barked.fired.length} cued, ${barked.late} frames driven after the wait cued nothing, ${barked.frames} driven in all`);
+      check(barked.early === 0, `and none before the cadence's ${barked.first} s were up`, `${barked.early} cued early, the first at ${barked.after} ms`);
       const d = barked.fired.length ? Math.hypot(barked.fired[0].at.x - barked.at.x, barked.fired[0].at.z - barked.at.z) : Infinity;
       check(d < 0.01, `and it is heard from where the hound stands`, `${d.toFixed(2)} m off`);
     }

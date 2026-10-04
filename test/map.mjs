@@ -266,7 +266,11 @@ try {
   // a placed camera is not a walking one and marks nothing dirty, so nothing
   // here reads the position after the reload. What the reload has to carry is
   // the set.
-  await page.reload({ waitUntil: 'load' });
+  //
+  // 120 s, not puppeteer's 30: under the software renderer a reload waits out
+  // the frames already queued, and with the castle skin drawn that is about
+  // 30 s by itself (#973).
+  await page.reload({ waitUntil: 'load', timeout: 120000 });
   await page.waitForSelector('#start-overlay:not(.hidden)', { timeout: 120000 });
   await page.evaluate(() => window.__quest.enterMystery());
   await attachSceneProbe(page, THREE_URL);
@@ -291,7 +295,7 @@ try {
     raw.visited = [...(raw.visited ?? []), 'the-oubliette', 'outer-ward'];
     localStorage.setItem('castleConundrumSave_v1', JSON.stringify(raw));
   });
-  await page.reload({ waitUntil: 'load' });
+  await page.reload({ waitUntil: 'load', timeout: 120000 });
   await page.waitForSelector('#start-overlay:not(.hidden)', { timeout: 120000 });
   await page.evaluate(() => window.__quest.enterMystery());
   await attachSceneProbe(page, THREE_URL);
