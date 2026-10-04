@@ -1081,6 +1081,7 @@ CI's reach that a container cannot run, except the cut itself.
 ### Open calls
 
 Each is decided in #963 to #968; the recommendation is that decision.
+Devon accepted all 22, as recommended (#969).
 
 - **What ships (#963).** Recommend **one file, `assets/castle3d/skin.glb`,
   holding exactly the listed stages, never the master**: 570 MB cannot be
