@@ -14180,6 +14180,284 @@ the pig and the sheep beside the cow, the geese beside the hens, the clips,
 the tints, and rank 10's inherited three (the hound's follow, the hens'
 peck, the cow grazing).
 
+## Rank 2b: #920's re-check, the look stands and the gate is open (2026-10-03)
+
+**#946. #803's flat look stands for rank 2b against the photographic castle,
+so #920's gate is discharged and 2b's increment 1 is a `builder` job.**
+Written as `architect` (session CC-11) on huginn. No code, asset, data or
+test changed; `HISTORY.md` and `SPECS.md` only.
+
+**What #920's reason got wrong, after the fact.** #920 recommended "the look
+stands, because #921 keeps the interiors on the kit and the pixel textures,
+and an interiors kit is seen there and nowhere else". #964 was written after
+it and amends #921 a third way: that sentence holds for what a room holds
+and not for the faces of the wall round it, because a swapped piece is
+swapped on every face. All four rooms 2b dresses (#814) are behind a swapped
+wall once the stages ship: the kitchen's wall is a curtain run's inner face
+and the chapel and the cell are drums' inner faces, all stage `curtain`; the
+great hall is stage `buildings`. So 2b's sets will not be seen only against
+the kit and the pixel textures, and #920's reason does not carry the answer
+any more.
+
+**The reason that replaces it**, four parts:
+
+1. **#964 names 2b's sets among what stays.** Its list of what a room holds
+   is "props, the kit, 2b's sets, the built props", and its `props` stage is
+   never admitted: "the game's props are the game's". The integration row
+   was decided with 2b's sets standing in the rooms as specced.
+2. **2b never owned a wall.** #813 splits by surface and volume: 2b makes no
+   piece whose job is to cover a face. The wall's look was rank 4's and is
+   now 2i's; a set is furniture in front of it either way.
+3. **This pipeline cannot make a photographic set.** #803 refuses
+   `images.load` and every input file, and "The look" caps a texture at 128
+   px and 32 colours with no normal or ORM map. A photographic 2b is not a
+   re-check of #803's look; it is #803 overturned, and nothing found here
+   argues for that.
+4. **The rooms are not one look today and will not be after.** The great
+   hall holds nine photographed Poly Haven props (29 draws) beside a kit
+   dais; 2f's props are flat low-poly on Devon's atlas, which #830 measured
+   at 1789 colours over #803's; 2a's evidence props, the crate, 2c's folk
+   and 2d's animals are #803's flat look. 2b's sets join the largest group.
+   Flat beside photographed is already a line on 2a's and 2b's looking
+   checklists, and 2b's increment 3 is already gated on its answer.
+
+**What this amends.** #920: its gate is discharged and its recommended
+answer is kept with the reason above in place of its own. #803: not
+reopened. #921 and #964: untouched. 2b's spec is unchanged but for the note
+at its head; increments 1 and 2 stay class S and increment 3 stays gated on
+rank 4's look (#813).
+
+**The look item this hands to 2i.** A flat set against a photographic wall
+is a GPU look at the `curtain` and `buildings` stages, and it is not a
+reason to hold 2b. If it reads as two rooms, the remedy is already #964's:
+the wall's plan id goes on `keep` in `data/castle-skin.json` and its built
+object stays drawn. The set is not rebuilt. 2i's looking checklist already
+asked this of "a flat prop" in the kitchen and a drum's cell; it gains one
+line naming 2b's sets, with the chapel at `curtain` and the hall at
+`buildings`.
+
+**Not verified.** Nobody has seen a flat set against a photographic wall:
+no 2b set exists and no stage has shipped. This entry is an argument from
+the decisions and the files, and the look itself is Devon's on a GPU (#53).
+If that look says the sets themselves are wrong and `keep` does not mend it,
+that is #803 reopened by an `architect` increment with the stills as
+evidence, and 2b's sets, being `packs.json` rows a script builds, are what
+gets rebuilt.
+
+## Rank 2b increment 1: the kitchen and the great hall, four sets, five placed, committed on huginn before the look (2026-10-03)
+
+**#947. Rank 2b's increment 1 shipped, and it is not the increment the
+spec was written as (#813 to #816, #819, #830, #946).** What the spec could
+not be built as written, and what was built instead:
+
+1. **Four rows, four files, five placements and 5 outer-ward draws, not six,
+   six, seven and 7.** #830 dropped `kitchen-hearth` and `hall-hearth` to 2f
+   after the scope was written, so `packs.json` gains `kitchen-worktable`,
+   `kitchen-shelves`, `hall-trestle` and `hall-high-table`, and
+   `interiorProps` gains five rows (`hall-trestle` is placed twice).
+2. **Acceptance break 2 named `kitchen-hearth`, which does not exist.**
+   `kitchen-shelves` moved 0.5 m into `kitchen-south` stands in for it.
+3. **`kitchen-shelves` stands on the floor and collides.** It is 1.60 m
+   tall and 0.36 m deep against the wall, so the spec's allowance to hang it
+   by `yOffset` and `noCollide` was not taken.
+4. **One `extraColour`, linen `#ebe5d6`, of the 8 allowed.** The spec named
+   linen, straw and ember for six sets; four sets use linen only.
+
+Written by session CC-11, built on huginn with Blender 5.2.2 LTS at `-t 4`,
+measured 2026-10-03. Every figure below is from `tools/blender/manifest.json`
+and the suites' own output.
+
+Files, against the cap `interiors: { triangles: 2500, bytes: 96000 }`
+(#819), which is the one added line in `test/assets.mjs`:
+
+| File | Triangles | Bytes | sha256 |
+| --- | --- | --- | --- |
+| `hall-high-table.glb` | 240 | 9,036 | 2fc15544ba2fe26fd9681bb4057e4c32df8ea0beff58746c1af3210f2fd3d779 |
+| `hall-trestle.glb` | 288 | 9,980 | cc72d6bf44f8b11c538c4afcc293041b2dd588713e43afdc0f0cd9d6ad0e2109 |
+| `kitchen-shelves.glb` | 808 | 25,576 | 62e43450221d98d7b673daec436114114276adce1d01a20c91ff5f31053183b8 |
+| `kitchen-worktable.glb` | 376 | 12,528 | cd0edca83ace4e2816d695c7dea325db4092402b838addc7daefbd0cc558314b |
+
+Four files, 1,712 triangles and 57,120 bytes between them; the largest is
+808 of 2,500 and 25,576 of 96,000. All in `assets/blender/interiors/`.
+
+Placements, all five colliding. The plan boxes are from `src/castle-plan.js`:
+
+| Id | Tile | rotationY | yOffset | x | z | y |
+| --- | --- | --- | --- | --- | --- | --- |
+| `kitchen-worktable` | (-4.75, -2) | 0 | 0 | -20.00..-18.00 | -8.40..-7.60 | 0.00..1.10 |
+| `kitchen-shelves` | (-5.375, -1.6725) | 180 | 0 | -22.20..-20.80 | -6.87..-6.51 | 0.00..1.60 |
+| `hall-trestle-west` | (-7.5, 2.5) | 0 | 0 | -31.20..-28.80 | 9.24..10.76 | 0.00..0.74 |
+| `hall-trestle-east` | (-3.75, 2.15) | 0 | 0 | -16.20..-13.80 | 7.84..9.36 | 0.00..0.74 |
+| `hall-high-table` | (-2.645, 2.5) | -90 | 0.32 | -11.20..-9.96 | 8.59..11.41 | 0.32..1.11 |
+
+No 2f row moved and no station moved.
+
+Budget (`test/budget.mjs`, unchanged, #816), before then after:
+
+```
+  ok    the outer ward draws 1021 meshes, 179 under the ceiling of 1200
+  ok    the outer ward draws 1026 meshes, 174 under the ceiling of 1200
+  ok    1821 meshes in the castle, 166 of them outside both wards
+  ok    1826 meshes in the castle, 166 of them outside both wards
+  ok    the outer ward's 1021 and the outside's 166 come to 1187, 13 under the ceiling of 1200
+  ok    the outer ward's 1026 and the outside's 166 come to 1192, 8 under the ceiling of 1200
+  ok    160 textures come to 43.9 MB of video memory, 20.1 under the ceiling of 64
+  ok    164 textures come to 43.9 MB of video memory, 20.1 under the ceiling of 64
+  outer    1021 / 1200 draw calls    ->    outer    1026 / 1200 draw calls
+  outside   166   counted in each ward (#727): outer 1187 / 1200, inner 875 / 1200
+  outside   166   counted in each ward (#727): outer 1192 / 1200, inner 875 / 1200
+```
+
+Outer plus outside is now 1192, 8 under 1200. Increment 2's cell draw comes
+out of those 8. The inner ward is unchanged at 875.
+
+Breaks (#34), each from green. The files were not yet committed, so each
+restore was `cmp`-checked against a saved green copy:
+
+1. `hall-trestle`'s `sizes.bench.bevel` at 8: "check 8 line 6:
+   assets/blender/interiors/hall-trestle.glb has 7072 triangles, over pack
+   interiors's cap of 2500", and "is 194420 bytes, over pack interiors's cap
+   of 96000".
+2. `kitchen-shelves`' tile z -1.6725 to -1.5475 (check 1 of `test/layout.mjs`):
+   "kitchen-shelves at x -22.20..-20.80, y 0.00..1.60, z -6.37..-6.01 is
+   inside kitchen-south".
+3. `hall-high-table`'s tile moved to `cooks-accounts`' (-6.35, -3.1), layout
+   1e: "hall-high-table at x -26.02..-24.78, y 0.32..1.11, z -13.81..-10.99 is
+   inside CL/KI", and "hall-high-table stands over cooks-accounts, which the
+   player presses E at: its base at y 0.32 is between cooks-accounts's centre
+   at 0.30 and a standing eye at 1.70, and it overlaps by 0.06 x 0.50 m in
+   plan".
+4. `hall-trestle-east`'s tile moved to the clerk's Vespers station (-4.4,
+   2.3), `test/mystery.mjs`: "validateMystery finds nothing wrong, the castle
+   included" followed by "clerk: station at vespers is at tile (-4.4, 2.3) in
+   GH, which the player cannot walk to" and five more clerk lines of the same
+   two kinds ("no path from CL at sext to GH at vespers", and the `-eve`
+   pair). The spec expected `nav.standable` to name the set; it fails as
+   "which the player cannot walk to" instead, and the fix is the same, the
+   set's tile.
+
+Determinism (#883): a second render printed "unchanged" for all four files
+and the manifest, and a third after break 1's restore did too.
+
+Suites on the final tree, huginn, software Chromium, load 9 to 14: fourteen
+of fifteen green. `layout`, `assets`, `budget`, `mystery` and `tools` 5 of 5;
+`gltf`, `quest`, `save`, `lore` and `dialogue` 5 of 5; `built` green in
+223.4 s; `touch`, `map` and `overlays` green. `plan-vs-scene` was red on run
+1 and run 2 on the hound-bark beat only: "Gelert beside the player cues a
+bark inside 0.6 s plus a margin (1 frames driven) -- 0 cued" and "and it is
+heard from where the hound stands -- Infinity m off". The control, HEAD's
+`data/scene-config.json`, was green with 1 frame driven (451 pieces). Run 3
+on the new tree was green with 2 frames driven (456 pieces). That beat
+runs in real time at about 1 frame a second under this load, so it is
+inconclusive under #53, and it is the same beat #939 to #941's entry
+recorded. A fourth run alone, at load 6 to 10, passed in 174.3 s with 3
+frames driven. So two green and two red on the new tree, on that beat only.
+
+Not verified: no GPU look (#53). The only thing seen is the contact sheet
+`shots/blender/interiors.png`. Whether the high table's bench, between the
+board and the Constable's high chair, reads as a bench is a look item.
+
+Left on the row:
+
+- **Increment 2**, the cell's `cell-pallet`. `chapel-altar` went to 2f under
+  #830, so increment 2 is one row unless a later spec says otherwise.
+  `SPECS.md`'s increment 2 scope and its acceptance line 5 still list the
+  altar. That is stale and owed to an `architect` pass; it was not fixed
+  here.
+- **Increment 3**, the photographed props, gated on rank 4's look (#813).
+- **The Windows GPU look** at the five sets, against the swapped walls
+  (#946).
+
+## Rank 3's orphan findings, re-verified: two fixed here, the rest already fixed or the GPU's (2026-10-03)
+
+Session CC-17, on huginn, software Chromium. The audit of 2026-10-01 listed
+four findings from #714, #715 and #718 as nobody's row. Each was read against
+the tree at `84b55f5` before anything was changed. Lead override of the class
+table for both edits: each is under twenty lines and its spec is the finding.
+
+| Finding | State before this session | Where |
+| --- | --- | --- |
+| #715's "talk to the Sir Roger Lestrange" | Fixed. `src/interaction.js:197` has no article, `test/plan-vs-scene.mjs` asserts the Constable's live prompt, and a GPU run read it right (#891's sitting). | no change |
+| #715's `read` half, "read the A gravestone" | **Open.** `src/castle-builder.js` still wrapped every title in "the"; #900's sitting saw four and filed none. | #948 |
+| #714's anisotropy, NEAREST and body-count checks | Fixed in #888 (items 5 and 6), read green on a GPU in its run 5. | no change |
+| #714's wall-height check | Deleted in #917 (a). | no change |
+| #714's brazier check | Hall half fixed in #917 (b). The porter's-gate pair reads clear headless and "IN Scene" on a GPU; the check now prints the `planId`. GPU only. | rank 3 |
+| The journal walk, 0.51 to 1.30 m against 3.75 m | Rewritten as a ratio against a baseline walk in #917 (c). Never watched fail (#626 not reintroduced). GPU only. | rank 3 |
+| The router prices tight cells (#717, #718) | Not a two-prop workaround. See #950. | no change |
+
+**#948. A title brings its own article.** `readables()` in
+`src/castle-builder.js` built `Press E to read the ${name}`, and twelve of
+`data/documents.json`'s thirteen titles open on The or A, so the page said
+"Press E to read the The King's writ" and "the A gravestone in the chapel
+floor". Now a title's own article is kept and lowered ("Press E to read the
+King's writ", "read a gravestone in the chapel floor"), a title with none is
+said as written ("Press E to read Letters on the Steward's floor"), and a
+piece with no title at all still reads "the" and its id. `src/ui.js`'s touch
+label strips "Press E to" and is unchanged.
+
+The rail is in `test/plan-vs-scene.mjs`, beside the bell, three assertions
+over `window.__readables`: thirteen documents are thirteen things to read, no
+prompt says two articles in a row, and each prompt ends on its document's own
+title from `data/documents.json`. It is a page assertion for #715's own
+reason: the string is composed from the objects the builder placed (#529,
+#39). **Broken on purpose (#34)**: the old template put back, `FAIL no
+readable's prompt says two articles in a row` followed by twelve prompts,
+"Press E to read the The old works ledgers" first, exit 1, 1 failure, the
+other two assertions green. Restored: `plan-vs-scene` green alone in 284.8 s.
+
+**#949. The furniture-against-the-wall check is deleted from
+`test/play-castle.mjs`.** `'the hall table, statue, cabinet and commode all
+clear the wall behind them'` took its stone from scene children named wall,
+tower or column. #917 said its wall half "passes without looking" and left
+it. A headless probe of the live scene at the start panel (static geometry,
+so #53 does not apply) found six such children: three `wall-fortified-gate`
+leaves, `column-61`, `column-damaged-62` and `mereford-churchyard-cross`. No
+wall run and no tower. The check could only fail if one of four props stood
+in a gate leaf or a column, or went missing. The fact is `test/layout.mjs`'s
+check 1, every prop against every wall run, tower and column, and it was
+watched fail for the bug this check was written about: `GothicCabinet_01`'s
+tile x -8.3557 to -8.6557 printed `FAIL GothicCabinet_01 at x -35.08..-33.95,
+y 0.00..2.36, z 10.40..12.12 is inside west-curtain-south`, from a green
+baseline, restored. Deleted and not rewritten, as #917 (a) did: a rewrite
+against `planId` stone would be check 1 again, on a page, in a file CI does
+not run. `test/layout.mjs`'s header said the beat exists; it now says it is
+gone. This adds no rail.
+
+The same probe answers #917 (a)'s open question. `/^column/` does catch the
+churchyard cross, and all six column submeshes read 4.00 m, so `'hall columns
+reach the same height as the walls'` passes for the right reason; its label
+is loose by one cross and is left.
+
+**#950. The clearance pricing is the router, not a workaround, and the two
+props stay.** #718 left `foundation-stone` and `barrels-91` as "a small row
+of its own" and `BACKLOG.md` no longer carries one. Measured in Node on this
+tree with `test/route.mjs`'s own `clearance`: 1031 of the 5227 ground cells
+are tighter than `BODY_RADIUS`, and 115 different colliders are the nearest
+stone to at least one of them. `foundation-stone` (a slab 0.08 m thick, 0.60
+m off `cross-wall-south`) is nearest to none of them and `barrels-91` (0.67 m
+off `west-curtain-north`) to three. Moving both props would take three cells
+out of 1031 and delete no line of `test/route.mjs`: `TIGHT` is there for the
+0.5 m lattice against 1.2 m doorways (#717), which is most of the 1031.
+Nothing changed. What moving them would take: two tile edits in
+`data/scene-config.json` (lane C), `foundation-stone`'s slab copy in
+`data/documents.json` (#557), and a GPU look at a readable that moved. No
+route depends on it.
+
+**Checks on huginn.** `plan-vs-scene` twice, once red on the break and once
+green, each alone. `node --check test/play-castle.mjs` clean; the file was
+not run (`npm run play` is the GPU's, #53). `npm test` on the final tree: 14
+of 15, `built` red at load 16 with two other sessions' browsers up, on
+`Waiting for selector #start-overlay:not(.hidden)` and a `DOM.describeNode`
+protocol timeout, which is #918's failure. `npm test built` alone straight
+after: green in 344.2 s. 8.3 GB was available at the red, so this was load
+and not memory.
+
+**Left for rank 3's next GPU run, by name:** `'no brazier is sealed inside
+the stonework'` for the porter's-gate pair at (-4.8, -2.4) and (-4.8, 2.4);
+`'W moves the player before the journal is opened'` and `'and W moves the
+player again, from the same standing start'`, which also owe #626
+reintroduced; and a look at one readable's prompt on the HUD.
+
 ## Castle in Blender, the integration row: Devon's lines on the open calls (2026-10-03)
 
 **#969. Devon accepts every recommendation in SPECS.md, "Castle in Blender:

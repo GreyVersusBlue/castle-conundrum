@@ -3561,6 +3561,57 @@
       ]
     },
     {
+      "id": "kitchen-worktable",
+      "model": "assets/blender/interiors/kitchen-worktable.glb",
+      "tile": [
+        -4.75,
+        -2
+      ],
+      "rotationY": 0,
+      "comment": "The kitchen's working board, mid-room off the south wall at (-19, -8), between Devon's hearth crane and spit (#830, #947). Collides. 1.6 m north of it are the cook's two stations at (-20, -10) and (-18, -10), which did not move (#814)."
+    },
+    {
+      "id": "kitchen-shelves",
+      "model": "assets/blender/interiors/kitchen-shelves.glb",
+      "tile": [
+        -5.375,
+        -1.6725
+      ],
+      "rotationY": 180,
+      "comment": "A standing rack of crocks on the south wall between the hearth crane and the spit, its back 1 cm off the stone at z -6.51 as theirs are, facing north into the room (#947). On the floor and colliding, so no yOffset and no noCollide."
+    },
+    {
+      "id": "hall-trestle-west",
+      "model": "assets/blender/interiors/hall-trestle.glb",
+      "tile": [
+        -7.5,
+        2.5
+      ],
+      "rotationY": 0,
+      "comment": "The household's trestle and two benches in the hall's west half at (-30, 10), between the cabinet and the fireplace (#947). 1.4 m from the well-wife's station and 1.6 m from the Vespers station at (-27.2, 11.6); neither moved (#814)."
+    },
+    {
+      "id": "hall-trestle-east",
+      "model": "assets/blender/interiors/hall-trestle.glb",
+      "tile": [
+        -3.75,
+        2.15
+      ],
+      "rotationY": 0,
+      "comment": "The second trestle, the same file, below the dais at (-15, 8.6) (#947). 1.4 m from the Vespers station at (-17.6, 9.2) and 1.8 m from the one at (-12, 10)."
+    },
+    {
+      "id": "hall-high-table",
+      "model": "assets/blender/interiors/hall-high-table.glb",
+      "tile": [
+        -2.645,
+        2.5
+      ],
+      "rotationY": -90,
+      "yOffset": 0.32,
+      "comment": "The high table on the dais, its cloth and board to the west so whoever sits at it faces down the hall, its bench between the board and Devon's high chair (#830, #947). yOffset 0.32 is the dais's top, as hall-high-chair's is: a prop stacks on props, and the dais is nine kit steps."
+    },
+    {
       "id": "chapel-aumbry",
       "model": "assets/blender/evidence/aumbry-candles.glb",
       "tile": [

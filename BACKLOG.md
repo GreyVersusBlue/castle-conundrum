@@ -241,7 +241,7 @@ the placement editor, budget suite, move-and-delete and the dialogue format
 
 | Rank | Item | Size | Model | Where | Gate | Lane | Claimed | Detail |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 2b | Blender: an interiors kit: joined sets dressing the kitchen, the great hall and the cell, specced (#813 to #816, #819); the two hearths and the chapel altar went to 2f (#830); nothing built | 2+ | Opus 5 | Local: Blender | 1 shipped (#881); 2a shipped (#907) | F, B | | [Blender: an interiors kit](SPECS.md#blender-an-interiors-kit) |
+| 2b | Blender: an interiors kit: joined sets dressing the kitchen, the great hall and the cell, specced (#813 to #816, #819); the two hearths and the chapel altar went to 2f (#830); the look gate discharged (#946); increment 1 shipped on huginn (#947): four sets, five placed, the kitchen and the great hall; left: increment 2 the cell's pallet, increment 3 gated on rank 4's look (#813), the Windows GPU look (#53) | 2+ | Opus 5 | Local: Blender | 1 shipped (#881); 2a shipped (#907) | F, B | | [Blender: an interiors kit](SPECS.md#blender-an-interiors-kit) |
 | 2c | Blender: a shared rig with swappable parts: one rig, one-primitive parts, at most five skinned draws a person against the Quaternius rigs' 12 to 15, specced (#820 to #825); increment 1 shipped on huginn (#939 to #941); left: the Windows GPU look, which gates increment 2, the other 15 populace humans (container) | 2+ | Opus 5 | Windows: GPU look (#53), then Container | 1 shipped (#881) | F, C | | [Blender: a shared rig with swappable parts](SPECS.md#blender-a-shared-rig-with-swappable-parts) |
 | 2d | Blender: the animals: pig, goat, sheep, horse, cat and two geese on one quadruped topology plus a bird one for the goose, specced (#826 to #829); both increments shipped on huginn (#942 to #945): six files, seven animals placed (pig, goat, sheep, horse and cat on the quadruped topology, the goose on a 12-joint bird topology, two geese); left: the Windows GPU look, which blocks nothing (#53) | 1 | Opus 5 | Windows: GPU look (#53) | 2c increment 1 committed (#941); 1 shipped (#881) | F, C | | [Blender: the animals](SPECS.md#blender-the-animals) |
 | 2i | Castle in Blender, the integration row: the game takes the model as a skin and never reads `markers.json` (#919); specced (#963 to #968): one `assets/castle3d/skin.glb` cut from the master by stage (`curtain`, `buildings`, `town`, `land`), about 25 MB and 37.3 MB of texture memory against the master's 570 MB and 1,738.8 MB, trees decimated to 2,000 triangles, KTX2 through `assets:encode`; draw ceiling 1200 to 600, a new 500,000-triangle ceiling, texture 64 to 76 to 84 (#966); #499 and #506 stand (#967); six increments; increment 1, #922's open gate in the model, built (#970), its still awaiting Devon's line; increment 2, the skin, next | 2+ | Opus 5 | Local: Blender GPU (5.2, Devon's Windows machine only), plus `ktx`; judged local: GPU (#53) | 2h shipped (#962) | G | | [Castle in Blender: the integration row](SPECS.md#castle-in-blender-the-integration-row) |
@@ -268,6 +268,10 @@ and volume: rank 4 owns every face's texture, this row makes pieces and
 never a wall or floor covering, so rank 4's old increment 3 (the props)
 moves here as this row's increment 3, gated on rank 4's look (#813). Detail:
 [Blender: an interiors kit](SPECS.md#blender-an-interiors-kit).
+Increment 1 shipped on huginn (#947) with the look gate discharged (#946):
+four sets, five placed, the kitchen and the great hall, 5 outer-ward draws.
+Left: increment 2 (the cell's pallet; the altar went to 2f), increment 3,
+and the Windows GPU look.
 
 ## Blender: a shared rig with swappable parts
 
@@ -335,8 +339,8 @@ as two, the Constable and the Steward being one white-haired man told apart
 only by a collar colour past about three metres. The Lauds sky reads flat,
 no dawn colour in it. The covered hall's seven trusses are invisible from
 the floor, and a sliver of sky shows at its south-east corner. #715's stray
-prompt naming "the Sir Roger Lestrange" is gone; every prompt now reads
-correctly.
+prompt naming "the Sir Roger Lestrange" is gone, and its `read` half ("read
+the The King's writ") went in #948; the next GPU run looks at one.
 
 ## The retro castle
 

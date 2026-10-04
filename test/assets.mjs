@@ -962,6 +962,7 @@ const BLENDER_CAPS = {
   folk: { triangles: 12000, bytes: 400000, person: 1500, joints: 20, materials: ['Cloth', 'Bare'], clips: 11 },
   held: { triangles: 300, bytes: 16000 },
   animals: { triangles: 1000, bytes: 80000, joints: 16, primitives: 2, materials: ['Coat', 'Bare'] },
+  interiors: { triangles: 2500, bytes: 96000 },
 };
 const ANIMAL_TOPOLOGIES = {
   quadruped: {

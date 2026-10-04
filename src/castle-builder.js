@@ -941,9 +941,17 @@ export class CastleBuilder {
         (piece.box.min.z + piece.box.max.z) / 2,
       );
       const name = titles[piece.read] || piece.read;
+      // A TITLE BRINGS ITS OWN ARTICLE (#948), the `read` half of #715. Twelve
+      // of data/documents.json's thirteen titles open on The or A, and this
+      // wrapped each in a second one: "Press E to read the The King's writ",
+      // "the A gravestone in the chapel floor". The title's own article is
+      // kept and lowered; a title with none is said as it is written; only a
+      // bare id, which is a noun and not a title, still takes "the".
+      const said = !titles[piece.read] ? `the ${name}`
+        : /^(The|An?) /.test(name) ? name[0].toLowerCase() + name.slice(1) : name;
       out.push({
         id: piece.read, isReadable: true, name,
-        prompt: `Press E to read the ${name}`,
+        prompt: `Press E to read ${said}`,
         group: obj, focus: centre,
       });
     }
