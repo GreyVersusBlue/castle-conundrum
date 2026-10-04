@@ -3,8 +3,10 @@
 Rank 2h, "Castle in Blender" (`SPECS.md`, decisions #839 to #844 in
 `HISTORY.md`). A standalone model of the castle, Mereford and the country
 around them, built by these scripts from today's layout and dressed with
-Poly Haven PBR materials. **The game loads none of it**: nothing here writes
-under `src/`, `data/`, `assets/` or `test/`, and no suite reads this folder.
+Poly Haven PBR materials. **The game loads none of it but the skin**: the
+build writes nothing under `src/`, `data/`, `assets/` or `test/`, and only
+`skin.mjs` writes into the repo (`assets/castle3d/skin.glb` and
+`skin-manifest.json`, rank 2i, below).
 
 ## Running it
 
@@ -173,7 +175,23 @@ here bites, since the glb lives outside the repo (#841).
 npm run castle3d:skin -- --stages curtain --dest <file>   skin.py, then the curtain cut to <file>
 npm run castle3d:skin -- --cut-only --stages curtain      the cut alone, from <out>/skin/skin-full.glb
 npm run castle3d:skin -- --drop <stage>                   one stage out of the written file, no Blender
+npm run castle3d:skin -- --record                         the encoded file into the manifest, no Blender
 ```
+
+Committing a stage, in order: list it in `data/castle-skin.json`'s `stages`;
+`npm run castle3d:skin` (skin.py, then the raw cut to `assets/castle3d/skin.glb`
+and `skin-manifest.json` with a `cut` row); `npm run assets:encode`, whose
+third family is this file; `npm run castle3d:skin -- --record`, which writes
+the encoded file's bytes and sha256 as the `encoded` row and refuses a file
+without meshopt and KTX2, one whose stages are not the manifest's, or a
+manifest with no `cut` row; then one more `npm run castle3d:skin`, which must
+print "unchanged". `test/assets.mjs` check 10 holds the file to that row,
+`test/layout.mjs` check 16 holds it to the plan. `--drop` of the last listed
+stage deletes the file and leaves the manifest `stages: []` with neither row
+(#1004). The joined trees and rocks carry `extras.joined`, the count each
+holds, which check 10 multiplies the per-tree and per-rock caps by.
+`skin-stages.mjs` is `common.py`'s `STAGE_RULES` and `skin.py`'s `SKIN_OF`
+in Node, for the layout check; change both or neither.
 
 `skin.py` is a fourth Blender over the master and never saves it; `skin.mjs`
 checks castle.blend's sha256 before and after. It deletes props, `BRAZIER_`,

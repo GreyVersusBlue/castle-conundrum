@@ -1,0 +1,7 @@
+{
+  "comment": "The castle skin (rank 2i, #963 to #968, #1004): which stages of tools/castle3d/'s model the game draws in place of the built pieces. Only that row writes this file. `stages` is cut by npm run castle3d:skin into `file`, which npm run assets:encode then encodes and castle3d:skin --record records; castle-builder.js hides every built piece a skin node names and draws the node instead, except under ?edit=1. `keep` is plan ids whose built piece stays drawn and whose skin node is cut (#964). `allow` is keyed by skin node name, each a reason for a node whose box departs from its plan box by more than 0.55 m (#965); test/layout.mjs fails a stale one.",
+  "file": "assets/castle3d/skin.glb",
+  "stages": ["curtain"],
+  "keep": [],
+  "allow": {}
+}

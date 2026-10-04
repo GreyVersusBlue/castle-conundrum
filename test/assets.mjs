@@ -30,7 +30,7 @@
 //      material is one 128 px map, at most 32 colours, wrapping at both edges
 //      and pixel-identical to the row tools/pixel/ draws it from (#742, #743)
 //   4. every byte under assets/poly-haven, assets/NPCs, assets/pixel,
-//      assets/props and assets/blender is
+//      assets/props, assets/blender and assets/castle3d is
 //      reachable from one of those references, and everything a reference needs
 //      is there
 //   5. every prop and body is meshopt-encoded (#506)
@@ -44,6 +44,9 @@
 //      no input file (#803, #806, #808)
 //   9. Devon's props under assets/props are meshopt with one material and one
 //      PNG atlas of 128 px or under (#831)
+//  10. the castle skin, assets/castle3d/skin.glb, is encoded, inside #968's
+//      caps by slot and by node class, of the listed stages, and is the
+//      encoded row of tools/castle3d/skin-manifest.json (#963, #1004)
 //
 // Everything it reads is compressed as of 2026-09-15 (#506 to #508): KTX2/Basis
 // textures and EXT_meshopt_compression geometry. `triangles()` decodes meshopt
@@ -59,10 +62,11 @@
 // because tools/encode-assets.mjs uses it.
 
 import fs from 'node:fs';
+import crypto from 'node:crypto';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import sharp from 'sharp';
-import { readGLTF, triangles } from './gltf.mjs';
+import { readGLTF, triangles, nodesOf } from './gltf.mjs';
 import { heldPropPath } from '../src/populace.js';
 import { propPath } from '../src/castle-plan.js';
 import { rows as pixelRows, render as renderPixel, SIZE as GENERATOR_PX, OUT_DIR as PIXEL_DIR } from '../tools/pixel/index.mjs';
@@ -460,7 +464,8 @@ console.log('\nevery built thing names a material that exists');
  * were ever loaded.
  *
  * The rule, for `assets/poly-haven`, `assets/NPCs`, `assets/pixel`, since
- * #830 `assets/props`, and since #808 `assets/blender`: a file
+ * #830 `assets/props`, since #808 `assets/blender`, and since #963
+ * `assets/castle3d`, which data/castle-skin.json names: a file
  * may be there if some entry in data/ names it, or if a .gltf that some entry
  * in data/ names declares it as a buffer or an image. Nothing else. A rendered
  * texture no material wears is in that rule too: tools/pixel/ writes whatever
@@ -504,6 +509,13 @@ console.log('\nnothing on disk that nothing asks for');
   for (const [name, spec] of Object.entries(config.pixelMaterials))
     if (spec.map) need(spec.map, `pixel material ${name}'s map`);
   for (const n of npcData.cast) need(n.modelPath, `${n.id || n.name}'s body`);
+  // The castle skin (#963): one file, named by data/castle-skin.json while it
+  // lists a stage. With none listed nothing asks for it, and a skin left on
+  // disk is dead weight that dist/ would still ship (#1004).
+  {
+    const skin = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/castle-skin.json'), 'utf8'));
+    if ((skin.stages || []).length) need(skin.file, `data/castle-skin.json's stages ${skin.stages.join(', ')}`);
+  }
   for (const p of populace.people ?? []) need(p.modelPath, `${p.id || p.name}'s body`);
 
   const walk = (rel) => {
@@ -514,7 +526,7 @@ console.log('\nnothing on disk that nothing asks for');
   };
 
   let dead = 0, deadBytes = 0;
-  for (const rel of [...walk('assets/poly-haven'), ...walk('assets/NPCs'), ...walk('assets/pixel'), ...walk('assets/props'), ...walk('assets/blender')]) {
+  for (const rel of [...walk('assets/poly-haven'), ...walk('assets/NPCs'), ...walk('assets/pixel'), ...walk('assets/props'), ...walk('assets/blender'), ...walk('assets/castle3d')]) {
     if (needed.has(rel)) continue;
     dead++;
     deadBytes += fs.statSync(path.join(ROOT, rel)).size;
@@ -522,7 +534,7 @@ console.log('\nnothing on disk that nothing asks for');
   }
   if (dead > 8) fail(`...and ${dead - 8} more unreferenced files`);
   if (dead) fail(`${dead} unreferenced file(s) under assets/, ${(deadBytes / 1048576).toFixed(1)} MB`);
-  else pass(`${needed.size} files under assets/poly-haven, assets/NPCs, assets/pixel, assets/props and assets/blender, every one of them asked for`);
+  else pass(`${needed.size} files under assets/poly-haven, assets/NPCs, assets/pixel, assets/props, assets/blender and assets/castle3d, every one of them asked for`);
 
   for (const [rel, why] of needed) {
     if (!fs.existsSync(path.join(ROOT, rel))) fail(`${why} needs ${rel}, which is not there`);
@@ -1378,6 +1390,143 @@ console.log("\nDevon's props: meshopt, one material, one small PNG atlas");
     for (const x of said) fail(`${rel}${x.startsWith("'") ? '' : ' '}${x} (#831)`);
   }
   if (!bad && files.length) pass(`${files.length} files under ${dir}, each meshopt-encoded with one material and one PNG atlas of ${PIXEL_PX} px or under`);
+}
+
+/* --------------------------- 10: the castle skin (#963, #967, #968, #1004) ---
+ * assets/castle3d/skin.glb is tools/castle3d/'s model cut to the stages
+ * data/castle-skin.json lists, encoded by tools/encode-assets.mjs and recorded
+ * by `castle3d:skin --record`. This is the file's own shape, as check 8 is for
+ * assets/blender/; whether it is a picture of the plan is test/layout.mjs's
+ * check 16 and what it costs a ward is test/budget.mjs's (#529, #611).
+ *
+ * With no stage listed there is nothing at `file`: `--drop` of the last stage
+ * deletes it, since dist/ copies assets/ whole (#1004). Otherwise:
+ *   - at most SKIN_MAX_BYTES, a third of what GitHub refuses (#967);
+ *   - EXT_meshopt_compression and KHR_texture_basisu, and every image KTX2 or
+ *     a PNG of PIXEL_PX or under (#506, #831); no Draco, no
+ *     KHR_materials_specular or _ior (skin.mjs drops them so three builds the
+ *     game's MeshStandardMaterial), no camera, no light;
+ *   - no base colour over SKIN_BASE_PX and no normal or metal-roughness over
+ *     SKIN_DATA_PX, read off each KTX2's own header (#968);
+ *   - the set of extras.stage values is `stages`;
+ *   - triangles by node class (#1004, restating #968's caps): a TREES_ or
+ *     ROCKS_ node carries an integer extras.joined of 1 or more and its mesh is
+ *     at most SKIN_TREE_TRIS or SKIN_ROCK_TRIS times it; no other node carries
+ *     `joined`; a mesh two or more nodes draw is at most SKIN_TREE_TRIS (the
+ *     five Mereford trees on one mesh); every other mesh at most SKIN_MESH_TRIS;
+ *   - tools/castle3d/skin-manifest.json names the same `file` and `stages`, and
+ *     its `encoded` row is this file's bytes and sha256. A re-cut writes the
+ *     manifest without `encoded`, so a raw cut committed before
+ *     assets:encode fails here.
+ * NOT YET: every base colour of a MASK or BLEND material carrying alpha in its
+ * DFD. The curtain ships no such material, so that line lands with `town`,
+ * the first stage that can fail it, with the encoder's alpha path (#1004).
+ */
+console.log('\nthe castle skin: its format, its caps and its record');
+{
+  const SKIN_MAX_BYTES = 32 * 1048576; // #967
+  const SKIN_BASE_PX = 1024; // #968, base colour, ETC1S
+  const SKIN_DATA_PX = 512; // #968, normal and metal-roughness, UASTC
+  const SKIN_TREE_TRIS = 2000; // #968, a tree, and a mesh several nodes share
+  const SKIN_ROCK_TRIS = 1000; // #968, a rock
+  const SKIN_MESH_TRIS = 40000; // #968, the ground's target and every other mesh's cap
+  const cfg = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/castle-skin.json'), 'utf8'));
+  const stages = cfg.stages || [];
+  const file = path.join(ROOT, cfg.file);
+  const MANIFEST = 'tools/castle3d/skin-manifest.json';
+  const sameSet = (a, b) => JSON.stringify([...new Set(a.map(String))].sort()) === JSON.stringify([...new Set(b.map(String))].sort());
+  if (!stages.length) {
+    if (fs.existsSync(file)) fail(`skin: data/castle-skin.json lists no stage and ${cfg.file} is there; a file nothing loads still ships in dist/, and --drop of the last stage deletes it (#1004)`);
+    else pass(`data/castle-skin.json lists no stage and there is nothing at ${cfg.file}`);
+  } else if (!fs.existsSync(file)) {
+    fail(`skin: data/castle-skin.json lists ${stages.join(', ')} and ${cfg.file} is not there; run npm run castle3d:skin`);
+  } else {
+    const before = failures;
+    const bytes = fs.readFileSync(file);
+    const { json, buffers, nodes } = nodesOf(file);
+    if (bytes.length > SKIN_MAX_BYTES) fail(`skin: ${cfg.file} is ${(bytes.length / 1048576).toFixed(1)} MB, over ${SKIN_MAX_BYTES / 1048576} MB (#967)`);
+    const used = json.extensionsUsed || [];
+    for (const ext of ['EXT_meshopt_compression', 'KHR_texture_basisu']) if (!used.includes(ext)) fail(`skin: ${cfg.file} has no ${ext}; run npm run assets:encode, then castle3d:skin -- --record (#506)`);
+    for (const ext of ['KHR_draco_mesh_compression', 'KHR_materials_specular', 'KHR_materials_ior', 'KHR_lights_punctual']) if (used.includes(ext)) fail(`skin: ${cfg.file} uses ${ext}, which the skin never ships`);
+    if ((json.cameras || []).length || (json.nodes || []).some((n) => n.camera !== undefined)) fail(`skin: ${cfg.file} carries a camera`);
+
+    /* Every image, by its own bytes. */
+    const imageBytes = (img) => {
+      const bv = json.bufferViews?.[img.bufferView];
+      const buf = bv && buffers[bv.buffer];
+      return buf ? buf.subarray(bv.byteOffset || 0, (bv.byteOffset || 0) + bv.byteLength) : null;
+    };
+    const sizeOf = (img) => {
+      const b = imageBytes(img);
+      if (!b) return null;
+      if (img.mimeType === 'image/ktx2' && b.length > 28 && b[0] === 0xab && b[1] === 0x4b && b[2] === 0x54) return [b.readUInt32LE(20), b.readUInt32LE(24)];
+      if (b.length >= 24 && b.readUInt32BE(0) === 0x89504e47) return [b.readUInt32BE(16), b.readUInt32BE(20)];
+      return null;
+    };
+    const images = json.images || [];
+    images.forEach((img, i) => {
+      const wh = sizeOf(img);
+      if (!wh) { fail(`skin: image ${i} (${img.name || 'unnamed'}) says ${img.mimeType || img.uri || 'nothing'} and is neither a KTX2 nor a PNG this suite can read`); return; }
+      if (img.mimeType !== 'image/ktx2' && (wh[0] > PIXEL_PX || wh[1] > PIXEL_PX)) fail(`skin: image ${i} is ${img.mimeType} ${wh[0]}x${wh[1]}; every image over ${PIXEL_PX} px is KTX2 (#506)`);
+    });
+    /* The caps, by glTF slot: a texture's image is its KHR_texture_basisu source when it has one. */
+    const imageOf = (ref) => {
+      const t = ref && json.textures?.[ref.index];
+      return t ? (t.extensions?.KHR_texture_basisu?.source ?? t.source) : undefined;
+    };
+    for (const m of json.materials || []) {
+      const slots = [
+        ['baseColorTexture', m.pbrMetallicRoughness?.baseColorTexture, SKIN_BASE_PX], ['emissiveTexture', m.emissiveTexture, SKIN_BASE_PX],
+        ['normalTexture', m.normalTexture, SKIN_DATA_PX], ['occlusionTexture', m.occlusionTexture, SKIN_DATA_PX],
+        ['metallicRoughnessTexture', m.pbrMetallicRoughness?.metallicRoughnessTexture, SKIN_DATA_PX],
+      ];
+      for (const [slot, ref, cap] of slots) {
+        const i = imageOf(ref);
+        if (i === undefined) continue;
+        const wh = images[i] && sizeOf(images[i]);
+        if (wh && Math.max(...wh) > cap) fail(`skin: image ${i} (${images[i].name || 'unnamed'}) is ${wh[0]}x${wh[1]} in ${m.name}'s ${slot}; the cap is ${cap} (#968)`);
+      }
+    }
+    const held = nodes.map((n) => n.extras.stage);
+    if (!sameSet(held, stages)) fail(`skin: ${cfg.file}'s nodes are of stages ${[...new Set(held.map(String))].sort().join(', ')} and data/castle-skin.json lists ${stages.join(', ')}; re-cut (npm run castle3d:skin)`);
+
+    /* Triangles, by node class (#1004). */
+    const users = new Map();
+    for (const n of nodes) if (n.mesh !== null) users.set(n.mesh, (users.get(n.mesh) || 0) + 1);
+    let biggest = 0, biggestAt = null;
+    for (const n of nodes) {
+      if (n.mesh === null) continue;
+      const tris = n.primitives.reduce((a, p) => a + p.triangles, 0);
+      const joined = n.extras.joined;
+      const kind = /^TREES_/.test(n.name) ? SKIN_TREE_TRIS : /^ROCKS_/.test(n.name) ? SKIN_ROCK_TRIS : null;
+      if (kind) {
+        if (!Number.isInteger(joined) || joined < 1) { fail(`skin: ${n.name} carries no integer extras.joined of 1 or more (${JSON.stringify(joined)}); skin.py writes the count on every join (#1004)`); continue; }
+        if (tris > kind * joined) fail(`skin: ${n.name} is ${tris} triangles for ${joined} joined, ${+(tris / joined).toFixed(1)} each; the cap is ${kind} (#968)`);
+        continue;
+      }
+      if (joined !== undefined) fail(`skin: ${n.name} carries extras.joined ${JSON.stringify(joined)} and is no TREES_ or ROCKS_ node (#1004)`);
+      const shared = users.get(n.mesh) >= 2;
+      if (shared && tris > SKIN_TREE_TRIS) fail(`skin: mesh ${n.meshName} is ${tris} triangles and ${users.get(n.mesh)} nodes draw it, ${n.name} among them; a shared mesh is at most ${SKIN_TREE_TRIS} (#1004)`);
+      else if (tris > SKIN_MESH_TRIS) fail(`skin: ${n.name} is ${tris} triangles; a mesh is at most ${SKIN_MESH_TRIS} (#968)`);
+      if (tris > biggest) { biggest = tris; biggestAt = n.name; }
+    }
+
+    /* The record. */
+    const manFile = path.join(ROOT, MANIFEST);
+    const man = fs.existsSync(manFile) ? JSON.parse(fs.readFileSync(manFile, 'utf8')) : null;
+    const sha = crypto.createHash('sha256').update(bytes).digest('hex');
+    if (!man) fail(`skin: there is no ${MANIFEST}, so nothing says this file is the one castle3d:skin cut`);
+    else {
+      if (man.file !== cfg.file) fail(`skin: ${MANIFEST} records ${man.file} and data/castle-skin.json names ${cfg.file}`);
+      if (!sameSet(man.stages || [], stages) || (man.stages || []).length !== stages.length) fail(`skin: ${MANIFEST} records stages ${(man.stages || []).join(', ') || '(none)'} and data/castle-skin.json lists ${stages.join(', ')}; re-cut, encode and record`);
+      if (!man.encoded) fail(`skin: ${MANIFEST} has no encoded row: the cut was not encoded and recorded (npm run assets:encode, then npm run castle3d:skin -- --record)`);
+      else if (man.encoded.sha256 !== sha || man.encoded.bytes !== bytes.length) fail(`skin: ${cfg.file} is ${bytes.length} bytes, sha256 ${sha}; ${MANIFEST}'s encoded row is ${man.encoded.bytes} bytes, sha256 ${man.encoded.sha256}`);
+    }
+    if (failures === before) {
+      pass(`${cfg.file}: ${stages.join(', ')}, ${(bytes.length / 1048576).toFixed(2)} MB, meshopt and KTX2, ${images.length} images inside their caps, ${nodes.length} nodes, the biggest mesh ${biggestAt} at ${biggest} triangles`);
+      pass(`and it is ${MANIFEST}'s encoded row, sha256 ${sha.slice(0, 12)}...`);
+    }
+  }
 }
 
 console.log(failures ? `\n${failures} failure(s)` : '\nall good');
