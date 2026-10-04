@@ -14746,4 +14746,52 @@ Leaf cards kept scaled 17.2x (island tree) and 18.4x (small tree); Blender's
 exporter warns "Mesh TREES_island_tree_01 is not valid". All for the land
 look.
 
+**#1004. Devon's line on the five open calls #1003 raised, given
+2026-10-04: "yes to all 5."** Each decided by `architect` on 2026-10-03 and
+confirmed here.
+
+Check 10's triangle line is caps by node class, held per joined tree or
+rock: a `TREES_` or `ROCKS_` node at most 2,000 or 1,000 triangles times its
+`extras.joined`, a shared mesh at most 2,000, every other mesh at most
+40,000, owned by `test/assets.mjs`. This restates #968 and does not overturn
+it: #968 caps each tree and joins them, and "no mesh over 40,000" failed its
+own join. Measured, `TREES_tree_small_02` is 82,000 triangles, 41 trees at
+2,000 each; `TREES_island_tree_01` is 60,000, 30 trees at 2,000;
+`ROCKS_boulder_01_1` is 11,000, 11 rocks at 1,000. Everything else sits at or
+under 3,760 (`TERRAIN_road`); `TERRAIN_ground` is 39,999 against its own
+40,000 decimation target.
+
+Check 10 keeps its number on the skin. The UI art row's own `test/assets.mjs`
+check 10 (#1002, branch claude/art-ui-layer) renumbers to check 11 when it
+lands, because the skin's check 10 is on `main` already and lands within
+this session, and the art row is still uncommitted. When it lands, that
+worktree changes: `test/assets.mjs`'s header line `10.` to `11.`, its banner
+`10: what the image model made` to `11:`, and `say`'s prefix `check 10 line`
+to `check 11 line`; its SPECS.md section "UI art: woodcut illustration in
+the DOM" wherever it says check 10 (the four uses holding "in check 10", the
+lockfile line, `finish.mjs`'s exports "for `test/tools.mjs` and check 10",
+the scope line "check 10 ... below check 9" becoming "check 11 ... below
+check 10", increments 0, a, b and c's acceptance lines, the "new block below
+check 9" in its merge note, and the #529/#611 constraint line); its
+BACKLOG.md row 14 and the row brief naming check 10; its two ROADMAP.md
+lines ("its own check 10 below check 9" becoming "its own check 11 below
+check 10"); and its #1002 entry in this file, three times.
+
+The encoder's alpha path and check 10's alpha line wait for increment 5, not
+increment 3, because `skin-curtain.glb` has no material that is not
+`OPAQUE`, and the first non-`OPAQUE` materials, `tree_small_02_leaves` and
+`island_tree_01_leaves`, both land at `town`. This moves #967's alpha path
+in time and does not amend it.
+
+`--drop` of the last listed stage deletes the file and leaves the manifest
+with `stages: []` and neither `cut` nor `encoded`, because a file nothing
+loads would still ship about 8 MB in `dist/`, which copies `assets/` whole.
+
+`--record` refuses a file that lacks `EXT_meshopt_compression` or
+`KHR_texture_basisu`, one whose `extras.stage` set is not the manifest's
+`stages`, and a manifest with no `cut` row, because otherwise a raw cut can
+be recorded as encoded and check 10's hash line passes over the wrong file.
+
+Next free number: #1005.
+
 Increment 3, stage curtain in the game, is next.
