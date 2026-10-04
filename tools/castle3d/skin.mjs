@@ -7,6 +7,21 @@
 //   npm run castle3d:skin -- --stages curtain,buildings     override data/castle-skin.json's stages
 //   npm run castle3d:skin -- --dest <file>                  write the cut there, not assets/castle3d/skin.glb
 //   npm run castle3d:skin -- --drop <stage>                 take one stage out of the written file, no Blender
+//   npm run castle3d:skin -- --record                       after assets:encode: the encoded file into the manifest
+//
+// THE SEQUENCE THAT COMMITS A STAGE (SPECS.md increment 3): `castle3d:skin`
+// cuts raw and writes the manifest with a `cut` row and no `encoded` one;
+// `npm run assets:encode` makes the file KTX2 and meshopt in place; `--record`
+// writes the encoded file's bytes and sha256 as `encoded`; and one more plain
+// run prints "unchanged". That last line is the proof the record took: a
+// destination whose sha256 is neither row is one this file did not write, and
+// it cuts raw over it. `--record` refuses a file without
+// EXT_meshopt_compression and KHR_texture_basisu, one whose extras.stage set is
+// not the manifest's `stages`, and a manifest with no `cut` row, because
+// otherwise a raw cut can be recorded as encoded and test/assets.mjs check 10's
+// hash line passes over the wrong file (#1004). `--drop` of the last listed
+// stage deletes the file and leaves the manifest `stages: []` with neither
+// `cut` nor `encoded`, since a file nothing loads still ships in dist/ (#1004).
 //
 // In order, each step exiting non-zero on its own failure (#13):
 //  1. refuse under CI (#842), as build.mjs does.
@@ -107,17 +122,19 @@ export const sha256Text = (text) => crypto.createHash('sha256').update(text.repl
 const sha256TextFile = (file) => (fs.existsSync(file) ? sha256Text(fs.readFileSync(file, 'utf8')) : null);
 
 function parseArgs(argv) {
-  const a = { cutOnly: false, stages: null, dest: null, drop: null };
+  const a = { cutOnly: false, stages: null, dest: null, drop: null, record: false };
   for (let i = 0; i < argv.length; i++) {
     const k = argv[i];
     const val = () => { const v = argv[++i]; if (!v) refuse(`${k} needs a value`); return v; };
     if (k === '--cut-only') a.cutOnly = true;
+    else if (k === '--record') a.record = true;
     else if (k === '--stages') a.stages = val().split(',').map((s) => s.trim()).filter(Boolean);
     else if (k === '--dest') a.dest = val();
     else if (k === '--drop') a.drop = val();
     else refuse(`unknown argument ${k}`);
   }
-  if (a.drop && (a.cutOnly || a.stages)) refuse('--drop takes a stage out of the written file and goes with nothing but --dest');
+  if (a.drop && (a.cutOnly || a.stages || a.record)) refuse('--drop takes a stage out of the written file and goes with nothing but --dest');
+  if (a.record && (a.cutOnly || a.stages)) refuse('--record reads the encoded file and goes with nothing but --dest');
   return a;
 }
 
@@ -273,17 +290,31 @@ async function drop(stage, dest, manifestPath) {
   if (!fs.existsSync(manifestPath)) refuse(`--drop: no manifest ${manifestPath} beside the file`);
   const man = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
   if (!man.stages.includes(stage)) refuse(`--drop ${stage}: ${shown(dest)} holds ${man.stages.join(', ')}`);
-  const doc = await (await reader()).read(dest);
-  let gone = 0;
-  for (const node of doc.getRoot().listNodes()) if (node.getExtras().stage === stage) { node.dispose(); gone += 1; }
-  await doc.transform(prune({ keepAttributes: true, keepSolidTextures: true }));
-  const bytes = Buffer.from(await (await reader()).writeBinary(doc));
-  fs.writeFileSync(`${dest}.part`, bytes);
-  fs.renameSync(`${dest}.part`, dest);
-  const sha = crypto.createHash('sha256').update(bytes).digest('hex');
   const stages = man.stages.filter((s) => s !== stage);
-  const key = man.encoded ? 'encoded' : 'cut';
-  writeManifest(manifestPath, { ...man, stages, [key]: { bytes: bytes.length, sha256: sha }, dropped: [...(man.dropped || []), stage] });
+  const dropped = [...(man.dropped || []), stage];
+  let said;
+  if (!stages.length) {
+    // The last listed stage: the file goes, and the manifest keeps its inputs
+    // and numbers but neither `cut` nor `encoded`, so nothing records a file
+    // that is not there and test/assets.mjs check 10 wants nothing at `file`
+    // (#1004).
+    fs.rmSync(dest);
+    const { cut: _cut, encoded: _encoded, ...rest } = man;
+    writeManifest(manifestPath, { ...rest, stages, dropped });
+    said = `dropped ${stage}, the last stage, from ${shown(dest)}: the file is deleted; stages (none)`;
+  } else {
+    const doc = await (await reader()).read(dest);
+    let gone = 0;
+    for (const node of doc.getRoot().listNodes()) if (node.getExtras().stage === stage) { node.dispose(); gone += 1; }
+    await doc.transform(prune({ keepAttributes: true, keepSolidTextures: true }));
+    const bytes = Buffer.from(await (await reader()).writeBinary(doc));
+    fs.writeFileSync(`${dest}.part`, bytes);
+    fs.renameSync(`${dest}.part`, dest);
+    const sha = crypto.createHash('sha256').update(bytes).digest('hex');
+    const key = man.encoded ? 'encoded' : 'cut';
+    writeManifest(manifestPath, { ...man, stages, [key]: { bytes: bytes.length, sha256: sha }, dropped });
+    said = `dropped ${stage} (${gone} nodes) from ${shown(dest)}: ${bytes.length} bytes, sha256 ${sha}; stages ${stages.join(', ')}`;
+  }
   if (fs.existsSync(CONFIG)) {
     const text = fs.readFileSync(CONFIG, 'utf8');
     const cfg = JSON.parse(text);
@@ -293,7 +324,47 @@ async function drop(stage, dest, manifestPath) {
       console.log(`castle3d:skin: ${shown(CONFIG)} no longer lists ${stage}`);
     }
   }
-  console.log(`castle3d:skin: dropped ${stage} (${gone} nodes) from ${shown(dest)}: ${bytes.length} bytes, sha256 ${sha}; stages ${stages.join(', ') || '(none)'}`);
+  console.log(`castle3d:skin: ${said}`);
+}
+
+/** The GLB's JSON chunk, read off the bytes: --record needs extensions and extras, not a decode. */
+function glbJSON(bytes) {
+  if (bytes.length < 20 || bytes.readUInt32LE(0) !== 0x46546c67 || bytes.readUInt32LE(16) !== 0x4e4f534a) return null;
+  return JSON.parse(bytes.subarray(20, 20 + bytes.readUInt32LE(12)).toString('utf8'));
+}
+
+/** --record: the encoded file's bytes and sha256 as the manifest's `encoded` row, with #1004's three refusals. */
+function record(dest, manifestPath) {
+  if (!fs.existsSync(manifestPath)) refuse(`--record: no manifest ${shown(manifestPath)}; cut first with npm run castle3d:skin`);
+  const man = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+  if (!man.cut) {
+    refuse(`--record: ${shown(manifestPath)} has no cut row, so there is no cut this file wrote to record an encoding of; `
+      + 'run npm run castle3d:skin, then npm run assets:encode (#1004)');
+  }
+  if (!fs.existsSync(dest)) refuse(`--record: ${shown(dest)} does not exist`);
+  const bytes = fs.readFileSync(dest);
+  const json = glbJSON(bytes);
+  if (!json) refuse(`--record: ${shown(dest)} is not a GLB`);
+  const used = json.extensionsUsed || [];
+  const lacks = ['EXT_meshopt_compression', 'KHR_texture_basisu'].filter((e) => !used.includes(e));
+  if (lacks.length) {
+    refuse(`--record: ${shown(dest)} lacks ${lacks.join(' and ')}, so it is not encoded; run npm run assets:encode first, `
+      + 'or a raw cut is recorded as encoded (#1004)');
+  }
+  const held = [...new Set((json.nodes || []).map((n) => (n.extras || {}).stage))].map(String).sort();
+  const want = [...man.stages].sort();
+  if (!same(held, want)) {
+    refuse(`--record: ${shown(dest)} holds stages ${held.join(', ') || '(none)'} and ${shown(manifestPath)} lists `
+      + `${want.join(', ') || '(none)'}; re-cut before recording (#1004)`);
+  }
+  const sha = crypto.createHash('sha256').update(bytes).digest('hex');
+  if (man.encoded && man.encoded.sha256 === sha && man.encoded.bytes === bytes.length) {
+    console.log(`castle3d:skin: --record: ${shown(dest)} sha256 ${sha} is already the encoded row; nothing written`);
+    return;
+  }
+  writeManifest(manifestPath, { ...man, encoded: { bytes: bytes.length, sha256: sha } });
+  console.log(`castle3d:skin: recorded ${shown(dest)} as encoded (${man.stages.join(', ')}): ${bytes.length} bytes, sha256 ${sha}, `
+    + `in ${shown(manifestPath)}`);
 }
 
 async function main() {
@@ -309,6 +380,7 @@ async function main() {
   const dest = path.resolve(ROOT, args.dest || (cfg && cfg.file) || DEFAULT_DEST);
   const manifestPath = insideRepo(dest) ? REPO_MANIFEST : path.join(path.dirname(dest), 'skin-manifest.json');
   if (args.drop) { await drop(args.drop, dest, manifestPath); return; }
+  if (args.record) { record(dest, manifestPath); return; }
   let stages;
   try {
     const list = args.stages || (cfg && cfg.stages);

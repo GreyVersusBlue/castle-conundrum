@@ -1,0 +1,63 @@
+{
+  "comment": "castle3d:skin's record (#968): the inputs' sha256 and the cut it wrote. A text input is hashed with CRLF read as LF (#632). Per stage, draws and triangles are the stage alone; images and texture memory are cumulative to it, KTX2 projected at budget.mjs's fromKTX2 rates.",
+  "file": "assets/castle3d/skin.glb",
+  "stages": [
+    "curtain"
+  ],
+  "keep": [],
+  "inputs": {
+    "upstream": {
+      "castle.glb": "151614aa96c60ae3e43752c58b26a915b9809337f8fb1dcd6d86a75ae2d6e705",
+      "castle.blend": "0db90daf1fb5f245a8c0e3344e225f120bf553eef7ed243ff29b566442c291ff",
+      "skin.py": "f7344f56b51b9fa7a61afd56e9d8364406da0407a2a40da21d500f7320129606",
+      "blueprint.json": "981eaf889a5b24aa43f55645c489ff2db18b1ea358b4ca3a25cecac4007c8c7b"
+    },
+    "skin-full.glb": "aa6460b0d2e4beff3fdb183f937de3ecf864fd5d3626797be03eae1eca205308",
+    "cut": {
+      "skin.mjs": "0f40177c00730831046c6cc3265eeb2f9dfd34b36f04f72b81561354253f3adc",
+      "data/castle-skin.json": "4db8ff933fe44cff1409628ccef0219e636a7652205a53419633730dc33c2447",
+      "stages": [
+        "curtain"
+      ],
+      "keep": []
+    }
+  },
+  "cut": {
+    "bytes": 6905900,
+    "sha256": "63cdff805f995e737f692b36cc5c9af5e6fbd6a8be5d7626e9ec88606e9c605e"
+  },
+  "measured": {
+    "curtain": {
+      "draws": 132,
+      "triangles": 40000,
+      "imagesCumulative": 33,
+      "rgba8MBCumulative": 88,
+      "ktx2MBCumulative": 14.7
+    },
+    "buildings": {
+      "draws": 42,
+      "triangles": 6392,
+      "imagesCumulative": 48,
+      "rgba8MBCumulative": 128,
+      "ktx2MBCumulative": 21.3
+    },
+    "town": {
+      "draws": 93,
+      "triangles": 28312,
+      "imagesCumulative": 63,
+      "rgba8MBCumulative": 168,
+      "ktx2MBCumulative": 28
+    },
+    "land": {
+      "draws": 15,
+      "triangles": 220755,
+      "imagesCumulative": 84,
+      "rgba8MBCumulative": 224,
+      "ktx2MBCumulative": 37.3
+    }
+  },
+  "encoded": {
+    "bytes": 7601804,
+    "sha256": "109b221808317e2fa4f500b43886f9a2649557c6fdf02d82c43d16132dc8d7db"
+  }
+}

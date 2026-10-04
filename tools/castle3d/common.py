@@ -156,6 +156,8 @@ def box_to_blender(box):
 # Every blueprint piece belongs to exactly one geometry stage, by kind and id
 # prefix, first rule that matches. A piece no rule takes is an error, named, so
 # a new kind in the plan cannot fall through silently. `--only guide` prints it.
+# skin-stages.mjs is this table in Node, for test/layout.mjs's skin check
+# (rank 2i): change both or neither.
 #
 #   gates      the leaves, the arches, the cell bars and the Stockhouse walk bar
 #   props      the quay's kit hoist, drawn by props.py's pulley-crate generator (#958)

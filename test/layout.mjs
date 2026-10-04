@@ -50,12 +50,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { partsOf } from './gltf.mjs';
+import { partsOf, nodesOf } from './gltf.mjs';
 import { makePlan, walkability, surfacesAt, collidersWith, moveBody, GRID, HEAD_LOW, HEAD_HIGH, BODY_RADIUS, DAY_SETS, EYE_HEIGHT } from '../src/castle-plan.js';
 import { dayTwoOutcomes, dayTwoCastle, undoDay } from '../src/mystery.js';
 import { stepClassOf, bedOf, bedSources, sourcePoint, audibleFrom, ringOf, CUES, eventOf, cueSound } from '../src/audio.js';
 import { castleNav } from '../src/stations.js';
 import { routeThrough, marksAlong, onStorey } from './route.mjs';
+import { skinStageOf } from '../tools/castle3d/skin-stages.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(HERE, '..');
@@ -1853,6 +1854,90 @@ console.log('\nevery cue has an event sound');
   const sane = [['refMetres', sp.refMetres > 0], ['maxMetres', sp.maxMetres > sp.refMetres], ['rolloff', sp.rolloff > 0], ['panning', sp.panning === 'equalpower' || sp.panning === 'HRTF']];
   for (const [k, ok] of sane) if (!ok) fail(`events.spatial.${k} is ${JSON.stringify(sp[k])}`);
   if (eventOf(sounds, 'no-such-cue') !== null || cueSound(sounds, 'no-such-cue') !== null) fail('eventOf a cue the file has nothing for is not null');
+}
+
+/* ------------------- 16 (rank 2i, #965): the castle skin against the plan ---
+ * The game draws tools/castle3d/'s model over the plan a stage at a time
+ * (data/castle-skin.json's `stages`): every plan piece is still built and
+ * collided, and the skin node that names it is drawn in its place. Whether
+ * that picture is a picture OF THE PLAN is a fact about two files, the plan
+ * and assets/castle3d/skin.glb, so it is held here and not in a browser
+ * (#529). Three questions, each on the encoded file as committed:
+ *   - every piece of a listed stage, less `keep`, is named by exactly one
+ *     node's `planId` or `planIds`, and every id a node names is a plan piece
+ *     of a listed stage that is not kept. Which stage a piece is in comes from
+ *     tools/castle3d/skin-stages.mjs, common.py's table in Node; a drift
+ *     between the two fails one of these two lines by name;
+ *   - each node's world box, read as `partsOf` reads a model (`nodesOf`), has
+ *     every face within SKIN_FACE_TOL of its plan box's, the union for a node
+ *     naming several, except that it may rise above the top: the batter is
+ *     exactly 0.5000 m and a drum's roof rises 3.2 m over its collider, which
+ *     shows no invisible wall (#965);
+ *   - an `allow` entry excuses one named node from the box rule, and fails as
+ *     stale when the node is within it, or when it names no node.
+ * With no stage listed there is nothing swapped and nothing to hold; check 10
+ * of test/assets.mjs then wants no file at all.
+ */
+console.log('\nthe castle skin against the plan');
+{
+  const SKIN_FACE_TOL = 0.55; // #965: 0.5 m of batter and 0.05 of float slack
+  const skin = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/castle-skin.json'), 'utf8'));
+  const stages = skin.stages || [];
+  const keep = new Set(skin.keep || []);
+  const allow = skin.allow || {};
+  const file = path.join(ROOT, skin.file);
+  if (!stages.length) pass('data/castle-skin.json lists no stage, so no plan piece is swapped');
+  else if (!fs.existsSync(file)) fail(`skin: data/castle-skin.json lists ${stages.join(', ')} and ${skin.file} is not there`);
+  else {
+    const { nodes } = nodesOf(file);
+    const pieceOf = new Map(plan.pieces.map(p => [p.id, p]));
+    const idsOf = (x) => [...(x.planId !== undefined ? [String(x.planId)] : []), ...(Array.isArray(x.planIds) ? x.planIds.map(String) : [])];
+    const namedBy = new Map();
+    let bad = 0;
+    for (const n of nodes) {
+      for (const id of idsOf(n.extras)) {
+        namedBy.set(id, [...(namedBy.get(id) || []), n.name]);
+        const piece = pieceOf.get(id);
+        const s = piece ? skinStageOf(piece) : null;
+        if (!piece) { fail(`skin: ${n.name} names ${id}, which is no plan piece`); bad++; }
+        else if (!stages.includes(s)) { fail(`skin: ${n.name} names ${id}, a piece of stage ${s}, which data/castle-skin.json does not list`); bad++; }
+        else if (keep.has(id)) { fail(`skin: ${n.name} names ${id}, which data/castle-skin.json keeps; a kept piece's node is cut (#964)`); bad++; }
+      }
+    }
+    const swapped = plan.pieces.filter(p => stages.includes(skinStageOf(p)) && !keep.has(p.id));
+    for (const p of swapped) {
+      const by = namedBy.get(p.id) || [];
+      if (!by.length) { fail(`skin: plan piece ${p.id} of stage ${skinStageOf(p)} is named by no skin node`); bad++; }
+      else if (by.length > 1) { fail(`skin: plan piece ${p.id} is named by ${by.length} skin nodes, ${by.join(', ')}; one draws it`); bad++; }
+    }
+    if (!bad) pass(`${swapped.length} plan pieces of ${stages.join(', ')}${keep.size ? `, less ${keep.size} kept,` : ''} each named by exactly one of ${nodes.filter(n => idsOf(n.extras).length).length} skin nodes, and every id a node names is one of them`);
+
+    let worst = 0, worstAt = null, held = 0, off = 0;
+    for (const n of nodes) {
+      const ids = idsOf(n.extras).filter(id => pieceOf.has(id));
+      if (!ids.length || !n.box) continue;
+      const boxes = ids.map(id => pieceOf.get(id).box);
+      const want = {
+        min: { x: Math.min(...boxes.map(b => b.min.x)), y: Math.min(...boxes.map(b => b.min.y)), z: Math.min(...boxes.map(b => b.min.z)) },
+        max: { x: Math.max(...boxes.map(b => b.max.x)), y: Math.max(...boxes.map(b => b.max.y)), z: Math.max(...boxes.map(b => b.max.z)) },
+      };
+      const faces = [
+        ['west', Math.abs(n.box.min.x - want.min.x)], ['east', Math.abs(n.box.max.x - want.max.x)],
+        ['bottom', Math.abs(n.box.min.y - want.min.y)], ['top', Math.max(0, want.max.y - n.box.max.y)],
+        ['north', Math.abs(n.box.min.z - want.min.z)], ['south', Math.abs(n.box.max.z - want.max.z)],
+      ].sort((a, b) => b[1] - a[1]);
+      const [face, d] = faces[0];
+      if (allow[n.name] !== undefined) {
+        if (d <= SKIN_FACE_TOL) { fail(`skin: allow entry ${n.name} is stale: every face is within ${SKIN_FACE_TOL} m of its plan box, worst ${d.toFixed(3)} m on its ${face} face`); off++; }
+        continue;
+      }
+      held++;
+      if (d > worst) { worst = d; worstAt = `${n.name}'s ${face} face`; }
+      if (d > SKIN_FACE_TOL) { fail(`skin: ${n.name} (${ids.join(', ')}) is ${d.toFixed(3)} m off its plan box on its ${face} face; every face but the top within ${SKIN_FACE_TOL} m (#965)`); off++; }
+    }
+    for (const key of Object.keys(allow)) if (!nodes.some(n => n.name === key)) { fail(`skin: allow entry ${key} names no skin node`); off++; }
+    if (!off) pass(`${held} skin nodes, every face within ${SKIN_FACE_TOL} m of its plan box but the top, worst ${worst.toFixed(4)} m on ${worstAt}; ${Object.keys(allow).length} allowed`);
+  }
 }
 
 /* --------------------------------------------------- WHERE CHECK 5 WENT ---
