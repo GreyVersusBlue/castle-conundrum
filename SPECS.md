@@ -182,9 +182,10 @@ sections cite, and what is still open:
 (#881; 2a shipped, #907, for check 1e and #811's pin). Lanes F and B.** Modular
 pieces that make the castle's working rooms read as what they are. "What
 every Blender pack shares" holds and is not restated. Decided as #813 to
-#816 and #819. Three increments: two class S, the third gated on rank 4's
-look. **Increment 1 shipped on huginn (#947)**: four sets, five placed, the
-GPU look still owed.
+#816 and #819, amended by #951 to #953. Three increments: two class S, the
+third gated on rank 4's look. **Increment 1 shipped on huginn (#947)**: four
+sets, five placed, the GPU look still owed. **Increment 2 is the cell alone
+(#951)**: one set, one outer-ward draw, behind one new station rail (#953).
 
 > **#920, discharged by #946 (2026-10-03):** the gate is open and #803's flat look stands for this row. #920's own reason was overtaken: #964 swaps the wall faces round all four rooms, so the sets will stand against photographic walls. The look stands because #964 names 2b's sets among what a room keeps, #813 gives this row no wall to cover, and #803's pipeline takes no image input. A flat set against a swapped wall is a line on the integration row's looking checklist, and its remedy is that row's `keep` list.
 
@@ -197,20 +198,31 @@ from the apprentice's station. `kitchen-worktable`, `kitchen-shelves`,
 a set may move a 2f row to fit, since both are dressing. `cell-door-barred.glb`
 in `51735fa` is available to the cell.
 
+**Amended by #951 to #953 (2026-10-03).** Three things above stopped being
+true. The altar is not in the Chapel Tower's top room: #837 moved it into
+the nave as `nave-altar`, at world (16.8, 10.25). The chapel gets no 2b set
+(#951), so 2b's sets stand in three rooms and increment 2 is the cell.
+`cell-door-barred.glb` is not available: `01ee3dd` deleted it with fifteen
+others under #390, and it is not restored (#952). And "every set collides,
+so the station rails hold it" (#814) was false for the one room increment 2
+dresses: a set stood on Madoc's station left `validateMystery` at 0
+problems, so the increment opens with the rail that closes that (#953).
+
 **The rooms, measured.** The brief named the kitchen, the great hall, the
 chapel, a smithy, stables and a dungeon. `data/scene-config.json` has 43
 rooms and no smithy and no stables; #800 found the same ("there is no forge
 room", which is why the carter hammers at his cart). The dungeon is the
 `cell` in the Prison Tower, the gaol since lore year 9, which today holds
-nothing but its 123 drum meshes and is shut. So the kit dresses four rooms
-(#814):
+nothing but its 123 drum meshes and is shut. #814 named four rooms; 2b's
+sets stand in three of them, and the chapel is dressed by 2a, 2f and 2g
+(#951):
 
 | Room | Ward | Extent | What stands in it today |
 | --- | --- | --- | --- |
 | `kitchen` | outer | x -26..-14, z -14..-6 | two barrels, a crate, a small barrel, the cook's slate |
 | `great-hall` | outer | x -34..-6, z 6..14 | nine photographed props (29 draws), a kit dais, seven trusses, seven roofs |
-| `chapel` | inner | Chapel Tower, r 2.8 | the body's lantern, candles, pouch, gravestone, bell, three stations |
-| `cell` | outer | Prison Tower, r 2.8 | nothing |
+| `chapel` | inner | Chapel Tower, r 2.8 | no 2b set (#951): the body's lantern, 2a's pricket and aumbry, 2f's hung censer, the pouch, the gravestone, the bell, the lower flight in the east half, three cast stations and one household one |
+| `cell` | outer | Prison Tower, r 2.8, cut to 4.0 m wide (x -22..-18) over z 14..18 by the south curtain's two ends | nothing; Madoc's one station at tile (-5, 3.5), world (-20, 14) |
 
 **Sets, not loose pieces** (#815). The modular pieces are Python functions
 in one script (a hearth, a hood, a spit, a cauldron, a trestle board, a
@@ -243,18 +255,131 @@ call. Modularity lives where it costs nothing and the draw count stays flat.
 - **`test/assets.mjs`**, check 8's caps block, one line:
   `interiors: { triangles: 2500, bytes: 96000 }` (#819).
 
-### Scope, increment 2: the chapel and the cell (class S)
+### Scope, increment 2: the cell (class S)
 
-- Two rows: `chapel-altar` (a stone altar, a frontal, a cross) and
-  `cell-pallet` (a straw pallet, a bucket, a ring and chain on the wall).
-  Two files, two `interiorProps` rows.
-- **The chapel is the tight one**: three stations, five pressables, a stair
-  in its east half. The altar stands where check 1e, check 1b and the nav
-  rails all pass with no station moved. If no spot does, the chapel gets no
-  altar and `HISTORY.md` records the spots tried.
-- **The cell is shut**, so the pallet is seen through the bars; it is a
-  low collider a body may step onto (its top is under `STEP_UP`), so
-  Madoc's stations stay standable.
+One set, `cell-pallet`, one file, one `interiorProps` row, one outer-ward
+draw (#951). The chapel gets nothing from this row. Two commits, in this
+order, each from a green `npm test`.
+
+**Step 1, the rail (#953). No Blender, no asset.**
+
+- **`src/stations.js`**: `castleNav`'s api gains `onFloor(point)`: true when
+  `point.h` is within 1 mm of the `top` of the plan room the station names
+  (`planRooms`, keyed `id/level`), null when the plan has no such room.
+- **`src/mystery.js`**, `validateMystery`: each of the three `barred`
+  branches (day one, `day0`, `day2`) says, when `nav.onFloor(point) ===
+  false`, `<npc>: station at <watch> is in <code>, behind bars, <h> m up on
+  something that is not its floor`. The `talkable` line beside it is
+  unchanged.
+- **`test/mystery.mjs`**: one `expect` beside the #785 pair, mutating the
+  config and not the mystery: `kitchen-worktable`'s row moved to tile
+  `[-5, 3.5]`. It expects `/^prisoner: station at prime is in PT, behind
+  bars, 1\.10 m up on something that is not its floor$/` (the worktable's
+  plan box tops out at 1.10). The break (#34): with the new clause commented
+  out the `expect` reads "said nothing", which is today's behaviour.
+
+**Step 2, the set. Blender on huginn or Windows.**
+
+- **`tools/blender/packs/interiors.py`**: four new piece functions. None of
+  the four exists today; `PIECES` holds `trestle-board`, `bench`, `trough`,
+  `pot`, `crock`, `rack` and `cloth`. Each is built from `cbox` and `lathe`,
+  which stand.
+  - `pallet`: a board frame in `WOOD_DARK`, a straw fill in `STRAW` proud of
+    it, a folded blanket at the foot in `EARTHEN_DARK`. Sizes `length` 1.9,
+    `depth` 0.75, `height` 0.18, `board` 0.03.
+  - `bucket`: staves lathed at `sides` 8 in `WOOD`, two hoops in `IRON`, the
+    inside in `INTERIOR`. Sizes `radius` 0.16, `height` 0.30.
+  - `wall-ring`: an `IRON` plate with its back on the piece's own z 0 and a
+    ring of 8 segments hanging from it. Nothing reaches behind z 0.
+  - `chain`: `links` boxes in `IRON`, alternate links turned 90 degrees,
+    rising `drop` from the piece's base.
+  - `STRAW = '#b89d55'`, **appended last in `PALETTE`** so slots 0 to 9 keep
+    their UVs (#952).
+- **`tools/blender/packs.json`**: one row, `cell-pallet`, pack `interiors`,
+  seed `interiors/cell-pallet/<the build date>`, a `why`, and
+  `packs.interiors.extraColours` gains `#b89d55` with a `why` (2 of 8). The
+  pieces, in the set's own metres before `common.frame` centres it, back at
+  -Z, which is the wall:
+
+  | Piece | x | y | z | rotationY | What it is for |
+  | --- | --- | --- | --- | --- | --- |
+  | `pallet` | 0 | 0 | 0 | 0 | 1.9 along the wall, 0.75 into the room |
+  | `wall-ring` | -0.60 | 1.05 | -0.375 | 0 | on the wall over the head end, its back flush with the pallet's back edge |
+  | `chain` | -0.60 | 0.18 | -0.34 | 0 | `drop` 0.85, from the pallet's top to the ring |
+  | `bucket` | -1.21 | 0 | -0.15 | 0 | on the floor past the head end |
+
+  The set's box comes to **2.32 x at most 1.20 x 0.75 m** (x -1.37..0.95,
+  z -0.375..0.375). The builder may change a size for the look and may not
+  let the box pass 2.36 m long, 0.75 m deep or 1.20 m high.
+- **`assets/blender/interiors/cell-pallet.glb`** and its manifest row. **The
+  whole pack re-renders**: `interiors.py` is an input to every interiors
+  row's `source` hash (check 8 line 4), and the new swatch changes the atlas
+  in all five files. The four shipped files keep their triangle counts (240,
+  288, 808, 376) and their plan boxes, and change `sha256`, `source` and
+  perhaps `bytes`; the builder records all four before and after. A second
+  render prints "unchanged" for five files (#883).
+- **`data/scene-config.json`, `interiorProps`**: one row, spliced (#584,
+  #632): `{ "id": "cell-pallet", "model":
+  "assets/blender/interiors/cell-pallet.glb", "tile": [-5.405, 4.05],
+  "rotationY": 90 }`. No `yOffset`, no `noCollide`, no `base`.
+
+**Where it stands, and why (#952).** The cell is not a 2.8 m disc. The south
+curtain's two ends stand 0.8 m into the drum: `south-curtain-west` is stone
+over x -22.8..-22.0 and `south-curtain-mid` over x -18.0..-17.2, both
+z 14..18 and 7.8 m high. So the room is 4.0 m wide with a flat face on each
+side, and the pallet lies along the west one with nothing between its back
+and the stone. A set against the ring itself would stand off it by the
+sector boxes' bulge, 0.10 to 0.23 m, which is what #833 found of the pulpit.
+
+- `rotationY` 90 turns the set's -Z to world -x and its -x to world +z, so
+  the back is on the west face and the head, the ring and the bucket are at
+  the south end, farthest from the bars.
+- Tile x: the box's west side at -21.995, 5 mm off the face at -22.0, and
+  0.75 deep, so its centre is x -21.62, tile -5.405. In general the tile is
+  `(-21.995 + depth / 2) / 4`.
+- Tile z: the drum's sectors `x -23.464..-21.980` reach in at z under 14.60
+  and over 17.40. A 2.32 m box centred on z 16.20 runs 15.04..17.36, 0.04 m
+  short of the south one. Tile 4.05.
+- The plan box: x -21.995..-21.245, y 0..1.20, z 15.04..17.36. Measured in
+  Node against the live plan with a stand-in box of the set's size: check 1
+  clear, no flight, the cell still shut with 12 standable cells within 1.5 m
+  of the bars, `validateMystery` and `validatePopulace` at 0, Madoc's cell
+  at h 0 and 2.2 m from the box.
+- **Through the bars.** The bars' north face is z 12.54, so an eye stands at
+  (-20, 12.09). The ray to the ring at (-21.97, 16.59) passes the west jamb
+  sector's corner, x -20.725 at z 13.575, at x -20.65, and Madoc at z 14 at
+  x -20.84, 0.39 m clear of his 0.45 m body. The bucket at (-21.77, 17.20)
+  clears the jamb by 0.21 m and the pallet's near corner by 0.10 m. The
+  sector box overstates the jamb, whose stone corner is at z 13.30, so these
+  are floors. One step east at the bars opens all of it.
+- **It is a full collider, not a step.** A set is one mesh and one plan box
+  (#815), and a ring at 1.05 m puts that box's top at about 1.2, over
+  `STEP_UP` 0.35. The earlier line here, "a low collider a body may step
+  onto", was written for a pallet alone. Madoc's station stays standable
+  because the box is 2.2 m from it, and #953's rail is what says so. On the
+  morning after, when `cell-bars` is `gone`, the player walks round it: the
+  cell's seeded cells go 58 to 49.
+
+**If the placement fails**, in the order the suites would say so:
+
+1. `layout` check 1, "cell-pallet ... is inside south-curtain-west": the
+   built set is deeper than 0.75 m. Recompute tile x from the formula above.
+2. Check 1, "... is inside Prison Tower": the built set is longer than
+   2.36 m. Pull the `bucket`'s x toward the pallet in `packs.json` and
+   re-render. The tile does not move south or north to make room.
+3. `mystery`, the #953 line or a `prisoner:` line of any kind: not expected
+   at 2.2 m. The set's tile moves, Madoc's never (#814).
+4. Anything else, or no tile on the west face passing: stop, place nothing,
+   record the tiles tried in `HISTORY.md`, and the row comes back to
+   `architect`. The east face is the mirror, but under `rotationY` -90 the
+   ring would be at the north end beside the jamb, so it needs the set's
+   pieces mirrored in x and is not a fallback a builder takes alone.
+
+**`cell-door-barred.glb` is not used (#952).** It is not in the tree. Its
+frame is 1.4 x 2.25 m and the doorway's plate is 1.76 x 2.5 m. The bars the
+player talks through are the built fixture `cell-bars`, which check 3c holds
+and which `day2.castle` takes off on the morning after; a prop door would be
+a second door that stays.
 
 ### Scope, increment 3: the photographed props (gated)
 
@@ -283,17 +408,32 @@ narrower, the increment comes back to `architect` first.
    unchanged). **The break the builder quotes**: `kitchen-shelves` (`kitchen-hearth`
    before #830 dropped it) moved 0.5 m into the kitchen's south wall, where
    it stands, expecting "kitchen-shelves at x ... is inside <that run's
-   label>".
+   label>". Increment 2's: `cell-pallet`'s tile x -5.405 to -5.53, 0.5 m
+   west, expecting "cell-pallet at x ... is inside south-curtain-west".
 3. **Check 1e** (2a's): no set stands over a pressable. Break: `hall-high-
    table` over `cooks-accounts`' tile.
 4. **Checks 1b, 11, 14, unchanged**; `validateMystery` and
    `validatePopulace` with no station moved: a set on a Vespers station fails
-   `nav.standable` by name, and the fix is the set's tile, never the
-   station (#814).
-5. **`test/budget.mjs`, unchanged** (#816): increment 1 adds 5 draws to the
-   outer ward (7 before #830), increment 2 one to each ward. The builder writes the printed
-   lines before and after in `HISTORY.md`.
+   as "which the player cannot walk to" (#947's break 4), and the fix is the
+   set's tile, never the station (#814). **Behind bars that line is never
+   asked**, so increment 2 adds one clause to `validateMystery` and one
+   `expect` to `test/mystery.mjs` (#953). It is `mystery`'s because the
+   stations are (#529). Its two breaks: the clause commented out, expecting
+   the `expect` to read "said nothing"; and `cell-pallet`'s tile moved to
+   `[-5, 3.5]`, expecting "prisoner: station at prime is in PT, behind bars,
+   <the set's height> m up on something that is not its floor".
+5. **`test/budget.mjs`, unchanged** (#816): increment 1 added 5 draws to the
+   outer ward (7 before #830). Increment 2 adds 1 to the outer ward and none
+   to the inner: outer 1026 to 1027, outer plus outside 1192 to 1193 of
+   1200, 7 under; inner 709, and 875 with the outside, both as they were;
+   1826 meshes to 1827; 164 textures to 165, one 16 px atlas. The builder
+   writes the printed lines before and after in `HISTORY.md`.
 6. **`plan-vs-scene.mjs`**, unchanged: one tagged mesh per set, diffed.
+7. **Check 8 over `cell-pallet`**: about 360 triangles and 13 KB expected,
+   against 2,500 and 96,000; the pack's five files about 2,070 triangles and
+   70 KB. Its line 6 is not broken again: #947's break 1 was that line, in
+   this pack, through the same `sizes` path. If `cell-pallet` measures over
+   600 triangles the builder says why in `HISTORY.md`.
 
 ### Open calls
 
@@ -320,6 +460,24 @@ narrower, the increment comes back to `architect` first.
 - **A set against a station.** Recommend **the set moves, the station never**:
   stations are `test/mystery.mjs`'s (#529), and a kit has no claim on them.
 - **The draw ceiling.** Recommend **no move** (#816); the numbers are there.
+  After increment 2 the outer ward has 7 draws left, so the next row that
+  adds to it brings #609's sector merge to `architect` first.
+- **For Devon: does the chapel get a 2b set?** Recommend **no** (#951): the
+  drum's 24.6 square metres already hold seven pieces, a flight and four
+  stations, and its altar, pulpit, rood and pews stand next door in 2g's
+  nave. **If this is not answered when increment 2 is built, the builder
+  builds the cell alone.** A yes is a new increment through `architect`,
+  with its tile measured the way the cell's was.
+- **Which face of the cell.** Recommend **the west, `rotationY` 90** (#952):
+  it is flat, and the head end is seen from the bars' centre past Madoc.
+- **Straw.** Recommend **one new `extraColour`, `#b89d55`, appended** (#952):
+  #819 already granted it, it is the countryside's wheat so the castle keeps
+  one yellow, and a pallet in plaster or linen reads as a mattress.
+- **`cell-door-barred.glb`.** Recommend **not used** (#952): the doorway
+  already has its bars, and they are the ones the morning after removes.
+- **Where the barred-station rail lives.** Recommend **`validateMystery`,
+  held by `test/mystery.mjs`** (#953): #529 gives the stations to that
+  suite, and `layout.mjs` asks only what is reachable from the spawn.
 
 ### Dependencies
 
@@ -333,9 +491,10 @@ narrower, the increment comes back to `architect` first.
 - #813: no piece covers a face. #815: one mesh per set. #814: no station moves.
 - #500: every set is an `interiorProps` plan piece with a `planId`.
 - #390, #506, #584, #632. #611, #816: no ceiling moves.
-- #529: no rail moves; every one above already exists but check 8's line.
+- #529: no rail moves; every one above already exists but check 8's line
+  and #953's clause, which is new and on `mystery`'s side.
 - #13, #34, #147. #53: whether a room reads as its trade is Devon's look.
-- #801 to #808, #811 to #816, #819.
+- #801 to #808, #811 to #816, #819, #830, #837, #946, #947, #951 to #953.
 
 ### Looking checklist
 
@@ -344,7 +503,12 @@ narrower, the increment comes back to `architect` first.
       standing in the benches?
 - [ ] Kit sets beside the photographed cabinet: the answer rank 4's "The
       props" line needs for increment 3.
-- [ ] The cell through the bars.
+- [ ] The cell through the bars, from their centre: the ring, the chain and
+      the pallet's head past Madoc's shoulder, or only Madoc?
+- [ ] The pallet: straw, or a yellow box? And is a pallet along the west
+      face the right wall, or does the cell want it at the back (#952)?
+- [ ] The morning after, inside the cell: the set is a 1.2 m collider over a
+      0.18 m pallet. Does walking into the air above it read as a bug?
 
 ---
 
