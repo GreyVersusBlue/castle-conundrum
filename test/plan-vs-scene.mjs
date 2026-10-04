@@ -1128,6 +1128,55 @@ try {
         seen.alone === null ? 'no prompt at all, so the label body was never in range and the line above proves nothing' : seen.alone);
     }
   }
+  /* AND A PIECE THE SKIN DRAWS IS NOT STONE IN FRONT OF ITSELF (#1008). The
+   * curtain skin (#1005) hides the built walk bar, which stays the evidence
+   * target's `group`, and draws `BAR_walk-bar` as its own child of the scene.
+   * `occluders()` used to drop the group alone, so the sight ray met the skin
+   * bar 0.09 to 0.16 m short of the bar's own aim point: the GPU run's fifth
+   * sitting stood the player 0.5 m from it in the Stockhouse top room with no
+   * prompt, and the day lost `door-unbarred` and the porter's admission.
+   *
+   * THE CONTROL IS THE RAY ITSELF. A prompt here proves nothing unless the
+   * skin node really stands between the eye and the aim point, so the same
+   * segment is cast against the target's skins alone first and has to hit
+   * them; and the target has to carry a skin at all. Then the prompt has to be
+   * the bar's. Static geometry, so CI may hold it (#53). The pose is the one
+   * the GPU run gave up at, (-1.9, -16.9) on the level-2 floor. */
+  {
+    const seen = await page.evaluate(async ({ eye }) => {
+      const frame = () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      const promptNow = () => { const el = document.getElementById('interact-prompt'); return el && !el.classList.contains('hidden') ? el.textContent.trim() : null; };
+      document.getElementById('riddle-cancel').click();
+      await frame();
+      const T = window.__THREE;
+      const t = window.__interaction.targets.find((x) => x.isEvidence && x.id === 'walk-door');
+      if (!t) return { missing: true };
+      const from = new T.Vector3(-1.9, 8 + eye, -16.9);
+      const at = t.focus.clone();
+      const cam = window.__player.camera;
+      const home = { p: cam.position.clone(), r: cam.rotation.clone() };
+      cam.position.copy(from);
+      cam.rotation.set(0, Math.atan2(-(at.x - from.x), -(at.z - from.z)), 0, 'YXZ');
+      const dir = at.clone().sub(from);
+      const dist = dir.length();
+      const ray = new T.Raycaster(from, dir.normalize(), 0.05, dist);
+      const throughSkin = ray.intersectObjects(t.skins || [], true).length;
+      await frame();
+      const prompt = promptNow();
+      cam.position.copy(home.p);
+      cam.rotation.copy(home.r);
+      return { skins: (t.skins || []).map((s) => s.name), throughSkin, prompt, want: t.prompt, active: t.active };
+    }, { eye: EYE_HEIGHT });
+    if (seen.missing) fail('no walk-door evidence target on the page to try the skin from');
+    else {
+      check(seen.skins.length > 0 && seen.throughSkin > 0,
+        `the walk bar's target carries its skin (${seen.skins.join(', ')}) and the eye-to-bar ray passes through it`,
+        seen.skins.length ? `the ray from the pose misses the skin, so the line below proves nothing (${seen.throughSkin} hits)` : 'the target carries no skin nodes');
+      check(seen.active && seen.prompt === seen.want,
+        `and from the Stockhouse top room the HUD offers "${seen.prompt}"`,
+        `wanted "${seen.want}", got ${seen.prompt === null ? 'no prompt' : `"${seen.prompt}"`}, active ${seen.active}`);
+    }
+  }
   /* AND WHAT THE VERDICT DOES TO THE STONE (#539). `castle-builder.js`'s
    * `applyDay` is the one half of the second day that Node cannot run: it takes
    * a mesh out of a live scene and its box out of a live collider list, and

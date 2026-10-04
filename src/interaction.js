@@ -197,11 +197,20 @@ export class InteractionSystem {
     this.ui.setInteractPrompt(!!shown, shown ? (shown.prompt || `Press E to talk to ${shown.name}`) : '');
   }
 
-  /** Scene contents minus the targets, cached until the child count changes. */
+  /**
+   * Scene contents minus the targets, cached until the child count changes.
+   *
+   * A TARGET'S SKIN IS THE TARGET (#1008). Where the castle skin draws a piece
+   * in place of the built one, the built object stays the target's `group` and
+   * is hidden, and the skin node is a separate child of the scene. Left in here
+   * it was stone in front of itself: the walk bar was never offered and the
+   * day lost `door-unbarred`. The builder hands each target the nodes that are
+   * that piece alone (`target.skins`), and they go out with the group.
+   */
   occluders() {
     const kids = this.scene.children;
     if (this._occluderCount === kids.length) return this._occluders;
-    const bodies = new Set(this.targets.map((t) => t.group));
+    const bodies = new Set(this.targets.flatMap((t) => [t.group, ...(t.skins || [])]));
     this._occluders = kids.filter((c) => !bodies.has(c) && c.visible && !c.isLight);
     this._occluderCount = kids.length;
     return this._occluders;
