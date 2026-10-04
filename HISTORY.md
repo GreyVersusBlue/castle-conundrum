@@ -14667,4 +14667,88 @@ Madoc is at h 0 today.
 `src/stations.js`, `src/mystery.js` and `test/mystery.mjs`; step 2
 `cell-pallet` on a machine with Blender 5.2. Lanes F and B.
 
+## Rank 2b increment 2: the cell alone, built on huginn (2026-10-03)
+
+**#971. Rank 2b's increment 2 shipped as #951 to #953 decided it: the rail,
+then `cell-pallet`, and no chapel set.** Built by `builder` on huginn with
+Blender 5.2.2 at `-t 4`, one Blender at a time, in two commits. Devon
+answered #951's open question on 2026-10-03 at 22:58 ET: the chapel gets no
+2b set. Every figure below is from the commit messages, `tools/blender/manifest.json`
+and the suites' own output.
+
+**Step 1, `7432c98`: the rail.** `castleNav` gains `onFloor(point)` in
+`src/stations.js`; `validateMystery`'s three `barred` branches (day one,
+day0, day2) gain the clause in `src/mystery.js`; `test/mystery.mjs` gains one
+`expect` beside the #785 pair. `npm test` was 15 of 15 before it. Break
+(#34): with the clause commented out, `mystery` exited 1 with "FAIL rejects
+the kitchen worktable stood on Madoc in his cell (`prisoner: station at prime
+is in PT, behind bars, 1.10 m up`) — said nothing"; restored, it reads
+"prisoner: station at prime is in PT, behind bars, 1.10 m up on something
+that is not its floor".
+
+**Step 2, `9213430`: the set.** `cell-pallet` is four new pieces (`pallet`,
+`bucket`, `wall-ring`, `chain`) joined into one mesh: 456 triangles against
+the spec's estimate of about 360, 13,632 bytes, 2.32 x 1.198 x 0.75 m. The
+extra triangles are the bucket, 188 against an estimated 92, because both
+hoops stand proud of the staves. 456 is under the 600 that acceptance line 7
+would want a reason for, and is recorded anyway. Two things go beyond the
+spec's wording: the pallet takes sizes `frame` 0.14 and `blanket` [0.5,
+0.05], and the `interiorProps` row carries a `comment` as increment 1's rows
+do. The plan box is x -21.995..-21.245, y 0..1.198, z 15.04..17.36 at tile
+(-5.405, 4.05), `rotationY` 90, as #952 predicted. No step of "If the
+placement fails" was needed, and no station moved (#814).
+
+**The palette.** `STRAW` `#b89d55` is appended last in `PALETTE` and is the
+pack's second `extraColour` of 8, so the pack re-rendered whole. The four
+shipped files keep their triangles and plan boxes, each grows 8 bytes, and
+`source` changed in all four:
+
+| File | Triangles | Bytes | sha256 before | sha256 after |
+| --- | --- | --- | --- | --- |
+| `kitchen-worktable.glb` | 376 | 12,528 to 12,536 | `cd0edca8` | `bdfe862a` |
+| `kitchen-shelves.glb` | 808 | 25,576 to 25,584 | `62e43450` | `2202ea2f` |
+| `hall-trestle.glb` | 288 | 9,980 to 9,988 | `cc72d6bf` | `483dfdbc` |
+| `hall-high-table.glb` | 240 | 9,036 to 9,044 | `2fc15544` | `33f53e00` |
+
+A second render printed "unchanged" for all five files and the manifest. The
+pack is now five files.
+
+**Breaks (#34), each red from green and restored.**
+
+1. Tile x -5.53, `layout` check 1: "FAIL cell-pallet at x -22.50..-21.74, y
+   0.00..1.20, z 15.04..17.36 is inside south-curtain-west".
+2. Tile [-5, 3.5], `mystery`: "FAIL validateMystery finds nothing wrong, the
+   castle included — prisoner: station at prime is in PT, behind bars, 1.20 m
+   up on something that is not its floor", repeated for every watch.
+
+**Budget.** `test/budget.mjs` not edited and no ceiling moved (#816, #611).
+Before then after:
+
+```
+  outer    1026 / 1200    ->    outer    1027 / 1200
+  inner     709 / 1200 and 875 with the outside: unchanged
+  outside   166; outer plus outside 1192    ->    1193
+  1826 meshes in the castle    ->    1827
+  164 textures come to 43.9 MB    ->    165 textures come to 43.9 MB
+  the outer ward's 1027 and the outside's 166 come to 1193, 7 under the ceiling of 1200
+```
+
+With 7 left, the next row that adds an outer-ward draw brings #609's sector
+merge to `architect` first.
+
+**Checks.** `npm test` on the final tree was 14 of 15. `plan-vs-scene` was
+red on the hound-bark beat only: "Gelert beside the player cues a bark inside
+0.6 s plus a margin (1 frames driven) — 0 cued" and "heard from where the
+hound stands — Infinity m off", with 9.9 GB available and a load average of
+7.6. Rerun once alone it passed in 152 s with 3 frames driven. That is
+inconclusive under #53 and the same beat as increment 1 (#947); CI's run is
+the check. No suite was edited for it. `npm run build` was green and `dist/`
+carries `cell-pallet.glb`.
+
+**Not verified:** the look on a GPU (#53). Only the contact sheet was seen,
+and the three cell lines on the looking checklist stand open.
+
+**Left:** increment 3, gated on rank 4's look, and the Windows GPU look at
+the five sets (six placements).
+
 **#1000. Reserved: #971 to #1000 are held for sessions on Huginn (the Selector loop); anyone else numbers from #1001.**
