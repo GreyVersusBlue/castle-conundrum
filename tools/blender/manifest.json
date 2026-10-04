@@ -291,11 +291,27 @@
       "source": "e7511ee1b5345e9d0afb013d189a16659d3b62d72d18c8c3618306cf6f359b67"
     },
     {
+      "file": "assets/blender/interiors/cell-pallet.glb",
+      "pack": "interiors",
+      "name": "cell-pallet",
+      "bytes": 13632,
+      "sha256": "19abed53902b93207f3280f3c9288159d285d4df182b6dad222b2aca1fa9585e",
+      "triangles": 456,
+      "images": [
+        [
+          16,
+          16
+        ]
+      ],
+      "blender": "5.2.2 LTS",
+      "source": "13d671fd6c73c53021e67a546109e0b39944c2740f42ee67fa1e5f39ad132da4"
+    },
+    {
       "file": "assets/blender/interiors/hall-high-table.glb",
       "pack": "interiors",
       "name": "hall-high-table",
-      "bytes": 9036,
-      "sha256": "2fc15544ba2fe26fd9681bb4057e4c32df8ea0beff58746c1af3210f2fd3d779",
+      "bytes": 9044,
+      "sha256": "33f53e00b7e91a82fb504b57990c06fd828b2b1e47df02475f1d52ffb985ec2c",
       "triangles": 240,
       "images": [
         [
@@ -304,14 +320,14 @@
         ]
       ],
       "blender": "5.2.2 LTS",
-      "source": "ca39ba4513e759031f65102dd75a754380c4de6eb4452914f2948cf152cbb050"
+      "source": "bc1c4054588bcad57390a867cc2ea54a15ec8a1830f6cab44e1be3effb1d94f6"
     },
     {
       "file": "assets/blender/interiors/hall-trestle.glb",
       "pack": "interiors",
       "name": "hall-trestle",
-      "bytes": 9980,
-      "sha256": "cc72d6bf44f8b11c538c4afcc293041b2dd588713e43afdc0f0cd9d6ad0e2109",
+      "bytes": 9988,
+      "sha256": "483dfdbca134aedaddd47820a18c35e115320d24131bf09b3c83a310e352d29f",
       "triangles": 288,
       "images": [
         [
@@ -320,14 +336,14 @@
         ]
       ],
       "blender": "5.2.2 LTS",
-      "source": "6810fd75d5f04f92e0baa484588e606ae01b30b4d5759c23846fa28c09f35e06"
+      "source": "96b6a18fe049ee62e79a3f6c0b7eb85dae59fa1b9717e0dcf9d9194a67146f80"
     },
     {
       "file": "assets/blender/interiors/kitchen-shelves.glb",
       "pack": "interiors",
       "name": "kitchen-shelves",
-      "bytes": 25576,
-      "sha256": "62e43450221d98d7b673daec436114114276adce1d01a20c91ff5f31053183b8",
+      "bytes": 25584,
+      "sha256": "2202ea2f3522c3613cd2cbb215fc0869829ea81b9b3ab6eb6946f8e43b6e94b0",
       "triangles": 808,
       "images": [
         [
@@ -336,14 +352,14 @@
         ]
       ],
       "blender": "5.2.2 LTS",
-      "source": "992262cec8fdbd5313cc79817672d78a750871d76670cbcd42f3d7fe2fb98418"
+      "source": "1f44c9b6d2cbe596e19d2319571b42c55eb980d8cf690a134cd8c1719c82217c"
     },
     {
       "file": "assets/blender/interiors/kitchen-worktable.glb",
       "pack": "interiors",
       "name": "kitchen-worktable",
-      "bytes": 12528,
-      "sha256": "cd0edca83ace4e2816d695c7dea325db4092402b838addc7daefbd0cc558314b",
+      "bytes": 12536,
+      "sha256": "bdfe862a6ae4b5b8606fea42af561f51bf3aff6a5bd09e2a158e830a72f76d92",
       "triangles": 376,
       "images": [
         [
@@ -352,7 +368,7 @@
         ]
       ],
       "blender": "5.2.2 LTS",
-      "source": "992bdb1be1d6fd707a8e1454fe71858a86c41288f6c15a070cbbc9360c2549b2"
+      "source": "6feb32bbc6607edc1ec4708936931c6a9eeffc097efa1c7eb61dce3c65320b23"
     }
   ]
 }
