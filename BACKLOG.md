@@ -213,7 +213,7 @@ that is two Blenders on one machine and Devon's call (#842).
 
 ## The ranked table
 
-Ten ranked rows: 2b, 2c, 2d, 2i, 3, 3c, 4, 6, 7, 11. Devon
+Nine ranked rows: 2b, 2c, 2d, 2i, 3, 4, 6, 7, 11. Devon
 reopened ranks 1 and 2 himself on 2026-09-25 for the Blender rows, and
 lettered the pack band by priority (#801, #802). 2f, his own props, took
 the next letter the same day, ran first, and shipped the same day
