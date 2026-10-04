@@ -14825,6 +14825,33 @@ index on every machine, and a plain `grep` over it prints nothing. That is
 why a search for "bark" in `test/` does not find this beat. Left as it is:
 whether the separator should be a NUL is not this row's call.
 
+**#973. `test/built.mjs` closes the built page before it opens the source
+page, and `test/map.mjs`'s two reloads get 120 s; the game is unchanged.**
+`main` went red on GitHub when #1004's stage curtain was merged
+(castle-conundrum#116, 2026-10-04): `map` and `built` failed on the pull
+request's run and on the push run, `built` on huginn too. Neither was the
+build or the map. Measured on huginn's software renderer from the built page:
+with the skin drawn a frame of the opening view is about 2.1 s, and with
+`data/castle-skin.json`'s stages emptied in the page it is about 1.2 s; a
+`page.reload` took 31.5 s with the skin and 15.1 s without, so it had been
+at half of puppeteer's 30 s navigation limit before the curtain and is past
+it now. `test/map.mjs` reloads twice and threw "Navigation timeout of 30000
+ms exceeded" on the first; both reloads now say `timeout: 120000`, the same
+figure the wait for the start panel under them already uses.
+`test/built.mjs` held the built page and the source page open side by side
+in one browser, so one GPU process drew both, and the source page did not
+finish building inside its 180 s (`DOM.describeNode timed out`). What the
+comparison needs from the built page is the set of files it was served, and
+that is in hand as soon as the page has built, so the built page's own
+checks (no offsite request, no console error, the second start button) now
+run first, the page is closed, and then the source page loads. No assertion
+was added, dropped or reworded, and none moved between suites. `built` went
+from red at 307 s to green in 35.8 s on huginn. **Not changed, and noted:**
+the frame cost is the software renderer's and says nothing measured about a
+GPU; `test/play-castle.mjs` has one more `page.reload` with the default
+30 s, which was green here and in CI and was left alone. Found by the
+landing routine and fixed at Devon's asking.
+
 **#1000. Reserved: #971 to #1000 are held for sessions on Huginn (the Selector loop); anyone else numbers from #1001.**
 
 **#1001. Devon's line on increment 1's still (#970), given 2026-10-03:
