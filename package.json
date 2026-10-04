@@ -17,7 +17,8 @@
     "dialogue:check": "node tools/dialogue.mjs check",
     "test": "node test/run.mjs",
     "play": "node test/play-castle.mjs",
-    "castle3d:build": "node tools/castle3d/build.mjs"
+    "castle3d:build": "node tools/castle3d/build.mjs",
+    "castle3d:skin": "node tools/castle3d/skin.mjs"
   },
   "dependencies": {
     "three": "0.169.0"

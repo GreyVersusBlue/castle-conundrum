@@ -14752,3 +14752,82 @@ and the three cell lines on the looking checklist stand open.
 the five sets (six placements).
 
 **#1000. Reserved: #971 to #1000 are held for sessions on Huginn (the Selector loop); anyone else numbers from #1001.**
+
+**#1001. Devon's line on increment 1's still (#970), given 2026-10-03:
+"Looks fine."** The still is
+`CASTLE3D_OUT\review\2i-1\spawn-west-2i-1-a.png`, `CAM_spawn`'s eye turned
+due west through the open outer gate. The known quirk shown to him with it,
+accepted as built: the round-headed leaves' tops run up into the vault, as
+the plan's west gate does.
+
+This closes increment 1 of SPECS.md's "Castle in Blender: the integration
+row." #922's open-arch recommendation (accept the road behind the collider,
+look west from SPAWN) stands; the lowered-portcullis fallback is not taken.
+Increment 2, the skin, outside this repo, is next.
+
+#1002 is held by the UI art row's session (branch claude/art-ui-layer, not
+yet on main) and is skipped here.
+
+**#1003. Rank 2i, increment 2 built: the skin, outside the repo.** New
+`tools/castle3d/skin.py` (Blender 5.2 over the master, writes
+`<out>/skin/skin-full.glb`, never saves the master, refuses CI and any
+Blender but 5.2) and `tools/castle3d/skin.mjs` (`npm run castle3d:skin`;
+cuts the stages, drops KHR_materials_specular/_ior, leaves to MASK 0.5,
+manifest of input sha256s, prints "unchanged" when nothing moved,
+`--cut-only`, `--stages`, `--dest`, `--drop`). `package.json` gains
+`castle3d:skin`; `tools/castle3d/README.md` gains "The skin".
+
+The lead's call for this increment, the spec puts the committed skin in
+increment 3: the cut and its manifest go to `<out>/skin/`
+(`skin-curtain.glb`, 6,905,900 bytes, sha256 63cdff80…605e; `skin-manifest.json`
+beside it). Nothing under `assets/`; no `data/castle-skin.json` and no
+`tools/castle3d/skin-manifest.json` until increment 3. `--record` deferred
+to increment 3.
+
+`skin-full.glb` 46,667,208 bytes, sha256
+`d9a3bbd131e09cdb6a4a89694dc603118e917bb2de04697235679080e06d8317` on two
+runs over one master (#968); master unmoved at sha256 0db90daf…291ff.
+Second `skin.mjs` printed "unchanged" and wrote nothing.
+
+Measured per stage against the spec's table, none past #966's margin:
+curtain 132 draws, 40,000 tris, 33 images, 14.7 MB (spec 132 / 40,000 / 33 /
+14.7); buildings 42, 6,392, 48, 21.3 (spec 42 / 6,472 / 48 / 21.3, -1.2%
+tris); town 93, 28,312, 63, 28.0 (spec ~93 / ~28,000 / 63 / 28.0); land 15,
+220,755, 84, 37.3 (spec ~15 / ~221,000 / 84 / 37.3). Texture memory
+cumulative, KTX2 projection by #963's method.
+
+A bug caught before the numbers: the first cut put town at 30.0 MB and land
+at 41.3 (+4.0 MB, past 10%) because the leaves' normal and roughness maps
+sat inside a Poly Haven node group the cap pass did not walk. The pass walks
+groups now, and `skin.mjs` re-checks every cap on the exported file and
+writes nothing if one is over.
+
+**Six build-time guard-rails, each broken from green (#34).** CI set
+(`skin.mjs` exit 1, `skin.py` exit 2, both citing #842); a wrong Blender
+(node.exe as CASTLE3D_BLENDER, "not Blender 5.2", #840); a flipped byte in
+the cut, re-cut not skipped, and CRLF `skin.mjs` still "unchanged" (#632); a
+save call added to `skin.py`: "castle.blend's sha256 moved … skin.py never
+saves the master (#963)", master restored; DATA_CAP at 1024: "56 texture(s)
+… over their caps, nothing written"; rocks undecimated: "rock low.001 8000
+> 1000"; #957 out of the admit table: "DOOR_quay-toll-house has no plan id
+and #964's admit table does not take it"; a node with no stage: "1 node(s)
+carry no extras.stage: WALL_north-curtain-mid". `--drop buildings` on a raw
+curtain+buildings cut gave the curtain cut byte for byte; not yet run on an
+encoded file.
+
+`npm test`: fifteen of fifteen.
+
+Open, for architect before increment 3 writes check 10: the spec's check 10
+says "no mesh over 40,000 triangles", but the joined land species are
+`TREES_tree_small_02` at 82,000 and `TREES_island_tree_01` at 60,000, so
+check 10 as written fails at increment 6. Also: the UI art row's own
+`test/assets.mjs` check 10 (claude/art-ui-layer, #1002) collides by number
+with the skin's check 10; whichever lands second renumbers.
+
+Look items, not baked because they are not in LOOK: rough_wood's rough_min
+0.75, and the grass and mud tints (the ground ships its straw grass map).
+Leaf cards kept scaled 17.2x (island tree) and 18.4x (small tree); Blender's
+exporter warns "Mesh TREES_island_tree_01 is not valid". All for the land
+look.
+
+Increment 3, stage curtain in the game, is next.

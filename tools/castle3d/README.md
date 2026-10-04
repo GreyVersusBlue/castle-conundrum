@@ -167,6 +167,29 @@ one shared mesh are most of it), 130 images, about 1.7 GB of texture memory
 uncompressed. That is the integration row's (2i) to argue down; nothing
 here bites, since the glb lives outside the repo (#841).
 
+## The skin (rank 2i)
+
+```
+npm run castle3d:skin -- --stages curtain --dest <file>   skin.py, then the curtain cut to <file>
+npm run castle3d:skin -- --cut-only --stages curtain      the cut alone, from <out>/skin/skin-full.glb
+npm run castle3d:skin -- --drop <stage>                   one stage out of the written file, no Blender
+```
+
+`skin.py` is a fourth Blender over the master and never saves it; `skin.mjs`
+checks castle.blend's sha256 before and after. It deletes props, `BRAZIER_`,
+#853 and #855, GUIDE and MARKERS; decimates each tree to 2,000 triangles, each
+rock to 1,000 and the ground to 40,000; joins the land's trees per species and
+rocks per mesh; bakes `LOOK`'s tint and warm into base colour pixels and #857's
+house colours into `COLOR_0`; caps base colour at 1024 and normal and
+metal-roughness at 512; stages every object; and writes
+`<out>/skin/skin-full.glb`. `skin.mjs` cuts it by `extras.stage`, holds the
+caps again, writes the cut raw, prints each stage's draws, triangles, images and
+projected KTX2 memory, and records its inputs' sha256 in a manifest:
+`tools/castle3d/skin-manifest.json` for a cut in the repo, or
+`skin-manifest.json` beside a cut outside it. With no input moved it prints
+"unchanged" and writes nothing. SPECS.md, "Castle in Blender: the integration
+row", is the spec.
+
 ## Committed here
 
 The scripts, `cameras.json` (the five cameras, #875), `sources.json` (every input with its URL or path, licence and
