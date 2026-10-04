@@ -14830,4 +14830,114 @@ Leaf cards kept scaled 17.2x (island tree) and 18.4x (small tree); Blender's
 exporter warns "Mesh TREES_island_tree_01 is not valid". All for the land
 look.
 
+**#1004. Devon's line on the five open calls #1003 raised, given
+2026-10-04: "yes to all 5."** Each decided by `architect` on 2026-10-03 and
+confirmed here.
+
+Check 10's triangle line is caps by node class, held per joined tree or
+rock: a `TREES_` or `ROCKS_` node at most 2,000 or 1,000 triangles times its
+`extras.joined`, a shared mesh at most 2,000, every other mesh at most
+40,000, owned by `test/assets.mjs`. This restates #968 and does not overturn
+it: #968 caps each tree and joins them, and "no mesh over 40,000" failed its
+own join. Measured, `TREES_tree_small_02` is 82,000 triangles, 41 trees at
+2,000 each; `TREES_island_tree_01` is 60,000, 30 trees at 2,000;
+`ROCKS_boulder_01_1` is 11,000, 11 rocks at 1,000. Everything else sits at or
+under 3,760 (`TERRAIN_road`); `TERRAIN_ground` is 39,999 against its own
+40,000 decimation target.
+
+Check 10 keeps its number on the skin. The UI art row's own `test/assets.mjs`
+check 10 (#1002, branch claude/art-ui-layer) renumbers to check 11 when it
+lands, because the skin's check 10 is on `main` already and lands within
+this session, and the art row is still uncommitted. When it lands, that
+worktree changes: `test/assets.mjs`'s header line `10.` to `11.`, its banner
+`10: what the image model made` to `11:`, and `say`'s prefix `check 10 line`
+to `check 11 line`; its SPECS.md section "UI art: woodcut illustration in
+the DOM" wherever it says check 10 (the four uses holding "in check 10", the
+lockfile line, `finish.mjs`'s exports "for `test/tools.mjs` and check 10",
+the scope line "check 10 ... below check 9" becoming "check 11 ... below
+check 10", increments 0, a, b and c's acceptance lines, the "new block below
+check 9" in its merge note, and the #529/#611 constraint line); its
+BACKLOG.md row 14 and the row brief naming check 10; its two ROADMAP.md
+lines ("its own check 10 below check 9" becoming "its own check 11 below
+check 10"); and its #1002 entry in this file, three times.
+
+The encoder's alpha path and check 10's alpha line wait for increment 5, not
+increment 3, because `skin-curtain.glb` has no material that is not
+`OPAQUE`, and the first non-`OPAQUE` materials, `tree_small_02_leaves` and
+`island_tree_01_leaves`, both land at `town`. This moves #967's alpha path
+in time and does not amend it.
+
+`--drop` of the last listed stage deletes the file and leaves the manifest
+with `stages: []` and neither `cut` nor `encoded`, because a file nothing
+loads would still ship about 8 MB in `dist/`, which copies `assets/` whole.
+
+`--record` refuses a file that lacks `EXT_meshopt_compression` or
+`KHR_texture_basisu`, one whose `extras.stage` set is not the manifest's
+`stages`, and a manifest with no `cut` row, because otherwise a raw cut can
+be recorded as encoded and check 10's hash line passes over the wrong file.
+
+Next free number: #1005.
+
 Increment 3, stage curtain in the game, is next.
+
+**#1005. Rank 2i, increment 3 built: stage curtain in the game (PR #116,
+commit ce50548).** Devon's line on its stills, given 2026-10-04: "Looks good
+to me."
+
+`data/castle-skin.json` stages `["curtain"]`; `assets/castle3d/skin.glb`
+7,601,804 bytes, sha256 109b221808317e2fa4f500b43886f9a2649557c6fdf02d82c43
+d16132dc8d7db (raw cut 63cdff80…605e), meshopt and KTX2 by `npm run
+assets:encode`, recorded by `skin.mjs --record`; `tools/castle3d/skin-
+manifest.json`. Final `castle3d:skin` printed "unchanged". `assets/` sits at
+40,650,035 bytes of the 200 MB ceiling (#499).
+
+`skin.py` writes `extras.joined` (#1004). Two runs over the unmoved master
+0db90daf…291ff gave `skin-full.glb` aa6460b0d2e4beff3fdb183f937de3ecf864fd5
+d3626797be03eae1eca205308, 46,667,308 bytes (supersedes #1003's
+`d9a3bbd1…`).
+
+Budget measured: outer and outside wards 473 of 600 draws, inner 379;
+triangles 198,947 and 58,281 of 500,000; textures 58.5 of 64 MB.
+
+`--drop` tested on an encoded scratch copy: `--drop buildings` (manifest
+`curtain,buildings`) removed 0 nodes, 7,601,804 to 7,269,276 bytes, kept
+meshopt and basisu, 132 draws, 40,000 tris, all 33 image sha256s unchanged;
+`--drop curtain` deleted the file, stages `[]`, no `cut` or `encoded` row.
+
+**Guard-rails broken from green (#34).** Check 10: a PNG over 128 px; a
+2048 KTX2 fixture, "the cap is 1024 (#968)"; a stages mismatch; a flipped
+byte against the encoded row; no encoded row; `ROCKS_kings-tower` at 2,722
+for 1 joined, "the cap is 1000 (#968)"; a missing `extras.joined`; `joined`
+on a non-`TREES_`/`ROCKS_` node; a shared mesh over 2,000; a mesh at 43,234;
+specular; Draco; a light; a camera; a 40.3 MB file; stages empty with the
+file present. Check 4: "nothing references assets/castle3d/skin.glb". Layout
+check 16: an unnamed plan piece; 1 m off its plan box; a stale allow entry;
+an unknown id, a duplicate id, a kept id, a dangling allow key, stage-table
+drift. Budget, skip removed: outer ward 1,117 meshes over 600; a 519,809-tri
+node; skin images priced RGBA8 at 131.9 MB over the 64 MB cap.
+`plan-vs-scene`'s seams: (a) identity transform, "ARCH_east-gate stands
+25.500 m…"; (b) the hide line commented out, "north-curtain-mid is drawn
+beside its skin"; (c) a leaf not under its pivot, "LEAF_muniment is 2.915 m
+off…"; (d) `setPieceVisible` run on the built page only; the evidence
+target, "walk-door: skin shown, target inactive". `--record`'s three
+refusals exit 1. `test/built.mjs` with `skin.glb` deleted from `dist/`:
+"1 missing".
+
+The builder's calls past the spec: leaves sit under their pivot at their
+glb world position in the pivot's frame, because meshopt quantization puts
+a scale and offset on each node, so an identity-under-pivot check fails by
+construction. `setEvidenceVisible` and `evidence().active` read the skin
+(the walk bar and the muniment door are evidence inside the curtain;
+without this the walk bar was never examinable). New
+`tools/castle3d/skin-stages.mjs` mirrors `common.py`'s stage table; drift
+between the two fails layout check 16.
+
+Look: 27 stills in `CASTLE3D_OUT\review\2i-3\` (headed Chrome, RTX 3070 Ti,
+poses in `look-2i-3.txt`). No clear curtain view at 10 m exists in the
+outer ward because buildings block it; 02 is partly blocked, 04 the most
+open. `renderer.info.memory` gives counts, not MB (578 textures, 1,516
+geometries, 27 programs).
+
+`npm test`: fifteen of fifteen.
+
+Increment 4, stage buildings, is next. Next free number: #1006.

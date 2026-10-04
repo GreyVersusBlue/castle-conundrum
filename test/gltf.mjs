@@ -241,3 +241,49 @@ export function partsOf(file) {
   for (const root of roots) walk(root, IDENTITY);
   return { parts };
 }
+
+/* ------------------------------------------------------------------ nodes ---
+ * The castle skin (rank 2i, #965), node by node: the skin's suites ask
+ * questions of a NODE, not of the file as one model. Each node's name, its
+ * extras, its mesh, its world matrix down the node chain, its primitives'
+ * triangle counts off the index accessors' `count` (no decode needed), and
+ * its world box read exactly as `partsOf` reads a model and three's
+ * `Box3.setFromObject` reads an object: every primitive's own accessor
+ * min/max, dequantised, eight corners through the world matrix, unioned.
+ * `test/layout.mjs` holds that box to the plan's, `test/plan-vs-scene.mjs` to
+ * the live object's, and `test/budget.mjs` buckets a node's draws by it.
+ */
+export function nodesOf(file) {
+  const g = readGLTF(file);
+  const nodes = g.json.nodes || [];
+  const roots = (g.json.scenes?.[g.json.scene ?? 0]?.nodes)
+    ?? nodes.map((_, i) => i).filter(i => !nodes.some(n => (n.children || []).includes(i)));
+  const out = [];
+  const walk = (index, parent) => {
+    const node = nodes[index];
+    const world = multiply(parent, localMatrix(node));
+    const entry = { index, name: node.name ?? '', extras: node.extras || {}, mesh: node.mesh ?? null,
+      meshName: node.mesh !== undefined ? (g.json.meshes[node.mesh].name ?? '') : null,
+      world: world.slice(), primitives: [], box: null };
+    if (node.mesh !== undefined) {
+      const lo = [Infinity, Infinity, Infinity], hi = [-Infinity, -Infinity, -Infinity];
+      for (const prim of g.json.meshes[node.mesh].primitives) {
+        const a = g.json.accessors[prim.attributes.POSITION];
+        const pmin = a.min.map((v) => dequantize(a, v)), pmax = a.max.map((v) => dequantize(a, v));
+        for (let c = 0; c < 8; c++) {
+          const p = apply(world, [c & 1 ? pmax[0] : pmin[0], c & 2 ? pmax[1] : pmin[1], c & 4 ? pmax[2] : pmin[2]]);
+          for (let k = 0; k < 3; k++) { lo[k] = Math.min(lo[k], p[k]); hi[k] = Math.max(hi[k], p[k]); }
+        }
+        const mode = prim.mode ?? 4;
+        const count = prim.indices !== undefined ? g.json.accessors[prim.indices].count : a.count;
+        entry.primitives.push({ mode, triangles: mode === 4 ? count / 3 : (mode === 5 || mode === 6 ? Math.max(0, count - 2) : 0),
+          min: pmin, max: pmax, material: prim.material ?? null });
+      }
+      entry.box = { min: { x: lo[0], y: lo[1], z: lo[2] }, max: { x: hi[0], y: hi[1], z: hi[2] } };
+    }
+    out.push(entry);
+    for (const child of node.children || []) walk(child, world);
+  };
+  for (const root of roots) walk(root, IDENTITY);
+  return { json: g.json, buffers: g.buffers, nodes: out };
+}

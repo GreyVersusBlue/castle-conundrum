@@ -51,14 +51,17 @@
 // and over the cross-wall from an inner-ward roof, and three.js draws it from
 // either. So the claim is `calls[w] + calls.outside` against the one
 // per-ward ceiling, for each ward, with no new constant. What bounds the town
-// is then 1200 less the busier ward, and when that fails the first answer is
-// still #611's: merge a drum's sectors before deleting a house.
+// is then the ceiling less the busier ward, and when that fails the first
+// answer was #611's, merge a drum's sectors before deleting a house; since the
+// castle skin's curtain stage (#966) the drums are drawn by the skin, and
+// sections 1 and 5 count what the page draws, the skin and not the hidden
+// pieces it names.
 
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as THREE from 'three';
-import { partsOf, readGLTF } from './gltf.mjs';
+import { partsOf, readGLTF, nodesOf } from './gltf.mjs';
 import { makePlan, tileToWorld, propPath } from '../src/castle-plan.js';
 import { buildPiece, carriesOwnWorldPosition } from '../src/castle-builder.js';
 
@@ -90,8 +93,18 @@ const pass = (msg) => console.log(`  ok    ${msg}`);
  */
 
 /** Meshes whose box reaches into one ward. See WHAT THE NUMBER IS NOT, above. */
-const MAX_DRAW_CALLS_PER_WARD = 1200;
-/* Anchored on what is there: the outer ward is at 965 and the whole castle is
+const MAX_DRAW_CALLS_PER_WARD = 600;
+/* 1200 TO 600 IS THE CASTLE SKIN'S CURTAIN STAGE (#966). Swapping the curtain,
+ * the towers and the gates hides their built meshes, the drums' 1,044 sectors
+ * among them (#611's own "merge a drum's sectors", done by the skin instead),
+ * and draws 132 skin primitives in their place, so outer plus outside goes
+ * from about 1190 to about 490 and inner plus outside from 875 to about 365;
+ * the next three stages leave it near 411. Left at 1200 it would be a ceiling
+ * met by doing nothing for the rest of the project, which this block says is
+ * not a ceiling; 600 leaves the busier ward about a hundred.
+ *
+ * What follows is the 1200's own anchor, as written before the skin.
+ * Anchored on what is there: the outer ward is at 965 and the whole castle is
  * 1539 meshes, of which 970 — 63 % of everything — is the eight tower drums, at
  * about 120 ring sections and caps each. A mid-range phone holding 60 fps with
  * one shadow-casting sun submits each of these about twice. 1200 leaves the
@@ -179,6 +192,18 @@ const MAX_SKINNED_DRAWS_TOTAL = 394;
  * TWO GEESE'S (#828, increment 2): 2 draws each and both in the outer ward,
  * so 4 on each line, and the suite prints 386 and 205 with them. The 8
  * under each is still the hen-wife's. */
+
+/** Triangles whose mesh's box reaches into one ward, counted as draws are: the ward's plus the outside's. */
+const MAX_TRIANGLES_PER_WARD = 500000;
+/* NEW WITH THE CASTLE SKIN'S CURTAIN STAGE (#966). There was no triangle
+ * ceiling because nothing the game loads came near one; tools/castle3d/'s
+ * master is 41.8 million placed. Outer plus outside was 185,805 and inner plus
+ * outside 51,913 before the skin; projected at #968's caps, about 199,000
+ * after the curtain, 202,000 after the buildings, 227,000 after Mereford and
+ * 448,000 after the land. A guess anchored on what is there, as the rest of
+ * this block is. What fails it first is an undecimated tree (519,809 on its
+ * own), which is test/assets.mjs check 10's to refuse as an asset and this
+ * line's to price. */
 
 /** Every image the page can load, decoded, in megabytes of video memory. */
 const MAX_TEXTURE_MB = 64;
@@ -283,33 +308,60 @@ if (!failures) pass(`all ${plan.rooms.length} rooms declare a ward, and every on
  * pieces — the four gate leaves and the cell's bars — and a gate leaf is 1.9 m
  * wide, so nothing is lost by treating one as a point.
  */
+/* THE CASTLE SKIN (rank 2i, #965, #966). A piece a skin node names is still
+ * built in the page, but hidden: what is drawn is the node. So such a piece
+ * counts the node's primitives and not its built meshes, bucketed by the
+ * node's own world box (test/gltf.mjs's `nodesOf`, as three's Box3 reads it),
+ * and a node that names no piece (#851's outer gate, the west portcullis)
+ * counts the same way. The skip is the whole of the curtain stage's saving,
+ * and it is a skip of what the page hides, not of what it builds. */
 console.log('\ndraw calls per ward');
+const skinCfg = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/castle-skin.json'), 'utf8'));
+const skinFile = path.join(ROOT, skinCfg.file);
+const skinNodes = (skinCfg.stages || []).length && fs.existsSync(skinFile) ? nodesOf(skinFile).nodes.filter((n) => n.box) : [];
+const swapped = new Set(skinNodes.flatMap((n) => [
+  ...(n.extras.planId !== undefined ? [String(n.extras.planId)] : []),
+  ...(Array.isArray(n.extras.planIds) ? n.extras.planIds.map(String) : []),
+]));
 const material = new THREE.MeshStandardMaterial();
 const calls = { outer: 0, inner: 0, outside: 0 };
 const perPiece = [];
 let meshTotal = 0;
+/** A built mesh's triangles, off its own geometry. */
+const trianglesOf = (o) => (o.geometry.index ? o.geometry.index.count : o.geometry.attributes.position.count) / 3;
 for (const piece of plan.pieces) {
-  let boxes;
-  if (piece.built) {
+  let meshes; // [{ box, triangles }], one per draw
+  if (swapped.has(piece.id)) {
+    meshes = [];
+  } else if (piece.built) {
     const obj = buildPiece(piece, material, config.repeatMetres);
     if (!obj) {
       fail(`the plan's piece "${piece.id}" says built: ${JSON.stringify(piece.built)} and castle-builder.js's buildPiece has no branch for it — the budget cannot count what it cannot build`);
       continue;
     }
     obj.updateMatrixWorld(true);
-    const meshes = [];
-    obj.traverse((o) => { if (o.isMesh) meshes.push(o); });
-    boxes = carriesOwnWorldPosition(piece)
-      ? meshes.map((o) => new THREE.Box3().setFromObject(o))
-      : meshes.map(() => piece.box);
+    const built = [];
+    obj.traverse((o) => { if (o.isMesh) built.push(o); });
+    meshes = built.map((o) => ({
+      box: carriesOwnWorldPosition(piece) ? new THREE.Box3().setFromObject(o) : piece.box,
+      triangles: trianglesOf(o),
+    }));
   } else {
-    boxes = partsOf(path.join(ROOT, piece.model)).parts.map(() => piece.box);
+    meshes = nodesOf(path.join(ROOT, piece.model)).nodes.flatMap((n) => n.primitives.map((p) => ({ box: piece.box, triangles: p.triangles })));
   }
-  meshTotal += boxes.length;
+  meshTotal += meshes.length;
   const here = { outer: 0, inner: 0, outside: 0 };
-  for (const box of boxes) for (const w of wardsOf(box)) { calls[w]++; here[w]++; }
-  perPiece.push({ id: piece.id, kind: piece.kind, meshes: boxes.length, here });
+  for (const m of meshes) for (const w of wardsOf(m.box)) { calls[w]++; here[w]++; }
+  perPiece.push({ id: piece.id, kind: piece.kind, meshes, here });
 }
+for (const n of skinNodes) {
+  const meshes = n.primitives.map((p) => ({ box: n.box, triangles: p.triangles }));
+  meshTotal += meshes.length;
+  const here = { outer: 0, inner: 0, outside: 0 };
+  for (const m of meshes) for (const w of wardsOf(m.box)) { calls[w]++; here[w]++; }
+  perPiece.push({ id: `skin ${n.name}`, kind: 'skin', meshes, here });
+}
+if (skinCfg.stages?.length) pass(`the castle skin, ${skinCfg.stages.join(', ')}: ${skinNodes.length} nodes drawn in place of the ${swapped.size} built pieces they name, which are not counted`);
 for (const w of WARDS) {
   if (calls[w] > MAX_DRAW_CALLS_PER_WARD) {
     // The three biggest pieces in the ward, because a ward over its ceiling is
@@ -633,6 +685,9 @@ console.log('\ntexture memory, from the image headers');
     ...npcs.cast.filter((n) => n.heldProp).map((n) => [config.polyhavenBase + n.heldProp, `${n.id || n.name}'s heldProp`]),
     ...(populace.people ?? []).map((p) => [p.modelPath, `${p.id || p.name}'s body`]),
     ...(populace.people ?? []).filter((p) => p.heldProp).map((p) => [heldPropPath(config.polyhavenBase, p.heldProp), `${p.id || p.name}'s heldProp`]),
+    // The castle skin (#966): its embedded KTX2, priced by fromKTX2 as
+    // assets/castle3d/skin.glb#<i>, while data/castle-skin.json lists a stage.
+    ...((skinCfg.stages || []).length ? [[skinCfg.file, `the castle skin, ${skinCfg.stages.join(', ')}`]] : []),
   ];
   const seenFiles = new Set();
   for (const [rel, why] of loaded) {
@@ -688,11 +743,43 @@ console.log('\ntexture memory, from the image headers');
   textureMB = mb;
 }
 
+/* =========================================== 5: triangles per ward (#966) ===
+ *
+ * The meshes section 1 counted, each with its triangles: a built mesh's off
+ * the geometry `buildPiece` really makes, a loaded model's and the skin's off
+ * each primitive's index accessor (`nodesOf`), bucketed by the same boxes on
+ * the same rectangles, the hidden built pieces a skin node names left out as
+ * they are there. Claimed as draws are (#727): each ward's plus the outside's
+ * against MAX_TRIANGLES_PER_WARD. Whether a mesh is decimated to its cap is
+ * what the ASSET is, and test/assets.mjs check 10 holds that; this is what a
+ * ward costs, and the two share no assertion (#529, #611, #1004). */
+console.log('\ntriangles per ward');
+const tris = { outer: 0, inner: 0, outside: 0 };
+{
+  const byPiece = perPiece.map((p) => {
+    const here = { outer: 0, inner: 0, outside: 0 };
+    for (const m of p.meshes) for (const w of wardsOf(m.box)) here[w] += m.triangles;
+    for (const w of Object.keys(here)) tris[w] += here[w];
+    return { id: p.id, here };
+  });
+  for (const w of WARDS) {
+    const sum = tris[w] + tris.outside;
+    if (sum > MAX_TRIANGLES_PER_WARD) {
+      const biggest = byPiece.filter((p) => p.here[w] + p.here.outside > 0)
+        .sort((a, b) => (b.here[w] + b.here.outside) - (a.here[w] + a.here.outside)).slice(0, 3);
+      fail(`the ${w} ward's ${tris[w]} triangles and the outside's ${tris.outside} come to ${sum}, over the ceiling of ${MAX_TRIANGLES_PER_WARD}. The three biggest: ${biggest.map((p) => `${p.id} (${p.here[w] + p.here.outside})`).join(', ')}`);
+    } else {
+      pass(`the ${w} ward's ${tris[w]} triangles and the outside's ${tris.outside} come to ${sum}, ${MAX_TRIANGLES_PER_WARD - sum} under the ceiling of ${MAX_TRIANGLES_PER_WARD}`);
+    }
+  }
+}
+
 /* -------------------------------------------------------------- the sheet --- */
 console.log('\nwhere the castle stands, against ceilings that are guesses:');
 for (const w of WARDS) console.log(`  ${w.padEnd(7)} ${String(calls[w]).padStart(5)} / ${MAX_DRAW_CALLS_PER_WARD} draw calls`);
 console.log(`  ${'outside'.padEnd(7)} ${String(calls.outside).padStart(5)}   counted in each ward (#727): ${WARDS.map((w) => `${w} ${calls[w] + calls.outside} / ${MAX_DRAW_CALLS_PER_WARD}`).join(', ')}`);
 console.log(`  ${'texture'.padEnd(7)} ${textureMB.toFixed(1).padStart(5)} / ${MAX_TEXTURE_MB} MB of video memory, the whole castle`);
+console.log(`  ${'tris'.padEnd(7)} ${WARDS.map((w) => `${w} ${tris[w] + tris.outside} / ${MAX_TRIANGLES_PER_WARD}`).join(', ')}, each with the outside's ${tris.outside}`);
 
 console.log(failures ? `\n${failures} failure(s)` : '\nall good');
 process.exit(failures ? 1 : 0);

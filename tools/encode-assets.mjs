@@ -234,8 +234,15 @@ async function encodeGLTF(file, { textures, mesh }) {
   // writer's LF turned ten untouched Poly Haven .gltf files into ten diffs.
   if (!before.tex && !before.mesh) { console.log(`  ${label}: nothing to do`); return; }
 
+  const fileBefore = sizeOf(file);
   await io.write(file, doc);
   for (const old of retired) if (fs.existsSync(old)) fs.rmSync(old);
+  // A .glb with its images embedded (the castle skin) has no texture files to
+  // weigh apart from its geometry: the one number that means anything is the file.
+  if (textures && file.endsWith('.glb')) {
+    console.log(`  ${label}: ${MB(fileBefore)} -> ${MB(sizeOf(file))} on disk, textures and geometry in one file`);
+    return;
+  }
 
   const after = { tex: 0, mesh: 0 };
   const written = await io.readAsJSON(file).catch(() => null);
@@ -295,10 +302,36 @@ const bodies = new Set([...npcs.cast.map((n) => n.modelPath), ...(populace.peopl
 for (const rel of [...bodies].sort())
   await encodeGLTF(path.join(ROOT, rel), { textures: false, mesh: true });
 
+/* ------------------------------------------------- 3: the castle skin ---
+ * A third family (#967): the one file data/castle-skin.json names, cut from
+ * tools/castle3d/'s model by `npm run castle3d:skin` and written raw. The same
+ * two passes as the prop packs, textures by slot (#507) and meshopt with
+ * `cleanup: false`, so this is still one KTX2 path for one rule. No stage
+ * listed is no file, and nothing to do; a stage listed and no file is a cut
+ * nobody ran, and that is a failure rather than a skip (#13). After this,
+ * `npm run castle3d:skin -- --record` writes the encoded file into
+ * tools/castle3d/skin-manifest.json, which test/assets.mjs check 10 holds.
+ *
+ * NOT YET: a base colour whose material is not OPAQUE keeping its alpha. Every
+ * material the `curtain` stage ships is OPAQUE, so `toKTX2`'s `removeAlpha()`
+ * loses nothing yet; the alpha path lands with `town`, the first stage with a
+ * MASK material, and its check 10 line with it (#1004, increment 5).
+ */
+console.log('\nthe castle skin');
+{
+  const skin = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/castle-skin.json'), 'utf8'));
+  const file = path.join(ROOT, skin.file);
+  if (!(skin.stages || []).length) console.log(`  ${skin.file}: no stage listed in data/castle-skin.json, nothing to do`);
+  else if (!fs.existsSync(file)) {
+    console.error(`encode-assets: data/castle-skin.json lists ${skin.stages.join(', ')} and ${skin.file} is not there; run npm run castle3d:skin first`);
+    process.exit(1);
+  } else await encodeGLTF(file, { textures: true, mesh: true });
+}
+
 fs.rmSync(TMP, { recursive: true, force: true });
 
 console.log(`
-textures  ${MB(totals.texturesBefore)} -> ${MB(totals.texturesAfter)} on disk (the props' own, inside their glTFs)
+textures  ${MB(totals.texturesBefore)} -> ${MB(totals.texturesAfter)} on disk (the props' and the skin's own, inside their glTFs)
 geometry  ${MB(totals.meshBefore)} -> ${MB(totals.meshAfter)} on disk
 
 Disk is not the point and may go up: UASTC is bigger than the jpg it replaces.

@@ -20,8 +20,10 @@
 #     cards scaled to hold cover), each rock mesh to ROCK_CAP, TERRAIN_ground to
 #     GROUND_CAP. The meshes are shared, so a cap is per tree, per rock. Then
 #     the land's trees join to one object per species and its rocks to one per
-#     mesh (#968, joining not instancing). Mereford's five trees are plan
-#     pieces and keep a node each, on the one decimated mesh.
+#     mesh (#968, joining not instancing), each joined object carrying
+#     `joined`, the count it holds, written as extras.joined (#1004).
+#     Mereford's five trees are plan pieces and keep a node each, on the one
+#     decimated mesh.
 #  3. the bake, arithmetic only (#968): materials.LOOK's constant `tint` and
 #     `warm` into a copy of the set's base colour pixels with numpy, the grime,
 #     undulation and drift dropped; #857's per-house `object_tint` (the
@@ -338,6 +340,10 @@ def join(obs, name, collection):
         me.materials.append(m)
     ob = bpy.data.objects.new(name, me)
     collection.objects.link(ob)
+    # How many trees or rocks the join holds, which the exporter writes as
+    # extras.joined: test/assets.mjs check 10 holds a TREES_ or ROCKS_ mesh to
+    # TREE_CAP or ROCK_CAP times it (#1004).
+    ob['joined'] = len(obs)
     bpy.data.batch_remove(obs)
     return ob
 

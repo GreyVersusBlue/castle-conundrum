@@ -40,11 +40,12 @@
 // round-tripped through a GPU buffer cannot trip it.
 
 import fs from 'node:fs';
+import * as THREE from 'three';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { serveDev, launch, prepPage, threeUrl } from './harness.mjs';
 import { attachSceneProbe, waitForProbe } from './drive.mjs';
-import { partsOf } from './gltf.mjs';
+import { partsOf, nodesOf } from './gltf.mjs';
 import { makePlan, walkability, surfacesAt, EYE_HEIGHT } from '../src/castle-plan.js';
 import { castleNav } from '../src/stations.js';
 import { stopWorld } from '../src/populace.js';
@@ -144,6 +145,126 @@ try {
     }
   }
   if (!failures) pass(`every piece within ${TOL} m of its plan box, worst ${worst.toFixed(4)} m on ${worstId}`);
+
+  /* ------------------------------------------- the castle skin (#965) ---
+   * Rank 2i draws tools/castle3d/'s model over the plan a stage at a time.
+   * test/layout.mjs holds the skin to the plan in Node and test/assets.mjs
+   * holds the file; what only a page can say is how the builder put it in
+   * the scene (#529). Each seam compares a live object with a box this file
+   * computes from assets/castle3d/skin.glb (`nodesOf`), as the diff above
+   * compares one with the plan's:
+   *   (a) every skin node stands where the glb says, its live Box3 within TOL
+   *       of its world box;
+   *   (b) every built object a skin node names is hidden, and still in the
+   *       diff above, unchanged: the plan's net runs on the hidden pieces;
+   *   (c) each gate leaf's skin hangs off its pivot: its live box is the
+   *       pivot's live matrixWorld times its box in the frame of the pivot
+   *       the plan built, at the angle it stands at and again after the page
+   *       swings it, and then the leaf is put back as it was;
+   *   (d) is in the morning-after beat below: `gone` on a swapped piece hides
+   *       its skin.
+   * With no stage listed the builder loads nothing, and the beat says so
+   * rather than asserting over an empty list (#13). */
+  console.log('');
+  const skinCfg = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/castle-skin.json'), 'utf8'));
+  const skinIdsOf = (x) => [...(x.planId !== undefined ? [String(x.planId)] : []), ...(Array.isArray(x.planIds) ? x.planIds.map(String) : [])];
+  if (!(skinCfg.stages || []).length) {
+    const none = await page.evaluate(() => window.__castle.skins.size);
+    check(none === 0, 'data/castle-skin.json lists no stage, and the builder drew no skin', `${none} pieces carry one`);
+  } else {
+    const { nodes: skinNodes } = nodesOf(path.join(ROOT, skinCfg.file));
+    const skinLive = await page.evaluate(async (url) => {
+      const THREE = await import(url);
+      const out = [];
+      window.__scene.traverse((o) => {
+        if (!o.userData || o.userData.skin !== true) return;
+        const b = new THREE.Box3().setFromObject(o);
+        out.push({ name: o.name, skinOf: o.userData.skinOf || [], planId: o.userData.planId ?? null,
+          min: { x: b.min.x, y: b.min.y, z: b.min.z }, max: { x: b.max.x, y: b.max.y, z: b.max.z } });
+      });
+      const castle = window.__castle;
+      const hidden = {};
+      for (const id of castle.skins.keys()) hidden[id] = castle.objects.get(id) ? castle.objects.get(id).visible === false : null;
+      // A swapped piece of evidence is pressable while its SKIN is there: its
+      // built object is hidden for good, and a target reading that would
+      // never be offered (the walk bar and the muniment door at `curtain`).
+      const pieceOfEvidence = new Map(castle.plan.pieces.filter((p) => p.evidence).map((p) => [p.evidence, p.id]));
+      const evidence = castle.evidence().map((t) => {
+        const skins = castle.skins.get(pieceOfEvidence.get(t.id)) || [];
+        return { id: t.id, skinned: skins.length > 0, shown: skins.every((s) => s.visible), active: t.active };
+      }).filter((t) => t.skinned);
+      return { out, hidden, evidence };
+    }, THREE_URL);
+    // (a)
+    const liveByName = new Map(skinLive.out.map((o) => [o.name, o]));
+    let offSkin = 0, worstSkin = 0, worstSkinAt = null;
+    for (const n of skinNodes.filter((x) => x.box)) {
+      const got = liveByName.get(n.name);
+      if (!got) { fail(`skin: ${n.name} is in ${skinCfg.file} and the page drew no such node`); offSkin++; continue; }
+      let d = 0;
+      for (const edge of ['min', 'max']) for (const axis of ['x', 'y', 'z']) d = Math.max(d, Math.abs(got[edge][axis] - n.box[edge][axis]));
+      if (d > worstSkin) { worstSkin = d; worstSkinAt = n.name; }
+      if (d > TOL) { fail(`skin: ${n.name} stands ${d.toFixed(3)} m from where ${skinCfg.file} puts it`); offSkin++; }
+    }
+    const tagged = skinLive.out.filter((o) => o.planId !== null).map((o) => o.name);
+    if (tagged.length) { fail(`skin: ${tagged.join(', ')} still carry a planId, so the diff above sees two objects for one piece`); offSkin++; }
+    if (!offSkin) pass(`${skinNodes.filter((x) => x.box).length} skin nodes stand where ${skinCfg.file} puts them, worst ${worstSkin.toFixed(4)} m on ${worstSkinAt}, none carrying a planId`);
+    // (b)
+    const namedIds = [...new Set(skinNodes.flatMap((n) => skinIdsOf(n.extras)))];
+    const drawnBeside = namedIds.filter((id) => skinLive.hidden[id] !== true);
+    for (const id of drawnBeside) fail(skinLive.hidden[id] === undefined ? `${id} is named by a skin node and the builder drew no skin for it` : `${id} is drawn beside its skin`);
+    if (!drawnBeside.length) pass(`all ${namedIds.length} built pieces a skin node names are hidden, and every one of them is in the ${TOL} m diff above`);
+    const deaf = skinLive.evidence.filter((t) => t.active !== t.shown);
+    check(skinLive.evidence.length > 0 && !deaf.length,
+      `the ${skinLive.evidence.length} swapped piece(s) of evidence, ${skinLive.evidence.map((t) => t.id).join(', ')}, are pressable exactly while their skin is shown`,
+      skinLive.evidence.length ? deaf.map((t) => `${t.id}: skin ${t.shown ? 'shown' : 'hidden'}, target ${t.active ? 'active' : 'inactive'}`).join('; ') : 'no swapped piece carries evidence, so this asserts nothing');
+    // (c)
+    const leaves = skinNodes.filter((n) => /^LEAF_/.test(n.name) && skinIdsOf(n.extras).length === 1 && plan.gates.some((g) => g.id === skinIdsOf(n.extras)[0]));
+    const swung = await page.evaluate(async ({ url, ids }) => {
+      const THREE = await import(url);
+      const castle = window.__castle;
+      const read = (id) => {
+        const gd = castle.gates.get(id);
+        const skin = (castle.skins.get(id) || [])[0];
+        if (!gd || !skin) return null;
+        gd.pivot.updateMatrixWorld(true);
+        const b = new THREE.Box3().setFromObject(skin);
+        return { underPivot: skin.parent === gd.pivot, pivot: gd.pivot.matrixWorld.elements.slice(), angle: gd.pivot.rotation.y,
+          min: { x: b.min.x, y: b.min.y, z: b.min.z }, max: { x: b.max.x, y: b.max.y, z: b.max.z } };
+      };
+      return ids.map((id) => {
+        const gd = castle.gates.get(id);
+        const first = read(id);
+        if (!first) return { id, first: null };
+        const wasShut = !gd.opening && gd.progress < 1;
+        if (wasShut) castle.openLock(id, { instant: true }); else castle.shutLeaf(id);
+        const second = read(id);
+        if (wasShut) castle.shutLeaf(id); else castle.openLock(id, { instant: true });
+        return { id, wasShut, first, second, back: read(id).angle };
+      });
+    }, { url: THREE_URL, ids: leaves.map((n) => skinIdsOf(n.extras)[0]) });
+    let offLeaf = 0;
+    for (const n of leaves) {
+      const id = skinIdsOf(n.extras)[0];
+      const s = swung.find((x) => x.id === id);
+      const piece = plan.pieces.find((p) => p.id === id);
+      if (!s || !s.first) { fail(`skin: ${n.name}'s gate ${id} has no pivot or no skin on the page`); offLeaf++; continue; }
+      const p0 = new THREE.Matrix4().compose(new THREE.Vector3(...piece.pivot.position),
+        new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), THREE.MathUtils.degToRad(piece.pivot.rotationY)), new THREE.Vector3(1, 1, 1));
+      const local = p0.clone().invert().multiply(new THREE.Matrix4().fromArray(n.world));
+      for (const [pose, at] of [['as built', s.first], [s.wasShut ? 'opened' : 'shut', s.second]]) {
+        const m = new THREE.Matrix4().fromArray(at.pivot).multiply(local);
+        const want = new THREE.Box3();
+        for (const pr of n.primitives) want.union(new THREE.Box3(new THREE.Vector3(...pr.min), new THREE.Vector3(...pr.max)).applyMatrix4(m));
+        let d = 0;
+        for (const edge of ['min', 'max']) for (const axis of ['x', 'y', 'z']) d = Math.max(d, Math.abs(at[edge][axis] - want[edge][axis]));
+        if (d > TOL) { fail(`skin: ${n.name} is ${d.toFixed(3)} m off its pivot's matrixWorld times its box, ${pose} (pivot at ${at.angle.toFixed(3)} rad)${at.underPivot ? '' : '; it is not under the pivot'}`); offLeaf++; }
+      }
+      if (Math.abs(s.second.angle - s.first.angle) < 0.1) { fail(`skin: ${id}'s pivot did not swing (${s.first.angle.toFixed(3)} to ${s.second.angle.toFixed(3)} rad), so its second pose proves nothing`); offLeaf++; }
+      if (Math.abs(s.back - s.first.angle) > 1e-6) { fail(`skin: ${id} was not put back at ${s.first.angle.toFixed(3)} rad`); offLeaf++; }
+    }
+    check(leaves.length === 4 && !offLeaf, `the ${leaves.length} gate leaves' skins follow their pivots, as built and swung, within ${TOL} m`, leaves.length === 4 ? '' : `${leaves.length} LEAF_ nodes name a plan gate, not 4`);
+  }
 
   /* ------------------------------------------------ the muniment word-lock ---
    * Phase 4 took the riddle off the Scholar and carved it over the muniment
@@ -1028,12 +1149,17 @@ try {
         const castle = window.__castle;
         const boxes = () => castle.colliders.filter((c) => c.id === id).length;
         const obj = castle.objects.get(id);
-        const before = { visible: obj.visible, boxes: boxes() };
+        // WHAT IS DRAWN, which for a swapped piece is its skin (#965): the
+        // built object stays hidden and the skin comes and goes, seam (d).
+        const skins = castle.skins.get(id) || [];
+        const drawn = () => (skins.length ? skins.every((s) => s.visible) : obj.visible);
+        const now = () => ({ visible: drawn(), built: obj.visible, boxes: boxes() });
+        const before = now();
         castle.applyDay(changes);
-        const after = { visible: obj.visible, boxes: boxes() };
+        const after = now();
         castle.applyDay(changes.map((c) => ({ ...c, set: c.set === 'gone' ? 'shown' : c.set })));
-        const back = { visible: obj.visible, boxes: boxes() };
-        return { before, after, back, planned: castle.plan.colliders.filter((c) => c.id === id).length };
+        const back = now();
+        return { before, after, back, skinned: skins.length, planned: castle.plan.colliders.filter((c) => c.id === id).length };
       }, { changes: full, id: hide.piece });
       check(swung.before.visible && swung.before.boxes === swung.planned && swung.planned > 0,
         `${hide.piece} starts the day standing, with its ${swung.planned} collider${swung.planned === 1 ? '' : 's'} in the live list`,
@@ -1041,6 +1167,14 @@ try {
       check(swung.after.visible === false, `and the full ending's own rows take it out of the scene`, JSON.stringify(swung.after));
       check(swung.after.boxes === 0, `and its box out of the colliders, so the cell is not a wall nobody can see`, `${swung.after.boxes} left`);
       check(swung.back.visible === true && swung.back.boxes === swung.planned, 'and putting it back puts both back', JSON.stringify(swung.back));
+      /* (d), the skin's seam (#965): `gone` on a swapped piece reaches the
+       * skin the player sees, and leaves the hidden built object hidden. */
+      if (swung.skinned) {
+        const states = [swung.before, swung.after, swung.back];
+        check(swung.before.visible && !swung.after.visible && swung.back.visible && states.every((s) => s.built === false),
+          `${hide.piece} is swapped: \`gone\` hides its skin and \`shown\` brings it back, its built object hidden throughout`,
+          `skin ${states.map((s) => s.visible).join(', ')}; built ${states.map((s) => s.built).join(', ')}`);
+      }
     }
 
     /* AND `shut` PUTS THE STONE BACK, which is the half of `applyDay` that no

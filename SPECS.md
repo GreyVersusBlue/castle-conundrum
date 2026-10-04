@@ -1082,7 +1082,9 @@ place.
   order: delete the `props` stage's objects, `BRAZIER_`, every `#853` and
   `#855` object, `GUIDE` and `MARKERS`; decimate (each tree at most 2,000
   triangles, each rock 1,000, `TERRAIN_ground` 40,000); join the land's trees
-  to one object per species and its rocks to one per mesh; multiply `LOOK`'s
+  to one object per species and its rocks to one per mesh, each joined object
+  carrying `joined`, the count of trees or rocks it holds, which the exporter
+  writes as `extras.joined` (from increment 3, for check 10); multiply `LOOK`'s
   constant tints into the base colour pixels with `numpy`, and #857's
   per-house `object_tint` into a `COLOR_0` attribute; scale every image to its
   cap (base colour 1024, normal and metal-roughness 512); set each object's
@@ -1097,19 +1099,30 @@ place.
   prunes, drops `KHR_materials_specular` and `KHR_materials_ior`, sets the
   leaf materials to `MASK` at 0.5, and writes `assets/castle3d/skin.glb` raw.
   `--drop <stage>` removes a stage from the committed, encoded file on any
-  machine, which is the revert. It records every input's sha256 (the master
+  machine, which is the revert; dropping the last listed stage deletes the
+  file and leaves the manifest with `stages: []` and neither `cut` nor
+  `encoded` (from increment 3). `--record`, run after `npm run
+  assets:encode`, no Blender, writes the encoded file's bytes and sha256 as
+  the manifest's `encoded` row, and refuses a file that lacks
+  `EXT_meshopt_compression` or `KHR_texture_basisu`, whose `extras.stage` set
+  is not the manifest's `stages`, or whose manifest has no `cut` row (from
+  increment 3). It records every input's sha256 (the master
   glb, `skin.py`, `blueprint.json`, `data/castle-skin.json`) and the written
   file's in `tools/castle3d/skin-manifest.json`, and prints "unchanged" and
   writes nothing when the inputs have not moved. It writes a repo file, so it
   takes the file's newline from the file (#632, `eolOf`).
 - **`tools/castle3d/skin-manifest.json`**, new, committed: per stage, the
-  numbers `skin.mjs` printed; the inputs' sha256; the encoded file's sha256
-  and bytes, re-recorded by `skin.mjs --record` after `assets:encode`.
+  numbers `skin.mjs` printed; the inputs' sha256; the raw cut's sha256 and
+  bytes as `cut`; the encoded file's as `encoded`, written by `skin.mjs
+  --record` after `assets:encode`. A re-cut writes the manifest without
+  `encoded`, so check 10 is red until the file is encoded and recorded.
 - **`tools/encode-assets.mjs`**: a third family, "the castle skin", the file
   `data/castle-skin.json` names, textures by slot (#507) and meshopt with
   `cleanup: false`; and `toKTX2` keeps alpha (`R8G8B8A8_SRGB`, ETC1S) for a
   base colour whose material is not `OPAQUE`, where it calls `removeAlpha()`
-  today (#967).
+  today (#967). The family lands in increment 3 and the alpha path in
+  increment 5, the first stage with a non-`OPAQUE` material (open calls,
+  "Before increment 3").
 - **`data/castle-skin.json`**, new: `{ comment, file:
   "assets/castle3d/skin.glb", stages: [], keep: [], allow: { "<skin node
   name>": "<reason>" } }`, `allow` keyed by node name as #895 keyed
@@ -1154,10 +1167,26 @@ place.
    projection sends the row back to `architect` (#966). Two runs over one
    master, the `skin-full.glb` sha256 of each quoted and equal. `builder`,
    Local: Blender GPU.
-3. **Stage `curtain` in the game.** The encoder family and alpha path;
-   `data/castle-skin.json` with `stages: ["curtain"]`;
-   `assets/castle3d/skin.glb` cut, encoded, recorded and committed; the
-   builder's skin path; check 10, the layout check, the budget changes
+3. **Stage `curtain` in the game.** In order. `skin.py`'s `joined` line;
+   `skin.mjs`'s `--record` and its last-stage `--drop` (both deferred here
+   by #1003); `data/castle-skin.json` with `stages: ["curtain"]`; the
+   encoder's skin family, meshopt with `cleanup: false` and textures by
+   slot, without the alpha path. `skin.py` run twice over one master, the
+   two `skin-full.glb` sha256 quoted and equal (#968; `skin.py` moved, so
+   #1003's `d9a3bbd1…` no longer stands). Then, on the repo's destination:
+   `npm run castle3d:skin`, `npm run assets:encode`, `npm run castle3d:skin
+   -- --record`, and one more `npm run castle3d:skin`, which must print
+   "unchanged" against the encoded file; that line is the proof the record
+   took, since without it `skin.mjs` sees a destination it did not write and
+   cuts raw over the encoded file. `assets/castle3d/skin.glb` and
+   `tools/castle3d/skin-manifest.json` committed. `--drop` on an encoded
+   file, which #1003 did not run: a scratch copy of the committed file with
+   its manifest beside it, that manifest's `stages` edited to `["curtain",
+   "buildings"]`, then `--drop buildings --dest <scratch>/skin.glb`; the
+   rewritten file still carries `EXT_meshopt_compression` and
+   `KHR_texture_basisu`, 132 draws and 40,000 triangles, and every embedded
+   image's sha256 unchanged, each quoted. Then the builder's skin path; check
+   10 without its alpha line, the layout check, the budget changes
    (`MAX_DRAW_CALLS_PER_WARD` 600, `MAX_TRIANGLES_PER_WARD` 500,000) and the
    four seams, each with its break. `npm test` fifteen of fifteen. Then the
    GPU look below, Devon's line recorded. `builder`, Local: Blender GPU for
@@ -1168,9 +1197,13 @@ place.
 5. **Stage `town`.** Re-cut; thirteen `allow` entries (five `TREE_`, six
    house `ROOF_`, `HOUSE_mereford-house-n1`, `ROOF_mereford-church-tower`);
    the five trees on
-   one decimated mesh. Look, line recorded.
+   one decimated mesh. The encoder's alpha path and check 10's alpha line,
+   with its break: the path removed, naming `tree_small_02_leaves`, the first
+   `MASK` material any stage ships. Look, line recorded.
 6. **Stage `land`.** Re-cut; two `allow` entries (the ground and the road);
-   `MAX_TEXTURE_MB` 76 to 84. Look, line recorded. Then a lane-B clean-up,
+   `MAX_TEXTURE_MB` 76 to 84; check 10's joined line run on the real joins,
+   its break `TREES_tree_small_02`'s `extras.joined` halved in a scratch
+   copy. Look, line recorded. Then a lane-B clean-up,
    not this row's, deletes the `pixelMaterials` rows no unswapped piece
    wears (#964).
 
@@ -1185,21 +1218,35 @@ break run from green, the failing line quoted (#34). Nothing below is in
 CI's reach that a container cannot run, except the cut itself.
 
 1. **`test/assets.mjs` check 10, the castle skin** (format, caps, hash; an
-   asset fact, as check 8 is for `tools/blender/`). The file exists for a
-   non-empty `stages`, is at most 32 MB, carries `EXT_meshopt_compression`
-   and `KHR_texture_basisu`, and every image is `image/ktx2` or a PNG of 128
-   px or under (#831); no base colour over 1024 and no normal or
-   metal-roughness over 512, read off the KTX2 header; every base colour of
-   a `MASK` or `BLEND` material carries alpha in its DFD; no Draco, no
-   `KHR_materials_specular` or `_ior`, no camera, no light; the set of
-   `extras.stage` values equals `stages`; no mesh over 40,000 triangles and
-   no mesh named by two or more nodes over 2,000; the file's sha256 is
-   `skin-manifest.json`'s. **Breaks**: a scratch copy with one image put back
+   asset fact, as check 8 is for `tools/blender/`). With `stages` empty,
+   nothing at `file`. Otherwise the file exists, is at most 32 MB, carries
+   `EXT_meshopt_compression` and `KHR_texture_basisu`, and every image is
+   `image/ktx2` or a PNG of 128 px or under (#831); no base colour over 1024
+   and no normal or metal-roughness over 512, read off the KTX2 header; from
+   increment 5, every base colour of a `MASK` or `BLEND` material carries
+   alpha in its DFD; no Draco, no `KHR_materials_specular` or `_ior`, no
+   camera, no light; the set of `extras.stage` values equals `stages`.
+   Triangles, by node class, against three named constants that restate
+   #968's caps: a node named `TREES_<species>` or `ROCKS_<name>` carries an
+   integer `extras.joined` of 1 or more, and its mesh is at most 2,000
+   (trees) or 1,000 (rocks) times it; no other node carries `joined`; a mesh
+   named by two or more nodes is at most 2,000; every other mesh is at most
+   40,000. The manifest's `stages` and `file` are the config's, and the
+   file's bytes and sha256 are the manifest's `encoded` row; a manifest with
+   no `encoded` row fails. **Breaks**: a scratch copy with one image put back
    as its 1024 PNG (a fixture, as #884's flipped byte was): `FAIL  skin:
    image <n> is image/png 1024x1024; every image over 128 px is KTX2 (#506)`;
-   `skin.py`'s base cap at 2048; the encoder's alpha path removed, naming
-   `island_tree_01_leaves`; `"buildings"` added to `stages` without a re-cut;
-   one tree's cap at 5,000; one flipped byte against the manifest.
+   one base colour swapped for a 2048 KTX2 from `ktx create` (not `skin.py`'s
+   cap at 2048, which `skin.mjs` has refused to write since #1003);
+   `"buildings"` added to `stages` without a re-cut; one flipped byte against
+   the manifest; the raw cut committed before `assets:encode`, so no
+   `encoded` row; in a scratch copy rewritten through `skin.mjs`'s reader,
+   `DRUM_kings-tower` renamed `ROCKS_kings-tower` with `extras.joined` 1:
+   `FAIL  skin: ROCKS_kings-tower is 2722 triangles for 1 joined, 2722 each;
+   the cap is 1000 (#968)`, and the same node with `joined` deleted. Every
+   fixture also fails the hash line, by design; the report quotes the line
+   under test. The alpha break is increment 5's and the halved `joined` is
+   increment 6's.
 2. **`test/layout.mjs`, the skin against the plan** (a fact derivable in
    Node from the plan and a file, #529). Every plan piece whose stage is
    listed and whose id is not in `keep` is named by exactly one skin node's
@@ -1326,6 +1373,73 @@ Devon accepted all 22, as recommended (#969).
 - **Lane (#963).** Recommend **G, extended to `data/castle-skin.json`**;
   `castle-builder.js` and `encode-assets.mjs` belong to no lane and the
   edits are additive.
+
+#### Settled before increment 3 (#1004)
+
+Raised by #1003's measurements, decided by `architect` on 2026-10-03, and
+confirmed by Devon on 2026-10-04 ("yes to all 5"). None overturns #963 to
+#968; the first restates #968 where check 10 contradicted it.
+
+- **Check 10's triangle line** is caps by node class, held per joined tree
+  or rock: a `TREES_` or `ROCKS_` node at most 2,000 or 1,000 times its
+  `extras.joined`, which `skin.py` writes; a shared mesh at most 2,000;
+  every other mesh at most 40,000; owned by `test/assets.mjs`. This is the
+  decision because #968 caps each tree and joins them, and "no mesh over
+  40,000" fails its own join: `skin-full.glb` measured `TREES_tree_small_02`
+  at 82,000 and `TREES_island_tree_01` at 60,000, which `castle.glb` counts
+  as 41 and 30 trees at 2,000 (46 on the small tree's mesh, less Mereford's
+  five), and `ROCKS_boulder_01_1` at 11,000, 11 rocks at 1,000. Everything
+  else meets 40,000 with room: `TERRAIN_road` 3,760 and `DRUM_kings-tower`
+  2,722 are the largest, and `TERRAIN_ground` is 39,999 against its own
+  decimation target of 40,000. A flat cap raised to 100,000 lets an
+  undecimated rock through (#1003's 8,000 a rock, joined 11 times, is
+  88,000) and so does `MAX_TRIANGLES_PER_WARD`, since that join takes the
+  land from 220,755 to about 297,755 against 500,000; a named exemption
+  list breaks on the next re-scatter and lets 2,400-triangle trees through
+  under a fixed ceiling; a per-primitive cap fails too, since the small
+  tree's leaf primitive alone is 49,159. Whether a mesh is decimated to its
+  cap is what the asset is, so `assets.mjs` holds it; `budget.mjs` section 5
+  keeps what it costs a ward, and the two share no assertion (#529, #611).
+- **Check 10's number against the UI art row's**: the skin keeps check 10
+  and the art row's block becomes check 11. This is the decision because
+  the skin's check 10 is on `main` already (#963's and #967's entries, and
+  this section), lands within this session, and the art row is uncommitted
+  on `claude/art-ui-layer` waiting on source PNGs, so it lands second by the
+  rule "whichever lands second renumbers". When it lands, in that worktree:
+  `test/assets.mjs`'s header line `10.` becomes `11.`, its banner `10: what
+  the image model made` becomes `11:`, and `say`'s prefix `check 10 line`
+  becomes `check 11 line`; its SPECS section, "UI art: woodcut illustration
+  in the DOM", says check 11 wherever it says check 10 (the four uses held
+  "in check 10", the lockfile line, `finish.mjs`'s exports "for
+  `test/tools.mjs` and check 10", the scope line "check 10 ... below check
+  9" which becomes "check 11 ... below check 10", increments 0, a, b and
+  c's acceptance lines, the "new block below check 9" in its merge note,
+  and the #529/#611 constraint); its BACKLOG row 14 and the row brief that
+  names check 10; its two ROADMAP lines ("its own check 10 below check 9"
+  becomes "its own check 11 below check 10"); and its #1002 entry in
+  HISTORY.md, three times. Its line 6 then also hashes `skin.glb`'s
+  embedded images, about 33 at `curtain`, which costs a read and matches
+  nothing.
+- **When the encoder's alpha path and check 10's alpha line land**:
+  increment 5, not 3. This is the decision because `skin-curtain.glb` has
+  no material that is not `OPAQUE` (measured), and `skin-full.glb` has two,
+  `tree_small_02_leaves` and `island_tree_01_leaves`, both `BLEND` before
+  the cut's `MASK`; at `curtain` the line would be green on nothing, and its
+  break would need an encoded fixture from an encoder that walks only
+  `assets/`. Town's five trees wear `tree_small_02_leaves`, so increment 5
+  is the first file that can fail it. This moves #967's alpha path in time
+  and does not amend it.
+- **`--drop` of the last stage, and check 10 on an empty `stages`**:
+  `--drop` deletes the file when it drops the last stage, and check 10
+  then wants nothing at `file`. This is the decision because a file
+  nothing loads would still ship about 8 MB in `dist/`, which copies
+  `assets/` whole, and the revert of `curtain` should leave the repo as it
+  stood before increment 3 but for a manifest and an empty config.
+- **`--record`'s refusals**: refuse a file without
+  `EXT_meshopt_compression` and `KHR_texture_basisu`, one whose stages are
+  not the manifest's, and a manifest with no `cut` row. This is the
+  decision because otherwise a raw cut can be recorded as encoded and
+  check 10's hash line passes over the wrong file.
 
 ### Dependencies
 

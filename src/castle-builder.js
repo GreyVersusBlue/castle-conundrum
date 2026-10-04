@@ -12,7 +12,7 @@
 // hinge's scene graph, and the gate's animation.
 
 import * as THREE from 'three';
-import { loadModel, loadPixelMaterial } from './assets.js';
+import { loadModel, loadPixelMaterial, loadJSON } from './assets.js';
 import { makePlan, tileToWorld, propPath } from './castle-plan.js';
 
 /* ------------------------------------------------- built stone and its UVs ---
@@ -666,6 +666,7 @@ export class CastleBuilder {
     this.gates = new Map(); // id -> { pivot, closedAngle, openAngle, progress, opening }
     this.materials = new Map(); // material name -> MeshStandardMaterial
     this.objects = new Map(); // plan piece id -> the Object3D built for it
+    this.skins = new Map(); // plan piece id -> the skin nodes drawn in its place (#965)
     // Somebody to tell when a leaf moves (#696): `onLeaf({ cue, id, at,
     // instant })`, with `cue` 'door-open' or 'door-shut' and `at` the leaf's
     // centre in world metres. main.js points it at the audio. It is called
@@ -814,7 +815,71 @@ export class CastleBuilder {
       this.scene.add(obj);
     }
 
+    await this.skin();
     return this;
+  }
+
+  /**
+   * THE CASTLE SKIN (rank 2i, #963 to #965): tools/castle3d/'s model, drawn
+   * over the plan a stage at a time. data/castle-skin.json says which stages;
+   * with none, or under `?edit=1`, nothing is loaded, because the editor moves
+   * the plan and the skin is a picture of the plan it was cut from (#965).
+   *
+   * EVERY PLAN PIECE IS STILL BUILT, TAGGED AND COLLIDED, and the skin computes
+   * nothing the plan reads (#500). For each node that names a plan id
+   * (`extras.planId` or `extras.planIds`, which GLTFLoader puts on
+   * `userData`), every built object it names is set `visible = false` and
+   * stays in `this.objects` with its `planId`, so test/plan-vs-scene.mjs's box
+   * diff still runs on it and `Box3` and `Raycaster`, which do not read
+   * `visible`, still find it. The node itself is drawn in its place and goes
+   * in `this.skins` under each id it names; its own ids move to
+   * `userData.skinOf`, so nothing that looks for a `planId` finds a second
+   * object for one piece. A node with no plan id (#851's outer gate, the
+   * west gate's portcullis) is drawn untagged with `userData.skin = true`,
+   * as every skin node is.
+   *
+   * WHERE A NODE GOES. At its glb world transform, which is the game's frame
+   * (#897), except a `LEAF_<gate>` node, which goes under that gate's pivot so
+   * the pivot swings both. The export writes a leaf at its hinge's world
+   * transform; the encoder's meshopt quantisation then folds a
+   * dequantising scale and offset into that node's own transform, so "the
+   * identity under the pivot" is the node's world transform taken into the
+   * pivot's frame at the angle the plan built it, not a literal identity.
+   */
+  async skin() {
+    this.skins = new Map(); // plan id -> [skin Object3D]
+    if (typeof window === 'undefined') return;
+    if (new URLSearchParams(window.location.search).get('edit') === '1') return;
+    const config = await loadJSON('data/castle-skin.json');
+    if (!Array.isArray(config.stages) || !config.stages.length) return;
+    const root = await loadModel(config.file);
+    root.updateMatrixWorld(true);
+    for (const node of [...root.children]) {
+      const ids = [
+        ...(node.userData.planId !== undefined ? [String(node.userData.planId)] : []),
+        ...(Array.isArray(node.userData.planIds) ? node.userData.planIds.map(String) : []),
+      ];
+      const world = node.matrixWorld.clone();
+      delete node.userData.planId;
+      delete node.userData.planIds;
+      node.userData.skin = true;
+      node.userData.skinOf = ids;
+      const gate = ids.length === 1 && /^LEAF_/.test(node.name) ? this.gates.get(ids[0]) : null;
+      if (gate) {
+        gate.pivot.updateMatrixWorld(true);
+        new THREE.Matrix4().copy(gate.pivot.matrixWorld).invert().multiply(world)
+          .decompose(node.position, node.quaternion, node.scale);
+        gate.pivot.add(node);
+      } else {
+        world.decompose(node.position, node.quaternion, node.scale);
+        this.scene.add(node);
+      }
+      for (const id of ids) {
+        const built = this.objects.get(id);
+        if (built) built.visible = false;
+        this.skins.set(id, [...(this.skins.get(id) || []), node]);
+      }
+    }
   }
 
   /** Call from the render loop. Animates any gate that is opening. */
@@ -910,11 +975,14 @@ export class CastleBuilder {
         (piece.box.min.z + piece.box.max.z) / 2,
       );
       const name = names[piece.evidence] || piece.evidence;
+      // A swapped piece's built object is always hidden; what says whether it
+      // is there is its skin (#965), which `setEvidenceVisible` moves.
+      const skins = this.skins.get(piece.id) || [];
       out.push({
         id: piece.evidence, isEvidence: true, name,
         prompt: `Press E to examine the ${name}`,
         group: obj, focus: centre,
-        get active() { return obj.visible; },
+        get active() { return skins.length ? skins.every((s) => s.visible) : obj.visible; },
       });
     }
     return out;
@@ -994,7 +1062,12 @@ export class CastleBuilder {
     const piece = this.plan.pieces.find((p) => p.evidence === evidenceId);
     if (!piece) return false;
     const obj = this.objects.get(piece.id);
-    if (obj) obj.visible = visible;
+    // Two of the ten are swapped at `curtain` (the walk bar and the muniment
+    // door's lock): their skin comes and goes and the built object stays
+    // hidden, as `setPieceVisible` does it (#965).
+    const skins = this.skins && this.skins.get(piece.id);
+    if (skins && skins.length) for (const s of skins) s.visible = visible;
+    else if (obj) obj.visible = visible;
     const planned = this.plan.colliders.filter((c) => c.id === piece.id);
     for (const c of planned) {
       const i = this.colliders.findIndex((x) => x.id === c.id && x.box === c.box);
@@ -1014,7 +1087,12 @@ export class CastleBuilder {
   setPieceVisible(planId, visible) {
     const obj = this.objects.get(planId);
     if (!obj) return false;
-    obj.visible = visible;
+    // A swapped piece's built object stays hidden and its skin comes and goes
+    // instead (#965): the second day's `gone` on `cell-bars` reaches the bars
+    // the player sees.
+    const skins = this.skins && this.skins.get(planId);
+    if (skins && skins.length) for (const s of skins) s.visible = visible;
+    else obj.visible = visible;
     const planned = this.plan.colliders.filter((c) => c.id === planId);
     for (const c of planned) {
       const i = this.colliders.findIndex((x) => x.id === c.id && x.box === c.box);
