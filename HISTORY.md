@@ -14249,3 +14249,15 @@ Main CI on `e832bad` (PR #106's merge) green: run 37150024532. Increment 2,
 the skin, outside this repo, is next.
 
 **#1000. Reserved: #971 to #1000 are held for sessions on Huginn (the Selector loop); anyone else numbers from #1001.**
+
+**#1001. Devon's line on increment 1's still (#970), given 2026-10-03:
+"Looks fine."** The still is
+`CASTLE3D_OUT\review\2i-1\spawn-west-2i-1-a.png`, `CAM_spawn`'s eye turned
+due west through the open outer gate. The known quirk shown to him with it,
+accepted as built: the round-headed leaves' tops run up into the vault, as
+the plan's west gate does.
+
+This closes increment 1 of SPECS.md's "Castle in Blender: the integration
+row." #922's open-arch recommendation (accept the road behind the collider,
+look west from SPAWN) stands; the lowered-portcullis fallback is not taken.
+Increment 2, the skin, outside this repo, is next.
