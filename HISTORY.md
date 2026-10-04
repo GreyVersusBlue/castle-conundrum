@@ -15042,3 +15042,108 @@ geometries, 27 programs).
 `npm test`: fifteen of fifteen.
 
 Increment 4, stage buildings, is next. Next free number: #1006.
+
+## The GPU run, fifth sitting: 3a and 3b hold, and the curtain skin hides the walk bar from itself (2026-10-04)
+
+**Rank 3, session CC-04, on DEVON-DESKTOP (Windows 10 Home 19045, RTX 3070
+Ti), worked by Claude Opus 5.5 as the lead in a fresh worktree off
+`origin/main` at `bc22327`, which carries 3a (#916), 3b (#917) and rank 2i's
+curtain skin (#1005).** `npm run play` ran twice in full and once cut short
+on purpose. Window 1200 x 800. Decisions #1006 to #1009. The lead wrote the
+doc files itself rather than dispatching `scribe`, because the repo's
+subagents were not registered in this session.
+
+- Run 1, the suite as merged: exit 1, 87 ok, 13 failures, ABORTED "cannot
+  ring a bell that cannot be reached". Every failure after the pouch is one
+  suite bug (#1006).
+- Run 2, #1006 in: **exit 1, 213 ok, 4 failures, no abort**, 42 shots. The
+  four are one game bug (#1008).
+- Run 3, `src/ui.js` broken on purpose and stopped after the journal beat
+  (#1007).
+
+**#1006. The journal walk faced the stair; it now faces the chapel door.**
+#917(c)'s `walk700` had never run on a GPU. `examine('pouch')` leaves the
+camera on the pouch, a metre from the body at the chapel stair foot, so both
+700 ms walks went at the stair. Run 1: the baseline W stopped at 0.69 m, S
+overshot by 2.99 m, and the second W ran 3.67 m up the flight to level 1.
+The assertion passed (ratio 5.34) and the player was left at (23.4, 14.4)
+L1, where `hike` has no stair of record down: the cook, the porter, the
+cloak, the apprentice and the bell all gave up there, three hikes each, and
+the run aborted at the bell. The fix, in `test/play-castle.mjs` only, is an
+`aimAt` the Chapel Tower's door (19.3, 13.3), the floor the run walked in
+across, before the baseline. Run 2: 2.45 m before the journal, 2.87 m after,
+ratio 1.17, starts 1.18 m apart, all on the ground, and the cook was reached
+at 1.72 m. A suite bug, recorded as one.
+
+**#1007. 3a and 3b, confirmed on a GPU, and #917(c)'s rail watched fail.**
+Against the fourth sitting's six failures (#890, #889), run 2:
+- The three Play Again beats pass (#916): "the button is the old one again
+  Play Again"; "Play Again starts a fresh walking day ... no key in storage",
+  `{"stored":null,"stage":"explore","watch":"prime-eve","clues":0}`; "the
+  panel offers the second door again". Then "the second button is the day of
+  the death at Prime".
+- "interior hall walls are the same height" is gone, deleted by #917(a).
+- "no brazier is sealed inside the stonework" passes, `[-4.8,-2.4]
+  [-4.8,2.4] [-20,10]`, in both full runs: the hall brazier with
+  `gothic_statue` moved (#917(b)), and the porter's-gate pair the headless
+  probe could not reproduce. Its root is still not named, because nothing
+  now reads it as inside anything.
+- The journal walk passes at ratio 1.17 (#1006).
+- **Broken on purpose (#34)**, owed since #917: `ui.js`'s `_takePointer()`
+  made a no-op, uncommitted, in this worktree only, and the run stopped
+  after the beat. "and W moves the player again, from the same standing
+  start" went red, "0.00 m in 700 ms against 0.00 m before the journal,
+  ratio 0.00", with "shutting the journal gives the player back the castle"
+  red beside it. The baseline beat read 0.00 m and went red too, because the
+  Constable's dialogue closes through the same hand-back first. Restored;
+  `git status` showed only `test/play-castle.mjs` changed.
+
+**#1008. The curtain skin's walk bar occludes the walk-door evidence, filed
+as rank 3c.** The four failures of run 2 are one: "walked to the bar beside
+the Stockhouse door, never got in range", the player stopped 0.5 m from the
+aim point at (-1.9, -16.9) L2 with the prompt null; "the Stockhouse door,
+unbarred"; and, downstream, "door-unbarred is in the list the Present
+button opens" and "the porter, on the cross-wall walk, admits the door",
+null. In the fourth sitting all four passed. A headless probe of the live
+scene (static geometry, so #53 does not apply), casting from three eyes in
+the Stockhouse top room to the target's aim point (-2.3, 8.75, -16.5): every
+ray's first hit is the skin node `BAR_walk-bar`, 0.09 to 0.16 m short of the
+aim. #1005's skin hides the built bar, which is still the target's `group`,
+and adds the skin node as its own scene child; `InteractionSystem.
+occluders()` leaves out each target's `group` only, so the skin bar is stone
+in front of itself. #1005 made the target `active` through the skin; its
+line of sight was not. The muniment door, the other evidence swapped at
+`curtain`, passes ("Press E to read the word-lock"). A game bug, not fixed
+here: nothing in `src/`.
+
+**#1009. The quay through the fog, at Prime, with the skin in.** Three
+pinned-camera stills through a scratch copy of `tools/shot-yard.mjs`'s pin
+(uncommitted, so the tool is unchanged), `shots/quay/`, 1600 x 900: q6 from
+the South-west Tower roof (-38.5, 13.7, 15.0) and q7 from the North-west
+Tower roof (-38.5, 13.7, -13.6), both at (-155, -3), and q8 from SPECS'
+west-walk eye (-35.75, 9.70, -11.75). Through the west gate is fog colour;
+the toll-house ridge is a small grey point over the town wall; no water can
+be told apart. The hills either side hold their shape, so this is the fog,
+not the resolution. That is #900's reading again, and by #910 the lever is
+`lighting.fog` (#796), not the town or the west wall: recorded, and the
+session stopped there. New with the skin: from both roofs the skin's
+parapet fills the lower half of the frame at under a metre, and from q8's
+eye a skin merlon and the tower drum block the ridge outright, so that
+vantage no longer sees it. Devon's verdict on `q1` to `q5` is still owed.
+
+**The shots were not looked at, and that is this sitting's slip.** Run 2
+wrote 42 shots to `shots/play/`, and run 3, which clears that folder when it
+starts, overwrote them before anyone opened them; only run 3's first ten are
+on disk. The beat-by-beat record above is from run 2's log, not its
+pictures. Run 2 reached the same beats as #891's run 5, whose sentences
+stand. The next sitting should copy `shots/play/` aside before any second
+run.
+
+**Still not seen.** Exit 0: owed to rank 3c. The phone (#530) is untouched:
+nobody was at the keyboard with a phone.
+
+**Checks.** `npm test` 15 of 15 (`built` 241 files and 46 KTX2 textures on
+both pages), `npm run build` ok, with only `test/play-castle.mjs` and the
+four doc files changed.
+
+Next free number: #1010.

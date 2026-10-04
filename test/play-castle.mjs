@@ -1424,7 +1424,17 @@ try {
    * where this one did and meets the same stonework. "About": if W was stopped
    * short by a wall, S overshoots, and the offset is printed with the result so
    * a reading can be judged. This is after `the-pouch-taken` is shot and takes
-   * no clue, so no earlier beat and no journal row can see it. */
+   * no clue, so no earlier beat and no journal row can see it.
+   *
+   * FACING THE DOOR, NOT THE POUCH (#1006). `examine` leaves the camera on the
+   * pouch, a metre from the body at the stair foot, so both walks went at the
+   * stair. On the first GPU run of this beat (2026-10-04) the first W stopped at
+   * 0.69 m, S overshot by 2.99 m, and the second W ran 3.67 m up the flight to
+   * level 1, where no stair of record leads back down: every hike for the rest
+   * of the day gave up at (23.4, 14.4) L1. The walks now face the Chapel Tower's
+   * door, the open floor the run walked in across, so both stay on the ground. */
+  await aimAt(page, [19.3, 13.3], 0);
+  await wait(120);
   const walk700 = async (key = 'KeyW') => {
     const from = await playerAt();
     await page.keyboard.down(key);
