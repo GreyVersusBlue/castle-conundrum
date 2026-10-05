@@ -67,6 +67,22 @@ function secondUV(geo) {
   return geo;
 }
 
+/**
+ * The skin nodes drawn in a target's place that are that piece and nothing
+ * else, for `InteractionSystem.occluders()` to leave out (#1008). The curtain
+ * skin hides the built walk bar, which stays the target's `group`, and draws
+ * `BAR_walk-bar` as its own child of the scene, so the sight ray met the bar
+ * 0.09 to 0.16 m short of the bar and the player was never offered it. A node
+ * that also names another piece (a wall a bar is joined to) is still stone in
+ * front of everything else, so it stays an occluder.
+ */
+function ownSkins(skins, id) {
+  return (skins || []).filter((s) => {
+    const of = s.userData.skinOf || [];
+    return of.length === 1 && of[0] === id;
+  });
+}
+
 function mesh(geo, material) {
   const m = new THREE.Mesh(geo, material);
   m.castShadow = true;
@@ -940,7 +956,8 @@ export class CastleBuilder {
         (piece.box.min.y + piece.box.max.y) / 2,
         (piece.box.min.z + piece.box.max.z) / 2,
       );
-      return { id: piece.id, isBell: true, name: 'bell', prompt: 'Press E to ring the bell', group: obj, focus: centre };
+      return { id: piece.id, isBell: true, name: 'bell', prompt: 'Press E to ring the bell', group: obj, focus: centre,
+        skins: ownSkins(this.skins.get(piece.id), piece.id) };
     });
   }
 
@@ -981,7 +998,7 @@ export class CastleBuilder {
       out.push({
         id: piece.evidence, isEvidence: true, name,
         prompt: `Press E to examine the ${name}`,
-        group: obj, focus: centre,
+        group: obj, focus: centre, skins: ownSkins(skins, piece.id),
         get active() { return skins.length ? skins.every((s) => s.visible) : obj.visible; },
       });
     }
@@ -1020,7 +1037,7 @@ export class CastleBuilder {
       out.push({
         id: piece.read, isReadable: true, name,
         prompt: `Press E to read ${said}`,
-        group: obj, focus: centre,
+        group: obj, focus: centre, skins: ownSkins(this.skins.get(piece.id), piece.id),
       });
     }
     return out;

@@ -6,7 +6,7 @@ what can be done *when*, on *what machine*, and *next to what else*.**
 Nothing here is a locked decision except the lane rule (#600 to #602).
 
 Nine open rows: 2b, 2c, 2d, 2i, 3, 4, 6, 7, 11, and ~~2a~~ (#907),
-~~2e~~ (#908), ~~3a~~ (#916), ~~3b~~ (#917), ~~13~~ (#909), ~~9~~ (#910), ~~2h~~ (#962), ~~2f~~ and ~~2g~~ shipped (#830 to #838). Rows are named by title as well as by rank
+~~2e~~ (#908), ~~3a~~ (#916), ~~3b~~ (#917), ~~3c~~ (#1012), ~~13~~ (#909), ~~9~~ (#910), ~~2h~~ (#962), ~~2f~~ and ~~2g~~ shipped (#830 to #838). Rows are named by title as well as by rank
 (#522), because a rank is a priority and gets reused across different rows
 over time, never renumbered mid-table (#619, #491). Devon re-ranked on
 2026-09-25, reopening ranks 1 and 2 for the Blender rows and retiring rank 10
@@ -53,7 +53,7 @@ cannot trust a pass either.
 
 | Row | Model | Status |
 | --- | --- | --- |
-| **3 The GPU run** | Opus 5 | The fifth sitting confirmed 3a and 3b on a GPU and ended 213 ok, 4 failures, all four rank 3c (#1006 to #1009). What is left is `npm run play` reaching exit 0 after 3c ships, the phone in the room (#530), and Devon's verdict on the quay stills (#900, #1009). |
+| **3 The GPU run** | Opus 5 | **Exit 0 reached** 2026-10-04, 217 ok, 0 failures, after 3a, 3b and 3c shipped (#1006 to #1012). What is left is the phone in the room (#530) and Devon's verdict on the quay stills (#900, #1009). |
 | **4 The retro castle**, past increment 1 | Opus 5 | Increment 1 shipped in a container, no GPU needed (#757 to #766). What is left is the look: the checklist is in `SPECS.md`. Increment 2 is superseded by 2h (#839). |
 | **11 Feel**, past its Node line | Sonnet 5 | The Node half shipped 2026-09-17 (#650 to #654): a shadow decal and a reaching hand, nine assertions in `plan-vs-scene.mjs`. What is left is whether either reads on a GPU. Gated on rank 3 (below). |
 | **2c Blender: a shared rig with swappable parts**, the clips | Opus 5 | The eleven clips and the hen-wife beside a Quaternius body are a GPU look, the gate on increment 2 (#939, #53). Increment 1 is committed (#941). |
@@ -87,10 +87,8 @@ files restored from `51735fa` and encoded, a room, two walls and 14 rows.~~
 **Shipped** in `41457cb`.
 
 ~~**3a** Play Again starts over (#889): `src/gvb-save.js`'s `autosave.stop()`
-and a Node test in `test/save.mjs`.~~ **Shipped** (#916). **3c** the walk bar
-hides itself (#1008): the builder hands a swapped piece's skin nodes to its
-evidence target and `occluders()` drops them, held by a `plan-vs-scene`
-pose in the Stockhouse top room; lane G, so not beside 2i's next increment. **6**
+and a Node test in `test/save.mjs`.~~ **Shipped** (#916). ~~**3c** the walk
+bar hides itself (#1008)~~ **Shipped** (#1012). **6**
 populace (19 chatter pairs placed and played, #911 to #938; the GPU look and the town's share left), **2c**'s increment 2 (the
 other 15 populace humans onto `folk.glb`, once increment 1's GPU look has
 passed). Every one is
@@ -111,7 +109,7 @@ lane at a time** (#602). The lanes are named by the file, not by the theme.
 | **D** | `src/main.js`'s player rig and spawn | 6, 11 |
 | **E** | `src/audio.js` and `data/sounds.json` | 7 |
 | **F** | `tools/blender/` and `tools/blender/manifest.json` | 1, 2b, 2c, 2d |
-| **G** | `tools/castle3d/`, and `data/castle-skin.json` (#963) | 2i, 3c (shares `castle-builder.js`'s `skin()`, #1008) |
+| **G** | `tools/castle3d/`, and `data/castle-skin.json` (#963) | 2i |
 | **none** | | 3 |
 
 Every Blender row holds lane F, so only one runs at a time, which matches
@@ -182,9 +180,9 @@ spec, which waited on that increment's numbers (#923), is written (#963 to
 next stage.
 
 **Rank 3's hour on a GPU is spent: the fourth sitting confirmed the sight
-fix** (#886 to #891) and the fifth confirmed 3a and 3b (#1007). What is left
-of the row is one more GPU `npm run play` after rank 3c (#1008) ships; it
-needs Devon's Windows machine and nothing else.
+fix** (#886 to #891), the fifth confirmed 3a and 3b (#1007), and with 3c
+shipped `npm run play` exited 0 (#1010 to #1012). What is left of the row is
+the phone (#530) and a verdict on the quay stills.
 
 **One gate outside the band stands**: rank 3 before rank 11 ships past its
 Node acceptance. Rank 11's own spec says nothing in it goes past a `snap`

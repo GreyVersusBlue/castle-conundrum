@@ -1517,10 +1517,10 @@ compositing eleven times over four sittings (#624 to #630, #708 to #715,
 holds: the sentry's and the porter's sighting beats pass, the accusation
 selects 3 of 3, and the whole day and the whole second day have now been
 walked by `npm run play` for the first time. **What is left is exit 0**:
-the fifth sitting (#1006 to #1009) confirmed 3a and 3b on a GPU and ended
-213 ok, 4 failures, all four rank 3c (the curtain skin's walk bar blocks its
-own sight line, #1008). One more GPU run after 3c ships, and the phone in the
-room (#530) is untouched.
+**reached 2026-10-04, 217 ok, 0 failures** (#1010 to #1012), after 3a
+(#916), 3b (#917) and 3c (#1012) shipped and three suite bugs were fixed in
+`test/play-castle.mjs` (#1006, #1010, #1011). The phone in the room (#530) is
+untouched.
 
 **The judgement half of this row is done.** Every render question this
 section used to list is answered in `HISTORY.md`: the twelve at Vespers
@@ -1572,9 +1572,7 @@ sitting took the shot again with the curtain skin in (#1009, `q6` to `q8`,
 - The run needs a machine with a GPU, which is Devon's; a session can add a
   beat and cannot run it. If a session is asked to take the run without one,
   the honest output is the beat and a note, not a claim.
-- **What exit 0 still owes**: rank 3a (#916) and rank 3b (#917) shipped
-  and were confirmed on a GPU (#1007). Rank 3c (#1008) is the last standing
-  failure; one more GPU run after it ships.
+- **Exit 0 is reached** (#1012). Nothing in this list gates it any more.
 
 ### Constraints
 
@@ -1585,8 +1583,12 @@ sitting took the shot again with the curtain skin in (#1009, `q6` to `q8`,
 
 ## The walk bar hides itself
 
-**Rank 3c. Size ¼. Filed by the GPU run's fifth sitting (#1008), against
-#1005.** A game bug. On the intended path the player reaches the Stockhouse
+**Rank 3c. Shipped (#1012), against #1008.** Its row is retired from
+`BACKLOG.md` and `ROADMAP.md`; the section stays because other sections cite
+it. The fix is the recommendation below, held by the `plan-vs-scene` beat its
+acceptance names, broken on purpose and watched fail (#34), and confirmed by
+`npm run play`'s first exit 0. Filed by the GPU run's fifth sitting against
+#1005, as a game bug. On the intended path the player reaches the Stockhouse
 Tower's top room and is never offered the bar, so `door-unbarred` is never
 held and the porter's admission on the cross-wall walk fails with it: four of
 run 2's four failures.

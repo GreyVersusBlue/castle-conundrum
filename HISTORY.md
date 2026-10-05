@@ -15146,4 +15146,82 @@ nobody was at the keyboard with a phone.
 both pages), `npm run build` ok, with only `test/play-castle.mjs` and the
 four doc files changed.
 
-Next free number: #1010.
+## Rank 3c ships, and `npm run play` exits 0 for the first time (2026-10-04)
+
+**Session CC-04 again, the same machine, on `claude/cc04-3c-walk-bar` off
+the fifth sitting's branch (PR #118).** Rank 3c was class S (its SPECS
+section had a recommendation); the lead built it itself, since the repo's
+subagents were not registered in this session. Four `npm run play` runs;
+the fourth is the first exit 0 this project has had. Decisions #1010 to
+#1012.
+
+- Run 1, 3c in: the journal walk passed (ratio 1.18) and the day stranded
+  at (23.4, 14.4) L1 again, at the cook. Stopped.
+- Run 2, the journal walk moved out of the chapel: `hike`'s own route from
+  the pouch to the door stranded at the same point. Stopped.
+- Run 3, #1010 in: exit 1, 215 ok, 2 failures: the tally (#1011). The walk
+  bar, `door-unbarred` and the porter's admission pass.
+- Run 4, #1011 in: **exit 0, 217 ok, 0 failures**, 42 shots, kept aside in
+  the worktree before anything else ran.
+
+**#1010. The Chapel Tower's lower flight becomes a stair of record, and the
+journal walk leaves the chapel.** Every stranding this day (fifth sitting
+run 1, and runs 1 and 2 here) ended at (23.4, 14.4) L1. A Node probe of the
+plan: the body and the pouch lie at the foot of `chapel-tower-stair-1`
+(axis x 24.75, foot z 17.65 at y 0, head z 14.35 at y 3.9, ramp x 24 to
+25.5), whose foot is 0.06 m off the floor, and (23.4, 14.4) is the
+Chaplain's chamber, `floor-chaplain-chamber`, y 4, level 1. A held W
+(twice) and `hike`'s own route (once) walked up the ramp from the pouch, and
+`changeStorey` had no stair of record from level 1, so every later hike gave
+up there. #1006's aim at the door was not enough. In `test/play-castle.mjs`:
+`CHAPEL_DOWN`, three legs square on to the head, down due south and off west
+of the ramp, taken by `changeStorey` from 1 to 0 when the player is inside
+the chamber; after the pouch the player steps west off the stair foot first;
+and the journal walk is taken outside the Chapel Tower's door, along the
+open inner ward. Run 3 onward: both walks 3.69 m, ratio 1.00, starts 0.01 m
+apart, the first clean reading the beat has given. A suite bug.
+
+**#1011. `walkTo`'s first read now gets the real distance.** It called
+`near(0)`, which skipped `within`, the guard #571's runs added because
+"examine" is every evidence prompt. With 3c in, the player finished the walk
+bar standing under its own prompt, the tally beat read "examine" as
+arrived, never hiked, and gave up 30.3 m from the stick at (-2.7, -14.0) L2.
+The first read now passes the player's distance to the target. Run 4:
+"walked to the tally stick 1.16m". A suite bug, and one 3c uncovered rather
+than caused.
+
+**#1012. Rank 3c shipped: a target's own skin is not an occluder.** As
+SPECS recommended: `castle-builder.js` hands each evidence, bell and
+readable target `skins`, the skin nodes whose `skinOf` is that piece alone
+(`ownSkins`), and `interaction.js`'s `occluders()` leaves them out with the
+group. A node that also names another piece stays stone. Held by a new
+`test/plan-vs-scene.mjs` beat from the pose the GPU run gave up at, (-1.9,
+-16.9) on the level-2 floor: control, the target carries `BAR_walk-bar` and
+the eye-to-bar ray passes through it; then the HUD offers "Press E to
+examine the bar beside the Stockhouse door". **Broken on purpose (#34)**:
+with `occluders()` back to the group alone, the beat went red, "wanted
+'Press E to examine the bar beside the Stockhouse door', got no prompt,
+active true", the control line green. On the GPU, run 4: "walked to the bar
+beside the Stockhouse door 1.25m", "the Stockhouse door, unbarred
+door-unbarred", "the porter, on the cross-wall walk, admits the door".
+
+**What the shots show** (run 4, kept at `.cc04/shots-exit0/` in the
+worktree, gitignored): 10 `journal` is opened in the inner ward now and
+lists the five clues; 37 `epilogue` reads "The Sheet Is Signed" with "The
+next morning", and the sentry's last dialogue line is still drawn behind the
+pane, bleeding through above it; 42 `a-fresh-day` is the title screen with
+"Walk the castle", which is #916 seen. The other 39 were not looked at one by
+one; they are #891's set.
+
+**Found, not filed.** The epilogue pane does not close the dialogue under
+it (shot 37). Cosmetic; the next look at the ending can take it.
+
+**Checks.** `npm test` 15 of 15, `npm run build` ok. Changed: `src/castle-
+builder.js`, `src/interaction.js`, `test/plan-vs-scene.mjs`,
+`test/play-castle.mjs` and the doc files.
+
+**Rank 3 has reached exit 0.** What is left of the row is not the run: the
+phone (#530), untouched, and Devon's verdict on the quay stills (#900,
+#1009).
+
+Next free number: #1013.
