@@ -15224,4 +15224,88 @@ builder.js`, `src/interaction.js`, `test/plan-vs-scene.mjs`,
 phone (#530), untouched, and Devon's verdict on the quay stills (#900,
 #1009).
 
-Next free number: #1013.
+## Feel: the three GPU looks, and the hand turned along the arm (2026-10-04)
+
+Session CC-13, DEVON-DESKTOP (RTX 3070 Ti), headed Chrome 1600 x 900, Claude
+Opus 5.5 as lead. Stills in `looks/2026-10-04/before/` (origin/main at
+d3493be) and `looks/2026-10-04/after/` (this branch, the hand only), taken by
+the new hand-run `tools/shot-feel.mjs`, which pins the camera like
+`tools/shot-yard.mjs`, stands the feet with `__player.settle()`, and measures
+the disc in every shot by rendering it three ways: as shot, hidden, and drawn
+with depthTest off (footprint vs visible pixels; a pixel counts at a channel
+change over 6/255). `shots.log` in each folder has every number. The
+stills are JPEG at quality 90, 6.9 MB for the 34, where the PNGs were 39 MB;
+the measurement reads the lossless frames and never the JPEG.
+
+**#1013. The three looks, answered.**
+
+- Look 1, the blob on stone and on grass at the same bell: GOOD. Terce,
+  straight down (pitch -1.35): stone inner ward 98% of the disc visible,
+  darkens the floor under it 20%; grass outer ward 100% visible, 23%.
+  Vespers: stone 97% / 21%, grass 100% / 27%. Glancing down (pitch -0.95):
+  stone 94% / 20%, grass 98% / 22%. On grass the pebble pattern breaks the
+  edge up but the darkening is the same or stronger. Stills a1 to a6. One
+  caveat recorded, not a defect: with a 72 degree vertical FOV the disc is
+  only in frame once the player looks about 40 degrees or more below level,
+  so a player walking with the view level never sees it.
+- Look 2, the flat disc on a flight: DEFECT, cause named. The plan stands a
+  body on a flight as a ramp (`castle-plan.js` `heightOnSurface`, foot to
+  head over 3.3 m of run and 3.9 m of rise), but the model drawn there, kit
+  `stairs-stone.glb` scaled 3 x 3.9 x 3.3, is 8 steps of 0.4875 m riser and
+  0.4125 m tread. The ramp line runs through the inner corner of every step,
+  so it is under each tread by 0 to 0.49 m, and the disc at feet + 0.02 is
+  inside the stone. Measured on nw-tower-stair-1 and kitchen-tower-stair-2 at
+  30% and 62% of the run: going up (pitch -0.9) 0% of the disc visible in
+  all four; looking at the feet (pitch -1.35) 37 to 40% visible, 0% at
+  kitchen-tower-stair-2 62%; going down (pitch -0.9) 84 to 89%, 25% at
+  kitchen 62%, and what shows going down is the disc's downhill half hanging
+  over the lower treads, not lying on them. Last night's #900 stills f3
+  showed no disc either, which this explains. Not fixed tonight: the fix
+  needs the plan to carry a flight's step count (8 for this model) so the
+  rig can put the disc on the tread top under the player while the feet
+  stay on the ramp, and putting that in `castle-plan.js` with its assertion
+  is a plan-suite question (#500, #529), so it goes to `architect` first.
+  Alternatives for that section to weigh: hide the disc on a ramp (one line,
+  loses the cue on every stair); draw it with depthTest off on a ramp only
+  (paints over a riser the way a real shadow would, and over the hand or a
+  body's feet if they overlap). Also recorded: at kitchen-tower-stair-2 62%
+  the eye (8.12) is above the level-2 floor top (8.0) and the frame is the
+  inside of the slab; a walking question, found not filed.
+- Look 3, the hand at the word-lock: DEFECT, fixed under #1014. Before
+  (stills before/c2, c3, c5): the hand reads as a rolling pin, an 8-sided
+  end cap with a stub of finger past it. Cause:
+  `this.hand.quaternion.copy(this.camera.quaternion)` laid the 0.20 m
+  forearm along the view axis, 7.3 degrees off the line to the eye at the
+  settled reach, so the eye looked down the forearm, and the forearm ended
+  mid-frame (NDC 0.14, -0.17).
+
+**#1014. The hand turned along the arm** (`src/player-rig.js`, builder). The
+fingers point from a shoulder at camera-space (0.24, -0.42, 0.08) to the
+hand, up taken from the camera, `Matrix4.lookAt` on module scratch, no
+allocation per frame. The forearm is 0.56 m (hand z 0.02 to 0.58, far radius
+0.042 to 0.046), still one merged geometry, so still two draw calls;
+`FOREARM_END` exported and carried as `rig.armEnd`. Everything else
+unchanged: NO_RAY on both meshes, no planId, `userData.playerRig`, `settle()`
+bringing matrixWorld, the 0.78 m reach clamp. Two assertions added to
+test/plan-vs-scene.mjs's shadow-and-hand beat, each broken on purpose (#34),
+as a table:
+
+| The break | What failed |
+| --- | --- |
+| old code | (a) "7.3 degrees ..., wants 25 or more"; (b) arm end undefined, NDC (NaN, NaN); with armEnd 0.22 patched in, NDC (0.14, -0.17) |
+| `quaternion.copy(camera.quaternion)` put back | (a) 7.3 degrees; (b) NDC (0.40, -0.48) |
+| forearm cut back to end at 0.22 | (a) passed; (b) "arm end at hand z 0.22 (mesh box 0.220), projects to NDC (0.21, -0.36)" |
+
+(a) is "its forearm runs along the arm, not straight back at the eye": 25
+degrees or more, now 31.5. (b) is "the arm comes in from the edge of the
+frame": its far end projects outside NDC +-1 or behind the camera, now
+(0.77, -1.59), and rig.armEnd must match the mesh box within 0.005 m.
+
+After (stills after/c2, c3, c5-700ms): an arm from the bottom right of the
+frame to a hand at the leaf; mid-turn (c5-700ms) the palm and four fingers
+read plainly; settled at the lock the fingers foreshorten into a small knot
+past the wrist. That last read is "needs Devon's eye": whether the settled
+hand wants its palm turned toward the leaf. npm test 15 suites green, npm run
+build ok (the lead will re-run before the PR).
+
+Next free number: #1015.

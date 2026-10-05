@@ -2932,9 +2932,11 @@ ray that was never going to hit anything.
 - GPU acceptance (#53): a screenshot of the player approaching a door with the
   hand visibly reaching, and a screenshot of the shadow on stone versus on
   grass; one sentence each in `HISTORY.md`, the same bar rank 2's photograph
-  sets. **Still open**, and a third shot was added to it by the work: the disc
-  is flat and a flight of stairs is a ramp, so what it does on a stair is
-  unlooked-at.
+  sets. **Met for the shadow** (stone and grass, #1013) **and for the hand**
+  (#1014, with one thing left for Devon's eye: whether the settled hand wants
+  its palm turned toward the leaf, not just mid-reach). **Still open for the
+  stair disc**: a flight of stairs is a ramp in the plan but 8 steps on
+  screen, and the disc sits inside the stone on every tread (#1013).
 
 ### Open calls
 
@@ -2944,6 +2946,16 @@ ray that was never going to hit anything.
   of the two. What shipped is cheaper again than a baked file — the gradient is
   painted into a canvas at load, so there is no asset to encode (#506) and
   nothing new is fetched (#493).
+- **How the disc sits on a flight.** Three options weighed: hide the disc on
+  a ramp (one line, loses the cue on every stair); draw it with depthTest off
+  on a ramp only (paints over a riser the way a real shadow would, and over
+  the hand or a body's feet if they overlap); or give the plan a flight's
+  step count (8 for `stairs-stone.glb`) so the rig can put the disc on the
+  tread top under the player while the feet stay on the ramp. **Recommended:
+  the step count in the plan**, asserted by `layout.mjs` or
+  `plan-vs-scene.mjs` against the model (#500, #529), with the rig reading it
+  to place the disc. This needs an `architect` section before anything is
+  built: it crosses the plan/scene line.
 - **Everything else in the theme** (weather, fire, examine, wear, sitting) is
   explicitly a later increment each, in no fixed order — `WISHLIST.md` ranks
   none of them against each other, and this spec does not invent an order it
