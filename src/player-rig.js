@@ -63,6 +63,22 @@ const _reach = new THREE.Vector3();
 const _aim = new THREE.Vector3();
 const _right = new THREE.Vector3();
 const _up = new THREE.Vector3();
+const _shoulder = new THREE.Vector3();
+const _aimArm = new THREE.Matrix4();
+
+// The shoulder, camera space: right of and below the eye and a little behind
+// it. The hand points away from here rather than the way the eye looks. Turned
+// with the camera, the forearm ran straight back at the eye, which looked down
+// its axis: the end cap covered the palm and the hand read as a rolling pin
+// (looks/2026-10-04). Pointed along the arm, the eye sees the arm side on.
+const SHOULDER = new THREE.Vector3(0.24, -0.42, 0.08);
+
+// Where the forearm ends, hand space +z. Long enough that at the settled reach
+// it runs back past the bottom edge of the frame, so the arm comes in from the
+// edge rather than ending in mid-air. test/plan-vs-scene.mjs reads it off the
+// rig as `armEnd` and holds it to the mesh's own box.
+export const FOREARM_START = 0.02;
+export const FOREARM_END = 0.58;
 
 /**
  * The blob's texture, painted rather than loaded: 64 x 64, one radial gradient,
@@ -86,8 +102,8 @@ function blobTexture() {
 }
 
 /**
- * A hand, in the hand's own space: fingers along -z, which is the way the eye
- * looks. Palm, four fingers, a thumb across them and enough forearm that it
+ * A hand, in the hand's own space: fingers along -z, which apply() turns to
+ * the way the arm points. Palm, four fingers, a thumb across them and enough forearm that it
  * reads as a hand on an arm rather than a hand in the air.
  *
  * MERGED INTO ONE GEOMETRY, which is the difference between the rig costing two
@@ -108,7 +124,8 @@ function handGeometry() {
   for (let i = 0; i < 4; i++)
     put(new THREE.CapsuleGeometry(0.0105, 0.046, 2, 6), -0.030 + i * 0.020, 0, -0.105, along);
   put(new THREE.CapsuleGeometry(0.0125, 0.038, 2, 6), -0.046, 0, -0.040, along, 0.85);
-  put(new THREE.CylinderGeometry(0.036, 0.042, 0.20, 8), 0, 0, 0.120, along);
+  const arm = FOREARM_END - FOREARM_START;
+  put(new THREE.CylinderGeometry(0.036, 0.046, arm, 8), 0, 0, FOREARM_START + arm / 2, along);
   return mergeGeometries(parts);
 }
 
@@ -185,6 +202,7 @@ export class PlayerRig {
       handGeometry(),
       new THREE.MeshStandardMaterial({ color: skin, roughness: 0.85, metalness: 0 }),
     );
+    this.armEnd = FOREARM_END;
     this.hand.visible = false;
     this.hand.raycast = NO_RAY;
     this.group.add(this.hand);
@@ -248,6 +266,11 @@ export class PlayerRig {
     // smoothstep, so the hand eases out of the frame rather than snapping to it
     const e = this.reach * this.reach * (3 - 2 * this.reach);
     this.hand.position.copy(_rest).lerp(_reach, e);
-    this.hand.quaternion.copy(this.camera.quaternion);
+    // Fingers (-z) point from the shoulder to the hand; Matrix4.lookAt puts +z
+    // on eye - target, so the shoulder is its eye. Up is the camera's, so the
+    // back of the hand stays up.
+    _shoulder.copy(SHOULDER).applyQuaternion(this.camera.quaternion).add(cam);
+    _aimArm.lookAt(_shoulder, this.hand.position, _up);
+    this.hand.quaternion.setFromRotationMatrix(_aimArm);
   }
 }

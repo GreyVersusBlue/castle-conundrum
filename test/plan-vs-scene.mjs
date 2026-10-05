@@ -574,6 +574,28 @@ try {
       rig.want = 1; rig.settle();
       at.returned = rig.hand.position.distanceTo(held);
 
+      /* Does it read as a hand on an arm? The forearm is the hand's own +z.
+       * Turned with the camera, it pointed back at the eye: the eye looked down
+       * its axis, its end cap covered the palm and the hand read as a rolling
+       * pin (looks/2026-10-04). So the angle between the forearm and the line
+       * back to the eye has to be wide enough to see the arm side on, and the
+       * arm's far end has to lie off the frame, so it is not a severed arm
+       * hanging in the middle of the view. The end is the rig's own number,
+       * and it is held to the geometry's box so the number cannot drift from
+       * the mesh it describes. */
+      cam.updateMatrixWorld();
+      const hm = rig.hand.matrixWorld;
+      const armAxis = new THREE.Vector3(0, 0, 1).transformDirection(hm);
+      const toEye = new THREE.Vector3().subVectors(cam.position, new THREE.Vector3().setFromMatrixPosition(hm)).normalize();
+      at.armToEyeDeg = THREE.MathUtils.radToDeg(Math.acos(Math.min(1, Math.max(-1, armAxis.dot(toEye)))));
+      if (!rig.hand.geometry.boundingBox) rig.hand.geometry.computeBoundingBox();
+      at.armEnd = rig.armEnd;
+      at.armEndBox = rig.hand.geometry.boundingBox.max.z;
+      const far = new THREE.Vector3(0, 0, rig.armEnd ?? NaN).applyMatrix4(hm);
+      at.armBehind = new THREE.Vector3().subVectors(far, cam.position).dot(ahead) <= 0;
+      const ndc = far.clone().project(cam);
+      at.armNdc = { x: ndc.x, y: ndc.y };
+
       // 3. The rays, each cast twice: the rig's own raycast, then THREE.Mesh's.
       const both = (object, from, dir, far) => {
         const ray = new THREE.Raycaster(from.clone(), dir.clone().normalize(), 0.02, far);
@@ -644,6 +666,13 @@ try {
     check(feel.at.fromEye <= 1.0 && feel.at.inFront > 0.3,
       'and it reaches from the player rather than flying to the door',
       `${feel.at.fromEye.toFixed(2)} m from the eye, ${feel.at.inFront.toFixed(2)} of the way in front of it`);
+    check(feel.at.armToEyeDeg >= 25,
+      'and its forearm runs along the arm, not straight back at the eye',
+      `${feel.at.armToEyeDeg.toFixed(1)} degrees between the forearm and the line to the eye, wants 25 or more`);
+    const armOff = feel.at.armBehind || Math.abs(feel.at.armNdc.x) > 1 || Math.abs(feel.at.armNdc.y) > 1;
+    check(Number.isFinite(feel.at.armEnd) && Math.abs(feel.at.armEnd - feel.at.armEndBox) < 0.005 && armOff,
+      'and the arm comes in from the edge of the frame rather than ending in the middle of it',
+      `arm end at hand z ${feel.at.armEnd} (mesh box ${feel.at.armEndBox.toFixed(3)}), projects to NDC (${feel.at.armNdc.x.toFixed(2)}, ${feel.at.armNdc.y.toFixed(2)})${feel.at.armBehind ? ', behind the camera' : ''}`);
     check(feel.riddleBack, 'and the beat leaves the riddle overlay open, the way it found it');
   }
 
