@@ -54,8 +54,8 @@ cannot trust a pass either.
 | Row | Model | Status |
 | --- | --- | --- |
 | **3 The GPU run** | Opus 5 | **Exit 0 reached** 2026-10-04, 217 ok, 0 failures, after 3a, 3b and 3c shipped (#1006 to #1012). What is left is the phone in the room (#530) and Devon's verdict on the quay stills (#900, #1009). |
-| **4 The retro castle**, past increment 1 | Opus 5 | Increment 1 shipped in a container, no GPU needed (#757 to #766). What is left is the look: the checklist is in `SPECS.md`. Increment 2 is superseded by 2h (#839). |
-| **11 Feel**, past its Node line | Sonnet 5 | The Node half shipped 2026-09-17 (#650 to #654): a shadow decal and a reaching hand, nine assertions in `plan-vs-scene.mjs`. What is left is whether either reads on a GPU. Gated on rank 3 (below). |
+| **4 The retro castle**, past increment 1 | Opus 5 | Increment 1 shipped in a container, no GPU needed (#757 to #766). The look was taken on 2026-10-04 under the curtain skin (#1013): five checklist lines pass, four wait on Devon's one call, the pixel look kept beside 2i's skin or the row retired into 2i. 2b's increment 3 waits on the same call, through "the props". Increment 2 is superseded by 2h (#839). |
+| **11 Feel**, past its Node line | Sonnet 5 | The Node half shipped 2026-09-17 (#650 to #654): a shadow decal and a reaching hand, nine assertions in `plan-vs-scene.mjs`. The GPU looked (#1014, #1015): the shadow reads on stone and grass, the hand now turns along the arm. Left: the stair disc (architect first, a flight's step count in the plan) and Devon's eye on the settled hand. Gate on rank 3 is met. |
 | **2c Blender: a shared rig with swappable parts**, the clips | Opus 5 | The eleven clips and the hen-wife beside a Quaternius body are a GPU look, the gate on increment 2 (#939, #53). Increment 1 is committed (#941). |
 | **2d Blender: the animals**, the clips | Opus 5 | Both increments are committed (#943, #945). The look is six kinds at 10 m and their clips on Windows; blocks nothing in `npm test` (#53). |
 
@@ -184,10 +184,12 @@ fix** (#886 to #891), the fifth confirmed 3a and 3b (#1007), and with 3c
 shipped `npm run play` exited 0 (#1010 to #1012). What is left of the row is
 the phone (#530) and a verdict on the quay stills.
 
-**One gate outside the band stands**: rank 3 before rank 11 ships past its
-Node acceptance. Rank 11's own spec says nothing in it goes past a `snap`
-and a sentence until the GPU run has happened. Every other gate this list
-carried has shipped and is retired: rank 4c's yard unlocked rank 9's town on
+**The one gate outside the band is now met**: rank 3 before rank 11 ships
+past its Node acceptance. Rank 3 reached exit 0 (#1010 to #1012) and the GPU
+looked at rank 11's shadow and hand (#1014, #1015); what is left of rank 11,
+the stair disc and Devon's eye on the settled hand, carries no further gate.
+Every other gate this list carried has shipped and is retired: rank 4c's
+yard unlocked rank 9's town on
 2026-09-19 (#703 to #707), and rank 9 is retired (#910); the two renders rank 3 and rank 5 once needed
 both arrived without waiting for `npm run play` to reach the end of its day
 (#634, #635, #656 to #658) — the lesson from both: name the render a row
