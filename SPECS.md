@@ -2687,8 +2687,11 @@ cue, and `test/plan-vs-scene.mjs` holds the two wires in `src/main.js`.
 Nothing plays before the start button (#697). The rest of the event sounds,
 the hammer and the sweep, still wait on rank 6's clips.
 
-**What is left is the listening**, and the checklist for it is at the end of
-this section.
+**The listening is done** (#974): Devon's verdict, GO with no changes asked
+for, recorded from the backlog audit's note of 2026-10-03; the checklist at the
+end of this section is kept as the record of what was asked. What is left is
+the hammer and the sweep, which wait on rank 6's clips, and recorded CC0 audio
+if one ever beats a synthesised sound.
 
 ### Scope
 
@@ -2751,7 +2754,9 @@ this section.
 
 ### Listening checklist
 
-Nobody has heard any of this (#53). `npm run play` on the dev machine, with
+Devon did this pass and answered GO (#974). It was not recorded item by item,
+so no box below is ticked and none is a claim about what he heard. As written
+for the pass: `npm run play` on the dev machine, with
 speakers or headphones, and `data/sounds.json` open beside it: every number
 below is tuned there and nowhere else. Write what was wrong, not that it was
 wrong, and put the answers in `HISTORY.md` against this row.

@@ -82,8 +82,8 @@ row, after 2h shipped as a realistic standalone Blender model (#962) (2i,
 #919 to #924, specced #963 to #968); the GPU run itself, now gated on nothing (rank 3, #780 to #782);
 the retro castle's look, its variety increment superseded by 2h (rank 4,
 #839); the rest of
-the fifty-person populace (rank 6); somebody with speakers to judge the
-soundscape (rank 7); the feel theme past
+the fifty-person populace (rank 6); the soundscape's hammer and sweep
+(rank 7, whose listening pass is done, #974); the feel theme past
 its shadow and hand (rank 11). A session never reuses a retired rank; Devon may, and did, here
 (#802). Rank 10 is retired, with 2c and 2d as its successors (#807). Ranks
 5, 8 and 12 stay retired numbers, not gaps: a rank is a priority, never an
@@ -169,8 +169,9 @@ finish the row.
   Haven and #541's could; #568's could not reach quaternius.com. No row needs
   it today, since rank 10 retired (#807), but sourcing CC0 stays allowed
   inside 2c and 2d if their sections say so.
-- **Local: audio.** Needs speakers and a person. Rank 7 only, and only for the
-  judgement — the assignment and the cross-fade are a container's.
+- **Local: audio.** Needs speakers and a person. No row needs it today: rank
+  7's listening pass is done (#974). A recorded CC0 clip that replaced a
+  synthesised sound would need it again, to judge the swap.
 
 **Gate.** What must have shipped before the row can start. **The list had
 four hard gates; three have shipped and are retired.** The lesson from the two
@@ -248,7 +249,7 @@ the placement editor, budget suite, move-and-delete and the dialogue format
 | 3 | The GPU run: the fourth sitting confirmed the sight fix on a GPU and walked the whole day and the second day (#886 to #891); exit 1, 6 failures, 3a (#916) and 3b (#917) shipped, one more GPU run owed; the quay look's stills taken (#900, `looks/2026-10-03/`), Devon's verdict owed; `renderer.info` recorded (#887); the phone (#530) untouched | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
 | 4 | The retro castle: increment 1 shipped, fifteen sets out and fifteen 128 px textures in (#757 to #766); the look is left; variety per room is superseded by 2h (#839); the props increment moved to 2b (#813) | 2+ | Opus 5 | Container to the look, local: GPU past it | — | B | | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
 | 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #729 to #733); four generated clips placed in the household's routines (#800), `drill` dropped (#915); the twelve's chatter pool placed and played by room and bell, 19 pairs after nine were recast and eight retired (#911, #925 to #938); left: the town's share of the fifty, the GPU look at playback (`npm run play`, #53, the looking list in #931) | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
-| 7 | Sound: somebody listens to the seven beds, the four rings and the first two event sounds (a bed at a point and the rings, #680 to #683; the door and the hound, #696 to #698) | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
+| 7 | Sound: the hammer and sweep event sounds, which wait on rank 6's activity clips; recorded CC0 audio only if a clip beats a synthesised sound (#548). The beds, the rings, the door and the hound were listened to and left as they are (#974) | 1 | Fable 5.1 | Container | rank 6's clips | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
 | 11 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 | Container to the Node line, local: GPU past it | **after 3** | D | shadow + hand shipped 2026-09-17 (#650 to #654) | [Feel](SPECS.md#feel) |
 
 **`ROADMAP.md` is these three columns turned into an order**: which row to
@@ -423,15 +424,15 @@ pattern (#680 to #683); and the two event sounds that need no clip, a door
 and the hound's bark, with `test/layout.mjs` checks 13 and 14 holding the
 wiring (#696 to #698).
 
-**What is left, in order.** Somebody with speakers listens (#53): every
-number in all three blocks is a guess and the file says so, and the three
-most likely wrong are 14 m of earshot through a stone wall, a tower roof
-heard from the hall under it, and the bark's formant. The listening
-checklist is in `SPECS.md` under this row. Hammer, sweep and the rest of the
-event sounds wait on rank 6's activity clips to sync to. Recorded CC0 audio
-is admitted since #548, named by `data/sounds.json` and run through
+**The listening is done** (#974): Devon's verdict, GO with no changes asked
+for, recorded on 2026-10-03 from the backlog audit's note. Nothing in
+`data/sounds.json` moved.
+
+**What is left, in order.** Hammer, sweep and the rest of the event sounds
+wait on rank 6's activity clips to sync to. Recorded CC0 audio is admitted
+since #548, named by `data/sounds.json` and run through
 `tools/encode-assets.mjs` like any asset (#506), and none has been looked
-for.
+for; nothing says it has to be.
 
 ## Feel
 

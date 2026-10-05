@@ -14852,6 +14852,19 @@ GPU; `test/play-castle.mjs` has one more `page.reload` with the default
 30 s, which was green here and in CI and was left alone. Found by the
 landing routine and fixed at Devon's asking.
 
+**#974. Rank 7's listening pass is closed on Devon's verdict: GO, no changes
+asked for (listener Devon, 2026-10-03).** The verdict is recorded from the
+backlog audit's note (CC-14), taken by the questions session on 2026-10-03;
+this entry does not say which checklist items he stepped through or what he
+heard, because the note does not. No number in `data/sounds.json` changed, and
+no code or audio. `BACKLOG.md` row 7 is rewritten, not deleted, to what is
+left: the hammer and sweep sounds, which wait on rank 6's activity clips, and
+recorded CC0 audio only if a clip beats a synthesised sound (#548). The
+"Local: audio" lane text, `ROADMAP.md`'s speakers table and `SPECS.md`'s
+"Sound: a soundscape" were reworded where they said the listening was owed;
+the listening checklist stays in `SPECS.md` unticked as the record of what was
+asked.
+
 **#1000. Reserved: #971 to #1000 are held for sessions on Huginn (the Selector loop); anyone else numbers from #1001.**
 
 **#1001. Devon's line on increment 1's still (#970), given 2026-10-03:
