@@ -246,10 +246,10 @@ the placement editor, budget suite, move-and-delete and the dialogue format
 | 2d | Blender: the animals: pig, goat, sheep, horse, cat and two geese on one quadruped topology plus a bird one for the goose, specced (#826 to #829); both increments shipped on huginn (#942 to #945): six files, seven animals placed (pig, goat, sheep, horse and cat on the quadruped topology, the goose on a 12-joint bird topology, two geese); left: the Windows GPU look, which blocks nothing (#53) | 1 | Opus 5 | Windows: GPU look (#53) | 2c increment 1 committed (#941); 1 shipped (#881) | F, C | | [Blender: the animals](SPECS.md#blender-the-animals) |
 | 2i | Castle in Blender, the integration row: the game takes the model as a skin and never reads `markers.json` (#919); specced (#963 to #968): one `assets/castle3d/skin.glb` cut from the master by stage (`curtain`, `buildings`, `town`, `land`), about 25 MB and 37.3 MB of texture memory against the master's 570 MB and 1,738.8 MB, trees decimated to 2,000 triangles, KTX2 through `assets:encode`; draw ceiling 1200 to 600, a new 500,000-triangle ceiling, texture 64 to 76 to 84 (#966); #499 and #506 stand (#967); six increments; increment 1, #922's open gate in the model, built (#970) and accepted (#1001); increment 2, the skin, built outside the repo (#1003); increment 3, stage curtain in the game, next | 2+ | Opus 5 | Local: Blender GPU (5.2, Devon's Windows machine only), plus `ktx`; judged local: GPU (#53) | 2h shipped (#962) | G | | [Castle in Blender: the integration row](SPECS.md#castle-in-blender-the-integration-row) |
 | 3 | The GPU run: **exit 0 reached** (#1010 to #1012): 217 ok, 0 failures, after 3a (#916), 3b (#917) and 3c (#1012) shipped and three suite bugs were fixed (#1006, #1010, #1011); left: the phone (#530), untouched, and Devon's verdict on the quay stills (#900, #1009); `renderer.info` recorded (#887) | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
-| 4 | The retro castle: increment 1 shipped, fifteen sets out and fifteen 128 px textures in (#757 to #766); the look is left; variety per room is superseded by 2h (#839); the props increment moved to 2b (#813) | 2+ | Opus 5 | Container to the look, local: GPU past it | — | B | | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
+| 4 | The retro castle: increment 1 shipped, fifteen sets out and fifteen 128 px textures in (#757 to #766); variety per room is superseded by 2h (#839); the props increment moved to 2b (#813); the GPU look done under the curtain skin (#1013): five checklist lines pass, and four wait on Devon, all one question: the pixel look beside 2i's photographed skin, kept, or the row retired into 2i ("one castle or two", "the eight tints", "the props", "the two knobs") | 2+ | Opus 5 | Devon's call; local: GPU if a knob moves | — | B | | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
 | 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #729 to #733); four generated clips placed in the household's routines (#800), `drill` dropped (#915); the twelve's chatter pool placed and played by room and bell, 19 pairs after nine were recast and eight retired (#911, #925 to #938); left: the town's share of the fifty, the GPU look at playback (`npm run play`, #53, the looking list in #931) | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: somebody listens to the seven beds, the four rings and the first two event sounds (a bed at a point and the rings, #680 to #683; the door and the hound, #696 to #698) | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
-| 11 | Feel: the three GPU looks answered (#1013): the blob reads on stone and on grass; the disc is buried in every flight, because a flight is a ramp in the plan and 8 steps on screen; the hand turned along the arm (#1014). Next: the stair disc (architect first: a flight's step count in the plan), then doors that open | 2+ | Sonnet 5 | Container to the Node line, local: GPU past it | **after 3: met** | D | shadow + hand shipped 2026-09-17 (#650 to #654) | [Feel](SPECS.md#feel) |
+| 11 | Feel: the three GPU looks answered (#1014): the blob reads on stone and on grass; the disc is buried in every flight, because a flight is a ramp in the plan and 8 steps on screen; the hand turned along the arm (#1015). Next: the stair disc (architect first: a flight's step count in the plan), then doors that open | 2+ | Sonnet 5 | Container to the Node line, local: GPU past it | **after 3: met** | D | shadow + hand shipped 2026-09-17 (#650 to #654) | [Feel](SPECS.md#feel) |
 
 **`ROADMAP.md` is these three columns turned into an order**: which row to
 take first, what each one unblocks, and which ones two sessions may hold at
@@ -369,7 +369,12 @@ into `test/budget.mjs`. Texture memory: **80.8 MB before, 37.9 MB after**.
 `npm test` fifteen of fifteen, `dist/` 52.8 to 28.9 MB. No `ktx`, network or
 GPU needed.
 
-**Then somebody looks** (#53), with the checklist in `SPECS.md`. The second
+**Somebody looked on 2026-10-04** (#1013), eighteen stills in
+`looks/2026-10-04/`, after 2i's curtain stage (#1005) had put photographed
+stone on the cross-wall, the drums and the hall. Five checklist lines pass;
+four wait on one call of Devon's: whether the pixel look is still wanted
+beside the skin, or the row retires into 2i, which deletes the fifteen
+textures when it swaps the last surface wearing one (#921). The second
 increment, a wall and a floor of its own in every named room, is superseded
 by 2h (#839): the game keeps these fifteen textures until the stage of 2i
 that swaps the last surface wearing one (#921), and forty more would be
@@ -452,7 +457,7 @@ most is that neither object answers a ray: the rig is a top-level scene child
 and `interaction.js` calls every one of those an occluder, so a disc under the
 player's feet would have stopped the prompt appearing and said nothing about it.
 
-**The three GPU looks, answered 2026-10-04 (#1013, #1014).** The blob shadow
+**The three GPU looks, answered 2026-10-04 (#1014, #1015).** The blob shadow
 reads on stone and on grass at the same bell: 94 to 100% of the disc visible,
 darkening the floor 20 to 27% in both terrains. The disc on a flight of
 stairs is a defect: a flight is a ramp in the plan but 8 steps on screen, so
@@ -460,7 +465,7 @@ the disc sits inside the stone on every tread, 0 to 40% visible going up and
 no better than 89% going down, and what shows going down is the disc hanging
 over the lower treads rather than lying on one. The hand read as a rolling
 pin, laid along the camera's own view axis 7.3 degrees off the line to the
-eye; turned to run along the arm instead (#1014), it now reads as an arm and
+eye; turned to run along the arm instead (#1015), it now reads as an arm and
 a hand, 31.5 degrees off that line and in frame end to end.
 
 **What is left, in order.**

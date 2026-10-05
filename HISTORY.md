@@ -15224,7 +15224,62 @@ builder.js`, `src/interaction.js`, `test/plan-vs-scene.mjs`,
 phone (#530), untouched, and Devon's verdict on the quay stills (#900,
 #1009).
 
+## The retro castle's look, under the curtain skin (2026-10-04)
+
+**#1013. Rank 4's looking checklist, read off eighteen GPU stills: five
+lines pass, four go to Devon, nothing fixed, and the row stays open.**
+Session CC-16, DEVON-DESKTOP, headed Chrome at 1600 x 900, off `main` at
+`d3493be` (after #118 and #119). The stills are in `looks/2026-10-04/`,
+named `r4-<line>-...`, with `r4-shots.log` beside them giving each one's
+eye, target, pitch, sky, and a census of the meshes in its frustum: how
+many wear each `assets/pixel/` texture, how many are skin, how many are
+neither. The eyes are #900's, so a still compares with `looks/2026-10-03/`
+one for one. The camera is pinned the way `tools/shot-yard.mjs` pins it and
+the sky set through `window.__quest._onWatch(sky, { walk: false, sky })`;
+the script stayed in the session's scratchpad. Every shot is day 0, HUD up.
+
+**What changed between the two days is the subject.** 2i's increment 3
+(#1005) put the curtain stage of `assets/castle3d/skin.glb` in the game the
+same day as #900's stills, after them: 117 skin nodes now draw in place of
+152 built pieces (`test/budget.mjs`), the eight drums are `DRUM_*` nodes,
+and the cross-wall, the mason's lodge's walls and the Great Hall's walls
+wear the skin's photographic stone and brick. `r4-3` against yesterday's
+`r4-3` is the whole of it: the pixel brick at 1 m is photographed stone
+today. The fifteen pixel textures are left on floors, the buildings' own
+slate (the Great Hall's north face, the Clerk of Works' office), posts and
+pillars: 117 visible meshes against the skin's 132, by the probe.
+
+| Line | Verdict | Still | What the still shows |
+| --- | --- | --- | --- |
+| One castle or two | **Devon** | `r4-1-one-castle-nw-roof-east`, `-se`, `r4-3-grazing-one-metre` | Two castles, but a different two: the kit seam #630 asked about is gone under the skin's merlons, and the seam now is the skin's photographed stone, linear-filtered and soft at 1 m, beside pixel posts, floors and a flagpole drawn NEAREST. |
+| The shadowed faces | **Pass** | `r4-2-shadowed-cross-wall-west-face`, `r4-2-shadowed-hall-north-wall` | No hole. The cross-wall's west face is skin now, warm and lit, mean luma 58.8 over the wall. The hall's north face is still pixel slate, mean luma 17.5 with 8.1% under 8 (the drawn mortar), unchanged from #900; every course reads. Darker than the 27 #438 measured as "reads as slate", which is line 9's question. |
+| A metre at a grazing angle | **Pass** | `r4-3-grazing-one-metre`, `r4-4-sky-terce` | The cobbles at a grazing angle are blocks, not a smear, and the slate runs at 20 m read as courses with no moire. The wall at 1 m is skin now and is not this row's. |
+| The four skies and Lauds | **Pass** | `r4-4-sky-prime`, `-terce`, `-sext`, `-vespers`, `-lauds` | Five skies. Mean floor colour 51/76/89/39/35 green and sky 165/148/156/95/124 green, Prime to Lauds; Vespers is warm and violet, Lauds grey and fogged. Terce and Sext are the closest pair, 13 apart on the floor. |
+| The eight tints | **Devon** | `r4-1-...-se`, `r4-5-eight-tints-nw-roof`, `r4-5-eight-tints-prison-roof` | Superseded in the frame: the drums are skin, two families (grey stone west, red brick and a cone east), not eight tints over pixel stone. Whether two is enough is 2i's and Devon's. #900's chapel-roof eye is replaced by the Prison Tower's roof: the chapel tower has no roof room, its top 2 m is a turret (plan box to 14 m), and that eye is inside the skin's drum. |
+| Under foot | **Pass** | `r4-6-floor-ward-cobbles`, `-hall-tiles`, `-walk-decking`, `-tower-boards` | The ward's cobbles and the hall's flags read as their rooms. The walk's decking and the North-west Tower's boards are the skin's planks now, photographed, with pixel decking beside the walk on the left: line 1's seam again, not a floor that reads wrong. |
+| The props | **Devon** | `r4-7-cabinet-in-pixel-hall` | `GothicCabinet_01` now sits among the skin's photographed hall walls and looks at home against them; against the pixel flags and the pixel pillar beside it, it is line 1. Whether 2b's increment 3 (#813) is still wanted depends on line 1. |
+| The number | **Pass** | none | `renderer.info.memory` off the live page: 552 textures and 507 geometries, read through `scene.onBeforeRender` because three 0.169 defines `render` per instance and a prototype patch catches nothing. `test/budget.mjs`: 198 images, 58.6 MB, 5.4 under 64. They count different things, as #900 said: three counts texture objects with clones, the suite counts images. |
+| The two knobs | **Devon** | `r4-9-two-knobs-ward-noon`, `r4-2-shadowed-hall-north-wall` | `toneMappingExposure` 1.0 and the hemisphere at 2.0, read off the page. Nothing in eighteen stills is clipped white; the pixel slate at Sext in the Clerk of Works' office is navy and legible. No change is proposed, and a knob turned now would be tuned against surfaces 2i is about to replace. |
+
+**Nothing was fixed.** No still showed a defect in lane B whose cause a test
+could be written for first (#34). Two things seen that are not this row's
+and not filed: the skin's merlons on the tower roofs are soft and swim at
+1 m (`r4-1`, `r4-5-...-prison-roof`), which is 2i's texel density; and the
+doubled article #900 found on readables is gone from the lodge's prompt
+("Press E to read the lodge's ordinances", `r4-2-...-west-face`).
+
+**Why the row stays open.** Lines 1, 5, 7 and 9 are one question: #742 made
+the castle pixel art, and #839 and 2i's curtain stage made its walls
+photographs, and today the game shows both in one frame. #921 says the
+fifteen textures go when 2i swaps the last surface wearing one, so this
+row ends by itself if 2i runs to `land`. Whether the pixel look is still
+wanted beside the skin, or the row should be retired into 2i now, is
+Devon's call, asked in the PR.
+
 ## Feel: the three GPU looks, and the hand turned along the arm (2026-10-04)
+
+Written as #1013 and #1014 and moved to #1014 and #1015 at merge time:
+CC-16 took #1013 for rank 4's look and merged first (PR #120).
 
 Session CC-13, DEVON-DESKTOP (RTX 3070 Ti), headed Chrome 1600 x 900, Claude
 Opus 5.5 as lead. Stills in `looks/2026-10-04/before/` (origin/main at
@@ -15237,7 +15292,7 @@ change over 6/255). `shots.log` in each folder has every number. The
 stills are JPEG at quality 90, 6.9 MB for the 34, where the PNGs were 39 MB;
 the measurement reads the lossless frames and never the JPEG.
 
-**#1013. The three looks, answered.**
+**#1014. The three looks, answered.**
 
 - Look 1, the blob on stone and on grass at the same bell: GOOD. Terce,
   straight down (pitch -1.35): stone inner ward 98% of the disc visible,
@@ -15271,7 +15326,7 @@ the measurement reads the lossless frames and never the JPEG.
   body's feet if they overlap). Also recorded: at kitchen-tower-stair-2 62%
   the eye (8.12) is above the level-2 floor top (8.0) and the frame is the
   inside of the slab; a walking question, found not filed.
-- Look 3, the hand at the word-lock: DEFECT, fixed under #1014. Before
+- Look 3, the hand at the word-lock: DEFECT, fixed under #1015. Before
   (stills before/c2, c3, c5): the hand reads as a rolling pin, an 8-sided
   end cap with a stub of finger past it. Cause:
   `this.hand.quaternion.copy(this.camera.quaternion)` laid the 0.20 m
@@ -15279,7 +15334,7 @@ the measurement reads the lossless frames and never the JPEG.
   settled reach, so the eye looked down the forearm, and the forearm ended
   mid-frame (NDC 0.14, -0.17).
 
-**#1014. The hand turned along the arm** (`src/player-rig.js`, builder). The
+**#1015. The hand turned along the arm** (`src/player-rig.js`, builder). The
 fingers point from a shoulder at camera-space (0.24, -0.42, 0.08) to the
 hand, up taken from the camera, `Matrix4.lookAt` on module scratch, no
 allocation per frame. The forearm is 0.56 m (hand z 0.02 to 0.58, far radius
@@ -15308,4 +15363,4 @@ past the wrist. That last read is "needs Devon's eye": whether the settled
 hand wants its palm turned toward the leaf. npm test 15 suites green, npm run
 build ok (the lead will re-run before the PR).
 
-Next free number: #1015.
+Next free number: #1016.
