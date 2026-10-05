@@ -1,0 +1,409 @@
+{
+ "started": "2026-10-05T00:34:34.245Z",
+ "segments": [
+  {
+   "id": "great-hall-vespers-2",
+   "cell": {
+    "x": -27.25,
+    "z": 11.75,
+    "h": 0,
+    "d": 5.03270553479935
+   },
+   "pairs": {
+    "outer-sext-3": {
+     "at": 41.171
+    },
+    "outer-vespers-1": {
+     "at": 59.647
+    },
+    "outer-vespers-2": {
+     "at": 76.174
+    },
+    "outer-vespers-3": {
+     "at": 92.09
+    },
+    "outer-prime-1": {
+     "at": 110.571
+    },
+    "outer-terce-4": {
+     "at": 126.832
+    },
+    "outer-sext-2": {
+     "at": 145.021
+    },
+    "outer-prime-3": {
+     "at": 161.272
+    },
+    "outer-cell-1": {
+     "at": 179.717
+    }
+   },
+   "seconds": 193.962,
+   "band": [
+    {
+     "t": 0.39,
+     "hidden": false,
+     "name": "Dafydd ap Rhys",
+     "line": "[Dafydd is got up onto the bench end, and the benches take up the time with their cups]",
+     "playing": "song-vespers-hall",
+     "room": "Great Hall",
+     "watch": "vespers"
+    },
+    {
+     "t": 5.53,
+     "hidden": false,
+     "name": "Dafydd ap Rhys",
+     "line": "Forty Michaelmas, and the roof not on, and the King that began it dead and gone;",
+     "playing": "song-vespers-hall",
+     "room": "Great Hall",
+     "watch": "vespers"
+    },
+    {
+     "t": 10.35,
+     "hidden": false,
+     "name": "Dafydd ap Rhys",
+     "line": "six for the curtain and ten for the towers, and the rest of it built in the King's spare hours!",
+     "playing": "song-vespers-hall",
+     "room": "Great Hall",
+     "watch": "vespers"
+    },
+    {
+     "t": 15.84,
+     "hidden": false,
+     "name": "Dafydd ap Rhys",
+     "line": "Eight men watching where eighty stood, and three months' wages made good in wood!",
+     "playing": "song-vespers-hall",
+     "room": "Great Hall",
+     "watch": "vespers"
+    },
+    {
+     "t": 20.71,
+     "hidden": false,
+     "name": "Dafydd ap Rhys",
+     "line": "[the high table laughs half a beat late; the Constable's cup goes down an inch and comes back up]",
+     "playing": "song-vespers-hall",
+     "room": "Great Hall",
+     "watch": "vespers"
+    },
+    {
+     "t": 26.29,
+     "hidden": false,
+     "name": "Dafydd ap Rhys",
+     "line": "There is a verse about a writ, and a verse about a river. Those two I do not sing in the King's tongue.",
+     "playing": "song-vespers-hall",
+     "room": "Great Hall",
+     "watch": "vespers"
+    },
+    {
+     "t": 32.16,
+     "hidden": false,
+     "name": "Dafydd ap Rhys",
+     "line": "[he sings them anyway, and the benches have every word of them, and the high table has none]",
+     "playing": "song-vespers-hall",
+     "room": "Great Hall",
+     "watch": "vespers"
+    },
+    {
+     "t": 37.52,
+     "hidden": true,
+     "name": "",
+     "line": "",
+     "playing": null,
+     "room": "Great Hall",
+     "watch": "vespers"
+    },
+    {
+     "t": 41.53,
+     "hidden": false,
+     "name": "Dafydd",
+     "line": "My grandfather stood on the other bank of this river against the old King for nine years, Master Robert, and was sworn at the end of it, and kept his word and his opinions both. I stand the King's watch and I have the opinions.",
+     "playing": "outer-sext-3",
+     "room": "Great Hall",
+     "watch": "vespers"
+    },
+    {
+     "t": 48.75,
+     "hidden": false,
+     "name": "Master Robert",
+     "line": "And the song, I suppose. I have sat at the high table and heard the garrison sing it every Michaelmas I have kept the works, and never been told a word of what it says.",
+     "playing": "outer-sext-3",
+     "room": "Great Hall",
+     "watch": "vespers"
+    },
+    {
+     "t": 55.97,
+     "hidden": true,
+     "name": "",
+     "line": "",
+     "playing": null,
+     "room": "Great Hall",
+     "watch": "vespers"
+    },
+    {
+     "t": 59.99,
+     "hidden": false,
+     "name": "Dafydd",
+     "line": "Not one man of the watch will draw from the south-west well after dark. Not one, and every one of them a different reason why.",
+     "playing": "outer-vespers-1",
+     "room": "Great Hall",
+     "watch": "vespers"
+    },
+    {
+     "t": 66.87,
+     "hidden": false,
+     "name": "Marged",
+     "line": "The water tastes the same to me at any hour, and I am the one who has actually tried it after dark.",
+     "playing": "outer-vespers-1",
+     "room": "Great Hall",
+     "watch": "vespers"
+    },
+    {
+     "t": 72.54,
+     "hidden": true,
+     "name": "",
+     "line": "",
+     "playing": null,
+     "room": "Great Hall",
+     "watch": "vespers"
+    },
+    {
+     "t": 76.56,
+     "hidden": false,
+     "name": "Nest",
+     "line": "The inner ward eats first, warms first and is paid first, Master Robert, whatever the works go without.",
+     "playing": "outer-vespers-2",
+     "room": "Great Hall",
+     "watch": "vespers"
+    },
+    {
+     "t": 82.42,
+     "hidden": false,
+     "name": "Master Robert",
+     "line": "The inner ward would say the same of you and mean the opposite. That is the whole of what a wall is for.",
+     "playing": "outer-vespers-2",
+     "room": "Great Hall",
+     "watch": "vespers"
+    },
+    {
+     "t": 88.32,
+     "hidden": true,
+     "name": "",
+     "line": "",
+     "playing": null,
+     "room": "Great Hall",
+     "watch": "vespers"
+    },
+    {
+     "t": 92.33,
+     "hidden": false,
+     "name": "Marged",
+     "line": "Michaelmas day the town has this whole ward by charter, Prime to Vespers, stalls from the lodge to the hall, and the garrison stands on the walk and watches its own yard fill up with the people it keeps out the rest of the year.",
+     "playing": "outer-vespers-3",
+     "room": "Great Hall",
+     "watch": "vespers"
+    },
+    {
+     "t": 99.55,
+     "hidden": false,
+     "name": "Nest",
+     "line": "And for one day the only tongue in the outer ward is our own, and the inner ward stands at its gate and does not understand a word, and that is the best of it.",
+     "playing": "outer-vespers-3",
+     "room": "Great Hall",
+     "watch": "vespers"
+    },
+    {
+     "t": 106.77,
+     "hidden": true,
+     "name": "",
+     "line": "",
+     "playing": null,
+     "room": "Great Hall",
+     "watch": "vespers"
+    },
+    {
+     "t": 110.79,
+     "hidden": false,
+     "name": "Marged",
+     "line": "That cousin of yours reads a frost off a cat's back better than any almanac I ever paid for.",
+     "playing": "outer-prime-1",
+     "room": "Great Hall",
+     "watch": "vespers"
+    },
+    {
+     "t": 116.15,
+     "hidden": false,
+     "name": "Nest",
+     "line": "She is no cousin of mine past what the roll says, and I never said the charm was worth the penny. I never said it wasn't, either.",
+     "playing": "outer-prime-1",
+     "room": "Great Hall",
+     "watch": "vespers"
+    },
+    {
+     "t": 123.17,
+     "hidden": true,
+     "name": "",
+     "line": "",
+     "playing": null,
+     "room": "Great Hall",
+     "watch": "vespers"
+    },
+    {
+     "t": 127.18,
+     "hidden": false,
+     "name": "Marged",
+     "line": "Nest says the well tastes of rock and she draws from it every day of her life. That is the whole of what I know about the well.",
+     "playing": "outer-terce-4",
+     "room": "Great Hall",
+     "watch": "vespers"
+    },
+    {
+     "t": 134.11,
+     "hidden": false,
+     "name": "Dafydd",
+     "line": "They say it goes down to the river and the tide comes up in it, and a man with a boat and a sack could poison the castle from the quay. Nobody who says it has lowered a light.",
+     "playing": "outer-terce-4",
+     "room": "Great Hall",
+     "watch": "vespers"
+    },
+    {
+     "t": 141.33,
+     "hidden": true,
+     "name": "",
+     "line": "",
+     "playing": null,
+     "room": "Great Hall",
+     "watch": "vespers"
+    },
+    {
+     "t": 145.34,
+     "hidden": false,
+     "name": "Dafydd",
+     "line": "My grandfather swore the chapel bell was a shrine bell off the March once, melted down so no native hand would ring it.",
+     "playing": "outer-sext-2",
+     "room": "Great Hall",
+     "watch": "vespers"
+    },
+    {
+     "t": 151.92,
+     "hidden": false,
+     "name": "Marged",
+     "line": "Your grandfather swore a great many things, Dafydd ap Rhys, and I never saw him show me the shrine.",
+     "playing": "outer-sext-2",
+     "room": "Great Hall",
+     "watch": "vespers"
+    },
+    {
+     "t": 157.59,
+     "hidden": true,
+     "name": "",
+     "line": "",
+     "playing": null,
+     "room": "Great Hall",
+     "watch": "vespers"
+    },
+    {
+     "t": 161.61,
+     "hidden": false,
+     "name": "Dafydd",
+     "line": "There is a cross cut in the stone for every man who died building this place. Count them and you have the priest's roll without the Latin.",
+     "playing": "outer-prime-3",
+     "room": "Great Hall",
+     "watch": "vespers"
+    },
+    {
+     "t": 168.82,
+     "hidden": false,
+     "name": "Master Robert",
+     "line": "A cross goes at the springing of an arch, Dafydd, and it means the arch. The watch has counted them twice and got two numbers, and neither of them was the roll.",
+     "playing": "outer-prime-3",
+     "room": "Great Hall",
+     "watch": "vespers"
+    },
+    {
+     "t": 176.04,
+     "hidden": true,
+     "name": "",
+     "line": "",
+     "playing": null,
+     "room": "Great Hall",
+     "watch": "vespers"
+    },
+    {
+     "t": 180.05,
+     "hidden": false,
+     "name": "Marged",
+     "line": "Madoc tells whoever stands at his bars that something moves under the Prison Tower's floor at night. Slow. A drag, then a stop, same as it has since before they put him in to hear it.",
+     "playing": "outer-cell-1",
+     "room": "Great Hall",
+     "watch": "vespers"
+    },
+    {
+     "t": 187.27,
+     "hidden": false,
+     "name": "Nest",
+     "line": "He has said that every day this week, Marged, and I have believed him every day this week, and neither of those has got him out.",
+     "playing": "outer-cell-1",
+     "room": "Great Hall",
+     "watch": "vespers"
+    },
+    {
+     "t": 194.25,
+     "hidden": true,
+     "name": "",
+     "line": "",
+     "playing": null,
+     "room": "Great Hall",
+     "watch": "vespers"
+    }
+   ]
+  }
+ ],
+ "costs": [],
+ "stills": [
+  "931-1-hall-vespers-00-song",
+  "931-1-hall-vespers-01-outer-sext-3",
+  "931-1-hall-vespers-02-outer-vespers-1",
+  "931-1-hall-vespers-03-outer-vespers-2",
+  "931-1-hall-vespers-04-outer-vespers-3",
+  "931-1-hall-vespers-05-outer-prime-1",
+  "931-1-hall-vespers-06-outer-terce-4",
+  "931-1-hall-vespers-07-outer-sext-2",
+  "931-1-hall-vespers-08-outer-prime-3",
+  "931-1-hall-vespers-09-outer-cell-1"
+ ],
+ "notes": [],
+ "spots": {
+  "outerEast": {
+   "x": -0.25,
+   "z": -0.25,
+   "h": 0
+  },
+  "innerMid": {
+   "x": 13.25,
+   "z": 0.75,
+   "h": 0
+  }
+ },
+ "hallCam": {
+  "cell": {
+   "x": -27.25,
+   "z": 11.75,
+   "h": 0,
+   "d": 5.03270553479935
+  },
+  "cen": {
+   "x": -22.375,
+   "y": 1.3,
+   "z": 10.5
+  },
+  "rooms": {
+   "sentry": "great-hall",
+   "clerk": "great-hall",
+   "cook": "great-hall",
+   "laundress": "great-hall"
+  }
+ },
+ "errors": [],
+ "blocked": [],
+ "ended": "2026-10-05T00:37:55.694Z"
+}
