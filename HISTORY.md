@@ -15364,3 +15364,149 @@ hand wants its palm turned toward the leaf. npm test 15 suites green, npm run
 build ok (the lead will re-run before the PR).
 
 Next free number: #1016.
+
+---
+
+## Rank 6: the GPU look at chatter playback, and `renderer.info` with the populace in (2026-10-04)
+
+Session CC-06, on Devon's Windows machine, worktree `castle-conundrum-cc06`
+at `d3493be`. Class F: a look and a measurement, nothing built. No file
+under `src/`, `data/` or `test/` changed. Three passes of a hand-run headed
+script (Playwright's Chrome, 1200 x 800, dpr 1, ANGLE on an NVIDIA GeForce
+RTX 3070 Ti, Direct3D 11), which stands the camera with `window.__cam` and
+`__player.settle()`, rings with `__quest.handleBell()`, logs every change of
+`#caption` with its time, and reads `renderer.info` through the scene's own
+`onBeforeRender`/`onAfterRender` hooks, as `test/play-castle.mjs`'s `cost`
+does. The 22 stills and the three logs (`cc06-look-pass1.json` to
+`pass3.json`) are in `looks/2026-10-04/`, each still named for the item it
+answers. The script itself was not committed: it was scratch, and the logs
+carry every number below. One GPU and three sessions: the window was opened
+only with no other headed game window up, and closed after each pass.
+
+**#1016. The looking list of #931 and #934, judged.**
+
+| Item | Verdict | What was seen |
+| --- | --- | --- |
+| 1. The hall at Vespers, end to end | **Fail, cause #1017**, on its first 41 s; the nine pairs pass | Bell to dark 194.0 s and 194.1 s in two runs, against #934's 193.3. Gaps 4.02 s. Order as #935. At every pair's first line both speakers stood in `great-hall` within 0.16 m of their stations. But the song starts at the bell, captioned "the benches take up the time with their cups", to an empty hall (`931-1-hall-vespers-00-song.png`): Dafydd's walk from his Sext station is 44.0 m, 40.0 s at 1.1 m/s, and the song is 37.0 s. |
+| 1b. Whether 3 min 14 s of supper is too much | **Needs Devon's eye** | Nine pairs, 18 lines. The fallback (#934, `outer-prime-3` to the outer ward at Terce) was not taken. |
+| 2. Both speakers in the King's Hall when `inner-sext-1` is captioned after the Sext bell | **Fail, cause #1017** | Twice: the first line at 4.0 s with Piers Marrable in `steward-chamber`, 16.4 m from his station (`931-2-kings-hall-sext-first-line-inner-sext-1.png`). He reached the hall at 21.5 s (`...-steward-arrived.png`), as the second pair began. The whole first pair is said by a man in the next room. |
+| 3. `outer-terce-1` from the east end of the outer ward | **Fail, cause #1017**; the reach **needs Devon's eye** | The first line at 4.1 s with Master Robert still in `clerk-office`, 4.1 m from his station; his walk is 9.5 m, 8.6 s. From the east end both speakers are 29.6 and 30.2 m off, small figures through the gate arch (`931-3-...`). That is #928's accepted coarseness, seen. |
+| 4. The band going dark on the hall's threshold | **Pass** | Stepped out cell by cell at 0.5 m: the band went dark on the same cell, (-20.75, 5.75), as the HUD changed to "Outer ward", for the song (#926, watched on a page for the first time) and for a pair. Walking back in started the next unheard pair at once (#929). |
+| 5a. The band over the dialogue panel | **Pass** on layout; **needs Devon's eye** on the voice | The band is at y 104 to 172 and the panel at y 623 to 768: no overlap, both read. But it puts Father Anselm in two conversations at once, the caption's with Sir Roger and the panel's with the player (`931-5-band-over-dialogue-...`). |
+| 5b. The band over the journal | **Needs Devon's eye** | The journal (z 50) covers the band (z 15) with its scrim. The band stays dimly legible and keeps running, so a pair's lines go by unread while the journal is open (`931-5-band-over-journal-...`). Pausing the band under the journal is the obvious change. Leaving it as it is costs nothing, because `_heard` is per page. |
+| #934. The chapel at Prime, four pairs, the same two men | **Pass** on timing; **needs Devon's eye** on the sameness | 64.3 s from the first line to dark, against 64.0. Both men at their stations, 1.5 and 4.5 m from the camera. |
+| #934. The King's Hall walked into after the bell | **Pass** on timing | 63.7 s from the first line to dark, against 63.5. |
+
+**#1017. A bell starts a piece before its speakers have walked to it, at three
+of the four places. Filed, not fixed.** What is wrong: #925 follows a bell
+with `CHATTER_GAP_MS`, 4000 ms, and #592 starts a performance on the bell
+itself. #928 consults no body, on the grounds that #912 proves the schedule
+puts both speakers in the room. It does at the bell's *station*, not at the
+moment the band lights, because the twelve walk there (`src/main.js`'s
+`onWatch`, `walk: true`). Walk times, by `castleNav().route` from the last
+bell's station at 1.1 m/s, against what covers them:
+
+| Place | Slowest speaker | Walk | Covered by |
+| --- | --- | --- | --- |
+| `kings-hall`/sext | steward | 28.0 m, 25.5 s | 4.0 s: no |
+| `great-hall`/vespers, the song | sentry | 44.0 m, 40.0 s | 0 s: no |
+| `great-hall`/vespers, the first pair | sentry | 44.0 m, 40.0 s | 37.0 + 4.0 s: yes, by 1 s |
+| `outer-ward`/terce | clerk | 9.5 m, 8.6 s | 4.0 s: no |
+| `chapel`/prime | nobody walks | 0 | yes |
+
+Walking into the hall within 40 s of Vespers shows the same thing from the
+other door (`931-4-threshold-c-...`, Dafydd captioned 6 s after the bell).
+**Why not tonight**: the fix amends #925's gap and #592's start, and either
+fix moves #928's "no body is consulted". That is class O, not a small look
+fix. **Recommendation for that increment**: a placed pair or a performance
+is not started before `walkMs` has passed since the bell, where `walkMs` is
+the longest of its speakers' routes from the last bell's station to this
+one, divided by their speed, worked out once from `castleNav` and the
+schedule. The 4000 ms gap follows as before. This reads data and no body,
+so #928 holds in spirit, and it is provable in Node in `test/quest.mjs`
+(#529). Walking in after `walkMs` is unchanged. The numbers it would give
+today are the table's: 25.5, 40.0 and 8.6 s.
+
+**#1018. `renderer.info` on the GPU with the populace in, and the town's share:
+none by the ceilings as written, six by the measurement, and only after 2c's
+increment 2.** Read with all 41 bodies built (445 skinned meshes), 37 to 39
+visible by bell. Each ward's number is the worst of four quarter-turns from
+one open-ground cell, 90 frames each. Draw calls and triangles are the whole
+frame, the shadow pass included.
+
+| Where | Bell | Draw calls | Triangles | Skinned draws, main + shadow | Bodies drawn | Frame ms p50 / p95 |
+| --- | --- | --- | --- | --- | --- | --- |
+| outer ward | prime | 425 | 198,551 | 154 + 339 | 14 | 14.6 / 20.6 |
+| inner ward | prime | 704 | 316,271 | 169 + 339 | 22 | 14.3 / 20.3 |
+| chapel | prime | 992 | 435,251 | 326 + 339 | 36 | 16.1 / 24.3 |
+| outer ward | terce | 440 | 211,947 | 172 + 362 | 16 | 17.5 / 21.5 |
+| inner ward | terce | 758 | 350,701 | 219 + 362 | 26 | 14.7 / 22.8 |
+| outer ward | sext | 435 | 203,831 | 171 + 351 | 16 | 21.5 / 29.3 |
+| inner ward | sext | 723 | 329,287 | 188 + 351 | 25 | 21.3 / 27.1 |
+| great hall, pair 1 | vespers | 395 | 203,224 | 64 + 339 | 13 | 14.1 / 20.2 |
+| outer ward | vespers | 399 | 261,537 | 151 + 339 | 18 | 13.0 / 16.5 |
+| inner ward | vespers | 728 | 337,423 | 194 + 339 | 24 | 14.6 / 21.4 |
+
+The Sext frame times are about 6 ms over every other bell's, in views with as
+few as 24 skinned draws, so they read as load from another session's run on
+the same machine and not as the castle. They are left out of the arithmetic.
+Draw calls and triangles do not depend on load.
+
+**What the table says that the budget did not.** (1) The shadow pass skins
+every visible body's every primitive on every frame, wherever the player
+stands: 339 to 362 shadow draws in every row, against `test/budget.mjs`'s
+386 for all 41 built. The sun's shadow camera is a fixed 80 m square
+(`src/scene-setup.js`), and the castle is inside it. So a body costs the same
+in either ward, and a per-ward body ceiling is not what bounds the frame;
+the total of visible bodies is. (2) Live draw calls run 1.5 to 2 times the
+suite's per-ward mesh count (474 and 379 against `MAX_DRAW_CALLS_PER_WARD`
+600), because the shadow pass draws again and there is no occlusion culling:
+the chapel's 992 is a camera seeing 36 bodies through the walls. The 600 is
+a count of meshes and stays a count of meshes. This is a note, not a
+ceiling change.
+
+**The cost of one body, measured by taking bodies away.** Same view, 240
+frames each, hiding `group.visible` and putting it back. GPU time is from
+`EXT_disjoint_timer_query_webgl2` over `renderer.render`, which the driver
+has.
+
+| View | All 37 | Populace hidden (25 visible) | All hidden | Per body, frame | Per body, GPU |
+| --- | --- | --- | --- | --- | --- |
+| great hall at Vespers, wide | 12.4 and 13.3 ms; GPU 8.5 and 9.1 | 9.5; GPU 5.2 | 7.5; GPU 3.2 | 0.145 ms | 0.150 ms |
+| inner ward at Vespers, facing west | 15.9 and 15.3 ms; GPU 10.8 and 10.4 | 12.8; GPU 7.6 | 9.1; GPU 4.7 | 0.176 ms | 0.160 ms |
+
+A hidden body's `AnimationMixer` still ticks, so these are a floor on what a
+body costs, not the whole of it. **The arithmetic.** By the ceilings as
+written: `MAX_SKINNED_TOTAL` 41, built 41, so **0**. The outer ward peaks at
+24 of `MAX_SKINNED_PER_WARD` 24 at `terce-eve`, so **0** in any ward that can
+see the town, and the inner ward's 6 is not where the town is.
+`MAX_SKINNED_DRAWS_TOTAL` 394, 386 drawn, 8 left, which are the hen-wife's
+(#940): no Quaternius human at 12 to 15 draws, one shared-rig person at five
+at most. By the measurement: the heaviest view, the inner ward facing west,
+has a median frame of 15.6 ms. A 60 Hz frame is 16.7 ms, so 1.1 ms is left,
+and 1.1 / 0.176 is **6 bodies** before that view's median crosses it, on
+this card at this size. Its p95, 19.2 to 21.1 ms, is already over 16.7, and
+the phone (#530) has never been measured.
+
+**Recommendation for the town's share, written into the rank 6 row.** Do not
+add the town's people on the Quaternius bodies. Order: 2c's increment 2
+first, which moves the 15 populace humans onto the shared rig at five draws
+at most against 12 to 15 (#825), and should free the largest single share of
+the skinned draws. Then run this same measurement again: the take-away of
+bodies in the two views above, 240 frames each. Set the town's number from
+that. Until then the town's share is **6 bodies at most**, argued in
+HISTORY.md as 41 to 47 beside its draws. Each body goes on the shared rig.
+Each stands outside the sun's 80 m shadow square with `castShadow` off, so it
+pays the main pass only when it is on screen. That last point is a reading
+of `src/scene-setup.js`, not a measurement. Nothing was raised tonight:
+`MAX_SKINNED_TOTAL`, the per-ward ceilings and the draw ceilings are
+untouched. Rows 2c and 2d hold that argument (lane C), and it is the next
+increment.
+
+**Not verified.** The phone. A frame time on an idle machine: other sessions
+ran suites during every pass, and the Sext rows show it. Whether a town body
+really falls outside the shadow square: no town body exists to put there.
+`npm run play` itself was not run; this session's script drove the same
+page with the same hooks and did not walk the day.
+
+Next free number: #1019.
