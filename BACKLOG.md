@@ -247,7 +247,7 @@ the placement editor, budget suite, move-and-delete and the dialogue format
 | 2i | Castle in Blender, the integration row: the game takes the model as a skin and never reads `markers.json` (#919); specced (#963 to #968): one `assets/castle3d/skin.glb` cut from the master by stage (`curtain`, `buildings`, `town`, `land`), about 25 MB and 37.3 MB of texture memory against the master's 570 MB and 1,738.8 MB, trees decimated to 2,000 triangles, KTX2 through `assets:encode`; draw ceiling 1200 to 600, a new 500,000-triangle ceiling, texture 64 to 76 to 84 (#966); #499 and #506 stand (#967); six increments; increment 1, #922's open gate in the model, built (#970) and accepted (#1001); increment 2, the skin, built outside the repo (#1003); increment 3, stage curtain in the game, next | 2+ | Opus 5 | Local: Blender GPU (5.2, Devon's Windows machine only), plus `ktx`; judged local: GPU (#53) | 2h shipped (#962) | G | | [Castle in Blender: the integration row](SPECS.md#castle-in-blender-the-integration-row) |
 | 3 | The GPU run: **exit 0 reached** (#1010 to #1012): 217 ok, 0 failures, after 3a (#916), 3b (#917) and 3c (#1012) shipped and three suite bugs were fixed (#1006, #1010, #1011); left: the phone (#530), untouched, and Devon's verdict on the quay stills (#900, #1009); `renderer.info` recorded (#887) | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
 | 4 | The retro castle: increment 1 shipped, fifteen sets out and fifteen 128 px textures in (#757 to #766); the look is left; variety per room is superseded by 2h (#839); the props increment moved to 2b (#813) | 2+ | Opus 5 | Container to the look, local: GPU past it | — | B | | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
-| 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #729 to #733); four generated clips placed in the household's routines (#800), `drill` dropped (#915); the twelve's chatter pool placed and played by room and bell, 19 pairs after nine were recast and eight retired (#911, #925 to #938); the GPU look at playback done (#1015): the threshold passes, a bell starts a piece before its speakers have walked to it at three of four places (#1016, class O next), and five calls wait on Devon; `renderer.info` read with the populace in (#1017); left: the bell-walk fix (#1016), Devon's five calls (#1015), and the town's share, 0 by the ceilings and 6 by the measurement, recommended after 2c's increment 2 and a second measurement (#1017) | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
+| 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #729 to #733); four generated clips placed in the household's routines (#800), `drill` dropped (#915); the twelve's chatter pool placed and played by room and bell, 19 pairs after nine were recast and eight retired (#911, #925 to #938); the GPU look at playback done (#1016): the threshold passes, a bell starts a piece before its speakers have walked to it at three of four places (#1017, class O next), and five calls wait on Devon; `renderer.info` read with the populace in (#1018); left: the bell-walk fix (#1017), Devon's five calls (#1016), and the town's share, 0 by the ceilings and 6 by the measurement, recommended after 2c's increment 2 and a second measurement (#1018) | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: somebody listens to the seven beds, the four rings and the first two event sounds (a bed at a point and the rings, #680 to #683; the door and the hound, #696 to #698) | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
 | 11 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 | Container to the Node line, local: GPU past it | **after 3** | D | shadow + hand shipped 2026-09-17 (#650 to #654) | [Feel](SPECS.md#feel) |
 
@@ -406,11 +406,11 @@ The fifth closed the pool (#932 to #938): nine pairs recast onto two
 speakers the schedule puts in one room, eight retired, 19 pairs each with a
 `room`, and a pair with no `room` refused by `src/lore.js`.
 
-**The GPU look at playback was run on 2026-10-04 (#1015 to #1017)**, on Devon's
+**The GPU look at playback was run on 2026-10-04 (#1016 to #1018)**, on Devon's
 RTX 3070 Ti, with 22 stills and three logs in `looks/2026-10-04/`. The
 threshold passes: the band goes dark on the cell where the HUD changes, for
 the song and for a pair. The nine pairs in the hall run 194.0 s against
-193.3. Three places fail for one cause (#1016): a bell starts a piece while
+193.3. Three places fail for one cause (#1017): a bell starts a piece while
 its speakers are still walking. The Vespers song is captioned to an empty
 hall (Dafydd's walk is 40.0 s, the song 37.0 s), the King's Hall's first
 pair is said with the Steward in his chamber (25.5 s walk, 4 s gap), and
@@ -420,11 +420,11 @@ every frame wherever the player stands, live draw calls up to 758 in a ward
 view and 992 from the chapel, and 0.145 to 0.176 ms of frame per body,
 measured by hiding bodies.
 
-**Left, in the order it can happen.** (1) The bell-walk fix (#1016), class O
+**Left, in the order it can happen.** (1) The bell-walk fix (#1017), class O
 because it amends #925, #592 and #928: hold a placed pair or a performance
 until its speakers' walk from the last bell's station is done, worked out
 from `castleNav` and the schedule (25.5, 40.0 and 8.6 s today), and asserted
-in `test/quest.mjs`. (2) Devon's calls from #1015: whether 3 min 14 s of hall
+in `test/quest.mjs`. (2) Devon's calls from #1016: whether 3 min 14 s of hall
 supper is too much (the fallback is #934's), whether four chapel pairs
 between the same two men read as one conversation, whether a pair heard
 across 30 m of outer ward is right, whether the band should pause under the
@@ -434,9 +434,9 @@ whether `garden` becomes ground. By the ceilings as written it is 0:
 `MAX_SKINNED_TOTAL` 41 of 41 built, the outer ward 24 of 24 at `terce-eve`,
 386 of 394 skinned draws. By the measurement it is 6: the heaviest view's
 median frame is 15.6 ms, 1.1 ms under 16.7, at 0.176 ms a body. **The
-recommendation (#1017)**: no town body on the Quaternius rigs. 2c's increment 2
+recommendation (#1018)**: no town body on the Quaternius rigs. 2c's increment 2
 goes first and moves the 15 populace humans onto the shared rig. The two
-take-away measurements in #1017 are then run again, and the town's number is
+take-away measurements in #1018 are then run again, and the town's number is
 set from them. Until then the share is at most 6, argued in `HISTORY.md` as
 41 to 47 by 2c or 2d (lane C), each on the shared rig, outside the sun's
 80 m shadow square with `castShadow` off. No ceiling moved on 2026-10-04.

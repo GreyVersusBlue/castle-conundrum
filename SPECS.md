@@ -1905,8 +1905,8 @@ this row is below.
   2026-10-03 as recommended, so nine are recast, eight retired, and the pool
   is 19 pairs with a `room` each.
 - **The GPU look at playback and `renderer.info` with the populace in are
-  done** (#1015 to #1017, 2026-10-04), below under "The GPU look". Left from them:
-  the bell-walk fix (#1016), Devon's five calls (#1015), and the town's share (#1017).
+  done** (#1016 to #1018, 2026-10-04), below under "The GPU look". Left from them:
+  the bell-walk fix (#1017), Devon's five calls (#1016), and the town's share (#1018).
 
 ### Increment 3: the twelve's chatter held to the schedule, and `drill` dropped
 
@@ -2681,13 +2681,13 @@ looking list is not asserted. Writing style: no em dash in any line.
 
 ### The GPU look, and what is left after it
 
-**Run 2026-10-04** (session CC-06, #1015 to #1017) on Devon's RTX 3070 Ti, with the
+**Run 2026-10-04** (session CC-06, #1016 to #1018) on Devon's RTX 3070 Ti, with the
 stills and logs in `looks/2026-10-04/`. `HISTORY.md` carries the verdict
 table and every number. In short: the threshold passes, the nine hall pairs
 run 194.0 s against 193.3, and three places fail for one cause, a bell
-starting a piece while its speakers are still walking (#1016).
+starting a piece while its speakers are still walking (#1017).
 
-**Next: the bell-walk fix, class O** (#1016). It amends #925's gap, #592's start
+**Next: the bell-walk fix, class O** (#1017). It amends #925's gap, #592's start
 on the bell and #928's "no body is consulted", so `architect` writes it
 first. The recommendation, for the open call it will carry: a placed pair or
 a performance does not start before `walkMs` since the bell, where `walkMs`
@@ -2700,11 +2700,11 @@ provable in Node (#529). Rejected: a check that both bodies have arrived,
 which needs a retry clock (#928's own reason), and a longer
 `CHATTER_GAP_MS`, which would also lengthen every gap between pairs.
 
-**Devon's five calls** (#1015): the hall's 3 min 14 s, the chapel's four pairs
+**Devon's five calls** (#1016): the hall's 3 min 14 s, the chapel's four pairs
 between the same two men, a pair heard across 30 m of outer ward, the band
 under the journal, and Father Anselm on the band while he is in the panel.
 
-**The town's share** (#1017): 0 by the ceilings as written, 6 by the
+**The town's share** (#1018): 0 by the ceilings as written, 6 by the
 measurement (1.1 ms of headroom at 0.176 ms a body in the heaviest view, on
 this card at 1200 x 800). Recommended order: 2c's increment 2, then the same
 take-away measurement again, then the town's number argued in `HISTORY.md`

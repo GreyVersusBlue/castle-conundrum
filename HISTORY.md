@@ -15244,21 +15244,21 @@ answers. The script itself was not committed: it was scratch, and the logs
 carry every number below. One GPU and three sessions: the window was opened
 only with no other headed game window up, and closed after each pass.
 
-**#1015. The looking list of #931 and #934, judged.**
+**#1016. The looking list of #931 and #934, judged.**
 
 | Item | Verdict | What was seen |
 | --- | --- | --- |
-| 1. The hall at Vespers, end to end | **Fail, cause #1016**, on its first 41 s; the nine pairs pass | Bell to dark 194.0 s and 194.1 s in two runs, against #934's 193.3. Gaps 4.02 s. Order as #935. At every pair's first line both speakers stood in `great-hall` within 0.16 m of their stations. But the song starts at the bell, captioned "the benches take up the time with their cups", to an empty hall (`931-1-hall-vespers-00-song.png`): Dafydd's walk from his Sext station is 44.0 m, 40.0 s at 1.1 m/s, and the song is 37.0 s. |
+| 1. The hall at Vespers, end to end | **Fail, cause #1017**, on its first 41 s; the nine pairs pass | Bell to dark 194.0 s and 194.1 s in two runs, against #934's 193.3. Gaps 4.02 s. Order as #935. At every pair's first line both speakers stood in `great-hall` within 0.16 m of their stations. But the song starts at the bell, captioned "the benches take up the time with their cups", to an empty hall (`931-1-hall-vespers-00-song.png`): Dafydd's walk from his Sext station is 44.0 m, 40.0 s at 1.1 m/s, and the song is 37.0 s. |
 | 1b. Whether 3 min 14 s of supper is too much | **Needs Devon's eye** | Nine pairs, 18 lines. The fallback (#934, `outer-prime-3` to the outer ward at Terce) was not taken. |
-| 2. Both speakers in the King's Hall when `inner-sext-1` is captioned after the Sext bell | **Fail, cause #1016** | Twice: the first line at 4.0 s with Piers Marrable in `steward-chamber`, 16.4 m from his station (`931-2-kings-hall-sext-first-line-inner-sext-1.png`). He reached the hall at 21.5 s (`...-steward-arrived.png`), as the second pair began. The whole first pair is said by a man in the next room. |
-| 3. `outer-terce-1` from the east end of the outer ward | **Fail, cause #1016**; the reach **needs Devon's eye** | The first line at 4.1 s with Master Robert still in `clerk-office`, 4.1 m from his station; his walk is 9.5 m, 8.6 s. From the east end both speakers are 29.6 and 30.2 m off, small figures through the gate arch (`931-3-...`). That is #928's accepted coarseness, seen. |
+| 2. Both speakers in the King's Hall when `inner-sext-1` is captioned after the Sext bell | **Fail, cause #1017** | Twice: the first line at 4.0 s with Piers Marrable in `steward-chamber`, 16.4 m from his station (`931-2-kings-hall-sext-first-line-inner-sext-1.png`). He reached the hall at 21.5 s (`...-steward-arrived.png`), as the second pair began. The whole first pair is said by a man in the next room. |
+| 3. `outer-terce-1` from the east end of the outer ward | **Fail, cause #1017**; the reach **needs Devon's eye** | The first line at 4.1 s with Master Robert still in `clerk-office`, 4.1 m from his station; his walk is 9.5 m, 8.6 s. From the east end both speakers are 29.6 and 30.2 m off, small figures through the gate arch (`931-3-...`). That is #928's accepted coarseness, seen. |
 | 4. The band going dark on the hall's threshold | **Pass** | Stepped out cell by cell at 0.5 m: the band went dark on the same cell, (-20.75, 5.75), as the HUD changed to "Outer ward", for the song (#926, watched on a page for the first time) and for a pair. Walking back in started the next unheard pair at once (#929). |
 | 5a. The band over the dialogue panel | **Pass** on layout; **needs Devon's eye** on the voice | The band is at y 104 to 172 and the panel at y 623 to 768: no overlap, both read. But it puts Father Anselm in two conversations at once, the caption's with Sir Roger and the panel's with the player (`931-5-band-over-dialogue-...`). |
 | 5b. The band over the journal | **Needs Devon's eye** | The journal (z 50) covers the band (z 15) with its scrim. The band stays dimly legible and keeps running, so a pair's lines go by unread while the journal is open (`931-5-band-over-journal-...`). Pausing the band under the journal is the obvious change. Leaving it as it is costs nothing, because `_heard` is per page. |
 | #934. The chapel at Prime, four pairs, the same two men | **Pass** on timing; **needs Devon's eye** on the sameness | 64.3 s from the first line to dark, against 64.0. Both men at their stations, 1.5 and 4.5 m from the camera. |
 | #934. The King's Hall walked into after the bell | **Pass** on timing | 63.7 s from the first line to dark, against 63.5. |
 
-**#1016. A bell starts a piece before its speakers have walked to it, at three
+**#1017. A bell starts a piece before its speakers have walked to it, at three
 of the four places. Filed, not fixed.** What is wrong: #925 follows a bell
 with `CHATTER_GAP_MS`, 4000 ms, and #592 starts a performance on the bell
 itself. #928 consults no body, on the grounds that #912 proves the schedule
@@ -15288,7 +15288,7 @@ so #928 holds in spirit, and it is provable in Node in `test/quest.mjs`
 (#529). Walking in after `walkMs` is unchanged. The numbers it would give
 today are the table's: 25.5, 40.0 and 8.6 s.
 
-**#1017. `renderer.info` on the GPU with the populace in, and the town's share:
+**#1018. `renderer.info` on the GPU with the populace in, and the town's share:
 none by the ceilings as written, six by the measurement, and only after 2c's
 increment 2.** Read with all 41 bodies built (445 skinned meshes), 37 to 39
 visible by bell. Each ward's number is the worst of four quarter-turns from
@@ -15370,4 +15370,4 @@ really falls outside the shadow square: no town body exists to put there.
 `npm run play` itself was not run; this session's script drove the same
 page with the same hooks and did not walk the day.
 
-Next free number: #1018.
+Next free number: #1019.
