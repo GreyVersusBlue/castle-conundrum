@@ -15522,4 +15522,21 @@ really falls outside the shadow square: no town body exists to put there.
 `npm run play` itself was not run; this session's script drove the same
 page with the same hooks and did not walk the day.
 
-Next free number: #1019.
+**#1019. `test/overlays.mjs` waits 120 s, not 4, for the start panel to
+come back after `exitPointerLock()`; the game is unchanged.** `main` went red
+on GitHub three times in a day on the same line (runs 283, 284 and 291, for
+castle-conundrum#119, the pull request for #120 and #122): `overlays.mjs:145`,
+`Waiting for selector #start-overlay:not(.hidden) failed`, `4000ms exceeded`.
+The runs on either side passed. It is #973's cause on a third suite: under
+#1004's curtain skin a software-rendered frame is about 2 s, and on the
+failing runs the beat before the wait took 33 s of wall clock, so the
+`unlock` event that calls `ui.showStartAgain()` did not land inside 4 s.
+Not reproduced on this session's container at full speed (three passes);
+reproduced with CDP `Emulation.setCPUThrottlingRate` at 12, with the same
+error and the same line, and at 12 the beat passes with 120 s. 120 s is the
+figure every other wait for that selector in `test/` already uses. Broken on
+purpose (#34): with `ui.showStartAgain()` removed from `src/main.js`'s
+`unlock` handler, the beat fails with `120000ms exceeded`. No assertion was
+added, dropped or reworded, and none moved between suites.
+
+Next free number: #1020.
