@@ -1720,7 +1720,8 @@ Haven's 341.
    textures, one per existing material name, so the castle is whole in the
    new look on one GPU sitting and not one wall at a time. A container
    closed it: no `ktx`, no network, no GPU. **Then somebody looks** (#53),
-   with the checklist at the end of this section — nobody has yet.
+   with the checklist at the end of this section; CC-16 did, on
+   2026-10-04 (#1013).
 2. ~~**Variety**: a wall and a floor per named room, about forty textures,
    against the texture ceiling below. Gated on the look, the way rank 11's
    second increment is.~~ **Superseded** by "Castle in Blender" (#839).
@@ -1788,29 +1789,36 @@ hemisphere fill left for the GPU to judge.
 
 ### Looking checklist
 
-Nobody has seen any of this (#53). `npm run play`, or the `applyWatch` look
-#711 used, on the dev machine, and write what was wrong rather than that it
-was wrong, in `HISTORY.md` against this row.
+Looked at on 2026-10-04 (#1013), eighteen stills in `looks/2026-10-04/`,
+one session after 2i's curtain stage (#1005) put photographed stone on the
+cross-wall, the drums and the hall walls. `[x]` is a pass off a still; `[ ]`
+waits on Devon, and all four are one question: the pixel look beside the
+skin, kept, or the row retired into 2i (#921). The table in #1013 has the
+still and the sentence for each.
 
-- [ ] **One castle or two.** From the North-west Tower's roof, #630's own
+- [ ] **One castle or two.** *Devon*: the kit seam is gone under the skin;
+      the seam now is photographed skin beside pixel posts and floors. From the North-west Tower's roof, #630's own
       vantage: the crown's merlons (the kit) against the drum's stone and
       the curtain (this row). Does the seam between kit and stone still show?
-- [ ] **The shadowed faces.** The cross-wall's west face and the Great
+- [x] **The shadowed faces.** The cross-wall's west face and the Great
       Hall's north wall, which #438 and #713 measured near-black under
       photographic slate. A darker palette, or a hole?
-- [ ] **A metre from a wall at a grazing angle.** 43 texels a metre, NEAREST:
+- [x] **A metre from a wall at a grazing angle.** 43 texels a metre, NEAREST:
       blocks, or a smear? Anisotropy is on; is the minified far wall a moire?
-- [ ] **The four skies and Lauds.** The same wall at Prime, Terce, Sext,
+- [x] **The four skies and Lauds.** The same wall at Prime, Terce, Sext,
       Vespers (#474) and on the morning after (#712): four bells, or one?
 - [ ] **The eight tints** (#516) over pixel stone: still eight towers?
-- [ ] **Under foot.** The ward's cobbles, the hall's tiles, the walk's
+      *Devon*: the drums are skin now, two families, not eight tints.
+- [x] **Under foot.** The ward's cobbles, the hall's tiles, the walk's
       decking, a tower's boards: does a floor read as its room's?
 - [ ] **The props.** A photographed cabinet in a pixel room: the next
-      increment, or fine?
-- [ ] **The number.** `renderer.info.memory.textures` off the live page
+      increment, or fine? *Devon*: at home against the skin's walls,
+      line 1 against the pixel floor.
+- [x] **The number.** `renderer.info.memory.textures` off the live page
       against `test/budget.mjs`'s estimate, written down beside it.
 - [ ] **The two knobs.** `toneMappingExposure` and the hemisphere's 2.0: what
-      the palette needs, if anything.
+      the palette needs, if anything. *Devon*: 1.0 and 2.0, nothing
+      clipped; no change proposed while 2i is replacing the surfaces.
 
 ---
 
