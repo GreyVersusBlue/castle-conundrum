@@ -1517,10 +1517,10 @@ compositing eleven times over four sittings (#624 to #630, #708 to #715,
 holds: the sentry's and the porter's sighting beats pass, the accusation
 selects 3 of 3, and the whole day and the whole second day have now been
 walked by `npm run play` for the first time. **What is left is exit 0**:
-run 5 of the fourth sitting still ends 212 ok, 6 failures. Rank 3a (Play Again
-does not start over, #916) and rank 3b (three small suite and data bugs,
-#917) have since shipped in Node, leaving one more GPU run, and the phone in
-the room (#530) is untouched.
+the fifth sitting (#1006 to #1009) confirmed 3a and 3b on a GPU and ended
+213 ok, 4 failures, all four rank 3c (the curtain skin's walk bar blocks its
+own sight line, #1008). One more GPU run after 3c ships, and the phone in the
+room (#530) is untouched.
 
 **The judgement half of this row is done.** Every render question this
 section used to list is answered in `HISTORY.md`: the twelve at Vespers
@@ -1560,7 +1560,10 @@ the lever is `lighting.fog` (#796), not the town or the west wall.
 in `looks/2026-10-03/`, from both west tower roofs and the west walk at
 Terce, Prime and Vespers. #900 reads the gate as fog colour, the ridge as a
 small grey point and no water told apart; that is the session's reading,
-not Devon's, and this item stays open until he judges them.
+not Devon's, and this item stays open until he judges them. The fifth
+sitting took the shot again with the curtain skin in (#1009, `q6` to `q8`,
+`shots/quay/`, not committed) and read the same; the lever is still
+`lighting.fog`. From SPECS' west-walk eye the skin now blocks the ridge.
 
 ### Dependencies
 
@@ -1569,14 +1572,58 @@ not Devon's, and this item stays open until he judges them.
 - The run needs a machine with a GPU, which is Devon's; a session can add a
   beat and cannot run it. If a session is asked to take the run without one,
   the honest output is the beat and a note, not a claim.
-- **What exit 0 still owes**: rank 3a (Play Again, #889) shipped (#916) and
-  rank 3b (the last three standing failures, #890) shipped (#917). One more
-  GPU run is owed, and it confirms both.
+- **What exit 0 still owes**: rank 3a (#916) and rank 3b (#917) shipped
+  and were confirmed on a GPU (#1007). Rank 3c (#1008) is the last standing
+  failure; one more GPU run after it ships.
 
 ### Constraints
 
 - #53 (the whole point of the row).
 - #34 does not apply: no rail is added.
+
+---
+
+## The walk bar hides itself
+
+**Rank 3c. Size ¼. Filed by the GPU run's fifth sitting (#1008), against
+#1005.** A game bug. On the intended path the player reaches the Stockhouse
+Tower's top room and is never offered the bar, so `door-unbarred` is never
+held and the porter's admission on the cross-wall walk fails with it: four of
+run 2's four failures.
+
+**The cause.** `src/castle-builder.js`'s `skin()` hides the built bar,
+which stays the evidence target's `group`, and adds the skin node
+`BAR_walk-bar` as its own child of the scene. `src/interaction.js`'s
+`occluders()` drops each target's `group` and nothing else, so
+`hasLineOfSight` meets the visible skin bar 0.09 to 0.16 m short of the
+target's aim point (-2.3, 8.75, -16.5), from every eye a probe tried. #1005
+made the target's `active` read the skin; its sight was missed.
+
+### Scope
+
+- `src/interaction.js`, or the target the builder hands it. **Recommendation:
+  the builder puts a swapped piece's skin nodes on its evidence target (for
+  example `target.skins`), and `occluders()` drops those as well as
+  `target.group`.** It keeps the one rule in one place (a target never
+  occludes itself) and needs no ray change. The alternative, aiming the
+  ray at the skin's box rather than the built one's, moves the aim point for
+  one piece and leaves the rule wrong for the next swap.
+- Check the other piece swapped at `curtain`, the muniment door's lock: it
+  passes today, likely because its aim point sits in front of its skin, and
+  the fix should cover it by construction rather than by luck.
+
+### Acceptance
+
+- `test/plan-vs-scene.mjs` (live scene, static, so CI may hold it, #53): from
+  a pose in the Stockhouse top room facing the bar, the prompt is the bar's.
+  Broken on purpose (#34): with the skin nodes left in `occluders()`, it
+  goes red.
+- The next `npm run play` passes "walked to the bar beside the Stockhouse
+  door" and the three beats after it, which is rank 3's exit 0.
+
+### Constraints
+
+- #53, #34, #500 (the built bar stays built, tagged and collided), #965.
 
 ---
 

@@ -213,7 +213,7 @@ that is two Blenders on one machine and Devon's call (#842).
 
 ## The ranked table
 
-Nine ranked rows: 2b, 2c, 2d, 2i, 3, 4, 6, 7, 11. Devon
+Ten ranked rows: 2b, 2c, 2d, 2i, 3, 3c, 4, 6, 7, 11. Devon
 reopened ranks 1 and 2 himself on 2026-09-25 for the Blender rows, and
 lettered the pack band by priority (#801, #802). 2f, his own props, took
 the next letter the same day, ran first, and shipped the same day
@@ -245,7 +245,8 @@ the placement editor, budget suite, move-and-delete and the dialogue format
 | 2c | Blender: a shared rig with swappable parts: one rig, one-primitive parts, at most five skinned draws a person against the Quaternius rigs' 12 to 15, specced (#820 to #825); increment 1 shipped on huginn (#939 to #941); left: the Windows GPU look, which gates increment 2, the other 15 populace humans (container) | 2+ | Opus 5 | Windows: GPU look (#53), then Container | 1 shipped (#881) | F, C | | [Blender: a shared rig with swappable parts](SPECS.md#blender-a-shared-rig-with-swappable-parts) |
 | 2d | Blender: the animals: pig, goat, sheep, horse, cat and two geese on one quadruped topology plus a bird one for the goose, specced (#826 to #829); both increments shipped on huginn (#942 to #945): six files, seven animals placed (pig, goat, sheep, horse and cat on the quadruped topology, the goose on a 12-joint bird topology, two geese); left: the Windows GPU look, which blocks nothing (#53) | 1 | Opus 5 | Windows: GPU look (#53) | 2c increment 1 committed (#941); 1 shipped (#881) | F, C | | [Blender: the animals](SPECS.md#blender-the-animals) |
 | 2i | Castle in Blender, the integration row: the game takes the model as a skin and never reads `markers.json` (#919); specced (#963 to #968): one `assets/castle3d/skin.glb` cut from the master by stage (`curtain`, `buildings`, `town`, `land`), about 25 MB and 37.3 MB of texture memory against the master's 570 MB and 1,738.8 MB, trees decimated to 2,000 triangles, KTX2 through `assets:encode`; draw ceiling 1200 to 600, a new 500,000-triangle ceiling, texture 64 to 76 to 84 (#966); #499 and #506 stand (#967); six increments; increment 1, #922's open gate in the model, built (#970) and accepted (#1001); increment 2, the skin, built outside the repo (#1003); increment 3, stage curtain in the game, next | 2+ | Opus 5 | Local: Blender GPU (5.2, Devon's Windows machine only), plus `ktx`; judged local: GPU (#53) | 2h shipped (#962) | G | | [Castle in Blender: the integration row](SPECS.md#castle-in-blender-the-integration-row) |
-| 3 | The GPU run: the fourth sitting confirmed the sight fix on a GPU and walked the whole day and the second day (#886 to #891); exit 1, 6 failures, 3a (#916) and 3b (#917) shipped, one more GPU run owed; the quay look's stills taken (#900, `looks/2026-10-03/`), Devon's verdict owed; `renderer.info` recorded (#887); the phone (#530) untouched | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
+| 3 | The GPU run: the fifth sitting confirmed 3a and 3b on a GPU (#1007) and ended exit 1, 213 ok, 4 failures, all four rank 3c (#1008); one more GPU run after 3c ships; the quay shot retaken with the skin in, same reading, lever `lighting.fog` (#1009), Devon's verdict on `q1` to `q5` owed; `renderer.info` recorded (#887); the phone (#530) untouched | 1 | Opus 5 | Local: GPU | **after 3c** | — | | [The GPU run](SPECS.md#the-gpu-run) |
+| 3c | The walk bar hides itself: the curtain skin's `BAR_walk-bar` occludes the walk-door evidence's own sight ray, so `door-unbarred` is never offered and the porter's admission fails with it (#1008); recommendation: the builder hands a swapped piece's skin nodes to its target and `occluders()` drops them too | ¼ | Opus 5 | Container, judged local: GPU (rank 3's next run) | — | G | | [The walk bar hides itself](SPECS.md#the-walk-bar-hides-itself) |
 | 4 | The retro castle: increment 1 shipped, fifteen sets out and fifteen 128 px textures in (#757 to #766); the look is left; variety per room is superseded by 2h (#839); the props increment moved to 2b (#813) | 2+ | Opus 5 | Container to the look, local: GPU past it | — | B | | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
 | 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #729 to #733); four generated clips placed in the household's routines (#800), `drill` dropped (#915); the twelve's chatter pool placed and played by room and bell, 19 pairs after nine were recast and eight retired (#911, #925 to #938); left: the town's share of the fifty, the GPU look at playback (`npm run play`, #53, the looking list in #931) | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: somebody listens to the seven beds, the four rings and the first two event sounds (a bed at a point and the rings, #680 to #683; the door and the hound, #696 to #698) | 1 | Fable 5.1 | Container, judged local: audio | — | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
@@ -327,15 +328,18 @@ to #891). The fourth sitting's fifth run walked the whole day and the whole
 second day for the first time: the accusation selects 3 of 3, "Master Robert
 Ferrour hangs," and Play Again's pane. `renderer.info` was read at five
 beats and recorded against rank 2c and 2d's skinned-draw ceiling (#887). Exit
-0 is still owed — rank 3a (Play Again does not start over, #916) and rank 3b
-(three small suite and data bugs, #917) shipped, so what is left is one more
-GPU `npm run play` to reach exit 0, which also confirms 3b's three beats and
-the three Play Again beats — and the phone (#530) is untouched. **One more shot
+0 is still owed. The fifth sitting (#1006 to #1009) confirmed rank 3a
+(#916) and rank 3b (#917) on a GPU, fixed the journal walk's aim in the suite,
+and ended 213 ok, 4 failures, all four rank 3c (the curtain skin's walk bar
+blocks its own sight line, #1008), so what is left is one GPU `npm run play`
+after 3c ships — and the phone (#530) is untouched. **One more shot
 moved here from rank 9 (#910)**: the quay through the fog, a pinned camera
 through `tools/shot-yard.mjs`, to say whether the toll-house ridge (about 98 m,
 60 % fog) and the river (first seen at 119.7 m, 84 % fog) read at all. Seven
 stills of that view exist, `q1` to `q5` and two crops in `looks/2026-10-03/`
-(#900); Devon's verdict on them is owed and nothing is closed.
+(#900); Devon's verdict on them is owed and nothing is closed. The fifth
+sitting retook it with the skin in (#1009) and read the same.
+
 
 **Settled and closed by the looking already done** (#711 to #715, #891):
 the compressed textures, the tower roof climb, the gaol roll on the
@@ -346,6 +350,18 @@ no dawn colour in it. The covered hall's seven trusses are invisible from
 the floor, and a sliver of sky shows at its south-east corner. #715's stray
 prompt naming "the Sir Roger Lestrange" is gone, and its `read` half ("read
 the The King's writ") went in #948; the next GPU run looks at one.
+
+## The walk bar hides itself
+
+*Where: container, judged local: GPU. Gate: none. Lane: G.*
+
+**Rank 3c, filed by the GPU run's fifth sitting (#1008).** The curtain skin
+(#1005) hides the built walk bar and draws `BAR_walk-bar` in its place as a
+separate scene child; `interaction.js`'s `occluders()` drops only the
+target's `group`, so the visible bar blocks the ray to its own aim point and
+the player is never offered it. It is the last thing between rank 3 and exit
+0. The spec, with its recommendation, is `SPECS.md`'s section of the same
+name.
 
 ## The retro castle
 
