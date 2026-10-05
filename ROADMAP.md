@@ -72,9 +72,8 @@ uncompressed body is the one asset nothing else on this list would catch.
 
 ### Local: speakers and a person
 
-| Row | Model | Which half |
-| --- | --- | --- |
-| **7 Sound** | Fable 5.1 | Three increments shipped in a container, all synthesised (#620 to #623, #680 to #683, #696 to #698). Whether any of it sounds right is not a container's question — the listening checklist is in `SPECS.md`. |
+No row needs this today. Rank 7's listening pass is done (#974); what is left of
+rank 7 is a container's and waits on rank 6's clips.
 
 ### Container, start to finish
 
