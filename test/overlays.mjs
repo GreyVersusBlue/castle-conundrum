@@ -142,7 +142,9 @@ try {
    * the player is standing in. The pointer is given up by hand here because
    * that is what those two paths hand the page: no pointer, and a panel. */
   await page.evaluate(() => document.exitPointerLock());
-  await page.waitForSelector('#start-overlay:not(.hidden)', { timeout: 4000 });
+  // 120 s and not 4 (#1019): under the curtain skin a software-rendered frame
+  // is about 2 s, and on a GitHub runner the panel came back after 4 s.
+  await page.waitForSelector('#start-overlay:not(.hidden)', { timeout: 120000 });
   check(await hidden('#start-mystery'), 'the panel that comes back mid-day does not offer to restart the day');
   check(await clickReal('#start-button'), 'and its first button is still clickable');
   check(await holder(true), 'and puts the player back in the castle');
