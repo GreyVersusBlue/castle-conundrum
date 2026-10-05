@@ -15055,3 +15055,471 @@ geometries, 27 programs).
 `npm test`: fifteen of fifteen.
 
 Increment 4, stage buildings, is next. Next free number: #1006.
+
+## The GPU run, fifth sitting: 3a and 3b hold, and the curtain skin hides the walk bar from itself (2026-10-04)
+
+**Rank 3, session CC-04, on DEVON-DESKTOP (Windows 10 Home 19045, RTX 3070
+Ti), worked by Claude Opus 5.5 as the lead in a fresh worktree off
+`origin/main` at `bc22327`, which carries 3a (#916), 3b (#917) and rank 2i's
+curtain skin (#1005).** `npm run play` ran twice in full and once cut short
+on purpose. Window 1200 x 800. Decisions #1006 to #1009. The lead wrote the
+doc files itself rather than dispatching `scribe`, because the repo's
+subagents were not registered in this session.
+
+- Run 1, the suite as merged: exit 1, 87 ok, 13 failures, ABORTED "cannot
+  ring a bell that cannot be reached". Every failure after the pouch is one
+  suite bug (#1006).
+- Run 2, #1006 in: **exit 1, 213 ok, 4 failures, no abort**, 42 shots. The
+  four are one game bug (#1008).
+- Run 3, `src/ui.js` broken on purpose and stopped after the journal beat
+  (#1007).
+
+**#1006. The journal walk faced the stair; it now faces the chapel door.**
+#917(c)'s `walk700` had never run on a GPU. `examine('pouch')` leaves the
+camera on the pouch, a metre from the body at the chapel stair foot, so both
+700 ms walks went at the stair. Run 1: the baseline W stopped at 0.69 m, S
+overshot by 2.99 m, and the second W ran 3.67 m up the flight to level 1.
+The assertion passed (ratio 5.34) and the player was left at (23.4, 14.4)
+L1, where `hike` has no stair of record down: the cook, the porter, the
+cloak, the apprentice and the bell all gave up there, three hikes each, and
+the run aborted at the bell. The fix, in `test/play-castle.mjs` only, is an
+`aimAt` the Chapel Tower's door (19.3, 13.3), the floor the run walked in
+across, before the baseline. Run 2: 2.45 m before the journal, 2.87 m after,
+ratio 1.17, starts 1.18 m apart, all on the ground, and the cook was reached
+at 1.72 m. A suite bug, recorded as one.
+
+**#1007. 3a and 3b, confirmed on a GPU, and #917(c)'s rail watched fail.**
+Against the fourth sitting's six failures (#890, #889), run 2:
+- The three Play Again beats pass (#916): "the button is the old one again
+  Play Again"; "Play Again starts a fresh walking day ... no key in storage",
+  `{"stored":null,"stage":"explore","watch":"prime-eve","clues":0}`; "the
+  panel offers the second door again". Then "the second button is the day of
+  the death at Prime".
+- "interior hall walls are the same height" is gone, deleted by #917(a).
+- "no brazier is sealed inside the stonework" passes, `[-4.8,-2.4]
+  [-4.8,2.4] [-20,10]`, in both full runs: the hall brazier with
+  `gothic_statue` moved (#917(b)), and the porter's-gate pair the headless
+  probe could not reproduce. Its root is still not named, because nothing
+  now reads it as inside anything.
+- The journal walk passes at ratio 1.17 (#1006).
+- **Broken on purpose (#34)**, owed since #917: `ui.js`'s `_takePointer()`
+  made a no-op, uncommitted, in this worktree only, and the run stopped
+  after the beat. "and W moves the player again, from the same standing
+  start" went red, "0.00 m in 700 ms against 0.00 m before the journal,
+  ratio 0.00", with "shutting the journal gives the player back the castle"
+  red beside it. The baseline beat read 0.00 m and went red too, because the
+  Constable's dialogue closes through the same hand-back first. Restored;
+  `git status` showed only `test/play-castle.mjs` changed.
+
+**#1008. The curtain skin's walk bar occludes the walk-door evidence, filed
+as rank 3c.** The four failures of run 2 are one: "walked to the bar beside
+the Stockhouse door, never got in range", the player stopped 0.5 m from the
+aim point at (-1.9, -16.9) L2 with the prompt null; "the Stockhouse door,
+unbarred"; and, downstream, "door-unbarred is in the list the Present
+button opens" and "the porter, on the cross-wall walk, admits the door",
+null. In the fourth sitting all four passed. A headless probe of the live
+scene (static geometry, so #53 does not apply), casting from three eyes in
+the Stockhouse top room to the target's aim point (-2.3, 8.75, -16.5): every
+ray's first hit is the skin node `BAR_walk-bar`, 0.09 to 0.16 m short of the
+aim. #1005's skin hides the built bar, which is still the target's `group`,
+and adds the skin node as its own scene child; `InteractionSystem.
+occluders()` leaves out each target's `group` only, so the skin bar is stone
+in front of itself. #1005 made the target `active` through the skin; its
+line of sight was not. The muniment door, the other evidence swapped at
+`curtain`, passes ("Press E to read the word-lock"). A game bug, not fixed
+here: nothing in `src/`.
+
+**#1009. The quay through the fog, at Prime, with the skin in.** Three
+pinned-camera stills through a scratch copy of `tools/shot-yard.mjs`'s pin
+(uncommitted, so the tool is unchanged), `shots/quay/`, 1600 x 900: q6 from
+the South-west Tower roof (-38.5, 13.7, 15.0) and q7 from the North-west
+Tower roof (-38.5, 13.7, -13.6), both at (-155, -3), and q8 from SPECS'
+west-walk eye (-35.75, 9.70, -11.75). Through the west gate is fog colour;
+the toll-house ridge is a small grey point over the town wall; no water can
+be told apart. The hills either side hold their shape, so this is the fog,
+not the resolution. That is #900's reading again, and by #910 the lever is
+`lighting.fog` (#796), not the town or the west wall: recorded, and the
+session stopped there. New with the skin: from both roofs the skin's
+parapet fills the lower half of the frame at under a metre, and from q8's
+eye a skin merlon and the tower drum block the ridge outright, so that
+vantage no longer sees it. Devon's verdict on `q1` to `q5` is still owed.
+
+**The shots were not looked at, and that is this sitting's slip.** Run 2
+wrote 42 shots to `shots/play/`, and run 3, which clears that folder when it
+starts, overwrote them before anyone opened them; only run 3's first ten are
+on disk. The beat-by-beat record above is from run 2's log, not its
+pictures. Run 2 reached the same beats as #891's run 5, whose sentences
+stand. The next sitting should copy `shots/play/` aside before any second
+run.
+
+**Still not seen.** Exit 0: owed to rank 3c. The phone (#530) is untouched:
+nobody was at the keyboard with a phone.
+
+**Checks.** `npm test` 15 of 15 (`built` 241 files and 46 KTX2 textures on
+both pages), `npm run build` ok, with only `test/play-castle.mjs` and the
+four doc files changed.
+
+## Rank 3c ships, and `npm run play` exits 0 for the first time (2026-10-04)
+
+**Session CC-04 again, the same machine, on `claude/cc04-3c-walk-bar` off
+the fifth sitting's branch (PR #118).** Rank 3c was class S (its SPECS
+section had a recommendation); the lead built it itself, since the repo's
+subagents were not registered in this session. Four `npm run play` runs;
+the fourth is the first exit 0 this project has had. Decisions #1010 to
+#1012.
+
+- Run 1, 3c in: the journal walk passed (ratio 1.18) and the day stranded
+  at (23.4, 14.4) L1 again, at the cook. Stopped.
+- Run 2, the journal walk moved out of the chapel: `hike`'s own route from
+  the pouch to the door stranded at the same point. Stopped.
+- Run 3, #1010 in: exit 1, 215 ok, 2 failures: the tally (#1011). The walk
+  bar, `door-unbarred` and the porter's admission pass.
+- Run 4, #1011 in: **exit 0, 217 ok, 0 failures**, 42 shots, kept aside in
+  the worktree before anything else ran.
+
+**#1010. The Chapel Tower's lower flight becomes a stair of record, and the
+journal walk leaves the chapel.** Every stranding this day (fifth sitting
+run 1, and runs 1 and 2 here) ended at (23.4, 14.4) L1. A Node probe of the
+plan: the body and the pouch lie at the foot of `chapel-tower-stair-1`
+(axis x 24.75, foot z 17.65 at y 0, head z 14.35 at y 3.9, ramp x 24 to
+25.5), whose foot is 0.06 m off the floor, and (23.4, 14.4) is the
+Chaplain's chamber, `floor-chaplain-chamber`, y 4, level 1. A held W
+(twice) and `hike`'s own route (once) walked up the ramp from the pouch, and
+`changeStorey` had no stair of record from level 1, so every later hike gave
+up there. #1006's aim at the door was not enough. In `test/play-castle.mjs`:
+`CHAPEL_DOWN`, three legs square on to the head, down due south and off west
+of the ramp, taken by `changeStorey` from 1 to 0 when the player is inside
+the chamber; after the pouch the player steps west off the stair foot first;
+and the journal walk is taken outside the Chapel Tower's door, along the
+open inner ward. Run 3 onward: both walks 3.69 m, ratio 1.00, starts 0.01 m
+apart, the first clean reading the beat has given. A suite bug.
+
+**#1011. `walkTo`'s first read now gets the real distance.** It called
+`near(0)`, which skipped `within`, the guard #571's runs added because
+"examine" is every evidence prompt. With 3c in, the player finished the walk
+bar standing under its own prompt, the tally beat read "examine" as
+arrived, never hiked, and gave up 30.3 m from the stick at (-2.7, -14.0) L2.
+The first read now passes the player's distance to the target. Run 4:
+"walked to the tally stick 1.16m". A suite bug, and one 3c uncovered rather
+than caused.
+
+**#1012. Rank 3c shipped: a target's own skin is not an occluder.** As
+SPECS recommended: `castle-builder.js` hands each evidence, bell and
+readable target `skins`, the skin nodes whose `skinOf` is that piece alone
+(`ownSkins`), and `interaction.js`'s `occluders()` leaves them out with the
+group. A node that also names another piece stays stone. Held by a new
+`test/plan-vs-scene.mjs` beat from the pose the GPU run gave up at, (-1.9,
+-16.9) on the level-2 floor: control, the target carries `BAR_walk-bar` and
+the eye-to-bar ray passes through it; then the HUD offers "Press E to
+examine the bar beside the Stockhouse door". **Broken on purpose (#34)**:
+with `occluders()` back to the group alone, the beat went red, "wanted
+'Press E to examine the bar beside the Stockhouse door', got no prompt,
+active true", the control line green. On the GPU, run 4: "walked to the bar
+beside the Stockhouse door 1.25m", "the Stockhouse door, unbarred
+door-unbarred", "the porter, on the cross-wall walk, admits the door".
+
+**What the shots show** (run 4, kept at `.cc04/shots-exit0/` in the
+worktree, gitignored): 10 `journal` is opened in the inner ward now and
+lists the five clues; 37 `epilogue` reads "The Sheet Is Signed" with "The
+next morning", and the sentry's last dialogue line is still drawn behind the
+pane, bleeding through above it; 42 `a-fresh-day` is the title screen with
+"Walk the castle", which is #916 seen. The other 39 were not looked at one by
+one; they are #891's set.
+
+**Found, not filed.** The epilogue pane does not close the dialogue under
+it (shot 37). Cosmetic; the next look at the ending can take it.
+
+**Checks.** `npm test` 15 of 15, `npm run build` ok. Changed: `src/castle-
+builder.js`, `src/interaction.js`, `test/plan-vs-scene.mjs`,
+`test/play-castle.mjs` and the doc files.
+
+**Rank 3 has reached exit 0.** What is left of the row is not the run: the
+phone (#530), untouched, and Devon's verdict on the quay stills (#900,
+#1009).
+
+## The retro castle's look, under the curtain skin (2026-10-04)
+
+**#1013. Rank 4's looking checklist, read off eighteen GPU stills: five
+lines pass, four go to Devon, nothing fixed, and the row stays open.**
+Session CC-16, DEVON-DESKTOP, headed Chrome at 1600 x 900, off `main` at
+`d3493be` (after #118 and #119). The stills are in `looks/2026-10-04/`,
+named `r4-<line>-...`, with `r4-shots.log` beside them giving each one's
+eye, target, pitch, sky, and a census of the meshes in its frustum: how
+many wear each `assets/pixel/` texture, how many are skin, how many are
+neither. The eyes are #900's, so a still compares with `looks/2026-10-03/`
+one for one. The camera is pinned the way `tools/shot-yard.mjs` pins it and
+the sky set through `window.__quest._onWatch(sky, { walk: false, sky })`;
+the script stayed in the session's scratchpad. Every shot is day 0, HUD up.
+
+**What changed between the two days is the subject.** 2i's increment 3
+(#1005) put the curtain stage of `assets/castle3d/skin.glb` in the game the
+same day as #900's stills, after them: 117 skin nodes now draw in place of
+152 built pieces (`test/budget.mjs`), the eight drums are `DRUM_*` nodes,
+and the cross-wall, the mason's lodge's walls and the Great Hall's walls
+wear the skin's photographic stone and brick. `r4-3` against yesterday's
+`r4-3` is the whole of it: the pixel brick at 1 m is photographed stone
+today. The fifteen pixel textures are left on floors, the buildings' own
+slate (the Great Hall's north face, the Clerk of Works' office), posts and
+pillars: 117 visible meshes against the skin's 132, by the probe.
+
+| Line | Verdict | Still | What the still shows |
+| --- | --- | --- | --- |
+| One castle or two | **Devon** | `r4-1-one-castle-nw-roof-east`, `-se`, `r4-3-grazing-one-metre` | Two castles, but a different two: the kit seam #630 asked about is gone under the skin's merlons, and the seam now is the skin's photographed stone, linear-filtered and soft at 1 m, beside pixel posts, floors and a flagpole drawn NEAREST. |
+| The shadowed faces | **Pass** | `r4-2-shadowed-cross-wall-west-face`, `r4-2-shadowed-hall-north-wall` | No hole. The cross-wall's west face is skin now, warm and lit, mean luma 58.8 over the wall. The hall's north face is still pixel slate, mean luma 17.5 with 8.1% under 8 (the drawn mortar), unchanged from #900; every course reads. Darker than the 27 #438 measured as "reads as slate", which is line 9's question. |
+| A metre at a grazing angle | **Pass** | `r4-3-grazing-one-metre`, `r4-4-sky-terce` | The cobbles at a grazing angle are blocks, not a smear, and the slate runs at 20 m read as courses with no moire. The wall at 1 m is skin now and is not this row's. |
+| The four skies and Lauds | **Pass** | `r4-4-sky-prime`, `-terce`, `-sext`, `-vespers`, `-lauds` | Five skies. Mean floor colour 51/76/89/39/35 green and sky 165/148/156/95/124 green, Prime to Lauds; Vespers is warm and violet, Lauds grey and fogged. Terce and Sext are the closest pair, 13 apart on the floor. |
+| The eight tints | **Devon** | `r4-1-...-se`, `r4-5-eight-tints-nw-roof`, `r4-5-eight-tints-prison-roof` | Superseded in the frame: the drums are skin, two families (grey stone west, red brick and a cone east), not eight tints over pixel stone. Whether two is enough is 2i's and Devon's. #900's chapel-roof eye is replaced by the Prison Tower's roof: the chapel tower has no roof room, its top 2 m is a turret (plan box to 14 m), and that eye is inside the skin's drum. |
+| Under foot | **Pass** | `r4-6-floor-ward-cobbles`, `-hall-tiles`, `-walk-decking`, `-tower-boards` | The ward's cobbles and the hall's flags read as their rooms. The walk's decking and the North-west Tower's boards are the skin's planks now, photographed, with pixel decking beside the walk on the left: line 1's seam again, not a floor that reads wrong. |
+| The props | **Devon** | `r4-7-cabinet-in-pixel-hall` | `GothicCabinet_01` now sits among the skin's photographed hall walls and looks at home against them; against the pixel flags and the pixel pillar beside it, it is line 1. Whether 2b's increment 3 (#813) is still wanted depends on line 1. |
+| The number | **Pass** | none | `renderer.info.memory` off the live page: 552 textures and 507 geometries, read through `scene.onBeforeRender` because three 0.169 defines `render` per instance and a prototype patch catches nothing. `test/budget.mjs`: 198 images, 58.6 MB, 5.4 under 64. They count different things, as #900 said: three counts texture objects with clones, the suite counts images. |
+| The two knobs | **Devon** | `r4-9-two-knobs-ward-noon`, `r4-2-shadowed-hall-north-wall` | `toneMappingExposure` 1.0 and the hemisphere at 2.0, read off the page. Nothing in eighteen stills is clipped white; the pixel slate at Sext in the Clerk of Works' office is navy and legible. No change is proposed, and a knob turned now would be tuned against surfaces 2i is about to replace. |
+
+**Nothing was fixed.** No still showed a defect in lane B whose cause a test
+could be written for first (#34). Two things seen that are not this row's
+and not filed: the skin's merlons on the tower roofs are soft and swim at
+1 m (`r4-1`, `r4-5-...-prison-roof`), which is 2i's texel density; and the
+doubled article #900 found on readables is gone from the lodge's prompt
+("Press E to read the lodge's ordinances", `r4-2-...-west-face`).
+
+**Why the row stays open.** Lines 1, 5, 7 and 9 are one question: #742 made
+the castle pixel art, and #839 and 2i's curtain stage made its walls
+photographs, and today the game shows both in one frame. #921 says the
+fifteen textures go when 2i swaps the last surface wearing one, so this
+row ends by itself if 2i runs to `land`. Whether the pixel look is still
+wanted beside the skin, or the row should be retired into 2i now, is
+Devon's call, asked in the PR.
+
+## Feel: the three GPU looks, and the hand turned along the arm (2026-10-04)
+
+Written as #1013 and #1014 and moved to #1014 and #1015 at merge time:
+CC-16 took #1013 for rank 4's look and merged first (PR #120).
+
+Session CC-13, DEVON-DESKTOP (RTX 3070 Ti), headed Chrome 1600 x 900, Claude
+Opus 5.5 as lead. Stills in `looks/2026-10-04/before/` (origin/main at
+d3493be) and `looks/2026-10-04/after/` (this branch, the hand only), taken by
+the new hand-run `tools/shot-feel.mjs`, which pins the camera like
+`tools/shot-yard.mjs`, stands the feet with `__player.settle()`, and measures
+the disc in every shot by rendering it three ways: as shot, hidden, and drawn
+with depthTest off (footprint vs visible pixels; a pixel counts at a channel
+change over 6/255). `shots.log` in each folder has every number. The
+stills are JPEG at quality 90, 6.9 MB for the 34, where the PNGs were 39 MB;
+the measurement reads the lossless frames and never the JPEG.
+
+**#1014. The three looks, answered.**
+
+- Look 1, the blob on stone and on grass at the same bell: GOOD. Terce,
+  straight down (pitch -1.35): stone inner ward 98% of the disc visible,
+  darkens the floor under it 20%; grass outer ward 100% visible, 23%.
+  Vespers: stone 97% / 21%, grass 100% / 27%. Glancing down (pitch -0.95):
+  stone 94% / 20%, grass 98% / 22%. On grass the pebble pattern breaks the
+  edge up but the darkening is the same or stronger. Stills a1 to a6. One
+  caveat recorded, not a defect: with a 72 degree vertical FOV the disc is
+  only in frame once the player looks about 40 degrees or more below level,
+  so a player walking with the view level never sees it.
+- Look 2, the flat disc on a flight: DEFECT, cause named. The plan stands a
+  body on a flight as a ramp (`castle-plan.js` `heightOnSurface`, foot to
+  head over 3.3 m of run and 3.9 m of rise), but the model drawn there, kit
+  `stairs-stone.glb` scaled 3 x 3.9 x 3.3, is 8 steps of 0.4875 m riser and
+  0.4125 m tread. The ramp line runs through the inner corner of every step,
+  so it is under each tread by 0 to 0.49 m, and the disc at feet + 0.02 is
+  inside the stone. Measured on nw-tower-stair-1 and kitchen-tower-stair-2 at
+  30% and 62% of the run: going up (pitch -0.9) 0% of the disc visible in
+  all four; looking at the feet (pitch -1.35) 37 to 40% visible, 0% at
+  kitchen-tower-stair-2 62%; going down (pitch -0.9) 84 to 89%, 25% at
+  kitchen 62%, and what shows going down is the disc's downhill half hanging
+  over the lower treads, not lying on them. Last night's #900 stills f3
+  showed no disc either, which this explains. Not fixed tonight: the fix
+  needs the plan to carry a flight's step count (8 for this model) so the
+  rig can put the disc on the tread top under the player while the feet
+  stay on the ramp, and putting that in `castle-plan.js` with its assertion
+  is a plan-suite question (#500, #529), so it goes to `architect` first.
+  Alternatives for that section to weigh: hide the disc on a ramp (one line,
+  loses the cue on every stair); draw it with depthTest off on a ramp only
+  (paints over a riser the way a real shadow would, and over the hand or a
+  body's feet if they overlap). Also recorded: at kitchen-tower-stair-2 62%
+  the eye (8.12) is above the level-2 floor top (8.0) and the frame is the
+  inside of the slab; a walking question, found not filed.
+- Look 3, the hand at the word-lock: DEFECT, fixed under #1015. Before
+  (stills before/c2, c3, c5): the hand reads as a rolling pin, an 8-sided
+  end cap with a stub of finger past it. Cause:
+  `this.hand.quaternion.copy(this.camera.quaternion)` laid the 0.20 m
+  forearm along the view axis, 7.3 degrees off the line to the eye at the
+  settled reach, so the eye looked down the forearm, and the forearm ended
+  mid-frame (NDC 0.14, -0.17).
+
+**#1015. The hand turned along the arm** (`src/player-rig.js`, builder). The
+fingers point from a shoulder at camera-space (0.24, -0.42, 0.08) to the
+hand, up taken from the camera, `Matrix4.lookAt` on module scratch, no
+allocation per frame. The forearm is 0.56 m (hand z 0.02 to 0.58, far radius
+0.042 to 0.046), still one merged geometry, so still two draw calls;
+`FOREARM_END` exported and carried as `rig.armEnd`. Everything else
+unchanged: NO_RAY on both meshes, no planId, `userData.playerRig`, `settle()`
+bringing matrixWorld, the 0.78 m reach clamp. Two assertions added to
+test/plan-vs-scene.mjs's shadow-and-hand beat, each broken on purpose (#34),
+as a table:
+
+| The break | What failed |
+| --- | --- |
+| old code | (a) "7.3 degrees ..., wants 25 or more"; (b) arm end undefined, NDC (NaN, NaN); with armEnd 0.22 patched in, NDC (0.14, -0.17) |
+| `quaternion.copy(camera.quaternion)` put back | (a) 7.3 degrees; (b) NDC (0.40, -0.48) |
+| forearm cut back to end at 0.22 | (a) passed; (b) "arm end at hand z 0.22 (mesh box 0.220), projects to NDC (0.21, -0.36)" |
+
+(a) is "its forearm runs along the arm, not straight back at the eye": 25
+degrees or more, now 31.5. (b) is "the arm comes in from the edge of the
+frame": its far end projects outside NDC +-1 or behind the camera, now
+(0.77, -1.59), and rig.armEnd must match the mesh box within 0.005 m.
+
+After (stills after/c2, c3, c5-700ms): an arm from the bottom right of the
+frame to a hand at the leaf; mid-turn (c5-700ms) the palm and four fingers
+read plainly; settled at the lock the fingers foreshorten into a small knot
+past the wrist. That last read is "needs Devon's eye": whether the settled
+hand wants its palm turned toward the leaf. npm test 15 suites green, npm run
+build ok (the lead will re-run before the PR).
+
+Next free number: #1016.
+
+---
+
+## Rank 6: the GPU look at chatter playback, and `renderer.info` with the populace in (2026-10-04)
+
+Session CC-06, on Devon's Windows machine, worktree `castle-conundrum-cc06`
+at `d3493be`. Class F: a look and a measurement, nothing built. No file
+under `src/`, `data/` or `test/` changed. Three passes of a hand-run headed
+script (Playwright's Chrome, 1200 x 800, dpr 1, ANGLE on an NVIDIA GeForce
+RTX 3070 Ti, Direct3D 11), which stands the camera with `window.__cam` and
+`__player.settle()`, rings with `__quest.handleBell()`, logs every change of
+`#caption` with its time, and reads `renderer.info` through the scene's own
+`onBeforeRender`/`onAfterRender` hooks, as `test/play-castle.mjs`'s `cost`
+does. The 22 stills and the three logs (`cc06-look-pass1.json` to
+`pass3.json`) are in `looks/2026-10-04/`, each still named for the item it
+answers. The script itself was not committed: it was scratch, and the logs
+carry every number below. One GPU and three sessions: the window was opened
+only with no other headed game window up, and closed after each pass.
+
+**#1016. The looking list of #931 and #934, judged.**
+
+| Item | Verdict | What was seen |
+| --- | --- | --- |
+| 1. The hall at Vespers, end to end | **Fail, cause #1017**, on its first 41 s; the nine pairs pass | Bell to dark 194.0 s and 194.1 s in two runs, against #934's 193.3. Gaps 4.02 s. Order as #935. At every pair's first line both speakers stood in `great-hall` within 0.16 m of their stations. But the song starts at the bell, captioned "the benches take up the time with their cups", to an empty hall (`931-1-hall-vespers-00-song.png`): Dafydd's walk from his Sext station is 44.0 m, 40.0 s at 1.1 m/s, and the song is 37.0 s. |
+| 1b. Whether 3 min 14 s of supper is too much | **Needs Devon's eye** | Nine pairs, 18 lines. The fallback (#934, `outer-prime-3` to the outer ward at Terce) was not taken. |
+| 2. Both speakers in the King's Hall when `inner-sext-1` is captioned after the Sext bell | **Fail, cause #1017** | Twice: the first line at 4.0 s with Piers Marrable in `steward-chamber`, 16.4 m from his station (`931-2-kings-hall-sext-first-line-inner-sext-1.png`). He reached the hall at 21.5 s (`...-steward-arrived.png`), as the second pair began. The whole first pair is said by a man in the next room. |
+| 3. `outer-terce-1` from the east end of the outer ward | **Fail, cause #1017**; the reach **needs Devon's eye** | The first line at 4.1 s with Master Robert still in `clerk-office`, 4.1 m from his station; his walk is 9.5 m, 8.6 s. From the east end both speakers are 29.6 and 30.2 m off, small figures through the gate arch (`931-3-...`). That is #928's accepted coarseness, seen. |
+| 4. The band going dark on the hall's threshold | **Pass** | Stepped out cell by cell at 0.5 m: the band went dark on the same cell, (-20.75, 5.75), as the HUD changed to "Outer ward", for the song (#926, watched on a page for the first time) and for a pair. Walking back in started the next unheard pair at once (#929). |
+| 5a. The band over the dialogue panel | **Pass** on layout; **needs Devon's eye** on the voice | The band is at y 104 to 172 and the panel at y 623 to 768: no overlap, both read. But it puts Father Anselm in two conversations at once, the caption's with Sir Roger and the panel's with the player (`931-5-band-over-dialogue-...`). |
+| 5b. The band over the journal | **Needs Devon's eye** | The journal (z 50) covers the band (z 15) with its scrim. The band stays dimly legible and keeps running, so a pair's lines go by unread while the journal is open (`931-5-band-over-journal-...`). Pausing the band under the journal is the obvious change. Leaving it as it is costs nothing, because `_heard` is per page. |
+| #934. The chapel at Prime, four pairs, the same two men | **Pass** on timing; **needs Devon's eye** on the sameness | 64.3 s from the first line to dark, against 64.0. Both men at their stations, 1.5 and 4.5 m from the camera. |
+| #934. The King's Hall walked into after the bell | **Pass** on timing | 63.7 s from the first line to dark, against 63.5. |
+
+**#1017. A bell starts a piece before its speakers have walked to it, at three
+of the four places. Filed, not fixed.** What is wrong: #925 follows a bell
+with `CHATTER_GAP_MS`, 4000 ms, and #592 starts a performance on the bell
+itself. #928 consults no body, on the grounds that #912 proves the schedule
+puts both speakers in the room. It does at the bell's *station*, not at the
+moment the band lights, because the twelve walk there (`src/main.js`'s
+`onWatch`, `walk: true`). Walk times, by `castleNav().route` from the last
+bell's station at 1.1 m/s, against what covers them:
+
+| Place | Slowest speaker | Walk | Covered by |
+| --- | --- | --- | --- |
+| `kings-hall`/sext | steward | 28.0 m, 25.5 s | 4.0 s: no |
+| `great-hall`/vespers, the song | sentry | 44.0 m, 40.0 s | 0 s: no |
+| `great-hall`/vespers, the first pair | sentry | 44.0 m, 40.0 s | 37.0 + 4.0 s: yes, by 1 s |
+| `outer-ward`/terce | clerk | 9.5 m, 8.6 s | 4.0 s: no |
+| `chapel`/prime | nobody walks | 0 | yes |
+
+Walking into the hall within 40 s of Vespers shows the same thing from the
+other door (`931-4-threshold-c-...`, Dafydd captioned 6 s after the bell).
+**Why not tonight**: the fix amends #925's gap and #592's start, and either
+fix moves #928's "no body is consulted". That is class O, not a small look
+fix. **Recommendation for that increment**: a placed pair or a performance
+is not started before `walkMs` has passed since the bell, where `walkMs` is
+the longest of its speakers' routes from the last bell's station to this
+one, divided by their speed, worked out once from `castleNav` and the
+schedule. The 4000 ms gap follows as before. This reads data and no body,
+so #928 holds in spirit, and it is provable in Node in `test/quest.mjs`
+(#529). Walking in after `walkMs` is unchanged. The numbers it would give
+today are the table's: 25.5, 40.0 and 8.6 s.
+
+**#1018. `renderer.info` on the GPU with the populace in, and the town's share:
+none by the ceilings as written, six by the measurement, and only after 2c's
+increment 2.** Read with all 41 bodies built (445 skinned meshes), 37 to 39
+visible by bell. Each ward's number is the worst of four quarter-turns from
+one open-ground cell, 90 frames each. Draw calls and triangles are the whole
+frame, the shadow pass included.
+
+| Where | Bell | Draw calls | Triangles | Skinned draws, main + shadow | Bodies drawn | Frame ms p50 / p95 |
+| --- | --- | --- | --- | --- | --- | --- |
+| outer ward | prime | 425 | 198,551 | 154 + 339 | 14 | 14.6 / 20.6 |
+| inner ward | prime | 704 | 316,271 | 169 + 339 | 22 | 14.3 / 20.3 |
+| chapel | prime | 992 | 435,251 | 326 + 339 | 36 | 16.1 / 24.3 |
+| outer ward | terce | 440 | 211,947 | 172 + 362 | 16 | 17.5 / 21.5 |
+| inner ward | terce | 758 | 350,701 | 219 + 362 | 26 | 14.7 / 22.8 |
+| outer ward | sext | 435 | 203,831 | 171 + 351 | 16 | 21.5 / 29.3 |
+| inner ward | sext | 723 | 329,287 | 188 + 351 | 25 | 21.3 / 27.1 |
+| great hall, pair 1 | vespers | 395 | 203,224 | 64 + 339 | 13 | 14.1 / 20.2 |
+| outer ward | vespers | 399 | 261,537 | 151 + 339 | 18 | 13.0 / 16.5 |
+| inner ward | vespers | 728 | 337,423 | 194 + 339 | 24 | 14.6 / 21.4 |
+
+The Sext frame times are about 6 ms over every other bell's, in views with as
+few as 24 skinned draws, so they read as load from another session's run on
+the same machine and not as the castle. They are left out of the arithmetic.
+Draw calls and triangles do not depend on load.
+
+**What the table says that the budget did not.** (1) The shadow pass skins
+every visible body's every primitive on every frame, wherever the player
+stands: 339 to 362 shadow draws in every row, against `test/budget.mjs`'s
+386 for all 41 built. The sun's shadow camera is a fixed 80 m square
+(`src/scene-setup.js`), and the castle is inside it. So a body costs the same
+in either ward, and a per-ward body ceiling is not what bounds the frame;
+the total of visible bodies is. (2) Live draw calls run 1.5 to 2 times the
+suite's per-ward mesh count (474 and 379 against `MAX_DRAW_CALLS_PER_WARD`
+600), because the shadow pass draws again and there is no occlusion culling:
+the chapel's 992 is a camera seeing 36 bodies through the walls. The 600 is
+a count of meshes and stays a count of meshes. This is a note, not a
+ceiling change.
+
+**The cost of one body, measured by taking bodies away.** Same view, 240
+frames each, hiding `group.visible` and putting it back. GPU time is from
+`EXT_disjoint_timer_query_webgl2` over `renderer.render`, which the driver
+has.
+
+| View | All 37 | Populace hidden (25 visible) | All hidden | Per body, frame | Per body, GPU |
+| --- | --- | --- | --- | --- | --- |
+| great hall at Vespers, wide | 12.4 and 13.3 ms; GPU 8.5 and 9.1 | 9.5; GPU 5.2 | 7.5; GPU 3.2 | 0.145 ms | 0.150 ms |
+| inner ward at Vespers, facing west | 15.9 and 15.3 ms; GPU 10.8 and 10.4 | 12.8; GPU 7.6 | 9.1; GPU 4.7 | 0.176 ms | 0.160 ms |
+
+A hidden body's `AnimationMixer` still ticks, so these are a floor on what a
+body costs, not the whole of it. **The arithmetic.** By the ceilings as
+written: `MAX_SKINNED_TOTAL` 41, built 41, so **0**. The outer ward peaks at
+24 of `MAX_SKINNED_PER_WARD` 24 at `terce-eve`, so **0** in any ward that can
+see the town, and the inner ward's 6 is not where the town is.
+`MAX_SKINNED_DRAWS_TOTAL` 394, 386 drawn, 8 left, which are the hen-wife's
+(#940): no Quaternius human at 12 to 15 draws, one shared-rig person at five
+at most. By the measurement: the heaviest view, the inner ward facing west,
+has a median frame of 15.6 ms. A 60 Hz frame is 16.7 ms, so 1.1 ms is left,
+and 1.1 / 0.176 is **6 bodies** before that view's median crosses it, on
+this card at this size. Its p95, 19.2 to 21.1 ms, is already over 16.7, and
+the phone (#530) has never been measured.
+
+**Recommendation for the town's share, written into the rank 6 row.** Do not
+add the town's people on the Quaternius bodies. Order: 2c's increment 2
+first, which moves the 15 populace humans onto the shared rig at five draws
+at most against 12 to 15 (#825), and should free the largest single share of
+the skinned draws. Then run this same measurement again: the take-away of
+bodies in the two views above, 240 frames each. Set the town's number from
+that. Until then the town's share is **6 bodies at most**, argued in
+HISTORY.md as 41 to 47 beside its draws. Each body goes on the shared rig.
+Each stands outside the sun's 80 m shadow square with `castShadow` off, so it
+pays the main pass only when it is on screen. That last point is a reading
+of `src/scene-setup.js`, not a measurement. Nothing was raised tonight:
+`MAX_SKINNED_TOTAL`, the per-ward ceilings and the draw ceilings are
+untouched. Rows 2c and 2d hold that argument (lane C), and it is the next
+increment.
+
+**Not verified.** The phone. A frame time on an idle machine: other sessions
+ran suites during every pass, and the Sext rows show it. Whether a town body
+really falls outside the shadow square: no town body exists to put there.
+`npm run play` itself was not run; this session's script drove the same
+page with the same hooks and did not walk the day.
+
+Next free number: #1019.

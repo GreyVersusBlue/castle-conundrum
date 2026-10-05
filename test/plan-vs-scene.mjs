@@ -574,6 +574,28 @@ try {
       rig.want = 1; rig.settle();
       at.returned = rig.hand.position.distanceTo(held);
 
+      /* Does it read as a hand on an arm? The forearm is the hand's own +z.
+       * Turned with the camera, it pointed back at the eye: the eye looked down
+       * its axis, its end cap covered the palm and the hand read as a rolling
+       * pin (looks/2026-10-04). So the angle between the forearm and the line
+       * back to the eye has to be wide enough to see the arm side on, and the
+       * arm's far end has to lie off the frame, so it is not a severed arm
+       * hanging in the middle of the view. The end is the rig's own number,
+       * and it is held to the geometry's box so the number cannot drift from
+       * the mesh it describes. */
+      cam.updateMatrixWorld();
+      const hm = rig.hand.matrixWorld;
+      const armAxis = new THREE.Vector3(0, 0, 1).transformDirection(hm);
+      const toEye = new THREE.Vector3().subVectors(cam.position, new THREE.Vector3().setFromMatrixPosition(hm)).normalize();
+      at.armToEyeDeg = THREE.MathUtils.radToDeg(Math.acos(Math.min(1, Math.max(-1, armAxis.dot(toEye)))));
+      if (!rig.hand.geometry.boundingBox) rig.hand.geometry.computeBoundingBox();
+      at.armEnd = rig.armEnd;
+      at.armEndBox = rig.hand.geometry.boundingBox.max.z;
+      const far = new THREE.Vector3(0, 0, rig.armEnd ?? NaN).applyMatrix4(hm);
+      at.armBehind = new THREE.Vector3().subVectors(far, cam.position).dot(ahead) <= 0;
+      const ndc = far.clone().project(cam);
+      at.armNdc = { x: ndc.x, y: ndc.y };
+
       // 3. The rays, each cast twice: the rig's own raycast, then THREE.Mesh's.
       const both = (object, from, dir, far) => {
         const ray = new THREE.Raycaster(from.clone(), dir.clone().normalize(), 0.02, far);
@@ -644,6 +666,13 @@ try {
     check(feel.at.fromEye <= 1.0 && feel.at.inFront > 0.3,
       'and it reaches from the player rather than flying to the door',
       `${feel.at.fromEye.toFixed(2)} m from the eye, ${feel.at.inFront.toFixed(2)} of the way in front of it`);
+    check(feel.at.armToEyeDeg >= 25,
+      'and its forearm runs along the arm, not straight back at the eye',
+      `${feel.at.armToEyeDeg.toFixed(1)} degrees between the forearm and the line to the eye, wants 25 or more`);
+    const armOff = feel.at.armBehind || Math.abs(feel.at.armNdc.x) > 1 || Math.abs(feel.at.armNdc.y) > 1;
+    check(Number.isFinite(feel.at.armEnd) && Math.abs(feel.at.armEnd - feel.at.armEndBox) < 0.005 && armOff,
+      'and the arm comes in from the edge of the frame rather than ending in the middle of it',
+      `arm end at hand z ${feel.at.armEnd} (mesh box ${feel.at.armEndBox.toFixed(3)}), projects to NDC (${feel.at.armNdc.x.toFixed(2)}, ${feel.at.armNdc.y.toFixed(2)})${feel.at.armBehind ? ', behind the camera' : ''}`);
     check(feel.riddleBack, 'and the beat leaves the riddle overlay open, the way it found it');
   }
 
@@ -1126,6 +1155,55 @@ try {
       check(!!seen.alone && seen.alone.includes(seen.folk),
         `and with the suspect hidden on the same spot it falls back to "${seen.alone}"`,
         seen.alone === null ? 'no prompt at all, so the label body was never in range and the line above proves nothing' : seen.alone);
+    }
+  }
+  /* AND A PIECE THE SKIN DRAWS IS NOT STONE IN FRONT OF ITSELF (#1008). The
+   * curtain skin (#1005) hides the built walk bar, which stays the evidence
+   * target's `group`, and draws `BAR_walk-bar` as its own child of the scene.
+   * `occluders()` used to drop the group alone, so the sight ray met the skin
+   * bar 0.09 to 0.16 m short of the bar's own aim point: the GPU run's fifth
+   * sitting stood the player 0.5 m from it in the Stockhouse top room with no
+   * prompt, and the day lost `door-unbarred` and the porter's admission.
+   *
+   * THE CONTROL IS THE RAY ITSELF. A prompt here proves nothing unless the
+   * skin node really stands between the eye and the aim point, so the same
+   * segment is cast against the target's skins alone first and has to hit
+   * them; and the target has to carry a skin at all. Then the prompt has to be
+   * the bar's. Static geometry, so CI may hold it (#53). The pose is the one
+   * the GPU run gave up at, (-1.9, -16.9) on the level-2 floor. */
+  {
+    const seen = await page.evaluate(async ({ eye }) => {
+      const frame = () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      const promptNow = () => { const el = document.getElementById('interact-prompt'); return el && !el.classList.contains('hidden') ? el.textContent.trim() : null; };
+      document.getElementById('riddle-cancel').click();
+      await frame();
+      const T = window.__THREE;
+      const t = window.__interaction.targets.find((x) => x.isEvidence && x.id === 'walk-door');
+      if (!t) return { missing: true };
+      const from = new T.Vector3(-1.9, 8 + eye, -16.9);
+      const at = t.focus.clone();
+      const cam = window.__player.camera;
+      const home = { p: cam.position.clone(), r: cam.rotation.clone() };
+      cam.position.copy(from);
+      cam.rotation.set(0, Math.atan2(-(at.x - from.x), -(at.z - from.z)), 0, 'YXZ');
+      const dir = at.clone().sub(from);
+      const dist = dir.length();
+      const ray = new T.Raycaster(from, dir.normalize(), 0.05, dist);
+      const throughSkin = ray.intersectObjects(t.skins || [], true).length;
+      await frame();
+      const prompt = promptNow();
+      cam.position.copy(home.p);
+      cam.rotation.copy(home.r);
+      return { skins: (t.skins || []).map((s) => s.name), throughSkin, prompt, want: t.prompt, active: t.active };
+    }, { eye: EYE_HEIGHT });
+    if (seen.missing) fail('no walk-door evidence target on the page to try the skin from');
+    else {
+      check(seen.skins.length > 0 && seen.throughSkin > 0,
+        `the walk bar's target carries its skin (${seen.skins.join(', ')}) and the eye-to-bar ray passes through it`,
+        seen.skins.length ? `the ray from the pose misses the skin, so the line below proves nothing (${seen.throughSkin} hits)` : 'the target carries no skin nodes');
+      check(seen.active && seen.prompt === seen.want,
+        `and from the Stockhouse top room the HUD offers "${seen.prompt}"`,
+        `wanted "${seen.want}", got ${seen.prompt === null ? 'no prompt' : `"${seen.prompt}"`}, active ${seen.active}`);
     }
   }
   /* AND WHAT THE VERDICT DOES TO THE STONE (#539). `castle-builder.js`'s

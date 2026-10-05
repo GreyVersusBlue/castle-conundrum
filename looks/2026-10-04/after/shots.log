@@ -1,0 +1,8 @@
+c1-hand-word-lock-turned-away | disc footprint 0 px, visible 0 px (-%), darkens -% of the floor under it, noise 0 px | sky prime | eye 21.00,1.70,-12.00 yaw 3.116 pitch 0 | feet 0.000 on ground | prompt null | shadow 21,0.02,-12 | hand hidden reach 0
+c2-hand-word-lock-at-rest | disc footprint 0 px, visible 0 px (-%), darkens -% of the floor under it, noise 0 px | sky prime | eye 21.00,1.70,-12.00 yaw -0.026 pitch 0 | feet 0.000 on ground | prompt "Press E to read the word-lock" | shadow 21,0.02,-12 | hand 21.093,1.633,-12.772 reach 1
+c3-hand-word-lock-closer | disc footprint 0 px, visible 0 px (-%), darkens -% of the floor under it, noise 0 px | sky prime | eye 21.00,1.70,-13.20 yaw -0.026 pitch -0.1 | feet 0.000 on ground | prompt "Press E to read the word-lock" | shadow 21,0.02,-13.2 | hand 21.189,1.563,-13.944 reach 1
+c5-hand-word-lock-turning-300ms | sky prime | eye 21.00,1.70,-12.00 yaw 1.633 pitch 0 | prompt null | shadow 21,0.02,-12 | hand hidden reach 0
+c5-hand-word-lock-turning-700ms | sky prime | eye 21.00,1.70,-12.00 yaw 0.993 pitch 0 | prompt "Press E to read the word-lock" | shadow 21,0.02,-12 | hand 20.915,1.397,-12.62 reach 0.497
+c5-hand-word-lock-turning-900ms | sky prime | eye 21.00,1.70,-12.00 yaw 0.389 pitch 0 | prompt "Press E to read the word-lock" | shadow 21,0.02,-12 | hand 21.083,1.635,-12.772 reach 0.976
+c5-hand-word-lock-turning-1100ms | sky prime | eye 21.00,1.70,-12.00 yaw -0.008 pitch 0 | prompt "Press E to read the word-lock" | shadow 21,0.02,-12 | hand 21.092,1.633,-12.772 reach 0.999
+c5-hand-word-lock-turning-1700ms | sky prime | eye 21.00,1.70,-12.00 yaw -0.026 pitch 0 | prompt "Press E to read the word-lock" | shadow 21,0.02,-12 | hand 21.093,1.633,-12.772 reach 1

@@ -1517,10 +1517,10 @@ compositing eleven times over four sittings (#624 to #630, #708 to #715,
 holds: the sentry's and the porter's sighting beats pass, the accusation
 selects 3 of 3, and the whole day and the whole second day have now been
 walked by `npm run play` for the first time. **What is left is exit 0**:
-run 5 of the fourth sitting still ends 212 ok, 6 failures. Rank 3a (Play Again
-does not start over, #916) and rank 3b (three small suite and data bugs,
-#917) have since shipped in Node, leaving one more GPU run, and the phone in
-the room (#530) is untouched.
+**reached 2026-10-04, 217 ok, 0 failures** (#1010 to #1012), after 3a
+(#916), 3b (#917) and 3c (#1012) shipped and three suite bugs were fixed in
+`test/play-castle.mjs` (#1006, #1010, #1011). The phone in the room (#530) is
+untouched.
 
 **The judgement half of this row is done.** Every render question this
 section used to list is answered in `HISTORY.md`: the twelve at Vespers
@@ -1560,7 +1560,10 @@ the lever is `lighting.fog` (#796), not the town or the west wall.
 in `looks/2026-10-03/`, from both west tower roofs and the west walk at
 Terce, Prime and Vespers. #900 reads the gate as fog colour, the ridge as a
 small grey point and no water told apart; that is the session's reading,
-not Devon's, and this item stays open until he judges them.
+not Devon's, and this item stays open until he judges them. The fifth
+sitting took the shot again with the curtain skin in (#1009, `q6` to `q8`,
+`shots/quay/`, not committed) and read the same; the lever is still
+`lighting.fog`. From SPECS' west-walk eye the skin now blocks the ridge.
 
 ### Dependencies
 
@@ -1569,14 +1572,60 @@ not Devon's, and this item stays open until he judges them.
 - The run needs a machine with a GPU, which is Devon's; a session can add a
   beat and cannot run it. If a session is asked to take the run without one,
   the honest output is the beat and a note, not a claim.
-- **What exit 0 still owes**: rank 3a (Play Again, #889) shipped (#916) and
-  rank 3b (the last three standing failures, #890) shipped (#917). One more
-  GPU run is owed, and it confirms both.
+- **Exit 0 is reached** (#1012). Nothing in this list gates it any more.
 
 ### Constraints
 
 - #53 (the whole point of the row).
 - #34 does not apply: no rail is added.
+
+---
+
+## The walk bar hides itself
+
+**Rank 3c. Shipped (#1012), against #1008.** Its row is retired from
+`BACKLOG.md` and `ROADMAP.md`; the section stays because other sections cite
+it. The fix is the recommendation below, held by the `plan-vs-scene` beat its
+acceptance names, broken on purpose and watched fail (#34), and confirmed by
+`npm run play`'s first exit 0. Filed by the GPU run's fifth sitting against
+#1005, as a game bug. On the intended path the player reaches the Stockhouse
+Tower's top room and is never offered the bar, so `door-unbarred` is never
+held and the porter's admission on the cross-wall walk fails with it: four of
+run 2's four failures.
+
+**The cause.** `src/castle-builder.js`'s `skin()` hides the built bar,
+which stays the evidence target's `group`, and adds the skin node
+`BAR_walk-bar` as its own child of the scene. `src/interaction.js`'s
+`occluders()` drops each target's `group` and nothing else, so
+`hasLineOfSight` meets the visible skin bar 0.09 to 0.16 m short of the
+target's aim point (-2.3, 8.75, -16.5), from every eye a probe tried. #1005
+made the target's `active` read the skin; its sight was missed.
+
+### Scope
+
+- `src/interaction.js`, or the target the builder hands it. **Recommendation:
+  the builder puts a swapped piece's skin nodes on its evidence target (for
+  example `target.skins`), and `occluders()` drops those as well as
+  `target.group`.** It keeps the one rule in one place (a target never
+  occludes itself) and needs no ray change. The alternative, aiming the
+  ray at the skin's box rather than the built one's, moves the aim point for
+  one piece and leaves the rule wrong for the next swap.
+- Check the other piece swapped at `curtain`, the muniment door's lock: it
+  passes today, likely because its aim point sits in front of its skin, and
+  the fix should cover it by construction rather than by luck.
+
+### Acceptance
+
+- `test/plan-vs-scene.mjs` (live scene, static, so CI may hold it, #53): from
+  a pose in the Stockhouse top room facing the bar, the prompt is the bar's.
+  Broken on purpose (#34): with the skin nodes left in `occluders()`, it
+  goes red.
+- The next `npm run play` passes "walked to the bar beside the Stockhouse
+  door" and the three beats after it, which is rank 3's exit 0.
+
+### Constraints
+
+- #53, #34, #500 (the built bar stays built, tagged and collided), #965.
 
 ---
 
@@ -1671,7 +1720,8 @@ Haven's 341.
    textures, one per existing material name, so the castle is whole in the
    new look on one GPU sitting and not one wall at a time. A container
    closed it: no `ktx`, no network, no GPU. **Then somebody looks** (#53),
-   with the checklist at the end of this section — nobody has yet.
+   with the checklist at the end of this section; CC-16 did, on
+   2026-10-04 (#1013).
 2. ~~**Variety**: a wall and a floor per named room, about forty textures,
    against the texture ceiling below. Gated on the look, the way rank 11's
    second increment is.~~ **Superseded** by "Castle in Blender" (#839).
@@ -1739,29 +1789,36 @@ hemisphere fill left for the GPU to judge.
 
 ### Looking checklist
 
-Nobody has seen any of this (#53). `npm run play`, or the `applyWatch` look
-#711 used, on the dev machine, and write what was wrong rather than that it
-was wrong, in `HISTORY.md` against this row.
+Looked at on 2026-10-04 (#1013), eighteen stills in `looks/2026-10-04/`,
+one session after 2i's curtain stage (#1005) put photographed stone on the
+cross-wall, the drums and the hall walls. `[x]` is a pass off a still; `[ ]`
+waits on Devon, and all four are one question: the pixel look beside the
+skin, kept, or the row retired into 2i (#921). The table in #1013 has the
+still and the sentence for each.
 
-- [ ] **One castle or two.** From the North-west Tower's roof, #630's own
+- [ ] **One castle or two.** *Devon*: the kit seam is gone under the skin;
+      the seam now is photographed skin beside pixel posts and floors. From the North-west Tower's roof, #630's own
       vantage: the crown's merlons (the kit) against the drum's stone and
       the curtain (this row). Does the seam between kit and stone still show?
-- [ ] **The shadowed faces.** The cross-wall's west face and the Great
+- [x] **The shadowed faces.** The cross-wall's west face and the Great
       Hall's north wall, which #438 and #713 measured near-black under
       photographic slate. A darker palette, or a hole?
-- [ ] **A metre from a wall at a grazing angle.** 43 texels a metre, NEAREST:
+- [x] **A metre from a wall at a grazing angle.** 43 texels a metre, NEAREST:
       blocks, or a smear? Anisotropy is on; is the minified far wall a moire?
-- [ ] **The four skies and Lauds.** The same wall at Prime, Terce, Sext,
+- [x] **The four skies and Lauds.** The same wall at Prime, Terce, Sext,
       Vespers (#474) and on the morning after (#712): four bells, or one?
 - [ ] **The eight tints** (#516) over pixel stone: still eight towers?
-- [ ] **Under foot.** The ward's cobbles, the hall's tiles, the walk's
+      *Devon*: the drums are skin now, two families, not eight tints.
+- [x] **Under foot.** The ward's cobbles, the hall's tiles, the walk's
       decking, a tower's boards: does a floor read as its room's?
 - [ ] **The props.** A photographed cabinet in a pixel room: the next
-      increment, or fine?
-- [ ] **The number.** `renderer.info.memory.textures` off the live page
+      increment, or fine? *Devon*: at home against the skin's walls,
+      line 1 against the pixel floor.
+- [x] **The number.** `renderer.info.memory.textures` off the live page
       against `test/budget.mjs`'s estimate, written down beside it.
 - [ ] **The two knobs.** `toneMappingExposure` and the hemisphere's 2.0: what
-      the palette needs, if anything.
+      the palette needs, if anything. *Devon*: 1.0 and 2.0, nothing
+      clipped; no change proposed while 2i is replacing the surfaces.
 
 ---
 
@@ -1855,6 +1912,9 @@ this row is below.
 - **The 17 are increment 5, below** (#932 to #938): Devon decided #914 on
   2026-10-03 as recommended, so nine are recast, eight retired, and the pool
   is 19 pairs with a `room` each.
+- **The GPU look at playback and `renderer.info` with the populace in are
+  done** (#1016 to #1018, 2026-10-04), below under "The GPU look". Left from them:
+  the bell-walk fix (#1017), Devon's five calls (#1016), and the town's share (#1018).
 
 ### Increment 3: the twelve's chatter held to the schedule, and `drill` dropped
 
@@ -2627,6 +2687,39 @@ the report is replaced by a failure. #34 and #147: the four breaks. #36 and
 `data/lore.json` are edited keeping each file's own line ending. #53: the
 looking list is not asserted. Writing style: no em dash in any line.
 
+### The GPU look, and what is left after it
+
+**Run 2026-10-04** (session CC-06, #1016 to #1018) on Devon's RTX 3070 Ti, with the
+stills and logs in `looks/2026-10-04/`. `HISTORY.md` carries the verdict
+table and every number. In short: the threshold passes, the nine hall pairs
+run 194.0 s against 193.3, and three places fail for one cause, a bell
+starting a piece while its speakers are still walking (#1017).
+
+**Next: the bell-walk fix, class O** (#1017). It amends #925's gap, #592's start
+on the bell and #928's "no body is consulted", so `architect` writes it
+first. The recommendation, for the open call it will carry: a placed pair or
+a performance does not start before `walkMs` since the bell, where `walkMs`
+is the longest of its speakers' `castleNav` routes from the last bell's
+station to this one, divided by their speed. Today that is 25.5 s for the
+King's Hall at Sext, 40.0 s for the hall at Vespers (the song included) and
+8.6 s for the outer ward at Terce. The 4000 ms gap follows it unchanged. It
+reads the schedule and the plan and no body, so it is `test/quest.mjs`'s and
+provable in Node (#529). Rejected: a check that both bodies have arrived,
+which needs a retry clock (#928's own reason), and a longer
+`CHATTER_GAP_MS`, which would also lengthen every gap between pairs.
+
+**Devon's five calls** (#1016): the hall's 3 min 14 s, the chapel's four pairs
+between the same two men, a pair heard across 30 m of outer ward, the band
+under the journal, and Father Anselm on the band while he is in the panel.
+
+**The town's share** (#1018): 0 by the ceilings as written, 6 by the
+measurement (1.1 ms of headroom at 0.176 ms a body in the heaviest view, on
+this card at 1200 x 800). Recommended order: 2c's increment 2, then the same
+take-away measurement again, then the town's number argued in `HISTORY.md`
+by 2c or 2d (lane C). Each town body goes on the shared rig, outside the
+sun's 80 m shadow square, with `castShadow` off. This row does not
+renegotiate a ceiling from a container.
+
 ### Dependencies
 
 - **Nothing gates it.** Rank 10 unblocks the four deferred activities and
@@ -2888,9 +2981,11 @@ ray that was never going to hit anything.
 - GPU acceptance (#53): a screenshot of the player approaching a door with the
   hand visibly reaching, and a screenshot of the shadow on stone versus on
   grass; one sentence each in `HISTORY.md`, the same bar rank 2's photograph
-  sets. **Still open**, and a third shot was added to it by the work: the disc
-  is flat and a flight of stairs is a ramp, so what it does on a stair is
-  unlooked-at.
+  sets. **Met for the shadow** (stone and grass, #1014) **and for the hand**
+  (#1015, with one thing left for Devon's eye: whether the settled hand wants
+  its palm turned toward the leaf, not just mid-reach). **Still open for the
+  stair disc**: a flight of stairs is a ramp in the plan but 8 steps on
+  screen, and the disc sits inside the stone on every tread (#1014).
 
 ### Open calls
 
@@ -2900,6 +2995,16 @@ ray that was never going to hit anything.
   of the two. What shipped is cheaper again than a baked file — the gradient is
   painted into a canvas at load, so there is no asset to encode (#506) and
   nothing new is fetched (#493).
+- **How the disc sits on a flight.** Three options weighed: hide the disc on
+  a ramp (one line, loses the cue on every stair); draw it with depthTest off
+  on a ramp only (paints over a riser the way a real shadow would, and over
+  the hand or a body's feet if they overlap); or give the plan a flight's
+  step count (8 for `stairs-stone.glb`) so the rig can put the disc on the
+  tread top under the player while the feet stay on the ramp. **Recommended:
+  the step count in the plan**, asserted by `layout.mjs` or
+  `plan-vs-scene.mjs` against the model (#500, #529), with the rig reading it
+  to place the disc. This needs an `architect` section before anything is
+  built: it crosses the plan/scene line.
 - **Everything else in the theme** (weather, fire, examine, wear, sitting) is
   explicitly a later increment each, in no fixed order — `WISHLIST.md` ranks
   none of them against each other, and this spec does not invent an order it

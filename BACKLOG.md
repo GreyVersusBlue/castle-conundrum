@@ -246,11 +246,11 @@ the placement editor, budget suite, move-and-delete and the dialogue format
 | 2c | Blender: a shared rig with swappable parts: one rig, one-primitive parts, at most five skinned draws a person against the Quaternius rigs' 12 to 15, specced (#820 to #825); increment 1 shipped on huginn (#939 to #941); left: the Windows GPU look, which gates increment 2, the other 15 populace humans (container) | 2+ | Opus 5 | Windows: GPU look (#53), then Container | 1 shipped (#881) | F, C | | [Blender: a shared rig with swappable parts](SPECS.md#blender-a-shared-rig-with-swappable-parts) |
 | 2d | Blender: the animals: pig, goat, sheep, horse, cat and two geese on one quadruped topology plus a bird one for the goose, specced (#826 to #829); both increments shipped on huginn (#942 to #945): six files, seven animals placed (pig, goat, sheep, horse and cat on the quadruped topology, the goose on a 12-joint bird topology, two geese); left: the Windows GPU look, which blocks nothing (#53) | 1 | Opus 5 | Windows: GPU look (#53) | 2c increment 1 committed (#941); 1 shipped (#881) | F, C | | [Blender: the animals](SPECS.md#blender-the-animals) |
 | 2i | Castle in Blender, the integration row: the game takes the model as a skin and never reads `markers.json` (#919); specced (#963 to #968): one `assets/castle3d/skin.glb` cut from the master by stage (`curtain`, `buildings`, `town`, `land`), about 25 MB and 37.3 MB of texture memory against the master's 570 MB and 1,738.8 MB, trees decimated to 2,000 triangles, KTX2 through `assets:encode`; draw ceiling 1200 to 600, a new 500,000-triangle ceiling, texture 64 to 76 to 84 (#966); #499 and #506 stand (#967); six increments; increment 1, #922's open gate in the model, built (#970) and accepted (#1001); increment 2, the skin, built outside the repo (#1003); increment 3, stage curtain in the game, next | 2+ | Opus 5 | Local: Blender GPU (5.2, Devon's Windows machine only), plus `ktx`; judged local: GPU (#53) | 2h shipped (#962) | G | | [Castle in Blender: the integration row](SPECS.md#castle-in-blender-the-integration-row) |
-| 3 | The GPU run: the fourth sitting confirmed the sight fix on a GPU and walked the whole day and the second day (#886 to #891); exit 1, 6 failures, 3a (#916) and 3b (#917) shipped, one more GPU run owed; the quay look's stills taken (#900, `looks/2026-10-03/`), Devon's verdict owed; `renderer.info` recorded (#887); the phone (#530) untouched | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
-| 4 | The retro castle: increment 1 shipped, fifteen sets out and fifteen 128 px textures in (#757 to #766); the look is left; variety per room is superseded by 2h (#839); the props increment moved to 2b (#813) | 2+ | Opus 5 | Container to the look, local: GPU past it | — | B | | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
-| 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #729 to #733); four generated clips placed in the household's routines (#800), `drill` dropped (#915); the twelve's chatter pool placed and played by room and bell, 19 pairs after nine were recast and eight retired (#911, #925 to #938); left: the town's share of the fifty, the GPU look at playback (`npm run play`, #53, the looking list in #931) | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
+| 3 | The GPU run: **exit 0 reached** (#1010 to #1012): 217 ok, 0 failures, after 3a (#916), 3b (#917) and 3c (#1012) shipped and three suite bugs were fixed (#1006, #1010, #1011); left: the phone (#530), untouched, and Devon's verdict on the quay stills (#900, #1009); `renderer.info` recorded (#887) | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
+| 4 | The retro castle: increment 1 shipped, fifteen sets out and fifteen 128 px textures in (#757 to #766); variety per room is superseded by 2h (#839); the props increment moved to 2b (#813); the GPU look done under the curtain skin (#1013): five checklist lines pass, and four wait on Devon, all one question: the pixel look beside 2i's photographed skin, kept, or the row retired into 2i ("one castle or two", "the eight tints", "the props", "the two knobs") | 2+ | Opus 5 | Devon's call; local: GPU if a knob moves | — | B | | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
+| 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #729 to #733); four generated clips placed in the household's routines (#800), `drill` dropped (#915); the twelve's chatter pool placed and played by room and bell, 19 pairs after nine were recast and eight retired (#911, #925 to #938); the GPU look at playback done (#1016): the threshold passes, a bell starts a piece before its speakers have walked to it at three of four places (#1017, class O next), and five calls wait on Devon; `renderer.info` read with the populace in (#1018); left: the bell-walk fix (#1017), Devon's five calls (#1016), and the town's share, 0 by the ceilings and 6 by the measurement, recommended after 2c's increment 2 and a second measurement (#1018) | 2+ | Opus 5 | Container | — | C, D | | [Life: a populace](SPECS.md#life-a-populace) |
 | 7 | Sound: the hammer and sweep event sounds, which wait on rank 6's activity clips; recorded CC0 audio only if a clip beats a synthesised sound (#548). The beds, the rings, the door and the hound were listened to and left as they are (#974) | 1 | Fable 5.1 | Container | rank 6's clips | E | | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
-| 11 | Feel: presence, fire, weather, a door that opens | 2+ | Sonnet 5 | Container to the Node line, local: GPU past it | **after 3** | D | shadow + hand shipped 2026-09-17 (#650 to #654) | [Feel](SPECS.md#feel) |
+| 11 | Feel: the three GPU looks answered (#1014): the blob reads on stone and on grass; the disc is buried in every flight, because a flight is a ramp in the plan and 8 steps on screen; the hand turned along the arm (#1015). Next: the stair disc (architect first: a flight's step count in the plan), then doors that open | 2+ | Sonnet 5 | Container to the Node line, local: GPU past it | **after 3: met** | D | shadow + hand shipped 2026-09-17 (#650 to #654) | [Feel](SPECS.md#feel) |
 
 **`ROADMAP.md` is these three columns turned into an order**: which row to
 take first, what each one unblocks, and which ones two sessions may hold at
@@ -328,15 +328,19 @@ to #891). The fourth sitting's fifth run walked the whole day and the whole
 second day for the first time: the accusation selects 3 of 3, "Master Robert
 Ferrour hangs," and Play Again's pane. `renderer.info` was read at five
 beats and recorded against rank 2c and 2d's skinned-draw ceiling (#887). Exit
-0 is still owed — rank 3a (Play Again does not start over, #916) and rank 3b
-(three small suite and data bugs, #917) shipped, so what is left is one more
-GPU `npm run play` to reach exit 0, which also confirms 3b's three beats and
-the three Play Again beats — and the phone (#530) is untouched. **One more shot
+0 was reached on 2026-10-04 (#1010 to #1012): the fifth sitting confirmed
+rank 3a (#916) and rank 3b (#917) on a GPU and filed rank 3c (the curtain
+skin's walk bar blocked its own sight line, #1008), 3c shipped (#1012), and
+the run ended **217 ok, 0 failures** after three suite bugs were fixed
+(#1006, #1010, #1011). What is left is not the run: the phone (#530) is
+untouched. **One more shot
 moved here from rank 9 (#910)**: the quay through the fog, a pinned camera
 through `tools/shot-yard.mjs`, to say whether the toll-house ridge (about 98 m,
 60 % fog) and the river (first seen at 119.7 m, 84 % fog) read at all. Seven
 stills of that view exist, `q1` to `q5` and two crops in `looks/2026-10-03/`
-(#900); Devon's verdict on them is owed and nothing is closed.
+(#900); Devon's verdict on them is owed and nothing is closed. The fifth
+sitting retook it with the skin in (#1009) and read the same.
+
 
 **Settled and closed by the looking already done** (#711 to #715, #891):
 the compressed textures, the tower roof climb, the gaol roll on the
@@ -366,7 +370,12 @@ into `test/budget.mjs`. Texture memory: **80.8 MB before, 37.9 MB after**.
 `npm test` fifteen of fifteen, `dist/` 52.8 to 28.9 MB. No `ktx`, network or
 GPU needed.
 
-**Then somebody looks** (#53), with the checklist in `SPECS.md`. The second
+**Somebody looked on 2026-10-04** (#1013), eighteen stills in
+`looks/2026-10-04/`, after 2i's curtain stage (#1005) had put photographed
+stone on the cross-wall, the drums and the hall. Five checklist lines pass;
+four wait on one call of Devon's: whether the pixel look is still wanted
+beside the skin, or the row retires into 2i, which deletes the fifteen
+textures when it swaps the last surface wearing one (#921). The second
 increment, a wall and a floor of its own in every named room, is superseded
 by 2h (#839): the game keeps these fifteen textures until the stage of 2i
 that swaps the last surface wearing one (#921), and forty more would be
@@ -384,7 +393,7 @@ gossip pairs, bringing the page to 32 of 32 bodies built — 13 cast plus 19
 populace, exactly `MAX_SKINNED_TOTAL` (#729 to #733). `test/mystery.mjs`
 owns the validator (#529); `test/budget.mjs` counts the household.
 
-**Five increments shipped, and what is left waits on a GPU look and one budget.**
+**Five increments shipped and the GPU look is done; what is left is one fix, five calls of Devon's and one budget.**
 The third held the twelve's chatter pool to the schedule (#911, #912): 10 of
 27 pairs carry a `room` at a day-one bell where both speakers stand, with the
 rail in `src/lore.js` and its tests in `test/lore.mjs`; the other 17 cannot be
@@ -403,14 +412,40 @@ The fifth closed the pool (#932 to #938): nine pairs recast onto two
 speakers the schedule puts in one room, eight retired, 19 pairs each with a
 `room`, and a pair with no `room` refused by `src/lore.js`.
 
-**Left, in the order it can happen.** (1) The GPU look at playback, which nobody has run: `npm run play` on a
-real GPU (#53), judged against the looking list in #931 (the hall at Vespers
-end to end at 193.3 s, the chapel's four pairs at Prime between the same two
-men, `outer-terce-1` from the east end of the outer ward,
-the band over the panel and the journal). (2) The town's share of the fifty, and whether
-`garden` becomes ground, which waits on the skinned-draw budget:
-`MAX_SKINNED_TOTAL` is 41 since 2d's increment 2 (#945) and 2c's increment 2 renegotiates it again (#825), and
-CC-04.
+**The GPU look at playback was run on 2026-10-04 (#1016 to #1018)**, on Devon's
+RTX 3070 Ti, with 22 stills and three logs in `looks/2026-10-04/`. The
+threshold passes: the band goes dark on the cell where the HUD changes, for
+the song and for a pair. The nine pairs in the hall run 194.0 s against
+193.3. Three places fail for one cause (#1017): a bell starts a piece while
+its speakers are still walking. The Vespers song is captioned to an empty
+hall (Dafydd's walk is 40.0 s, the song 37.0 s), the King's Hall's first
+pair is said with the Steward in his chamber (25.5 s walk, 4 s gap), and
+`outer-terce-1` starts with the clerk still in his office (8.6 s walk).
+`renderer.info` with the populace in: 339 to 362 shadow-pass skinned draws on
+every frame wherever the player stands, live draw calls up to 758 in a ward
+view and 992 from the chapel, and 0.145 to 0.176 ms of frame per body,
+measured by hiding bodies.
+
+**Left, in the order it can happen.** (1) The bell-walk fix (#1017), class O
+because it amends #925, #592 and #928: hold a placed pair or a performance
+until its speakers' walk from the last bell's station is done, worked out
+from `castleNav` and the schedule (25.5, 40.0 and 8.6 s today), and asserted
+in `test/quest.mjs`. (2) Devon's calls from #1016: whether 3 min 14 s of hall
+supper is too much (the fallback is #934's), whether four chapel pairs
+between the same two men read as one conversation, whether a pair heard
+across 30 m of outer ward is right, whether the band should pause under the
+journal, and whether Father Anselm can talk to Sir Roger on the band while
+the player has him in the panel. (3) The town's share of the fifty, and
+whether `garden` becomes ground. By the ceilings as written it is 0:
+`MAX_SKINNED_TOTAL` 41 of 41 built, the outer ward 24 of 24 at `terce-eve`,
+386 of 394 skinned draws. By the measurement it is 6: the heaviest view's
+median frame is 15.6 ms, 1.1 ms under 16.7, at 0.176 ms a body. **The
+recommendation (#1018)**: no town body on the Quaternius rigs. 2c's increment 2
+goes first and moves the 15 populace humans onto the shared rig. The two
+take-away measurements in #1018 are then run again, and the town's number is
+set from them. Until then the share is at most 6, argued in `HISTORY.md` as
+41 to 47 by 2c or 2d (lane C), each on the shared rig, outside the sun's
+80 m shadow square with `castShadow` off. No ceiling moved on 2026-10-04.
 
 ## Sound: a soundscape
 
@@ -449,10 +484,31 @@ most is that neither object answers a ray: the rig is a top-level scene child
 and `interaction.js` calls every one of those an occluder, so a disc under the
 player's feet would have stopped the prompt appearing and said nothing about it.
 
-**What is left needs a GPU and the rest of the theme needs it more.** Whether a
-blob reads on stone and still reads on grass, what the disc does on a flight of
-stairs, and whether a hand reads as a hand are the row's own GPU criteria (#53)
-and are unanswered. Nothing else in the theme — weather and sky, fire and its
-point-light budget, examine, doors that open, wear, sitting — starts before that
-pair has been looked at, because they are the ones that say whether the budget
-has room for the rest at all.
+**The three GPU looks, answered 2026-10-04 (#1014, #1015).** The blob shadow
+reads on stone and on grass at the same bell: 94 to 100% of the disc visible,
+darkening the floor 20 to 27% in both terrains. The disc on a flight of
+stairs is a defect: a flight is a ramp in the plan but 8 steps on screen, so
+the disc sits inside the stone on every tread, 0 to 40% visible going up and
+no better than 89% going down, and what shows going down is the disc hanging
+over the lower treads rather than lying on one. The hand read as a rolling
+pin, laid along the camera's own view axis 7.3 degrees off the line to the
+eye; turned to run along the arm instead (#1015), it now reads as an arm and
+a hand, 31.5 degrees off that line and in frame end to end.
+
+**What is left, in order.**
+
+1. The stair disc. Specced by `architect` first: the plan needs to carry a
+   flight's step count (8 for `stairs-stone.glb`), `layout.mjs` or
+   `plan-vs-scene.mjs` asserts it against the model, and the rig puts the
+   disc on the tread top under the player while the feet stay on the ramp.
+2. Devon's eye on the settled hand: whether its palm wants to turn toward
+   the leaf at the word-lock, not just mid-reach.
+3. Then the theme's next increment: doors that open. It reuses the hand's
+   reach and the word-lock's target, adds no point light and no
+   shadow-casting light, and the budget has the room (`test/budget.mjs`
+   holds 3 point lights against ceilings of 6 per ward and 8 total; the rig
+   itself is two draw calls `budget.mjs` cannot see).
+
+`WISHLIST.md` ranks none of the theme's remaining items; fire is the first
+that spends point lights and stays after doors. Weather, examine, wear and
+sitting have no order invented among them.

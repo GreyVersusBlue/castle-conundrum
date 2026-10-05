@@ -379,6 +379,21 @@ const CHAMBER_OUT = [
   [[6, 9], "the Steward's chamber, under its door"],
   [[6, 3.5], 'through that door, into the inner ward'],
 ];
+/* THE CHAPEL TOWER'S LOWER FLIGHT, DOWN (#1010). Not on the day's path, and
+ * still a stair of record, because the day's path stands on its foot: the body
+ * and the pouch lie at the bottom of `chapel-tower-stair-1` (axis x 24.75, foot
+ * z 17.65 at y 0, head z 14.35 at y 3.9), whose ramp starts 0.06 m off the
+ * floor. Three GPU runs on 2026-10-04 walked up it from the pouch, by a held W
+ * twice and by `hike`'s own route once, into the Chaplain's chamber (y 4,
+ * level 1) at (23.4, 14.4), and every hike after that gave up there because no
+ * stair of record led down. Square on to the head, down due south, and off it
+ * west, x under 24, where the ramp is not. */
+const CHAPEL_DOWN = [
+  [[24.75, 13.7], "the head of the chapel flight, square on to it"],
+  [[24.75, 18.2], 'down the chapel flight, due south'],
+  [[23.0, 18.0], "off it, west onto the chapel floor"],
+];
+const inChaplainsChamber = (at) => at.level === 1 && at.x > 21.2 && at.x < 26.8 && at.z > 13.2 && at.z < 18.8;
 
 /* A WALK TO ANOTHER STOREY TAKES THE STAIRS OF RECORD, BECAUSE THE ROUTE'S
  * OWN MARKS CANNOT BE DRIVEN UP A FLIGHT. Measured on a GPU on 2026-09-21: the
@@ -415,6 +430,11 @@ const changeStorey = async (from, to) => {
   } else if (from === 2 && to === 0) {
     await hike(BAKEHOUSE_DOWN[0][0], 2);
     done = (await legs(BAKEHOUSE_DOWN)) && (await legs(CHAMBER_OUT));
+  } else if (from === 1 && to === 0 && inChaplainsChamber(await playerAt())) {
+    done = await legs(CHAPEL_DOWN);
+    const at = await playerAt();
+    console.log(`  note  down the Chapel Tower: ${done ? 'every leg reached' : 'stopped'}, now L${at.level} at (${at.x.toFixed(1)}, ${at.z.toFixed(1)})`);
+    return done;
   } else {
     console.log(`  note  no stair of record from L${from} to L${to}; hiking the route as it comes`);
     return false;
@@ -556,7 +576,14 @@ const walkTo = async (target, who, level = 0, within = Infinity) => {
     if (d > 0.3 && Number.isFinite(d)) { await aimAt(page, target); await wait(80); }
     return !!(await state()).prompt?.includes(who);
   };
-  if (!(await near(0))) {
+  /* THE FIRST READ GETS THE REAL DISTANCE TOO (#1011). It passed 0, which
+   * skipped `within`, so "examine" read as "arrived" wherever any evidence
+   * prompt was up. Hidden while the walk bar offered nothing; with rank 3c in
+   * (#1008) the player stood at the bar under its own prompt, the tally beat
+   * read that as the tally, never hiked, and gave up 30.3 m from the stick on
+   * 2026-10-04. */
+  const start = await playerAt();
+  if (!(await near(Math.hypot(start.x - target[0], start.z - target[1])))) {
     const here = await playerAt();
     if (here.level !== level) await changeStorey(here.level, level);
     await hike(target, level);
@@ -1424,7 +1451,30 @@ try {
    * where this one did and meets the same stonework. "About": if W was stopped
    * short by a wall, S overshoots, and the offset is printed with the result so
    * a reading can be judged. This is after `the-pouch-taken` is shot and takes
-   * no clue, so no earlier beat and no journal row can see it. */
+   * no clue, so no earlier beat and no journal row can see it.
+   *
+   * FACING THE DOOR, NOT THE POUCH (#1006). `examine` leaves the camera on the
+   * pouch, a metre from the body at the stair foot, so both walks went at the
+   * stair. On the first GPU run of this beat (2026-10-04) the first W stopped at
+   * 0.69 m, S overshot by 2.99 m, and the second W ran 3.67 m up the flight to
+   * level 1, where no stair of record leads back down: every hike for the rest
+   * of the day gave up at (23.4, 14.4) L1.
+   *
+   * AND NOT IN THE CHAPEL AT ALL (#1010). Facing the door was not enough: on
+   * the next run the S back-up overshot 1.24 m, the second W clipped the same
+   * flight from there, and the day stranded at the same (23.4, 14.4) L1 with
+   * the journal beat itself passing at ratio 1.18. Anything that walks freely
+   * inside the Chapel Tower can catch that stair. So the player hikes out to
+   * the point outside its door (19.3, 13.3), which the run reached on the way
+   * in, and both walks go south along the open inner ward the same run walked
+   * north up. The journal has the same five clues there. */
+  // Off the stair foot first, west, where the ramp is not (CHAPEL_DOWN, #1010),
+  // and down again if anything has already carried the player up it.
+  await driveTo(page, CHAPEL_DOWN[2][0], async (d) => d < 0.6, { maxBursts: 20, nearAt: 2.5, longMs: 250, shortMs: 90 });
+  { const at = await playerAt(); if (at.level !== 0) await changeStorey(at.level, 0); }
+  await hike([19.3, 13.3], 0);
+  await aimAt(page, [18.7, 6.5], 0);
+  await wait(120);
   const walk700 = async (key = 'KeyW') => {
     const from = await playerAt();
     await page.keyboard.down(key);
