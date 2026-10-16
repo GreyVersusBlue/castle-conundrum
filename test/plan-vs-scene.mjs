@@ -437,6 +437,49 @@ try {
     }
   }
 
+  /* AND THE BELL WALK REACHES THE PAGE (#1020, #1021, #1023). test/mystery.mjs
+   * holds `routeFrom` against the station routes and pins `walkMs`, and
+   * test/quest.mjs holds the band's wait. What neither can see is
+   * src/main.js, which nothing in Node loads. Two reads, one beat:
+   *   - `onWatch` routes a body from the floor under its feet, so two frames
+   *     after a walking Vespers the sentry is still up on the north walk at his
+   *     Sext station. Routed from the destination's floor his route is null
+   *     and he is placed in the hall, 24.9 m off.
+   *   - main.js hands `walkMs` to the manager, so the same bell leaves
+   *     `__quest.settling` at `['great-hall']`.
+   * Parked, not waited on (#724): two frames at a `dt` capped at 0.05 s move
+   * a body at most 0.11 m a frame, so 1.0 m is placement and not pace. Put
+   * back the way the upstairs beat puts it back. */
+  {
+    const walkMystery = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/mystery.json'), 'utf8'));
+    const sext = castleNav(plan, walkMystery).at('sentry', 'sext');
+    if (!sext || typeof sext.h !== 'number') fail('the sentry has no Sext station with a floor under it, so the bell walk cannot be read on the page');
+    else {
+      const walked = await page.evaluate(async () => {
+        const two = () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+        window.__quest.applyWatch('sext', { walk: false });
+        await two();
+        window.__quest.applyWatch('vespers');
+        await two();
+        const n = (window.__cast || []).find((x) => x.id === 'sentry');
+        const out = { at: n ? { x: n.group.position.x, y: n.group.position.y, z: n.group.position.z } : null, settling: window.__quest.settling };
+        window.__quest.applyWatch(window.__mystery.watch, { walk: false });
+        return out;
+      });
+      await page.evaluate(async (home) => {
+        window.__populace.setWatch(home, { walk: false });
+        await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      }, walkMystery.watches[0]);
+      const off = walked.at ? Math.hypot(walked.at.x - sext.x, walked.at.z - sext.z) : Infinity;
+      check(walked.at && off <= 1.0 && Math.abs(walked.at.y - sext.h) <= 0.5,
+        `two frames after a walking Vespers the sentry is ${walked.at ? off.toFixed(2) : '-'} m from his Sext station with his feet at ${walked.at ? walked.at.y.toFixed(2) : '-'}: main.js walks him from the floor he stands on (#1021)`,
+        walked.at ? `he is ${off.toFixed(2)} m off with his feet at ${walked.at.y.toFixed(2)}, against a station at ${sext.h}: placed, not walked` : 'no sentry in window.__cast');
+      check(JSON.stringify(walked.settling) === JSON.stringify(['great-hall']),
+        'and __quest.settling is ["great-hall"]: main.js hands `walkMs` to the manager (#1020)',
+        JSON.stringify(walked.settling));
+    }
+  }
+
   /* AND THE HUD SAYS WHERE (#515). The room line is written by the page's own
    * `nav.roomAt` on the next frame after the camera moves, so with the camera
    * settled in each room the line has to read what the same resolver, run

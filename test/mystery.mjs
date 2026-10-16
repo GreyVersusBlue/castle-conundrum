@@ -491,6 +491,47 @@ console.log('\nthe twelve, at their stations');
   check(cook && cook.length > 1, `the cook walks ${cook ? cook.length - 1 : 0} cells from the kitchen to the Great Hall at Vespers`);
   const porter = nav.route(nav.at('porter', 'sext'), nav.at('porter', 'vespers'));
   check(porter && porter.some((p) => p.level === 2), `the porter climbs to the cross-wall walk: ${porter ? porter.length - 1 : 0} cells, top level ${porter ? Math.max(...porter.map((p) => p.level)) : '-'}`);
+
+  /* THE BELL WALK (#1020 to #1023). A body walks from the floor under its feet
+   * (#1021), so `routeFrom` a station's own point and feet has to be the
+   * station-to-station route, cell for cell, for every walk of day one and the
+   * walking day. And `walkMs`, which QuestManager holds a room for, is pinned
+   * at what the GPU look measured against rather than summed again here: a
+   * rail that recomputes the route is the walk re-implemented (#34). A station
+   * move that changes one of the three updates it in the same commit. */
+  const cellsOf = (r) => (r ? r.map((p) => `${p.x},${p.z},${p.level}`).join(' ') : 'null');
+  let walks = 0;
+  const astray = [];
+  for (const id of Object.keys(mystery.schedule)) {
+    for (const list of [mystery.watches, mystery.day0?.watches ?? []]) {
+      for (let i = 1; i < list.length; i++) {
+        const a = nav.at(id, list[i - 1]), b = nav.at(id, list[i]);
+        if (!a || !b) continue;
+        walks += 1;
+        const from = nav.routeFrom({ x: a.x, y: a.h, z: a.z }, b);
+        if (!from || cellsOf(from) !== cellsOf(nav.route(a, b))) {
+          astray.push(`${id} ${list[i - 1]} to ${list[i]} (level ${a.level} to ${b.level}): ${from ? `${from.length - 1} cells from level ${from[0].level}` : 'no route'} where the stations walk ${(nav.route(a, b)?.length ?? 1) - 1}`);
+        }
+      }
+    }
+  }
+  check(walks > 0 && astray.length === 0,
+    `every bell walk starts on the floor under the body's feet: ${walks - astray.length} of ${walks} routeFrom the station equal the station route (#1021)`,
+    `${astray.length} walks do not: ${astray.join('; ')}`);
+  const pinned = [['steward', 'sext', 25455], ['sentry', 'vespers', 40000], ['clerk', 'terce', 8636]];
+  for (const [id, w, ms] of pinned) {
+    const got = nav.walkMs(id, w);
+    check(got === ms, `the ${id}'s walk to ${w} is ${ms} ms at WALK_SPEED (#1023)`, `got ${got}`);
+  }
+  const zeros = [];
+  for (const id of Object.keys(mystery.schedule)) for (const w of ['prime', 'prime-eve', 'lauds']) zeros.push([id, w]);
+  zeros.push(['merchant', 'terce'], ['chaplain', 'vespers'], ['cook', 'sext']);
+  const notZero = zeros.map(([id, w]) => [id, w, nav.walkMs(id, w)]).filter(([, , ms]) => ms !== 0);
+  check(notZero.length === 0,
+    `walkMs is 0 for ${zeros.length} walks nobody takes: the first bell of each day, Lauds, a body placed at its first station, a body already there`,
+    notZero.map(([id, w, ms]) => `${id} at ${w}: ${ms}`).join('; '));
+  const fast = nav.walkMs('steward', 'sext', 2.2);
+  check(fast === 12727, 'and at 2.2 m/s the steward walks to Sext in 12727 ms: the speed is the divisor', `got ${fast}`);
 }
 
 /* ----------------------------------------------- 3: discoverability --- */

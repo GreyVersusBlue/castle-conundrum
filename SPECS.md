@@ -1915,6 +1915,8 @@ this row is below.
 - **The GPU look at playback and `renderer.info` with the populace in are
   done** (#1016 to #1018, 2026-10-04), below under "The GPU look". Left from them:
   the bell-walk fix (#1017), Devon's five calls (#1016), and the town's share (#1018).
+- **The bell-walk fix is increment 6, below** (#1020 to #1023): specified
+  2026-10-16, class S from here.
 
 ### Increment 3: the twelve's chatter held to the schedule, and `drill` dropped
 
@@ -2695,6 +2697,11 @@ table and every number. In short: the threshold passes, the nine hall pairs
 run 194.0 s against 193.3, and three places fail for one cause, a bell
 starting a piece while its speakers are still walking (#1017).
 
+**The bell-walk fix is specified as increment 6, below** (#1020 to #1023).
+The paragraph that follows is #1017's recommendation as filed; the numbers
+in it were recomputed in Node and hold, but its song row's cause did not:
+the sentry was placed in the hall at the bell, not walking (#1021).
+
 **Next: the bell-walk fix, class O** (#1017). It amends #925's gap, #592's start
 on the bell and #928's "no body is consulted", so `architect` writes it
 first. The recommendation, for the open call it will carry: a placed pair or
@@ -2719,6 +2726,273 @@ take-away measurement again, then the town's number argued in `HISTORY.md`
 by 2c or 2d (lane C). Each town body goes on the shared rig, outside the
 sun's 80 m shadow square, with `castShadow` off. This row does not
 renegotiate a ceiling from a container.
+
+### Increment 6: the bell walk
+
+**Specified 2026-10-16** (#1020 to #1023). Not built. Class S from here:
+every open call below carries a recommendation, no save bump, no assertion
+crosses a suite line. Limits: no station moves, no pair or piece is placed,
+recast, rewritten or retired, no body is added, `MAX_SKINNED_TOTAL`,
+`CHATTER_GAP_MS` (4000) and `SAVE_VERSION` (6) are untouched.
+
+**What the code says today, measured in Node on `f99f515`.** Two things,
+and the second is new.
+
+1. #1017 holds. `applyWatch` starts a performance on the bell and queues a
+   placed pair at `CHATTER_GAP_MS`; nothing waits for the walk. The walks,
+   by `castleNav().route` from the last bell's station at 1.1 m/s:
+   `kings-hall`/sext, steward, 28.0 m, **25455 ms**; `great-hall`/vespers,
+   sentry, 44.0 m, **40000 ms**; `outer-ward`/terce, clerk, 9.5 m, **8636
+   ms** (the merchant has no Prime station, so he is placed, not walked).
+   `chapel`/vespers (chaplain) and `kitchen`/sext (cook) are 0: the
+   performer is already there. `chapel`/prime has no bell before it. #1017's
+   25.5, 40.0 and 8.6 s are right.
+2. **`src/main.js`'s `onWatch` routes every body from the floor it is going
+   to, not the floor it is on** (#1021): `from = { x, z, level: to.level }`.
+   Of the 67 bell walks on day one and the walking day, 14 change level; 8
+   of those get a null route and are placed (`placeAt`) at the bell, and 6
+   start from the cell under the body on the destination's floor. The
+   sentry, on `north-walk` (level 2, feet at 8.0) at Sext, is placed in the
+   hall at Vespers: #1017's song row ("Dafydd's walk ... 40.0 s") is the
+   station route, not what the body does. The Lady, in `royal-apartments`
+   (level 1) at Terce, starts her Sext walk from the ground cell under her,
+   9.5 m where her route is 94.5 m, and her feet sink 4 m through the floor
+   at `CLIMB_SPEED`; at Vespers she is placed back upstairs. With the level
+   taken from `nav.roomAt(x, z, feet)` all 67 match `nav.route(station,
+   station)` cell for cell. Fixing (1) without (2) would hold the song 40 s
+   for a singer already standing in the hall.
+
+**The behaviour, in one paragraph.** A walking bell (`handleBell`, never a
+load, a reload or `applyDay*`, which pass `walk: false`) puts each room that
+has a performance or a placed pair at the new bell into `settling` for that
+room's `walkMs`: the longest walk of any speaker of any of its pieces, from
+the last bell's station to this one. While the player's room is settling
+nothing starts there, whether the player was standing in it at the bell or
+walked in after. When the room's wake fires it does what `applyWatch` does
+today: the performance at once, or failing one the room's first unheard pair
+after `CHATTER_GAP_MS`. Walking in after the wake is unchanged (#925: at
+once). Today that is the song at 40.0 s, `inner-sext-1` at 29.5 s and
+`outer-terce-1` at 12.6 s after the bell, where the GPU look saw 0, 4.0 and
+4.1 s.
+
+**Scope, by file.**
+
+- **`src/stations.js`.**
+  - `export const WALK_SPEED = 1.1;` with a comment saying it is the
+    twelve's pace in m/s, read by `src/npc.js` and by `walkMs`.
+  - `nav.routeFrom(body, to)`: `body` is `{x, y, z}` with `y` the feet;
+    returns `api.route({ x: body.x, z: body.z, level: api.roomAt(body.x,
+    body.z, body.y).level }, to)`. The comment says why: a body's floor is
+    the one under its feet, and #1021's 14 walks.
+  - `nav.walkMs(npcId, watch, speed = WALK_SPEED)`: the bell before `watch`
+    is the one before it in `mystery.watches`, or in `mystery.day0.watches`
+    for a walking-day bell. 0 when `watch` is the first of its day or in
+    neither list (`lauds`), and 0 when either station is null (a body with
+    no station at the last bell is placed, not walked). Otherwise
+    `routeFrom({ x, y: h, z } of the earlier station, the later station)`,
+    its length the sum of the horizontal distances between consecutive
+    points, and `Math.round(1000 * length / speed)`. A null route is 0:
+    `validateMystery`'s station rails already refuse a walk that has none.
+- **`src/npc.js`.** `PATROL_SPEED` becomes `WALK_SPEED` imported from
+  `./stations.js`, one line, so the pace `walkMs` divides by and the pace a
+  body walks at cannot drift. No other change.
+- **`src/main.js`.** Two edits.
+  - `onWatch`: `nav.route(from, to)` with `from = { x, z, level: to.level }`
+    becomes `nav.routeFrom({ x, y, z } of npc.group.position, to)`. A null
+    still places the body, as today.
+  - The `QuestManager` constructor gains `walkMs: (id, watch) =>
+    nav.walkMs(id, watch, npcData.cast.find((c) => c.id === id)?.speed)`,
+    with a comment: the walk is read off the schedule and the plan, never
+    off a body (#1020). No cast entry carries `speed` today; the child who
+    does is the household's, which this does not touch.
+- **`src/quest-manager.js`.**
+  - The constructor takes `walkMs = null`, documented beside `chatter`:
+    `(npcId, watch) => ms`; omitted is a castle where nobody is ever still
+    walking, which every existing rig gets.
+  - `this._bell = null` (a token, one per walking bell) and
+    `this._settling = new Set()`. A public getter `settling` returns
+    `[...this._settling]` sorted, for the browser seam below.
+  - `_settle(watch, walking)`: a fresh `_bell` token and an empty
+    `_settling`. If `walking` and `_walkMs` is set: for every room with
+    an entry in `_performances` or `_chatter` keyed `` `${room}/${watch}` ``,
+    `ms` is the largest `_walkMs(id, watch)` over every speaker of every
+    entry there (a performance's `npc`, a pair's `npcs`). If `ms > 0` the
+    room goes into `_settling` and a wake is scheduled at `ms`: if `_bell`
+    is no longer this token, nothing; otherwise the room leaves
+    `_settling`, and if `_room` is that room, `_playing` is null and `_gap`
+    is null, `if (!this._maybePerform()) this._queueChatter()`.
+  - `applyWatch`: `this._settle(watch, opts.walk !== false)` after
+    `_stopPerformance()` and before the existing `_maybePerform` /
+    `_queueChatter` line, which stays.
+  - `_maybePerform`, `_maybeChatter` and `_queueChatter` each return null
+    (nothing) first if `_settling.has(this._room)`. `performanceHere` and
+    `chatterHere` are not changed: they say what is due, not whether it may
+    start. `overhear` is not guarded (open call 6).
+  - The comment over `CHATTER_GAP_MS` loses "after a bell it is the
+    allowance for bodies still walking to their stations" and says the walk
+    is `walkMs`'s (#1020) and the gap follows it. The comment in
+    `applyWatch` that says the same is amended the same way.
+- **`test/mystery.mjs`**, **`test/quest.mjs`**, **`test/plan-vs-scene.mjs`**:
+  below.
+- **Not touched**: `data/` (every file), `src/lore.js`, `src/populace.js`
+  (the household's rings walk by their own clock and are not this
+  increment's), `src/save.js`, `src/ui.js`, `test/budget.mjs`,
+  `test/layout.mjs`, `test/play-castle.mjs`, anything under `tools/`.
+
+**Acceptance.** 1 to 4 in `test/mystery.mjs`, a new block at the end of
+"the twelve, at their stations" (section 2b), on the suite's own `nav`.
+5 to 13 in `test/quest.mjs`, a new section "the bell walk" after "two of
+the twelve, in a room", on `chatterRig({ walkMs })` where `walkMs` is `(id,
+w) => nav.walkMs(id, w)` off a `castleNav(makePlan(config, boundsOf),
+mystery)` built once at the section's top as line 1882 builds one; `rig`
+gains a `walkMs` option (default null) passed straight through, and
+`performRig`'s queue keeps each step's `ms` beside it, with `r.nextMs()`
+the first pending step's. 14 and 15 in `test/plan-vs-scene.mjs`, one beat
+after the chatter wire beat.
+
+1. **The level rail.** For each of the twelve in `mystery.schedule` and each two consecutive
+   bells of `mystery.watches` and of `mystery.day0.watches` where both
+   stations exist, `nav.routeFrom({ x, y: h, z } of the earlier station,
+   the later station)` is non-null and the same `x, z, level` list as
+   `nav.route(earlier, later)`. The check line prints the count: 67 of 67.
+2. **The three walks, pinned.** `nav.walkMs('steward', 'sext') === 25455`,
+   `nav.walkMs('sentry', 'vespers') === 40000`, `nav.walkMs('clerk',
+   'terce') === 8636`. A station move that changes one updates the number
+   in the same commit; that is the point of pinning what the GPU look
+   measured.
+3. **The zeros.** `walkMs` is 0 for all twelve at `prime`, at
+   `prime-eve` and at `lauds`, for `merchant` at `terce`, for `chaplain` at
+   `vespers` and for `cook` at `sext`.
+4. **The speed.** `nav.walkMs('steward', 'sext', 2.2) === 12727`.
+5. **Who settles.** Stood in `outer-ward` (`handleStand`) and rung to Terce,
+   `qm.settling` is `['outer-ward']`; rung to Sext, `['kings-hall']`; rung
+   to Vespers, `['great-hall']`.
+6. **The hall, stood in at the bell.** In `great-hall` at Sext, rung to
+   Vespers: the band is dark, `r.pending() === 1` and `r.nextMs() ===
+   40000`. Ticked once: the song's first line under "Dafydd ap Rhys".
+   Ticked through the song: one step pending at 4000, and it shows
+   `outer-sext-3`'s first line.
+7. **The King's Hall, stood in at the bell.** In `kings-hall` at Terce,
+   rung to Sext: dark, one step at 25455. Ticked once: still dark, one step
+   at 4000. Ticked once: `inner-sext-1`'s first line under "Sir Roger".
+8. **The outer ward.** On `outer-ward` at Prime, rung to Terce: one step at
+   8636, then one at 4000, then `outer-terce-1` under "Master Robert".
+9. **Walked in during the walk** (#1017's threshold-c still). In
+   `outer-ward` at Sext, rung to Vespers, then `handleEnter('great-hall',
+   0)`: the band stays dark and `qm.performing` is null. Ticked once: the
+   song's first line.
+10. **Walked in after it.** In `outer-ward` at Terce, rung to Sext, ticked
+    once (the wake, with the player elsewhere): the band is dark and
+    nothing is pending. Then `handleEnter('kings-hall', 0)`:
+    `inner-sext-1`'s first line at once.
+11. **A bell voids the last bell's wake.** In `kings-hall` at Terce, rung
+    to Sext and at once to Vespers, then ticked until nothing is pending
+    (capped at 200): no caption of any `kings-hall`/sext pair is ever
+    shown.
+12. **A placed bell does not wait.** In `outer-ward` at Sext, rung to
+    Vespers, then `handleEnter('great-hall', 0)` and
+    `qm.applyWatch(qm.watch, { walk: false })` (the reload's call): the
+    song's first line at once, and `qm.settling` is empty. And the chapel at
+    Vespers, stood in at the bell from Sext: the sermon's first line at
+    once, because the chaplain's walk is 0.
+13. Every section of `test/quest.mjs` above the new one passes with no edit
+    to its assertions, and every section of `test/mystery.mjs` likewise.
+14. **The walk seam, on the page.** `__quest.applyWatch('sext', { walk:
+    false })`, two frames; `__quest.applyWatch('vespers')`, two frames:
+    the sentry's body in `window.__cast` is within 1.0 m (horizontal) of
+    its Sext station and its `y` within 0.5 m of that station's `h` (8.0).
+    Placed, it would be 24.9 m off.
+15. **The handover seam.** In the same beat, `__quest.settling` deep-equals
+    `['great-hall']`. Then put back: `applyWatch(__mystery.watch, { walk:
+    false })`, `__populace.setWatch(mystery.watches[0], { walk: false })`,
+    two frames, as the upstairs beat restores. Parked, not waited on
+    (#724): two frames at `dt` capped at 0.05 s move a body at most 0.11 m
+    a frame, so 1.0 m is placement and not pace.
+
+`npm test` 15 of 15 and `npm run build` ok.
+
+**The #34 break, five of them, each from green and each restored.**
+
+- In `routeFrom`, take the level from `to.level` (today's `main.js`): 1
+  must go red, naming 14 walks, and 2's sentry must go red (null route,
+  0). Quote the Lady's line.
+- In `walkMs`, drop `/ speed`: 2 and 4 must go red.
+- Delete the `_settling.has(this._room)` guard from `_maybePerform`: 6 and
+  9 must go red (the song on the bell), 7 and 8 stay green. Quote 6.
+- Put `src/main.js`'s `onWatch` back to `nav.route({ x, z, level:
+  to.level }, to)`: 14 must go red while `npm test mystery quest` stays
+  green.
+- Delete `walkMs:` from `src/main.js`'s constructor call: 15 must go red
+  while `npm test quest` stays green. These two are what make 14 and 15
+  seams and not Node facts (#529).
+
+If any of the five leaves its suite green the row comes back to
+`architect` (#147).
+
+**Open calls, each with a recommendation.**
+
+1. **Per piece or per room.** Recommended: per room, the longest walk of
+   every speaker of every piece placed there at that bell (#1020), because
+   it is one wake per room with no clock to read, and it gives the same
+   number as the first piece's own speakers in every room today (hall
+   40000, King's Hall 25455, outer ward 8636).
+2. **The gap after the walk.** Recommended: the gap follows the walk, so a
+   pair waits `walkMs + CHATTER_GAP_MS` and a performance waits `walkMs`
+   (#1020), because the wake does exactly what `applyWatch` does today and
+   the dark band still has to read as a break.
+3. **Walking in before the wake.** Recommended: nothing starts and the wake
+   starts it (#1020), because the GPU look saw Dafydd captioned 6 s after
+   the bell from the other door, which is the same bug.
+4. **The cross-level walk.** Recommended: fixed in this increment (#1021),
+   because without it the song waits 40 s for a singer the page has
+   already put in the hall, and the Lady sinks through a floor every Sext.
+5. **One frame lost per waypoint.** `NPC.update` spends the frame it
+   reaches a waypoint on advancing the index and does not move. Recommended:
+   accept it and do not pad `walkMs` (#1022), because at 60 fps it is 0.32,
+   0.93 and 1.47 s on the three walks, a pair's 4000 ms gap covers all of
+   it, and the song's first caption is a 5115 ms stage direction ("Dafydd
+   is got up onto the bench end"), so Dafydd arriving 1.5 s into it reads
+   as written. Fixing it is `npc.js`, which no Node suite constructs.
+6. **The household's `talk`.** Recommended: not guarded (#1020), because
+   `Populace` hands a pair over only when both bodies are in earshot of the
+   player, so it is already a check that they arrived, and no room at any
+   bell holds a household pair and a placed piece (#927).
+7. **A bell rung while a body is still walking.** Recommended: accept that
+   `walkMs` is station to station (#1020), because a body caught mid-walk
+   is the player's own haste and the worst case is today's behaviour.
+8. **Pinning 25455, 40000 and 8636.** Recommended: pin them (#1023),
+   because they are what the GPU look measured against, and a rail that
+   recomputes them from the route would be the walk re-implemented (#34).
+9. **Rounding.** Recommended: `Math.round`, because the three numbers come
+   out whole and `Math.ceil` makes 8636.36 into 8637 for no reason a player
+   could see.
+
+**Looking list, `npm run play` on a GPU (#53), judged by Devon, asserted
+nowhere.** #1016's items 1 to 3 again: the song's first caption with
+Dafydd standing on the bench end and the four diners in; `inner-sext-1`'s
+first line at about 29.5 s with Piers Marrable at his station;
+`outer-terce-1` at about 12.6 s with Master Robert at the cart. And two
+walks seen for the first time: the sentry coming down off the north walk at
+Vespers, and the Lady going down her stair at Sext rather than through her
+floor. The hall from the bell to dark becomes about 234 s (40.0 of walk and
+194.0 measured); from the first note it is unchanged, so Devon's call on
+the hall's 3 min 14 s (#1016) is not moved by this.
+
+**Dependencies.** None. Lanes C and D, which rank 6 holds:
+`src/npc.js`'s one constant, `src/main.js`'s `onWatch` and constructor
+call. `src/stations.js`, `src/quest-manager.js`, `test/mystery.mjs`,
+`test/quest.mjs` and `test/plan-vs-scene.mjs` are in no other open row's
+scope; the browser suite gains one beat and moves none.
+
+**House rules that bite.** #529: the two `nav` facts are stations, so
+`mystery.mjs`; the band's timing is `quest.mjs`'s; `plan-vs-scene.mjs`
+holds only what `src/main.js` does, which no Node suite loads, and the
+breaks above prove each side. #928 in spirit: the manager reads a function
+of the schedule and the plan, never a body's position. #39 and #36: nothing
+is saved, `SAVE_VERSION` stays 6. #724 and #53: the browser beat parks and
+counts frames; every time a body takes is on the looking list. #632: every
+new assertion reads data through `JSON.parse`. #13: every new check exits
+non-zero. Writing style: no em dash in any line.
 
 ### Dependencies
 
