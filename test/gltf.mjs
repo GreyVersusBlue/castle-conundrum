@@ -152,17 +152,22 @@ function localMatrix(node) {
 /**
  * Every triangle in the file, in the model's own root space, with each node's
  * TRS chain applied. `verts` is a flat list of [x,y,z]; `tris` indexes into it.
+ *
+ * `only(nodeJson)`, if given, keeps a mesh when its own node or any ancestor
+ * passes, and skips decoding every other one: test/layout.mjs check 8c reads one
+ * `FLIGHT_<id>` out of the whole skin that way (#1032). No `only` keeps all.
  */
-export function triangles(file) {
+export function triangles(file, { only = null } = {}) {
   const g = readGLTF(file);
   const verts = [], tris = [];
   const nodes = g.json.nodes || [];
   const roots = (g.json.scenes?.[g.json.scene ?? 0]?.nodes)
     ?? nodes.map((_, i) => i).filter(i => !nodes.some(n => (n.children || []).includes(i)));
-  const walk = (index, parent) => {
+  const walk = (index, parent, kept) => {
     const node = nodes[index];
     const world = multiply(parent, localMatrix(node));
-    if (node.mesh !== undefined) {
+    const keep = kept || !only || !!only(node);
+    if (node.mesh !== undefined && keep) {
       for (const prim of g.json.meshes[node.mesh].primitives) {
         if (prim.indices === undefined) continue;
         const p = accessor(g, prim.attributes.POSITION).map(v => apply(world, v));
@@ -172,9 +177,9 @@ export function triangles(file) {
         for (let i = 0; i < idx.length; i += 3) tris.push([base + idx[i], base + idx[i + 1], base + idx[i + 2]]);
       }
     }
-    for (const child of node.children || []) walk(child, world);
+    for (const child of node.children || []) walk(child, world, keep && !!only);
   };
-  for (const root of roots) walk(root, IDENTITY);
+  for (const root of roots) walk(root, IDENTITY, false);
   return { json: g.json, verts, tris };
 }
 

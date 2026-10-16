@@ -90,8 +90,10 @@ function placementMatrix({ position = [0, 0, 0], rotationY = 0, scale = 1 }) {
   ];
 }
 
-/** Local (x, y, z) through the placement, for a ramp's two ends. */
-const placePoint = (transform, x, y, z) => applyPoint(placementMatrix(transform), x, y, z);
+/** Local (x, y, z) through the placement, for a ramp's two ends. Exported so
+ * test/layout.mjs check 8c puts the kit flight's vertices in world space
+ * through the plan's own placement, not a second T·R·S in the test (#1032). */
+export const placePoint =(transform, x, y, z) => applyPoint(placementMatrix(transform), x, y, z);
 
 const EMPTY = () => ({
   min: { x: Infinity, y: Infinity, z: Infinity },
@@ -1177,6 +1179,11 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
     if (drum.stairs && (!onlyStairs || onlyStairs === drum.id)) {
       const st = config.stairs;
       if (!st) throw new Error(`[castle-plan] ${drum.id} names a stairs side and the config has no \`stairs\` section`);
+      // `steps` is the treads the flight is DRAWN with, which the rig's shadow
+      // lies on (#1031); the ramp the feet walk is unchanged by it.
+      if (st.steps !== undefined && !(Number.isInteger(st.steps) && st.steps >= 1)) {
+        throw new Error(`[castle-plan] stairs.steps is ${JSON.stringify(st.steps)}, not a whole number of treads`);
+      }
       if (!d.inner) throw new Error(`[castle-plan] ${drum.id} has stairs and no interior to put them in`);
       const parts = boundsOf(kBase + st.model).parts;
       const raw = boxOfParts(parts);
@@ -1239,6 +1246,7 @@ export function makePlan(config, boundsOf, { closed = [], opened = [], stairs = 
           id, box, top: box.max.y, level: f.level, ramp: true, drum: drum.id,
           slope: { from: [low.x, low.z, box.min.y], to: [high.x, high.z, box.max.y] },
         };
+        if (st.steps !== undefined) s.steps = st.steps;
         surfaces.push(s);
         ramps.push(s);
       }
@@ -1727,14 +1735,21 @@ function coversSurface(s, x, z) {
   return true;
 }
 
-function heightOnSurface(s, x, z) {
-  if (!s.slope) return s.top;
-  const [ax, az, ay] = s.slope.from, [bx, bz, by] = s.slope.to;
+/** How far up a sloped surface (x, z) is, 0 at `slope.from` to 1 at `slope.to`,
+ * clamped. One function so the ramp and the tread over it cannot read two
+ * different `t` (#1031). */
+export function slopeT(s, x, z) {
+  const [ax, az] = s.slope.from, [bx, bz] = s.slope.to;
   const dx = bx - ax, dz = bz - az;
   const len2 = dx * dx + dz * dz;
-  if (len2 < 1e-9) return ay;
-  const t = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / len2));
-  return ay + (by - ay) * t;
+  if (len2 < 1e-9) return 0;
+  return Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / len2));
+}
+
+function heightOnSurface(s, x, z) {
+  if (!s.slope) return s.top;
+  const ay = s.slope.from[2], by = s.slope.to[2];
+  return ay + (by - ay) * slopeT(s, x, z);
 }
 
 /** Every height a body could stand at over (x, z): `[{h, surface, level, ramp}]`, highest first. */
@@ -1768,6 +1783,22 @@ export function standAt(plan, x, z, feet, stepUp = STEP_UP) {
     if (Math.abs(f.h - feet) <= stepUp + 1e-9) return f;
   }
   return null;
+}
+
+/** The height of what is DRAWN under (x, z) for a body with its feet at
+ * `feet`: standAt's floor, or on a flight that carries `steps`, the top of
+ * the tread over the ramp there. Null where standAt is null. At a riser line
+ * exactly it answers the higher tread, whose front edge is there; at t = 1 the
+ * `min` holds it to the last (#1031). */
+export function treadTop(plan, x, z, feet, stepUp = STEP_UP) {
+  const on = standAt(plan, x, z, feet, stepUp);
+  if (!on) return null;
+  if (!on.ramp) return on.h;
+  const s = plan.surfaces.find((q) => q.id === on.surface);
+  if (!s || !s.steps) return on.h;
+  const k = Math.min(s.steps, Math.floor(slopeT(s, x, z) * s.steps) + 1);
+  const ay = s.slope.from[2], by = s.slope.to[2];
+  return ay + (by - ay) * k / s.steps;
 }
 
 /* ------------------------------------------------------------- the body ---
