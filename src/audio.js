@@ -179,6 +179,8 @@ export const CUES = {
   'door-open': 'castle-builder.js openLock, on a leaf that was shut',
   'door-shut': 'castle-builder.js shutLeaf, on a leaf that was open',
   'hound-near': 'populace.js _follow, every frame a follow body is inside its radius',
+  'hammer-strike': 'populace.js update, when a body doing hammer crosses one of its beats',
+  'sweep-stroke': 'populace.js update, when a body doing sweep crosses one of its beats',
 };
 
 /**
@@ -367,15 +369,21 @@ export function createAudio(listener, sounds) {
     return end;
   };
 
-  /** The whole sound `def` from point `at`, now. Returns when it ends. */
-  const playSound = (def, at) => {
+  /**
+   * The whole sound `def` from point `at`, now, scaled by `scale` (a beat's
+   * own `gain`). `gainSpread` varies the sound's gain per play, the way a
+   * footstep's does, so 72 blows a minute are not one blow 72 times (#1042).
+   * Returns when it ends.
+   */
+  const playSound = (def, at, scale = 1) => {
+    const gain = vary(def.gain ?? 1, def.gainSpread ?? 0) * scale;
     const pn = at ? pannerFor({ panning: evSpatial.panning || 'HRTF', refDistance: evSpatial.refMetres ?? 1.5, maxDistance: evSpatial.maxMetres ?? 40, rolloff: evSpatial.rolloff ?? 1 }) : null;
     if (pn) moveTo(pn, at);
     const dest = pn || out;
     const times = Math.max(1, def.repeat?.times ?? 1);
     let t0 = ctx.currentTime + 0.001, last = t0;
     for (let k = 0; k < times; k++) {
-      for (const part of def.parts || []) last = Math.max(last, playPart(dest, part, t0 + (part.at ?? 0), def.gain ?? 1));
+      for (const part of def.parts || []) last = Math.max(last, playPart(dest, part, t0 + (part.at ?? 0), gain));
       t0 += vary(def.repeat?.gapSeconds ?? 0, def.repeat?.spread ?? 0);
     }
     if (pn) setTimeout(() => pn.disconnect(), (last - ctx.currentTime) * 1000 + 200);
@@ -384,11 +392,15 @@ export function createAudio(listener, sounds) {
 
   const point = (p) => (p && Number.isFinite(p.x) && Number.isFinite(p.z)) ? { x: p.x, y: Number.isFinite(p.y) ? p.y : 0, z: p.z } : null;
 
-  /** A cue that fires now, from `at`. */
-  const fire = (name, key, def, at) => {
+  // Every log entry's number, never reset, so a reader can ask for what came
+  // after a point even once the log is full and its length stops moving (#1043).
+  let seq = 0;
+
+  /** A cue that fires now, from `at`. `opts` is the cue's `gain`, `id` and `beat`. */
+  const fire = (name, key, def, at, { gain = 1, id = null, beat = null } = {}) => {
     const played = ctx.state === 'running';
-    if (played) playSound(def, at);
-    log.push({ cue: name, sound: key, at, played, t: performance.now() });
+    if (played) playSound(def, at, gain);
+    log.push({ seq: ++seq, cue: name, sound: key, at, played, gain, id, beat, t: performance.now() });
     if (log.length > LOG_MAX) log.shift();
   };
 
@@ -400,7 +412,7 @@ export function createAudio(listener, sounds) {
    * A state cue, fired every frame it holds: the data's `cadence` turns the
    * frames into moments.
    */
-  const paced = (name, key, def, at, metres) => {
+  const paced = (name, key, def, at, metres, opts) => {
     const c = def.cadence;
     const now = performance.now();
     if (!(metres <= c.withinMetres)) { clocks.delete(name); return; }
@@ -408,16 +420,17 @@ export function createAudio(listener, sounds) {
     if (!clock) { clock = { next: now + c.firstSeconds * 1000 }; clocks.set(name, clock); }
     if (now < clock.next) return;
     clock.next = now + vary(c.everySeconds, c.spread ?? 0) * 1000;
-    fire(name, key, def, at);
+    fire(name, key, def, at, opts);
   };
 
-  const cue = (name, { at = null, metres = null } = {}) => {
+  const cue = (name, { at = null, metres = null, gain = 1, id = null, beat = null } = {}) => {
     const key = eventOf(sounds, name);
     const def = key ? ev.sounds?.[key] : null;
     if (!def) return false;
     const p = point(at);
-    if (def.cadence) paced(name, key, def, p, metres ?? 0);
-    else fire(name, key, def, p);
+    const opts = { gain, id, beat };
+    if (def.cadence) paced(name, key, def, p, metres ?? 0, opts);
+    else fire(name, key, def, p, opts);
     return true;
   };
 
@@ -653,15 +666,19 @@ export function createAudio(listener, sounds) {
     /**
      * Something happened: `name` is one of `CUES`, `at` is where in the world
      * it happened, and `metres` is how far from the player it is, for a cue
-     * with a cadence. A cue the file has nothing for is false and silent; what
-     * refuses one is test/layout.mjs, in Node, before it is ever fired.
+     * with a cadence. `gain` scales the sound for this one cue (a beat's), and
+     * `id` and `beat` are only written to the log, for the suites. A cue the
+     * file has nothing for is false and silent; what refuses one is
+     * test/layout.mjs, in Node, before it is ever fired.
      */
     cue,
 
     /**
-     * Every cue fired so far, oldest first and at most the last 64: which cue,
-     * which sound it resolved to, where from, and whether the context was
-     * running to play it. For test/plan-vs-scene.mjs.
+     * Every cue fired so far, oldest first and at most the last 64: its `seq`,
+     * which cue, which sound it resolved to, where from, whether the context
+     * was running to play it, and the cue's `gain`, `id` and `beat`. Read
+     * what came after a point by `seq`, never by length (#1043). For
+     * test/plan-vs-scene.mjs.
      */
     events() { return log.map((e) => ({ ...e, at: e.at ? { ...e.at } : null })); },
 

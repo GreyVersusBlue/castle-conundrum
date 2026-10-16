@@ -15639,3 +15639,16 @@ it sounds is Devon's, and the listening list is in the spec.
 
 **What was not done.** No code, no data, no asset, and no `npm test` run,
 because nothing that runs changed.
+
+**#1045. Built, and one call the spec did not make: a body off its job forgets
+its last phase.** `_beat` runs only for a body that is visible, settled, not
+following and not walking, and the spec forgets the last phase only on a null
+or a changed activity. The scullion sweeps at both her Prime stops, so she
+walks from one sweep to the next with a phase from before the walk, and
+`_play`'s `reset()` restarts the loop at 0: the first frame back would read as
+a wrap and cue a stroke nobody made. So
+`update` sets `beatPhase` to null on every frame it skips `_beat`, and the
+first frame back is a first frame. 8e's first-frame line reads 0.13, just
+past a beat, and not 0.10: with the guard removed as a last phase of 0, a
+first frame at 0.10 crosses nothing and stays green (#34). Nothing else moved
+from the spec.

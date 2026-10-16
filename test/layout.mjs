@@ -55,6 +55,7 @@ import { makePlan, walkability, surfacesAt, collidersWith, moveBody, GRID, HEAD_
 import { dayTwoOutcomes, dayTwoCastle, undoDay } from '../src/mystery.js';
 import { stepClassOf, bedOf, bedSources, sourcePoint, audibleFrom, ringOf, CUES, eventOf, cueSound } from '../src/audio.js';
 import { castleNav } from '../src/stations.js';
+import { ACTIVITY_CLIPS } from '../src/populace.js';
 import { routeThrough, marksAlong, onStorey } from './route.mjs';
 import { skinStageOf } from '../tools/castle3d/skin-stages.mjs';
 
@@ -1803,6 +1804,18 @@ console.log('\nevery zone has an ambient bed');
  * `cadence` is a state, fired every frame it holds, and its `withinMetres`
  * has to sit inside the follow radius of some body in data/populace.json,
  * or the cue never fires while the bark would.
+ *
+ * AND A JOB'S BEATS (#1040, #1044). `events.byActivity` puts a cue on a
+ * fraction of an activity's clip loop. Three more questions, all of the data:
+ * the table's shape (every key an ACTIVITY_CLIPS activity, every cue a CUES
+ * key, `at` in [0, 1) and distinct, `gain` in (0, 1], the distances sane,
+ * `gainSpread` in [0, 0.5]); every beat within BEAT_TOL of a loop of the point
+ * where its clip's driver angle meets its `mark`, in every row of that clip's
+ * name in tools/bodies/clips.json and in tools/blender/packs.json's folk pack,
+ * with as many beats on a mark as the clip has cycles; and every activity with
+ * beats being somebody's job in data/populace.json. The angle is the tables'
+ * own `rest + amp * sin(2 pi (cycles * t + phase))`, and the tables and not the
+ * .glbs are read, because test/assets.mjs checks 7 and 8 hold the files to them.
  */
 console.log('\nevery cue has an event sound');
 {
@@ -1854,6 +1867,90 @@ console.log('\nevery cue has an event sound');
   const sane = [['refMetres', sp.refMetres > 0], ['maxMetres', sp.maxMetres > sp.refMetres], ['rolloff', sp.rolloff > 0], ['panning', sp.panning === 'equalpower' || sp.panning === 'HRTF']];
   for (const [k, ok] of sane) if (!ok) fail(`events.spatial.${k} is ${JSON.stringify(sp[k])}`);
   if (eventOf(sounds, 'no-such-cue') !== null || cueSound(sounds, 'no-such-cue') !== null) fail('eventOf a cue the file has nothing for is not null');
+
+  // gainSpread: a sound's gain varied per play by that fraction of itself (#1042).
+  const spreadBad = Object.entries(defs).filter(([, d]) => d?.gainSpread != null && !(finite(d.gainSpread) && d.gainSpread >= 0 && d.gainSpread <= 0.5));
+  for (const [k, d] of spreadBad) fail(`event sound "${k}" has gainSpread ${JSON.stringify(d.gainSpread)}, not a fraction in [0, 0.5]`);
+  if (!spreadBad.length) pass(`every gainSpread is in [0, 0.5]: ${Object.entries(defs).filter(([, d]) => d?.gainSpread != null).map(([k, d]) => `${k} ${d.gainSpread}`).join(', ') || 'none set'}`);
+
+  /* The beats' shape (#1040). */
+  const BEAT_TOL = 0.04; // of a loop, measured round the circle (#1040)
+  const MARKS = ['max', 'min', 'rising', 'falling'];
+  const byActivity = ev.byActivity ?? {};
+  let shapeBad = 0;
+  const shapeFail = (m) => { fail(m); shapeBad++; };
+  if (typeof byActivity !== 'object' || Array.isArray(byActivity)) shapeFail('events.byActivity is not an object of activity to beats');
+  const maxMetres = ev.spatial?.maxMetres;
+  for (const [activity, entry] of Object.entries(byActivity)) {
+    if (!ACTIVITY_CLIPS[activity]) { shapeFail(`events.byActivity names "${activity}", which src/populace.js's ACTIVITY_CLIPS does not`); continue; }
+    if (!entry || typeof entry !== 'object') { shapeFail(`events.byActivity.${activity} is not an object`); continue; }
+    if (!(finite(entry.heightMetres) && entry.heightMetres >= 0)) shapeFail(`events.byActivity.${activity}.heightMetres is ${JSON.stringify(entry.heightMetres)}, not 0 or more`);
+    if (!(finite(entry.hearMetres) && entry.hearMetres > 0 && entry.hearMetres <= maxMetres)) shapeFail(`events.byActivity.${activity}.hearMetres is ${JSON.stringify(entry.hearMetres)}, not above 0 and at most events.spatial.maxMetres ${maxMetres}`);
+    if (typeof entry.sameRoom !== 'boolean') shapeFail(`events.byActivity.${activity}.sameRoom is ${JSON.stringify(entry.sameRoom)}, not true or false`);
+    if (!Array.isArray(entry.beats) || !entry.beats.length) { shapeFail(`events.byActivity.${activity} has no beats`); continue; }
+    const seen = new Set();
+    for (const [i, b] of entry.beats.entries()) {
+      const at = `events.byActivity.${activity} beat ${i + 1}`;
+      if (!CUES[b?.cue]) shapeFail(`${at} cues ${JSON.stringify(b?.cue)}, which is not one of src/audio.js's CUES: ${Object.keys(CUES).join(', ')}`);
+      if (!(finite(b?.at) && b.at >= 0 && b.at < 1)) shapeFail(`${at} is at ${JSON.stringify(b?.at)}, not a fraction of a loop in [0, 1)`);
+      else if (seen.has(b.at)) shapeFail(`${at} is at ${b.at}, and so is another of ${activity}'s beats`);
+      else seen.add(b.at);
+      if (b?.gain != null && !(finite(b.gain) && b.gain > 0 && b.gain <= 1)) shapeFail(`${at} has gain ${JSON.stringify(b.gain)}, not in (0, 1]`);
+      if (!MARKS.includes(b?.mark)) shapeFail(`${at} has mark ${JSON.stringify(b?.mark)}, not one of ${MARKS.join(', ')}`);
+    }
+  }
+  if (!shapeBad) pass(`events.byActivity's ${Object.keys(byActivity).length} activities are ACTIVITY_CLIPS', with ${Object.values(byActivity).reduce((n, e) => n + e.beats.length, 0)} beats on CUES, in [0, 1), within ${maxMetres} m`);
+
+  /* The beats against the clips (#1040). Every row of the clip's name, in both tables. */
+  const clipsTable = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/bodies/clips.json'), 'utf8'));
+  const packsTable = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/blender/packs.json'), 'utf8'));
+  const sources = [
+    { where: 'tools/bodies/clips.json', rows: clipsTable.clips ?? [] },
+    ...(packsTable.rows ?? []).filter((r) => r.pack === 'folk').map((r) => ({ where: `tools/blender/packs.json's folk pack (row ${r.name})`, rows: r.clips ?? [] })),
+  ];
+  const round = (d) => { const m = ((d % 1) + 1) % 1; return Math.min(m, 1 - m); };
+  // Where in the loop, as fractions, the angle rest + amp sin(2 pi (c t + ph)) meets `mark`.
+  const markPoints = (move, cycles, mark) => {
+    const up = move.amp > 0;
+    const u = { max: up ? 0.25 : 0.75, min: up ? 0.75 : 0.25, rising: up ? 0 : 0.5, falling: up ? 0.5 : 0 }[mark];
+    return Array.from({ length: cycles }, (_, k) => ((((u - (move.phase ?? 0) + k) / cycles) % 1) + 1) % 1);
+  };
+  let clipBad = 0;
+  const held = [];
+  for (const [activity, entry] of Object.entries(byActivity)) {
+    const clip = ACTIVITY_CLIPS[activity];
+    if (!clip || !Array.isArray(entry?.beats)) continue;
+    let rowsSeen = 0;
+    for (const { where, rows } of sources) {
+      for (const row of rows.filter((r) => r.name === clip)) {
+        rowsSeen++;
+        const driven = (row.moves ?? []).filter((m) => m.bone === row.driver && finite(m.amp) && m.amp !== 0);
+        if (driven.length !== 1) { fail(`${clip}'s driver ${row.driver} in ${where} has ${driven.length} moving angles, not one: ${(row.moves ?? []).filter((m) => m.bone === row.driver).map((m) => `${m.axis} amp ${m.amp}`).join(', ') || 'no moves'}`); clipBad++; continue; }
+        const move = driven[0];
+        const cycles = row.cycles;
+        if (!(Number.isInteger(cycles) && cycles >= 1)) { fail(`${clip} in ${where} has cycles ${JSON.stringify(cycles)}`); clipBad++; continue; }
+        for (const b of entry.beats) {
+          if (!MARKS.includes(b.mark) || !finite(b.at)) continue; // the shape pass said so
+          const off = Math.min(...markPoints(move, cycles, b.mark).map((t) => round(b.at - t)));
+          if (off > BEAT_TOL) { fail(`${activity}'s beat at ${b.at} is ${+off.toFixed(4)} of a loop from a ${b.mark} of ${clip}'s ${row.driver} ${move.axis} in ${where}, over ${BEAT_TOL}`); clipBad++; }
+        }
+        for (const mark of new Set(entry.beats.map((b) => b.mark).filter((m) => MARKS.includes(m)))) {
+          const on = entry.beats.filter((b) => b.mark === mark).length;
+          if (on !== cycles) { fail(`${clip} reaches its ${mark} ${cycles} time${cycles === 1 ? '' : 's'} a loop and events.byActivity.${activity} strikes on ${on}, in ${where}`); clipBad++; }
+        }
+        held.push(`${clip} in ${where}`);
+      }
+    }
+    if (!rowsSeen) { fail(`events.byActivity.${activity} plays on ${clip}, and neither tools/bodies/clips.json nor the folk pack has a row of that name to hold its beats to`); clipBad++; }
+  }
+  if (!clipBad) pass(`every beat is within ${BEAT_TOL} of a loop of its mark, a mark per cycle, in ${held.length} clip rows: ${held.join(', ')}`);
+
+  /* Every activity with beats is somebody's job (#1040), the way check 13 fails a bed no zone reaches. */
+  const worked = new Set();
+  for (const p of populace.people ?? []) for (const stops of Object.values(p.routine ?? {})) for (const s of Array.isArray(stops) ? stops : []) worked.add(s?.activity);
+  const idle = Object.keys(byActivity).filter((a) => !worked.has(a));
+  for (const a of idle) fail(`"${a}" has beats in data/sounds.json and nobody in data/populace.json ${a}s`);
+  if (!idle.length) pass(`every activity with beats is somebody's job: ${Object.keys(byActivity).join(', ')}`);
 }
 
 /* ------------------- 16 (rank 2i, #965): the castle skin against the plan ---

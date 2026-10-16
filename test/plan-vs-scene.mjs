@@ -1295,16 +1295,18 @@ try {
        * fires on a change of state and not on every call: the cycle above is
        * shut, open, shut, open, and a second `openLock` on an open leaf has
        * to be silence, or the second day's idempotent `applyDay` is two
-       * doors. No speaker is asked anything (#53): `events()` is the log. */
+       * doors. No speaker is asked anything (#53): `events()` is the log,
+       * read by `seq` and not by length, because a log full at 64 entries
+       * keeps its length and a slice from it is empty (#1043). */
       const cued = await page.evaluate(async ({ id }) => {
         const castle = window.__castle, audio = window.__audio;
         const gd = castle.gates.get(id);
-        const before = audio.events().length;
+        const before = audio.events().at(-1)?.seq ?? 0;
         castle.openLock(id, { instant: true }); // already open: no cue
         castle.applyDay([{ piece: id, set: 'shut' }]);
         castle.applyDay([{ piece: id, set: 'shut' }]); // already shut: no cue
         castle.openLock(id, { instant: true });
-        const fired = audio.events().slice(before);
+        const fired = audio.events().filter((e) => e.seq > before);
         const c = gd.centre;
         return { fired, centre: c ? { x: c.x, y: c.y, z: c.z } : null };
       }, { id: leaf.piece });
@@ -1356,8 +1358,8 @@ try {
       const me = body.npc.group.position;
       const home = { x: cam.position.x, y: cam.position.y, z: cam.position.z };
       cam.position.set(me.x + 1.5, me.y + 1.7, me.z);
-      const before = audio.events().length;
-      const heard = () => audio.events().slice(before).filter((e) => e.cue === 'hound-near');
+      const before = audio.events().at(-1)?.seq ?? 0; // by seq, not length (#1043)
+      const heard = () => audio.events().filter((e) => e.seq > before && e.cue === 'hound-near');
       const t0 = performance.now();
       let opened = null, late = 0, frames = 0;
       while (!heard().length && late < LATE && performance.now() - t0 < WALL) {
@@ -1483,6 +1485,82 @@ try {
       window.__populace.setWatch(home, { walk: false });
       await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
     }, { home: mystery.watches[0], back });
+  }
+
+  /* A JOB HEARD ON ITS BEAT, OFF THE LIVE MIXER (#1041, #1044). The crossing
+   * itself is test/mystery.mjs 8e's, over a scripted `loopPhase()`. What only
+   * a page has is that main.js handed `Populace` the `byActivity` table, and
+   * that `NPC.loopPhase()` reads a loaded body's own action. One synchronous
+   * evaluate, so the page's loop cannot run inside it and nothing waits on a
+   * frame (#53, #972): the body put on its stop, `npc.update(0.3)` to finish
+   * the 0.25 s cross-fade, then for each beat the action's `time` set 0.03 of
+   * a loop short of it and advanced 0.06 of a loop by the mixer. That has to
+   * cue exactly one, from the body; the same from 0.1 past the beat, none.
+   * The carter at Terce with the camera 2 m off on open ground, and the
+   * scullion at Prime 1.5 m off inside the kitchen, because she wears a
+   * second file and her job is heard only in its own room. */
+  {
+    const jobs = await page.evaluate(({ eye }) => {
+      const pop = window.__populace, audio = window.__audio, cam = window.__cam;
+      const back = { x: cam.position.x, y: cam.position.y, z: cam.position.z, yaw: cam.rotation.y, watch: pop.watch };
+      const seqNow = () => audio.events().at(-1)?.seq ?? 0;
+      const job = (watch, activity, cue, metres, sameRoom) => {
+        pop.setWatch(watch, { walk: false });
+        const body = pop.bodies.find((b) => b.npc.group.visible && b.stops.some((s) => s.activity === activity));
+        if (!body) return { activity, watch, missing: `nobody visible at ${watch} has a ${activity} stop` };
+        body.index = body.stops.findIndex((s) => s.activity === activity);
+        pop._arrive(body);
+        body.npc.update(0.3, cam.position);
+        const stop = body.stops[body.index];
+        const me = body.npc.group.position;
+        // The camera `metres` off, on a cell of the stop's own room when the
+        // job is heard only there, and anywhere on the grid when it is not.
+        let spot = null;
+        for (let k = 0; k < 64 && !spot; k++) {
+          const a = (k / 64) * Math.PI * 2, x = me.x + Math.cos(a) * metres, z = me.z + Math.sin(a) * metres;
+          const cell = pop.nav.walk.cellAt(x, z, stop.level);
+          if (!cell) continue;
+          const room = pop.nav.roomAt(x, z, cell.h);
+          if (sameRoom ? room.id === stop.room && room.level === stop.level : room.open) spot = { x, y: cell.h + eye, z, room: room.id };
+        }
+        if (!spot) return { activity, watch, id: body.person.id, missing: `no cell ${metres} m from ${body.person.id} ${sameRoom ? `in ${stop.room}` : 'on open ground'}` };
+        cam.position.set(spot.x, spot.y, spot.z);
+        const action = body.npc._current;
+        const D = action ? action.getClip().duration : 0;
+        const beats = (pop.beats?.[activity]?.beats ?? []).map((b) => b.at);
+        const drive = (from) => {
+          action.time = from * D;
+          pop.update(0, cam.position);
+          const before = seqNow();
+          body.npc.update(0.06 * D, cam.position);
+          pop.update(0, cam.position);
+          return audio.events().filter((e) => e.seq > before && e.cue === cue).map((e) => ({ at: e.at, beat: e.beat, id: e.id }));
+        };
+        const on = [], off = [];
+        if (action && D > 0) for (const b of (beats.length ? beats : [0.5])) {
+          on.push({ b, fired: drive(b - 0.03) });
+          off.push({ b, fired: drive(b + 0.1) });
+        }
+        return { activity, watch, cue, id: body.person.id, clip: action?.getClip().name ?? null, D, beats, on, off, me: { x: me.x, z: me.z }, room: spot.room };
+      };
+      const out = [job('terce', 'hammer', 'hammer-strike', 2, false), job('prime', 'sweep', 'sweep-stroke', 1.5, true)];
+      cam.position.set(back.x, back.y, back.z);
+      cam.rotation.set(0, back.yaw, 0, 'YXZ');
+      pop.setWatch(back.watch, { walk: false });
+      return out;
+    }, { eye: EYE_HEIGHT });
+    for (const j of jobs) {
+      if (j.missing) { fail(`${j.activity} at ${j.watch}: ${j.missing}`); continue; }
+      const who = `${j.id}'s ${j.activity} at ${j.watch} (${j.clip}, ${j.D.toFixed(2)} s, camera in ${j.room})`;
+      const counts = j.on.map((o) => o.fired.length);
+      check(j.beats.length > 0 && counts.every((n) => n === 1),
+        `${who}: the live action carried across each of its ${j.beats.length} beats cues exactly one ${j.cue}`,
+        `${counts.join(', ') || 0} cued across beats ${j.beats.join(', ') || 'none in pop.beats'}`);
+      const offs = j.on.flatMap((o) => o.fired.map((e) => Math.hypot(e.at.x - j.me.x, e.at.z - j.me.z)));
+      check(offs.length > 0 && offs.every((d) => d < 0.01), 'and each from the body, within 0.01 m in x and z', offs.map((d) => d.toFixed(3)).join(', ') || 'none cued');
+      const stray = j.off.map((o) => o.fired.length);
+      check(stray.every((n) => n === 0), 'and the same 0.06 of a loop starting 0.1 past each beat cues none', `${stray.join(', ')} cued`);
+    }
   }
   // The tint (#419). Four bodies, fourteen people: the cloth has to differ
   // fourteen ways and the skin must not differ at all, or the tint went onto
