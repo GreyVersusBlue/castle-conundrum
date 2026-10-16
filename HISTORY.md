@@ -15709,6 +15709,22 @@ down against the piece's one visible drawing lands 0 to 0.05 m under the disc,
 with the ramp-height disc failing the same samples as its control. No
 assertion moves between suites, no ceiling moves, no save version moves.
 
+**Built** (2026-10-16, `7e01646`). `data/scene-config.json`'s `stairs` section
+carries `steps: 22`. `makePlan` copies it onto every flight's ramp and throws on
+a bad value. `src/castle-plan.js` gains `slopeT` and `treadTop`, and
+`src/player-rig.js` puts the disc at `treadTop` + 0.02. `test/layout.mjs` check
+8c: 18 flights each drawn with 22 treads (18 skin, 0 kit), and `treadTop`
+against the drawn tread tops at 1188 samples, worst error 0.0001 m. Breaks
+(#34): `steps: 8` gave "nw-tower-stair-1 is drawn by FLIGHT_nw-tower-stair-1
+with 22 treads and the plan says 8"; dropping `+ 1` in `treadTop` gave
+"treadTop says 0.000 ... 0.177 m under it" on all 1188. `plan-vs-scene.mjs`'s
+flight line passes at most 0.020 m over the tread; with the rig back at
+`feet + SHADOW_LIFT` it said "on nw-tower-stair-1 at t 0.30 the shadow is 0.069
+m under the drawn tread". One existing line changed under #1032's drop rule: 10
+of the 45 room anchors stand on a flight (guardroom, laundry, porter-lodge,
+bakehouse and six tower rooms), so "the shadow lies on the floor" now counts 35
+rooms and names the 10.
+
 ---
 
 ## Sound, increment 4: the hammer and the sweep, decided before anything is built (2026-10-16)
