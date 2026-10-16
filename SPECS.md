@@ -2729,7 +2729,9 @@ renegotiate a ceiling from a container.
 
 ### Increment 6: the bell walk
 
-**Specified 2026-10-16** (#1020 to #1023). Not built. Class S from here:
+**Specified 2026-10-16** (#1020 to #1023). **Built the same day** (#1021's
+route fix, #1024's second read of rail 11; `walkMs` held at 25455, 40000 and
+8636). Class S from here:
 every open call below carries a recommendation, no save bump, no assertion
 crosses a suite line. Limits: no station moves, no pair or piece is placed,
 recast, rewritten or retired, no body is added, `MAX_SKINNED_TOTAL`,
@@ -3183,7 +3185,9 @@ watch, from the chapel and then from the far ward):
 
 ### Increment 4: the hammer and the sweep
 
-**Specified 2026-10-16** (#1040 to #1044). Class S from here: every open
+**Specified 2026-10-16** (#1040 to #1044). **Built the same day** (#1045;
+only the listening list below is open, and it is Devon's, Local: audio).
+Class S from here: every open
 call below carries a recommendation, `SAVE_VERSION` stays 6, no budget
 ceiling moves, no numbered decision is overturned, and no existing assertion
 crosses a suite line. Synthesised, as #519 and #548 require. No asset, no
@@ -3595,6 +3599,9 @@ ray that was never going to hit anything.
   was not given.
 
 ### Scope, second increment: the stair disc (class S, lane D)
+
+**Specified and built 2026-10-16** (#1030 to #1032). What is open is the GPU
+look at the 12 stair stills (Devon, #53), not the build.
 
 **What is wrong, measured.** `heightOnSurface` stands a body on a flight as a
 straight ramp from `slope.from` to `slope.to`. What the game draws there is

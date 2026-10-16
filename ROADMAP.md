@@ -55,7 +55,7 @@ cannot trust a pass either.
 | --- | --- | --- |
 | **3 The GPU run** | Opus 5 | **Exit 0 reached** 2026-10-04, 217 ok, 0 failures, after 3a, 3b and 3c shipped (#1006 to #1012). What is left is the phone in the room (#530) and Devon's verdict on the quay stills (#900, #1009). |
 | **4 The retro castle**, past increment 1 | Opus 5 | Increment 1 shipped in a container, no GPU needed (#757 to #766). The look was taken on 2026-10-04 under the curtain skin (#1013): five checklist lines pass, four wait on Devon's one call, the pixel look kept beside 2i's skin or the row retired into 2i. 2b's increment 3 waits on the same call, through "the props". Increment 2 is superseded by 2h (#839). |
-| **11 Feel**, past its Node line | Sonnet 5 | The Node half shipped 2026-09-17 (#650 to #654): a shadow decal and a reaching hand, nine assertions in `plan-vs-scene.mjs`. The GPU looked (#1014, #1015): the shadow reads on stone and grass, the hand now turns along the arm. Left: the stair disc (architect first, a flight's step count in the plan) and Devon's eye on the settled hand. Gate on rank 3 is met. |
+| **11 Feel**, past its Node line | Sonnet 5 | The Node half shipped 2026-09-17 (#650 to #654): a shadow decal and a reaching hand, nine assertions in `plan-vs-scene.mjs`. The GPU looked (#1014, #1015): the shadow reads on stone and grass, the hand now turns along the arm. The stair disc shipped (#1030 to #1032): the plan carries the drawn flight's 22 steps and the disc lies on the tread. Left: the GPU look at the 12 stair stills (Devon, #53), Devon's eye on the settled hand, then doors that open. Gate on rank 3 is met. |
 | **2c Blender: a shared rig with swappable parts**, the clips | Opus 5 | The eleven clips and the hen-wife beside a Quaternius body are a GPU look, the gate on increment 2 (#939, #53). Increment 1 is committed (#941). |
 | **2d Blender: the animals**, the clips | Opus 5 | Both increments are committed (#943, #945). The look is six kinds at 10 m and their clips on Windows; blocks nothing in `npm test` (#53). |
 
@@ -72,8 +72,9 @@ uncompressed body is the one asset nothing else on this list would catch.
 
 ### Local: speakers and a person
 
-No row needs this today. Rank 7's listening pass is done (#974); what is left of
-rank 7 is a container's and waits on rank 6's clips.
+Rank 7's listening pass on the hammer and the sweep needs it (#1040 to #1045):
+the eight-line list at the end of `SPECS.md`'s "Increment 4". The older sounds
+were listened to and left (#974). Nothing else in the container is left of rank 7.
 
 ### Container, start to finish
 
@@ -88,7 +89,7 @@ files restored from `51735fa` and encoded, a room, two walls and 14 rows.~~
 ~~**3a** Play Again starts over (#889): `src/gvb-save.js`'s `autosave.stop()`
 and a Node test in `test/save.mjs`.~~ **Shipped** (#916). ~~**3c** the walk
 bar hides itself (#1008)~~ **Shipped** (#1012). **6**
-populace (19 chatter pairs placed and played, #911 to #938; the GPU look done, #1016 to #1018; the bell-walk fix, #1017, and the town's share, after 2c's increment 2, left), **2c**'s increment 2 (the
+populace (19 chatter pairs placed and played, #911 to #938; the GPU look done, #1016 to #1018; the bell walk shipped, #1020 to #1024; Devon's five calls, #1016, and the town's share, after 2c's increment 2, left), **2c**'s increment 2 (the
 other 15 populace humans onto `folk.glb`, once increment 1's GPU look has
 passed). Every one is
 data, a validator, a Node suite or a headless DOM assertion.
@@ -106,7 +107,7 @@ lane at a time** (#602). The lanes are named by the file, not by the theme.
 | **B** | `data/scene-config.json`, and `test/tools.mjs`'s byte-exactness rail | 1, 2b, 4 |
 | **C** | `data/npcs.json`'s `cast` block, and `npc.js`'s body machinery | 2c, 2d, 6 |
 | **D** | `src/main.js`'s player rig and spawn | 6, 11 |
-| **E** | `src/audio.js` and `data/sounds.json` | 7 |
+| **E** | `src/audio.js` and `data/sounds.json` | 7 (its increment 4 took one read-only getter in lane C's `src/npc.js`, #1041; shipped, #1045) |
 | **F** | `tools/blender/` and `tools/blender/manifest.json` | 1, 2b, 2c, 2d |
 | **G** | `tools/castle3d/`, and `data/castle-skin.json` (#963) | 2i |
 | **none** | | 3 |
@@ -186,7 +187,7 @@ the phone (#530) and a verdict on the quay stills.
 **The one gate outside the band is now met**: rank 3 before rank 11 ships
 past its Node acceptance. Rank 3 reached exit 0 (#1010 to #1012) and the GPU
 looked at rank 11's shadow and hand (#1014, #1015); what is left of rank 11,
-the stair disc and Devon's eye on the settled hand, carries no further gate.
+the stair-still look and Devon's eye on the settled hand, carries no further gate.
 Every other gate this list carried has shipped and is retired: rank 4c's
 yard unlocked rank 9's town on
 2026-09-19 (#703 to #707), and rank 9 is retired (#910); the two renders rank 3 and rank 5 once needed

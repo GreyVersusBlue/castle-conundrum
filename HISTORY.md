@@ -15539,8 +15539,6 @@ purpose (#34): with `ui.showStartAgain()` removed from `src/main.js`'s
 `unlock` handler, the beat fails with `120000ms exceeded`. No assertion was
 added, dropped or reworded, and none moved between suites.
 
-Next free number: #1020.
-
 ---
 
 ## Rank 6, increment 6: the bell walk (2026-10-16)
@@ -15824,3 +15822,7 @@ first frame back is a first frame. 8e's first-frame line reads 0.13, just
 past a beat, and not 0.10: with the guard removed as a last phase of 0, a
 first frame at 0.10 crosses nothing and stays green (#34). Nothing else moved
 from the spec.
+
+---
+
+Next free number: #1046. #1025 to #1029 and #1033 to #1039 were reserved bands left unused.

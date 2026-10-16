@@ -71,7 +71,8 @@ rank 9, a castle to get lost in, the rock dropped and its last look moved to ran
 rank 2h, the castle in Blender, Mereford and the countryside as a realistic
 standalone model with Poly Haven PBR, all ten increments and Devon's closing
 verdict on the nine review stills (#839 to #844, #892, #893 to #899, #955 to
-#961, #962).
+#961, #962); and rank 6's bell walk (#1020 to #1024), rank 11's stair disc
+(#1030 to #1032) and rank 7's hammer and sweep event sounds (#1040 to #1045).
 
 **Open, ranked below.** Devon made Blender-built assets the project's top
 priority on 2026-09-25 and reopened ranks 1 and 2 himself to hold them
@@ -82,9 +83,10 @@ row, after 2h shipped as a realistic standalone Blender model (#962) (2i,
 #919 to #924, specced #963 to #968); the GPU run itself, now gated on nothing (rank 3, #780 to #782);
 the retro castle's look, its variety increment superseded by 2h (rank 4,
 #839); the rest of
-the fifty-person populace (rank 6); the soundscape's hammer and sweep
-(rank 7, whose listening pass is done, #974); the feel theme past
-its shadow and hand (rank 11). A session never reuses a retired rank; Devon may, and did, here
+the fifty-person populace (rank 6, Devon's five calls and the town's share);
+the soundscape's listening pass on the hammer and sweep (rank 7, Local:
+audio); the feel theme past its stair disc (rank 11: the GPU look, the
+settled hand, then doors). A session never reuses a retired rank; Devon may, and did, here
 (#802). Rank 10 is retired, with 2c and 2d as its successors (#807). Ranks
 5, 8 and 12 stay retired numbers, not gaps: a rank is a priority, never an
 id, and a number a session retires is never reused (#619, #522, #491, #802).
@@ -169,8 +171,9 @@ finish the row.
   Haven and #541's could; #568's could not reach quaternius.com. No row needs
   it today, since rank 10 retired (#807), but sourcing CC0 stays allowed
   inside 2c and 2d if their sections say so.
-- **Local: audio.** Needs speakers and a person. No row needs it today: rank
-  7's listening pass is done (#974). A recorded CC0 clip that replaced a
+- **Local: audio.** Needs speakers and a person. Rank 7's listening pass on
+  the hammer and sweep (#1040 to #1045) needs it; the older sounds were
+  listened to and left (#974). A recorded CC0 clip that replaced a
   synthesised sound would need it again, to judge the swap.
 
 **Gate.** What must have shipped before the row can start. **The list had
@@ -248,9 +251,9 @@ the placement editor, budget suite, move-and-delete and the dialogue format
 | 2i | Castle in Blender, the integration row: the game takes the model as a skin and never reads `markers.json` (#919); specced (#963 to #968): one `assets/castle3d/skin.glb` cut from the master by stage (`curtain`, `buildings`, `town`, `land`), about 25 MB and 37.3 MB of texture memory against the master's 570 MB and 1,738.8 MB, trees decimated to 2,000 triangles, KTX2 through `assets:encode`; draw ceiling 1200 to 600, a new 500,000-triangle ceiling, texture 64 to 76 to 84 (#966); #499 and #506 stand (#967); six increments; increment 1, #922's open gate in the model, built (#970) and accepted (#1001); increment 2, the skin, built outside the repo (#1003); increment 3, stage curtain in the game, next | 2+ | Opus 5 | Local: Blender GPU (5.2, Devon's Windows machine only), plus `ktx`; judged local: GPU (#53) | 2h shipped (#962) | G | | [Castle in Blender: the integration row](SPECS.md#castle-in-blender-the-integration-row) |
 | 3 | The GPU run: **exit 0 reached** (#1010 to #1012): 217 ok, 0 failures, after 3a (#916), 3b (#917) and 3c (#1012) shipped and three suite bugs were fixed (#1006, #1010, #1011); left: the phone (#530), untouched, and Devon's verdict on the quay stills (#900, #1009); `renderer.info` recorded (#887) | 1 | Opus 5 | Local: GPU | — | — | | [The GPU run](SPECS.md#the-gpu-run) |
 | 4 | The retro castle: increment 1 shipped, fifteen sets out and fifteen 128 px textures in (#757 to #766); variety per room is superseded by 2h (#839); the props increment moved to 2b (#813); the GPU look done under the curtain skin (#1013): five checklist lines pass, and four wait on Devon, all one question: the pixel look beside 2i's photographed skin, kept, or the row retired into 2i ("one castle or two", "the eight tints", "the props", "the two knobs") | 2+ | Opus 5 | Devon's call; local: GPU if a knob moves | — | B | | [The retro castle](SPECS.md#the-retro-castle-the-stone-in-the-castles-own-pixel-art) |
-| 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #729 to #733); four generated clips placed in the household's routines (#800), `drill` dropped (#915); the twelve's chatter pool placed and played by room and bell, 19 pairs after nine were recast and eight retired (#911, #925 to #938); the GPU look at playback done (#1016): the threshold passes, a bell starts a piece before its speakers have walked to it at three of four places (#1017, class O next), and five calls wait on Devon; `renderer.info` read with the populace in (#1018); left: the bell-walk fix (#1017), Devon's five calls (#1016), and the town's share, 0 by the ceilings and 6 by the measurement, recommended after 2c's increment 2 and a second measurement (#1018) | 2+ | Opus 5 | Container | — | C, D | claude/eager-noether-lkaux2 | [Life: a populace](SPECS.md#life-a-populace) |
-| 7 | Sound: the hammer and sweep event sounds, which wait on rank 6's activity clips; recorded CC0 audio only if a clip beats a synthesised sound (#548). The beds, the rings, the door and the hound were listened to and left as they are (#974) | 1 | Fable 5.1 | Container | rank 6's clips | E | claude/eager-noether-lkaux2 | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
-| 11 | Feel: the three GPU looks answered (#1014): the blob reads on stone and on grass; the disc is buried in every flight, because a flight is a ramp in the plan and 8 steps on screen; the hand turned along the arm (#1015). Next: the stair disc (architect first: a flight's step count in the plan), then doors that open | 2+ | Sonnet 5 | Container to the Node line, local: GPU past it | **after 3: met** | D | shadow + hand shipped 2026-09-17 (#650 to #654); claude/eager-noether-lkaux2 | [Feel](SPECS.md#feel) |
+| 6 | Life: a populace: 32 of 32 bodies built and a talk rail (#616 to #618, #729 to #733); four generated clips placed in the household's routines (#800), `drill` dropped (#915); the twelve's chatter pool placed and played by room and bell, 19 pairs after nine were recast and eight retired (#911, #925 to #938); the GPU look at playback done (#1016); the bell walk shipped (#1020 to #1024): a piece waits for its room's walk and the gap follows it, and a body walks from the floor it stands on (#1021); `renderer.info` read with the populace in (#1018); left: Devon's five calls (#1016) and the town's share, 0 by the ceilings and 6 by the measurement, recommended after 2c's increment 2 and a second measurement (#1018) | 2+ | Opus 5 | Container | — | C, D | — | [Life: a populace](SPECS.md#life-a-populace) |
+| 7 | Sound: the hammer and sweep event sounds shipped (#1040 to #1045), synthesised, each blow cued from the clip's own loop; the beds, the rings, the door and the hound were listened to and left as they are (#974). Left: Devon's listening pass on the two new sounds; recorded CC0 audio only if a clip beats a synthesised sound (#548) | 1 | Fable 5.1 | Local: audio | — | E | — | [Sound: a soundscape](SPECS.md#sound-a-soundscape) |
+| 11 | Feel: the three GPU looks answered (#1014): the blob reads on stone and on grass; the hand turned along the arm (#1015); the stair disc built: the plan carries the drawn flight's 22 steps, not the kit's 8, and the disc lies on the tread (#1030 to #1032). Next: the GPU look at the 12 stair stills (Devon, #53), Devon's eye on the settled hand, then doors that open | 2+ | Sonnet 5 | Container to the Node line, local: GPU past it | **after 3: met** | D | shadow + hand shipped 2026-09-17 (#650 to #654) | [Feel](SPECS.md#feel) |
 
 **`ROADMAP.md` is these three columns turned into an order**: which row to
 take first, what each one unblocks, and which ones two sessions may hold at
@@ -393,7 +396,7 @@ gossip pairs, bringing the page to 32 of 32 bodies built — 13 cast plus 19
 populace, exactly `MAX_SKINNED_TOTAL` (#729 to #733). `test/mystery.mjs`
 owns the validator (#529); `test/budget.mjs` counts the household.
 
-**Five increments shipped and the GPU look is done; what is left is one fix, five calls of Devon's and one budget.**
+**Six increments shipped and the GPU look is done; what is left is five calls of Devon's and one budget.**
 The third held the twelve's chatter pool to the schedule (#911, #912): 10 of
 27 pairs carry a `room` at a day-one bell where both speakers stand, with the
 rail in `src/lore.js` and its tests in `test/lore.mjs`; the other 17 cannot be
@@ -426,16 +429,22 @@ every frame wherever the player stands, live draw calls up to 758 in a ward
 view and 992 from the chapel, and 0.145 to 0.176 ms of frame per body,
 measured by hiding bodies.
 
-**Left, in the order it can happen.** (1) The bell-walk fix (#1017), class O
-because it amends #925, #592 and #928: hold a placed pair or a performance
-until its speakers' walk from the last bell's station is done, worked out
-from `castleNav` and the schedule (25.5, 40.0 and 8.6 s today), and asserted
-in `test/quest.mjs`. (2) Devon's calls from #1016: whether 3 min 14 s of hall
+**The bell walk shipped (#1020 to #1024).** A room with a performance or a
+placed pair at a bell settles for the longest walk of any of its speakers from
+the last bell's station, at 1.1 m/s (25.5, 40.0 and 8.6 s at the three failing
+places), and the gap follows the wake (#1020). The same build fixed `onWatch`,
+which routed 67 bell walks from the destination's floor: 14 change level, 8 of
+those routed null and the body was placed at its station (#1021). `walkMs` and
+the band are held in `test/mystery.mjs`, `test/quest.mjs` and two lines in
+`test/plan-vs-scene.mjs` (#1023, #1024). Nobody has seen the sentry walk off
+the wall or the Lady take her stair yet.
+
+**Left, in the order it can happen.** (1) Devon's calls from #1016: whether 3 min 14 s of hall
 supper is too much (the fallback is #934's), whether four chapel pairs
 between the same two men read as one conversation, whether a pair heard
 across 30 m of outer ward is right, whether the band should pause under the
 journal, and whether Father Anselm can talk to Sir Roger on the band while
-the player has him in the panel. (3) The town's share of the fifty, and
+the player has him in the panel. (2) The town's share of the fifty, and
 whether `garden` becomes ground. By the ceilings as written it is 0:
 `MAX_SKINNED_TOTAL` 41 of 41 built, the outer ward 24 of 24 at `terce-eve`,
 386 of 394 skinned draws. By the measurement it is 6: the heaviest view's
@@ -449,23 +458,32 @@ set from them. Until then the share is at most 6, argued in `HISTORY.md` as
 
 ## Sound: a soundscape
 
-*Where: container to write it, local with speakers to judge it. Gate: none. Lane: E.*
+*Where: local with speakers, for the listening pass. Gate: none. Lane: E.*
 
-**Rank 7.** Three increments shipped, all synthesised, no audio file in the
+**Rank 7.** Four increments shipped, all synthesised, no audio file in the
 repo (#519, #548): seven ambient room tones with a 1.2 s cross-fade on the
 HUD's room change (#620 to #623); a bed at a point per room, heard through a
 panner, the nearest three within 14 m sounding at once, plus the bell's ring
 pattern (#680 to #683); and the two event sounds that need no clip, a door
 and the hound's bark, with `test/layout.mjs` checks 13 and 14 holding the
-wiring (#696 to #698).
+wiring (#696 to #698); and the hammer and sweep, below.
 
-**The listening is done** (#974): Devon's verdict, GO with no changes asked
+**The listening to the first three increments is done** (#974): Devon's verdict, GO with no changes asked
 for, recorded on 2026-10-03 from the backlog audit's note. Nothing in
 `data/sounds.json` moved.
 
-**What is left, in order.** Hammer, sweep and the rest of the event sounds
-wait on rank 6's activity clips to sync to. Recorded CC0 audio is admitted
-since #548, named by `data/sounds.json` and run through
+**The fourth increment shipped (#1040 to #1045).** The hammer and the sweep,
+synthesised: `data/sounds.json` carries each beat as a fraction of the clip's
+loop, held to both clip tables by `test/layout.mjs` check 14 (#1040);
+`Populace` cues the beat when the live mixer crosses it, through one
+read-only getter, `NPC.loopPhase()` (#1041); the sound is positional at the
+body, the hammer carrying 20 m and the sweep 8 m in its own room (#1042); and
+the event log's `seq` keeps the door and bark beats honest once the log fills
+(#1043). The getter is in `src/npc.js`, lane C's file; it moves no body.
+
+**What is left.** Devon's listening pass on the two sounds, the list at the
+end of `SPECS.md`'s "Increment 4" (Local: audio). Recorded CC0 audio is
+admitted since #548, named by `data/sounds.json` and run through
 `tools/encode-assets.mjs` like any asset (#506), and none has been looked
 for; nothing says it has to be.
 
@@ -495,12 +513,19 @@ pin, laid along the camera's own view axis 7.3 degrees off the line to the
 eye; turned to run along the arm instead (#1015), it now reads as an arm and
 a hand, 31.5 degrees off that line and in frame end to end.
 
+**The stair disc shipped (#1030 to #1032).** The flights on screen are the
+skin's 22 treads, not the kit's 8 (#1030). `scene-config.json`'s `stairs`
+carries `steps: 22`, `treadTop` in `src/castle-plan.js` answers the drawn
+tread's height, and the rig lies the disc on it while the feet stay on the
+ramp (#1031). `test/layout.mjs` check 8c holds the count and the height
+against the drawing; one line in `test/plan-vs-scene.mjs` holds the live rig
+(#1032).
+
 **What is left, in order.**
 
-1. The stair disc. Specced by `architect` first: the plan needs to carry a
-   flight's step count (8 for `stairs-stone.glb`), `layout.mjs` or
-   `plan-vs-scene.mjs` asserts it against the model, and the rig puts the
-   disc on the tread top under the player while the feet stay on the ramp.
+1. The GPU look at the 12 stair stills (Devon, #53), including whether the
+   flat disc's downhill overhang, up to 0.35 m, reads as a plate (#1031's
+   fallback is a disc tilted on the nosings).
 2. Devon's eye on the settled hand: whether its palm wants to turn toward
    the leaf at the word-lock, not just mid-reach.
 3. Then the theme's next increment: doors that open. It reuses the hand's
