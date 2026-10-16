@@ -74,9 +74,10 @@ const captionMs = (line) => Math.min(7200, Math.max(2600, 1200 + 45 * String(lin
 /**
  * The dark band before a placed chatter pair that follows another piece or a
  * bell (#925). Longer than the shortest caption (2600 ms), so a dark band reads
- * as a break and not as a flicker, and after a bell it is the allowance for
- * bodies still walking to their stations. A guess held as one constant; the
- * Great Hall at Vespers, a song and six pairs, is where it is judged.
+ * as a break and not as a flicker. The walk to the stations after a bell is
+ * not this: it is `walkMs`'s (#1020), the room settles for it, and the gap
+ * follows it. A guess held as one constant; the Great Hall at Vespers, a song
+ * and six pairs, is where it is judged.
  */
 const CHATTER_GAP_MS = 4000;
 
@@ -163,8 +164,15 @@ export class QuestManager {
    *                   room and bell. Omitted is a castle where the twelve say
    *                   nothing to each other, and a manager that schedules
    *                   nothing it did not schedule before.
+   * @param walkMs     `(npcId, watch) => ms` (#1020): how long that speaker takes
+   *                   to walk from the last bell's station to this one's, read
+   *                   off the schedule and the plan (src/stations.js's
+   *                   `walkMs`) and never off a body. A walking bell holds each
+   *                   room with a piece in it for its slowest speaker. Omitted
+   *                   is a castle where nobody is ever still walking, which is
+   *                   what every suite above the bell walk gets.
    */
-  constructor({ quest, sideQuests = [], mystery = null, riddle, documents = [], npcs, ui, castle, schedule, restart, saved = null, onChange = null, engine = null, onWatch = null, audio = null, rooms = [], performances = null, reputation = null, chatter = null }) {
+  constructor({ quest, sideQuests = [], mystery = null, riddle, documents = [], npcs, ui, castle, schedule, restart, saved = null, onChange = null, engine = null, onWatch = null, audio = null, rooms = [], performances = null, reputation = null, chatter = null, walkMs = null }) {
     this.graph = new QuestGraph(quest, QuestManager.actions);
     this.mystery = mystery;
     this.riddle = riddle;
@@ -245,6 +253,9 @@ export class QuestManager {
     this._playing = null; // the piece the band is in the middle of, or null
     this._room = null;    // where the player is standing, per `handleStand`
     this._gap = null;     // the token of the pause before the next chatter pair, or null (#925)
+    this._walkMs = walkMs;
+    this._bell = null;    // the token of the last bell's wakes, one per bell (#1020)
+    this._settling = new Set(); // rooms whose speakers are still walking to this bell's stations
 
     // The lock the player last pressed E at. `openLock` unlocks that one, so no
     // door id is written down in this file.
@@ -427,10 +438,55 @@ export class QuestManager {
     // A pause that was counting towards a pair of the old bell is void (#925).
     this._gap = null;
     this._stopPerformance();
-    // A BELL IS FOLLOWED BY THE GAP, NOT BY A PAIR AT ONCE (#925): the twelve
-    // are still walking to where this bell puts them. A performance due here
-    // goes first (#927), and the pairs queue behind its last line.
+    // A WALKING BELL HOLDS EACH ROOM WITH A PIECE IN IT UNTIL ITS SPEAKERS HAVE
+    // WALKED THERE (#1020); a load, a reload and `applyDay*` pass `walk: false`
+    // and hold nothing.
+    this._settle(watch, opts.walk !== false);
+    // A BELL IS FOLLOWED BY THE GAP, NOT BY A PAIR AT ONCE (#925). A performance
+    // due here goes first (#927), and the pairs queue behind its last line. In
+    // a settling room neither starts here: the room's wake does this instead,
+    // so the gap follows the walk (#1020).
     if (!this._maybePerform()) this._queueChatter();
+  }
+
+  /** The rooms still waiting for their speakers to walk in, sorted (#1020). */
+  get settling() { return [...this._settling].sort(); }
+
+  /**
+   * THE WALK BEFORE THE PIECE (#1020). A fresh token and an empty set at every
+   * bell, so a wake of the last bell finds itself stale and does nothing. On a
+   * walking bell each room with a performance or a placed pair at `watch` is
+   * held for the longest walk of any speaker of any piece there (per room, not
+   * per piece: one wake and no clock). Its wake does what `applyWatch` does on
+   * a bell, if the player is standing there and the band is free.
+   */
+  _settle(watch, walking) {
+    const bell = {};
+    this._bell = bell;
+    this._settling = new Set();
+    if (!walking || !this._walkMs) return;
+    const byRoom = new Map();
+    const add = (place, ids) => {
+      const cut = place.lastIndexOf('/');
+      if (place.slice(cut + 1) !== watch) return;
+      const room = place.slice(0, cut);
+      if (!byRoom.has(room)) byRoom.set(room, new Set());
+      for (const id of ids) if (id) byRoom.get(room).add(id);
+    };
+    for (const [place, entries] of this._performances) add(place, entries.map((e) => e.npc));
+    for (const [place, pairs] of this._chatter) add(place, pairs.flatMap((p) => p.npcs ?? []));
+    for (const [room, ids] of byRoom) {
+      let ms = 0;
+      for (const id of ids) ms = Math.max(ms, Number(this._walkMs(id, watch)) || 0);
+      if (ms <= 0) continue;
+      this._settling.add(room);
+      this._schedule(() => {
+        if (this._bell !== bell) return;
+        this._settling.delete(room);
+        if (this._room !== room || this._playing || this._gap) return;
+        if (!this._maybePerform()) this._queueChatter();
+      }, ms);
+    }
   }
 
   /**
@@ -706,6 +762,7 @@ export class QuestManager {
    * delayed effects use, so a suite can run a whole sermon in no time at all.
    */
   _maybePerform() {
+    if (this._settling.has(this._room)) return null; // still walking in (#1020)
     const piece = this.performanceHere();
     if (!piece) return null;
     // A PERFORMANCE OUT-RANKS TALK (#732): two of the household gossiping are
@@ -798,6 +855,7 @@ export class QuestManager {
    * (#929).
    */
   _maybeChatter() {
+    if (this._settling.has(this._room)) return null; // still walking in (#1020)
     if (this._playing) return null;
     const pair = this.chatterHere();
     if (!pair) return null;
@@ -814,6 +872,7 @@ export class QuestManager {
    * the clock it had.
    */
   _queueChatter() {
+    if (this._settling.has(this._room)) return null; // the wake queues it (#1020)
     if (!this.chatterHere()) return;
     const gap = {};
     this._gap = gap;

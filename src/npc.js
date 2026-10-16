@@ -29,8 +29,8 @@
 import * as THREE from 'three';
 import { loadGLTF, loadModel } from './assets.js';
 import { ACTIVITY_CLIPS, heldPropPath } from './populace.js';
+import { WALK_SPEED } from './stations.js';
 
-const PATROL_SPEED = 1.1; // m/s
 const WAYPOINT_EPS = 0.05;
 const TURN_SPEED = 4.0; // rad/s — how fast an npc swings round to a new heading
 const CLIMB_SPEED = 1.6; // m/s the feet rise or fall towards the next waypoint's floor
@@ -81,7 +81,7 @@ export class NPC {
      * speed; a child runs between her stops at twice it, and the clip she
      * runs with comes off `def.clips` below, because a Run clip played at a
      * walking pace is a body running on the spot. */
-    this.speed = def.speed ?? PATROL_SPEED;
+    this.speed = def.speed ?? WALK_SPEED;
 
     this._mixer = null;
     this._actions = {};

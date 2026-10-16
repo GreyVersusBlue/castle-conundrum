@@ -15630,4 +15630,18 @@ delete `walkMs:` from the constructor and the second goes red while `quest`
 stays green. `QuestManager` gains a public `settling` getter for that seam.
 Nothing moves between suites.
 
-Next free number in this band: #1024.
+**#1024. The bell walk's rail 11 gets a second read, because the first cannot
+fail.** Found building increment 6. `SPECS.md`'s rail 11 (rung to Sext and at
+once to Vespers in the King's Hall, no Sext pair ever said) stayed green with
+the bell token deleted from `_settle`'s wake: `chatterHere` reads the live
+watch, so a stale wake can only open the new bell's pieces, and no room holds
+a piece at two consecutive bells (outer ward Terce, King's Hall Sext, hall and
+chapel Vespers). The token's job is visible only when one room settles twice
+in a row. So rail 11 keeps its check and gains one in the same block: Vespers
+applied twice, walking, with the player in the hall, ticked once: the band is
+dark, `settling` is still `['great-hall']` and one step is pending. With the
+token deleted it printed `song-vespers-hall: "[Dafydd is got up onto the bench
+end, ...]", settling [], 2 pending`. Same suite, no assertion moved, no
+decision amended.
+
+Next free number in this band: #1025.

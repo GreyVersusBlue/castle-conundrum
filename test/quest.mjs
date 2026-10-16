@@ -408,7 +408,7 @@ function stubUI() {
  *   mystery dispatches it too and nothing happens, because `day:1` is a
  *   transition on `explore` and on `night` and on no other stage.
  */
-function rig({ saved = null, withSideQuests = true, quests = null, cast = npcDefs, rooms = [], perform = null, schedule = null, reputes = reputation, day0 = false, chatter = null } = {}) {
+function rig({ saved = null, withSideQuests = true, quests = null, cast = npcDefs, rooms = [], perform = null, schedule = null, reputes = reputation, day0 = false, chatter = null, walkMs = null } = {}) {
   const ui = stubUI();
   const npcs = cast.map((def) => ({
     id: def.id, name: def.name, def, talking: false, dialogueState: 'default',
@@ -453,6 +453,8 @@ function rig({ saved = null, withSideQuests = true, quests = null, cast = npcDef
     performances: perform, ...(schedule ? { schedule } : {}),
     // The twelve's placed pairs (#925). Nothing by default, for the same reason.
     chatter,
+    // The bell walk (#1020). Nothing by default: nobody is ever still walking.
+    walkMs,
     /* THE REAL REPUTATION BLOCK, IN EVERY BEAT IN THIS FILE, ON PURPOSE. It is
      * the opposite of `performances` above, which defaults to nothing so that
      * no beat that does not care about it can reach its code: reputation adds
@@ -2010,11 +2012,14 @@ console.log('\nthe sermon and the song');
 /** A rig whose captions step on a queue this returns, with the real pool in it. */
 function performRig(opts = {}) {
   const queue = [];
-  const r = rig({ ...opts, perform: performances, schedule: (fn) => queue.push(fn) });
+  // Each step keeps the `ms` it was scheduled with beside it, so the bell walk
+  // can say how long a wake waits (#1020). The queue is still run in order.
+  const r = rig({ ...opts, perform: performances, schedule: (fn, ms) => queue.push({ fn, ms }) });
   // Step the band at most `n` times. Each step schedules the next, so a cap is
   // what stops a bug here becoming a hung suite rather than a failed one.
-  r.tick = (n = 40) => { let i = 0; while (queue.length && i < n) { queue.shift()(); i++; } return i; };
+  r.tick = (n = 40) => { let i = 0; while (queue.length && i < n) { queue.shift().fn(); i++; } return i; };
   r.pending = () => queue.length;
+  r.nextMs = () => queue[0]?.ms ?? null;
   return r;
 }
 
@@ -2511,6 +2516,160 @@ const HALL_ORDER = ['outer-sext-3', 'outer-vespers-1', 'outer-vespers-2', 'outer
   check(wrongCount.length === 0, 'each of their lines once', JSON.stringify(wrongCount));
   check(allPairs.length === 19 && placed.length === allPairs.length, 'and the pool holds no pair without a room', `${placed.length} of ${allPairs.length}`);
   check(r.engine.watch === 'vespers' && r.pending() === 0 && r.ui.captionLine === null, 'ending at Vespers, dark, with nothing pending', `${r.engine.watch}, ${r.pending()} pending`);
+}
+
+/* ------------------------------------------- the bell walk (#1020 to #1023) ---
+ * A walking bell holds each room with a piece in it until its slowest speaker
+ * has walked there from the last bell's station; the room's wake then does what
+ * the bell did before (#1020). The walk is src/stations.js's `walkMs` on the
+ * real plan and the real schedule, handed to the rig the way src/main.js hands
+ * it to the manager. Its numbers are test/mystery.mjs's (#1023); what is held
+ * here is the band: who settles, the wake then the gap, walking in before and
+ * after, a later bell voiding a wake, and a placed bell not waiting.
+ */
+console.log('\nthe bell walk');
+const walkNav = (() => {
+  const measured = new Map();
+  const boundsOf = (rel) => { if (!measured.has(rel)) measured.set(rel, partsOf(path.join(ROOT, rel))); return measured.get(rel); };
+  return castleNav(makePlan(scene, boundsOf), mystery);
+})();
+const walkRig = (opts = {}) => chatterRig({ ...opts, walkMs: (id, w) => walkNav.walkMs(id, w) });
+{
+  // 5: WHO SETTLES. One room at each walking bell of day one.
+  const r = walkRig();
+  r.qm.handleStand('outer-ward');
+  r.tick(200);
+  const got = [];
+  for (const want of [['outer-ward'], ['kings-hall'], ['great-hall']]) {
+    r.ring();
+    got.push(`${r.engine.watch}: ${JSON.stringify(r.qm.settling)}`);
+    check(same(r.qm.settling, want), `stood in the outer ward and rung to ${r.engine.watch}, the room settling is ${want.join(', ')}`, got.at(-1));
+    r.tick(200);
+  }
+}
+{
+  // 6: THE HALL, STOOD IN AT THE BELL. The song waits for the sentry's walk,
+  // and the first pair follows the song by the gap.
+  const r = walkRig();
+  r.ring(); r.ring();
+  r.qm.handleEnter('great-hall', 0);
+  r.tick(200);
+  r.ring();
+  const song = pieceOf('song-vespers-hall');
+  check(r.engine.watch === 'vespers' && r.ui.captionLine === null && r.qm.performing === null && r.pending() === 1 && r.nextMs() === 40000,
+    'in the Great Hall at the Vespers bell the band is dark and one step is pending, at 40000 ms: the sentry\'s walk',
+    `${JSON.stringify(r.ui.captionLine)}, ${r.qm.performing?.id ?? null}, ${r.pending()} pending at ${r.nextMs()}`);
+  r.tick(1);
+  check(r.ui.captionName === 'Dafydd ap Rhys' && r.ui.captionLine === song.lines[0], 'the wake starts the song under "Dafydd ap Rhys"', `${r.ui.captionName}: ${r.ui.captionLine}`);
+  r.tick(song.lines.length);
+  check(r.ui.captionLine === null && r.pending() === 1 && r.nextMs() === 4000, 'through the song, the band is dark with one step pending at 4000 ms: the gap', `${JSON.stringify(r.ui.captionLine)}, ${r.pending()} pending at ${r.nextMs()}`);
+  r.tick(1);
+  check(r.ui.captionLine === bare('outer-sext-3', 0), 'and it shows outer-sext-3\'s first line', JSON.stringify(r.ui.captionLine));
+}
+{
+  // 7: THE KING'S HALL, STOOD IN AT THE BELL. The walk, then the gap, then the pair.
+  const r = walkRig();
+  r.ring();
+  r.qm.handleEnter('kings-hall', 0);
+  r.tick(200);
+  r.ring();
+  check(r.engine.watch === 'sext' && r.ui.captionLine === null && r.pending() === 1 && r.nextMs() === 25455,
+    'in the King\'s Hall at the Sext bell the band is dark with one step pending at 25455 ms: the steward\'s walk', `${JSON.stringify(r.ui.captionLine)}, ${r.pending()} pending at ${r.nextMs()}`);
+  r.tick(1);
+  check(r.ui.captionLine === null && r.pending() === 1 && r.nextMs() === 4000, 'after the wake, still dark with one step at 4000 ms', `${JSON.stringify(r.ui.captionLine)}, ${r.pending()} pending at ${r.nextMs()}`);
+  r.tick(1);
+  check(r.ui.captionName === 'Sir Roger' && r.ui.captionLine === bare('inner-sext-1', 0), 'then inner-sext-1\'s first line under "Sir Roger"', `${r.ui.captionName}: ${r.ui.captionLine}`);
+}
+{
+  // 8: THE OUTER WARD. The clerk's walk from his office, then the gap.
+  const r = walkRig();
+  r.qm.handleStand('outer-ward');
+  r.tick(200);
+  r.ring();
+  check(r.engine.watch === 'terce' && r.ui.captionLine === null && r.pending() === 1 && r.nextMs() === 8636,
+    'on the outer ward at the Terce bell, one step pending at 8636 ms: the clerk\'s walk', `${JSON.stringify(r.ui.captionLine)}, ${r.pending()} pending at ${r.nextMs()}`);
+  r.tick(1);
+  check(r.ui.captionLine === null && r.pending() === 1 && r.nextMs() === 4000, 'then one at 4000 ms', `${JSON.stringify(r.ui.captionLine)}, ${r.pending()} pending at ${r.nextMs()}`);
+  r.tick(1);
+  check(r.ui.captionName === 'Master Robert' && r.ui.captionLine === bare('outer-terce-1', 0), 'then outer-terce-1 under "Master Robert"', `${r.ui.captionName}: ${r.ui.captionLine}`);
+}
+{
+  // 9: WALKED IN DURING THE WALK (#1017's threshold-c still). Nothing starts;
+  // the wake starts it.
+  const r = walkRig();
+  r.ring(); r.ring();
+  r.qm.handleStand('outer-ward');
+  r.tick(200);
+  r.ring();
+  r.qm.handleEnter('great-hall', 0);
+  check(r.ui.captionLine === null && r.qm.performing === null, 'walking into the Great Hall while the sentry is still walking there starts nothing', `${r.qm.performing?.id ?? null}: ${JSON.stringify(r.ui.captionLine)}`);
+  r.tick(1);
+  check(r.ui.captionLine === pieceOf('song-vespers-hall').lines[0], 'and the wake starts the song', JSON.stringify(r.ui.captionLine));
+}
+{
+  // 10: WALKED IN AFTER IT. The wake with the player elsewhere starts nothing,
+  // and walking in after it is at once (#925).
+  const r = walkRig();
+  r.ring();
+  r.qm.handleStand('outer-ward');
+  r.tick(200);
+  r.ring();
+  r.tick(1);
+  check(r.ui.captionLine === null && r.pending() === 0, 'the King\'s Hall wake with the player on the outer ward leaves the band dark and nothing pending', `${JSON.stringify(r.ui.captionLine)}, ${r.pending()} pending`);
+  r.qm.handleEnter('kings-hall', 0);
+  check(r.ui.captionLine === bare('inner-sext-1', 0), 'walking in after the walk shows inner-sext-1\'s first line at once', JSON.stringify(r.ui.captionLine));
+}
+{
+  // 11: A BELL VOIDS THE LAST BELL'S WAKE.
+  const r = walkRig();
+  r.ring();
+  r.qm.handleEnter('kings-hall', 0);
+  r.tick(200);
+  r.ring(); r.ring();
+  let guard = 0;
+  while (r.pending() && guard++ < 200) r.tick(1);
+  const sextPairs = allPairs.filter((p) => p.room === 'kings-hall' && Object.values(chatterPool).some((byWatch) => (byWatch.sext ?? []).includes(p)));
+  const leaked = r.ui.captions.filter((c) => sextPairs.some((p) => p.lines.includes(c)));
+  check(r.engine.watch === 'vespers' && sextPairs.length > 0 && leaked.length === 0 && r.pending() === 0,
+    `rung to Sext and at once to Vespers in the King's Hall, none of its ${sextPairs.length} Sext pairs is ever said`, JSON.stringify(leaked));
+
+  // AND THE SAME ROOM SETTLING TWICE (#1024). No room holds a piece at two
+  // consecutive bells, so the check above cannot see a stale wake: it stays
+  // green with the bell token deleted. Applying Vespers twice, walking, with
+  // the player in the hall is the case it can: the first wake is the last
+  // bell's and must not open the room the second bell is still settling.
+  const h = walkRig();
+  h.ring(); h.ring();
+  h.qm.handleEnter('great-hall', 0);
+  h.tick(200);
+  h.ring();
+  h.qm.applyWatch(h.qm.watch);
+  h.tick(1);
+  check(h.ui.captionLine === null && h.qm.performing === null && same(h.qm.settling, ['great-hall']) && h.pending() === 1,
+    'Vespers applied twice, walking, in the Great Hall: the first bell\'s wake starts nothing and the hall is still settling for the second',
+    `${h.qm.performing?.id ?? null}: ${JSON.stringify(h.ui.captionLine)}, settling ${JSON.stringify(h.qm.settling)}, ${h.pending()} pending`);
+}
+{
+  // 12: A PLACED BELL DOES NOT WAIT. The reload's call settles nothing, and a
+  // performer already in the room starts on the bell.
+  const r = walkRig();
+  r.ring(); r.ring();
+  r.qm.handleStand('outer-ward');
+  r.tick(200);
+  r.ring();
+  r.qm.handleEnter('great-hall', 0);
+  r.qm.applyWatch(r.qm.watch, { walk: false });
+  check(r.ui.captionLine === pieceOf('song-vespers-hall').lines[0] && same(r.qm.settling, []),
+    'applyWatch with walk: false in the Great Hall at Vespers starts the song at once and settles nothing', `${JSON.stringify(r.ui.captionLine)}, ${JSON.stringify(r.qm.settling)}`);
+
+  const c = walkRig();
+  c.ring(); c.ring();
+  c.qm.handleEnter('chapel', 0);
+  c.tick(200);
+  c.ring();
+  const sermon = Object.values(performances).flat().find((e) => e.room === 'chapel' && e.watch === 'vespers');
+  check(!!sermon && c.engine.watch === 'vespers' && c.ui.captionLine === sermon.lines[0],
+    'stood in the chapel at the Vespers bell, the sermon starts at once: the chaplain\'s walk is 0', `${sermon?.id}: ${JSON.stringify(c.ui.captionLine)}`);
 }
 
 console.log(failures ? `\n${failures} failure(s)` : '\nall good');
