@@ -2783,8 +2783,13 @@ the hammer and the sweep, still wait on rank 6's clips.
 **The listening is done** (#974): Devon's verdict, GO with no changes asked
 for, recorded from the backlog audit's note of 2026-10-03; the checklist at the
 end of this section is kept as the record of what was asked. What is left is
-the hammer and the sweep, which wait on rank 6's clips, and recorded CC0 audio
-if one ever beats a synthesised sound.
+the hammer and the sweep, and recorded CC0 audio if one ever beats a
+synthesised sound.
+
+**The fourth increment, the hammer and the sweep, is specified** (#1040 to
+#1044) in "Increment 4" at the end of this section. Its gate is met: rank 6
+placed the clips (#800), so the scullion sweeps the kitchen at Prime and the
+carter hammers at his cart in the outer ward at Terce. Class S from there.
 
 ### Scope
 
@@ -2824,8 +2829,8 @@ if one ever beats a synthesised sound.
 - **Event sounds (door, bark, hammer strike)** are named in the theme but are
   the increment after this one: they want an activity clip to sync to, which
   is rank 6's to add first. (The door and the bark turned out to need no
-  clip, and shipped as the third increment, #696 to #698. The hammer still
-  waits.)
+  clip, and shipped as the third increment, #696 to #698. The hammer and
+  the sweep are "Increment 4" below, #1040 to #1044.)
 
 ### Dependencies
 
@@ -2901,6 +2906,311 @@ watch, from the chapel and then from the far ward):
       again.
 - [ ] Does anything fire before Enter the Castle is pressed? It must not
       (#697); a save resumed with the door open is the case to try.
+
+### Increment 4: the hammer and the sweep
+
+**Specified 2026-10-16** (#1040 to #1044). Class S from here: every open
+call below carries a recommendation, `SAVE_VERSION` stays 6, no budget
+ceiling moves, no numbered decision is overturned, and no existing assertion
+crosses a suite line. Synthesised, as #519 and #548 require. No asset, no
+`.glb` re-render, no change to `tools/bodies/clips.json` or
+`tools/blender/packs.json`.
+
+**What is synced to what, measured.** Both clip tables use one grammar: a
+move's angle at loop fraction `t` is `rest + amp * sin(2 pi (cycles * t +
+phase))`. `Hammer` is `cycles: 2` with its driver `UpperArm.R` about x at
+rest -80, amp 60, phase 0, in `tools/bodies/clips.json` and in the folk pack
+of `tools/blender/packs.json` alike. Its angle is greatest, -20 degrees, at
+t 0.125 and 0.625: the arm at the bottom of the swing, the forearm and wrist
+straight on the same sine. That is the blow landing. On Farmer's 1.67 s
+Idle length it is 0.21 s and 1.04 s into the loop, 72 blows a minute; on the
+folk rig's 2.0 s (48 keys at 24 fps) it is 60 a minute. `Sweep` is
+`cycles: 1`, its driver `UpperArm.R` about z at amp 28: the hands travel to
+the body's left fastest at t 0 and to its right fastest at t 0.5, one stroke
+each way, 1.04 s apart on Woman's 2.08 s loop. The carter alternates his
+`haul` and `hammer` stops on `DWELL`'s 9 s at Terce and on the walking day's
+Terce; the scullion walks 5 m between two `sweep` stops at Prime and the
+walking day's Prime. The carter's hammer stop is 4.2 m from the great hall's
+footprint; the scullion's two are 1.2 m from the clerk's office through the
+kitchen wall.
+
+**Scope, by file.**
+
+- **`data/sounds.json` `events`** (lane E). Three additions, in the shape
+  the block already has:
+  - `byCue` gains `"hammer-strike": "mallet-on-cart"` and
+    `"sweep-stroke": "broom-stroke"`.
+  - `sounds` gains the two, as parts (#696), each with a new optional
+    `gainSpread`: the sound's `gain` varies by that fraction of itself per
+    play, the way a footstep's does by 15 %, so 72 blows a minute are not
+    one blow 72 times (#1042).
+
+    ```json
+    "mallet-on-cart": {
+      "gain": 0.6, "gainSpread": 0.15,
+      "parts": [
+        { "type": "noise", "at": 0.0, "filter": "bandpass", "hz": 2200, "q": 2.5, "decay": 0.025, "gain": 0.5, "name": "the contact: wood on wood" },
+        { "type": "tone", "at": 0.0, "wave": "triangle", "hz": 880, "toHz": 820, "decay": 0.045, "gain": 0.22, "name": "the mallet head's tock" },
+        { "type": "tone", "at": 0.0, "wave": "sine", "hz": 260, "toHz": 240, "decay": 0.09, "gain": 0.4, "name": "the cart's board ringing" },
+        { "type": "noise", "at": 0.0, "filter": "lowpass", "hz": 400, "q": 1.0, "decay": 0.08, "gain": 0.3, "name": "the board's thud" },
+        { "type": "tone", "at": 0.0, "wave": "sine", "hz": 110, "decay": 0.12, "gain": 0.3, "name": "the cart's weight under it" }
+      ]
+    },
+    "broom-stroke": {
+      "gain": 0.35, "gainSpread": 0.2,
+      "parts": [
+        { "type": "noise", "at": 0.0, "filter": "bandpass", "hz": 4200, "q": 0.7, "attack": 0.08, "hold": 0.12, "release": 0.22, "gain": 0.45, "name": "the bristles" },
+        { "type": "noise", "at": 0.02, "filter": "bandpass", "hz": 1400, "q": 0.9, "attack": 0.06, "hold": 0.08, "release": 0.18, "gain": 0.18, "name": "the grit under them" }
+      ]
+    }
+    ```
+
+  - **`byActivity`**, new: an activity's beats, where its sound is heard
+    from and how far. Keyed by the activity names of `ACTIVITY_CLIPS` in
+    `src/populace.js`, so the clip is that table's and is not typed twice.
+    `at` is a fraction of the clip's loop, `mark` is what the driver is
+    doing there (below), `cue` is a key of `CUES`, and `gain` (default 1)
+    scales the sound for that beat.
+
+    ```json
+    "byActivity": {
+      "hammer": {
+        "heightMetres": 0.8, "hearMetres": 20, "sameRoom": false,
+        "beats": [
+          { "at": 0.125, "mark": "max", "cue": "hammer-strike" },
+          { "at": 0.625, "mark": "max", "cue": "hammer-strike" }
+        ]
+      },
+      "sweep": {
+        "heightMetres": 0.1, "hearMetres": 8, "sameRoom": true,
+        "beats": [
+          { "at": 0.47, "mark": "falling", "cue": "sweep-stroke", "gain": 0.5 },
+          { "at": 0.97, "mark": "rising", "cue": "sweep-stroke" }
+        ]
+      }
+    }
+    ```
+
+    A `mark` names a point of the driver joint's one moving angle, `rest +
+    amp * sin(...)`: `max` and `min` are its two ends, `rising` and
+    `falling` the two points it moves fastest, up and down (#1040). The
+    sweep's beats sit 0.03 of a loop ahead of their marks so the bristles'
+    80 ms attack peaks on the fastest point of the stroke; the hammer's sit
+    on the mark because a blow is an instant. `byActivityComment` says all
+    of that, and `soundsComment` gains `gainSpread`.
+- **`src/audio.js`** (lane E).
+  - `CUES` gains `'hammer-strike'` and `'sweep-stroke'`, each with a line
+    saying what fires it: `populace.js update, when a body doing hammer
+    (sweep) crosses one of its beats`.
+  - `playSound(def, at, scale)` multiplies every part by
+    `vary(def.gain ?? 1, def.gainSpread ?? 0) * scale`, and `cue(name, {
+    at, metres, gain = 1, id = null, beat = null })` passes `gain` through
+    as `scale`.
+  - **The log gains `seq`**, a count that never resets, on every entry, and
+    `id` and `beat` from the cue's options (#1043). `events()` stays the
+    last 64.
+  - Nothing else: the panner is `events.spatial`'s, HRTF, at the point the
+    cue names, torn down after the last part, and a cue on a context that
+    is not running is logged and not played (#697).
+- **`src/npc.js`** (lane C, one getter, #1041). `loopPhase()`: when
+  `_current` is an activity's action (`do:<activity>`) and the body is not
+  walking, `{ activity, phase }` with `phase = action.time /
+  action.getClip().duration`, in [0, 1); otherwise null. It reads the
+  mixer's own action and keeps no clock. `_play` records the key of
+  `_current` so the getter can name the activity.
+- **`src/populace.js`**. The constructor takes `beats` (default `{}`), the
+  `byActivity` table. `update` calls a new `_beat(body, player)` for every
+  body that is visible, settled, not following and not walking, before the
+  dwell timer, every frame; `_beat` does nothing when `player` is null.
+  `_beat` reads `npc.loopPhase()` and keeps the last phase per body:
+  - null, or a different activity from last frame: forget the last phase
+    and cue nothing;
+  - a last phase and this one: the beats crossed are those with `at` in
+    (last, this], or, when this < last (the loop wrapped), in (last, 1) or
+    [0, this]. **At most one cue per body per frame**, the last beat
+    crossed; nothing is cued on the first frame a phase is seen;
+  - a crossed beat is cued only if the player's eye is within
+    `hearMetres` of the sound's point, in three dimensions, and, when
+    `sameRoom` is true, `nav.roomAt` at the player's feet is the stop's own
+    `room` on its own `level`. `roomAt` is asked only on a crossing, about
+    once a second, never per frame;
+  - the cue is `cue(beat.cue, { id, at: { x, y: feet + heightMetres, z },
+    metres, gain: beat.gain ?? 1, beat: beat.at })`, from the body's own
+    position.
+  The comment at `ACTIVITY_CLIPS` and the class comment say where the beats
+  come from and that nothing here keeps time: the mixer is the clock.
+- **`src/main.js`**: `beats: soundData.events?.byActivity ?? {}` in the
+  `new Populace({...})` call, beside `cue`. One line. Its comment names
+  #1041.
+- **`test/layout.mjs`** check 14, **`test/mystery.mjs`** a new section 8e,
+  **`test/plan-vs-scene.mjs`** one new beat and two rewritten reads:
+  Acceptance, below.
+- **Not touched**: `tools/bodies/clips.json`, `tools/blender/packs.json`,
+  every `.glb`, `data/populace.json`, `src/save.js`, `test/budget.mjs`,
+  `test/assets.mjs`, `test/map.mjs`, `BACKLOG.md`, `ROADMAP.md`.
+
+**Acceptance.** Each line names its suite and the break that turns it red
+from green (#34). The builder runs each break, quotes the message, and puts
+it back.
+
+1. **`test/layout.mjs` check 14, the cues.** No new code: the two cues and
+   two sounds go through the existing both-ways rail. Break: delete
+   `"sweep-stroke"` from `byCue`; the check names the cue and the orphaned
+   `broom-stroke` in one run.
+2. **Check 14, the table's shape** (new). Every `byActivity` key is a key of
+   `ACTIVITY_CLIPS` (imported from `src/populace.js`, which has no three);
+   every beat's `cue` is a key of `CUES`; `at` in [0, 1), distinct within an
+   activity; `gain` in (0, 1]; `heightMetres` at least 0; `hearMetres` above
+   0 and at most `events.spatial.maxMetres`; `sameRoom` a boolean;
+   `gainSpread`, where present, in [0, 0.5]. Breaks: rename `hammer` to
+   `hamer` (`events.byActivity names "hamer", which src/populace.js's
+   ACTIVITY_CLIPS does not`); a beat's cue `hammer-blow`; `hearMetres` 60.
+3. **Check 14, the beats against the clips** (new, #1040). For each
+   activity, the clip is `ACTIVITY_CLIPS[activity]`, and every row of that
+   name in `tools/bodies/clips.json` and in `tools/blender/packs.json`'s
+   folk pack is checked, because the household is moving onto the folk rig
+   (#1018) and a beat must not depend on which body does the job. The
+   row's `driver` bone has exactly one move with a non-zero `amp` (else
+   fail, naming the moves); each beat's `at` is within **0.04 of a loop**,
+   measured round the circle, of the nearest point where that angle meets
+   its `mark`; and for each mark used, the number of beats on it equals the
+   row's `cycles`. Breaks: the second hammer beat moved to 0.5 (`hammer's
+   beat at 0.5 is 0.125 of a loop from a max of Hammer's UpperArm.R x in
+   tools/bodies/clips.json, over 0.04`); the same beat deleted (`Hammer
+   reaches its max 2 times a loop and events.byActivity.hammer strikes on 1`);
+   the folk pack's Hammer `phase` set to 0.25 in `tools/blender/packs.json`
+   (check 14 names the folk row and not the other; `test/assets.mjs` check
+   8 goes red beside it on the manifest's source hash, which is that
+   check's own rail). The rail reads the
+   tables and not the `.glb`s, which is sound because `test/assets.mjs`
+   checks 7 and 8 already hold the files to the tables.
+4. **Check 14, every activity with beats is somebody's job**: some person in
+   `data/populace.json` has a stop with that activity at some watch, the
+   way check 13 fails a bed no zone reaches. Break: the carter's two
+   `hammer` stops set to `haul` in `data/populace.json` (`"hammer" has beats
+   in data/sounds.json and nobody in data/populace.json hammers`;
+   `test/mystery.mjs`'s "nobody does hammer" goes red beside it, which is
+   that suite's own rail and not this one).
+5. **`test/mystery.mjs` 8e, the crossing, over plain-object bodies** (new,
+   #1041, 8c's and 8d's harness). A fake NPC with a scripted `loopPhase()`
+   and the real `byActivity` table, the scullion and the carter on the real
+   grid, `setWatch(..., { walk: false })`. Held, each its own `check`:
+   - the first frame with a phase cues nothing;
+   - 0.10 then 0.15 cues one `hammer-strike`, with `beat` 0.125, `gain` 1,
+     `id` carter and `at` the body's position plus 0.8 m, to 1e-9;
+   - 0.15 then 0.30 cues nothing;
+   - 0.60 then 0.13, a wrap across two beats, cues one, the 0.125;
+   - `loopPhase()` null for a frame, then 0.10, then 0.15: nothing on the
+     frame after the null, one on the next;
+   - `walking` true, or `following` true, or `group.visible` false: nothing
+     across a crossing;
+   - the player 21 m from the carter: nothing; 19 m: one;
+   - the scullion with the player 1.5 m off inside the kitchen: one
+     `sweep-stroke` on 0.95 to 0.99, with `gain` 1; on 0.45 to 0.49, `gain`
+     0.5; the player in the clerk's office, the nearest point of it to her
+     stop: nothing, though it is inside 8 m.
+   Breaks: the first-frame guard removed (`the first frame with a phase
+   cued 1, not 0`); the wrap branch removed (`0.60 then 0.13 cued 0`); the
+   `sameRoom` test removed (`a player in clerk-office ... hears the sweep
+   through the kitchen wall`); the at-most-one rule removed (`cued 2`).
+6. **`test/plan-vs-scene.mjs`, the wire and the live clock** (new, #1044).
+   What only a page has: `main.js` handing the table to the populace, and
+   `loopPhase()` reading a loaded body's mixer. One `page.evaluate`, all
+   synchronous, so the page's own loop cannot run inside it: the watch set
+   to `terce` with `walk: false`, the carter put on his `hammer` stop
+   (`body.index` to that stop, then `pop._arrive(body)`), `npc.update(0.3)`
+   to finish the 0.25 s cross-fade, the camera 2 m from him on open ground.
+   Then, for each hammer beat `b`, with `D` the live action's clip duration:
+   set the action's `time` to `(b - 0.03) * D`, `pop.update(0, cam)`, note
+   the log's last `seq`, `npc.update(0.06 * D)`, `pop.update(0, cam)`.
+   Held: exactly one `hammer-strike` after the note, its `at` within 0.01 m
+   of the carter in x and z; and the same steps from `(b + 0.1) * D` log
+   none. The same for the scullion at `prime` with the camera 1.5 m from her
+   in the kitchen and `sweep-stroke`, because she wears a second file. The
+   watch and the camera are put back as the populace beat at line 1466
+   does. Breaks: the `beats:` line deleted from `src/main.js` (`0 cued`);
+   `loopPhase()` reading `this._mixer.time / duration` in place of the
+   action's own `time` (the set time is ignored, and the beat cues nothing
+   or cues off the beat).
+7. **`test/plan-vs-scene.mjs`, the door and the bark read `seq`** (#1043).
+   Lines 1302 to 1307 and 1359 to 1360 take the last `seq` before they act
+   and filter on `seq` after it, in place of `events().slice(before)`.
+   Nothing they assert changes. The break, from green: fill the log with 64
+   `hammer-strike` cues by hand at the top of the door beat; under
+   `slice(before)` it reads `cued: nothing`, under `seq` it is green.
+8. `npm run build`, and `npm test` 15 of 15. `test/built.mjs` needs nothing
+   new: no file is added.
+
+**Open calls, each with a recommendation.**
+
+- **Where the beat lives.** Recommend `data/sounds.json`'s `byActivity`,
+  and not a field on the clip rows, because the beat is a sound tuning and
+  `data/sounds.json` is the only place a sound is tuned, while the clip
+  tables are held byte-for-byte to the `.glb`s and a sound edit there would
+  mean a re-render.
+- **Which clock.** Recommend the action's own `time` over its clip's
+  duration, read every frame after `npc.update`, because the mixer is what
+  the eye sees and any clock of the populace's own drifts from it at every
+  cross-fade and every reset (#1041).
+- **Fire on the crossing, or schedule ahead on the audio clock.** Recommend
+  the crossing, at most a frame late, because `main.js` clamps `dt` to
+  50 ms, a 60 Hz frame is 16.7 ms and the ear forgives sound after picture
+  by much more than that, while scheduling ahead needs the populace to
+  predict the mixer.
+- **One cue for all work, or one per activity.** Recommend one per
+  activity, `hammer-strike` and `sweep-stroke`, because check 14 already
+  holds a cue to exactly one sound, and a generic cue would need a second
+  lookup that check does not see.
+- **Both sweep strokes, or one.** Recommend both, the rising stroke at full
+  gain and the falling at 0.5, because a broom drags both ways and one
+  stroke a loop is a gap of 2 s that reads as a pause; which stroke is the
+  loud one is Devon's ear and a one-number swap.
+- **How far.** Recommend the hammer at 20 m with no room test, because it
+  is outdoors and a mallet carries, at 1.5 / (1.5 + 1.3 x 18.5) = 6 % of
+  itself at the edge; the sweep at 8 m and only in its own room, because a
+  broom is not heard through a stone wall and distance alone would put it
+  in the clerk's office, 1.2 m off (#1042).
+- **Where from.** Recommend the body's position plus `heightMetres`, 0.8 m
+  for the mallet on the cart bed and 0.1 m for the bristles, through the
+  existing HRTF event panner, because a bone-tracked point costs a world
+  matrix read per beat and buys a few centimetres nobody can hear.
+- **During the cross-fade into the activity.** Recommend no weight gate:
+  the first blow lands at 0.21 s with the clip 84 % blended in, and a gate
+  would drop it for nothing visible.
+- **The log rolling over.** Recommend `seq` (#1043), because at 72 blows a
+  minute a full 64-entry log makes `slice(before)` read nothing, which is a
+  red door beat caused by a hammer.
+
+**Dependencies.** Rank 6's clips, placed (#800): met. #1018's move of the
+household onto the folk rig is not needed and is covered by acceptance 3.
+**Lanes**: E, plus one getter in `src/npc.js`, which is lane C's file
+(#1041). This increment does not run beside 2c, 2d or a rank 6 increment that
+writes `src/npc.js`; it may run beside anything else.
+
+**The rules that bite.** #34 (every break above, from green, quoted);
+#529 (crossing logic in Node, the wire and the mixer in the page, and no
+assertion in `plan-vs-scene.mjs` that `mystery.mjs` could hold); #13 (every
+new line exits non-zero); #53 (CI hears nothing; `harness.mjs` launches with
+`--mute-audio`, and the log is what is asserted); #697 (nothing plays before
+the start button); #519 and #548 (synthesised); #493 (no file fetched);
+#632 (no new file is written by a tool, so no line-ending rule applies).
+
+**Listening, for Devon, after it ships** (`npm run play`, speakers,
+`data/sounds.json` open beside it):
+
+- [ ] The carter at Terce, from 3 m: wood on wood, or a click, or a drum?
+      The 260 Hz board tone is the number most likely wrong.
+- [ ] Does each knock land on the blow you see, from 3 m and from 15 m?
+      Early or late, and by how much (the fix is a beat's `at`).
+- [ ] 72 a minute for 9 s, then 9 s of hauling: a man working, or a
+      metronome? `gainSpread` 0.15 is the lever.
+- [ ] Inside the great hall, 4.2 m from his stop through the wall: should
+      the hammer be heard there? `hearMetres` 20 says yes, faintly.
+- [ ] The scullion at Prime: bristles, or hiss, or wind? Under the
+      kitchen's crackle, can you tell the two apart?
+- [ ] Which sweep stroke is the loud one, and is it the right one?
+- [ ] From the clerk's office next door: silence. Should it be?
+- [ ] Before Enter the Castle: no blow and no stroke (#697).
 
 ---
 
