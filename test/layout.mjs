@@ -50,11 +50,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { partsOf, nodesOf } from './gltf.mjs';
-import { makePlan, walkability, surfacesAt, collidersWith, moveBody, GRID, HEAD_LOW, HEAD_HIGH, BODY_RADIUS, DAY_SETS, EYE_HEIGHT } from '../src/castle-plan.js';
+import { partsOf, nodesOf, triangles } from './gltf.mjs';
+import { makePlan, walkability, surfacesAt, standAt, treadTop, placePoint, collidersWith, moveBody, GRID, HEAD_LOW, HEAD_HIGH, BODY_RADIUS, DAY_SETS, EYE_HEIGHT } from '../src/castle-plan.js';
 import { dayTwoOutcomes, dayTwoCastle, undoDay } from '../src/mystery.js';
 import { stepClassOf, bedOf, bedSources, sourcePoint, audibleFrom, ringOf, CUES, eventOf, cueSound } from '../src/audio.js';
 import { castleNav } from '../src/stations.js';
+import { ACTIVITY_CLIPS } from '../src/populace.js';
 import { routeThrough, marksAlong, onStorey } from './route.mjs';
 import { skinStageOf } from '../tools/castle3d/skin-stages.mjs';
 
@@ -1256,6 +1257,116 @@ console.log('\na body up and down every flight');
   else if (climbed === plan.ramps.length * 2) pass(`${plan.ramps.length} flights, each climbed and descended by a ${BODY_RADIUS} m body onto the floor beyond, ${sidestepped} of the ${climbed} walks leaving through the crescent beside the flight`);
 }
 
+/* ------------- 8c (#1031, #1032): every flight's disc lies on the drawn tread ---
+ * A flight is a ramp in the plan and a stair on screen, and the ramp line runs
+ * through every tread's inner corner, so the player rig's shadow at the feet
+ * was inside the stone on every tread (#1014, #1030). The plan carries the
+ * flight's step count (`stairs.steps`) and `treadTop` answers the tread over
+ * the ramp. Both are facts about the plan and the drawing's glb, so they are
+ * held here and not in a browser (#529, #1032). The drawing in force is check
+ * 16's rule: the skin node naming the flight when its stage is listed and the
+ * id not kept, else the kit glb through the plan's own `placePoint`.
+ *   1. the drawing's distinct upward planes over the flight's foot number
+ *      exactly `steps`, the k-th at k / steps of the rise. The `min.y` cut is
+ *      the kit glb's upward-wound face at y = 0 under its whole footprint,
+ *      which would count as a ninth tread;
+ *   2. at the middle of every tread, on the centreline and 0.4 of the half
+ *      width either side, `treadTop` is the drawing's highest upward face
+ *      there within TREAD_TOL, and over the ramp by more than 0 and at most
+ *      one riser.
+ */
+console.log('\nthe shadow on every flight lies on the tread that is drawn');
+{
+  const TREAD_TOL = 0.005, PLANE_TOL = 0.002;
+  const skin = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/castle-skin.json'), 'utf8'));
+  const stages = skin.stages || [];
+  const keep = new Set(skin.keep || []);
+  const skinFile = path.join(ROOT, skin.file);
+  const kitFile = path.join(ROOT, config.kenneyBase + config.stairs.model);
+  const idsOf = (x) => [...(x?.planId !== undefined ? [String(x.planId)] : []), ...(Array.isArray(x?.planIds) ? x.planIds.map(String) : [])];
+  const kitLocal = triangles(kitFile);
+  const drawingOf = (piece) => {
+    if (stages.includes(skinStageOf(piece)) && !keep.has(piece.id)) {
+      const names = [];
+      const { verts, tris } = triangles(skinFile, { only: (n) => idsOf(n.extras).includes(piece.id) && names.push(n.name ?? '') > 0 });
+      return { by: names.join(', ') || '(no skin node)', skinned: true, verts, tris };
+    }
+    const verts = kitLocal.verts.map(([x, y, z]) => { const p = placePoint(piece.transform, x, y, z); return [p.x, p.y, p.z]; });
+    return { by: `${config.stairs.model} (kit)`, skinned: false, verts, tris: kitLocal.tris };
+  };
+  const upward = ({ verts, tris }) => {
+    const out = [];
+    for (const [a, b, c] of tris) {
+      const A = verts[a], B = verts[b], C = verts[c];
+      const ux = B[0] - A[0], uy = B[1] - A[1], uz = B[2] - A[2];
+      const vx = C[0] - A[0], vy = C[1] - A[1], vz = C[2] - A[2];
+      const nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+      const len = Math.hypot(nx, ny, nz);
+      if (len < 1e-12 || ny / len <= 0.999) continue;
+      out.push({ A, B, C, y: (A[1] + B[1] + C[1]) / 3 });
+    }
+    return out;
+  };
+  const inTri = (x, z, { A, B, C }) => {
+    const s = (P, Q) => (Q[0] - P[0]) * (z - P[2]) - (Q[2] - P[2]) * (x - P[0]);
+    const d1 = s(A, B), d2 = s(B, C), d3 = s(C, A);
+    const neg = d1 < -1e-9 || d2 < -1e-9 || d3 < -1e-9, pos = d1 > 1e-9 || d2 > 1e-9 || d3 > 1e-9;
+    return !(neg && pos);
+  };
+  let counted = 0, skinnedN = 0, kitN = 0, samples = 0, worst = 0, worstAt = '';
+  const countBad = [], heightBad = [];
+  for (const ramp of plan.ramps) {
+    const piece = plan.pieces.find(p => p.id === ramp.id);
+    if (!piece) { countBad.push(`${ramp.id} is a flight with no plan piece to draw it`); continue; }
+    if (!ramp.steps) { countBad.push(`${ramp.id} carries no step count (stairs.steps in data/scene-config.json)`); continue; }
+    const drawing = drawingOf(piece);
+    if (drawing.skinned) skinnedN++; else kitN++;
+    const up = upward(drawing);
+    const [ax, az, ay] = ramp.slope.from, [bx, bz, by] = ramp.slope.to;
+    const planes = [...new Set(up.map(f => Math.round(f.y * 1000) / 1000))]
+      .filter(y => y > ramp.box.min.y + 0.001).sort((p, q) => p - q);
+    const offAt = planes.findIndex((y, i) => Math.abs(y - (ay + (by - ay) * (i + 1) / ramp.steps)) > PLANE_TOL);
+    if (planes.length !== ramp.steps) countBad.push(`${ramp.id} is drawn by ${drawing.by} with ${planes.length} treads and the plan says ${ramp.steps}`);
+    else if (offAt >= 0) countBad.push(`${ramp.id}'s tread ${offAt + 1} is drawn at ${planes[offAt].toFixed(3)} and the plan's ${ramp.steps} steps put it at ${(ay + (by - ay) * (offAt + 1) / ramp.steps).toFixed(3)}`);
+    else counted++;
+
+    // 2: the height, at mid-tread, on the centreline and 0.4 of the half width either side
+    const len = Math.hypot(bx - ax, bz - az);
+    const ux = (bx - ax) / len, uz = (bz - az) / len, px = -uz, pz = ux;
+    const half = (Math.abs(px) * (ramp.box.max.x - ramp.box.min.x) + Math.abs(pz) * (ramp.box.max.z - ramp.box.min.z)) / 2;
+    const cx = (ramp.box.min.x + ramp.box.max.x) / 2, cz = (ramp.box.min.z + ramp.box.max.z) / 2;
+    const perp0 = (cx - ax) * px + (cz - az) * pz; // the centreline's offset from the slope line
+    const riser = (by - ay) / ramp.steps;
+    for (let k = 0; k < ramp.steps; k++) {
+      const t = (k + 0.5) / ramp.steps;
+      for (const side of [0, -0.4, 0.4]) {
+        samples++;
+        const off = perp0 + side * half;
+        const x = ax + ux * len * t + px * off, z = az + uz * len * t + pz * off;
+        const feet = ay + (by - ay) * t;
+        const where = `${ramp.id} at t ${t.toFixed(3)}${side ? `, ${side > 0 ? '+' : ''}${side} of the half width` : ''}`;
+        const on = standAt(plan, x, z, feet);
+        if (!on) { heightBad.push(`${where} stood nowhere, not the flight`); continue; }
+        if (on.surface !== ramp.id) { heightBad.push(`${where} stood on ${on.surface}, not the flight`); continue; }
+        const got = treadTop(plan, x, z, feet);
+        const drawn = Math.max(-Infinity, ...up.filter(f => inTri(x, z, f)).map(f => f.y));
+        if (!Number.isFinite(drawn)) { heightBad.push(`${where}: ${drawing.by} draws no upward face there`); continue; }
+        const d = Math.abs(got - drawn);
+        if (d > worst) { worst = d; worstAt = where; }
+        if (d > TREAD_TOL) heightBad.push(`${where}: treadTop says ${got.toFixed(3)} and ${drawing.by} draws the tread at ${drawn.toFixed(3)}, ${Math.abs(got - drawn).toFixed(3)} m ${got > drawn ? 'over' : 'under'} it`);
+        else if (!(got - feet > 0 && got - feet <= riser + 1e-6)) heightBad.push(`${where}: treadTop is ${(got - feet).toFixed(3)} m over the ramp, not in (0, ${riser.toFixed(3)}]`);
+      }
+    }
+  }
+  if (!plan.ramps.length) fail('the plan has no flights, so no tread was counted');
+  else if (countBad.length) countBad.forEach((m) => fail(m));
+  else pass(`${counted} flights, each drawn with ${[...new Set(plan.ramps.map(r => r.steps))].join(', ')} treads as the plan says (${skinnedN} skin, ${kitN} kit)`);
+  if (heightBad.length) {
+    heightBad.slice(0, 8).forEach((m) => fail(m));
+    if (heightBad.length > 8) fail(`... and ${heightBad.length - 8} more of ${samples} mid-tread samples`);
+  } else if (plan.ramps.length) pass(`${samples} mid-tread samples on ${plan.ramps.length} flights, treadTop on the drawn tread within ${TREAD_TOL} m (worst ${worst.toFixed(4)} m, ${worstAt}) and over the ramp by at most a riser`);
+}
+
 /* --------------- 8b: a walk between two rooms on one storey stays on it ---
  * `walkability(plan).path()` treats a flight as floor, because a flight IS the
  * only surface over the cells it stands on, and it hands back the shortest walk
@@ -1803,6 +1914,18 @@ console.log('\nevery zone has an ambient bed');
  * `cadence` is a state, fired every frame it holds, and its `withinMetres`
  * has to sit inside the follow radius of some body in data/populace.json,
  * or the cue never fires while the bark would.
+ *
+ * AND A JOB'S BEATS (#1040, #1044). `events.byActivity` puts a cue on a
+ * fraction of an activity's clip loop. Three more questions, all of the data:
+ * the table's shape (every key an ACTIVITY_CLIPS activity, every cue a CUES
+ * key, `at` in [0, 1) and distinct, `gain` in (0, 1], the distances sane,
+ * `gainSpread` in [0, 0.5]); every beat within BEAT_TOL of a loop of the point
+ * where its clip's driver angle meets its `mark`, in every row of that clip's
+ * name in tools/bodies/clips.json and in tools/blender/packs.json's folk pack,
+ * with as many beats on a mark as the clip has cycles; and every activity with
+ * beats being somebody's job in data/populace.json. The angle is the tables'
+ * own `rest + amp * sin(2 pi (cycles * t + phase))`, and the tables and not the
+ * .glbs are read, because test/assets.mjs checks 7 and 8 hold the files to them.
  */
 console.log('\nevery cue has an event sound');
 {
@@ -1854,6 +1977,90 @@ console.log('\nevery cue has an event sound');
   const sane = [['refMetres', sp.refMetres > 0], ['maxMetres', sp.maxMetres > sp.refMetres], ['rolloff', sp.rolloff > 0], ['panning', sp.panning === 'equalpower' || sp.panning === 'HRTF']];
   for (const [k, ok] of sane) if (!ok) fail(`events.spatial.${k} is ${JSON.stringify(sp[k])}`);
   if (eventOf(sounds, 'no-such-cue') !== null || cueSound(sounds, 'no-such-cue') !== null) fail('eventOf a cue the file has nothing for is not null');
+
+  // gainSpread: a sound's gain varied per play by that fraction of itself (#1042).
+  const spreadBad = Object.entries(defs).filter(([, d]) => d?.gainSpread != null && !(finite(d.gainSpread) && d.gainSpread >= 0 && d.gainSpread <= 0.5));
+  for (const [k, d] of spreadBad) fail(`event sound "${k}" has gainSpread ${JSON.stringify(d.gainSpread)}, not a fraction in [0, 0.5]`);
+  if (!spreadBad.length) pass(`every gainSpread is in [0, 0.5]: ${Object.entries(defs).filter(([, d]) => d?.gainSpread != null).map(([k, d]) => `${k} ${d.gainSpread}`).join(', ') || 'none set'}`);
+
+  /* The beats' shape (#1040). */
+  const BEAT_TOL = 0.04; // of a loop, measured round the circle (#1040)
+  const MARKS = ['max', 'min', 'rising', 'falling'];
+  const byActivity = ev.byActivity ?? {};
+  let shapeBad = 0;
+  const shapeFail = (m) => { fail(m); shapeBad++; };
+  if (typeof byActivity !== 'object' || Array.isArray(byActivity)) shapeFail('events.byActivity is not an object of activity to beats');
+  const maxMetres = ev.spatial?.maxMetres;
+  for (const [activity, entry] of Object.entries(byActivity)) {
+    if (!ACTIVITY_CLIPS[activity]) { shapeFail(`events.byActivity names "${activity}", which src/populace.js's ACTIVITY_CLIPS does not`); continue; }
+    if (!entry || typeof entry !== 'object') { shapeFail(`events.byActivity.${activity} is not an object`); continue; }
+    if (!(finite(entry.heightMetres) && entry.heightMetres >= 0)) shapeFail(`events.byActivity.${activity}.heightMetres is ${JSON.stringify(entry.heightMetres)}, not 0 or more`);
+    if (!(finite(entry.hearMetres) && entry.hearMetres > 0 && entry.hearMetres <= maxMetres)) shapeFail(`events.byActivity.${activity}.hearMetres is ${JSON.stringify(entry.hearMetres)}, not above 0 and at most events.spatial.maxMetres ${maxMetres}`);
+    if (typeof entry.sameRoom !== 'boolean') shapeFail(`events.byActivity.${activity}.sameRoom is ${JSON.stringify(entry.sameRoom)}, not true or false`);
+    if (!Array.isArray(entry.beats) || !entry.beats.length) { shapeFail(`events.byActivity.${activity} has no beats`); continue; }
+    const seen = new Set();
+    for (const [i, b] of entry.beats.entries()) {
+      const at = `events.byActivity.${activity} beat ${i + 1}`;
+      if (!CUES[b?.cue]) shapeFail(`${at} cues ${JSON.stringify(b?.cue)}, which is not one of src/audio.js's CUES: ${Object.keys(CUES).join(', ')}`);
+      if (!(finite(b?.at) && b.at >= 0 && b.at < 1)) shapeFail(`${at} is at ${JSON.stringify(b?.at)}, not a fraction of a loop in [0, 1)`);
+      else if (seen.has(b.at)) shapeFail(`${at} is at ${b.at}, and so is another of ${activity}'s beats`);
+      else seen.add(b.at);
+      if (b?.gain != null && !(finite(b.gain) && b.gain > 0 && b.gain <= 1)) shapeFail(`${at} has gain ${JSON.stringify(b.gain)}, not in (0, 1]`);
+      if (!MARKS.includes(b?.mark)) shapeFail(`${at} has mark ${JSON.stringify(b?.mark)}, not one of ${MARKS.join(', ')}`);
+    }
+  }
+  if (!shapeBad) pass(`events.byActivity's ${Object.keys(byActivity).length} activities are ACTIVITY_CLIPS', with ${Object.values(byActivity).reduce((n, e) => n + e.beats.length, 0)} beats on CUES, in [0, 1), within ${maxMetres} m`);
+
+  /* The beats against the clips (#1040). Every row of the clip's name, in both tables. */
+  const clipsTable = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/bodies/clips.json'), 'utf8'));
+  const packsTable = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/blender/packs.json'), 'utf8'));
+  const sources = [
+    { where: 'tools/bodies/clips.json', rows: clipsTable.clips ?? [] },
+    ...(packsTable.rows ?? []).filter((r) => r.pack === 'folk').map((r) => ({ where: `tools/blender/packs.json's folk pack (row ${r.name})`, rows: r.clips ?? [] })),
+  ];
+  const round = (d) => { const m = ((d % 1) + 1) % 1; return Math.min(m, 1 - m); };
+  // Where in the loop, as fractions, the angle rest + amp sin(2 pi (c t + ph)) meets `mark`.
+  const markPoints = (move, cycles, mark) => {
+    const up = move.amp > 0;
+    const u = { max: up ? 0.25 : 0.75, min: up ? 0.75 : 0.25, rising: up ? 0 : 0.5, falling: up ? 0.5 : 0 }[mark];
+    return Array.from({ length: cycles }, (_, k) => ((((u - (move.phase ?? 0) + k) / cycles) % 1) + 1) % 1);
+  };
+  let clipBad = 0;
+  const held = [];
+  for (const [activity, entry] of Object.entries(byActivity)) {
+    const clip = ACTIVITY_CLIPS[activity];
+    if (!clip || !Array.isArray(entry?.beats)) continue;
+    let rowsSeen = 0;
+    for (const { where, rows } of sources) {
+      for (const row of rows.filter((r) => r.name === clip)) {
+        rowsSeen++;
+        const driven = (row.moves ?? []).filter((m) => m.bone === row.driver && finite(m.amp) && m.amp !== 0);
+        if (driven.length !== 1) { fail(`${clip}'s driver ${row.driver} in ${where} has ${driven.length} moving angles, not one: ${(row.moves ?? []).filter((m) => m.bone === row.driver).map((m) => `${m.axis} amp ${m.amp}`).join(', ') || 'no moves'}`); clipBad++; continue; }
+        const move = driven[0];
+        const cycles = row.cycles;
+        if (!(Number.isInteger(cycles) && cycles >= 1)) { fail(`${clip} in ${where} has cycles ${JSON.stringify(cycles)}`); clipBad++; continue; }
+        for (const b of entry.beats) {
+          if (!MARKS.includes(b.mark) || !finite(b.at)) continue; // the shape pass said so
+          const off = Math.min(...markPoints(move, cycles, b.mark).map((t) => round(b.at - t)));
+          if (off > BEAT_TOL) { fail(`${activity}'s beat at ${b.at} is ${+off.toFixed(4)} of a loop from a ${b.mark} of ${clip}'s ${row.driver} ${move.axis} in ${where}, over ${BEAT_TOL}`); clipBad++; }
+        }
+        for (const mark of new Set(entry.beats.map((b) => b.mark).filter((m) => MARKS.includes(m)))) {
+          const on = entry.beats.filter((b) => b.mark === mark).length;
+          if (on !== cycles) { fail(`${clip} reaches its ${mark} ${cycles} time${cycles === 1 ? '' : 's'} a loop and events.byActivity.${activity} strikes on ${on}, in ${where}`); clipBad++; }
+        }
+        held.push(`${clip} in ${where}`);
+      }
+    }
+    if (!rowsSeen) { fail(`events.byActivity.${activity} plays on ${clip}, and neither tools/bodies/clips.json nor the folk pack has a row of that name to hold its beats to`); clipBad++; }
+  }
+  if (!clipBad) pass(`every beat is within ${BEAT_TOL} of a loop of its mark, a mark per cycle, in ${held.length} clip rows: ${held.join(', ')}`);
+
+  /* Every activity with beats is somebody's job (#1040), the way check 13 fails a bed no zone reaches. */
+  const worked = new Set();
+  for (const p of populace.people ?? []) for (const stops of Object.values(p.routine ?? {})) for (const s of Array.isArray(stops) ? stops : []) worked.add(s?.activity);
+  const idle = Object.keys(byActivity).filter((a) => !worked.has(a));
+  for (const a of idle) fail(`"${a}" has beats in data/sounds.json and nobody in data/populace.json ${a}s`);
+  if (!idle.length) pass(`every activity with beats is somebody's job: ${Object.keys(byActivity).join(', ')}`);
 }
 
 /* ------------------- 16 (rank 2i, #965): the castle skin against the plan ---

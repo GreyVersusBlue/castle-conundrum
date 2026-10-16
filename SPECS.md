@@ -1915,6 +1915,8 @@ this row is below.
 - **The GPU look at playback and `renderer.info` with the populace in are
   done** (#1016 to #1018, 2026-10-04), below under "The GPU look". Left from them:
   the bell-walk fix (#1017), Devon's five calls (#1016), and the town's share (#1018).
+- **The bell-walk fix is increment 6, below** (#1020 to #1023): specified
+  2026-10-16, class S from here.
 
 ### Increment 3: the twelve's chatter held to the schedule, and `drill` dropped
 
@@ -2695,6 +2697,11 @@ table and every number. In short: the threshold passes, the nine hall pairs
 run 194.0 s against 193.3, and three places fail for one cause, a bell
 starting a piece while its speakers are still walking (#1017).
 
+**The bell-walk fix is specified as increment 6, below** (#1020 to #1023).
+The paragraph that follows is #1017's recommendation as filed; the numbers
+in it were recomputed in Node and hold, but its song row's cause did not:
+the sentry was placed in the hall at the bell, not walking (#1021).
+
 **Next: the bell-walk fix, class O** (#1017). It amends #925's gap, #592's start
 on the bell and #928's "no body is consulted", so `architect` writes it
 first. The recommendation, for the open call it will carry: a placed pair or
@@ -2719,6 +2726,275 @@ take-away measurement again, then the town's number argued in `HISTORY.md`
 by 2c or 2d (lane C). Each town body goes on the shared rig, outside the
 sun's 80 m shadow square, with `castShadow` off. This row does not
 renegotiate a ceiling from a container.
+
+### Increment 6: the bell walk
+
+**Specified 2026-10-16** (#1020 to #1023). **Built the same day** (#1021's
+route fix, #1024's second read of rail 11; `walkMs` held at 25455, 40000 and
+8636). Class S from here:
+every open call below carries a recommendation, no save bump, no assertion
+crosses a suite line. Limits: no station moves, no pair or piece is placed,
+recast, rewritten or retired, no body is added, `MAX_SKINNED_TOTAL`,
+`CHATTER_GAP_MS` (4000) and `SAVE_VERSION` (6) are untouched.
+
+**What the code says today, measured in Node on `f99f515`.** Two things,
+and the second is new.
+
+1. #1017 holds. `applyWatch` starts a performance on the bell and queues a
+   placed pair at `CHATTER_GAP_MS`; nothing waits for the walk. The walks,
+   by `castleNav().route` from the last bell's station at 1.1 m/s:
+   `kings-hall`/sext, steward, 28.0 m, **25455 ms**; `great-hall`/vespers,
+   sentry, 44.0 m, **40000 ms**; `outer-ward`/terce, clerk, 9.5 m, **8636
+   ms** (the merchant has no Prime station, so he is placed, not walked).
+   `chapel`/vespers (chaplain) and `kitchen`/sext (cook) are 0: the
+   performer is already there. `chapel`/prime has no bell before it. #1017's
+   25.5, 40.0 and 8.6 s are right.
+2. **`src/main.js`'s `onWatch` routes every body from the floor it is going
+   to, not the floor it is on** (#1021): `from = { x, z, level: to.level }`.
+   Of the 67 bell walks on day one and the walking day, 14 change level; 8
+   of those get a null route and are placed (`placeAt`) at the bell, and 6
+   start from the cell under the body on the destination's floor. The
+   sentry, on `north-walk` (level 2, feet at 8.0) at Sext, is placed in the
+   hall at Vespers: #1017's song row ("Dafydd's walk ... 40.0 s") is the
+   station route, not what the body does. The Lady, in `royal-apartments`
+   (level 1) at Terce, starts her Sext walk from the ground cell under her,
+   9.5 m where her route is 94.5 m, and her feet sink 4 m through the floor
+   at `CLIMB_SPEED`; at Vespers she is placed back upstairs. With the level
+   taken from `nav.roomAt(x, z, feet)` all 67 match `nav.route(station,
+   station)` cell for cell. Fixing (1) without (2) would hold the song 40 s
+   for a singer already standing in the hall.
+
+**The behaviour, in one paragraph.** A walking bell (`handleBell`, never a
+load, a reload or `applyDay*`, which pass `walk: false`) puts each room that
+has a performance or a placed pair at the new bell into `settling` for that
+room's `walkMs`: the longest walk of any speaker of any of its pieces, from
+the last bell's station to this one. While the player's room is settling
+nothing starts there, whether the player was standing in it at the bell or
+walked in after. When the room's wake fires it does what `applyWatch` does
+today: the performance at once, or failing one the room's first unheard pair
+after `CHATTER_GAP_MS`. Walking in after the wake is unchanged (#925: at
+once). Today that is the song at 40.0 s, `inner-sext-1` at 29.5 s and
+`outer-terce-1` at 12.6 s after the bell, where the GPU look saw 0, 4.0 and
+4.1 s.
+
+**Scope, by file.**
+
+- **`src/stations.js`.**
+  - `export const WALK_SPEED = 1.1;` with a comment saying it is the
+    twelve's pace in m/s, read by `src/npc.js` and by `walkMs`.
+  - `nav.routeFrom(body, to)`: `body` is `{x, y, z}` with `y` the feet;
+    returns `api.route({ x: body.x, z: body.z, level: api.roomAt(body.x,
+    body.z, body.y).level }, to)`. The comment says why: a body's floor is
+    the one under its feet, and #1021's 14 walks.
+  - `nav.walkMs(npcId, watch, speed = WALK_SPEED)`: the bell before `watch`
+    is the one before it in `mystery.watches`, or in `mystery.day0.watches`
+    for a walking-day bell. 0 when `watch` is the first of its day or in
+    neither list (`lauds`), and 0 when either station is null (a body with
+    no station at the last bell is placed, not walked). Otherwise
+    `routeFrom({ x, y: h, z } of the earlier station, the later station)`,
+    its length the sum of the horizontal distances between consecutive
+    points, and `Math.round(1000 * length / speed)`. A null route is 0:
+    `validateMystery`'s station rails already refuse a walk that has none.
+- **`src/npc.js`.** `PATROL_SPEED` becomes `WALK_SPEED` imported from
+  `./stations.js`, one line, so the pace `walkMs` divides by and the pace a
+  body walks at cannot drift. No other change.
+- **`src/main.js`.** Two edits.
+  - `onWatch`: `nav.route(from, to)` with `from = { x, z, level: to.level }`
+    becomes `nav.routeFrom({ x, y, z } of npc.group.position, to)`. A null
+    still places the body, as today.
+  - The `QuestManager` constructor gains `walkMs: (id, watch) =>
+    nav.walkMs(id, watch, npcData.cast.find((c) => c.id === id)?.speed)`,
+    with a comment: the walk is read off the schedule and the plan, never
+    off a body (#1020). No cast entry carries `speed` today; the child who
+    does is the household's, which this does not touch.
+- **`src/quest-manager.js`.**
+  - The constructor takes `walkMs = null`, documented beside `chatter`:
+    `(npcId, watch) => ms`; omitted is a castle where nobody is ever still
+    walking, which every existing rig gets.
+  - `this._bell = null` (a token, one per walking bell) and
+    `this._settling = new Set()`. A public getter `settling` returns
+    `[...this._settling]` sorted, for the browser seam below.
+  - `_settle(watch, walking)`: a fresh `_bell` token and an empty
+    `_settling`. If `walking` and `_walkMs` is set: for every room with
+    an entry in `_performances` or `_chatter` keyed `` `${room}/${watch}` ``,
+    `ms` is the largest `_walkMs(id, watch)` over every speaker of every
+    entry there (a performance's `npc`, a pair's `npcs`). If `ms > 0` the
+    room goes into `_settling` and a wake is scheduled at `ms`: if `_bell`
+    is no longer this token, nothing; otherwise the room leaves
+    `_settling`, and if `_room` is that room, `_playing` is null and `_gap`
+    is null, `if (!this._maybePerform()) this._queueChatter()`.
+  - `applyWatch`: `this._settle(watch, opts.walk !== false)` after
+    `_stopPerformance()` and before the existing `_maybePerform` /
+    `_queueChatter` line, which stays.
+  - `_maybePerform`, `_maybeChatter` and `_queueChatter` each return null
+    (nothing) first if `_settling.has(this._room)`. `performanceHere` and
+    `chatterHere` are not changed: they say what is due, not whether it may
+    start. `overhear` is not guarded (open call 6).
+  - The comment over `CHATTER_GAP_MS` loses "after a bell it is the
+    allowance for bodies still walking to their stations" and says the walk
+    is `walkMs`'s (#1020) and the gap follows it. The comment in
+    `applyWatch` that says the same is amended the same way.
+- **`test/mystery.mjs`**, **`test/quest.mjs`**, **`test/plan-vs-scene.mjs`**:
+  below.
+- **Not touched**: `data/` (every file), `src/lore.js`, `src/populace.js`
+  (the household's rings walk by their own clock and are not this
+  increment's), `src/save.js`, `src/ui.js`, `test/budget.mjs`,
+  `test/layout.mjs`, `test/play-castle.mjs`, anything under `tools/`.
+
+**Acceptance.** 1 to 4 in `test/mystery.mjs`, a new block at the end of
+"the twelve, at their stations" (section 2b), on the suite's own `nav`.
+5 to 13 in `test/quest.mjs`, a new section "the bell walk" after "two of
+the twelve, in a room", on `chatterRig({ walkMs })` where `walkMs` is `(id,
+w) => nav.walkMs(id, w)` off a `castleNav(makePlan(config, boundsOf),
+mystery)` built once at the section's top as line 1882 builds one; `rig`
+gains a `walkMs` option (default null) passed straight through, and
+`performRig`'s queue keeps each step's `ms` beside it, with `r.nextMs()`
+the first pending step's. 14 and 15 in `test/plan-vs-scene.mjs`, one beat
+after the chatter wire beat.
+
+1. **The level rail.** For each of the twelve in `mystery.schedule` and each two consecutive
+   bells of `mystery.watches` and of `mystery.day0.watches` where both
+   stations exist, `nav.routeFrom({ x, y: h, z } of the earlier station,
+   the later station)` is non-null and the same `x, z, level` list as
+   `nav.route(earlier, later)`. The check line prints the count: 67 of 67.
+2. **The three walks, pinned.** `nav.walkMs('steward', 'sext') === 25455`,
+   `nav.walkMs('sentry', 'vespers') === 40000`, `nav.walkMs('clerk',
+   'terce') === 8636`. A station move that changes one updates the number
+   in the same commit; that is the point of pinning what the GPU look
+   measured.
+3. **The zeros.** `walkMs` is 0 for all twelve at `prime`, at
+   `prime-eve` and at `lauds`, for `merchant` at `terce`, for `chaplain` at
+   `vespers` and for `cook` at `sext`.
+4. **The speed.** `nav.walkMs('steward', 'sext', 2.2) === 12727`.
+5. **Who settles.** Stood in `outer-ward` (`handleStand`) and rung to Terce,
+   `qm.settling` is `['outer-ward']`; rung to Sext, `['kings-hall']`; rung
+   to Vespers, `['great-hall']`.
+6. **The hall, stood in at the bell.** In `great-hall` at Sext, rung to
+   Vespers: the band is dark, `r.pending() === 1` and `r.nextMs() ===
+   40000`. Ticked once: the song's first line under "Dafydd ap Rhys".
+   Ticked through the song: one step pending at 4000, and it shows
+   `outer-sext-3`'s first line.
+7. **The King's Hall, stood in at the bell.** In `kings-hall` at Terce,
+   rung to Sext: dark, one step at 25455. Ticked once: still dark, one step
+   at 4000. Ticked once: `inner-sext-1`'s first line under "Sir Roger".
+8. **The outer ward.** On `outer-ward` at Prime, rung to Terce: one step at
+   8636, then one at 4000, then `outer-terce-1` under "Master Robert".
+9. **Walked in during the walk** (#1017's threshold-c still). In
+   `outer-ward` at Sext, rung to Vespers, then `handleEnter('great-hall',
+   0)`: the band stays dark and `qm.performing` is null. Ticked once: the
+   song's first line.
+10. **Walked in after it.** In `outer-ward` at Terce, rung to Sext, ticked
+    once (the wake, with the player elsewhere): the band is dark and
+    nothing is pending. Then `handleEnter('kings-hall', 0)`:
+    `inner-sext-1`'s first line at once.
+11. **A bell voids the last bell's wake.** In `kings-hall` at Terce, rung
+    to Sext and at once to Vespers, then ticked until nothing is pending
+    (capped at 200): no caption of any `kings-hall`/sext pair is ever
+    shown.
+12. **A placed bell does not wait.** In `outer-ward` at Sext, rung to
+    Vespers, then `handleEnter('great-hall', 0)` and
+    `qm.applyWatch(qm.watch, { walk: false })` (the reload's call): the
+    song's first line at once, and `qm.settling` is empty. And the chapel at
+    Vespers, stood in at the bell from Sext: the sermon's first line at
+    once, because the chaplain's walk is 0.
+13. Every section of `test/quest.mjs` above the new one passes with no edit
+    to its assertions, and every section of `test/mystery.mjs` likewise.
+14. **The walk seam, on the page.** `__quest.applyWatch('sext', { walk:
+    false })`, two frames; `__quest.applyWatch('vespers')`, two frames:
+    the sentry's body in `window.__cast` is within 1.0 m (horizontal) of
+    its Sext station and its `y` within 0.5 m of that station's `h` (8.0).
+    Placed, it would be 24.9 m off.
+15. **The handover seam.** In the same beat, `__quest.settling` deep-equals
+    `['great-hall']`. Then put back: `applyWatch(__mystery.watch, { walk:
+    false })`, `__populace.setWatch(mystery.watches[0], { walk: false })`,
+    two frames, as the upstairs beat restores. Parked, not waited on
+    (#724): two frames at `dt` capped at 0.05 s move a body at most 0.11 m
+    a frame, so 1.0 m is placement and not pace.
+
+`npm test` 15 of 15 and `npm run build` ok.
+
+**The #34 break, five of them, each from green and each restored.**
+
+- In `routeFrom`, take the level from `to.level` (today's `main.js`): 1
+  must go red, naming 14 walks, and 2's sentry must go red (null route,
+  0). Quote the Lady's line.
+- In `walkMs`, drop `/ speed`: 2 and 4 must go red.
+- Delete the `_settling.has(this._room)` guard from `_maybePerform`: 6 and
+  9 must go red (the song on the bell), 7 and 8 stay green. Quote 6.
+- Put `src/main.js`'s `onWatch` back to `nav.route({ x, z, level:
+  to.level }, to)`: 14 must go red while `npm test mystery quest` stays
+  green.
+- Delete `walkMs:` from `src/main.js`'s constructor call: 15 must go red
+  while `npm test quest` stays green. These two are what make 14 and 15
+  seams and not Node facts (#529).
+
+If any of the five leaves its suite green the row comes back to
+`architect` (#147).
+
+**Open calls, each with a recommendation.**
+
+1. **Per piece or per room.** Recommended: per room, the longest walk of
+   every speaker of every piece placed there at that bell (#1020), because
+   it is one wake per room with no clock to read, and it gives the same
+   number as the first piece's own speakers in every room today (hall
+   40000, King's Hall 25455, outer ward 8636).
+2. **The gap after the walk.** Recommended: the gap follows the walk, so a
+   pair waits `walkMs + CHATTER_GAP_MS` and a performance waits `walkMs`
+   (#1020), because the wake does exactly what `applyWatch` does today and
+   the dark band still has to read as a break.
+3. **Walking in before the wake.** Recommended: nothing starts and the wake
+   starts it (#1020), because the GPU look saw Dafydd captioned 6 s after
+   the bell from the other door, which is the same bug.
+4. **The cross-level walk.** Recommended: fixed in this increment (#1021),
+   because without it the song waits 40 s for a singer the page has
+   already put in the hall, and the Lady sinks through a floor every Sext.
+5. **One frame lost per waypoint.** `NPC.update` spends the frame it
+   reaches a waypoint on advancing the index and does not move. Recommended:
+   accept it and do not pad `walkMs` (#1022), because at 60 fps it is 0.32,
+   0.93 and 1.47 s on the three walks, a pair's 4000 ms gap covers all of
+   it, and the song's first caption is a 5115 ms stage direction ("Dafydd
+   is got up onto the bench end"), so Dafydd arriving 1.5 s into it reads
+   as written. Fixing it is `npc.js`, which no Node suite constructs.
+6. **The household's `talk`.** Recommended: not guarded (#1020), because
+   `Populace` hands a pair over only when both bodies are in earshot of the
+   player, so it is already a check that they arrived, and no room at any
+   bell holds a household pair and a placed piece (#927).
+7. **A bell rung while a body is still walking.** Recommended: accept that
+   `walkMs` is station to station (#1020), because a body caught mid-walk
+   is the player's own haste and the worst case is today's behaviour.
+8. **Pinning 25455, 40000 and 8636.** Recommended: pin them (#1023),
+   because they are what the GPU look measured against, and a rail that
+   recomputes them from the route would be the walk re-implemented (#34).
+9. **Rounding.** Recommended: `Math.round`, because the three numbers come
+   out whole and `Math.ceil` makes 8636.36 into 8637 for no reason a player
+   could see.
+
+**Looking list, `npm run play` on a GPU (#53), judged by Devon, asserted
+nowhere.** #1016's items 1 to 3 again: the song's first caption with
+Dafydd standing on the bench end and the four diners in; `inner-sext-1`'s
+first line at about 29.5 s with Piers Marrable at his station;
+`outer-terce-1` at about 12.6 s with Master Robert at the cart. And two
+walks seen for the first time: the sentry coming down off the north walk at
+Vespers, and the Lady going down her stair at Sext rather than through her
+floor. The hall from the bell to dark becomes about 234 s (40.0 of walk and
+194.0 measured); from the first note it is unchanged, so Devon's call on
+the hall's 3 min 14 s (#1016) is not moved by this.
+
+**Dependencies.** None. Lanes C and D, which rank 6 holds:
+`src/npc.js`'s one constant, `src/main.js`'s `onWatch` and constructor
+call. `src/stations.js`, `src/quest-manager.js`, `test/mystery.mjs`,
+`test/quest.mjs` and `test/plan-vs-scene.mjs` are in no other open row's
+scope; the browser suite gains one beat and moves none.
+
+**House rules that bite.** #529: the two `nav` facts are stations, so
+`mystery.mjs`; the band's timing is `quest.mjs`'s; `plan-vs-scene.mjs`
+holds only what `src/main.js` does, which no Node suite loads, and the
+breaks above prove each side. #928 in spirit: the manager reads a function
+of the schedule and the plan, never a body's position. #39 and #36: nothing
+is saved, `SAVE_VERSION` stays 6. #724 and #53: the browser beat parks and
+counts frames; every time a body takes is on the looking list. #632: every
+new assertion reads data through `JSON.parse`. #13: every new check exits
+non-zero. Writing style: no em dash in any line.
 
 ### Dependencies
 
@@ -2783,8 +3059,13 @@ the hammer and the sweep, still wait on rank 6's clips.
 **The listening is done** (#974): Devon's verdict, GO with no changes asked
 for, recorded from the backlog audit's note of 2026-10-03; the checklist at the
 end of this section is kept as the record of what was asked. What is left is
-the hammer and the sweep, which wait on rank 6's clips, and recorded CC0 audio
-if one ever beats a synthesised sound.
+the hammer and the sweep, and recorded CC0 audio if one ever beats a
+synthesised sound.
+
+**The fourth increment, the hammer and the sweep, is specified** (#1040 to
+#1044) in "Increment 4" at the end of this section. Its gate is met: rank 6
+placed the clips (#800), so the scullion sweeps the kitchen at Prime and the
+carter hammers at his cart in the outer ward at Terce. Class S from there.
 
 ### Scope
 
@@ -2824,8 +3105,8 @@ if one ever beats a synthesised sound.
 - **Event sounds (door, bark, hammer strike)** are named in the theme but are
   the increment after this one: they want an activity clip to sync to, which
   is rank 6's to add first. (The door and the bark turned out to need no
-  clip, and shipped as the third increment, #696 to #698. The hammer still
-  waits.)
+  clip, and shipped as the third increment, #696 to #698. The hammer and
+  the sweep are "Increment 4" below, #1040 to #1044.)
 
 ### Dependencies
 
@@ -2901,6 +3182,313 @@ watch, from the chapel and then from the far ward):
       again.
 - [ ] Does anything fire before Enter the Castle is pressed? It must not
       (#697); a save resumed with the door open is the case to try.
+
+### Increment 4: the hammer and the sweep
+
+**Specified 2026-10-16** (#1040 to #1044). **Built the same day** (#1045;
+only the listening list below is open, and it is Devon's, Local: audio).
+Class S from here: every open
+call below carries a recommendation, `SAVE_VERSION` stays 6, no budget
+ceiling moves, no numbered decision is overturned, and no existing assertion
+crosses a suite line. Synthesised, as #519 and #548 require. No asset, no
+`.glb` re-render, no change to `tools/bodies/clips.json` or
+`tools/blender/packs.json`.
+
+**What is synced to what, measured.** Both clip tables use one grammar: a
+move's angle at loop fraction `t` is `rest + amp * sin(2 pi (cycles * t +
+phase))`. `Hammer` is `cycles: 2` with its driver `UpperArm.R` about x at
+rest -80, amp 60, phase 0, in `tools/bodies/clips.json` and in the folk pack
+of `tools/blender/packs.json` alike. Its angle is greatest, -20 degrees, at
+t 0.125 and 0.625: the arm at the bottom of the swing, the forearm and wrist
+straight on the same sine. That is the blow landing. On Farmer's 1.67 s
+Idle length it is 0.21 s and 1.04 s into the loop, 72 blows a minute; on the
+folk rig's 2.0 s (48 keys at 24 fps) it is 60 a minute. `Sweep` is
+`cycles: 1`, its driver `UpperArm.R` about z at amp 28: the hands travel to
+the body's left fastest at t 0 and to its right fastest at t 0.5, one stroke
+each way, 1.04 s apart on Woman's 2.08 s loop. The carter alternates his
+`haul` and `hammer` stops on `DWELL`'s 9 s at Terce and on the walking day's
+Terce; the scullion walks 5 m between two `sweep` stops at Prime and the
+walking day's Prime. The carter's hammer stop is 4.2 m from the great hall's
+footprint; the scullion's two are 1.2 m from the clerk's office through the
+kitchen wall.
+
+**Scope, by file.**
+
+- **`data/sounds.json` `events`** (lane E). Three additions, in the shape
+  the block already has:
+  - `byCue` gains `"hammer-strike": "mallet-on-cart"` and
+    `"sweep-stroke": "broom-stroke"`.
+  - `sounds` gains the two, as parts (#696), each with a new optional
+    `gainSpread`: the sound's `gain` varies by that fraction of itself per
+    play, the way a footstep's does by 15 %, so 72 blows a minute are not
+    one blow 72 times (#1042).
+
+    ```json
+    "mallet-on-cart": {
+      "gain": 0.6, "gainSpread": 0.15,
+      "parts": [
+        { "type": "noise", "at": 0.0, "filter": "bandpass", "hz": 2200, "q": 2.5, "decay": 0.025, "gain": 0.5, "name": "the contact: wood on wood" },
+        { "type": "tone", "at": 0.0, "wave": "triangle", "hz": 880, "toHz": 820, "decay": 0.045, "gain": 0.22, "name": "the mallet head's tock" },
+        { "type": "tone", "at": 0.0, "wave": "sine", "hz": 260, "toHz": 240, "decay": 0.09, "gain": 0.4, "name": "the cart's board ringing" },
+        { "type": "noise", "at": 0.0, "filter": "lowpass", "hz": 400, "q": 1.0, "decay": 0.08, "gain": 0.3, "name": "the board's thud" },
+        { "type": "tone", "at": 0.0, "wave": "sine", "hz": 110, "decay": 0.12, "gain": 0.3, "name": "the cart's weight under it" }
+      ]
+    },
+    "broom-stroke": {
+      "gain": 0.35, "gainSpread": 0.2,
+      "parts": [
+        { "type": "noise", "at": 0.0, "filter": "bandpass", "hz": 4200, "q": 0.7, "attack": 0.08, "hold": 0.12, "release": 0.22, "gain": 0.45, "name": "the bristles" },
+        { "type": "noise", "at": 0.02, "filter": "bandpass", "hz": 1400, "q": 0.9, "attack": 0.06, "hold": 0.08, "release": 0.18, "gain": 0.18, "name": "the grit under them" }
+      ]
+    }
+    ```
+
+  - **`byActivity`**, new: an activity's beats, where its sound is heard
+    from and how far. Keyed by the activity names of `ACTIVITY_CLIPS` in
+    `src/populace.js`, so the clip is that table's and is not typed twice.
+    `at` is a fraction of the clip's loop, `mark` is what the driver is
+    doing there (below), `cue` is a key of `CUES`, and `gain` (default 1)
+    scales the sound for that beat.
+
+    ```json
+    "byActivity": {
+      "hammer": {
+        "heightMetres": 0.8, "hearMetres": 20, "sameRoom": false,
+        "beats": [
+          { "at": 0.125, "mark": "max", "cue": "hammer-strike" },
+          { "at": 0.625, "mark": "max", "cue": "hammer-strike" }
+        ]
+      },
+      "sweep": {
+        "heightMetres": 0.1, "hearMetres": 8, "sameRoom": true,
+        "beats": [
+          { "at": 0.47, "mark": "falling", "cue": "sweep-stroke", "gain": 0.5 },
+          { "at": 0.97, "mark": "rising", "cue": "sweep-stroke" }
+        ]
+      }
+    }
+    ```
+
+    A `mark` names a point of the driver joint's one moving angle, `rest +
+    amp * sin(...)`: `max` and `min` are its two ends, `rising` and
+    `falling` the two points it moves fastest, up and down (#1040). The
+    sweep's beats sit 0.03 of a loop ahead of their marks so the bristles'
+    80 ms attack peaks on the fastest point of the stroke; the hammer's sit
+    on the mark because a blow is an instant. `byActivityComment` says all
+    of that, and `soundsComment` gains `gainSpread`.
+- **`src/audio.js`** (lane E).
+  - `CUES` gains `'hammer-strike'` and `'sweep-stroke'`, each with a line
+    saying what fires it: `populace.js update, when a body doing hammer
+    (sweep) crosses one of its beats`.
+  - `playSound(def, at, scale)` multiplies every part by
+    `vary(def.gain ?? 1, def.gainSpread ?? 0) * scale`, and `cue(name, {
+    at, metres, gain = 1, id = null, beat = null })` passes `gain` through
+    as `scale`.
+  - **The log gains `seq`**, a count that never resets, on every entry, and
+    `id` and `beat` from the cue's options (#1043). `events()` stays the
+    last 64.
+  - Nothing else: the panner is `events.spatial`'s, HRTF, at the point the
+    cue names, torn down after the last part, and a cue on a context that
+    is not running is logged and not played (#697).
+- **`src/npc.js`** (lane C, one getter, #1041). `loopPhase()`: when
+  `_current` is an activity's action (`do:<activity>`) and the body is not
+  walking, `{ activity, phase }` with `phase = action.time /
+  action.getClip().duration`, in [0, 1); otherwise null. It reads the
+  mixer's own action and keeps no clock. `_play` records the key of
+  `_current` so the getter can name the activity.
+- **`src/populace.js`**. The constructor takes `beats` (default `{}`), the
+  `byActivity` table. `update` calls a new `_beat(body, player)` for every
+  body that is visible, settled, not following and not walking, before the
+  dwell timer, every frame; `_beat` does nothing when `player` is null.
+  `_beat` reads `npc.loopPhase()` and keeps the last phase per body:
+  - null, or a different activity from last frame: forget the last phase
+    and cue nothing;
+  - a last phase and this one: the beats crossed are those with `at` in
+    (last, this], or, when this < last (the loop wrapped), in (last, 1) or
+    [0, this]. **At most one cue per body per frame**, the last beat
+    crossed; nothing is cued on the first frame a phase is seen;
+  - a crossed beat is cued only if the player's eye is within
+    `hearMetres` of the sound's point, in three dimensions, and, when
+    `sameRoom` is true, `nav.roomAt` at the player's feet is the stop's own
+    `room` on its own `level`. `roomAt` is asked only on a crossing, about
+    once a second, never per frame;
+  - the cue is `cue(beat.cue, { id, at: { x, y: feet + heightMetres, z },
+    metres, gain: beat.gain ?? 1, beat: beat.at })`, from the body's own
+    position.
+  The comment at `ACTIVITY_CLIPS` and the class comment say where the beats
+  come from and that nothing here keeps time: the mixer is the clock.
+- **`src/main.js`**: `beats: soundData.events?.byActivity ?? {}` in the
+  `new Populace({...})` call, beside `cue`. One line. Its comment names
+  #1041.
+- **`test/layout.mjs`** check 14, **`test/mystery.mjs`** a new section 8e,
+  **`test/plan-vs-scene.mjs`** one new beat and two rewritten reads:
+  Acceptance, below.
+- **Not touched**: `tools/bodies/clips.json`, `tools/blender/packs.json`,
+  every `.glb`, `data/populace.json`, `src/save.js`, `test/budget.mjs`,
+  `test/assets.mjs`, `test/map.mjs`, `BACKLOG.md`, `ROADMAP.md`.
+
+**Acceptance.** Each line names its suite and the break that turns it red
+from green (#34). The builder runs each break, quotes the message, and puts
+it back.
+
+1. **`test/layout.mjs` check 14, the cues.** No new code: the two cues and
+   two sounds go through the existing both-ways rail. Break: delete
+   `"sweep-stroke"` from `byCue`; the check names the cue and the orphaned
+   `broom-stroke` in one run.
+2. **Check 14, the table's shape** (new). Every `byActivity` key is a key of
+   `ACTIVITY_CLIPS` (imported from `src/populace.js`, which has no three);
+   every beat's `cue` is a key of `CUES`; `at` in [0, 1), distinct within an
+   activity; `gain` in (0, 1]; `heightMetres` at least 0; `hearMetres` above
+   0 and at most `events.spatial.maxMetres`; `sameRoom` a boolean;
+   `gainSpread`, where present, in [0, 0.5]. Breaks: rename `hammer` to
+   `hamer` (`events.byActivity names "hamer", which src/populace.js's
+   ACTIVITY_CLIPS does not`); a beat's cue `hammer-blow`; `hearMetres` 60.
+3. **Check 14, the beats against the clips** (new, #1040). For each
+   activity, the clip is `ACTIVITY_CLIPS[activity]`, and every row of that
+   name in `tools/bodies/clips.json` and in `tools/blender/packs.json`'s
+   folk pack is checked, because the household is moving onto the folk rig
+   (#1018) and a beat must not depend on which body does the job. The
+   row's `driver` bone has exactly one move with a non-zero `amp` (else
+   fail, naming the moves); each beat's `at` is within **0.04 of a loop**,
+   measured round the circle, of the nearest point where that angle meets
+   its `mark`; and for each mark used, the number of beats on it equals the
+   row's `cycles`. Breaks: the second hammer beat moved to 0.5 (`hammer's
+   beat at 0.5 is 0.125 of a loop from a max of Hammer's UpperArm.R x in
+   tools/bodies/clips.json, over 0.04`); the same beat deleted (`Hammer
+   reaches its max 2 times a loop and events.byActivity.hammer strikes on 1`);
+   the folk pack's Hammer `phase` set to 0.25 in `tools/blender/packs.json`
+   (check 14 names the folk row and not the other; `test/assets.mjs` check
+   8 goes red beside it on the manifest's source hash, which is that
+   check's own rail). The rail reads the
+   tables and not the `.glb`s, which is sound because `test/assets.mjs`
+   checks 7 and 8 already hold the files to the tables.
+4. **Check 14, every activity with beats is somebody's job**: some person in
+   `data/populace.json` has a stop with that activity at some watch, the
+   way check 13 fails a bed no zone reaches. Break: the carter's two
+   `hammer` stops set to `haul` in `data/populace.json` (`"hammer" has beats
+   in data/sounds.json and nobody in data/populace.json hammers`;
+   `test/mystery.mjs`'s "nobody does hammer" goes red beside it, which is
+   that suite's own rail and not this one).
+5. **`test/mystery.mjs` 8e, the crossing, over plain-object bodies** (new,
+   #1041, 8c's and 8d's harness). A fake NPC with a scripted `loopPhase()`
+   and the real `byActivity` table, the scullion and the carter on the real
+   grid, `setWatch(..., { walk: false })`. Held, each its own `check`:
+   - the first frame with a phase cues nothing;
+   - 0.10 then 0.15 cues one `hammer-strike`, with `beat` 0.125, `gain` 1,
+     `id` carter and `at` the body's position plus 0.8 m, to 1e-9;
+   - 0.15 then 0.30 cues nothing;
+   - 0.60 then 0.13, a wrap across two beats, cues one, the 0.125;
+   - `loopPhase()` null for a frame, then 0.10, then 0.15: nothing on the
+     frame after the null, one on the next;
+   - `walking` true, or `following` true, or `group.visible` false: nothing
+     across a crossing;
+   - the player 21 m from the carter: nothing; 19 m: one;
+   - the scullion with the player 1.5 m off inside the kitchen: one
+     `sweep-stroke` on 0.95 to 0.99, with `gain` 1; on 0.45 to 0.49, `gain`
+     0.5; the player in the clerk's office, the nearest point of it to her
+     stop: nothing, though it is inside 8 m.
+   Breaks: the first-frame guard removed (`the first frame with a phase
+   cued 1, not 0`); the wrap branch removed (`0.60 then 0.13 cued 0`); the
+   `sameRoom` test removed (`a player in clerk-office ... hears the sweep
+   through the kitchen wall`); the at-most-one rule removed (`cued 2`).
+6. **`test/plan-vs-scene.mjs`, the wire and the live clock** (new, #1044).
+   What only a page has: `main.js` handing the table to the populace, and
+   `loopPhase()` reading a loaded body's mixer. One `page.evaluate`, all
+   synchronous, so the page's own loop cannot run inside it: the watch set
+   to `terce` with `walk: false`, the carter put on his `hammer` stop
+   (`body.index` to that stop, then `pop._arrive(body)`), `npc.update(0.3)`
+   to finish the 0.25 s cross-fade, the camera 2 m from him on open ground.
+   Then, for each hammer beat `b`, with `D` the live action's clip duration:
+   set the action's `time` to `(b - 0.03) * D`, `pop.update(0, cam)`, note
+   the log's last `seq`, `npc.update(0.06 * D)`, `pop.update(0, cam)`.
+   Held: exactly one `hammer-strike` after the note, its `at` within 0.01 m
+   of the carter in x and z; and the same steps from `(b + 0.1) * D` log
+   none. The same for the scullion at `prime` with the camera 1.5 m from her
+   in the kitchen and `sweep-stroke`, because she wears a second file. The
+   watch and the camera are put back as the populace beat at line 1466
+   does. Breaks: the `beats:` line deleted from `src/main.js` (`0 cued`);
+   `loopPhase()` reading `this._mixer.time / duration` in place of the
+   action's own `time` (the set time is ignored, and the beat cues nothing
+   or cues off the beat).
+7. **`test/plan-vs-scene.mjs`, the door and the bark read `seq`** (#1043).
+   Lines 1302 to 1307 and 1359 to 1360 take the last `seq` before they act
+   and filter on `seq` after it, in place of `events().slice(before)`.
+   Nothing they assert changes. The break, from green: fill the log with 64
+   `hammer-strike` cues by hand at the top of the door beat; under
+   `slice(before)` it reads `cued: nothing`, under `seq` it is green.
+8. `npm run build`, and `npm test` 15 of 15. `test/built.mjs` needs nothing
+   new: no file is added.
+
+**Open calls, each with a recommendation.**
+
+- **Where the beat lives.** Recommend `data/sounds.json`'s `byActivity`,
+  and not a field on the clip rows, because the beat is a sound tuning and
+  `data/sounds.json` is the only place a sound is tuned, while the clip
+  tables are held byte-for-byte to the `.glb`s and a sound edit there would
+  mean a re-render.
+- **Which clock.** Recommend the action's own `time` over its clip's
+  duration, read every frame after `npc.update`, because the mixer is what
+  the eye sees and any clock of the populace's own drifts from it at every
+  cross-fade and every reset (#1041).
+- **Fire on the crossing, or schedule ahead on the audio clock.** Recommend
+  the crossing, at most a frame late, because `main.js` clamps `dt` to
+  50 ms, a 60 Hz frame is 16.7 ms and the ear forgives sound after picture
+  by much more than that, while scheduling ahead needs the populace to
+  predict the mixer.
+- **One cue for all work, or one per activity.** Recommend one per
+  activity, `hammer-strike` and `sweep-stroke`, because check 14 already
+  holds a cue to exactly one sound, and a generic cue would need a second
+  lookup that check does not see.
+- **Both sweep strokes, or one.** Recommend both, the rising stroke at full
+  gain and the falling at 0.5, because a broom drags both ways and one
+  stroke a loop is a gap of 2 s that reads as a pause; which stroke is the
+  loud one is Devon's ear and a one-number swap.
+- **How far.** Recommend the hammer at 20 m with no room test, because it
+  is outdoors and a mallet carries, at 1.5 / (1.5 + 1.3 x 18.5) = 6 % of
+  itself at the edge; the sweep at 8 m and only in its own room, because a
+  broom is not heard through a stone wall and distance alone would put it
+  in the clerk's office, 1.2 m off (#1042).
+- **Where from.** Recommend the body's position plus `heightMetres`, 0.8 m
+  for the mallet on the cart bed and 0.1 m for the bristles, through the
+  existing HRTF event panner, because a bone-tracked point costs a world
+  matrix read per beat and buys a few centimetres nobody can hear.
+- **During the cross-fade into the activity.** Recommend no weight gate:
+  the first blow lands at 0.21 s with the clip 84 % blended in, and a gate
+  would drop it for nothing visible.
+- **The log rolling over.** Recommend `seq` (#1043), because at 72 blows a
+  minute a full 64-entry log makes `slice(before)` read nothing, which is a
+  red door beat caused by a hammer.
+
+**Dependencies.** Rank 6's clips, placed (#800): met. #1018's move of the
+household onto the folk rig is not needed and is covered by acceptance 3.
+**Lanes**: E, plus one getter in `src/npc.js`, which is lane C's file
+(#1041). This increment does not run beside 2c, 2d or a rank 6 increment that
+writes `src/npc.js`; it may run beside anything else.
+
+**The rules that bite.** #34 (every break above, from green, quoted);
+#529 (crossing logic in Node, the wire and the mixer in the page, and no
+assertion in `plan-vs-scene.mjs` that `mystery.mjs` could hold); #13 (every
+new line exits non-zero); #53 (CI hears nothing; `harness.mjs` launches with
+`--mute-audio`, and the log is what is asserted); #697 (nothing plays before
+the start button); #519 and #548 (synthesised); #493 (no file fetched);
+#632 (no new file is written by a tool, so no line-ending rule applies).
+
+**Listening, for Devon, after it ships** (`npm run play`, speakers,
+`data/sounds.json` open beside it):
+
+- [ ] The carter at Terce, from 3 m: wood on wood, or a click, or a drum?
+      The 260 Hz board tone is the number most likely wrong.
+- [ ] Does each knock land on the blow you see, from 3 m and from 15 m?
+      Early or late, and by how much (the fix is a beat's `at`).
+- [ ] 72 a minute for 9 s, then 9 s of hauling: a man working, or a
+      metronome? `gainSpread` 0.15 is the lever.
+- [ ] Inside the great hall, 4.2 m from his stop through the wall: should
+      the hammer be heard there? `hearMetres` 20 says yes, faintly.
+- [ ] The scullion at Prime: bristles, or hiss, or wind? Under the
+      kitchen's crackle, can you tell the two apart?
+- [ ] Which sweep stroke is the loud one, and is it the right one?
+- [ ] From the clerk's office next door: silence. Should it be?
+- [ ] Before Enter the Castle: no blow and no stroke (#697).
 
 ---
 
@@ -2984,8 +3572,10 @@ ray that was never going to hit anything.
   sets. **Met for the shadow** (stone and grass, #1014) **and for the hand**
   (#1015, with one thing left for Devon's eye: whether the settled hand wants
   its palm turned toward the leaf, not just mid-reach). **Still open for the
-  stair disc**: a flight of stairs is a ramp in the plan but 8 steps on
-  screen, and the disc sits inside the stone on every tread (#1014).
+  stair disc**: a flight of stairs is a ramp in the plan but 22 steps on
+  screen, and the disc sits inside the stone on every tread (#1014, its step
+  count amended by #1030). The increment that fixes it is "Scope, second
+  increment: the stair disc" below.
 
 ### Open calls
 
@@ -2995,20 +3585,232 @@ ray that was never going to hit anything.
   of the two. What shipped is cheaper again than a baked file — the gradient is
   painted into a canvas at load, so there is no asset to encode (#506) and
   nothing new is fetched (#493).
-- **How the disc sits on a flight.** Three options weighed: hide the disc on
-  a ramp (one line, loses the cue on every stair); draw it with depthTest off
-  on a ramp only (paints over a riser the way a real shadow would, and over
-  the hand or a body's feet if they overlap); or give the plan a flight's
-  step count (8 for `stairs-stone.glb`) so the rig can put the disc on the
-  tread top under the player while the feet stay on the ramp. **Recommended:
-  the step count in the plan**, asserted by `layout.mjs` or
-  `plan-vs-scene.mjs` against the model (#500, #529), with the rig reading it
-  to place the disc. This needs an `architect` section before anything is
-  built: it crosses the plan/scene line.
+- ~~**How the disc sits on a flight.**~~ **Taken: the step count in the plan,
+  and the disc flat on the tread top under the player** (#1031). Hiding the
+  disc on a ramp loses the cue on every stair; depthTest off paints it over
+  the hand and over any body's feet. The count is the drawn flight's, 22, not
+  `stairs-stone.glb`'s 8, because the kit model is hidden under the curtain
+  skin everywhere but `?edit=1` (#1030). The section that a `builder` ships
+  is "Scope, second increment: the stair disc" below, and its own open calls
+  all carry a recommendation.
 - **Everything else in the theme** (weather, fire, examine, wear, sitting) is
   explicitly a later increment each, in no fixed order — `WISHLIST.md` ranks
   none of them against each other, and this spec does not invent an order it
   was not given.
+
+### Scope, second increment: the stair disc (class S, lane D)
+
+**Specified and built 2026-10-16** (#1030 to #1032). What is open is the GPU
+look at the 12 stair stills (Devon, #53), not the build.
+
+**What is wrong, measured.** `heightOnSurface` stands a body on a flight as a
+straight ramp from `slope.from` to `slope.to`. What the game draws there is
+`FLIGHT_<id>` out of `assets/castle3d/skin.glb` (#1004; `castle-builder.js`
+`skin()` hides the built kit piece): 22 solid steps of 0.1773 m riser and
+0.15 m tread, from `tools/castle3d/towers.py`'s `round(3.9 / RISER)` with
+`RISER = 0.18`. Read off the encoded file in Node: all 18 `FLIGHT_` nodes
+carry 22 upward planes, the first at 0.177 over the flight's foot and the last
+at its head. The first riser stands at the foot, so tread k covers the run
+fraction `[(k-1)/22, k/22]` at height `k/22` of the rise, and the ramp line
+runs through every tread's inner corner: 0 to 0.177 m under the tread, so a
+disc at `feet + 0.02` is in the stone over all but its first 0.02 m. The kit
+model, `stairs-stone.glb`, has the same shape with 8 treads (local up planes
+at y = 0.125 to 1.0, each 0.125 of z), and is drawn only under `?edit=1`.
+
+**The decision** (#1031): the plan carries a flight's step count, the rig puts
+the disc on the tread top under the player's xz, and the feet stay on the
+ramp. Nothing about walking changes.
+
+By file:
+
+- **`data/scene-config.json`**: `"steps": 22` in the `stairs` section, after
+  `scale`, and one sentence added to that section's `comment`: "`steps` is the
+  treads a flight is drawn with in play, the curtain skin's (towers.py RISER
+  0.18 over 3.9 m), not stairs-stone.glb's 8, which is drawn only under
+  ?edit=1; test/layout.mjs check 8c holds it to whichever drawing
+  data/castle-skin.json puts in force (#1031)." Write the line with the file's
+  own line ending (#632).
+- **`src/castle-plan.js`**:
+  - `makePlan` reads `config.stairs.steps`. Absent: no ramp carries `steps`
+    and nothing else changes. Present and not an integer of 1 or more: throw
+    `[castle-plan] stairs.steps is <value>, not a whole number of treads`.
+    Present and good: every ramp surface object (the `s` pushed to both
+    `surfaces` and `ramps`) gets `steps`. The stair piece does not.
+  - Factor the clamped projection out of `heightOnSurface` into
+    `slopeT(s, x, z)` (0 to 1, the same clamp, the same `len2 < 1e-9`
+    guard returning 0), and have `heightOnSurface` call it, so the ramp and
+    the tread cannot read two different `t`.
+  - New export, beside `standAt`:
+
+    ```js
+    /** The height of what is DRAWN under (x, z) for a body with its feet at
+     * `feet`: standAt's floor, or on a flight that carries `steps`, the top of
+     * the tread over the ramp there. Null where standAt is null. */
+    export function treadTop(plan, x, z, feet, stepUp = STEP_UP) {
+      const on = standAt(plan, x, z, feet, stepUp);
+      if (!on) return null;
+      if (!on.ramp) return on.h;
+      const s = plan.surfaces.find((q) => q.id === on.surface);
+      if (!s || !s.steps) return on.h;
+      const k = Math.min(s.steps, Math.floor(slopeT(s, x, z) * s.steps) + 1);
+      const ay = s.slope.from[2], by = s.slope.to[2];
+      return ay + (by - ay) * k / s.steps;
+    }
+    ```
+
+    At a riser line exactly (`t * steps` whole) it answers the higher tread,
+    whose front edge is there; at `t = 1` the `min` holds it to the last.
+  - Export `placePoint` (today module-private) so check 8c can put the kit's
+    vertices in world space through the plan's own placement, rather than a
+    second T·R·S in the test.
+- **`src/player-rig.js`**, `apply()`: the shadow's y becomes
+  `(treadTop(plan, cam.x, cam.z, this.player.feet) ?? this.player.feet) +
+  SHADOW_LIFT`, with `plan` from `this.player.getPlan()` (null before the
+  castle is built, which falls back to the feet). Still unsmoothed. Rewrite the
+  constructor's `@param player` comment, which says the shadow is on the
+  plan's floor "so the shadow and the feet cannot disagree about ... a flight
+  of stairs": on a flight they now disagree on purpose, by up to one riser,
+  and the comment says so and cites #1031. `main.js` does not change.
+- **`test/gltf.mjs`**: `triangles(file, { only })`, where `only(nodeJson)`
+  is a predicate; a mesh is kept when its own node or any ancestor passes.
+  No argument keeps today's behaviour, and every existing caller passes none.
+- **`test/layout.mjs`**, a new **check 8c** after check 8, the Node half
+  (below).
+- **`test/plan-vs-scene.mjs`**, one assertion added to the shadow-and-hand
+  beat, the seam (below).
+
+Nothing in `budget.mjs`: no mesh, no light, no draw call is added. No save
+change. No storage key. No new asset.
+
+### Acceptance, second increment
+
+**Which suite, and why (#529).** Whether the step count is right, and whether
+`treadTop` answers the height of what is drawn, is a fact about three files
+(`scene-config.json`, `castle-skin.json`, `skin.glb` or the kit glb) and one
+function, all readable in Node: `layout.mjs`. Check 16 already reads
+`skin.glb` there and owns the "which pieces are swapped" rule. What Node
+cannot see is that the page's rig calls `treadTop` with the live plan and the
+live feet, and that the page really draws the skin node in the piece's place
+and hides the kit: `plan-vs-scene.mjs`. Neither suite asserts the other's
+fact (#1032).
+
+**`test/layout.mjs` check 8c, "every flight's disc lies on the tread that is
+drawn".** For every `plan.ramps` entry, the drawing in force is the skin node
+whose `extras.planId` (or `planIds`) names the ramp's id when check 16's
+`swapped` rule says the piece is swapped (stage listed, id not kept), and
+otherwise `config.kenneyBase + config.stairs.model` through `placePoint` with
+the piece's `transform`. Read with `triangles(file, { only })`. Two lines:
+
+1. **The count.** The ramp carries `steps`, and the drawing's distinct upward
+   planes (normal y over 0.999, mean y rounded to 0.001) strictly above
+   `box.min.y + 0.001` number exactly `steps`, the k-th at
+   `ay + (by - ay) * k / steps` within 0.002 m. The `min.y` cut is not
+   decoration: the kit glb carries an upward-wound face at y = 0 over its
+   whole footprint (measured, 0.5 m² local), and counting it gives 9.
+   Pass line names the flight count, the step count and the drawing:
+   `18 flights, each drawn with 22 treads as the plan says (18 skin, 0 kit)`.
+   Fail line: `nw-tower-stair-1 is drawn by FLIGHT_nw-tower-stair-1 with 22
+   treads and the plan says 8`.
+2. **The height.** For every ramp, at `t = (k + 0.5) / steps` for every k,
+   on the centreline and at 0.4 of the half width to either side (66 points a
+   flight, 1188 in all), `treadTop(plan, x, z, ay + (by - ay) * t)` equals the
+   highest upward triangle of the drawing covering (x, z) in plan, within
+   0.005 m, and lies above the ramp by more than 0 and at most
+   `(by - ay) / steps + 1e-6`. A sample where `standAt` answers a surface
+   other than the ramp fails by name (`... stood on floor-x, not the
+   flight`), because that is a finding, not noise.
+
+Breaks on purpose (#34), each from a green baseline, each to be reported with
+the line it printed:
+
+| The break | Must fail |
+| --- | --- |
+| `"steps": 8` in `scene-config.json`, #1014's own number | 8c.1, "drawn ... with 22 treads and the plan says 8"; and 8c.2 on most samples |
+| `steps` deleted from the config | 8c.1, "carries no step count" |
+| `+ 1` dropped from `treadTop`'s `k` (the tread below) | 8c.2, one riser low, 0.177 m |
+| `treadTop` returning `on.h` on a ramp (today's behaviour) | 8c.2, 0.089 m low at every mid-tread sample |
+| the `> min.y` cut dropped from 8c.1 | stays green while every flight is skinned, so force the kit branch for one flight in a scratch edit of 8c itself: with the cut 8c.1 says 8 against the plan's 22, without it 9. Revert both, and say in the report that this break needed the scratch edit |
+
+**`test/plan-vs-scene.mjs`, in the shadow-and-hand beat, one `check`: "on a
+flight the shadow lies on the drawn tread, not on the ramp under it".** In the
+same `page.evaluate`: for `nw-tower-stair-1` and `kitchen-tower-stair-2`
+(#1014's two), at `t = 6.5 / steps` and `t = 13.5 / steps` (30% and 61%, both
+mid-tread), on the flight's centreline from `window.__castle.plan.ramps`, put
+the camera at the ramp height there plus 0.1 plus `EYE_HEIGHT`,
+`__player.settle()`, `__rig.settle()`. Then take the drawing of that piece
+from the page itself: `castle.skins.get(id)` and `castle.objects.get(id)`,
+kept only where the object and every ancestor is `visible` (three's
+`Raycaster` does not skip a hidden object, and the hidden kit's treads stand
+up to 0.49 m over the ramp). Assert exactly one drawing is visible, then cast
+a ray straight down from 0.5 m over the shadow at its xz against that drawing
+only; assert `shadow.y - hit.y` is over 0 and at most 0.05 at all four
+samples. In the same line, the control: `shadow.y - (feet + 0.02)` is over
+0.05 at all four, so the samples are ones where the ramp-height disc fails.
+The existing "the shadow lies on the floor under the player's feet in all N
+rooms" line is unchanged; if any of its anchors stands on a ramp
+(`on.ramp`), drop that anchor from it and say so in the report, because the
+new line holds flights.
+
+| The break | Must fail |
+| --- | --- |
+| `player-rig.js` back to `this.player.feet + SHADOW_LIFT` | the new line, "on nw-tower-stair-1 at t 0.30 the shadow is 0.069 m under the drawn tread" or the like |
+| `castle-builder.js` `skin()` no longer hiding the built piece (`built.visible = false` commented) | the new line, "2 drawings visible" |
+
+The second break also reddens other lines in that suite; report which went
+red first and revert.
+
+`npm test` 15 suites green. `npm run build` ok.
+
+### The GPU half, for Devon (#53)
+
+Run `tools/shot-feel.mjs` on DEVON-DESKTOP after the merge and take its
+twelve `b-` stills again into `looks/<date>/after/`: `nw-tower-stair-1` and
+`kitchen-tower-stair-2`, 30% and 62%, going up (pitch -0.9), at the feet
+(-1.35), going down (-0.9). The bar is the at-the-feet four: **50% or more of
+the disc visible in each** (it was 37 to 40%, and 0% at kitchen 62%, #1014).
+Going up and going down are recorded, not barred. One sentence on the thing a
+browser cannot answer: whether the downhill half of the disc, which lies flat
+at the tread top and hangs up to 0.35 m (two risers) over the treads
+below, reads as a shadow or as a dark plate in the air. One line in
+`HISTORY.md` with the twelve numbers. If it reads as a plate, the follow-up is
+open call 3's fallback, a rig-only change.
+
+### Open calls, second increment
+
+1. **The drawing the count describes: the skin's 22 or the kit's 8.**
+   Recommended: **22**, because the kit flight is hidden in every page but
+   `?edit=1` (#1030), and 8c holds the number to whichever drawing is in
+   force, so a change to the skin's stages makes the suite say which.
+2. **Where the number lives: a config field, a constant in `castle-plan.js`,
+   or derived from a mirrored `RISER`.** Recommended: **`stairs.steps` in
+   `scene-config.json`**, because the count belongs beside the model it
+   describes in data, and a mirrored `RISER` would be a second copy of
+   `towers.py`'s constant for no gain while all 18 flights rise the same 3.9 m.
+3. **Flat on the tread under the player, or tilted on the nosings.** A disc
+   parallel to the ramp and one riser above it touches every tread's front
+   edge, is never in the stone and never hangs, but is a 50 degree tilted
+   ellipse floating over the back of each tread. Recommended: **flat on the
+   tread** for this increment, because its centre is exactly right and it is
+   what #1014 named; the tilt is the fallback if Devon's look says the
+   overhang reads as a plate.
+4. **The disc's size on a flight.** Recommended: **unchanged, 0.46 m**,
+   because a disc cut to one 0.15 m tread is a smudge and loses the cue the
+   increment exists for.
+5. **Smoothing between treads.** Recommended: **none**, because the shadow is
+   already unsmoothed (#650) and a 0.177 m snap per tread is what a shadow on
+   stairs does.
+6. **`?edit=1`, where the kit's 8 treads are drawn and the plan says 22.**
+   Recommended: **accept it**, because the editor is dev-only by construction
+   (#586) and nobody judges the shadow there; the disc is then inside the kit
+   stone by up to 0.47 m there, no worse than today's 0.47.
+7. **Should `towers.py` read the plan's `steps` instead of
+   `round(rise / RISER)`.** Recommended: **yes, later, as its own 2i
+   increment**, because it would make the plan the one source of the count
+   (#500) but it is a second lane and a Blender machine; until then 8c is what
+   holds the two together. The new ramp field reaches `blueprint.json` through
+   `export-blueprint.mjs` on the next build and `towers.py` ignores it, so the
+   skin's recorded blueprint hash moves on its next `--record` with no
+   geometry change.
 
 ### Dependencies
 
@@ -3025,6 +3827,11 @@ ray that was never going to hit anything.
 - #499, #510 (video memory is the number to watch, not disk; a shadow or a
   point light is exactly the kind of thing that moves it).
 - #500 (anything built as a plan piece gets a `planId`).
+- #529, #1032 (the stair disc: the count and the height are `layout.mjs`'s,
+  the rig's wiring and the drawing in the page are `plan-vs-scene.mjs`'s).
+- #632 (the `steps` line in `scene-config.json` takes the file's own newline).
+- #1004 (the game draws the skin's flights, not the kit's; read the drawing in
+  force, never assume the kit).
 
 ---
 

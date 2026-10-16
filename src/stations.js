@@ -36,6 +36,13 @@ export const STATION_CLEARANCE = 1.5;
 export const PROP_CLEARANCE = 1.0;
 /** interaction.js's INTERACT_RANGE: how close the player gets before E works. */
 export const TALK_RANGE = 3.2;
+/**
+ * The twelve's walking pace, in m/s. Read by src/npc.js as the speed a body
+ * walks a route at and by `walkMs` below as the divisor of the same route, so
+ * the time the manager waits for a walk and the time the body takes over it
+ * cannot drift apart (#1020, #1021).
+ */
+export const WALK_SPEED = 1.1;
 
 /** A station's world point. Null for a station that is not in the castle. */
 export function stationWorld(plan, station) {
@@ -258,6 +265,45 @@ export function castleNav(plan, mystery) {
     route(from, to) {
       if (!from || !to) return null;
       return walk.path(from, to);
+    },
+    /**
+     * The walk from where a body stands to a station. `body` is `{x, y, z}`
+     * with `y` the feet. A BODY'S FLOOR IS THE ONE UNDER ITS FEET (#1021):
+     * src/main.js routed every bell walk from the floor it was going to, and
+     * of the 67 bell walks of day one and the walking day 14 change level, so
+     * 8 came back null and were placed and 6 started from the cell under the
+     * body on the wrong storey. The sentry was put in the hall off the north
+     * walk; the Lady sank 4 m through her floor every Sext.
+     */
+    routeFrom(body, to) {
+      if (!body || !to) return null;
+      return api.route({ x: body.x, z: body.z, level: api.roomAt(body.x, body.z, body.y).level }, to);
+    },
+    /**
+     * How long `npcId` takes to walk from the last bell's station to the one
+     * at `watch`, in ms (#1020). The bell before is the one before `watch` in
+     * `mystery.watches`, or in `mystery.day0.watches` for a walking-day bell.
+     * 0 for the first bell of a day, for a bell in neither list (Lauds), and
+     * when either station is null: a body with no station at the last bell is
+     * placed, not walked. A null route is 0 too, because `validateMystery`'s
+     * station rails already refuse a walk that has none. Read off the schedule
+     * and the plan, never off a body, which is what lets QuestManager hold a
+     * room until its speakers have arrived without looking at one (#928).
+     */
+    walkMs(npcId, watch, speed = WALK_SPEED) {
+      const day0Watches = Array.isArray(mystery?.day0?.watches) ? mystery.day0.watches : [];
+      const list = watches.includes(watch) ? watches : day0Watches.includes(watch) ? day0Watches : null;
+      if (!list) return 0;
+      const i = list.indexOf(watch);
+      if (i <= 0) return 0;
+      const a = api.at(npcId, list[i - 1]);
+      const b = api.at(npcId, watch);
+      if (!a || !b) return 0;
+      const path = api.routeFrom({ x: a.x, y: a.h ?? 0, z: a.z }, b);
+      if (!path) return 0;
+      let length = 0;
+      for (let k = 1; k < path.length; k++) length += Math.hypot(path[k].x - path[k - 1].x, path[k].z - path[k - 1].z);
+      return Math.round(1000 * length / speed);
     },
   };
   return api;

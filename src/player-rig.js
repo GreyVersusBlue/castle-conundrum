@@ -37,6 +37,7 @@
 
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { treadTop } from './castle-plan.js';
 
 const SHADOW_R = 0.46;        // metres — a standing body's footprint plus a little
 const SHADOW_LIFT = 0.02;     // off the floor, or it z-fights with the paver it sits on
@@ -157,10 +158,13 @@ export class PlayerRig {
    *   and quaternion, which is why the rig needs no state of its own about
    *   where the player is looking.
    * @param player the PlayerController, for `feet` — the height the plan says
-   *   the player is standing at. The shadow is on THAT, not on a ray cast down
-   *   from the camera: the plan is what the player stands on (castle-plan.js's
-   *   standAt), so the shadow and the feet cannot disagree about a slab edge or
-   *   a flight of stairs even in principle.
+   *   the player is standing at — and `getPlan`. The shadow is on the plan's
+   *   floor, not on a ray cast down from the camera: castle-plan.js's treadTop
+   *   answers standAt's floor, so the shadow and the feet cannot disagree about
+   *   a slab edge even in principle. On a flight they disagree on purpose: the
+   *   feet walk the ramp and the shadow lies on the drawn tread over it, up to
+   *   one riser higher, because a disc at the ramp's height is inside the stone
+   *   on every tread (#1031).
    * @param skin   the hand's colour, from `skinColour` above.
    */
   constructor({ scene, camera, player, skin = 0xc79a7a }) {
@@ -242,9 +246,12 @@ export class PlayerRig {
   apply(a) {
     const cam = this.camera.position;
 
-    // The shadow is not smoothed. It is where the feet are, and the feet are
-    // where the plan put them.
-    this.shadow.position.set(cam.x, this.player.feet + SHADOW_LIFT, cam.z);
+    // The shadow is not smoothed. It is on what is drawn under the feet, which
+    // off a flight is where the feet are, and on one is the tread over the ramp
+    // (#1031). No plan yet, before the castle is built: the feet.
+    const plan = this.player.getPlan ? this.player.getPlan() : null;
+    const floor = plan ? treadTop(plan, cam.x, cam.z, this.player.feet) : null;
+    this.shadow.position.set(cam.x, (floor ?? this.player.feet) + SHADOW_LIFT, cam.z);
 
     this.reach += (this.want - this.reach) * a;
     if (this.reach < 0.0005) this.reach = 0;

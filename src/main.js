@@ -156,6 +156,7 @@ async function init() {
   // called once the loop is running.
   const populace = new Populace({
     people: populaceData.people, npcs: folk, nav, cue: (name, ev) => audio.cue(name, ev),
+    beats: soundData.events?.byActivity ?? {}, // a job's sound on its beat, off the live mixer (#1041)
     pairs: populaceData.talk, talk: (pair, names) => quest.overhear(pair, names), hush: (id) => quest.stopTalk(id),
   });
   populace.setWatch(engine.watch, { walk: false });
@@ -241,6 +242,12 @@ async function init() {
     // The twelve's ten placed pairs, said on the caption band by room and bell
     // (#925). The manager plays only the pairs with a `room`.
     chatter: npcData.chatter,
+    // How long a speaker takes to walk to this bell's station (#1020): a room
+    // with a piece in it waits for its slowest speaker. The walk is read off
+    // the schedule and the plan, never off a body (#928). No cast entry
+    // carries `speed` today; the child who does is the household's, which
+    // this does not touch.
+    walkMs: (id, watch) => nav.walkMs(id, watch, npcData.cast.find((c) => c.id === id)?.speed),
     // The world half of a bell: the sky and twelve people walking to where they
     // are due next. The engine has already moved the watch on; this puts the
     // castle where the watch says it is. `applyDay` calls it once more for
@@ -259,9 +266,12 @@ async function init() {
       for (const npc of npcs) {
         const to = placeOf(npc.id, watch);
         if (!to) { npc.group.visible = false; continue; }
-        const from = npc.group.visible ? { x: npc.group.position.x, z: npc.group.position.z, level: to.level } : null;
+        // From the floor under the body's feet, not the floor it is going to
+        // (#1021): the sentry comes down off the north walk at Vespers and the
+        // Lady takes her stair at Sext. A null route still places the body.
+        const from = npc.group.visible ? { x: npc.group.position.x, y: npc.group.position.y, z: npc.group.position.z } : null;
         npc.group.visible = true;
-        const route = walk && from ? nav.route(from, to) : null;
+        const route = walk && from ? nav.routeFrom(from, to) : null;
         if (route) npc.walkTo(route);
         else npc.placeAt({ x: to.x, y: to.h ?? 0, z: to.z });
       }

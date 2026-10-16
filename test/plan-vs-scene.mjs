@@ -437,6 +437,49 @@ try {
     }
   }
 
+  /* AND THE BELL WALK REACHES THE PAGE (#1020, #1021, #1023). test/mystery.mjs
+   * holds `routeFrom` against the station routes and pins `walkMs`, and
+   * test/quest.mjs holds the band's wait. What neither can see is
+   * src/main.js, which nothing in Node loads. Two reads, one beat:
+   *   - `onWatch` routes a body from the floor under its feet, so two frames
+   *     after a walking Vespers the sentry is still up on the north walk at his
+   *     Sext station. Routed from the destination's floor his route is null
+   *     and he is placed in the hall, 24.9 m off.
+   *   - main.js hands `walkMs` to the manager, so the same bell leaves
+   *     `__quest.settling` at `['great-hall']`.
+   * Parked, not waited on (#724): two frames at a `dt` capped at 0.05 s move
+   * a body at most 0.11 m a frame, so 1.0 m is placement and not pace. Put
+   * back the way the upstairs beat puts it back. */
+  {
+    const walkMystery = JSON.parse(fs.readFileSync(path.join(ROOT, 'data/mystery.json'), 'utf8'));
+    const sext = castleNav(plan, walkMystery).at('sentry', 'sext');
+    if (!sext || typeof sext.h !== 'number') fail('the sentry has no Sext station with a floor under it, so the bell walk cannot be read on the page');
+    else {
+      const walked = await page.evaluate(async () => {
+        const two = () => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+        window.__quest.applyWatch('sext', { walk: false });
+        await two();
+        window.__quest.applyWatch('vespers');
+        await two();
+        const n = (window.__cast || []).find((x) => x.id === 'sentry');
+        const out = { at: n ? { x: n.group.position.x, y: n.group.position.y, z: n.group.position.z } : null, settling: window.__quest.settling };
+        window.__quest.applyWatch(window.__mystery.watch, { walk: false });
+        return out;
+      });
+      await page.evaluate(async (home) => {
+        window.__populace.setWatch(home, { walk: false });
+        await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      }, walkMystery.watches[0]);
+      const off = walked.at ? Math.hypot(walked.at.x - sext.x, walked.at.z - sext.z) : Infinity;
+      check(walked.at && off <= 1.0 && Math.abs(walked.at.y - sext.h) <= 0.5,
+        `two frames after a walking Vespers the sentry is ${walked.at ? off.toFixed(2) : '-'} m from his Sext station with his feet at ${walked.at ? walked.at.y.toFixed(2) : '-'}: main.js walks him from the floor he stands on (#1021)`,
+        walked.at ? `he is ${off.toFixed(2)} m off with his feet at ${walked.at.y.toFixed(2)}, against a station at ${sext.h}: placed, not walked` : 'no sentry in window.__cast');
+      check(JSON.stringify(walked.settling) === JSON.stringify(['great-hall']),
+        'and __quest.settling is ["great-hall"]: main.js hands `walkMs` to the manager (#1020)',
+        JSON.stringify(walked.settling));
+    }
+  }
+
   /* AND THE HUD SAYS WHERE (#515). The room line is written by the page's own
    * `nav.roomAt` on the next frame after the camera moves, so with the camera
    * settled in each room the line has to read what the same resolver, run
@@ -532,9 +575,47 @@ try {
         const on = window.__player.settle();
         rig.settle();
         feet.push({
-          id: a.id, level: a.level, surface: on ? on.surface : null, floor: on ? on.h : null,
+          id: a.id, level: a.level, surface: on ? on.surface : null, floor: on ? on.h : null, ramp: !!(on && on.ramp),
           cam: p(cam.position), shadow: p(rig.shadow.position),
         });
+      }
+
+      /* 1b. The shadow on a flight (#1031, #1032). A flight is a ramp to the
+       * feet and 22 treads on screen, and a disc at the feet is in the stone on
+       * every tread. layout.mjs check 8c holds that treadTop answers the drawn
+       * tread; what only the page can say is that the rig calls it with the live
+       * plan and feet, and that the drawing at that spot is the one 8c read.
+       * The drawing is the piece's skin nodes and its built object, kept only
+       * where it and every ancestor is visible: a Raycaster does not skip a
+       * hidden object, and the hidden kit's treads stand up to 0.49 m over the
+       * ramp. #1014's two flights, mid-tread at 30% and 61%. */
+      const castle = window.__castle;
+      const shown = (o) => { for (let q = o; q; q = q.parent) if (!q.visible) return false; return true; };
+      const flights = [];
+      for (const id of ['nw-tower-stair-1', 'kitchen-tower-stair-2']) {
+        const r = castle.plan.ramps.find((q) => q.id === id);
+        if (!r) { flights.push({ id, missing: true }); continue; }
+        const [ax, az, ay] = r.slope.from, [bx, bz, by] = r.slope.to;
+        const len = Math.hypot(bx - ax, bz - az);
+        const ux = (bx - ax) / len, uz = (bz - az) / len, px = -uz, pz = ux;
+        const off = ((r.box.min.x + r.box.max.x) / 2 - ax) * px + ((r.box.min.z + r.box.max.z) / 2 - az) * pz;
+        for (const k of [6.5, 13.5]) {
+          const t = k / (r.steps || NaN);
+          const x = ax + ux * len * t + px * off, z = az + uz * len * t + pz * off;
+          cam.position.set(x, ay + (by - ay) * t + 0.1 + eye, z);
+          window.__player.settle();
+          rig.settle();
+          const drawings = [...(castle.skins.get(id) || []), castle.objects.get(id)].filter(Boolean).filter(shown);
+          let hitY = null;
+          if (drawings.length === 1) {
+            drawings[0].updateMatrixWorld(true);
+            const s = rig.shadow.position;
+            const ray = new THREE.Raycaster(new THREE.Vector3(s.x, s.y + 0.5, s.z), new THREE.Vector3(0, -1, 0), 0, 2);
+            const hits = ray.intersectObject(drawings[0], true);
+            hitY = hits.length ? hits[0].point.y : null;
+          }
+          flights.push({ id, t, visible: drawings.length, names: drawings.map((o) => o.name), shadowY: rig.shadow.position.y, feet: window.__player.feet, hitY });
+        }
       }
 
       // 2. The hand, with the door behind the player and then in front of it.
@@ -615,15 +696,20 @@ try {
       document.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyE' }));
       await frame();
       const riddleBack = !document.getElementById('riddle-overlay').classList.contains('hidden');
-      return { tagged, rooted, flagged, feet, away, at, rays, riddleBack };
+      return { tagged, rooted, flagged, feet, flights, away, at, rays, riddleBack };
     }, { anchors, eye: EYE_HEIGHT, pose: doorPose });
 
     check(feel.rooted && feel.tagged === 0 && feel.flagged,
       'the rig is one flagged group in the scene and neither of its objects carries a planId',
       `${feel.tagged} tagged, ${feel.flagged ? 'flagged' : 'NOT flagged as the player rig'}`);
 
+    /* An anchor that stands on a flight is not held here: there the shadow lies
+     * on the drawn tread, up to one riser over the feet on purpose (#1031), and
+     * the flight line below holds it against the drawing. Ten of the anchors
+     * are on a flight, at the reachable cell nearest a tower room's centre. */
+    const offFlight = feel.feet.filter((f) => !f.ramp);
     let worstFeet = -1, worstFeetRoom = null, onFeet = 0;
-    for (const f of feel.feet) {
+    for (const f of offFlight) {
       const flat = Math.max(Math.abs(f.shadow.x - f.cam.x), Math.abs(f.shadow.z - f.cam.z));
       const lift = f.shadow.y - f.floor;
       if (flat > worstFeet) { worstFeet = flat; worstFeetRoom = f.id; }
@@ -631,9 +717,9 @@ try {
       else if (!(lift > 0 && lift <= 0.05)) fail(`in ${f.id} the shadow sits ${lift.toFixed(3)} m over a floor at ${f.floor.toFixed(3)} — it is buried in it, or hovering`);
       else onFeet++;
     }
-    const surfaces = new Set(feel.feet.map((f) => f.surface).filter(Boolean));
-    check(onFeet === feel.feet.length && feel.feet.length > 0,
-      `the shadow lies on the floor under the player's feet in all ${feel.feet.length} rooms, over ${surfaces.size} kinds of surface`,
+    const surfaces = new Set(offFlight.map((f) => f.surface).filter(Boolean));
+    check(onFeet === offFlight.length && offFlight.length > 0,
+      `the shadow lies on the floor under the player's feet in all ${offFlight.length} rooms whose anchor is off a flight, over ${surfaces.size} kinds of surface (${feel.feet.length - offFlight.length} stand on one)`,
       `worst ${Math.max(0, worstFeet).toFixed(4)} m in ${worstFeetRoom}`);
     /* A SHADOW NAILED TO ONE SPOT WOULD PASS EVERY LINE ABOVE IF THE PLAYER
      * NEVER MOVED, AND THE LINES ABOVE MOVE THE PLAYER FORTY TIMES WITHOUT EVER
@@ -646,6 +732,25 @@ try {
     // right in both of them for the wrong reason.
     const stoodAt = new Set(feel.feet.map((f) => `${f.cam.x.toFixed(2)},${f.floor.toFixed(2)},${f.cam.z.toFixed(2)}`));
     check(spots.size === stoodAt.size, `and it is somewhere different in each of the ${stoodAt.size} places that is`, `${spots.size} places`);
+
+    // On a flight: within 0.05 m over the one visible drawing, and the ramp-height
+    // disc (feet + 0.02) more than 0.05 m under the same spot, so these are
+    // samples where today's disc would be in the stone (#1031).
+    const stairBad = [];
+    let stairWorst = 0;
+    for (const f of feel.flights) {
+      const at = f.missing ? f.id : `${f.id} at t ${f.t.toFixed(2)}`;
+      if (f.missing) { stairBad.push(`${f.id} is no flight in the page's plan`); continue; }
+      if (f.visible !== 1) { stairBad.push(`on ${at} ${f.visible} drawings visible${f.names.length ? ` (${f.names.join(', ')})` : ''}, not 1`); continue; }
+      if (f.hitY == null) { stairBad.push(`on ${at} a ray down from over the shadow hits nothing of ${f.names[0]}`); continue; }
+      const over = f.shadowY - f.hitY, ramp = f.shadowY - (f.feet + 0.02);
+      stairWorst = Math.max(stairWorst, over);
+      if (!(over > 0 && over <= 0.05)) stairBad.push(`on ${at} the shadow is ${Math.abs(over).toFixed(3)} m ${over > 0 ? 'over' : 'under'} the drawn tread`);
+      else if (!(ramp > 0.05)) stairBad.push(`on ${at} the ramp-height disc is only ${ramp.toFixed(3)} m under the shadow, so the sample proves nothing`);
+    }
+    check(feel.flights.length === 4 && !stairBad.length,
+      `on a flight the shadow lies on the drawn tread, not on the ramp under it (${feel.flights.length} mid-tread samples on 2 flights, at most ${stairWorst.toFixed(3)} m over it)`,
+      stairBad.join('; '));
 
     check(feel.rays.shadow.withRig === 0 && feel.rays.shadow.withMesh > 0,
       'a ray straight down from the eye passes through the shadow, and hits it with THREE.Mesh\'s own raycast put back',
@@ -1295,16 +1400,18 @@ try {
        * fires on a change of state and not on every call: the cycle above is
        * shut, open, shut, open, and a second `openLock` on an open leaf has
        * to be silence, or the second day's idempotent `applyDay` is two
-       * doors. No speaker is asked anything (#53): `events()` is the log. */
+       * doors. No speaker is asked anything (#53): `events()` is the log,
+       * read by `seq` and not by length, because a log full at 64 entries
+       * keeps its length and a slice from it is empty (#1043). */
       const cued = await page.evaluate(async ({ id }) => {
         const castle = window.__castle, audio = window.__audio;
         const gd = castle.gates.get(id);
-        const before = audio.events().length;
+        const before = audio.events().at(-1)?.seq ?? 0;
         castle.openLock(id, { instant: true }); // already open: no cue
         castle.applyDay([{ piece: id, set: 'shut' }]);
         castle.applyDay([{ piece: id, set: 'shut' }]); // already shut: no cue
         castle.openLock(id, { instant: true });
-        const fired = audio.events().slice(before);
+        const fired = audio.events().filter((e) => e.seq > before);
         const c = gd.centre;
         return { fired, centre: c ? { x: c.x, y: c.y, z: c.z } : null };
       }, { id: leaf.piece });
@@ -1356,8 +1463,8 @@ try {
       const me = body.npc.group.position;
       const home = { x: cam.position.x, y: cam.position.y, z: cam.position.z };
       cam.position.set(me.x + 1.5, me.y + 1.7, me.z);
-      const before = audio.events().length;
-      const heard = () => audio.events().slice(before).filter((e) => e.cue === 'hound-near');
+      const before = audio.events().at(-1)?.seq ?? 0; // by seq, not length (#1043)
+      const heard = () => audio.events().filter((e) => e.seq > before && e.cue === 'hound-near');
       const t0 = performance.now();
       let opened = null, late = 0, frames = 0;
       while (!heard().length && late < LATE && performance.now() - t0 < WALL) {
@@ -1483,6 +1590,82 @@ try {
       window.__populace.setWatch(home, { walk: false });
       await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
     }, { home: mystery.watches[0], back });
+  }
+
+  /* A JOB HEARD ON ITS BEAT, OFF THE LIVE MIXER (#1041, #1044). The crossing
+   * itself is test/mystery.mjs 8e's, over a scripted `loopPhase()`. What only
+   * a page has is that main.js handed `Populace` the `byActivity` table, and
+   * that `NPC.loopPhase()` reads a loaded body's own action. One synchronous
+   * evaluate, so the page's loop cannot run inside it and nothing waits on a
+   * frame (#53, #972): the body put on its stop, `npc.update(0.3)` to finish
+   * the 0.25 s cross-fade, then for each beat the action's `time` set 0.03 of
+   * a loop short of it and advanced 0.06 of a loop by the mixer. That has to
+   * cue exactly one, from the body; the same from 0.1 past the beat, none.
+   * The carter at Terce with the camera 2 m off on open ground, and the
+   * scullion at Prime 1.5 m off inside the kitchen, because she wears a
+   * second file and her job is heard only in its own room. */
+  {
+    const jobs = await page.evaluate(({ eye }) => {
+      const pop = window.__populace, audio = window.__audio, cam = window.__cam;
+      const back = { x: cam.position.x, y: cam.position.y, z: cam.position.z, yaw: cam.rotation.y, watch: pop.watch };
+      const seqNow = () => audio.events().at(-1)?.seq ?? 0;
+      const job = (watch, activity, cue, metres, sameRoom) => {
+        pop.setWatch(watch, { walk: false });
+        const body = pop.bodies.find((b) => b.npc.group.visible && b.stops.some((s) => s.activity === activity));
+        if (!body) return { activity, watch, missing: `nobody visible at ${watch} has a ${activity} stop` };
+        body.index = body.stops.findIndex((s) => s.activity === activity);
+        pop._arrive(body);
+        body.npc.update(0.3, cam.position);
+        const stop = body.stops[body.index];
+        const me = body.npc.group.position;
+        // The camera `metres` off, on a cell of the stop's own room when the
+        // job is heard only there, and anywhere on the grid when it is not.
+        let spot = null;
+        for (let k = 0; k < 64 && !spot; k++) {
+          const a = (k / 64) * Math.PI * 2, x = me.x + Math.cos(a) * metres, z = me.z + Math.sin(a) * metres;
+          const cell = pop.nav.walk.cellAt(x, z, stop.level);
+          if (!cell) continue;
+          const room = pop.nav.roomAt(x, z, cell.h);
+          if (sameRoom ? room.id === stop.room && room.level === stop.level : room.open) spot = { x, y: cell.h + eye, z, room: room.id };
+        }
+        if (!spot) return { activity, watch, id: body.person.id, missing: `no cell ${metres} m from ${body.person.id} ${sameRoom ? `in ${stop.room}` : 'on open ground'}` };
+        cam.position.set(spot.x, spot.y, spot.z);
+        const action = body.npc._current;
+        const D = action ? action.getClip().duration : 0;
+        const beats = (pop.beats?.[activity]?.beats ?? []).map((b) => b.at);
+        const drive = (from) => {
+          action.time = from * D;
+          pop.update(0, cam.position);
+          const before = seqNow();
+          body.npc.update(0.06 * D, cam.position);
+          pop.update(0, cam.position);
+          return audio.events().filter((e) => e.seq > before && e.cue === cue).map((e) => ({ at: e.at, beat: e.beat, id: e.id }));
+        };
+        const on = [], off = [];
+        if (action && D > 0) for (const b of (beats.length ? beats : [0.5])) {
+          on.push({ b, fired: drive(b - 0.03) });
+          off.push({ b, fired: drive(b + 0.1) });
+        }
+        return { activity, watch, cue, id: body.person.id, clip: action?.getClip().name ?? null, D, beats, on, off, me: { x: me.x, z: me.z }, room: spot.room };
+      };
+      const out = [job('terce', 'hammer', 'hammer-strike', 2, false), job('prime', 'sweep', 'sweep-stroke', 1.5, true)];
+      cam.position.set(back.x, back.y, back.z);
+      cam.rotation.set(0, back.yaw, 0, 'YXZ');
+      pop.setWatch(back.watch, { walk: false });
+      return out;
+    }, { eye: EYE_HEIGHT });
+    for (const j of jobs) {
+      if (j.missing) { fail(`${j.activity} at ${j.watch}: ${j.missing}`); continue; }
+      const who = `${j.id}'s ${j.activity} at ${j.watch} (${j.clip}, ${j.D.toFixed(2)} s, camera in ${j.room})`;
+      const counts = j.on.map((o) => o.fired.length);
+      check(j.beats.length > 0 && counts.every((n) => n === 1),
+        `${who}: the live action carried across each of its ${j.beats.length} beats cues exactly one ${j.cue}`,
+        `${counts.join(', ') || 0} cued across beats ${j.beats.join(', ') || 'none in pop.beats'}`);
+      const offs = j.on.flatMap((o) => o.fired.map((e) => Math.hypot(e.at.x - j.me.x, e.at.z - j.me.z)));
+      check(offs.length > 0 && offs.every((d) => d < 0.01), 'and each from the body, within 0.01 m in x and z', offs.map((d) => d.toFixed(3)).join(', ') || 'none cued');
+      const stray = j.off.map((o) => o.fired.length);
+      check(stray.every((n) => n === 0), 'and the same 0.06 of a loop starting 0.1 past each beat cues none', `${stray.join(', ')} cued`);
+    }
   }
   // The tint (#419). Four bodies, fourteen people: the cloth has to differ
   // fourteen ways and the skin must not differ at all, or the tint went onto

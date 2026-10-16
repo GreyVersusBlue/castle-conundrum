@@ -29,8 +29,8 @@
 import * as THREE from 'three';
 import { loadGLTF, loadModel } from './assets.js';
 import { ACTIVITY_CLIPS, heldPropPath } from './populace.js';
+import { WALK_SPEED } from './stations.js';
 
-const PATROL_SPEED = 1.1; // m/s
 const WAYPOINT_EPS = 0.05;
 const TURN_SPEED = 4.0; // rad/s — how fast an npc swings round to a new heading
 const CLIMB_SPEED = 1.6; // m/s the feet rise or fall towards the next waypoint's floor
@@ -81,7 +81,7 @@ export class NPC {
      * speed; a child runs between her stops at twice it, and the clip she
      * runs with comes off `def.clips` below, because a Run clip played at a
      * walking pace is a body running on the spot. */
-    this.speed = def.speed ?? PATROL_SPEED;
+    this.speed = def.speed ?? WALK_SPEED;
 
     this._mixer = null;
     this._actions = {};
@@ -332,6 +332,22 @@ export class NPC {
   get walking() { return this._waypoints.length > 0 && !this._loop; }
 
   /**
+   * Where in its job's loop this body is (#1041): `{ activity, phase }`, phase
+   * the live action's own `time` over its clip's duration, in [0, 1), while an
+   * activity's action is current and the body is not walking; otherwise null.
+   * Read-only, and it keeps no clock: the mixer is the clock, so a beat in
+   * src/populace.js lands when the eye sees the arm come down.
+   */
+  loopPhase() {
+    const key = this._currentKey;
+    if (!this._current || !key?.startsWith('do:') || this.walking) return null;
+    const d = this._current.getClip().duration;
+    if (!(d > 0)) return null;
+    const phase = (this._current.time / d) % 1;
+    return { activity: key.slice(3), phase: phase < 0 ? phase + 1 : phase };
+  }
+
+  /**
    * STAND STILL AND DO A JOB (#616). `activity` is one of the strings
    * src/populace.js's ACTIVITY_CLIPS names, and the clip it resolves to is
    * whatever the loaded body ships under that name. A body whose file has no
@@ -376,6 +392,7 @@ export class NPC {
     else next.setEffectiveWeight(1);
     next.play();
     this._current = next;
+    this._currentKey = key;
   }
 
   /** Called every frame from main.js's render loop. */
