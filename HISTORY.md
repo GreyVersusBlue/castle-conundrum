@@ -15539,4 +15539,95 @@ purpose (#34): with `ui.showStartAgain()` removed from `src/main.js`'s
 `unlock` handler, the beat fails with `120000ms exceeded`. No assertion was
 added, dropped or reworded, and none moved between suites.
 
-Next free number: #1020.
+---
+
+## Rank 6, increment 6: the bell walk (2026-10-16)
+
+**A spec, not a build.** Written as `architect` on `f99f515`. `SPECS.md`
+"Life: a populace" gains "Increment 6: the bell walk". No file under `src/`,
+`data/` or `test/` changed. This session's band is #1020 to #1029; #1030 and
+up are held by other sessions. What was measured, in Node off the real plan
+and `castleNav`, by a scratch script not committed: every speaker's walk
+into every room that holds a piece, and every one of the 67 bell walks of
+day one and the walking day routed the way `src/main.js` routes it and the
+way the stations say.
+
+**#1020. A piece waits for its room's walk; the gap follows it.** Amends
+#925, #592 and #928. #925 made `CHATTER_GAP_MS` both the dark band between
+pieces and "the allowance for bodies still walking"; #1016 measured that
+allowance failing at three of four places: the steward reached the King's
+Hall at 21.5 s, against a first line at 4.0 s.
+#592 started a performance on the bell. From here a walking bell puts each
+room with a performance or a placed pair at that bell into `settling` for
+`walkMs`, the longest walk of any speaker of any piece there, from the last
+bell's station, at 1.1 m/s. While the player's room settles nothing starts
+in it, whether the player stood there at the bell or walked in after. The
+room's wake then does what `applyWatch` did on the bell: a performance at
+once, or the first unheard pair after `CHATTER_GAP_MS`, so the gap keeps its
+first job and loses its second. A load, a reload and `applyDay*` pass `walk:
+false`, place every body, and settle nothing. Per room rather than per piece
+because it needs one wake and no clock, and in every room today the two give
+the same number. #928 holds in spirit: `QuestManager` is handed `walkMs`, a
+function of the schedule and the plan, and still reads no body's position.
+The household's `talk` is not held back, because `Populace` already hands a
+pair over only when both bodies are in earshot. The numbers #1017 quoted
+were recomputed and stand: 25455 ms (steward, 28.0 m), 40000 ms (sentry,
+44.0 m) and 8636 ms (clerk, 9.5 m); the chaplain at Vespers and the cook at
+Sext walk 0.
+
+**#1021. A body walks from the floor it is standing on. `src/main.js`
+routed every bell walk from the floor it was going to; #1017's song row is
+amended.** What was wrong: `onWatch` builds `from = { x, z, level: to.level
+}`. Of the 67 bell walks, 14 change level. For 8 of them the route from the
+destination's floor at the body's own x, z is null, so `placeAt` puts the
+body at its station on the bell; the other 6 start from whatever cell is
+under the body on the destination's floor. The sentry stands on `north-walk`,
+level 2, feet at 8.0, at Sext, and is placed in the great hall at Vespers.
+The Lady stands in `royal-apartments`, level 1, at Terce: at Sext her walk is
+9.5 m from the ground under her instead of 94.5 m down her stair, so her feet
+sink 4 m through the floor at `CLIMB_SPEED`, and at Vespers she is placed
+back upstairs. The evidence is the computation: with the level taken from
+`nav.roomAt(x, z, feet)` all 67 routes equal `nav.route(station, station)`
+cell for cell, and with `to.level` 8 are null and 6 differ. It is consistent
+with #1016's still `931-1-hall-vespers-00-song.png`, which has an armoured
+body standing just in front of the camera at the song's first caption, and
+that camera stood 1.75 m from the sentry's Vespers station. The still was
+not proof enough on its own, and #1016's logs record no body's position
+before the first pair. So #1017's table row "the
+song, sentry, 44.0 m, 40.0 s" is the station route and not what the body
+did: Dafydd was in the hall from the bell, and what was missing was the
+hall's other speakers, the cook (23.2 s), the laundress (19.1 s) and the
+clerk (28.2 s). Its conclusion stands, because the fix makes the sentry walk
+the 40.0 s. The route is now `nav.routeFrom(body, to)` in `src/stations.js`,
+the one place both `main.js` and `walkMs` read it, and `src/npc.js`'s pace
+becomes `WALK_SPEED` from the same file so the divisor and the walk cannot
+drift. Nobody has seen the sentry walk off the wall or the Lady take her
+stair yet; both are on the looking list.
+
+**#1022. One frame per waypoint is accepted, not padded.** `NPC.update`
+spends the frame in which it reaches a cell centre advancing to the next one
+and does not move. At 60 fps that is 0.32, 0.93 and 1.47 s on the clerk's,
+the steward's and the sentry's walks. Not added to `walkMs`: a pair's 4000
+ms gap covers all three, and the song's first caption is a 5115 ms stage
+direction ("Dafydd is got up onto the bench end"), so his arriving 1.5 s
+into it reads as written. Fixing the frame is `src/npc.js`, which no Node
+suite constructs, for a difference no player at the bell would see.
+
+**#1023. Who holds what.** `test/mystery.mjs` owns the stations (#529), so
+it holds `routeFrom` against `route` for all 67 walks and pins `walkMs` at
+25455, 40000 and 8636, plus its zeros and its speed. Pinned rather than
+recomputed, because a rail that sums the route again is the walk
+re-implemented (#34), and a station move updates the number in the same
+commit. `test/quest.mjs` holds the band: who settles at each bell, the wake
+then the gap, walking in before and after, a later bell voiding a wake, and
+a placed bell not waiting, on the real nav handed to the rig.
+`test/plan-vs-scene.mjs` holds two seams in one beat, because no Node suite
+loads `src/main.js`: the sentry still within 1.0 m of his Sext station two
+frames after a walking Vespers, and `__quest.settling` equal to
+`['great-hall']`. The breaks that prove the line: put `onWatch` back to
+`to.level` and the first goes red while `mystery` and `quest` stay green;
+delete `walkMs:` from the constructor and the second goes red while `quest`
+stays green. `QuestManager` gains a public `settling` getter for that seam.
+Nothing moves between suites.
+
+Next free number in this band: #1024.
