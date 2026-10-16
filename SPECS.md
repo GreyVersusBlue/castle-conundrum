@@ -2984,8 +2984,10 @@ ray that was never going to hit anything.
   sets. **Met for the shadow** (stone and grass, #1014) **and for the hand**
   (#1015, with one thing left for Devon's eye: whether the settled hand wants
   its palm turned toward the leaf, not just mid-reach). **Still open for the
-  stair disc**: a flight of stairs is a ramp in the plan but 8 steps on
-  screen, and the disc sits inside the stone on every tread (#1014).
+  stair disc**: a flight of stairs is a ramp in the plan but 22 steps on
+  screen, and the disc sits inside the stone on every tread (#1014, its step
+  count amended by #1030). The increment that fixes it is "Scope, second
+  increment: the stair disc" below.
 
 ### Open calls
 
@@ -2995,20 +2997,229 @@ ray that was never going to hit anything.
   of the two. What shipped is cheaper again than a baked file — the gradient is
   painted into a canvas at load, so there is no asset to encode (#506) and
   nothing new is fetched (#493).
-- **How the disc sits on a flight.** Three options weighed: hide the disc on
-  a ramp (one line, loses the cue on every stair); draw it with depthTest off
-  on a ramp only (paints over a riser the way a real shadow would, and over
-  the hand or a body's feet if they overlap); or give the plan a flight's
-  step count (8 for `stairs-stone.glb`) so the rig can put the disc on the
-  tread top under the player while the feet stay on the ramp. **Recommended:
-  the step count in the plan**, asserted by `layout.mjs` or
-  `plan-vs-scene.mjs` against the model (#500, #529), with the rig reading it
-  to place the disc. This needs an `architect` section before anything is
-  built: it crosses the plan/scene line.
+- ~~**How the disc sits on a flight.**~~ **Taken: the step count in the plan,
+  and the disc flat on the tread top under the player** (#1031). Hiding the
+  disc on a ramp loses the cue on every stair; depthTest off paints it over
+  the hand and over any body's feet. The count is the drawn flight's, 22, not
+  `stairs-stone.glb`'s 8, because the kit model is hidden under the curtain
+  skin everywhere but `?edit=1` (#1030). The section that a `builder` ships
+  is "Scope, second increment: the stair disc" below, and its own open calls
+  all carry a recommendation.
 - **Everything else in the theme** (weather, fire, examine, wear, sitting) is
   explicitly a later increment each, in no fixed order — `WISHLIST.md` ranks
   none of them against each other, and this spec does not invent an order it
   was not given.
+
+### Scope, second increment: the stair disc (class S, lane D)
+
+**What is wrong, measured.** `heightOnSurface` stands a body on a flight as a
+straight ramp from `slope.from` to `slope.to`. What the game draws there is
+`FLIGHT_<id>` out of `assets/castle3d/skin.glb` (#1004; `castle-builder.js`
+`skin()` hides the built kit piece): 22 solid steps of 0.1773 m riser and
+0.15 m tread, from `tools/castle3d/towers.py`'s `round(3.9 / RISER)` with
+`RISER = 0.18`. Read off the encoded file in Node: all 18 `FLIGHT_` nodes
+carry 22 upward planes, the first at 0.177 over the flight's foot and the last
+at its head. The first riser stands at the foot, so tread k covers the run
+fraction `[(k-1)/22, k/22]` at height `k/22` of the rise, and the ramp line
+runs through every tread's inner corner: 0 to 0.177 m under the tread, so a
+disc at `feet + 0.02` is in the stone over all but its first 0.02 m. The kit
+model, `stairs-stone.glb`, has the same shape with 8 treads (local up planes
+at y = 0.125 to 1.0, each 0.125 of z), and is drawn only under `?edit=1`.
+
+**The decision** (#1031): the plan carries a flight's step count, the rig puts
+the disc on the tread top under the player's xz, and the feet stay on the
+ramp. Nothing about walking changes.
+
+By file:
+
+- **`data/scene-config.json`**: `"steps": 22` in the `stairs` section, after
+  `scale`, and one sentence added to that section's `comment`: "`steps` is the
+  treads a flight is drawn with in play, the curtain skin's (towers.py RISER
+  0.18 over 3.9 m), not stairs-stone.glb's 8, which is drawn only under
+  ?edit=1; test/layout.mjs check 8c holds it to whichever drawing
+  data/castle-skin.json puts in force (#1031)." Write the line with the file's
+  own line ending (#632).
+- **`src/castle-plan.js`**:
+  - `makePlan` reads `config.stairs.steps`. Absent: no ramp carries `steps`
+    and nothing else changes. Present and not an integer of 1 or more: throw
+    `[castle-plan] stairs.steps is <value>, not a whole number of treads`.
+    Present and good: every ramp surface object (the `s` pushed to both
+    `surfaces` and `ramps`) gets `steps`. The stair piece does not.
+  - Factor the clamped projection out of `heightOnSurface` into
+    `slopeT(s, x, z)` (0 to 1, the same clamp, the same `len2 < 1e-9`
+    guard returning 0), and have `heightOnSurface` call it, so the ramp and
+    the tread cannot read two different `t`.
+  - New export, beside `standAt`:
+
+    ```js
+    /** The height of what is DRAWN under (x, z) for a body with its feet at
+     * `feet`: standAt's floor, or on a flight that carries `steps`, the top of
+     * the tread over the ramp there. Null where standAt is null. */
+    export function treadTop(plan, x, z, feet, stepUp = STEP_UP) {
+      const on = standAt(plan, x, z, feet, stepUp);
+      if (!on) return null;
+      if (!on.ramp) return on.h;
+      const s = plan.surfaces.find((q) => q.id === on.surface);
+      if (!s || !s.steps) return on.h;
+      const k = Math.min(s.steps, Math.floor(slopeT(s, x, z) * s.steps) + 1);
+      const ay = s.slope.from[2], by = s.slope.to[2];
+      return ay + (by - ay) * k / s.steps;
+    }
+    ```
+
+    At a riser line exactly (`t * steps` whole) it answers the higher tread,
+    whose front edge is there; at `t = 1` the `min` holds it to the last.
+  - Export `placePoint` (today module-private) so check 8c can put the kit's
+    vertices in world space through the plan's own placement, rather than a
+    second T·R·S in the test.
+- **`src/player-rig.js`**, `apply()`: the shadow's y becomes
+  `(treadTop(plan, cam.x, cam.z, this.player.feet) ?? this.player.feet) +
+  SHADOW_LIFT`, with `plan` from `this.player.getPlan()` (null before the
+  castle is built, which falls back to the feet). Still unsmoothed. Rewrite the
+  constructor's `@param player` comment, which says the shadow is on the
+  plan's floor "so the shadow and the feet cannot disagree about ... a flight
+  of stairs": on a flight they now disagree on purpose, by up to one riser,
+  and the comment says so and cites #1031. `main.js` does not change.
+- **`test/gltf.mjs`**: `triangles(file, { only })`, where `only(nodeJson)`
+  is a predicate; a mesh is kept when its own node or any ancestor passes.
+  No argument keeps today's behaviour, and every existing caller passes none.
+- **`test/layout.mjs`**, a new **check 8c** after check 8, the Node half
+  (below).
+- **`test/plan-vs-scene.mjs`**, one assertion added to the shadow-and-hand
+  beat, the seam (below).
+
+Nothing in `budget.mjs`: no mesh, no light, no draw call is added. No save
+change. No storage key. No new asset.
+
+### Acceptance, second increment
+
+**Which suite, and why (#529).** Whether the step count is right, and whether
+`treadTop` answers the height of what is drawn, is a fact about three files
+(`scene-config.json`, `castle-skin.json`, `skin.glb` or the kit glb) and one
+function, all readable in Node: `layout.mjs`. Check 16 already reads
+`skin.glb` there and owns the "which pieces are swapped" rule. What Node
+cannot see is that the page's rig calls `treadTop` with the live plan and the
+live feet, and that the page really draws the skin node in the piece's place
+and hides the kit: `plan-vs-scene.mjs`. Neither suite asserts the other's
+fact (#1032).
+
+**`test/layout.mjs` check 8c, "every flight's disc lies on the tread that is
+drawn".** For every `plan.ramps` entry, the drawing in force is the skin node
+whose `extras.planId` (or `planIds`) names the ramp's id when check 16's
+`swapped` rule says the piece is swapped (stage listed, id not kept), and
+otherwise `config.kenneyBase + config.stairs.model` through `placePoint` with
+the piece's `transform`. Read with `triangles(file, { only })`. Two lines:
+
+1. **The count.** The ramp carries `steps`, and the drawing's distinct upward
+   planes (normal y over 0.999, mean y rounded to 0.001) strictly above
+   `box.min.y + 0.001` number exactly `steps`, the k-th at
+   `ay + (by - ay) * k / steps` within 0.002 m. The `min.y` cut is not
+   decoration: the kit glb carries an upward-wound face at y = 0 over its
+   whole footprint (measured, 0.5 m² local), and counting it gives 9.
+   Pass line names the flight count, the step count and the drawing:
+   `18 flights, each drawn with 22 treads as the plan says (18 skin, 0 kit)`.
+   Fail line: `nw-tower-stair-1 is drawn by FLIGHT_nw-tower-stair-1 with 22
+   treads and the plan says 8`.
+2. **The height.** For every ramp, at `t = (k + 0.5) / steps` for every k,
+   on the centreline and at 0.4 of the half width to either side (66 points a
+   flight, 1188 in all), `treadTop(plan, x, z, ay + (by - ay) * t)` equals the
+   highest upward triangle of the drawing covering (x, z) in plan, within
+   0.005 m, and lies above the ramp by more than 0 and at most
+   `(by - ay) / steps + 1e-6`. A sample where `standAt` answers a surface
+   other than the ramp fails by name (`... stood on floor-x, not the
+   flight`), because that is a finding, not noise.
+
+Breaks on purpose (#34), each from a green baseline, each to be reported with
+the line it printed:
+
+| The break | Must fail |
+| --- | --- |
+| `"steps": 8` in `scene-config.json`, #1014's own number | 8c.1, "drawn ... with 22 treads and the plan says 8"; and 8c.2 on most samples |
+| `steps` deleted from the config | 8c.1, "carries no step count" |
+| `+ 1` dropped from `treadTop`'s `k` (the tread below) | 8c.2, one riser low, 0.177 m |
+| `treadTop` returning `on.h` on a ramp (today's behaviour) | 8c.2, 0.089 m low at every mid-tread sample |
+| the `> min.y` cut dropped from 8c.1 | stays green while every flight is skinned, so force the kit branch for one flight in a scratch edit of 8c itself: with the cut 8c.1 says 8 against the plan's 22, without it 9. Revert both, and say in the report that this break needed the scratch edit |
+
+**`test/plan-vs-scene.mjs`, in the shadow-and-hand beat, one `check`: "on a
+flight the shadow lies on the drawn tread, not on the ramp under it".** In the
+same `page.evaluate`: for `nw-tower-stair-1` and `kitchen-tower-stair-2`
+(#1014's two), at `t = 6.5 / steps` and `t = 13.5 / steps` (30% and 61%, both
+mid-tread), on the flight's centreline from `window.__castle.plan.ramps`, put
+the camera at the ramp height there plus 0.1 plus `EYE_HEIGHT`,
+`__player.settle()`, `__rig.settle()`. Then take the drawing of that piece
+from the page itself: `castle.skins.get(id)` and `castle.objects.get(id)`,
+kept only where the object and every ancestor is `visible` (three's
+`Raycaster` does not skip a hidden object, and the hidden kit's treads stand
+up to 0.49 m over the ramp). Assert exactly one drawing is visible, then cast
+a ray straight down from 0.5 m over the shadow at its xz against that drawing
+only; assert `shadow.y - hit.y` is over 0 and at most 0.05 at all four
+samples. In the same line, the control: `shadow.y - (feet + 0.02)` is over
+0.05 at all four, so the samples are ones where the ramp-height disc fails.
+The existing "the shadow lies on the floor under the player's feet in all N
+rooms" line is unchanged; if any of its anchors stands on a ramp
+(`on.ramp`), drop that anchor from it and say so in the report, because the
+new line holds flights.
+
+| The break | Must fail |
+| --- | --- |
+| `player-rig.js` back to `this.player.feet + SHADOW_LIFT` | the new line, "on nw-tower-stair-1 at t 0.30 the shadow is 0.069 m under the drawn tread" or the like |
+| `castle-builder.js` `skin()` no longer hiding the built piece (`built.visible = false` commented) | the new line, "2 drawings visible" |
+
+The second break also reddens other lines in that suite; report which went
+red first and revert.
+
+`npm test` 15 suites green. `npm run build` ok.
+
+### The GPU half, for Devon (#53)
+
+Run `tools/shot-feel.mjs` on DEVON-DESKTOP after the merge and take its
+twelve `b-` stills again into `looks/<date>/after/`: `nw-tower-stair-1` and
+`kitchen-tower-stair-2`, 30% and 62%, going up (pitch -0.9), at the feet
+(-1.35), going down (-0.9). The bar is the at-the-feet four: **50% or more of
+the disc visible in each** (it was 37 to 40%, and 0% at kitchen 62%, #1014).
+Going up and going down are recorded, not barred. One sentence on the thing a
+browser cannot answer: whether the downhill half of the disc, which lies flat
+at the tread top and hangs up to 0.35 m (two risers) over the treads
+below, reads as a shadow or as a dark plate in the air. One line in
+`HISTORY.md` with the twelve numbers. If it reads as a plate, the follow-up is
+open call 3's fallback, a rig-only change.
+
+### Open calls, second increment
+
+1. **The drawing the count describes: the skin's 22 or the kit's 8.**
+   Recommended: **22**, because the kit flight is hidden in every page but
+   `?edit=1` (#1030), and 8c holds the number to whichever drawing is in
+   force, so a change to the skin's stages makes the suite say which.
+2. **Where the number lives: a config field, a constant in `castle-plan.js`,
+   or derived from a mirrored `RISER`.** Recommended: **`stairs.steps` in
+   `scene-config.json`**, because the count belongs beside the model it
+   describes in data, and a mirrored `RISER` would be a second copy of
+   `towers.py`'s constant for no gain while all 18 flights rise the same 3.9 m.
+3. **Flat on the tread under the player, or tilted on the nosings.** A disc
+   parallel to the ramp and one riser above it touches every tread's front
+   edge, is never in the stone and never hangs, but is a 50 degree tilted
+   ellipse floating over the back of each tread. Recommended: **flat on the
+   tread** for this increment, because its centre is exactly right and it is
+   what #1014 named; the tilt is the fallback if Devon's look says the
+   overhang reads as a plate.
+4. **The disc's size on a flight.** Recommended: **unchanged, 0.46 m**,
+   because a disc cut to one 0.15 m tread is a smudge and loses the cue the
+   increment exists for.
+5. **Smoothing between treads.** Recommended: **none**, because the shadow is
+   already unsmoothed (#650) and a 0.177 m snap per tread is what a shadow on
+   stairs does.
+6. **`?edit=1`, where the kit's 8 treads are drawn and the plan says 22.**
+   Recommended: **accept it**, because the editor is dev-only by construction
+   (#586) and nobody judges the shadow there; the disc is then inside the kit
+   stone by up to 0.47 m there, no worse than today's 0.47.
+7. **Should `towers.py` read the plan's `steps` instead of
+   `round(rise / RISER)`.** Recommended: **yes, later, as its own 2i
+   increment**, because it would make the plan the one source of the count
+   (#500) but it is a second lane and a Blender machine; until then 8c is what
+   holds the two together. The new ramp field reaches `blueprint.json` through
+   `export-blueprint.mjs` on the next build and `towers.py` ignores it, so the
+   skin's recorded blueprint hash moves on its next `--record` with no
+   geometry change.
 
 ### Dependencies
 
@@ -3025,6 +3236,11 @@ ray that was never going to hit anything.
 - #499, #510 (video memory is the number to watch, not disk; a shadow or a
   point light is exactly the kind of thing that moves it).
 - #500 (anything built as a plan piece gets a `planId`).
+- #529, #1032 (the stair disc: the count and the height are `layout.mjs`'s,
+  the rig's wiring and the drawing in the page are `plan-vs-scene.mjs`'s).
+- #632 (the `steps` line in `scene-config.json` takes the file's own newline).
+- #1004 (the game draws the skin's flights, not the kit's; read the drawing in
+  force, never assume the kit).
 
 ---
 

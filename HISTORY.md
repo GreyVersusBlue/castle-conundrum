@@ -15540,3 +15540,68 @@ purpose (#34): with `ui.showStartAgain()` removed from `src/main.js`'s
 added, dropped or reworded, and none moved between suites.
 
 Next free number: #1020.
+
+---
+
+## Feel: the stair disc, decided (2026-10-16)
+
+Rank 11, class O, `architect`. Nothing built: `SPECS.md`'s "Feel" section gains
+"Scope, second increment: the stair disc", whose open calls all carry a
+recommendation, and this entry records the three decisions under it. Numbers
+from this session's band, #1030 to #1039; #1033 to #1039 are unclaimed.
+
+**#1030. #1014's cause amended: the flights on screen are 22 steps, not 8.**
+#1014 said the model drawn on a flight is the kit's `stairs-stone.glb`, scaled
+3 x 3.9 x 3.3, 8 steps of 0.4875 m riser and 0.4125 m tread, and so the ramp
+line runs under each tread by 0 to 0.49 m. The shape of the cause is right and
+the numbers are not. Since `ce50548` (2i increment 3, #1004, 2026-10-04
+00:23), the day before that look's `d3493be`, `data/castle-skin.json` lists
+the `curtain` stage, `skin-stages.mjs` puts every `stair` piece in it, and
+`castle-builder.js`'s `skin()` sets the built kit piece `visible = false` and
+draws the skin node in its place. The evidence, read in Node off the encoded
+`assets/castle3d/skin.glb`: 18 `FLIGHT_<id>` nodes, one per plan flight, each
+with 22 upward planes from 0.177 to 3.9 m over its foot, tread 0.15 m, which is
+`tools/castle3d/towers.py`'s `round(3.9 / RISER)` with `RISER = 0.18`; and the
+still `looks/2026-10-04/before/b-nw1-30-going-down.jpg` shows a fine flight,
+not eight 0.49 m blocks. So the ramp is 0 to 0.177 m under each tread, not 0
+to 0.49, and the disc is still in the stone on every tread. #1014's measured
+visibility (0% going up, 37 to 40% at the feet) stands: it was read off the
+screen, whatever was drawn. The kit's 8 is still true of the kit glb, measured
+too (local up planes at y 0.125 to 1.0, each 0.125 of z, plus an
+upward-wound face at y 0), and it is what `?edit=1` draws.
+
+**#1031. The disc lies on the drawn tread; the plan carries the count.**
+`scene-config.json`'s `stairs` gets `"steps": 22`, `makePlan` copies it onto
+every ramp surface, and a new `treadTop(plan, x, z, feet)` in
+`castle-plan.js` answers `standAt`'s floor, or on a flight
+`ay + (by - ay) * min(steps, floor(t * steps) + 1) / steps`, with `t` from the
+same clamped projection `heightOnSurface` uses (factored out as `slopeT`).
+`player-rig.js` puts the disc at that plus 0.02, unsmoothed; the feet stay on
+the ramp and nothing about walking changes. Weighed and refused: hiding the
+disc on a flight (loses the cue on every stair), depthTest off on a flight
+(paints over the hand and any body's feet), a constant in `castle-plan.js` or
+a mirror of `towers.py`'s `RISER` (a second copy of a number for no gain while
+all 18 flights rise 3.9 m), and a disc tilted on the nosings (never in the
+stone, but a 50 degree ellipse floating over every tread's back; kept as the
+fallback if Devon's look says the flat disc's downhill overhang, up to 0.35 m,
+reads as a plate). `?edit=1` keeps the kit's 8 treads under a plan that says
+22, accepted because the editor is dev-only (#586). Making `towers.py` read the
+plan's `steps` is recommended as 2i's own later increment, not this one: a
+second lane and a Blender machine.
+
+**#1032. Which suite holds the stair disc (#529).** The count and the height
+are facts about `scene-config.json`, `castle-skin.json`, the drawing's glb and
+one exported function, all readable in Node, so they are `test/layout.mjs`
+check 8c: every flight's drawing in force (check 16's swapped rule: the skin
+node, else the kit through the plan's own `placePoint`) has exactly `steps`
+upward planes above its foot at `k / steps` of the rise, and `treadTop` equals
+the drawing's top at 1188 mid-tread samples within 0.005 m. The step count
+against the model's geometry was offered as a `plan-vs-scene.mjs` candidate
+and does not go there: `test/gltf.mjs` already reads the glb in Node, so it is
+provable in Node, and #529 forbids it in the browser suite. What Node cannot
+see is the page: that the rig calls `treadTop` with the live plan and feet,
+and that the skin node and not the kit is what is visible at that spot. That
+is one `plan-vs-scene.mjs` line: on two flights at two mid-tread points, a ray
+down against the piece's one visible drawing lands 0 to 0.05 m under the disc,
+with the ramp-height disc failing the same samples as its control. No
+assertion moves between suites, no ceiling moves, no save version moves.
