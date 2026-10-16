@@ -1766,6 +1766,130 @@ console.log('\nwho the player overhears, and from where');
   check(folk.talkDue(prime)?.id === 'talk-prime-inner-ward', 'Prime, with the player at the Prime pair: the Prime pair is due', folk.talkDue(prime)?.id ?? 'null');
 }
 
+/* ----------------------------- 8e: a job heard on its beat (#1041, #1044) ---
+ * `Populace._beat` is the crossing: a body's loop phase last frame and this
+ * one, the beats of data/sounds.json's `events.byActivity` between them, at
+ * most one cue a frame, none on the first frame a phase is seen, and the
+ * range and room tests on a crossing. Driven the way 8c and 8d drive the
+ * populace, over plain-object bodies on the real grid with a scripted
+ * `loopPhase()`, so nothing here waits on a clock. That main.js hands the
+ * table over and that `loopPhase()` reads a loaded body's mixer is
+ * test/plan-vs-scene.mjs's (#529).
+ */
+console.log('\na job heard on its beat');
+{
+  const byActivity = read('data/sounds.json').events?.byActivity ?? {};
+  const fake = (id) => ({
+    id, walking: false, phase: null, activity: null,
+    group: { visible: true, position: { x: 0, y: 0, z: 0 } },
+    walkTo(points) { this.walking = points.length > 1; },
+    placeAt({ x, y = 0, z }) { Object.assign(this.group.position, { x, y, z }); this.walking = false; },
+    playActivity(a) { this.activity = a; }, facePlayer() {},
+    loopPhase() { return this.phase == null ? null : { activity: this.activity, phase: this.phase }; },
+  });
+  const people = ['carter', 'scullion'].map((id) => populace.people.find((p) => p.id === id));
+  check(people.every(Boolean), 'the carter and the scullion are in data/populace.json', people.map((p, i) => p ? '' : ['carter', 'scullion'][i]).join(' '));
+  const cued = [];
+  const folk = new Populace({ people, npcs: people.map((p) => fake(p.id)), nav, beats: byActivity, cue: (name, ev) => cued.push({ name, ...ev }) });
+  const body = (id) => folk.bodies.find((b) => b.person.id === id);
+  /** One frame with `who`'s loop at `phase` (null for none), the player at `player`; what it cued. */
+  const frame = (who, phase, player) => { body(who).npc.phase = phase; cued.length = 0; folk.update(0, player); return [...cued]; };
+  const run = (who, phases, player) => phases.map((ph) => frame(who, ph, player));
+  const near = (a, b) => Math.abs(a - b) < 1e-9;
+
+  folk.setWatch('terce', { walk: false });
+  const carter = body('carter');
+  carter.index = carter.stops.findIndex((s) => s.activity === 'hammer');
+  check(carter.index >= 0, 'the carter has a hammer stop at Terce', `stops: ${carter.stops.map((s) => s.activity).join(', ')}`);
+  folk._arrive(carter);
+  const pos = carter.npc.group.position;
+  const hammer = byActivity.hammer;
+  const eye = (metres) => {
+    // The player's eye `metres` from the sound's point, in three dimensions, along +z.
+    const dy = pos.y + EYE_HEIGHT - (pos.y + hammer.heightMetres);
+    return { x: pos.x, y: pos.y + EYE_HEIGHT, z: pos.z + Math.sqrt(metres * metres - dy * dy) };
+  };
+  const by = eye(2);
+
+  // 0.13, just past a beat: a body seen for the first time is not a crossing,
+  // whatever its loop has done before anybody looked.
+  const first = frame('carter', 0.13, by);
+  check(first.length === 0, 'the first frame with a phase, 0.13, cues nothing', `the first frame with a phase cued ${first.length}, not 0`);
+  frame('carter', null, by);
+  frame('carter', 0.10, by);
+  const one = frame('carter', 0.15, by);
+  const hit = one[0];
+  check(one.length === 1 && hit.name === 'hammer-strike' && hit.beat === 0.125 && hit.gain === 1 && hit.id === 'carter'
+    && near(hit.at.x, pos.x) && near(hit.at.y, pos.y + hammer.heightMetres) && near(hit.at.z, pos.z),
+    '0.10 then 0.15 cues one hammer-strike, beat 0.125, gain 1, from the carter plus 0.8 m', JSON.stringify(one));
+  const none = frame('carter', 0.30, by);
+  check(none.length === 0, '0.15 then 0.30 crosses no beat and cues nothing', `cued ${none.length}`);
+  frame('carter', 0.60, by);
+  const wrap = frame('carter', 0.13, by);
+  check(wrap.length === 1 && wrap[0].beat === 0.125, '0.60 then 0.13, a wrap across both beats, cues one, the 0.125',
+    `0.60 then 0.13 cued ${wrap.length}${wrap.length ? ` (${wrap.map((c) => c.beat).join(', ')})` : ''}`);
+  const after = run('carter', [null, 0.10, 0.15], by);
+  check(after[1].length === 0 && after[2].length === 1, 'a null phase, then 0.10, then 0.15: nothing on the frame after the null, one on the next',
+    `cued ${after.map((c) => c.length).join(', ')}`);
+
+  const quiet = (what, set, unset) => {
+    frame('carter', null, by);
+    set();
+    const got = run('carter', [0.10, 0.15], by).flat();
+    unset();
+    frame('carter', null, by); // `update` re-arrives a body it saw walking
+    check(got.length === 0, `${what}: nothing across a crossing`, `cued ${got.length}`);
+  };
+  quiet('walking', () => { carter.npc.walking = true; }, () => { carter.npc.walking = false; });
+  quiet('following', () => { carter.following = true; }, () => { carter.following = false; });
+  quiet('hidden', () => { carter.npc.group.visible = false; }, () => { carter.npc.group.visible = true; });
+  const restored = run('carter', [null, 0.10, 0.15], by);
+  check(restored[2].length === 1, 'and back at the job, the next crossing cues again', `cued ${restored.map((c) => c.length).join(', ')}`);
+
+  const far = run('carter', [null, 0.10, 0.15], eye(hammer.hearMetres + 1))[2];
+  check(far.length === 0, `the player ${hammer.hearMetres + 1} m from the carter: nothing`, `cued ${far.length}`);
+  const inside = run('carter', [null, 0.10, 0.15], eye(hammer.hearMetres - 1))[2];
+  check(inside.length === 1, `the player ${hammer.hearMetres - 1} m from the carter: one`, `cued ${inside.length}`);
+  frame('carter', null, by);
+
+  // The scullion at Prime, in the kitchen, and the clerk's office through its wall.
+  folk.setWatch('prime', { walk: false });
+  const scullion = body('scullion');
+  const stop = scullion.stops[scullion.index];
+  const sweep = byActivity.sweep;
+  check(stop?.activity === 'sweep' && stop.room === 'kitchen', 'the scullion sweeps the kitchen at Prime', `${stop?.activity} in ${stop?.room}`);
+  /** The nearest walk-grid point to her stop, out to 4 m on a 0.125 m lattice, whose room is `room`. */
+  const nearestIn = (room, min = 0) => {
+    let best = null;
+    for (let i = -32; i <= 32; i++) for (let j = -32; j <= 32; j++) {
+      const x = stop.x + i * 0.125, z = stop.z + j * 0.125, d = Math.hypot(i, j) * 0.125;
+      if (d < min || (best && d >= best.d)) continue;
+      const cell = nav.walk.cellAt(x, z, stop.level);
+      if (!cell || nav.roomAt(x, z, cell.h).id !== room) continue;
+      best = { x, y: cell.h + EYE_HEIGHT, z, d };
+    }
+    return best;
+  };
+  const cook = nearestIn('kitchen', 1.5);
+  check(!!cook && cook.d < 1.7, 'a point 1.5 m from her stop is in the kitchen', cook ? `${cook.d.toFixed(2)} m` : 'none within 4 m');
+  if (cook) {
+    const rising = run('scullion', [null, 0.95, 0.99], cook)[2];
+    check(rising.length === 1 && rising[0].name === 'sweep-stroke' && rising[0].gain === 1 && rising[0].id === 'scullion',
+      'the player in the kitchen: 0.95 to 0.99 cues one sweep-stroke at gain 1', JSON.stringify(rising));
+    const falling = run('scullion', [null, 0.45, 0.49], cook)[2];
+    check(falling.length === 1 && falling[0].name === 'sweep-stroke' && falling[0].gain === 0.5,
+      'and 0.45 to 0.49 cues one at gain 0.5, the falling stroke', JSON.stringify(falling));
+  }
+  const office = nearestIn('clerk-office');
+  const officeMetres = office ? Math.hypot(office.x - stop.x, office.y - (stop.h + sweep.heightMetres), office.z - stop.z) : Infinity;
+  check(!!office && officeMetres < sweep.hearMetres, `the nearest point of clerk-office to her stop is inside the sweep's ${sweep.hearMetres} m`, office ? `${officeMetres.toFixed(2)} m` : 'no point of it within 4 m');
+  if (office) {
+    const through = run('scullion', [null, 0.95, 0.99], office)[2];
+    check(through.length === 0, `a player in clerk-office, ${officeMetres.toFixed(2)} m from her stop, does not hear the sweep through the kitchen wall`,
+      `a player in clerk-office ${officeMetres.toFixed(2)} m off hears the sweep through the kitchen wall: cued ${through.length}`);
+  }
+}
+
 /* ---------------- the HUD's room line agrees with the schedule (#515) ---
  * `nav.roomAt` answers "which room is this point in" for the HUD, over every
  * room, with the overlaps settled by level and then disc over box. The

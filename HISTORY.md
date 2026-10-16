@@ -15710,3 +15710,117 @@ is one `plan-vs-scene.mjs` line: on two flights at two mid-tread points, a ray
 down against the piece's one visible drawing lands 0 to 0.05 m under the disc,
 with the ramp-height disc failing the same samples as its control. No
 assertion moves between suites, no ceiling moves, no save version moves.
+
+---
+
+## Sound, increment 4: the hammer and the sweep, decided before anything is built (2026-10-16)
+
+**A spec, not a build.** Rank 7's last open item, written as `architect`:
+`SPECS.md`'s "Sound: a soundscape" gains "Increment 4", every open call
+recommended, and the next increment is a `builder` job. No code, no data, no
+asset. Decisions #1040 to #1044, from the band #1040 to #1049 the lead
+assigned this session; #1045 to #1049 are unused. The gate was rank 6's
+clips, and #800 met it: the scullion sweeps the kitchen at Prime and the
+carter hammers at his cart in the outer ward at Terce, on both days.
+
+**Measured before anything was decided.** Both clip tables, `tools/bodies/
+clips.json` and the folk pack of `tools/blender/packs.json`, give a move's
+angle at loop fraction t as `rest + amp * sin(2 pi (cycles * t + phase))`,
+and their `Hammer` and `Sweep` drivers are the same rows. `Hammer`'s
+`UpperArm.R` about x, rest -80, amp 60, `cycles: 2`, is greatest, -20
+degrees, at t 0.125 and 0.625, with the forearm and wrist straight on the
+same sine: the bottom of the swing. That is 72 blows a minute on Farmer's
+1.67 s loop and 60 on the folk rig's 2.0 s. `Sweep`'s `UpperArm.R` about z,
+amp 28, `cycles: 1`, moves fastest at t 0 and 0.5. Off the plan in Node:
+the carter's hammer stop is 4.2 m from the great hall's footprint, and both
+of the scullion's sweep stops are 1.2 m from the clerk's office through the
+kitchen wall. `main.js` clamps `dt` to 50 ms and updates every body's mixer
+before `populace.update`.
+
+**#1040. A beat is a fraction of the clip's loop, written in
+`data/sounds.json`, and `test/layout.mjs` holds it to the clip tables.**
+`events.byActivity` maps an activity to its beats: `at`, a fraction of the
+loop; `mark`, what the driver is doing there (`max`, `min`, `rising` or
+`falling` of its one moving angle); the cue; and a per-beat `gain`. Two
+places it could have gone and did not: the clip rows, because they are held
+byte for byte to the `.glb`s and a sound edit there would be a re-render;
+and a time in seconds, because the same `Hammer` is 1.67 s on Farmer and
+2.0 s on the folk rig. Check 14 reads every row of the clip's name in both
+tables, because #1018 moves the household onto the folk rig and a beat must
+not depend on which body does the job, and fails a beat more than 0.04 of a
+loop from its mark or a mark struck on fewer beats than the row has cycles.
+The rail reads the tables and not the files, which is sound only because
+`test/assets.mjs` checks 7 and 8 already hold the files to the tables.
+
+**#1041. The populace fires the beat when the live mixer crosses it, and the
+mixer is the only clock.** `NPC.loopPhase()` is one getter: the current
+activity action's `time` over its clip's duration, or null. `Populace._beat`
+remembers last frame's phase per body and cues the last beat crossed since,
+the wrap included, at most one per body per frame and none on the first
+frame a phase is seen; nothing while walking, following or hidden. This is
+the hound's split (#698) turned round, and on purpose: the bark's clock is
+the audio's because nothing else has one, while a blow has to land when the
+eye sees the arm come down, and only the mixer knows that. A clock of the
+populace's own would drift at every cross-fade and every `reset()`. Firing
+on the crossing rather than scheduling on the audio clock costs at most one
+frame, 16.7 ms at 60 Hz, which the ear forgives in a sound that follows its
+picture. **Two lanes**: rank 7 holds E, and the getter is in `src/npc.js`,
+which is lane C's file. It is one read-only method that moves no body, so
+the increment takes it rather than routing round it, and does not run
+beside 2c, 2d or a rank 6 increment that writes `src/npc.js`. `ROADMAP.md`
+is the lead's to annotate.
+
+**#1042. Positional, at the body, through the existing event panner; the
+hammer carries 20 m, the sweep 8 m and only in its own room.** A beat plays
+from the body's feet plus `heightMetres` (0.8 m, the cart bed; 0.1 m, the
+bristles), HRTF, `events.spatial` unchanged. `hearMetres` and `sameRoom` are
+on the activity's entry and the populace tests them on a crossing only, so
+`roomAt` is asked about once a second and never per frame. The sweep's room
+test is there because distance alone puts a broom in the clerk's office 1.2 m
+away through stone; the hammer has none because it is outdoors and a mallet
+carries, 6 % of itself at 20 m on the panner's inverse model. Each sound
+gains `gainSpread`, so 72 blows a minute are not one blow 72 times. Both
+sounds are parts in the existing shape (#696): the mallet is a 25 ms
+wood-contact click, an 880 Hz tock, a 260 Hz board, a thud and a 110 Hz
+weight; the broom is two bands of held noise, the bristles at 4200 Hz and the
+grit at 1400 Hz. The sweep's two strokes are both heard, the falling one at
+half gain, with their beats 0.03 of a loop ahead of the marks so the
+bristles' 80 ms attack peaks on the fastest point.
+
+**#1043. The event log carries a `seq`, and the two browser beats that read
+it filter on it.** `events()` is the last 64 entries, and the door and bark
+beats in `test/plan-vs-scene.mjs` take `events().length` before they act and
+`slice` from it after. Once the log is full that length stays 64 and the
+slice is empty, so a full log reads as "cued: nothing". No beat ever filled
+it, because doors and barks are rare. At 72 blows a minute the log fills in
+under a minute with the camera beside the carter. Nothing either beat
+asserts changes; the break is the log filled by hand before the door beat.
+
+**#1044. The split across the suites** (#529). `test/layout.mjs` check 14 has
+the data: cues to sounds both ways (unchanged), the table's shape, the beats
+against both clip tables, and every activity with beats being somebody's.
+`test/mystery.mjs` 8e has the crossing, on plain-object bodies with a
+scripted `loopPhase()`, the way 8c drives the hound: once per crossing, the
+wrap, the first frame, the one-per-frame rule, range and the room test. The
+browser has only what Node cannot have: that `main.js` hands the populace
+the table, and that `loopPhase()` reads a loaded body's mixer. It is driven
+synchronously inside one `page.evaluate`, with the action's `time` set just
+before each beat and advanced across it by `npc.update`, so the page's own
+loop cannot interleave and nothing waits on a frame (#53, #972). How any of
+it sounds is Devon's, and the listening list is in the spec.
+
+**What was not done.** No code, no data, no asset, and no `npm test` run,
+because nothing that runs changed.
+
+**#1045. Built, and one call the spec did not make: a body off its job forgets
+its last phase.** `_beat` runs only for a body that is visible, settled, not
+following and not walking, and the spec forgets the last phase only on a null
+or a changed activity. The scullion sweeps at both her Prime stops, so she
+walks from one sweep to the next with a phase from before the walk, and
+`_play`'s `reset()` restarts the loop at 0: the first frame back would read as
+a wrap and cue a stroke nobody made. So
+`update` sets `beatPhase` to null on every frame it skips `_beat`, and the
+first frame back is a first frame. 8e's first-frame line reads 0.13, just
+past a beat, and not 0.10: with the guard removed as a last phase of 0, a
+first frame at 0.10 crosses nothing and stays green (#34). Nothing else moved
+from the spec.

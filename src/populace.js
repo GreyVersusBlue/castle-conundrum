@@ -62,6 +62,13 @@ import { EYE_HEIGHT } from './castle-plan.js';
  * test/mystery.mjs reads the animation list out of each .glb on disk and
  * fails if any clip named here is missing from any body, because a typo in
  * this table is the same silent freeze one level up.
+ *
+ * A JOB'S SOUND IS KEYED BY THESE NAMES TOO (#1040, #1041).
+ * data/sounds.json's `events.byActivity` gives `hammer` and `sweep` their
+ * beats, each a fraction of the clip's loop, and test/layout.mjs check 14
+ * holds every beat to the clip named here, in both clip tables. Nothing in
+ * this file keeps time for them: `Populace._beat` reads the live mixer
+ * through `NPC.loopPhase()` and cues a beat when the loop crosses it.
  */
 export const ACTIVITY_CLIPS = {
   // Idle: hands empty, weight on both feet. The default body at rest.
@@ -509,15 +516,24 @@ export function validatePopulace(populace, { nav = null, mystery = {}, cast = []
  * household; ten bodies given `Math.random()` read differently on every load
  * and cannot be asserted about at all. The offset is the body's own index, so
  * the castle is the same castle twice and nobody moves in lockstep.
+ *
+ * A JOB IS HEARD ON ITS OWN BEAT, AND THE MIXER IS THE CLOCK (#1041). `beats`
+ * is data/sounds.json's `events.byActivity`: a hammer's two blows and a
+ * broom's two strokes, as fractions of the clip's loop. `_beat` asks each
+ * working body where in its loop it is and cues a beat the loop crossed since
+ * last frame. It keeps the last phase and nothing else, so a cross-fade or a
+ * `reset()` cannot put it out of step with the arm the player sees.
  */
 export class Populace {
-  constructor({ people, npcs, nav, dwell = DWELL, cue = null, pairs = [], talk = null, hush = null }) {
+  constructor({ people, npcs, nav, dwell = DWELL, cue = null, beats = {}, pairs = [], talk = null, hush = null }) {
     this.nav = nav;
     this.dwell = dwell;
     // Somebody to tell that a follow body is near the player (#696):
     // `cue('hound-near', { id, at, metres })`, every frame it holds. The
     // audio's cadence turns the frames into barks; nothing here keeps time.
     this.cue = cue;
+    // The beats of a job (#1041): data/sounds.json's events.byActivity.
+    this.beats = beats && typeof beats === 'object' ? beats : {};
     /* AND SOMEBODY TO HAND A CONVERSATION TO (#732), the same way. `pairs` is
      * data/populace.json's `talk` list. `talk(pair, names)` is told a pair is
      * due where the player stands, with `room` set on it, and `hush(id)` that
@@ -580,10 +596,14 @@ export class Populace {
    */
   update(dt, player = null) {
     for (const body of this.bodies) {
-      if (!body.stops.length || !body.npc.group.visible) continue;
-      if (body.person.follow && player && this._follow(body, player, dt)) continue;
-      if (body.npc.walking) { body.settled = false; continue; }
-      if (!body.settled) { this._arrive(body); continue; }
+      // A body that is not standing at its job forgets its last phase, so a
+      // beat is never counted across a walk, a follow or a hidden watch.
+      if (!body.stops.length || !body.npc.group.visible) { body.beatPhase = null; continue; }
+      if (body.person.follow && player && this._follow(body, player, dt)) { body.beatPhase = null; continue; }
+      if (body.npc.walking) { body.settled = false; body.beatPhase = null; continue; }
+      if (!body.settled) { this._arrive(body); body.beatPhase = null; continue; }
+      if (body.following) body.beatPhase = null;
+      else this._beat(body, player);
       if (body.stops.length < 2) continue;
       body.timer -= dt;
       if (body.timer > 0) continue;
@@ -721,6 +741,49 @@ export class Populace {
     if (route && route.length > 1) { body.npc.walkTo(route); body.settled = false; }
     else this._arrive(body);
     return false;
+  }
+
+  /**
+   * A job's sound on its beat (#1041, #1042). `npc.loopPhase()` is where the
+   * live action is in its loop; the beats crossed since last frame are those
+   * with `at` in (last, this], or across the wrap. At most one cue per body
+   * per frame, the last beat crossed, and none on the first frame a phase is
+   * seen. The cue is heard only within `hearMetres` of the sound's point, in
+   * three dimensions, and, for a `sameRoom` job, only with the player's feet
+   * in the stop's own room on its own level: `roomAt` is asked on a crossing
+   * only, about once a second, never per frame.
+   */
+  _beat(body, player) {
+    if (!player) return;
+    const now = body.npc.loopPhase?.() ?? null;
+    const last = body.beatPhase;
+    const entry = now ? this.beats[now.activity] : null;
+    if (!now || !entry || !last || last.activity !== now.activity) {
+      body.beatPhase = now && entry ? now : null;
+      return;
+    }
+    body.beatPhase = now;
+    // How far round the loop it came since last frame, and how far round
+    // each beat is from last frame's phase: a beat is crossed when it is in
+    // (0, span], and the last one crossed is the furthest. When this < last
+    // the loop wrapped, and the + 1 is what puts [0, this] after (last, 1).
+    const span = now.phase - last.phase + (now.phase < last.phase ? 1 : 0);
+    let hit = null, far = 0;
+    for (const beat of entry.beats ?? []) {
+      const d = beat.at - last.phase + (beat.at <= last.phase ? 1 : 0);
+      if (d > 0 && d <= span && d > far) { hit = beat; far = d; }
+    }
+    if (!hit || !this.cue) return;
+    const me = body.npc.group.position;
+    const at = { x: me.x, y: me.y + (entry.heightMetres ?? 0), z: me.z };
+    const metres = Math.hypot(player.x - at.x, player.y - at.y, player.z - at.z);
+    if (!(metres <= entry.hearMetres)) return;
+    if (entry.sameRoom) {
+      const stop = body.stops[body.index];
+      const there = this.nav.roomAt(player.x, player.z, player.y - EYE_HEIGHT);
+      if (there.id !== stop.room || there.level !== stop.level) return;
+    }
+    this.cue(hit.cue, { id: body.person.id, at, metres, gain: hit.gain ?? 1, beat: hit.at });
   }
 
   /** Standing at the stop it is on: on the floor, facing, and doing the job. */

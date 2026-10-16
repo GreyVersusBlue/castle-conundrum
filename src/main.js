@@ -156,6 +156,7 @@ async function init() {
   // called once the loop is running.
   const populace = new Populace({
     people: populaceData.people, npcs: folk, nav, cue: (name, ev) => audio.cue(name, ev),
+    beats: soundData.events?.byActivity ?? {}, // a job's sound on its beat, off the live mixer (#1041)
     pairs: populaceData.talk, talk: (pair, names) => quest.overhear(pair, names), hush: (id) => quest.stopTalk(id),
   });
   populace.setWatch(engine.watch, { walk: false });

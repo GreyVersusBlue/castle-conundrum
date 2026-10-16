@@ -332,6 +332,22 @@ export class NPC {
   get walking() { return this._waypoints.length > 0 && !this._loop; }
 
   /**
+   * Where in its job's loop this body is (#1041): `{ activity, phase }`, phase
+   * the live action's own `time` over its clip's duration, in [0, 1), while an
+   * activity's action is current and the body is not walking; otherwise null.
+   * Read-only, and it keeps no clock: the mixer is the clock, so a beat in
+   * src/populace.js lands when the eye sees the arm come down.
+   */
+  loopPhase() {
+    const key = this._currentKey;
+    if (!this._current || !key?.startsWith('do:') || this.walking) return null;
+    const d = this._current.getClip().duration;
+    if (!(d > 0)) return null;
+    const phase = (this._current.time / d) % 1;
+    return { activity: key.slice(3), phase: phase < 0 ? phase + 1 : phase };
+  }
+
+  /**
    * STAND STILL AND DO A JOB (#616). `activity` is one of the strings
    * src/populace.js's ACTIVITY_CLIPS names, and the clip it resolves to is
    * whatever the loaded body ships under that name. A body whose file has no
@@ -376,6 +392,7 @@ export class NPC {
     else next.setEffectiveWeight(1);
     next.play();
     this._current = next;
+    this._currentKey = key;
   }
 
   /** Called every frame from main.js's render loop. */

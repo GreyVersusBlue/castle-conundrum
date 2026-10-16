@@ -206,7 +206,7 @@
     "bedsComment": "Seven places. `gain` is the whole bed against a footstep's 0.10 to 0.20: every bed sits under the feet, and the quiet ones (a timber chamber, the chapel) are a fifth of a step, because a room tone is the thing you notice going away and not the thing you hear. `layers` are filtered noise; `swellHz` and `swellDepth` move a layer's gain between (1 - depth) and 1 of itself on a sine, and no two layers in a bed share a rate, so the sum never repeats on a period anyone will sit through. The ward is wind with the top off and the ground under it. THE GARDEN HAS NO BED, and had one for an hour: it is behind the east gate, which never opens (#469), so no walkable cell in the castle is in it and check 13 called its bed dead. The day that gate opens, the same check fails on a garden with nothing to say, which is the right day to write it. The wall walk is 8 m up and is the loud one: more wind, higher, and a narrow band at 1500 Hz that is the merlons whistling when it gusts. The kitchen (and the bakehouse, which is an oven) is a fire: a low roar that flutters three times a second, and `pops`, random filtered clicks at `perSecond`, which are the crackle. The hall is a big stone box: almost nothing, and low. The chapel is the hall quieter, over a drone a fifth apart at half the bell's hum (82.5 Hz under the bell's 165), so the bell is in tune with the room it hangs over. A chamber is timber, cloth and a shut door: the quietest thing in the castle. A tower is a stone drum with arrow loops: the low of the hall and one narrow whistle at 880 Hz that is mostly not there. EVERY NUMBER HERE IS A GUESS MADE WITHOUT SPEAKERS (#53). Whether a kitchen sounds like a kitchen is a question for a machine with ears, and this file is where the answer gets typed."
   },
   "events": {
-    "comment": "The sounds a thing happening makes (#696): a door, and the hound. Synthesised like everything above (#519, #548): a sound here is a list of `parts`, each one noise burst or one tone at an offset from the cue, and src/audio.js plays the list at the point the cue names through a panner of its own. `byCue` is the map from what the engine does to what it sounds like, and `sounds` is the sounds; that is `steps`' byMaterial and classes, and `ambient`'s byRoom and beds, a third time. The cues are src/audio.js's CUES, and test/layout.mjs holds this block to that list both ways: a cue with no entry here and an entry no cue fires are both red. A cue that is a state and not a moment (`hound-near`, fired every frame the hound is inside its follow radius) carries a `cadence`, and the cadence is what turns the frames into barks. NOBODY HAS HEARD ANY OF THIS (#53).",
+    "comment": "The sounds a thing happening makes (#696): a door, the hound, and two jobs (#1040 to #1044), the carter's mallet and the scullion's broom. Synthesised like everything above (#519, #548): a sound here is a list of `parts`, each one noise burst or one tone at an offset from the cue, and src/audio.js plays the list at the point the cue names through a panner of its own. `byCue` is the map from what the engine does to what it sounds like, and `sounds` is the sounds; that is `steps`' byMaterial and classes, and `ambient`'s byRoom and beds, a third time. The cues are src/audio.js's CUES, and test/layout.mjs holds this block to that list both ways: a cue with no entry here and an entry no cue fires are both red. A cue that is a state and not a moment (`hound-near`, fired every frame the hound is inside its follow radius) carries a `cadence`, and the cadence is what turns the frames into barks. NOBODY HAS HEARD ANY OF THIS (#53).",
 
     "spatial": {
       "panning": "HRTF",
@@ -219,7 +219,9 @@
     "byCue": {
       "door-open": "latch-and-swing",
       "door-shut": "latch-and-slam",
-      "hound-near": "bark"
+      "hound-near": "bark",
+      "hammer-strike": "mallet-on-cart",
+      "sweep-stroke": "broom-stroke"
     },
 
     "sounds": {
@@ -257,8 +259,49 @@
           { "type": "tone", "at": 0.0, "wave": "square", "hz": 280, "toHz": 190, "filter": "lowpass", "filterHz": 700, "attack": 0.012, "decay": 0.09, "gain": 0.16, "name": "the chest under it" },
           { "type": "noise", "at": 0.0, "filter": "bandpass", "hz": 1600, "q": 0.9, "decay": 0.07, "gain": 0.22, "name": "the breath" }
         ]
+      },
+      "mallet-on-cart": {
+        "gain": 0.6,
+        "gainSpread": 0.15,
+        "parts": [
+          { "type": "noise", "at": 0.0, "filter": "bandpass", "hz": 2200, "q": 2.5, "decay": 0.025, "gain": 0.5, "name": "the contact: wood on wood" },
+          { "type": "tone", "at": 0.0, "wave": "triangle", "hz": 880, "toHz": 820, "decay": 0.045, "gain": 0.22, "name": "the mallet head's tock" },
+          { "type": "tone", "at": 0.0, "wave": "sine", "hz": 260, "toHz": 240, "decay": 0.09, "gain": 0.4, "name": "the cart's board ringing" },
+          { "type": "noise", "at": 0.0, "filter": "lowpass", "hz": 400, "q": 1.0, "decay": 0.08, "gain": 0.3, "name": "the board's thud" },
+          { "type": "tone", "at": 0.0, "wave": "sine", "hz": 110, "decay": 0.12, "gain": 0.3, "name": "the cart's weight under it" }
+        ]
+      },
+      "broom-stroke": {
+        "gain": 0.35,
+        "gainSpread": 0.2,
+        "parts": [
+          { "type": "noise", "at": 0.0, "filter": "bandpass", "hz": 4200, "q": 0.7, "attack": 0.08, "hold": 0.12, "release": 0.22, "gain": 0.45, "name": "the bristles" },
+          { "type": "noise", "at": 0.02, "filter": "bandpass", "hz": 1400, "q": 0.9, "attack": 0.06, "hold": 0.08, "release": 0.18, "gain": 0.18, "name": "the grit under them" }
+        ]
       }
     },
-    "soundsComment": "A `part` is `noise` (the shared noise buffer through a `filter` at `hz` and `q`) or `tone` (a `wave` at `hz`, sliding to `toHz` if given, through an optional `filter` at `filterHz`/`filterQ`). Its envelope is either a strike, `decay` seconds to silence, or a held one, `attack` up, `hold` at the top and `release` down. `at` is the offset from the cue in seconds. A sound's own `gain` scales all its parts, and `repeat` plays the list again `times` in all, `gapSeconds` apart give or take `spread`. The hinge sawtooth and the bark's formant are the two numbers most likely to be wrong in this file, in that order."
+    "soundsComment": "A `part` is `noise` (the shared noise buffer through a `filter` at `hz` and `q`) or `tone` (a `wave` at `hz`, sliding to `toHz` if given, through an optional `filter` at `filterHz`/`filterQ`). Its envelope is either a strike, `decay` seconds to silence, or a held one, `attack` up, `hold` at the top and `release` down. `at` is the offset from the cue in seconds. A sound's own `gain` scales all its parts, varied per play by `gainSpread` of itself where given (0.15 is 15 %, the way a footstep's varies), so a mallet 72 times a minute is not one blow 72 times (#1042), and `repeat` plays the list again `times` in all, `gapSeconds` apart give or take `spread`. The hinge sawtooth and the bark's formant are the two numbers most likely to be wrong in this file, in that order. The mallet's 260 Hz board tone is the one most likely wrong after them.",
+
+    "byActivity": {
+      "hammer": {
+        "heightMetres": 0.8,
+        "hearMetres": 20,
+        "sameRoom": false,
+        "beats": [
+          { "at": 0.125, "mark": "max", "cue": "hammer-strike" },
+          { "at": 0.625, "mark": "max", "cue": "hammer-strike" }
+        ]
+      },
+      "sweep": {
+        "heightMetres": 0.1,
+        "hearMetres": 8,
+        "sameRoom": true,
+        "beats": [
+          { "at": 0.47, "mark": "falling", "cue": "sweep-stroke", "gain": 0.5 },
+          { "at": 0.97, "mark": "rising", "cue": "sweep-stroke" }
+        ]
+      }
+    },
+    "byActivityComment": "A job's beats (#1040, #1041). Keyed by the activity names of ACTIVITY_CLIPS in src/populace.js, so the clip is that table's and is not typed twice here. `at` is a fraction of the clip's loop, not a time, because the same Hammer is 1.67 s on Farmer and 2.0 s on the folk rig. `mark` is what the clip's driver joint is doing there, on its one moving angle `rest + amp * sin(2 pi (cycles * t + phase))`: `max` and `min` its two ends, `rising` and `falling` the two points it moves fastest. test/layout.mjs check 14 holds every beat within 0.04 of a loop of its mark, in tools/bodies/clips.json and in tools/blender/packs.json's folk pack both, and a mark struck on as many beats as the clip has cycles. The hammer's beats sit on the mark, the bottom of the swing, because a blow is an instant; the sweep's sit 0.03 of a loop ahead of theirs so the bristles' 80 ms attack peaks on the fastest point of the stroke. `cue` is one of src/audio.js's CUES and `gain` (default 1) scales the sound for that beat: the falling stroke is half the rising one, and which is the loud one is an ear's call. The sound plays from the body's feet plus `heightMetres` (the cart bed, the bristles), only with the player's eye within `hearMetres` of that point, and for a `sameRoom` job only with the player in the stop's own room: a mallet outdoors carries 20 m, a broom is not heard through the kitchen wall in the clerk's office 1.2 m away (#1042). src/populace.js `_beat` reads the live mixer through NPC.loopPhase() and cues the last beat crossed since the frame before; nothing keeps time but the mixer."
   }
 }
