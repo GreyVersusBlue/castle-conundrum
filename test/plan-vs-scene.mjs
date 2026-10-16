@@ -532,9 +532,47 @@ try {
         const on = window.__player.settle();
         rig.settle();
         feet.push({
-          id: a.id, level: a.level, surface: on ? on.surface : null, floor: on ? on.h : null,
+          id: a.id, level: a.level, surface: on ? on.surface : null, floor: on ? on.h : null, ramp: !!(on && on.ramp),
           cam: p(cam.position), shadow: p(rig.shadow.position),
         });
+      }
+
+      /* 1b. The shadow on a flight (#1031, #1032). A flight is a ramp to the
+       * feet and 22 treads on screen, and a disc at the feet is in the stone on
+       * every tread. layout.mjs check 8c holds that treadTop answers the drawn
+       * tread; what only the page can say is that the rig calls it with the live
+       * plan and feet, and that the drawing at that spot is the one 8c read.
+       * The drawing is the piece's skin nodes and its built object, kept only
+       * where it and every ancestor is visible: a Raycaster does not skip a
+       * hidden object, and the hidden kit's treads stand up to 0.49 m over the
+       * ramp. #1014's two flights, mid-tread at 30% and 61%. */
+      const castle = window.__castle;
+      const shown = (o) => { for (let q = o; q; q = q.parent) if (!q.visible) return false; return true; };
+      const flights = [];
+      for (const id of ['nw-tower-stair-1', 'kitchen-tower-stair-2']) {
+        const r = castle.plan.ramps.find((q) => q.id === id);
+        if (!r) { flights.push({ id, missing: true }); continue; }
+        const [ax, az, ay] = r.slope.from, [bx, bz, by] = r.slope.to;
+        const len = Math.hypot(bx - ax, bz - az);
+        const ux = (bx - ax) / len, uz = (bz - az) / len, px = -uz, pz = ux;
+        const off = ((r.box.min.x + r.box.max.x) / 2 - ax) * px + ((r.box.min.z + r.box.max.z) / 2 - az) * pz;
+        for (const k of [6.5, 13.5]) {
+          const t = k / (r.steps || NaN);
+          const x = ax + ux * len * t + px * off, z = az + uz * len * t + pz * off;
+          cam.position.set(x, ay + (by - ay) * t + 0.1 + eye, z);
+          window.__player.settle();
+          rig.settle();
+          const drawings = [...(castle.skins.get(id) || []), castle.objects.get(id)].filter(Boolean).filter(shown);
+          let hitY = null;
+          if (drawings.length === 1) {
+            drawings[0].updateMatrixWorld(true);
+            const s = rig.shadow.position;
+            const ray = new THREE.Raycaster(new THREE.Vector3(s.x, s.y + 0.5, s.z), new THREE.Vector3(0, -1, 0), 0, 2);
+            const hits = ray.intersectObject(drawings[0], true);
+            hitY = hits.length ? hits[0].point.y : null;
+          }
+          flights.push({ id, t, visible: drawings.length, names: drawings.map((o) => o.name), shadowY: rig.shadow.position.y, feet: window.__player.feet, hitY });
+        }
       }
 
       // 2. The hand, with the door behind the player and then in front of it.
@@ -615,15 +653,20 @@ try {
       document.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyE' }));
       await frame();
       const riddleBack = !document.getElementById('riddle-overlay').classList.contains('hidden');
-      return { tagged, rooted, flagged, feet, away, at, rays, riddleBack };
+      return { tagged, rooted, flagged, feet, flights, away, at, rays, riddleBack };
     }, { anchors, eye: EYE_HEIGHT, pose: doorPose });
 
     check(feel.rooted && feel.tagged === 0 && feel.flagged,
       'the rig is one flagged group in the scene and neither of its objects carries a planId',
       `${feel.tagged} tagged, ${feel.flagged ? 'flagged' : 'NOT flagged as the player rig'}`);
 
+    /* An anchor that stands on a flight is not held here: there the shadow lies
+     * on the drawn tread, up to one riser over the feet on purpose (#1031), and
+     * the flight line below holds it against the drawing. Ten of the anchors
+     * are on a flight, at the reachable cell nearest a tower room's centre. */
+    const offFlight = feel.feet.filter((f) => !f.ramp);
     let worstFeet = -1, worstFeetRoom = null, onFeet = 0;
-    for (const f of feel.feet) {
+    for (const f of offFlight) {
       const flat = Math.max(Math.abs(f.shadow.x - f.cam.x), Math.abs(f.shadow.z - f.cam.z));
       const lift = f.shadow.y - f.floor;
       if (flat > worstFeet) { worstFeet = flat; worstFeetRoom = f.id; }
@@ -631,9 +674,9 @@ try {
       else if (!(lift > 0 && lift <= 0.05)) fail(`in ${f.id} the shadow sits ${lift.toFixed(3)} m over a floor at ${f.floor.toFixed(3)} — it is buried in it, or hovering`);
       else onFeet++;
     }
-    const surfaces = new Set(feel.feet.map((f) => f.surface).filter(Boolean));
-    check(onFeet === feel.feet.length && feel.feet.length > 0,
-      `the shadow lies on the floor under the player's feet in all ${feel.feet.length} rooms, over ${surfaces.size} kinds of surface`,
+    const surfaces = new Set(offFlight.map((f) => f.surface).filter(Boolean));
+    check(onFeet === offFlight.length && offFlight.length > 0,
+      `the shadow lies on the floor under the player's feet in all ${offFlight.length} rooms whose anchor is off a flight, over ${surfaces.size} kinds of surface (${feel.feet.length - offFlight.length} stand on one)`,
       `worst ${Math.max(0, worstFeet).toFixed(4)} m in ${worstFeetRoom}`);
     /* A SHADOW NAILED TO ONE SPOT WOULD PASS EVERY LINE ABOVE IF THE PLAYER
      * NEVER MOVED, AND THE LINES ABOVE MOVE THE PLAYER FORTY TIMES WITHOUT EVER
@@ -646,6 +689,25 @@ try {
     // right in both of them for the wrong reason.
     const stoodAt = new Set(feel.feet.map((f) => `${f.cam.x.toFixed(2)},${f.floor.toFixed(2)},${f.cam.z.toFixed(2)}`));
     check(spots.size === stoodAt.size, `and it is somewhere different in each of the ${stoodAt.size} places that is`, `${spots.size} places`);
+
+    // On a flight: within 0.05 m over the one visible drawing, and the ramp-height
+    // disc (feet + 0.02) more than 0.05 m under the same spot, so these are
+    // samples where today's disc would be in the stone (#1031).
+    const stairBad = [];
+    let stairWorst = 0;
+    for (const f of feel.flights) {
+      const at = f.missing ? f.id : `${f.id} at t ${f.t.toFixed(2)}`;
+      if (f.missing) { stairBad.push(`${f.id} is no flight in the page's plan`); continue; }
+      if (f.visible !== 1) { stairBad.push(`on ${at} ${f.visible} drawings visible${f.names.length ? ` (${f.names.join(', ')})` : ''}, not 1`); continue; }
+      if (f.hitY == null) { stairBad.push(`on ${at} a ray down from over the shadow hits nothing of ${f.names[0]}`); continue; }
+      const over = f.shadowY - f.hitY, ramp = f.shadowY - (f.feet + 0.02);
+      stairWorst = Math.max(stairWorst, over);
+      if (!(over > 0 && over <= 0.05)) stairBad.push(`on ${at} the shadow is ${Math.abs(over).toFixed(3)} m ${over > 0 ? 'over' : 'under'} the drawn tread`);
+      else if (!(ramp > 0.05)) stairBad.push(`on ${at} the ramp-height disc is only ${ramp.toFixed(3)} m under the shadow, so the sample proves nothing`);
+    }
+    check(feel.flights.length === 4 && !stairBad.length,
+      `on a flight the shadow lies on the drawn tread, not on the ramp under it (${feel.flights.length} mid-tread samples on 2 flights, at most ${stairWorst.toFixed(3)} m over it)`,
+      stairBad.join('; '));
 
     check(feel.rays.shadow.withRig === 0 && feel.rays.shadow.withMesh > 0,
       'a ray straight down from the eye passes through the shadow, and hits it with THREE.Mesh\'s own raycast put back',
